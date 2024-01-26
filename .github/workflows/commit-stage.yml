@@ -1,0 +1,40 @@
+name: Commit Stage
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Compile and test
+        run: ./gradlew build
+
+      - name: Generate SBOMs
+        run: ./gradlew cyclonedxBom
+
+      - name: Publish snapshot artifacts
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: ./gradlew snapshot
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+          SIGNING_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}

@@ -1,0 +1,27 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+    id 'io.arconia.optional-dependencies'
+}
+
+group = 'io.arconia'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

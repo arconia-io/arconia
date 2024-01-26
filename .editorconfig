@@ -1,0 +1,19 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+
+[*.java]
+indent_size = 4
+max_line_length = 120
+trim_trailing_whitespace=true
+ij_continuation_indent_size = 8
+ij_java_imports_layout = java.**, |, javax.**, |, jakarta.**, |, com.**, |, dev.**, |, io.**, |, org.**, |, *, |, io.arconia.**, |, $*
+ij_java_class_count_to_use_import_on_demand = 99
+ij_java_names_count_to_use_import_on_demand = 99
+
+[*.{yaml,yml}]
+indent_size = 2

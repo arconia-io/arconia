@@ -1,0 +1,32 @@
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+ext {
+    set("cycloneDxVersion", '1.8.2')
+    set("springBootVersion", '3.2.2')
+    set("springJavaFormatVersion", '0.0.41')
+    set("dependencyManagementVersion", '1.1.4')
+}
+
+dependencies {
+    implementation "org.cyclonedx:cyclonedx-gradle-plugin:${cycloneDxVersion}"
+    implementation "io.spring.javaformat:spring-javaformat-gradle-plugin:${springJavaFormatVersion}"
+    implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
+    implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+}
+
+gradlePlugin {
+    plugins {
+        optionalDependenciesPlugin {
+            id = "io.arconia.optional-dependencies"
+            implementationClass = "io.arconia.build.OptionalDependenciesPlugin"
+        }
+    }
+}
