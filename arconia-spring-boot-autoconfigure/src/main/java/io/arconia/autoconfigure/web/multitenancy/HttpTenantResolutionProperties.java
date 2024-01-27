@@ -25,7 +25,7 @@ public class HttpTenantResolutionProperties {
     /**
      * Mode of HTTP resolution.
      */
-    private HttpResolutionMode type = HttpResolutionMode.HEADER;
+    private HttpResolutionMode resolutionMode = HttpResolutionMode.HEADER;
 
     /**
      * Configuration for HTTP header tenant resolution.
@@ -50,12 +50,12 @@ public class HttpTenantResolutionProperties {
         this.enabled = enabled;
     }
 
-    public HttpResolutionMode getType() {
-        return type;
+    public HttpResolutionMode getResolutionMode() {
+        return resolutionMode;
     }
 
-    public void setType(HttpResolutionMode type) {
-        this.type = type;
+    public void setResolutionMode(HttpResolutionMode resolutionMode) {
+        this.resolutionMode = resolutionMode;
     }
 
     public Header getHeader() {
