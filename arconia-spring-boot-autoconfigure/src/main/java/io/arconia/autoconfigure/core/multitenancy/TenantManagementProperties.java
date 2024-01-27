@@ -2,7 +2,6 @@ package io.arconia.autoconfigure.core.multitenancy;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.core.multitenancy.context.events.MdcTenantContextEventListener;
 import io.arconia.core.multitenancy.context.events.ObservationTenantContextEventListener;
 
 /**
@@ -43,7 +42,7 @@ public class TenantManagementProperties {
         /**
          * Key to use for including the tenant identifier information in MDC.
          */
-        private String key = MdcTenantContextEventListener.DEFAULT_TENANT_ID_KEY;
+        private String key = "tenantId";
 
         public boolean isEnabled() {
             return enabled;
@@ -73,7 +72,7 @@ public class TenantManagementProperties {
         /**
          * Key to use for including the tenant identifier information in observations.
          */
-        private String key = ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY;
+        private String key = "tenant.id";
 
         /**
          * Whether to include the tenant identifier information in traces ('high'

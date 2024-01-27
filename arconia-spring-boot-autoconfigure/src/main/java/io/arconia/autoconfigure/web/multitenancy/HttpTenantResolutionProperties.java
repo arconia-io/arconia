@@ -4,9 +4,6 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.web.multitenancy.context.resolvers.CookieTenantResolver;
-import io.arconia.web.multitenancy.context.resolvers.HeaderTenantResolver;
-
 /**
  * Configuration properties for HTTP tenant resolution.
  *
@@ -75,7 +72,7 @@ public class HttpTenantResolutionProperties {
         /**
          * Name of the HTTP header from which to resolve the current tenant.
          */
-        private String headerName = HeaderTenantResolver.DEFAULT_HEADER_NAME;
+        private String headerName = "X-TenantId";
 
         public String getHeaderName() {
             return headerName;
@@ -92,7 +89,7 @@ public class HttpTenantResolutionProperties {
         /**
          * Name of the HTTP cookie from which to resolve the current tenant.
          */
-        private String cookieName = CookieTenantResolver.DEFAULT_COOKIE_NAME;
+        private String cookieName = "TENANT-ID";
 
         public String getCookieName() {
             return cookieName;

@@ -2,8 +2,6 @@ package io.arconia.autoconfigure.core.multitenancy;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
-
 /**
  * Configuration properties for fixed tenant resolution.
  *
@@ -22,7 +20,7 @@ public class FixedTenantResolutionProperties {
     /**
      * Identifier of the fixed tenant to use in each context.
      */
-    private String tenantId = FixedTenantResolver.DEFAULT_FIXED_TENANT;
+    private String tenantId = "default";
 
     public boolean isEnabled() {
         return enabled;
