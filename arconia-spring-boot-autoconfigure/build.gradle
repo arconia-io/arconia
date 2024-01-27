@@ -28,6 +28,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

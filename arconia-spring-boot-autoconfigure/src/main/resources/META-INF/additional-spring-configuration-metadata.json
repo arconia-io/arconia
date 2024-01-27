@@ -35,7 +35,7 @@
       "defaultValue": "X-TenantId"
     },
     {
-      "name": "arconia.multitenancy.resolution.http.resolutionMode",
+      "name": "arconia.multitenancy.resolution.http.resolution-mode",
       "defaultValue": "header"
     }
   ]
