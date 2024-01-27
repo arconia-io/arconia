@@ -1,7 +1,6 @@
 package io.arconia.autoconfigure.core.multitenancy;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -10,11 +9,9 @@ import io.arconia.core.multitenancy.context.events.HolderTenantContextEventListe
 import io.arconia.core.multitenancy.context.events.MdcTenantContextEventListener;
 import io.arconia.core.multitenancy.context.events.ObservationTenantContextEventListener;
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
-import io.arconia.core.multitenancy.events.DefaultTenantEventPublisher;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link MultitenancyCoreAutoConfiguration}.
@@ -29,72 +26,63 @@ class MultitenancyCoreAutoConfigurationTests {
     @Test
     void tenantKeyGenerator() {
         contextRunner.run(context -> {
-            var bean = context.getBean(TenantKeyGenerator.class);
-            assertThat(bean).isInstanceOf(TenantKeyGenerator.class);
+            assertThat(context).hasSingleBean(TenantKeyGenerator.class);
         });
     }
 
     @Test
     void holderTenantContextEventListener() {
         contextRunner.run(context -> {
-            var bean = context.getBean(HolderTenantContextEventListener.class);
-            assertThat(bean).isInstanceOf(HolderTenantContextEventListener.class);
+            assertThat(context).hasSingleBean(HolderTenantContextEventListener.class);
         });
     }
 
     @Test
     void observationTenantContextEventListenerWhenDefault() {
         contextRunner.run(context -> {
-            var bean = context.getBean(ObservationTenantContextEventListener.class);
-            assertThat(bean).isInstanceOf(ObservationTenantContextEventListener.class);
+            assertThat(context).hasSingleBean(ObservationTenantContextEventListener.class);
         });
     }
 
     @Test
     void observationTenantContextEventListenerWhenDisabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.management.observations.enabled=false").run(context -> {
-            assertThatThrownBy(() -> context.getBean(ObservationTenantContextEventListener.class))
-                .isInstanceOf(NoSuchBeanDefinitionException.class);
+            assertThat(context).doesNotHaveBean(ObservationTenantContextEventListener.class);
         });
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDefault() {
         contextRunner.run(context -> {
-            var bean = context.getBean(MdcTenantContextEventListener.class);
-            assertThat(bean).isInstanceOf(MdcTenantContextEventListener.class);
+            assertThat(context).hasSingleBean(MdcTenantContextEventListener.class);
         });
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDisabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.management.mdc.enabled=false").run(context -> {
-            assertThatThrownBy(() -> context.getBean(MdcTenantContextEventListener.class))
-                .isInstanceOf(NoSuchBeanDefinitionException.class);
+            assertThat(context).doesNotHaveBean(MdcTenantContextEventListener.class);
         });
     }
 
     @Test
     void fixedTenantResolverWhenDefault() {
         contextRunner.run(context -> {
-            assertThatThrownBy(() -> context.getBean(FixedTenantResolver.class))
-                .isInstanceOf(NoSuchBeanDefinitionException.class);
+            assertThat(context).doesNotHaveBean(FixedTenantResolver.class);
         });
     }
 
     @Test
     void fixedTenantResolverWhenEnabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true").run(context -> {
-            var bean = context.getBean(FixedTenantResolver.class);
-            assertThat(bean).isInstanceOf(FixedTenantResolver.class);
+            assertThat(context).hasSingleBean(FixedTenantResolver.class);
         });
     }
 
     @Test
     void tenantEventPublisher() {
         contextRunner.run(context -> {
-            var bean = context.getBean(TenantEventPublisher.class);
-            assertThat(bean).isInstanceOf(DefaultTenantEventPublisher.class);
+            assertThat(context).hasSingleBean(TenantEventPublisher.class);
         });
     }
 
