@@ -23,7 +23,7 @@ public class HttpTenantResolutionProperties {
     private boolean enabled = true;
 
     /**
-     * The HTTP type of resolution.
+     * Mode of HTTP resolution.
      */
     private HttpResolutionMode type = HttpResolutionMode.HEADER;
 
@@ -73,7 +73,7 @@ public class HttpTenantResolutionProperties {
     public static class Header {
 
         /**
-         * The name of the HTTP header from which to resolve the current tenant.
+         * Name of the HTTP header from which to resolve the current tenant.
          */
         private String headerName = HeaderTenantResolver.DEFAULT_HEADER_NAME;
 
@@ -90,7 +90,7 @@ public class HttpTenantResolutionProperties {
     public static class Cookie {
 
         /**
-         * The name of the HTTP cookie from which to resolve the current tenant.
+         * Name of the HTTP cookie from which to resolve the current tenant.
          */
         private String cookieName = CookieTenantResolver.DEFAULT_COOKIE_NAME;
 
@@ -112,8 +112,8 @@ public class HttpTenantResolutionProperties {
         private boolean enabled = true;
 
         /**
-         * A list of HTTP request paths for which the tenant resolution will not be
-         * performed.
+         * Comma-separated list of HTTP request paths for which the tenant resolution will
+         * not be performed.
          */
         private List<String> ignorePaths = List.of("/actuator/**", "/webjars/**", "/css/**", "/js/**", ".ico");
 

@@ -41,7 +41,7 @@ public class TenantManagementProperties {
         private boolean enabled = true;
 
         /**
-         * The key to use for including the tenant identifier information in MDC.
+         * Key to use for including the tenant identifier information in MDC.
          */
         private String key = MdcTenantContextEventListener.DEFAULT_TENANT_ID_KEY;
 
@@ -71,7 +71,7 @@ public class TenantManagementProperties {
         private boolean enabled = true;
 
         /**
-         * The key to use for including the tenant identifier information in observations.
+         * Key to use for including the tenant identifier information in observations.
          */
         private String key = ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY;
 

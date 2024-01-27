@@ -20,7 +20,7 @@ public class FixedTenantResolutionProperties {
     private boolean enabled = false;
 
     /**
-     * The name of the fixed tenant to use in each context.
+     * Identifier of the fixed tenant to use in each context.
      */
     private String tenantId = FixedTenantResolver.DEFAULT_FIXED_TENANT;
 
