@@ -25,14 +25,14 @@ public class ObservationTenantContextEventListener implements TenantEventListene
     private final String tenantIdKey;
 
     public ObservationTenantContextEventListener() {
-        this(DEFAULT_CARDINALITY, DEFAULT_TENANT_ID_KEY);
+        this(DEFAULT_TENANT_ID_KEY, DEFAULT_CARDINALITY);
     }
 
-    public ObservationTenantContextEventListener(Cardinality cardinality, String tenantIdKey) {
-        Assert.notNull(cardinality, "cardinality cannot be null");
+    public ObservationTenantContextEventListener(String tenantIdKey, Cardinality cardinality) {
         Assert.hasText(tenantIdKey, "tenantIdKey cannot be empty");
-        this.cardinality = cardinality;
+        Assert.notNull(cardinality, "cardinality cannot be null");
         this.tenantIdKey = tenantIdKey;
+        this.cardinality = cardinality;
     }
 
     @Override

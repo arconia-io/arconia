@@ -39,11 +39,4 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
             .orElse(null);
     }
 
-    /**
-     * The name of the Cookie containing the tenant identifier.
-     */
-    public String getTenantCookieName() {
-        return tenantCookieName;
-    }
-
 }

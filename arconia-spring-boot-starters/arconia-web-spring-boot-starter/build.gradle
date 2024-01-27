@@ -1,0 +1,26 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+
+    api project(':arconia-spring-boot-autoconfigure')
+
+    api project(':arconia-core')
+    api project(':arconia-web')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Web Spring Boot Starter"
+                description = "Arconia Web Spring Boot Starter."
+            }
+        }
+    }
+}

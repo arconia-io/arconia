@@ -5,6 +5,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link FixedTenantResolver}.
+ *
+ * @author Thomas Vitale
+ */
 class FixedTenantResolverTests {
 
     @Test

@@ -8,6 +8,11 @@ import io.arconia.core.multitenancy.context.events.TenantContextAttachedEvent;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link DefaultTenantEventPublisher}.
+ *
+ * @author Thomas Vitale
+ */
 class DefaultTenantEventPublisherTests {
 
     @Test

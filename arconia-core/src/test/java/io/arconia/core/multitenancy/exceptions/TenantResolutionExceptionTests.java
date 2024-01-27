@@ -4,18 +4,23 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TenantRequiredExceptionTests {
+/**
+ * Unit tests for {@link TenantResolutionException}.
+ *
+ * @author Thomas Vitale
+ */
+class TenantResolutionExceptionTests {
 
     @Test
     void whenDefaultMessage() {
-        var exception = new TenantRequiredException();
+        var exception = new TenantResolutionException();
         assertThat(exception).hasMessageContaining("A tenant must be specified for the current operation");
     }
 
     @Test
     void whenCustomMessage() {
         var message = "Custom tenant exception message";
-        var exception = new TenantRequiredException(message);
+        var exception = new TenantResolutionException(message);
         assertThat(exception).hasMessageContaining(message);
     }
 

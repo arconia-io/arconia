@@ -7,6 +7,11 @@ import io.arconia.core.multitenancy.exceptions.TenantNotFoundException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link TenantContextHolder}.
+ *
+ * @author Thomas Vitale
+ */
 class TenantContextHolderTests {
 
     @Test

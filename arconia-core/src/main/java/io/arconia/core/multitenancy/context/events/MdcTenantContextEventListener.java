@@ -14,7 +14,7 @@ import io.arconia.core.multitenancy.events.TenantEventListener;
  */
 public final class MdcTenantContextEventListener implements TenantEventListener {
 
-    private static final String DEFAULT_TENANT_ID_KEY = "tenantId";
+    public static final String DEFAULT_TENANT_ID_KEY = "tenantId";
 
     private final String tenantIdKey;
 

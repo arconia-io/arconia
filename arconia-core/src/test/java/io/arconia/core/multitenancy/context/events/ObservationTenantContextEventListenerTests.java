@@ -8,29 +8,32 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link ObservationTenantContextEventListener}.
+ *
+ * @author Thomas Vitale
+ */
 class ObservationTenantContextEventListenerTests {
 
     @Test
     void whenNullCardinalityThenThrow() {
-        assertThatThrownBy(() -> new ObservationTenantContextEventListener(null, "tenant.id"))
+        assertThatThrownBy(() -> new ObservationTenantContextEventListener("tenant.id", null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("cardinality cannot be null");
     }
 
     @Test
     void whenEmptyTenantKeyThenThrow() {
-        assertThatThrownBy(
-                () -> new ObservationTenantContextEventListener(ObservationTenantContextEventListener.Cardinality.HIGH,
-                        ""))
+        assertThatThrownBy(() -> new ObservationTenantContextEventListener("",
+                ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantIdKey cannot be empty");
     }
 
     @Test
     void whenNullTenantKeyThenThrow() {
-        assertThatThrownBy(
-                () -> new ObservationTenantContextEventListener(ObservationTenantContextEventListener.Cardinality.HIGH,
-                        null))
+        assertThatThrownBy(() -> new ObservationTenantContextEventListener(null,
+                ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantIdKey cannot be empty");
     }
@@ -54,8 +57,8 @@ class ObservationTenantContextEventListenerTests {
     void whenCustomValueIsUsedAsKey() {
         var tenantKey = "tenant.identifier";
         var tenantId = "acme";
-        var listener = new ObservationTenantContextEventListener(
-                ObservationTenantContextEventListener.DEFAULT_CARDINALITY, tenantKey);
+        var listener = new ObservationTenantContextEventListener(tenantKey,
+                ObservationTenantContextEventListener.DEFAULT_CARDINALITY);
         var observationContext = new Observation.Context();
         var event = new TenantContextAttachedEvent(tenantId, this);
         event.setObservationContext(observationContext);
@@ -69,8 +72,9 @@ class ObservationTenantContextEventListenerTests {
     @Test
     void whenCustomCardinalityIsUsed() {
         var tenantId = "acme";
-        var listener = new ObservationTenantContextEventListener(ObservationTenantContextEventListener.Cardinality.LOW,
-                ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY);
+        var listener = new ObservationTenantContextEventListener(
+                ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY,
+                ObservationTenantContextEventListener.Cardinality.LOW);
         var observationContext = new Observation.Context();
         var event = new TenantContextAttachedEvent(tenantId, this);
         event.setObservationContext(observationContext);

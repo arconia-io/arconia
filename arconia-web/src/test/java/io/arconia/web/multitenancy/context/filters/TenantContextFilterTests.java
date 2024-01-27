@@ -18,18 +18,23 @@ import io.arconia.core.multitenancy.context.events.TenantContextAttachedEvent;
 import io.arconia.core.multitenancy.context.events.TenantContextClosedEvent;
 import io.arconia.core.multitenancy.events.TenantEvent;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
-import io.arconia.core.multitenancy.exceptions.TenantRequiredException;
+import io.arconia.core.multitenancy.exceptions.TenantResolutionException;
 import io.arconia.web.multitenancy.context.resolvers.HeaderTenantResolver;
 import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link TenantContextFilter}.
+ *
+ * @author Thomas Vitale
+ */
 class TenantContextFilterTests {
 
     @Test
     void whenNullTenantResolverThenThrow() {
-        var noTenantPathMatcher = Mockito.mock(TenantOptionalPathMatcher.class);
+        var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
         assertThatThrownBy(() -> new TenantContextFilter(null, noTenantPathMatcher, tenantEventPublisher))
             .isInstanceOf(IllegalArgumentException.class)
@@ -48,7 +53,7 @@ class TenantContextFilterTests {
     @Test
     void whenNullEventPublisherThenThrow() {
         var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
-        var noTenantPathMatcher = Mockito.mock(TenantOptionalPathMatcher.class);
+        var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
         assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantEventPublisher cannot be null");
@@ -64,7 +69,7 @@ class TenantContextFilterTests {
         var response = new MockHttpServletResponse();
         var filterChain = new MockFilterChain();
         var httpRequestTenantResolver = new HeaderTenantResolver();
-        var noTenantPathMatcher = new TenantOptionalPathMatcher(List.of());
+        var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of());
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
         var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
 
@@ -88,31 +93,31 @@ class TenantContextFilterTests {
     }
 
     @Test
-    void whenRequiredTenantNotResolvedThenThrow() throws ServletException, IOException {
+    void whenRequiredTenantNotResolvedThenThrow() {
         var request = new MockHttpServletRequest();
         var response = new MockHttpServletResponse();
         var filterChain = new MockFilterChain();
         var httpRequestTenantResolver = new HeaderTenantResolver();
-        var noTenantPathMatcher = new TenantOptionalPathMatcher(List.of());
+        var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of());
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
         var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
 
         assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
-            .isInstanceOf(TenantRequiredException.class)
+            .isInstanceOf(TenantResolutionException.class)
             .hasMessageContaining("A tenant identifier must be specified for HTTP requests");
 
         Mockito.verify(tenantEventPublisher, Mockito.times(0)).publishTenantEvent(Mockito.any(TenantEvent.class));
     }
 
     @Test
-    void whenOptionalTenantNotResolvedThenNoEventPublished() throws ServletException, IOException {
-        var path = "/optional-path";
+    void whenIgnorePathThenNoTenantResolvedAndNoEventPublished() throws ServletException, IOException {
+        var path = "/ignore-path";
         var request = new MockHttpServletRequest();
         request.setRequestURI(path);
         var response = new MockHttpServletResponse();
         var filterChain = new MockFilterChain();
         var httpRequestTenantResolver = new HeaderTenantResolver();
-        var noTenantPathMatcher = new TenantOptionalPathMatcher(List.of(path));
+        var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of(path));
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
         var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
 

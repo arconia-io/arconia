@@ -15,7 +15,7 @@ import org.springframework.web.filter.ServerHttpObservationFilter;
 import io.arconia.core.multitenancy.context.events.TenantContextAttachedEvent;
 import io.arconia.core.multitenancy.context.events.TenantContextClosedEvent;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
-import io.arconia.core.multitenancy.exceptions.TenantRequiredException;
+import io.arconia.core.multitenancy.exceptions.TenantResolutionException;
 import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 /**
@@ -27,17 +27,17 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     private final HttpRequestTenantResolver httpRequestTenantResolver;
 
-    private final TenantOptionalPathMatcher tenantOptionalPathMatcher;
+    private final TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
 
     private final TenantEventPublisher tenantEventPublisher;
 
     public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
-            TenantOptionalPathMatcher tenantOptionalPathMatcher, TenantEventPublisher tenantEventPublisher) {
+            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, TenantEventPublisher tenantEventPublisher) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
-        Assert.notNull(tenantOptionalPathMatcher, "ignorePathMatcher cannot be null");
+        Assert.notNull(tenantContextIgnorePathMatcher, "ignorePathMatcher cannot be null");
         Assert.notNull(tenantEventPublisher, "tenantEventPublisher cannot be null");
         this.httpRequestTenantResolver = httpRequestTenantResolver;
-        this.tenantOptionalPathMatcher = tenantOptionalPathMatcher;
+        this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
         this.tenantEventPublisher = tenantEventPublisher;
     }
 
@@ -45,22 +45,23 @@ public final class TenantContextFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         var tenantId = httpRequestTenantResolver.resolveTenantId(request);
-        if (StringUtils.hasText(tenantId)) {
-            publishTenantContextAttachedEvent(tenantId, request);
-        }
-        else if (!tenantOptionalPathMatcher.matches(request)) {
-            throw new TenantRequiredException(
+        if (!StringUtils.hasText(tenantId)) {
+            throw new TenantResolutionException(
                     "A tenant identifier must be specified for HTTP requests to: " + request.getRequestURI());
         }
+        publishTenantContextAttachedEvent(tenantId, request);
 
         try {
             filterChain.doFilter(request, response);
         }
         finally {
-            if (StringUtils.hasText(tenantId)) {
-                publishTenantContextClosedEvent(tenantId, request);
-            }
+            publishTenantContextClosedEvent(tenantId, request);
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return tenantContextIgnorePathMatcher.matches(request);
     }
 
     private void publishTenantContextAttachedEvent(String tenantId, HttpServletRequest request) {

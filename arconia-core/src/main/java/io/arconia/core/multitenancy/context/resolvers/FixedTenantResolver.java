@@ -10,7 +10,7 @@ import org.springframework.util.Assert;
  */
 public final class FixedTenantResolver implements TenantResolver<Object> {
 
-    private static final String DEFAULT_FIXED_TENANT = "default";
+    public static final String DEFAULT_FIXED_TENANT = "default";
 
     private final String fixedTenantName;
 

@@ -9,6 +9,11 @@ import io.arconia.core.multitenancy.exceptions.TenantNotFoundException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link DefaultTenantKeyGenerator}.
+ *
+ * @author Thomas Vitale
+ */
 class DefaultTenantKeyGeneratorTests {
 
     DefaultTenantKeyGenerator keyGenerator = new DefaultTenantKeyGenerator();

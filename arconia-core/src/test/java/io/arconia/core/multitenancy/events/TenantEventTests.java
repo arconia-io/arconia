@@ -4,6 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link TenantEvent}.
+ *
+ * @author Thomas Vitale
+ */
 class TenantEventTests {
 
     @Test

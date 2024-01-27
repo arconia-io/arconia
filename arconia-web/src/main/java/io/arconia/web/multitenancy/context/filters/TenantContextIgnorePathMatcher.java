@@ -12,31 +12,32 @@ import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
- * Matches HTTP requests paths for which a tenant context is optional.
+ * Matches HTTP requests paths for which a tenant context is not attached.
  *
  * @author Thomas Vitale
  */
-public class TenantOptionalPathMatcher {
+public class TenantContextIgnorePathMatcher {
 
-    private static final Logger log = LoggerFactory.getLogger(TenantOptionalPathMatcher.class);
+    private static final Logger log = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);
 
-    private final List<PathPattern> optionalPathPatterns;
+    private final List<PathPattern> ignorePathPatterns;
 
-    public TenantOptionalPathMatcher(List<String> optionalPathPatterns) {
-        Assert.notNull(optionalPathPatterns, "optionalPathPatterns cannot be null");
-        this.optionalPathPatterns = optionalPathPatterns.stream().map(this::parse).toList();
+    public TenantContextIgnorePathMatcher(List<String> ignorePathPatterns) {
+        Assert.notNull(ignorePathPatterns, "ignorePathPatterns cannot be null");
+        this.ignorePathPatterns = ignorePathPatterns.stream().map(this::parse).toList();
     }
 
     public boolean matches(HttpServletRequest httpServletRequest) {
         Assert.notNull(httpServletRequest, "httpServletRequest cannot be null");
         var requestUri = httpServletRequest.getRequestURI();
         var pathContainer = PathContainer.parsePath(requestUri);
-        var matchesOptionalPaths = optionalPathPatterns.stream()
+        var matchesIgnorePaths = ignorePathPatterns.stream()
             .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
-        if (matchesOptionalPaths) {
-            log.debug("Request '" + requestUri + "' matches one of the paths for which a tenant is optional");
+        if (matchesIgnorePaths) {
+            log.debug(
+                    "Request '" + requestUri + "' matches one of the paths for which a tenant context is not attached");
         }
-        return matchesOptionalPaths;
+        return matchesIgnorePaths;
     }
 
     private PathPattern parse(String pattern) {

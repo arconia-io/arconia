@@ -8,6 +8,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link CookieTenantResolver}.
+ *
+ * @author Thomas Vitale
+ */
 class CookieTenantResolverTests {
 
     @Test

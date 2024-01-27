@@ -5,13 +5,13 @@ package io.arconia.core.multitenancy.exceptions;
  *
  * @author Thomas Vitale
  */
-public class TenantRequiredException extends IllegalStateException {
+public class TenantResolutionException extends IllegalStateException {
 
-    public TenantRequiredException() {
+    public TenantResolutionException() {
         super("A tenant must be specified for the current operation");
     }
 
-    public TenantRequiredException(String message) {
+    public TenantResolutionException(String message) {
         super(message);
     }
 

@@ -6,6 +6,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for {@link HeaderTenantResolver}.
+ *
+ * @author Thomas Vitale
+ */
 class HeaderTenantResolverTests {
 
     @Test

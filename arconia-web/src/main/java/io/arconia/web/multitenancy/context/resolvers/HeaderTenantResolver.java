@@ -31,11 +31,4 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
         return request.getHeader(tenantHeaderName);
     }
 
-    /**
-     * The name of the HTTP Header containing the tenant identifier.
-     */
-    public String getTenantHeaderName() {
-        return tenantHeaderName;
-    }
-
 }
