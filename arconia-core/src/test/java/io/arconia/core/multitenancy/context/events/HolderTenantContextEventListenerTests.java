@@ -16,22 +16,22 @@ class HolderTenantContextEventListenerTests {
     @Test
     void whenContextIsAttached() {
         var listener = new HolderTenantContextEventListener();
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
 
-        listener.onApplicationEvent(new TenantContextAttachedEvent(tenantId, this));
+        listener.onApplicationEvent(new TenantContextAttachedEvent(tenantIdentifier, this));
 
-        assertThat(TenantContextHolder.getTenantId()).isEqualTo(tenantId);
+        assertThat(TenantContextHolder.getTenantIdentifier()).isEqualTo(tenantIdentifier);
     }
 
     @Test
     void whenContextIsClosed() {
         var listener = new HolderTenantContextEventListener();
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
 
-        listener.onApplicationEvent(new TenantContextAttachedEvent(tenantId, this));
-        listener.onApplicationEvent(new TenantContextClosedEvent(tenantId, this));
+        listener.onApplicationEvent(new TenantContextAttachedEvent(tenantIdentifier, this));
+        listener.onApplicationEvent(new TenantContextClosedEvent(tenantIdentifier, this));
 
-        assertThat(TenantContextHolder.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantIdentifier()).isNull();
     }
 
 }

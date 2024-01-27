@@ -20,7 +20,7 @@ public class FixedTenantResolutionProperties {
     /**
      * Identifier of the fixed tenant to use in each context.
      */
-    private String tenantId = "default";
+    private String tenantIdentifier = "default";
 
     public boolean isEnabled() {
         return enabled;
@@ -30,12 +30,12 @@ public class FixedTenantResolutionProperties {
         this.enabled = enabled;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public String getTenantIdentifier() {
+        return tenantIdentifier;
     }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+    public void setTenantIdentifier(String tenantIdentifier) {
+        this.tenantIdentifier = tenantIdentifier;
     }
 
 }

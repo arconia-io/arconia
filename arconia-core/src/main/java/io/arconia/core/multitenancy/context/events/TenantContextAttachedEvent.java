@@ -18,8 +18,8 @@ public final class TenantContextAttachedEvent extends TenantEvent {
     @Nullable
     private Observation.Context observationContext;
 
-    public TenantContextAttachedEvent(String tenantId, Object object) {
-        super(tenantId, object);
+    public TenantContextAttachedEvent(String tenantIdentifier, Object object) {
+        super(tenantIdentifier, object);
     }
 
     @Nullable

@@ -14,7 +14,7 @@ class TenantResolutionExceptionTests {
     @Test
     void whenDefaultMessage() {
         var exception = new TenantResolutionException();
-        assertThat(exception).hasMessageContaining("A tenant must be specified for the current operation");
+        assertThat(exception).hasMessageContaining("Error when trying to resolve the current tenant");
     }
 
     @Test

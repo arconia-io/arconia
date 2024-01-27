@@ -14,26 +14,26 @@ import io.arconia.core.multitenancy.events.TenantEventListener;
  */
 public final class MdcTenantContextEventListener implements TenantEventListener {
 
-    public static final String DEFAULT_TENANT_ID_KEY = "tenantId";
+    public static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenantId";
 
-    private final String tenantIdKey;
+    private final String tenantIdentifierKey;
 
     public MdcTenantContextEventListener() {
-        this(DEFAULT_TENANT_ID_KEY);
+        this(DEFAULT_TENANT_IDENTIFIER_KEY);
     }
 
-    public MdcTenantContextEventListener(String tenantIdKey) {
-        Assert.hasText(tenantIdKey, "tenantIdKey cannot be empty");
-        this.tenantIdKey = tenantIdKey;
+    public MdcTenantContextEventListener(String tenantIdentifierKey) {
+        Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be empty");
+        this.tenantIdentifierKey = tenantIdentifierKey;
     }
 
     @Override
     public void onApplicationEvent(TenantEvent tenantEvent) {
         if (tenantEvent instanceof TenantContextAttachedEvent event) {
-            MDC.put(tenantIdKey, event.getTenantId());
+            MDC.put(tenantIdentifierKey, event.getTenantIdentifier());
         }
         else if (tenantEvent instanceof TenantContextClosedEvent) {
-            MDC.remove(tenantIdKey);
+            MDC.remove(tenantIdentifierKey);
         }
     }
 

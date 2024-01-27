@@ -27,7 +27,7 @@ class ObservationTenantContextEventListenerTests {
         assertThatThrownBy(() -> new ObservationTenantContextEventListener("",
                 ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be empty");
     }
 
     @Test
@@ -35,55 +35,55 @@ class ObservationTenantContextEventListenerTests {
         assertThatThrownBy(() -> new ObservationTenantContextEventListener(null,
                 ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be empty");
     }
 
     @Test
     void whenDefaultValueIsUsedAsKey() {
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
         var listener = new ObservationTenantContextEventListener();
         var observationContext = new Observation.Context();
-        var event = new TenantContextAttachedEvent(tenantId, this);
+        var event = new TenantContextAttachedEvent(tenantIdentifier, this);
         event.setObservationContext(observationContext);
 
         listener.onApplicationEvent(event);
 
         assertThat(observationContext
-            .getHighCardinalityKeyValue(ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY))
-            .isEqualTo(KeyValue.of(ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY, tenantId));
+            .getHighCardinalityKeyValue(ObservationTenantContextEventListener.DEFAULT_TENANT_IDENTIFIER_KEY)).isEqualTo(
+                    KeyValue.of(ObservationTenantContextEventListener.DEFAULT_TENANT_IDENTIFIER_KEY, tenantIdentifier));
     }
 
     @Test
     void whenCustomValueIsUsedAsKey() {
         var tenantKey = "tenant.identifier";
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
         var listener = new ObservationTenantContextEventListener(tenantKey,
                 ObservationTenantContextEventListener.DEFAULT_CARDINALITY);
         var observationContext = new Observation.Context();
-        var event = new TenantContextAttachedEvent(tenantId, this);
+        var event = new TenantContextAttachedEvent(tenantIdentifier, this);
         event.setObservationContext(observationContext);
 
         listener.onApplicationEvent(event);
 
         assertThat(observationContext.getHighCardinalityKeyValue(tenantKey))
-            .isEqualTo(KeyValue.of(tenantKey, tenantId));
+            .isEqualTo(KeyValue.of(tenantKey, tenantIdentifier));
     }
 
     @Test
     void whenCustomCardinalityIsUsed() {
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
         var listener = new ObservationTenantContextEventListener(
-                ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY,
+                ObservationTenantContextEventListener.DEFAULT_TENANT_IDENTIFIER_KEY,
                 ObservationTenantContextEventListener.Cardinality.LOW);
         var observationContext = new Observation.Context();
-        var event = new TenantContextAttachedEvent(tenantId, this);
+        var event = new TenantContextAttachedEvent(tenantIdentifier, this);
         event.setObservationContext(observationContext);
 
         listener.onApplicationEvent(event);
 
         assertThat(observationContext
-            .getLowCardinalityKeyValue(ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY))
-            .isEqualTo(KeyValue.of(ObservationTenantContextEventListener.DEFAULT_TENANT_ID_KEY, tenantId));
+            .getLowCardinalityKeyValue(ObservationTenantContextEventListener.DEFAULT_TENANT_IDENTIFIER_KEY)).isEqualTo(
+                    KeyValue.of(ObservationTenantContextEventListener.DEFAULT_TENANT_IDENTIFIER_KEY, tenantIdentifier));
     }
 
 }

@@ -16,7 +16,7 @@ public final class DefaultTenantKeyGenerator implements TenantKeyGenerator {
 
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        return SimpleKeyGenerator.generateKey(TenantContextHolder.getRequiredTenantId(), params);
+        return SimpleKeyGenerator.generateKey(TenantContextHolder.getRequiredTenantIdentifier(), params);
     }
 
 }

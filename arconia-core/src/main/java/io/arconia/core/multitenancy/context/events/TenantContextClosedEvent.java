@@ -10,8 +10,8 @@ import io.arconia.core.multitenancy.events.TenantEvent;
  */
 public final class TenantContextClosedEvent extends TenantEvent {
 
-    public TenantContextClosedEvent(String tenantId, Object object) {
-        super(tenantId, object);
+    public TenantContextClosedEvent(String tenantIdentifier, Object object) {
+        super(tenantIdentifier, object);
     }
 
 }

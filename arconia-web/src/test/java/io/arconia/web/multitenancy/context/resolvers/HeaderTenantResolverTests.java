@@ -32,7 +32,7 @@ class HeaderTenantResolverTests {
         var request = new MockHttpServletRequest();
         request.addHeader(HeaderTenantResolver.DEFAULT_HEADER_NAME, expectedTenantId);
 
-        var actualTenantId = headerTenantResolver.resolveTenantId(request);
+        var actualTenantId = headerTenantResolver.resolveTenantIdentifier(request);
 
         assertThat(actualTenantId).isEqualTo(expectedTenantId);
     }
@@ -45,7 +45,7 @@ class HeaderTenantResolverTests {
         var request = new MockHttpServletRequest();
         request.addHeader(headerName, expectedTenantId);
 
-        var actualTenantId = headerTenantResolver.resolveTenantId(request);
+        var actualTenantId = headerTenantResolver.resolveTenantIdentifier(request);
 
         assertThat(actualTenantId).isEqualTo(expectedTenantId);
     }
@@ -54,7 +54,7 @@ class HeaderTenantResolverTests {
     void whenNullRequestThenThrow() {
         var headerTenantResolver = new HeaderTenantResolver();
 
-        assertThatThrownBy(() -> headerTenantResolver.resolveTenantId(null))
+        assertThatThrownBy(() -> headerTenantResolver.resolveTenantIdentifier(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("request cannot be null");
     }

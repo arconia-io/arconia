@@ -61,10 +61,10 @@ class TenantContextFilterTests {
 
     @Test
     void whenTenantResolvedThenPublishEvent() throws ServletException, IOException {
-        var tenantId = "acme";
+        var tenantIdentifier = "acme";
         var observationContext = Mockito.mock(ServerRequestObservationContext.class);
         var request = new MockHttpServletRequest();
-        request.addHeader(HeaderTenantResolver.DEFAULT_HEADER_NAME, tenantId);
+        request.addHeader(HeaderTenantResolver.DEFAULT_HEADER_NAME, tenantIdentifier);
         request.setAttribute(ServerHttpObservationFilter.CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE, observationContext);
         var response = new MockHttpServletResponse();
         var filterChain = new MockFilterChain();
@@ -81,14 +81,14 @@ class TenantContextFilterTests {
         assertThat(tenantEventArgumentCaptor.getAllValues().get(0))
             .isExactlyInstanceOf(TenantContextAttachedEvent.class)
             .extracting(event -> (TenantContextAttachedEvent) event)
-            .matches(event -> event.getTenantId().equals(tenantId))
+            .matches(event -> event.getTenantIdentifier().equals(tenantIdentifier))
             .matches(event -> event.getSource().equals(request))
             .matches(event -> event.getObservationContext() != null);
 
         assertThat(tenantEventArgumentCaptor.getAllValues().get(tenantEventArgumentCaptor.getAllValues().size() - 1))
             .isExactlyInstanceOf(TenantContextClosedEvent.class)
             .extracting(event -> (TenantContextClosedEvent) event)
-            .matches(event -> event.getTenantId().equals(tenantId))
+            .matches(event -> event.getTenantIdentifier().equals(tenantIdentifier))
             .matches(event -> event.getSource().equals(request));
     }
 

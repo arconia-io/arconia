@@ -10,16 +10,16 @@ import org.springframework.util.Assert;
  */
 public abstract class TenantEvent extends ApplicationEvent {
 
-    private final String tenantId;
+    private final String tenantIdentifier;
 
-    public TenantEvent(String tenantId, Object source) {
+    public TenantEvent(String tenantIdentifier, Object source) {
         super(source);
-        Assert.hasText(tenantId, "tenantId cannot be empty");
-        this.tenantId = tenantId;
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be empty");
+        this.tenantIdentifier = tenantIdentifier;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public String getTenantIdentifier() {
+        return tenantIdentifier;
     }
 
 }

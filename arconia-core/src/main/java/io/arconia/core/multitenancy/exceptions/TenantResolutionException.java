@@ -1,14 +1,14 @@
 package io.arconia.core.multitenancy.exceptions;
 
 /**
- * Thrown when the source of the operation didn't provide any tenant information.
+ * Thrown when an error occurred during the tenant resolution process.
  *
  * @author Thomas Vitale
  */
 public class TenantResolutionException extends IllegalStateException {
 
     public TenantResolutionException() {
-        super("A tenant must be specified for the current operation");
+        super("Error when trying to resolve the current tenant");
     }
 
     public TenantResolutionException(String message) {

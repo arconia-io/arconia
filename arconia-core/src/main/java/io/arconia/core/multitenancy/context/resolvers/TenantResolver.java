@@ -14,6 +14,6 @@ public interface TenantResolver<T> {
      * Resolves a tenant identifier from the given source.
      */
     @Nullable
-    String resolveTenantId(T source);
+    String resolveTenantIdentifier(T source);
 
 }

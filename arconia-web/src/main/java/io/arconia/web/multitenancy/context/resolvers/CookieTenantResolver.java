@@ -30,7 +30,7 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
     @Override
     @Nullable
-    public String resolveTenantId(HttpServletRequest request) {
+    public String resolveTenantIdentifier(HttpServletRequest request) {
         Assert.notNull(request, "request cannot be null");
         return Arrays.stream(request.getCookies())
             .filter(cookie -> cookie.getName().equals(tenantCookieName))

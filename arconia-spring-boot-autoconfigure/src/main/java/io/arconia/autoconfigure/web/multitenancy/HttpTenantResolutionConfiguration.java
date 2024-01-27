@@ -32,7 +32,7 @@ public class HttpTenantResolutionConfiguration {
     @ConditionalOnProperty(prefix = FixedTenantResolutionProperties.CONFIG_PREFIX, value = "enabled",
             havingValue = "true")
     HttpRequestTenantResolver fixedHttpRequestTenantResolver(FixedTenantResolver fixedTenantResolver) {
-        return fixedTenantResolver::resolveTenantId;
+        return fixedTenantResolver::resolveTenantIdentifier;
     }
 
     @Bean

@@ -16,41 +16,43 @@ class TenantContextHolderTests {
 
     @Test
     void setValidTenantContext() {
-        var tenantId = "acme";
-        TenantContextHolder.setTenantId(tenantId);
-        assertThat(TenantContextHolder.getTenantId()).isEqualTo(tenantId);
+        var tenantIdentifier = "acme";
+        TenantContextHolder.setTenantIdentifier(tenantIdentifier);
+        assertThat(TenantContextHolder.getTenantIdentifier()).isEqualTo(tenantIdentifier);
     }
 
     @Test
     void setNullTenantContext() {
-        assertThatThrownBy(() -> TenantContextHolder.setTenantId(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantId cannot be empty");
+        assertThatThrownBy(() -> TenantContextHolder.setTenantIdentifier(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenant cannot be empty");
     }
 
     @Test
     void setEmptyTenantContext() {
-        assertThatThrownBy(() -> TenantContextHolder.setTenantId("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantId cannot be empty");
+        assertThatThrownBy(() -> TenantContextHolder.setTenantIdentifier(""))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenant cannot be empty");
     }
 
     @Test
     void clearTenantContext() {
-        var tenantId = "acme";
-        TenantContextHolder.setTenantId(tenantId);
+        var tenantIdentifier = "acme";
+        TenantContextHolder.setTenantIdentifier(tenantIdentifier);
         TenantContextHolder.clear();
-        assertThat(TenantContextHolder.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantIdentifier()).isNull();
     }
 
     @Test
     void whenRequiredTenantContextPresentThenReturn() {
-        var tenantId = "acme";
-        TenantContextHolder.setTenantId(tenantId);
-        assertThat(TenantContextHolder.getRequiredTenantId()).isEqualTo(tenantId);
+        var tenantIdentifier = "acme";
+        TenantContextHolder.setTenantIdentifier(tenantIdentifier);
+        assertThat(TenantContextHolder.getRequiredTenantIdentifier()).isEqualTo(tenantIdentifier);
     }
 
     @Test
     void whenRequiredTenantContextMissingThenThrow() {
-        assertThatThrownBy(TenantContextHolder::getRequiredTenantId).isInstanceOf(TenantNotFoundException.class)
+        assertThatThrownBy(TenantContextHolder::getRequiredTenantIdentifier).isInstanceOf(TenantNotFoundException.class)
             .hasMessageContaining("No tenant found in the current context");
     }
 

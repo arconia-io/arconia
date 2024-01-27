@@ -44,18 +44,18 @@ public final class TenantContextFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        var tenantId = httpRequestTenantResolver.resolveTenantId(request);
-        if (!StringUtils.hasText(tenantId)) {
+        var tenantIdentifier = httpRequestTenantResolver.resolveTenantIdentifier(request);
+        if (!StringUtils.hasText(tenantIdentifier)) {
             throw new TenantResolutionException(
                     "A tenant identifier must be specified for HTTP requests to: " + request.getRequestURI());
         }
-        publishTenantContextAttachedEvent(tenantId, request);
+        publishTenantContextAttachedEvent(tenantIdentifier, request);
 
         try {
             filterChain.doFilter(request, response);
         }
         finally {
-            publishTenantContextClosedEvent(tenantId, request);
+            publishTenantContextClosedEvent(tenantIdentifier, request);
         }
     }
 
@@ -64,15 +64,15 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         return tenantContextIgnorePathMatcher.matches(request);
     }
 
-    private void publishTenantContextAttachedEvent(String tenantId, HttpServletRequest request) {
-        var tenantContextAttachedEvent = new TenantContextAttachedEvent(tenantId, request);
+    private void publishTenantContextAttachedEvent(String tenantIdentifier, HttpServletRequest request) {
+        var tenantContextAttachedEvent = new TenantContextAttachedEvent(tenantIdentifier, request);
         var observationContext = ServerHttpObservationFilter.findObservationContext(request);
         observationContext.ifPresent(tenantContextAttachedEvent::setObservationContext);
         tenantEventPublisher.publishTenantEvent(tenantContextAttachedEvent);
     }
 
-    private void publishTenantContextClosedEvent(String tenantId, HttpServletRequest request) {
-        var tenantContextClosedEvent = new TenantContextClosedEvent(tenantId, request);
+    private void publishTenantContextClosedEvent(String tenantIdentifier, HttpServletRequest request) {
+        var tenantContextClosedEvent = new TenantContextClosedEvent(tenantIdentifier, request);
         tenantEventPublisher.publishTenantEvent(tenantContextClosedEvent);
     }
 

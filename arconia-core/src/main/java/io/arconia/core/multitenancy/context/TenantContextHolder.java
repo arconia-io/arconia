@@ -17,33 +17,33 @@ public final class TenantContextHolder {
 
     private static final Logger log = LoggerFactory.getLogger(TenantContextHolder.class);
 
-    private static final ThreadLocal<String> tenantId = new ThreadLocal<>();
+    private static final ThreadLocal<String> tenantIdentifier = new ThreadLocal<>();
 
     private TenantContextHolder() {
     }
 
-    public static void setTenantId(final String tenant) {
-        Assert.hasText(tenant, "tenantId cannot be empty");
+    public static void setTenantIdentifier(String tenant) {
+        Assert.hasText(tenant, "tenant cannot be empty");
         log.trace("Setting current tenant to: {}", tenant);
-        tenantId.set(tenant);
+        tenantIdentifier.set(tenant);
     }
 
     @Nullable
-    public static String getTenantId() {
-        return tenantId.get();
+    public static String getTenantIdentifier() {
+        return tenantIdentifier.get();
     }
 
-    public static String getRequiredTenantId() {
-        var tenantId = getTenantId();
-        if (!StringUtils.hasText(tenantId)) {
+    public static String getRequiredTenantIdentifier() {
+        var tenant = getTenantIdentifier();
+        if (!StringUtils.hasText(tenant)) {
             throw new TenantNotFoundException("No tenant found in the current context");
         }
-        return tenantId;
+        return tenant;
     }
 
     public static void clear() {
         log.trace("Clearing current tenant");
-        tenantId.remove();
+        tenantIdentifier.remove();
     }
 
 }

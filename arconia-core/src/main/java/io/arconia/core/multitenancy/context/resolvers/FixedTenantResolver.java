@@ -10,23 +10,23 @@ import org.springframework.util.Assert;
  */
 public final class FixedTenantResolver implements TenantResolver<Object> {
 
-    public static final String DEFAULT_FIXED_TENANT = "default";
+    public static final String DEFAULT_FIXED_TENANT_IDENTIFIER = "default";
 
-    private final String fixedTenantName;
+    private final String fixedTenantIdentifier;
 
     public FixedTenantResolver() {
-        fixedTenantName = DEFAULT_FIXED_TENANT;
+        fixedTenantIdentifier = DEFAULT_FIXED_TENANT_IDENTIFIER;
     }
 
-    public FixedTenantResolver(String tenantName) {
-        Assert.hasText(tenantName, "tenantName cannot be empty");
-        this.fixedTenantName = tenantName;
+    public FixedTenantResolver(String tenantIdentifier) {
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be empty");
+        this.fixedTenantIdentifier = tenantIdentifier;
     }
 
     @Override
     @NonNull
-    public String resolveTenantId(Object source) {
-        return fixedTenantName;
+    public String resolveTenantIdentifier(Object source) {
+        return fixedTenantIdentifier;
     }
 
 }

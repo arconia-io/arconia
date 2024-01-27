@@ -16,13 +16,13 @@ class MdcTenantContextEventListenerTests {
     @Test
     void whenNullCustomValueThenThrow() {
         assertThatThrownBy(() -> new MdcTenantContextEventListener(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be empty");
     }
 
     @Test
     void whenEmptyCustomValueThenThrow() {
         assertThatThrownBy(() -> new MdcTenantContextEventListener("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be empty");
     }
 
     @Test

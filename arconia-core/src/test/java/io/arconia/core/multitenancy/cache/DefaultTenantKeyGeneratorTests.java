@@ -22,12 +22,12 @@ class DefaultTenantKeyGeneratorTests {
     void whenTenantContextDefinedThenGenerateCacheKey() {
         var objectToCache = new Object[] { "something" };
 
-        TenantContextHolder.setTenantId("tenant1");
+        TenantContextHolder.setTenantIdentifier("tenant1");
         Object key1 = generateCacheKey(objectToCache);
         Object key2 = generateCacheKey(objectToCache);
         TenantContextHolder.clear();
 
-        TenantContextHolder.setTenantId("tenant2");
+        TenantContextHolder.setTenantIdentifier("tenant2");
         Object key3 = generateCacheKey(objectToCache);
         TenantContextHolder.clear();
 

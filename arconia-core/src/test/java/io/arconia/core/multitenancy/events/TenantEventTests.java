@@ -12,15 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TenantEventTests {
 
     @Test
-    void whenNullTenantIdThenThrow() {
+    void whenNullTenantIdentifierThenThrow() {
         assertThatThrownBy(() -> new TestTenantEvent(null, this)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantId cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be empty");
     }
 
     @Test
-    void whenEmptyTenantIdThenThrow() {
+    void whenEmptyTenantIdentifierThenThrow() {
         assertThatThrownBy(() -> new TestTenantEvent("", this)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantId cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be empty");
     }
 
     @Test
@@ -30,8 +30,8 @@ class TenantEventTests {
 
     static class TestTenantEvent extends TenantEvent {
 
-        public TestTenantEvent(String tenantId, Object source) {
-            super(tenantId, source);
+        public TestTenantEvent(String tenantIdentifier, Object source) {
+            super(tenantIdentifier, source);
         }
 
     }

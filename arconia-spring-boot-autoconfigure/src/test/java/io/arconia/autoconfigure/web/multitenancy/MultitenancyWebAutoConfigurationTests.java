@@ -66,11 +66,11 @@ class MultitenancyWebAutoConfigurationTests {
     void httpRequestTenantResolverFixed() {
         contextRunner
             .withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true",
-                    "arconia.multitenancy.resolution.fixed.tenant-id=myTenant")
+                    "arconia.multitenancy.resolution.fixed.tenant-identifier=myTenant")
             .run(context -> {
                 assertThat(context).hasSingleBean(HttpRequestTenantResolver.class);
                 var httpRequestTenantResolver = context.getBean(HttpRequestTenantResolver.class);
-                assertThat(httpRequestTenantResolver.resolveTenantId(new MockHttpServletRequest()))
+                assertThat(httpRequestTenantResolver.resolveTenantIdentifier(new MockHttpServletRequest()))
                     .isEqualTo("myTenant");
             });
     }

@@ -15,7 +15,7 @@ public final class HolderTenantContextEventListener implements TenantEventListen
     @Override
     public void onApplicationEvent(TenantEvent tenantEvent) {
         if (tenantEvent instanceof TenantContextAttachedEvent event) {
-            TenantContextHolder.setTenantId(event.getTenantId());
+            TenantContextHolder.setTenantIdentifier(event.getTenantIdentifier());
         }
         else if (tenantEvent instanceof TenantContextClosedEvent) {
             TenantContextHolder.clear();

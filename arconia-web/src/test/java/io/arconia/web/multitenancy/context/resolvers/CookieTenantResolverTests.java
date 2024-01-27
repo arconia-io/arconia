@@ -34,7 +34,7 @@ class CookieTenantResolverTests {
         var request = new MockHttpServletRequest();
         request.setCookies(new Cookie(CookieTenantResolver.DEFAULT_COOKIE_NAME, expectedTenantId));
 
-        var actualTenantId = cookieTenantResolver.resolveTenantId(request);
+        var actualTenantId = cookieTenantResolver.resolveTenantIdentifier(request);
 
         assertThat(actualTenantId).isEqualTo(expectedTenantId);
     }
@@ -47,7 +47,7 @@ class CookieTenantResolverTests {
         var request = new MockHttpServletRequest();
         request.setCookies(new Cookie(cookieName, expectedTenantId));
 
-        var actualTenantId = cookieTenantResolver.resolveTenantId(request);
+        var actualTenantId = cookieTenantResolver.resolveTenantIdentifier(request);
 
         assertThat(actualTenantId).isEqualTo(expectedTenantId);
     }
@@ -56,7 +56,7 @@ class CookieTenantResolverTests {
     void whenNullRequestThenThrow() {
         var cookieTenantResolver = new CookieTenantResolver();
 
-        assertThatThrownBy(() -> cookieTenantResolver.resolveTenantId(null))
+        assertThatThrownBy(() -> cookieTenantResolver.resolveTenantIdentifier(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("request cannot be null");
     }

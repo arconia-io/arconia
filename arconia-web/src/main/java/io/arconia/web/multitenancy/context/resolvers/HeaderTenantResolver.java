@@ -26,7 +26,7 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
     @Override
     @Nullable
-    public String resolveTenantId(HttpServletRequest request) {
+    public String resolveTenantIdentifier(HttpServletRequest request) {
         Assert.notNull(request, "request cannot be null");
         return request.getHeader(tenantHeaderName);
     }
