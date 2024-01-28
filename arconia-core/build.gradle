@@ -6,19 +6,19 @@ plugins {
 }
 
 dependencies {
-	implementation 'org.slf4j:slf4j-api'
-	implementation 'org.springframework:spring-context'
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.springframework:spring-context'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			pom {
-				name = "Arconia Core"
-				description = "Core interfaces and classes used by the Arconia framework."
-			}
-		}
-	}
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Core"
+                description = "Core interfaces and classes used by the Arconia framework."
+            }
+        }
+    }
 }

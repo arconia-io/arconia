@@ -25,7 +25,7 @@ dependencies {
     optional 'org.springframework:spring-context'
     optional 'org.springframework:spring-web'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.named('compileJava') {
