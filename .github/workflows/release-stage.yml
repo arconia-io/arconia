@@ -3,8 +3,9 @@ on:
   - workflow_dispatch
 
 jobs:
-  build:
-    name: Build
+  release:
+    name: Release
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -26,7 +27,7 @@ jobs:
         run: ./gradlew build
 
       - name: Publish staging artifacts
-        run: ./gradlew release
+        run: ./gradlew publishAllPublicationsToSonatypeStagingRepository
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}

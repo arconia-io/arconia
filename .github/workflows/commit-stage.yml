@@ -32,7 +32,11 @@ jobs:
 
       - name: Publish snapshot artifacts
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: ./gradlew snapshot
+        run: |
+          VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
+          if [[ $VERSION == *"SNAPSHOT"* ]]; then
+            ./gradlew publishAllPublicationsToSonatypeSnapshotRepository
+          fi
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
