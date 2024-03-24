@@ -2,7 +2,9 @@ package io.arconia.core.multitenancy.tenantdetails;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -14,15 +16,14 @@ public class Tenant implements TenantDetails {
 
     private final boolean enabled;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes;
 
-    public Tenant(String identifier, boolean enabled, Map<String, Object> attributes) {
+    public Tenant(String identifier, boolean enabled, @Nullable Map<String, Object> attributes) {
         Assert.hasText(identifier, "identifier cannot be null or empty");
-        Assert.notNull(attributes, "attributes cannot be null");
 
         this.identifier = identifier;
         this.enabled = enabled;
-        this.attributes = attributes;
+        this.attributes = Objects.requireNonNullElse(attributes, new HashMap<>());
     }
 
     @Override

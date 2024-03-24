@@ -2,6 +2,7 @@ package io.arconia.core.multitenancy.tenantdetails;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -22,10 +23,10 @@ class TenantTests {
     }
 
     @Test
-    void whenAttributesIsNullThenThrow() {
-        assertThatThrownBy(() -> Tenant.create().identifier("acme").attributes(null).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("attributes cannot be null");
+    void whenAttributesIsNullThenUseEmptymap() {
+        var tenant = Tenant.create().identifier("acme").attributes(null).build();
+        assertThat(tenant.getAttributes()).isNotNull();
+        assertThat(tenant.getAttributes()).isEmpty();
     }
 
 }
