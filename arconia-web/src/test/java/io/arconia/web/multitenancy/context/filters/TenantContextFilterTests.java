@@ -19,11 +19,15 @@ import io.arconia.core.multitenancy.context.events.TenantContextClosedEvent;
 import io.arconia.core.multitenancy.events.TenantEvent;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
 import io.arconia.core.multitenancy.exceptions.TenantResolutionException;
+import io.arconia.core.multitenancy.tenantdetails.Tenant;
+import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 import io.arconia.web.multitenancy.context.resolvers.HeaderTenantResolver;
 import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link TenantContextFilter}.
@@ -34,7 +38,9 @@ class TenantContextFilterTests {
     void whenNullTenantResolverThenThrow() {
         var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
-        assertThatThrownBy(() -> new TenantContextFilter(null, noTenantPathMatcher, tenantEventPublisher))
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        assertThatThrownBy(
+                () -> new TenantContextFilter(null, noTenantPathMatcher, tenantDetailsService, tenantEventPublisher))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("httpRequestTenantResolver cannot be null");
     }
@@ -43,16 +49,31 @@ class TenantContextFilterTests {
     void whenNullPathMatcherThenThrow() {
         var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
-        assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, null, tenantEventPublisher))
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, null, tenantDetailsService,
+                tenantEventPublisher))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("ignorePathMatcher cannot be null");
+    }
+
+    @Test
+    void whenNullTenantDetailsServiceThenThrow() {
+        var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
+        var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
+        var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
+        assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, null,
+                tenantEventPublisher))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantDetailsService cannot be null");
     }
 
     @Test
     void whenNullEventPublisherThenThrow() {
         var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
         var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
-        assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, null))
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        assertThatThrownBy(() -> new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher,
+                tenantDetailsService, null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantEventPublisher cannot be null");
     }
@@ -68,8 +89,12 @@ class TenantContextFilterTests {
         var filterChain = new MockFilterChain();
         var httpRequestTenantResolver = new HeaderTenantResolver();
         var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of());
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        when(tenantDetailsService.loadTenantByIdentifier(anyString()))
+            .thenReturn(Tenant.create().identifier(tenantIdentifier).enabled(true).build());
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
-        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
+        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantDetailsService,
+                tenantEventPublisher);
 
         filter.doFilter(request, response, filterChain);
 
@@ -98,11 +123,36 @@ class TenantContextFilterTests {
         var httpRequestTenantResolver = new HeaderTenantResolver();
         var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of());
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
-        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantDetailsService,
+                tenantEventPublisher);
 
         assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
             .isInstanceOf(TenantResolutionException.class)
             .hasMessageContaining("A tenant identifier must be specified for HTTP requests");
+
+        Mockito.verify(tenantEventPublisher, Mockito.times(0)).publishTenantEvent(Mockito.any(TenantEvent.class));
+    }
+
+    @Test
+    void whenResolvedTenantIsDisabledThenThrow() {
+        var tenantIdentifier = "acme";
+        var request = new MockHttpServletRequest();
+        request.addHeader(HeaderTenantResolver.DEFAULT_HEADER_NAME, tenantIdentifier);
+        var response = new MockHttpServletResponse();
+        var filterChain = new MockFilterChain();
+        var httpRequestTenantResolver = new HeaderTenantResolver();
+        var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of());
+        var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        when(tenantDetailsService.loadTenantByIdentifier(anyString()))
+            .thenReturn(Tenant.create().identifier(tenantIdentifier).build());
+        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantDetailsService,
+                tenantEventPublisher);
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
+            .isInstanceOf(TenantResolutionException.class)
+            .hasMessageContaining("The resolved tenant is invalid or disabled");
 
         Mockito.verify(tenantEventPublisher, Mockito.times(0)).publishTenantEvent(Mockito.any(TenantEvent.class));
     }
@@ -117,7 +167,9 @@ class TenantContextFilterTests {
         var httpRequestTenantResolver = new HeaderTenantResolver();
         var noTenantPathMatcher = new TenantContextIgnorePathMatcher(List.of(path));
         var tenantEventPublisher = Mockito.mock(TenantEventPublisher.class);
-        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantEventPublisher);
+        var tenantDetailsService = Mockito.mock(TenantDetailsService.class);
+        var filter = new TenantContextFilter(httpRequestTenantResolver, noTenantPathMatcher, tenantDetailsService,
+                tenantEventPublisher);
 
         filter.doFilter(request, response, filterChain);
 

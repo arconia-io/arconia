@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 
+import io.arconia.autoconfigure.multitenancy.core.tenantdetails.PropertiesTenantDetailsService;
+import io.arconia.autoconfigure.multitenancy.core.tenantdetails.TenantDetailsProperties;
 import io.arconia.core.multitenancy.cache.DefaultTenantKeyGenerator;
 import io.arconia.core.multitenancy.cache.TenantKeyGenerator;
 import io.arconia.core.multitenancy.context.events.HolderTenantContextEventListener;
@@ -15,12 +17,14 @@ import io.arconia.core.multitenancy.context.events.ObservationTenantContextEvent
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
 import io.arconia.core.multitenancy.events.DefaultTenantEventPublisher;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
+import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 
 /**
  * Auto-configuration for core multitenancy.
  */
 @AutoConfiguration
-@EnableConfigurationProperties({ FixedTenantResolutionProperties.class, TenantManagementProperties.class })
+@EnableConfigurationProperties({ FixedTenantResolutionProperties.class, TenantDetailsProperties.class,
+        TenantManagementProperties.class })
 public class MultitenancyCoreAutoConfiguration {
 
     @Bean
@@ -65,6 +69,14 @@ public class MultitenancyCoreAutoConfiguration {
     @ConditionalOnMissingBean
     TenantEventPublisher tenantEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         return new DefaultTenantEventPublisher(applicationEventPublisher);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = TenantDetailsProperties.CONFIG_PREFIX, name = "source", havingValue = "properties",
+            matchIfMissing = true)
+    TenantDetailsService tenantDetailsService(TenantDetailsProperties tenantDetailsProperties) {
+        return new PropertiesTenantDetailsService(tenantDetailsProperties);
     }
 
 }

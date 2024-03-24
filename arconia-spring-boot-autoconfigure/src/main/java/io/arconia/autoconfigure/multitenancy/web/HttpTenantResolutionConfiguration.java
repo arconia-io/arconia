@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import io.arconia.autoconfigure.multitenancy.core.FixedTenantResolutionProperties;
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
+import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 import io.arconia.web.multitenancy.context.filters.TenantContextFilter;
 import io.arconia.web.multitenancy.context.filters.TenantContextIgnorePathMatcher;
 import io.arconia.web.multitenancy.context.resolvers.CookieTenantResolver;
@@ -58,9 +59,9 @@ public class HttpTenantResolutionConfiguration {
         @ConditionalOnMissingBean
         TenantContextFilter tenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
-                TenantEventPublisher tenantEventPublisher) {
+                TenantDetailsService tenantDetailsService, TenantEventPublisher tenantEventPublisher) {
             return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher,
-                    tenantEventPublisher);
+                    tenantDetailsService, tenantEventPublisher);
         }
 
         @Bean

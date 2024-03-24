@@ -1,6 +1,10 @@
 {
   "properties": [
     {
+      "name": "arconia.multitenancy.details.source",
+      "defaultValue": "properties"
+    },
+    {
       "name": "arconia.multitenancy.management.observations.cardinality",
       "defaultValue": "high"
     },
