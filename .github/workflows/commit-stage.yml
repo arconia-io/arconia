@@ -12,33 +12,52 @@ jobs:
     name: Build
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
-      security-events: write
+      contents: write
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
+          cache: gradle
 
       - name: Compile and test
-        run: ./gradlew build
+        run: ./gradlew build -Dorg.gradle.parallel=false
 
       - name: Generate SBOMs
         run: ./gradlew cyclonedxBom
 
-      - name: Publish snapshot artifacts
+      - name: Stage artifacts to local directory
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: ./gradlew publish
+
+      - name: Deploy and release artifacts
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
           if [[ $VERSION == *"SNAPSHOT"* ]]; then
-            ./gradlew publishAllPublicationsToSonatypeSnapshotRepository
+            ./gradlew jreleaserDeploy
+          else
+            ./gradlew jreleaserFullRelease
           fi
         env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-          SIGNING_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
-          SIGNING_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+          JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
+          JRELEASER_NEXUS2_MAVEN_CENTRAL_TOKEN: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_TOKEN }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-output
+          path: |
+            build/jreleaser/trace.log
+            build/jreleaser/output.properties

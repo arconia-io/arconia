@@ -4,8 +4,6 @@ plugins {
     id 'io.arconia.optional-dependencies'
 }
 
-group = 'io.arconia'
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
