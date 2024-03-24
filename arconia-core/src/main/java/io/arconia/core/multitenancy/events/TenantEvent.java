@@ -5,8 +5,6 @@ import org.springframework.util.Assert;
 
 /**
  * Abstract superclass for all tenant-related events.
- *
- * @author Thomas Vitale
  */
 public abstract class TenantEvent extends ApplicationEvent {
 
@@ -14,7 +12,7 @@ public abstract class TenantEvent extends ApplicationEvent {
 
     public TenantEvent(String tenantIdentifier, Object source) {
         super(source);
-        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be empty");
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
         this.tenantIdentifier = tenantIdentifier;
     }
 

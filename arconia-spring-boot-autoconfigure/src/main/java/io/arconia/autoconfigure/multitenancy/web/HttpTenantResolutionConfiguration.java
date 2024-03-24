@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.web.multitenancy;
+package io.arconia.autoconfigure.multitenancy.web;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.autoconfigure.core.multitenancy.FixedTenantResolutionProperties;
+import io.arconia.autoconfigure.multitenancy.core.FixedTenantResolutionProperties;
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
 import io.arconia.web.multitenancy.context.filters.TenantContextFilter;
@@ -18,8 +18,6 @@ import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 /**
  * Configuration for HTTP tenant resolution.
- *
- * @author Thomas Vitale
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(HttpTenantResolutionProperties.class)

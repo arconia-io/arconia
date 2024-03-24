@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link DefaultTenantEventPublisher}.
- *
- * @author Thomas Vitale
  */
 class DefaultTenantEventPublisherTests {
 

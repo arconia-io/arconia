@@ -7,21 +7,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link FixedTenantResolver}.
- *
- * @author Thomas Vitale
  */
 class FixedTenantResolverTests {
 
     @Test
     void whenNullCustomValueThenThrow() {
         assertThatThrownBy(() -> new FixedTenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomValueThenThrow() {
         assertThatThrownBy(() -> new FixedTenantResolver("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test

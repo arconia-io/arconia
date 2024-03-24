@@ -3,6 +3,8 @@ package io.arconia.core.multitenancy.context.events;
 import io.micrometer.common.KeyValue;
 import io.micrometer.observation.Observation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import io.arconia.core.multitenancy.events.TenantEvent;
@@ -11,14 +13,14 @@ import io.arconia.core.multitenancy.events.TenantEventListener;
 /**
  * A {@link TenantEventListener} that sets the tenant identifier from the current context
  * on an existing {@link Observation}.
- *
- * @author Thomas Vitale
  */
 public class ObservationTenantContextEventListener implements TenantEventListener {
 
-    public static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
+    private static final Logger logger = LoggerFactory.getLogger(ObservationTenantContextEventListener.class);
 
-    public static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
+    protected static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
+
+    protected static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
 
     private final Cardinality cardinality;
 
@@ -29,7 +31,7 @@ public class ObservationTenantContextEventListener implements TenantEventListene
     }
 
     public ObservationTenantContextEventListener(String tenantIdentifierKey, Cardinality cardinality) {
-        Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be empty");
+        Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be null or empty");
         Assert.notNull(cardinality, "cardinality cannot be null");
         this.tenantIdentifierKey = tenantIdentifierKey;
         this.cardinality = cardinality;
@@ -46,6 +48,8 @@ public class ObservationTenantContextEventListener implements TenantEventListene
         if (event.getObservationContext() == null) {
             return;
         }
+
+        logger.trace("Enhancing current observation with tenant context for: {}", event.getTenantIdentifier());
 
         switch (cardinality) {
             case LOW -> event.getObservationContext()

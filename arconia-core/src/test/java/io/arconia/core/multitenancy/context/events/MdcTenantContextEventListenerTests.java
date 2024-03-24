@@ -8,21 +8,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link MdcTenantContextEventListener}.
- *
- * @author Thomas Vitale
  */
 class MdcTenantContextEventListenerTests {
 
     @Test
     void whenNullCustomValueThenThrow() {
         assertThatThrownBy(() -> new MdcTenantContextEventListener(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomValueThenThrow() {
         assertThatThrownBy(() -> new MdcTenantContextEventListener("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test

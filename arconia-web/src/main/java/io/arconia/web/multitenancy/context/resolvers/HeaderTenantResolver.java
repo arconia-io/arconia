@@ -6,8 +6,6 @@ import org.springframework.util.Assert;
 
 /**
  * Strategy used to resolve the current tenant from a header in an HTTP request.
- *
- * @author Thomas Vitale
  */
 public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
@@ -20,7 +18,7 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
     }
 
     public HeaderTenantResolver(String tenantHeaderName) {
-        Assert.hasText(tenantHeaderName, "tenantHeaderName cannot be empty");
+        Assert.hasText(tenantHeaderName, "tenantHeaderName cannot be null or empty");
         this.tenantHeaderName = tenantHeaderName;
     }
 

@@ -27,8 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link TenantContextFilter}.
- *
- * @author Thomas Vitale
  */
 class TenantContextFilterTests {
 

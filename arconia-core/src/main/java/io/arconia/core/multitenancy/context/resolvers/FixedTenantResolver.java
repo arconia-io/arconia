@@ -5,8 +5,6 @@ import org.springframework.util.Assert;
 
 /**
  * Strategy to use a fixed value as the current tenant, regardless of the source context.
- *
- * @author Thomas Vitale
  */
 public final class FixedTenantResolver implements TenantResolver<Object> {
 
@@ -19,7 +17,7 @@ public final class FixedTenantResolver implements TenantResolver<Object> {
     }
 
     public FixedTenantResolver(String tenantIdentifier) {
-        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be empty");
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
         this.fixedTenantIdentifier = tenantIdentifier;
     }
 

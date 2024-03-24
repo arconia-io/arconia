@@ -8,8 +8,6 @@ import io.arconia.core.multitenancy.context.resolvers.TenantResolver;
 
 /**
  * Strategy used to resolve the current tenant from an HTTP request.
- *
- * @author Thomas Vitale
  */
 public interface HttpRequestTenantResolver extends TenantResolver<HttpServletRequest> {
 

@@ -10,21 +10,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link CookieTenantResolver}.
- *
- * @author Thomas Vitale
  */
 class CookieTenantResolverTests {
 
     @Test
     void whenNullCustomCookieThenThrow() {
         assertThatThrownBy(() -> new CookieTenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantCookieName cannot be empty");
+            .hasMessageContaining("tenantCookieName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomCookieThenThrow() {
         assertThatThrownBy(() -> new CookieTenantResolver("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantCookieName cannot be empty");
+            .hasMessageContaining("tenantCookieName cannot be null or empty");
     }
 
     @Test

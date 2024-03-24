@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link ObservationTenantContextEventListener}.
- *
- * @author Thomas Vitale
  */
 class ObservationTenantContextEventListenerTests {
 
@@ -27,7 +25,7 @@ class ObservationTenantContextEventListenerTests {
         assertThatThrownBy(() -> new ObservationTenantContextEventListener("",
                 ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
@@ -35,7 +33,7 @@ class ObservationTenantContextEventListenerTests {
         assertThatThrownBy(() -> new ObservationTenantContextEventListener(null,
                 ObservationTenantContextEventListener.Cardinality.HIGH))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be empty");
+            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test

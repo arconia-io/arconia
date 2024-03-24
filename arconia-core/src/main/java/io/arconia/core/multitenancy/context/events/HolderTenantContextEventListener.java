@@ -7,8 +7,6 @@ import io.arconia.core.multitenancy.events.TenantEventListener;
 /**
  * A {@link TenantEventListener} that sets/clears the tenant identifier from the current
  * context on the {@link TenantContextHolder}.
- *
- * @author Thomas Vitale
  */
 public final class HolderTenantContextEventListener implements TenantEventListener {
 

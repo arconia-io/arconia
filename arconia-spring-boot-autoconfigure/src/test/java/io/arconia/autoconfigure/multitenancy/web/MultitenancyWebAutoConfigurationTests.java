@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.web.multitenancy;
+package io.arconia.autoconfigure.multitenancy.web;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import io.arconia.autoconfigure.core.multitenancy.MultitenancyCoreAutoConfiguration;
+import io.arconia.autoconfigure.multitenancy.core.MultitenancyCoreAutoConfiguration;
 import io.arconia.web.multitenancy.context.filters.TenantContextFilter;
 import io.arconia.web.multitenancy.context.filters.TenantContextIgnorePathMatcher;
 import io.arconia.web.multitenancy.context.resolvers.CookieTenantResolver;
@@ -18,8 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link MultitenancyWebAutoConfiguration}.
- *
- * @author Thomas Vitale
  */
 class MultitenancyWebAutoConfigurationTests {
 

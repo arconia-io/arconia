@@ -20,8 +20,6 @@ import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 /**
  * Establish a tenant context from an HTTP request, if tenant information is available.
- *
- * @author Thomas Vitale
  */
 public final class TenantContextFilter extends OncePerRequestFilter {
 

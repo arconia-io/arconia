@@ -4,8 +4,6 @@ import org.springframework.lang.Nullable;
 
 /**
  * Strategy used to resolve the current tenant from a given source context.
- *
- * @author Thomas Vitale
  */
 @FunctionalInterface
 public interface TenantResolver<T> {

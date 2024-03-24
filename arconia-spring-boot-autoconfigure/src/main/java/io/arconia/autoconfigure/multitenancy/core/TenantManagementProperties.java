@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.core.multitenancy;
+package io.arconia.autoconfigure.multitenancy.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -6,8 +6,6 @@ import io.arconia.core.multitenancy.context.events.ObservationTenantContextEvent
 
 /**
  * Configuration properties for tenant management.
- *
- * @author Thomas Vitale
  */
 @ConfigurationProperties(prefix = TenantManagementProperties.CONFIG_PREFIX)
 public class TenantManagementProperties {

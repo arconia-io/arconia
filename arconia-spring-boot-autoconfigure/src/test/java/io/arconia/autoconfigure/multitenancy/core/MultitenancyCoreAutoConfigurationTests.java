@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.core.multitenancy;
+package io.arconia.autoconfigure.multitenancy.core;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -15,8 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link MultitenancyCoreAutoConfiguration}.
- *
- * @author Thomas Vitale
  */
 class MultitenancyCoreAutoConfigurationTests {
 

@@ -6,21 +6,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link TenantEvent}.
- *
- * @author Thomas Vitale
  */
 class TenantEventTests {
 
     @Test
     void whenNullTenantIdentifierThenThrow() {
         assertThatThrownBy(() -> new TestTenantEvent(null, this)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
     void whenEmptyTenantIdentifierThenThrow() {
         assertThatThrownBy(() -> new TestTenantEvent("", this)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be empty");
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test

@@ -1,11 +1,9 @@
-package io.arconia.autoconfigure.core.multitenancy;
+package io.arconia.autoconfigure.multitenancy.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Configuration properties for fixed tenant resolution.
- *
- * @author Thomas Vitale
  */
 @ConfigurationProperties(prefix = FixedTenantResolutionProperties.CONFIG_PREFIX)
 public class FixedTenantResolutionProperties {

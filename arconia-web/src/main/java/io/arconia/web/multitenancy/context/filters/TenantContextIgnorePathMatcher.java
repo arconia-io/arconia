@@ -13,12 +13,10 @@ import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * Matches HTTP requests paths for which a tenant context is not attached.
- *
- * @author Thomas Vitale
  */
 public class TenantContextIgnorePathMatcher {
 
-    private static final Logger log = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);
 
     private final List<PathPattern> ignorePathPatterns;
 
@@ -34,7 +32,7 @@ public class TenantContextIgnorePathMatcher {
         var matchesIgnorePaths = ignorePathPatterns.stream()
             .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
         if (matchesIgnorePaths) {
-            log.debug(
+            logger.debug(
                     "Request '" + requestUri + "' matches one of the paths for which a tenant context is not attached");
         }
         return matchesIgnorePaths;

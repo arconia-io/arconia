@@ -6,8 +6,6 @@ import org.springframework.util.Assert;
 /**
  * An implementation of {@link TenantEventPublisher} that uses Spring's event publishing
  * support.
- *
- * @author Thomas Vitale
  */
 public class DefaultTenantEventPublisher implements TenantEventPublisher {
 

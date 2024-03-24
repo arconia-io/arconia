@@ -10,8 +10,6 @@ import org.springframework.util.Assert;
 
 /**
  * Strategy used to resolve the current tenant from a cookie in an HTTP request.
- *
- * @author Thomas Vitale
  */
 public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
@@ -24,7 +22,7 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
     }
 
     public CookieTenantResolver(String tenantCookieName) {
-        Assert.hasText(tenantCookieName, "tenantCookieName cannot be empty");
+        Assert.hasText(tenantCookieName, "tenantCookieName cannot be null or empty");
         this.tenantCookieName = tenantCookieName;
     }
 

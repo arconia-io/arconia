@@ -17,7 +17,7 @@ publishing {
         mavenJava(MavenPublication) {
             pom {
                 name = "Arconia Core"
-                description = "Core interfaces and classes used by the Arconia framework."
+                description = "Arconia Core."
             }
         }
     }

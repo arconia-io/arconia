@@ -1,2 +1,2 @@
-io.arconia.autoconfigure.core.multitenancy.MultitenancyCoreAutoConfiguration
-io.arconia.autoconfigure.web.multitenancy.MultitenancyWebAutoConfiguration
+io.arconia.autoconfigure.multitenancy.core.MultitenancyCoreAutoConfiguration
+io.arconia.autoconfigure.multitenancy.web.MultitenancyWebAutoConfiguration

@@ -8,21 +8,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link HeaderTenantResolver}.
- *
- * @author Thomas Vitale
  */
 class HeaderTenantResolverTests {
 
     @Test
     void whenNullCustomHeaderThenThrow() {
         assertThatThrownBy(() -> new HeaderTenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantHeaderName cannot be empty");
+            .hasMessageContaining("tenantHeaderName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomHeaderThenThrow() {
         assertThatThrownBy(() -> new HeaderTenantResolver("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantHeaderName cannot be empty");
+            .hasMessageContaining("tenantHeaderName cannot be null or empty");
     }
 
     @Test

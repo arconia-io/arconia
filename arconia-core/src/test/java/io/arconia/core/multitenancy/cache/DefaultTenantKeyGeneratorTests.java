@@ -11,12 +11,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link DefaultTenantKeyGenerator}.
- *
- * @author Thomas Vitale
  */
 class DefaultTenantKeyGeneratorTests {
 
-    DefaultTenantKeyGenerator keyGenerator = new DefaultTenantKeyGenerator();
+    private final DefaultTenantKeyGenerator keyGenerator = new DefaultTenantKeyGenerator();
 
     @Test
     void whenTenantContextDefinedThenGenerateCacheKey() {

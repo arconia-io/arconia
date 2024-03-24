@@ -9,8 +9,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link TenantContextHolder}.
- *
- * @author Thomas Vitale
  */
 class TenantContextHolderTests {
 
@@ -25,14 +23,14 @@ class TenantContextHolderTests {
     void setNullTenantContext() {
         assertThatThrownBy(() -> TenantContextHolder.setTenantIdentifier(null))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenant cannot be empty");
+            .hasMessageContaining("tenant cannot be null or empty");
     }
 
     @Test
     void setEmptyTenantContext() {
         assertThatThrownBy(() -> TenantContextHolder.setTenantIdentifier(""))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenant cannot be empty");
+            .hasMessageContaining("tenant cannot be null or empty");
     }
 
     @Test

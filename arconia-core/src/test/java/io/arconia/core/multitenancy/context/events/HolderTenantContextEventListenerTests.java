@@ -8,8 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link HolderTenantContextEventListener}.
- *
- * @author Thomas Vitale
  */
 class HolderTenantContextEventListenerTests {
 

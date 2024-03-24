@@ -10,12 +10,10 @@ import io.arconia.core.multitenancy.exceptions.TenantNotFoundException;
 
 /**
  * A shared, thread-local store for the current tenant.
- *
- * @author Thomas Vitale
  */
 public final class TenantContextHolder {
 
-    private static final Logger log = LoggerFactory.getLogger(TenantContextHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(TenantContextHolder.class);
 
     private static final ThreadLocal<String> tenantIdentifier = new ThreadLocal<>();
 
@@ -23,8 +21,8 @@ public final class TenantContextHolder {
     }
 
     public static void setTenantIdentifier(String tenant) {
-        Assert.hasText(tenant, "tenant cannot be empty");
-        log.trace("Setting current tenant to: {}", tenant);
+        Assert.hasText(tenant, "tenant cannot be null or empty");
+        logger.debug("Setting current tenant to: {}", tenant);
         tenantIdentifier.set(tenant);
     }
 
@@ -42,7 +40,7 @@ public final class TenantContextHolder {
     }
 
     public static void clear() {
-        log.trace("Clearing current tenant");
+        logger.debug("Clearing current tenant");
         tenantIdentifier.remove();
     }
 

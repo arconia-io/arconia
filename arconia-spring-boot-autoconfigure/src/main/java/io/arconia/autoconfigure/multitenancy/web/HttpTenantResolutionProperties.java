@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.web.multitenancy;
+package io.arconia.autoconfigure.multitenancy.web;
 
 import java.util.List;
 
@@ -6,8 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Configuration properties for HTTP tenant resolution.
- *
- * @author Thomas Vitale
  */
 @ConfigurationProperties(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX)
 public class HttpTenantResolutionProperties {

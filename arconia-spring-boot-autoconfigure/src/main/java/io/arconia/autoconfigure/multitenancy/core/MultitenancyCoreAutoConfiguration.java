@@ -1,4 +1,4 @@
-package io.arconia.autoconfigure.core.multitenancy;
+package io.arconia.autoconfigure.multitenancy.core;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,8 +18,6 @@ import io.arconia.core.multitenancy.events.TenantEventPublisher;
 
 /**
  * Auto-configuration for core multitenancy.
- *
- * @author Thomas Vitale
  */
 @AutoConfiguration
 @EnableConfigurationProperties({ FixedTenantResolutionProperties.class, TenantManagementProperties.class })
