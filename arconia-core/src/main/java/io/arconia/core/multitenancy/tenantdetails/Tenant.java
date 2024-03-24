@@ -14,7 +14,7 @@ public class Tenant implements TenantDetails {
 
     private final boolean enabled;
 
-    private final Map<String, Object> attributes;
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public Tenant(String identifier, boolean enabled, Map<String, Object> attributes) {
         Assert.hasText(identifier, "identifier cannot be null or empty");
