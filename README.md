@@ -4,16 +4,42 @@ Arconia is a framework to build SaaS, multitenant applications using Java and Sp
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
-## 🚀&nbsp; Getting Started
+## 🚀&nbsp; Quick Start
 
-### Prerequisites
+### Pre-Requisites
 
 * Java 17+
-* Spring Boot 3+
+* [Spring CLI](https://docs.spring.io/spring-cli/reference/installation.html)
 
-### Instructions
+### Getting Started
 
-_Coming soon_
+Using the Spring CLI, you can easily bootstrap a new Spring Boot application using the Arconia framework.
+
+First, add the Arconia Spring catalog providing the project templates.
+
+```shell
+spring project-catalog add arconia https://github.com/arconia-io/arconia
+```
+
+Then, create a new Spring Boot project for building a multitenant web application.
+
+```shell
+spring boot new myapp arconia-web
+```
+
+Finally, navigate to the `myapp` folder and run the Spring Boot application.
+
+```shell
+cd myapp
+./mvnw spring-boot:run
+```
+
+You can now call the application as one of the valid tenants (`dukes` or `beans`).
+This example uses [httpie](https://httpie.io) to send HTTP requests.
+
+```shell
+http :8080/ X-TenantId:dukes
+```
 
 ## 🛡️&nbsp; Security
 
