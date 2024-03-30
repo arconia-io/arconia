@@ -18,7 +18,7 @@ public class Tenant implements TenantDetails {
 
     private final Map<String, Object> attributes;
 
-    public Tenant(String identifier, boolean enabled, @Nullable Map<String, Object> attributes) {
+    protected Tenant(String identifier, boolean enabled, @Nullable Map<String, Object> attributes) {
         Assert.hasText(identifier, "identifier cannot be null or empty");
 
         this.identifier = identifier;
@@ -49,7 +49,7 @@ public class Tenant implements TenantDetails {
 
         private String identifier;
 
-        private boolean enabled;
+        private boolean enabled = true;
 
         private Map<String, Object> attributes = new HashMap<>();
 

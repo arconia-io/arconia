@@ -1,6 +1,6 @@
 package io.arconia.autoconfigure.multitenancy.web;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -110,7 +110,13 @@ public class HttpTenantResolutionProperties {
          * Comma-separated list of HTTP request paths for which the tenant resolution will
          * not be performed.
          */
-        private List<String> ignorePaths = List.of("/actuator/**", "/webjars/**", "/css/**", "/js/**", ".ico");
+        private Set<String> ignorePaths = Set.of("/actuator/**", "/webjars/**", "/css/**", "/js/**", ".ico");
+
+        /**
+         * Additional comma-separated list of HTTP request paths for which the tenant
+         * resolution will not be performed.
+         */
+        private Set<String> additionalIgnorePaths = Set.of();
 
         public boolean isEnabled() {
             return enabled;
@@ -120,12 +126,20 @@ public class HttpTenantResolutionProperties {
             this.enabled = enabled;
         }
 
-        public List<String> getIgnorePaths() {
+        public Set<String> getIgnorePaths() {
             return ignorePaths;
         }
 
-        public void setIgnorePaths(List<String> ignorePaths) {
+        public void setIgnorePaths(Set<String> ignorePaths) {
             this.ignorePaths = ignorePaths;
+        }
+
+        public Set<String> getAdditionalIgnorePaths() {
+            return additionalIgnorePaths;
+        }
+
+        public void setAdditionalIgnorePaths(Set<String> additionalIgnorePaths) {
+            this.additionalIgnorePaths = additionalIgnorePaths;
         }
 
     }

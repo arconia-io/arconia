@@ -2,7 +2,7 @@
   "properties": [
     {
       "name": "arconia.multitenancy.details.source",
-      "defaultValue": "properties"
+      "defaultValue": "none"
     },
     {
       "name": "arconia.multitenancy.management.observations.cardinality",

@@ -1,5 +1,7 @@
 package io.arconia.autoconfigure.multitenancy.web;
 
+import java.util.HashSet;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import io.arconia.autoconfigure.multitenancy.core.FixedTenantResolutionProperties;
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
-import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 import io.arconia.web.multitenancy.context.filters.TenantContextFilter;
 import io.arconia.web.multitenancy.context.filters.TenantContextIgnorePathMatcher;
 import io.arconia.web.multitenancy.context.resolvers.CookieTenantResolver;
@@ -59,16 +60,18 @@ public class HttpTenantResolutionConfiguration {
         @ConditionalOnMissingBean
         TenantContextFilter tenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
-                TenantDetailsService tenantDetailsService, TenantEventPublisher tenantEventPublisher) {
+                TenantEventPublisher tenantEventPublisher) {
             return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher,
-                    tenantDetailsService, tenantEventPublisher);
+                    tenantEventPublisher);
         }
 
         @Bean
         @ConditionalOnMissingBean
         TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher(
                 HttpTenantResolutionProperties httpTenantResolutionProperties) {
-            return new TenantContextIgnorePathMatcher(httpTenantResolutionProperties.getFilter().getIgnorePaths());
+            var ignorePathMatcher = new HashSet<>(httpTenantResolutionProperties.getFilter().getIgnorePaths());
+            ignorePathMatcher.addAll(httpTenantResolutionProperties.getFilter().getAdditionalIgnorePaths());
+            return new TenantContextIgnorePathMatcher(ignorePathMatcher);
         }
 
     }

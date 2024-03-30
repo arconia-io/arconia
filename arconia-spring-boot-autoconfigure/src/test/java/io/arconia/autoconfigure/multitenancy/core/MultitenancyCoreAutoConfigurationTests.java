@@ -10,7 +10,6 @@ import io.arconia.core.multitenancy.context.events.MdcTenantContextEventListener
 import io.arconia.core.multitenancy.context.events.ObservationTenantContextEventListener;
 import io.arconia.core.multitenancy.context.resolvers.FixedTenantResolver;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
-import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -82,20 +81,6 @@ class MultitenancyCoreAutoConfigurationTests {
     void tenantEventPublisher() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(TenantEventPublisher.class);
-        });
-    }
-
-    @Test
-    void tenantDetailsServiceWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(TenantDetailsService.class);
-        });
-    }
-
-    @Test
-    void tenantDetailsServiceWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.details.source=http").run(context -> {
-            assertThat(context).doesNotHaveBean(TenantDetailsService.class);
         });
     }
 

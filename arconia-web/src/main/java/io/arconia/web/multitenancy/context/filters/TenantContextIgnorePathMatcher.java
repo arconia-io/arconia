@@ -1,6 +1,7 @@
 package io.arconia.web.multitenancy.context.filters;
 
 import java.util.List;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,7 +21,7 @@ public class TenantContextIgnorePathMatcher {
 
     private final List<PathPattern> ignorePathPatterns;
 
-    public TenantContextIgnorePathMatcher(List<String> ignorePathPatterns) {
+    public TenantContextIgnorePathMatcher(Set<String> ignorePathPatterns) {
         Assert.notNull(ignorePathPatterns, "ignorePathPatterns cannot be null");
         this.ignorePathPatterns = ignorePathPatterns.stream().map(this::parse).toList();
     }
@@ -33,7 +34,7 @@ public class TenantContextIgnorePathMatcher {
             .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
         if (matchesIgnorePaths) {
             logger.debug(
-                    "Request '" + requestUri + "' matches one of the paths for which a tenant context is not attached");
+                    "Request '" + requestUri + "' matches one of the paths to ignore when attaching a tenant context");
         }
         return matchesIgnorePaths;
     }

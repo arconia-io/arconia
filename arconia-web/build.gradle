@@ -8,6 +8,7 @@ plugins {
 dependencies {
     implementation project(':arconia-core')
 
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'jakarta.servlet:jakarta.servlet-api'
     implementation 'org.slf4j:slf4j-api'
 

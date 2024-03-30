@@ -1,7 +1,11 @@
 package io.arconia.core.multitenancy.events;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import io.arconia.core.multitenancy.context.events.TenantContextAttachedEvent;
@@ -11,7 +15,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Unit tests for {@link DefaultTenantEventPublisher}.
  */
+@ExtendWith(MockitoExtension.class)
 class DefaultTenantEventPublisherTests {
+
+    @Mock
+    ApplicationEventPublisher applicationEventPublisher;
+
+    @InjectMocks
+    DefaultTenantEventPublisher tenantEventPublisher;
 
     @Test
     void whenNullApplicationEventPublisherThenThrow() {
@@ -21,21 +32,17 @@ class DefaultTenantEventPublisherTests {
 
     @Test
     void whenTenantEventThenPublish() {
-        var applicationEventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        var publisher = new DefaultTenantEventPublisher(applicationEventPublisher);
         var event = new TenantContextAttachedEvent("tenant", this);
 
-        publisher.publishTenantEvent(event);
+        tenantEventPublisher.publishTenantEvent(event);
 
         Mockito.verify(applicationEventPublisher).publishEvent(event);
     }
 
     @Test
     void whenNullTenantEventThenThrow() {
-        var applicationEventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        var publisher = new DefaultTenantEventPublisher(applicationEventPublisher);
-
-        assertThatThrownBy(() -> publisher.publishTenantEvent(null)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> tenantEventPublisher.publishTenantEvent(null))
+            .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantEvent cannot be null");
     }
 

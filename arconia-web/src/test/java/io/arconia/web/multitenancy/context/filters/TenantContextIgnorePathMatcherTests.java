@@ -1,6 +1,6 @@
 package io.arconia.web.multitenancy.context.filters;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -23,7 +23,7 @@ class TenantContextIgnorePathMatcherTests {
     void matchAgainstFullPath() {
         var request = new MockHttpServletRequest();
         request.setRequestURI("/actuator/prometheus");
-        var matcher = new TenantContextIgnorePathMatcher(List.of("/actuator/prometheus"));
+        var matcher = new TenantContextIgnorePathMatcher(Set.of("/actuator/prometheus"));
         assertThat(matcher.matches(request)).isTrue();
     }
 
@@ -31,7 +31,7 @@ class TenantContextIgnorePathMatcherTests {
     void matchAgainstFullPathWithoutTrailingSlash() {
         var request = new MockHttpServletRequest();
         request.setRequestURI("/actuator/prometheus");
-        var matcher = new TenantContextIgnorePathMatcher(List.of("actuator/prometheus"));
+        var matcher = new TenantContextIgnorePathMatcher(Set.of("actuator/prometheus"));
         assertThat(matcher.matches(request)).isTrue();
     }
 
@@ -39,7 +39,7 @@ class TenantContextIgnorePathMatcherTests {
     void matchAgainstTemplatePath() {
         var request = new MockHttpServletRequest();
         request.setRequestURI("/actuator/prometheus");
-        var matcher = new TenantContextIgnorePathMatcher(List.of("/actuator/**"));
+        var matcher = new TenantContextIgnorePathMatcher(Set.of("/actuator/**"));
         assertThat(matcher.matches(request)).isTrue();
     }
 
@@ -47,13 +47,13 @@ class TenantContextIgnorePathMatcherTests {
     void matchDifferentPathsThenFalse() {
         var request = new MockHttpServletRequest();
         request.setRequestURI("/actuators");
-        var matcher = new TenantContextIgnorePathMatcher(List.of("/actuator/**"));
+        var matcher = new TenantContextIgnorePathMatcher(Set.of("/actuator/**"));
         assertThat(matcher.matches(request)).isFalse();
     }
 
     @Test
     void whenNullRequestThenThrow() {
-        var matcher = new TenantContextIgnorePathMatcher(List.of("/actuator/**"));
+        var matcher = new TenantContextIgnorePathMatcher(Set.of("/actuator/**"));
         assertThatThrownBy(() -> matcher.matches(null)).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("httpServletRequest cannot be null");
     }

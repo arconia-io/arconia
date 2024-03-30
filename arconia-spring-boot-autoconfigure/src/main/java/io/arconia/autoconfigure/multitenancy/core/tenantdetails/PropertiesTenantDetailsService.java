@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import io.arconia.core.multitenancy.tenantdetails.Tenant;
 import io.arconia.core.multitenancy.tenantdetails.TenantDetails;
 import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 
@@ -22,7 +23,7 @@ public class PropertiesTenantDetailsService implements TenantDetailsService {
 
     @Override
     public List<? extends TenantDetails> loadAllTenants() {
-        return tenantDetailsProperties.getTenants();
+        return tenantDetailsProperties.getTenants().stream().map(this::toTenant).toList();
     }
 
     @Nullable
@@ -31,9 +32,18 @@ public class PropertiesTenantDetailsService implements TenantDetailsService {
         Assert.hasText(identifier, "identifier cannot be null or empty");
         return tenantDetailsProperties.getTenants()
             .stream()
+            .map(this::toTenant)
             .filter(tenant -> tenant.getIdentifier().equals(identifier))
             .findFirst()
             .orElse(null);
+    }
+
+    private Tenant toTenant(TenantDetailsProperties.TenantConfig tenantConfig) {
+        return Tenant.create()
+            .identifier(tenantConfig.getIdentifier())
+            .enabled(tenantConfig.isEnabled())
+            .attributes(tenantConfig.getAttributes())
+            .build();
     }
 
 }

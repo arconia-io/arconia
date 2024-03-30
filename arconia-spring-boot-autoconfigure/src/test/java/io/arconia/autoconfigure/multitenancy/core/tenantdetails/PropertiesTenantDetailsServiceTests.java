@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.core.multitenancy.tenantdetails.Tenant;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -16,8 +14,7 @@ class PropertiesTenantDetailsServiceTests {
     @Test
     void loadAllTenants() {
         var tenantDetailsProperties = new TenantDetailsProperties();
-        tenantDetailsProperties.setTenants(List.of(Tenant.create().identifier("acme").enabled(true).build(),
-                Tenant.create().identifier("sam").enabled(false).build()));
+        tenantDetailsProperties.setTenants(List.of(buildTenantConfig("acme", true), buildTenantConfig("sam", false)));
 
         var tenantDetailsService = new PropertiesTenantDetailsService(tenantDetailsProperties);
         var tenants = tenantDetailsService.loadAllTenants();
@@ -29,7 +26,7 @@ class PropertiesTenantDetailsServiceTests {
     @Test
     void whenTenantEnabledThenReturn() {
         var tenantDetailsProperties = new TenantDetailsProperties();
-        tenantDetailsProperties.setTenants(List.of(Tenant.create().identifier("acme").enabled(true).build()));
+        tenantDetailsProperties.setTenants(List.of(buildTenantConfig("acme", true)));
 
         var tenantDetailsService = new PropertiesTenantDetailsService(tenantDetailsProperties);
         var tenant = tenantDetailsService.loadTenantByIdentifier("acme");
@@ -40,12 +37,19 @@ class PropertiesTenantDetailsServiceTests {
     @Test
     void whenTenantDisabledThenReturn() {
         var tenantDetailsProperties = new TenantDetailsProperties();
-        tenantDetailsProperties.setTenants(List.of(Tenant.create().identifier("acme").build()));
+        tenantDetailsProperties.setTenants(List.of(buildTenantConfig("acme", false)));
 
         var tenantDetailsService = new PropertiesTenantDetailsService(tenantDetailsProperties);
         var tenant = tenantDetailsService.loadTenantByIdentifier("acme");
 
         assertThat(tenant).isNotNull();
+    }
+
+    private TenantDetailsProperties.TenantConfig buildTenantConfig(String identifier, boolean enabled) {
+        var tenantConfig = new TenantDetailsProperties.TenantConfig();
+        tenantConfig.setIdentifier(identifier);
+        tenantConfig.setEnabled(enabled);
+        return tenantConfig;
     }
 
 }

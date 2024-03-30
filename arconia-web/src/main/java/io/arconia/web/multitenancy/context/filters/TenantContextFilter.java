@@ -7,6 +7,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,7 +21,6 @@ import io.arconia.core.multitenancy.context.events.TenantContextAttachedEvent;
 import io.arconia.core.multitenancy.context.events.TenantContextClosedEvent;
 import io.arconia.core.multitenancy.events.TenantEventPublisher;
 import io.arconia.core.multitenancy.exceptions.TenantResolutionException;
-import io.arconia.core.multitenancy.tenantdetails.TenantDetailsService;
 import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
 
 /**
@@ -24,32 +28,43 @@ import io.arconia.web.multitenancy.context.resolvers.HttpRequestTenantResolver;
  */
 public final class TenantContextFilter extends OncePerRequestFilter {
 
+    private static final String MISSING_TENANT_ERROR_MESSAGE = "A tenant identifier must be specified for HTTP requests to %s";
+
     private final HttpRequestTenantResolver httpRequestTenantResolver;
 
     private final TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
 
-    private final TenantDetailsService tenantDetailsService;
-
     private final TenantEventPublisher tenantEventPublisher;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
-            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, TenantDetailsService tenantDetailsService,
-            TenantEventPublisher tenantEventPublisher) {
+            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, TenantEventPublisher tenantEventPublisher) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
         Assert.notNull(tenantContextIgnorePathMatcher, "ignorePathMatcher cannot be null");
-        Assert.notNull(tenantDetailsService, "tenantDetailsService cannot be null");
         Assert.notNull(tenantEventPublisher, "tenantEventPublisher cannot be null");
         this.httpRequestTenantResolver = httpRequestTenantResolver;
         this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
-        this.tenantDetailsService = tenantDetailsService;
         this.tenantEventPublisher = tenantEventPublisher;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        var tenantIdentifier = resolveAndValidateTenant(request);
-        publishTenantContextAttachedEvent(tenantIdentifier, request);
+        var tenantIdentifier = httpRequestTenantResolver.resolveTenantIdentifier(request);
+        if (!StringUtils.hasText(tenantIdentifier)) {
+            handleTenantResolutionException(response, MISSING_TENANT_ERROR_MESSAGE.formatted(request.getRequestURI()));
+            return;
+        }
+
+        try {
+            publishTenantContextAttachedEvent(tenantIdentifier, request);
+        }
+        catch (TenantResolutionException exception) {
+            publishTenantContextClosedEvent(tenantIdentifier, request);
+            handleTenantResolutionException(response, exception.getMessage());
+            return;
+        }
 
         try {
             filterChain.doFilter(request, response);
@@ -64,22 +79,6 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         return tenantContextIgnorePathMatcher.matches(request);
     }
 
-    private String resolveAndValidateTenant(HttpServletRequest request) {
-        var tenantIdentifier = httpRequestTenantResolver.resolveTenantIdentifier(request);
-
-        if (!StringUtils.hasText(tenantIdentifier)) {
-            throw new TenantResolutionException(
-                    "A tenant identifier must be specified for HTTP requests to: " + request.getRequestURI());
-        }
-
-        var tenant = tenantDetailsService.loadTenantByIdentifier(tenantIdentifier);
-        if (tenant == null || !tenant.isEnabled()) {
-            throw new TenantResolutionException("The resolved tenant is invalid or disabled");
-        }
-
-        return tenantIdentifier;
-    }
-
     private void publishTenantContextAttachedEvent(String tenantIdentifier, HttpServletRequest request) {
         var tenantContextAttachedEvent = new TenantContextAttachedEvent(tenantIdentifier, request);
         var observationContext = ServerHttpObservationFilter.findObservationContext(request);
@@ -90,6 +89,14 @@ public final class TenantContextFilter extends OncePerRequestFilter {
     private void publishTenantContextClosedEvent(String tenantIdentifier, HttpServletRequest request) {
         var tenantContextClosedEvent = new TenantContextClosedEvent(tenantIdentifier, request);
         tenantEventPublisher.publishTenantEvent(tenantContextClosedEvent);
+    }
+
+    private void handleTenantResolutionException(HttpServletResponse response, String exceptionMessage)
+            throws IOException {
+        var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exceptionMessage);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
     }
 
 }

@@ -14,13 +14,13 @@ import io.arconia.core.multitenancy.events.TenantEventListener;
  * A {@link TenantEventListener} that sets the tenant identifier from the current context
  * on an existing {@link Observation}.
  */
-public class ObservationTenantContextEventListener implements TenantEventListener {
+public final class ObservationTenantContextEventListener implements TenantEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ObservationTenantContextEventListener.class);
 
-    protected static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
+    static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
 
-    protected static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
+    static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
 
     private final Cardinality cardinality;
 

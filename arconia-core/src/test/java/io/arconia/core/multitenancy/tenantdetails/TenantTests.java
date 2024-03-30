@@ -23,7 +23,7 @@ class TenantTests {
     }
 
     @Test
-    void whenAttributesIsNullThenUseEmptymap() {
+    void whenAttributesIsNullThenUseEmptyMap() {
         var tenant = Tenant.create().identifier("acme").attributes(null).build();
         assertThat(tenant.getAttributes()).isNotNull();
         assertThat(tenant.getAttributes()).isEmpty();
