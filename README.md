@@ -41,6 +41,10 @@ This example uses [httpie](https://httpie.io) to send HTTP requests.
 http :8080/ X-TenantId:dukes
 ```
 
+## 🌟 Examples
+
+Check these [examples](https://github.com/arconia-io/arconia-samples) to see Arconia and Spring Boot in action.
+
 ## 🛡️&nbsp; Security
 
 The security process for reporting vulnerabilities is described in [SECURITY.md](SECURITY.md).
