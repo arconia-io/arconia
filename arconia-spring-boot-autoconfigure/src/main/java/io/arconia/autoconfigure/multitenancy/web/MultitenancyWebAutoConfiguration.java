@@ -11,7 +11,7 @@ import io.arconia.autoconfigure.multitenancy.core.MultitenancyCoreAutoConfigurat
  */
 @AutoConfiguration(after = MultitenancyCoreAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@Import(HttpTenantResolutionConfiguration.class)
+@Import({ HttpTenantResolutionConfiguration.class, WebMvcConfiguration.class })
 public class MultitenancyWebAutoConfiguration {
 
 }

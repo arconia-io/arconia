@@ -23,7 +23,7 @@ dependencies {
     optional 'jakarta.servlet:jakarta.servlet-api'
 
     optional 'org.springframework:spring-context'
-    optional 'org.springframework:spring-web'
+    optional 'org.springframework:spring-webmvc'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
