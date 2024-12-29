@@ -11,7 +11,7 @@ repositories {
 ext {
     set("cycloneDxVersion", '1.10.0')
     set("springBootVersion", '3.2.4')
-    set("springJavaFormatVersion", '0.0.41')
+    set("springJavaFormatVersion", '0.0.43')
     set("dependencyManagementVersion", '1.1.4')
 }
 
