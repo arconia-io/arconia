@@ -44,7 +44,7 @@ jobs:
         run: |
           VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
           if [[ $VERSION == *"SNAPSHOT"* ]]; then
-            ./gradlew jreleaserDeploy
+            ./gradlew jreleaserDeploy --debug --stacktrace
           else
             ./gradlew jreleaserFullRelease
           fi
