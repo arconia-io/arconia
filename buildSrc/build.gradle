@@ -10,9 +10,9 @@ repositories {
 
 ext {
     set("cycloneDxVersion", '1.10.0')
-    set("springBootVersion", '3.2.4')
+    set("springBootVersion", '3.3.1')
     set("springJavaFormatVersion", '0.0.43')
-    set("dependencyManagementVersion", '1.1.4')
+    set("dependencyManagementVersion", '1.1.7')
 }
 
 dependencies {
