@@ -4,8 +4,8 @@ plugins {
 
 rootProject.name = 'arconia'
 
-include 'arconia-core'
-include 'arconia-web'
+include 'arconia-multitenancy:arconia-multitenancy-core'
+include 'arconia-multitenancy:arconia-multitenancy-web'
 
-include 'arconia-spring-boot-autoconfigure'
-include 'arconia-spring-boot-starters:arconia-web-spring-boot-starter'
+include 'arconia-multitenancy:arconia-multitenancy-spring-boot-autoconfigure'
+include 'arconia-multitenancy:arconia-multitenancy-spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'

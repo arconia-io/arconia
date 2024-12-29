@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "arconia.multitenancy.resolution.http.filter.ignore-paths",
+      "defaultValue": [
+        "\/actuator\/**",
+        "\/webjars\/**",
+        "\/css\/**",
+        "\/js\/**",
+        ".ico"
+      ]
+    }
+  ]
+}

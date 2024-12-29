@@ -1,0 +1,44 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    optional project(':arconia-multitenancy:arconia-multitenancy-core')
+    optional project(':arconia-multitenancy:arconia-multitenancy-web')
+
+    optional 'jakarta.servlet:jakarta.servlet-api'
+
+    optional 'org.springframework:spring-context'
+    optional 'org.springframework:spring-webmvc'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Multitenancy Spring Boot Autoconfigure"
+                description = "Arconia Multitenancy Spring Boot Autoconfigure."
+            }
+        }
+    }
+}
