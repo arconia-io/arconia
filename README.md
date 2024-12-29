@@ -8,7 +8,7 @@ Arconia is a framework to build SaaS, multitenant applications using Java and Sp
 
 ### Pre-Requisites
 
-* Java 17+
+* Java 21+
 * [Spring CLI](https://docs.spring.io/spring-cli/reference/installation.html)
 
 ### Getting Started
