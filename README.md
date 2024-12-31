@@ -1,6 +1,7 @@
 # Arconia
 
-Arconia is a framework to build SaaS, multitenant applications using Java and Spring Boot.
+Arconia is a framework to build modern applications using Java and Spring Boot.
+It provides support for multitenancy and AI.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 

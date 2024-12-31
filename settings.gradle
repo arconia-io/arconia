@@ -4,8 +4,12 @@ plugins {
 
 rootProject.name = 'arconia'
 
+// AI
+include 'arconia-ai:arconia-ai-core'
+include 'arconia-ai:arconia-ai-mcp'
+
+// Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
-
 include 'arconia-multitenancy:arconia-multitenancy-spring-boot-autoconfigure'
 include 'arconia-multitenancy:arconia-multitenancy-spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
