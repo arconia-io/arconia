@@ -19,9 +19,11 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
 
     compileOnly "org.springframework.ai:spring-ai-core:${springAiVersion}"
+    compileOnly "org.springframework.ai:spring-ai-spring-boot-autoconfigure:${springAiVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.ai:spring-ai-core:${springAiVersion}"
+    testImplementation "org.springframework.ai:spring-ai-spring-boot-autoconfigure:${springAiVersion}"
 }
 
 publishing {

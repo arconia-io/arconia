@@ -1,2 +1,2 @@
-org.springframework.aot.hint.RuntimeHintsRegistrar=\
-	io.arconia.ai.autoconfigure.core.tools.aot.ToolRuntimeHints
+#org.springframework.aot.hint.RuntimeHintsRegistrar=\
+#	io.arconia.ai.autoconfigure.core.tools.aot.ToolRuntimeHints
