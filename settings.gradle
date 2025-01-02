@@ -8,6 +8,8 @@ rootProject.name = 'arconia'
 include 'arconia-ai:arconia-ai-core'
 include 'arconia-ai:arconia-ai-mcp'
 
+include 'arconia-ai:arconia-ai-spring-boot-starters:arconia-ai-spring-boot-starter'
+
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'

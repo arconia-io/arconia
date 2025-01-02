@@ -28,8 +28,8 @@ public class MethodToolCallbackResolver implements ToolCallbackResolver {
     public FunctionCallback[] getToolCallbacks() {
         return Stream.of(ReflectionUtils.getDeclaredMethods(target.getClass()))
             .filter(method -> method.isAnnotationPresent(Tool.class))
-            .map(method -> FunctionCallback.builder()
-                .method(method.getName(), method.getParameterTypes())
+            .map(method -> ToolCallback.builder()
+                .method(method)
                 .name(getToolName(method.getAnnotation(Tool.class), method.getName()))
                 .description(getToolDescription(method.getAnnotation(Tool.class), method.getName()))
                 .schemaType(method.getAnnotation(Tool.class).schemaType())
@@ -46,6 +46,10 @@ public class MethodToolCallbackResolver implements ToolCallbackResolver {
         return StringUtils.hasText(tool.value()) ? tool.value() : methodName;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
 
         private Object target;
@@ -59,10 +63,6 @@ public class MethodToolCallbackResolver implements ToolCallbackResolver {
             return new MethodToolCallbackResolver(target);
         }
 
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
 }

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import org.springframework.ai.model.function.FunctionCallback;
 
 /**
- * Annotation to mark a method as a tool.
+ * Marks a method as a tool in Spring AI.
  */
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)

@@ -10,8 +10,13 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    implementation project(":arconia-ai:arconia-ai-core")
+
     implementation "org.slf4j:slf4j-api"
-    implementation "org.springframework:spring-context"
+    implementation "org.springframework.boot:spring-boot-starter"
 
     compileOnly "org.springframework.ai:spring-ai-core:${springAiVersion}"
 
@@ -23,8 +28,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia AI Core"
-                description = "Arconia AI Core."
+                name = "Arconia AI Spring Boot Starter"
+                description = "Arconia AI Spring Boot Starter."
             }
         }
     }

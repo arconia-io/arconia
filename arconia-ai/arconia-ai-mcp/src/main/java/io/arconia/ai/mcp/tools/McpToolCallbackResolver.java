@@ -20,7 +20,7 @@ public class McpToolCallbackResolver implements ToolCallbackResolver {
 
     private final List<McpSyncClient> mcpClients;
 
-    public McpToolCallbackResolver(List<McpSyncClient> mcpClients) {
+    private McpToolCallbackResolver(List<McpSyncClient> mcpClients) {
         Assert.notNull(mcpClients, "mcpClients cannot be null");
         Assert.noNullElements(mcpClients, "mcpClients cannot contain null elements");
         this.mcpClients = mcpClients;
