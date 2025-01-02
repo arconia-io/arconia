@@ -5,46 +5,13 @@ It provides support for multitenancy and AI.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
-## 🚀&nbsp; Quick Start
-
-### Pre-Requisites
+## ⚙️Requirements
 
 * Java 21+
-* [Spring CLI](https://docs.spring.io/spring-cli/reference/installation.html)
-
-### Getting Started
-
-Using the Spring CLI, you can easily bootstrap a new Spring Boot application using the Arconia framework.
-
-First, add the Arconia Spring catalog providing the project templates.
-
-```shell
-spring project-catalog add arconia https://github.com/arconia-io/arconia
-```
-
-Then, create a new Spring Boot project for building a multitenant web application.
-
-```shell
-spring boot new myapp arconia-web
-```
-
-Finally, navigate to the `myapp` folder and run the Spring Boot application.
-
-```shell
-cd myapp
-./mvnw spring-boot:run
-```
-
-You can now call the application as one of the valid tenants (`dukes` or `beans`).
-This example uses [httpie](https://httpie.io) to send HTTP requests.
-
-```shell
-http :8080/ X-TenantId:dukes
-```
 
 ## 🌟 Examples
 
-Check these [examples](https://github.com/arconia-io/arconia-samples) to see Arconia and Spring Boot in action.
+Check these [examples](https://github.com/arconia-io/arconia-examples) to see Arconia and Spring Boot in action.
 
 ## 🛡️&nbsp; Security
 
