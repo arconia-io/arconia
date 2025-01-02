@@ -69,6 +69,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
