@@ -25,17 +25,19 @@ import io.arconia.ai.core.tools.ToolCallbackResolver;
 import io.arconia.ai.core.tools.method.MethodToolCallbackResolver;
 
 /**
- * Default implementation of {@link ArconiaChatClient.ArconiaBuilder} based on {@link DefaultChatClientBuilder}.
+ * Default implementation of {@link ArconiaChatClient.ArconiaBuilder} based on
+ * {@link DefaultChatClientBuilder}.
  */
 public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.ArconiaBuilder {
 
     private final DefaultArconiaChatClientRequestSpec arconiaRequest;
 
-    public DefaultArconiaChatClientBuilder(ChatModel chatModel, ObservationRegistry observationRegistry, ChatClientObservationConvention customObservationConvention) {
+    public DefaultArconiaChatClientBuilder(ChatModel chatModel, ObservationRegistry observationRegistry,
+            ChatClientObservationConvention customObservationConvention) {
         Assert.notNull(chatModel, "the " + ChatModel.class.getName() + " must be non-null");
         Assert.notNull(observationRegistry, "the " + ObservationRegistry.class.getName() + " must be non-null");
-        this.arconiaRequest = new DefaultArconiaChatClientRequestSpec(chatModel, null, Map.of(), null, Map.of(), List.of(),
-                List.of(), List.of(), List.of(), null, List.of(), Map.of(), observationRegistry,
+        this.arconiaRequest = new DefaultArconiaChatClientRequestSpec(chatModel, null, Map.of(), null, Map.of(),
+                List.of(), List.of(), List.of(), List.of(), null, List.of(), Map.of(), observationRegistry,
                 customObservationConvention, Map.of());
     }
 
@@ -148,8 +150,8 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Object... toolBoxes) {
         ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-                .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
-                .toArray(ToolCallbackResolver[]::new);
+            .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
+            .toArray(ToolCallbackResolver[]::new);
         return defaultToolCallbackResolvers(toolCallbackResolvers);
     }
 
@@ -160,7 +162,8 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     @Override
-    public ArconiaChatClient.ArconiaBuilder defaultToolCallbackResolvers(ToolCallbackResolver... toolCallbackResolvers) {
+    public ArconiaChatClient.ArconiaBuilder defaultToolCallbackResolvers(
+            ToolCallbackResolver... toolCallbackResolvers) {
         for (ToolCallbackResolver toolCallbackResolver : toolCallbackResolvers) {
             this.arconiaRequest.functions(toolCallbackResolver.getToolCallbacks());
         }

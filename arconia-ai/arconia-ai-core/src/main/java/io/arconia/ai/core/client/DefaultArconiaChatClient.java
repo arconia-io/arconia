@@ -75,7 +75,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
     public ArconiaChatClientRequestSpec prompt(Prompt prompt) {
         Assert.notNull(prompt, "prompt cannot be null");
 
-        DefaultArconiaChatClientRequestSpec spec = new DefaultArconiaChatClientRequestSpec(this.defaultArconiaChatClientRequest);
+        DefaultArconiaChatClientRequestSpec spec = new DefaultArconiaChatClientRequestSpec(
+                this.defaultArconiaChatClientRequest);
 
         // Options
         if (prompt.getOptions() != null) {
@@ -298,7 +299,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
     }
 
-    public static class DefaultArconiaCallResponseSpec extends DefaultCallResponseSpec implements ArconiaCallResponseSpec {
+    public static class DefaultArconiaCallResponseSpec extends DefaultCallResponseSpec
+            implements ArconiaCallResponseSpec {
 
         public DefaultArconiaCallResponseSpec(DefaultChatClientRequestSpec request) {
             super(request);
@@ -306,7 +308,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
     }
 
-    public static class DefaultArconiaStreamResponseSpec extends DefaultStreamResponseSpec implements ArconiaStreamResponseSpec {
+    public static class DefaultArconiaStreamResponseSpec extends DefaultStreamResponseSpec
+            implements ArconiaStreamResponseSpec {
 
         public DefaultArconiaStreamResponseSpec(DefaultChatClientRequestSpec request) {
             super(request);
@@ -314,7 +317,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
     }
 
-    public static class DefaultArconiaChatClientRequestSpec extends DefaultChatClientRequestSpec implements ArconiaChatClientRequestSpec {
+    public static class DefaultArconiaChatClientRequestSpec extends DefaultChatClientRequestSpec
+            implements ArconiaChatClientRequestSpec {
 
         private final ObservationRegistry observationRegistry;
 
@@ -358,14 +362,16 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
         }
 
         public DefaultArconiaChatClientRequestSpec(ChatModel chatModel, @Nullable String userText,
-                                            Map<String, Object> userParams, @Nullable String systemText, Map<String, Object> systemParams,
-                                            List<FunctionCallback> toolCallbacks, List<Message> messages, List<String> toolNames,
-                                            List<Media> media, @Nullable ChatOptions chatOptions, List<Advisor> advisors,
-                                            Map<String, Object> advisorParams, ObservationRegistry observationRegistry,
-                                            @Nullable ChatClientObservationConvention customObservationConvention,
-                                            Map<String, Object> toolContext) {
+                Map<String, Object> userParams, @Nullable String systemText, Map<String, Object> systemParams,
+                List<FunctionCallback> toolCallbacks, List<Message> messages, List<String> toolNames, List<Media> media,
+                @Nullable ChatOptions chatOptions, List<Advisor> advisors, Map<String, Object> advisorParams,
+                ObservationRegistry observationRegistry,
+                @Nullable ChatClientObservationConvention customObservationConvention,
+                Map<String, Object> toolContext) {
 
-            super(chatModel, userText, userParams, systemText, systemParams, toolCallbacks, messages, toolNames, media, chatOptions, advisors, advisorParams, observationRegistry, customObservationConvention, toolContext);
+            super(chatModel, userText, userParams, systemText, systemParams, toolCallbacks, messages, toolNames, media,
+                    chatOptions, advisors, advisorParams, observationRegistry, customObservationConvention,
+                    toolContext);
 
             Assert.notNull(chatModel, "chatModel cannot be null");
             Assert.notNull(userParams, "userParams cannot be null");
@@ -412,7 +418,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
                 @Override
                 public AdvisedResponse aroundCall(AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
-                    return new AdvisedResponse(chatModel.call(advisedRequest.toPrompt()), Collections.unmodifiableMap(advisedRequest.adviseContext()));
+                    return new AdvisedResponse(chatModel.call(advisedRequest.toPrompt()),
+                            Collections.unmodifiableMap(advisedRequest.adviseContext()));
                 }
             });
 
@@ -428,14 +435,17 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
                 }
 
                 @Override
-                public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest, StreamAroundAdvisorChain chain) {
+                public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest,
+                        StreamAroundAdvisorChain chain) {
                     return chatModel.stream(advisedRequest.toPrompt())
-                            .map(chatResponse -> new AdvisedResponse(chatResponse, Collections.unmodifiableMap(advisedRequest.adviseContext())))
-                            .publishOn(Schedulers.boundedElastic());
+                        .map(chatResponse -> new AdvisedResponse(chatResponse,
+                                Collections.unmodifiableMap(advisedRequest.adviseContext())))
+                        .publishOn(Schedulers.boundedElastic());
                 }
             });
 
-            this.aroundAdvisorChainBuilder = DefaultAroundAdvisorChain.builder(observationRegistry).pushAll(this.advisors);
+            this.aroundAdvisorChainBuilder = DefaultAroundAdvisorChain.builder(observationRegistry)
+                .pushAll(this.advisors);
         }
 
         private ObservationRegistry getObservationRegistry() {
@@ -502,8 +512,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
         @Override
         public ArconiaBuilder mutate() {
             DefaultArconiaChatClientBuilder builder = (DefaultArconiaChatClientBuilder) ArconiaChatClient
-                    .builder(this.chatModel, this.observationRegistry, this.customObservationConvention)
-                    .defaultTools(StringUtils.toStringArray(this.toolNames));
+                .builder(this.chatModel, this.observationRegistry, this.customObservationConvention)
+                .defaultTools(StringUtils.toStringArray(this.toolNames));
 
             if (StringUtils.hasText(this.userText)) {
                 builder.defaultUser(
@@ -606,8 +616,8 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
             ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-                    .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
-                    .toArray(ToolCallbackResolver[]::new);
+                .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
+                .toArray(ToolCallbackResolver[]::new);
             return toolCallbackResolvers(toolCallbackResolvers);
         }
 
@@ -726,12 +736,18 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
         @Override
         public ArconiaCallResponseSpec call() {
-            return new DefaultArconiaCallResponseSpec(new DefaultChatClientRequestSpec(this.chatModel, this.userText, this.userParams, this.systemText, this.systemParams, this.toolCallbacks, this.messages, this.toolNames, this.media, this.chatOptions, this.advisors, this.advisorParams, this.observationRegistry, this.customObservationConvention, this.toolContext));
+            return new DefaultArconiaCallResponseSpec(new DefaultChatClientRequestSpec(this.chatModel, this.userText,
+                    this.userParams, this.systemText, this.systemParams, this.toolCallbacks, this.messages,
+                    this.toolNames, this.media, this.chatOptions, this.advisors, this.advisorParams,
+                    this.observationRegistry, this.customObservationConvention, this.toolContext));
         }
 
         @Override
         public ArconiaStreamResponseSpec stream() {
-            return new DefaultArconiaStreamResponseSpec(new DefaultChatClientRequestSpec(this.chatModel, this.userText, this.userParams, this.systemText, this.systemParams, this.toolCallbacks, this.messages, this.toolNames, this.media, this.chatOptions, this.advisors, this.advisorParams, this.observationRegistry, this.customObservationConvention, this.toolContext));
+            return new DefaultArconiaStreamResponseSpec(new DefaultChatClientRequestSpec(this.chatModel, this.userText,
+                    this.userParams, this.systemText, this.systemParams, this.toolCallbacks, this.messages,
+                    this.toolNames, this.media, this.chatOptions, this.advisors, this.advisorParams,
+                    this.observationRegistry, this.customObservationConvention, this.toolContext));
         }
 
     }

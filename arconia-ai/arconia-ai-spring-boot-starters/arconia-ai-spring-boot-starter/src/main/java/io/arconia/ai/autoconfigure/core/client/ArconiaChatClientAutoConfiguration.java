@@ -20,9 +20,9 @@ public class ArconiaChatClientAutoConfiguration {
     @Bean
     @Scope("prototype")
     @Primary
-    ChatClient.Builder arconiaChatClientBuilder(ChatClientBuilderConfigurer chatClientBuilderConfigurer, ChatModel chatModel,
-                                         ObjectProvider<ObservationRegistry> observationRegistry,
-                                         ObjectProvider<ChatClientObservationConvention> observationConvention) {
+    ChatClient.Builder arconiaChatClientBuilder(ChatClientBuilderConfigurer chatClientBuilderConfigurer,
+            ChatModel chatModel, ObjectProvider<ObservationRegistry> observationRegistry,
+            ObjectProvider<ChatClientObservationConvention> observationConvention) {
         ChatClient.Builder builder = ArconiaChatClient.builder(chatModel,
                 observationRegistry.getIfUnique(() -> ObservationRegistry.NOOP),
                 observationConvention.getIfUnique(() -> null));

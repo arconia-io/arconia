@@ -37,7 +37,8 @@ public interface ArconiaChatClient extends ChatClient {
         return create(chatModel, observationRegistry, null);
     }
 
-    static ArconiaChatClient create(ChatModel chatModel, ObservationRegistry observationRegistry, @Nullable ChatClientObservationConvention observationConvention) {
+    static ArconiaChatClient create(ChatModel chatModel, ObservationRegistry observationRegistry,
+            @Nullable ChatClientObservationConvention observationConvention) {
         Assert.notNull(chatModel, "chatModel cannot be null");
         Assert.notNull(observationRegistry, "observationRegistry cannot be null");
         return builder(chatModel, observationRegistry, observationConvention).build();
@@ -48,7 +49,7 @@ public interface ArconiaChatClient extends ChatClient {
     }
 
     static ArconiaBuilder builder(ChatModel chatModel, ObservationRegistry observationRegistry,
-                                                                         @Nullable ChatClientObservationConvention customObservationConvention) {
+            @Nullable ChatClientObservationConvention customObservationConvention) {
         Assert.notNull(chatModel, "chatModel cannot be null");
         Assert.notNull(observationRegistry, "observationRegistry cannot be null");
         return new DefaultArconiaChatClientBuilder(chatModel, observationRegistry, customObservationConvention);
@@ -64,23 +65,37 @@ public interface ArconiaChatClient extends ChatClient {
 
     // PROMPT
 
-    interface ArconiaPromptUserSpec extends PromptUserSpec {}
+    interface ArconiaPromptUserSpec extends PromptUserSpec {
 
-    interface ArconiaPromptSystemSpec extends PromptSystemSpec {}
+    }
+
+    interface ArconiaPromptSystemSpec extends PromptSystemSpec {
+
+    }
 
     // ADVISOR
 
-    interface ArconiaAdvisorSpec extends AdvisorSpec {}
+    interface ArconiaAdvisorSpec extends AdvisorSpec {
+
+    }
 
     // RESPONSE
 
-    interface ArconiaCallResponseSpec extends CallResponseSpec {}
+    interface ArconiaCallResponseSpec extends CallResponseSpec {
 
-    interface ArconiaStreamResponseSpec extends StreamResponseSpec {}
+    }
 
-    interface ArconiaCallPromptResponseSpec extends CallPromptResponseSpec {}
+    interface ArconiaStreamResponseSpec extends StreamResponseSpec {
 
-    interface ArconiaStreamPromptResponseSpec extends StreamPromptResponseSpec {}
+    }
+
+    interface ArconiaCallPromptResponseSpec extends CallPromptResponseSpec {
+
+    }
+
+    interface ArconiaStreamPromptResponseSpec extends StreamPromptResponseSpec {
+
+    }
 
     // REQUEST
 
@@ -212,7 +227,8 @@ public interface ArconiaChatClient extends ChatClient {
             throw new UnsupportedOperationException();
         }
 
-        default <I, O> Builder defaultFunction(String name, String description, BiFunction<I, ToolContext, O> function) {
+        default <I, O> Builder defaultFunction(String name, String description,
+                BiFunction<I, ToolContext, O> function) {
             throw new UnsupportedOperationException();
         }
 
