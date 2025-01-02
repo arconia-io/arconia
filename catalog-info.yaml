@@ -1,0 +1,15 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: arconia
+  description: Arconia is a framework to build modern applications using Java and Spring Boot. It provides support for multitenancy and AI/Large Language Models.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    endoflife.date/products: spring-boot
+    github.com/project-slug: arconia-io/arconia
+    sonarqube.org/project-key: arconia-io_arconia
+spec:
+  type: library
+  lifecycle: experimental
+  owner: arconia
