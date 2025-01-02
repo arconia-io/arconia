@@ -3,9 +3,33 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.editorconfig'
+      - '.gitignore'
+      - '.sdkmanrc'
+      - '*.adoc'
+      - '*.png'
+      - '*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.md'
+      - '.github/*.yml'
+      - '.github/*.yaml'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '.editorconfig'
+      - '.gitignore'
+      - '.sdkmanrc'
+      - '*.adoc'
+      - '*.png'
+      - '*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.md'
+      - '.github/*.yml'
+      - '.github/*.yaml'
 
 permissions:
   contents: read
@@ -27,7 +51,9 @@ jobs:
         with:
           java-version: 21
           distribution: temurin
-          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6 # v4.2.2
 
       - name: Compile and test
         run: ./gradlew build -Dorg.gradle.parallel=false
@@ -60,6 +86,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
+          retention-days: 1
           name: jreleaser-output
           path: |
             build/jreleaser/trace.log
