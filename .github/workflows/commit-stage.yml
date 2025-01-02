@@ -65,13 +65,16 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         run: ./gradlew publish
 
-      - name: Set VERSION environment variable
+      - name: Define environment variables for Java project
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
+          GROUP=$(./gradlew properties | grep 'group:' | awk '{print $2}')
+          echo "group=$GROUP" >> $GITHUB_ENV
+          echo "group: $GROUP"
+          
           VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
           echo "version=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+          echo "version: $VERSION"
 
       - name: Release
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -85,6 +88,7 @@ jobs:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
           JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
           JRELEASER_NEXUS2_MAVEN_CENTRAL_TOKEN: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_TOKEN }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.GROUP }}
           JRELEASER_PROJECT_VERSION: ${{ env.VERSION }}
 
       - name: Upload JReleaser output
