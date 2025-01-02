@@ -9,6 +9,7 @@ tasks.register("clean", Delete.class) {
 }
 
 jreleaser {
+    dryrun = true
     project {
         name = "arconia"
         description = "Java framework to build SaaS, multitenant applications"
@@ -17,7 +18,6 @@ jreleaser {
         maintainers = ['ThomasVitale']
         license = 'Apache-2.0'
         inceptionYear = "2024"
-        copyright = '#{project.inceptionYear} #{project.authors}'
     }
 
     checksum {
