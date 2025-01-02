@@ -603,12 +603,14 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             return this;
         }
 
-        // TODO
         @Override
         public ArconiaChatClientRequestSpec tools(Class<?>... toolBoxes) {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
-            return this;
+            ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
+                .map(toolBox -> MethodToolCallbackResolver.builder().type(toolBox).build())
+                .toArray(ToolCallbackResolver[]::new);
+            return toolCallbackResolvers(toolCallbackResolvers);
         }
 
         @Override
@@ -616,7 +618,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
             ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-                .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
+                .map(toolBox -> MethodToolCallbackResolver.builder().object(toolBox).build())
                 .toArray(ToolCallbackResolver[]::new);
             return toolCallbackResolvers(toolCallbackResolvers);
         }

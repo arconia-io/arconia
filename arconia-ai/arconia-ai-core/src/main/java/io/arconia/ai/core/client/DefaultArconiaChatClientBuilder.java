@@ -141,16 +141,18 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
         return this;
     }
 
-    // TODO
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Class<?>... toolBoxes) {
-        return this;
+        ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
+            .map(toolBox -> MethodToolCallbackResolver.builder().type(toolBox).build())
+            .toArray(ToolCallbackResolver[]::new);
+        return defaultToolCallbackResolvers(toolCallbackResolvers);
     }
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Object... toolBoxes) {
         ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-            .map(toolBox -> MethodToolCallbackResolver.builder().target(toolBox).build())
+            .map(toolBox -> MethodToolCallbackResolver.builder().object(toolBox).build())
             .toArray(ToolCallbackResolver[]::new);
         return defaultToolCallbackResolvers(toolCallbackResolvers);
     }
