@@ -10,17 +10,18 @@ import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.util.Assert;
 
 import io.arconia.ai.core.tools.ToolCallback;
-import io.arconia.ai.core.tools.ToolCallbackResolver;
+import io.arconia.ai.core.tools.ToolCallbackProvider;
+import io.arconia.ai.core.tools.ToolUtils;
 
 /**
- * A {@link ToolCallbackResolver} that resolves {@link ToolCallback} instances from MCP
+ * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances from MCP
  * tools.
  */
-public class McpToolCallbackResolver implements ToolCallbackResolver {
+public class McpToolCallbackProvider implements ToolCallbackProvider {
 
     private final List<McpSyncClient> mcpClients;
 
-    private McpToolCallbackResolver(List<McpSyncClient> mcpClients) {
+    private McpToolCallbackProvider(List<McpSyncClient> mcpClients) {
         Assert.notNull(mcpClients, "mcpClients cannot be null");
         Assert.noNullElements(mcpClients, "mcpClients cannot contain null elements");
         this.mcpClients = mcpClients;
@@ -28,12 +29,18 @@ public class McpToolCallbackResolver implements ToolCallbackResolver {
 
     @Override
     public FunctionCallback[] getToolCallbacks() {
-        return mcpClients.stream()
+        var toolCallbacks = mcpClients.stream()
             .flatMap(mcpClient -> mcpClient.listTools()
                 .tools()
                 .stream()
                 .map(tool -> (ToolCallback) new McpToolCallback(mcpClient, tool)))
             .toArray(ToolCallback[]::new);
+
+        if (ToolUtils.hasDuplicateToolNames(toolCallbacks)) {
+            throw new IllegalStateException("Multiple tools with the same name found in MCP sources");
+        }
+
+        return toolCallbacks;
     }
 
     public static Builder builder() {
@@ -60,8 +67,8 @@ public class McpToolCallbackResolver implements ToolCallbackResolver {
             return this;
         }
 
-        public McpToolCallbackResolver build() {
-            return new McpToolCallbackResolver(mcpClients);
+        public McpToolCallbackProvider build() {
+            return new McpToolCallbackProvider(mcpClients);
         }
 
     }

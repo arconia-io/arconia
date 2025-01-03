@@ -1,6 +1,7 @@
 package io.arconia.ai.core.tools.method;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -13,41 +14,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link MethodToolCallbackResolver}.
+ * Unit tests for {@link MethodToolCallbackProvider}.
  */
-class MethodToolCallbackResolverTests {
+class MethodToolCallbackProviderTests {
 
     @Test
-    void shouldResolveToolCallbacksFromObject() {
+    void shouldProvideToolCallbacksFromObject() {
         TestComponent testComponent = new TestComponent();
-        MethodToolCallbackResolver resolver = MethodToolCallbackResolver.builder().object(testComponent).build();
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().sources(testComponent).build();
 
-        FunctionCallback[] callbacks = resolver.getToolCallbacks();
-
-        assertThat(callbacks).hasSize(2);
-
-        var callback1 = Stream.of(callbacks)
-            .filter(c -> c.getName().equals("testMethod"))
-            .map(m -> (MethodInvokingFunctionCallback) m)
-            .findFirst();
-        assertThat(callback1).isPresent();
-        assertThat(callback1.get().getName()).isEqualTo("testMethod");
-        assertThat(callback1.get().getDescription()).isEqualTo("Test description");
-
-        var callback2 = Stream.of(callbacks)
-            .filter(c -> c.getName().equals("testStaticMethod"))
-            .map(m -> (MethodInvokingFunctionCallback) m)
-            .findFirst();
-        assertThat(callback2).isPresent();
-        assertThat(callback2.get().getName()).isEqualTo("testStaticMethod");
-        assertThat(callback2.get().getDescription()).isEqualTo("Test description");
-    }
-
-    @Test
-    void shouldResolveToolCallbacksFromAllMethodsInType() {
-        MethodToolCallbackResolver resolver = MethodToolCallbackResolver.builder().type(TestComponent.class).build();
-
-        FunctionCallback[] callbacks = resolver.getToolCallbacks();
+        FunctionCallback[] callbacks = provider.getToolCallbacks();
 
         assertThat(callbacks).hasSize(2);
 
@@ -69,12 +45,12 @@ class MethodToolCallbackResolverTests {
     }
 
     @Test
-    void shouldResolveToolCallbacksOnlyFromStaticMethodsInType() {
-        MethodToolCallbackResolver resolver = MethodToolCallbackResolver.builder()
-            .type(OtherTestComponent.class)
+    void shouldProvideToolCallbacksOnlyFromStaticMethodsInType() {
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder()
+            .sources(OtherTestComponent.class)
             .build();
 
-        FunctionCallback[] callbacks = resolver.getToolCallbacks();
+        FunctionCallback[] callbacks = provider.getToolCallbacks();
 
         assertThat(callbacks).hasSize(1);
 
@@ -88,10 +64,13 @@ class MethodToolCallbackResolverTests {
     }
 
     @Test
-    void shouldFailWhenTargetTypeIsNotProvided() {
-        assertThatThrownBy(() -> MethodToolCallbackResolver.builder().build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("targetType cannot be null");
+    void shouldEnsureUniqueToolNames() {
+        TestComponentWithDuplicates testComponent = new TestComponentWithDuplicates();
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().sources(testComponent).build();
+
+        assertThatThrownBy(provider::getToolCallbacks).isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(
+                    "Multiple tools with the same name found in sources: " + testComponent.getClass().getName());
     }
 
     static class TestComponent {
@@ -104,6 +83,13 @@ class MethodToolCallbackResolverTests {
         @Tool("Test description")
         public List<String> testMethod(String input) {
             return List.of(input);
+        }
+
+        @Tool("Test description")
+        public Function<String, Integer> testFunction(String input) {
+            // This method should be ignored as it's a functional type, which is not
+            // supported.
+            return String::length;
         }
 
         public void nonToolMethod() {
@@ -130,6 +116,20 @@ class MethodToolCallbackResolverTests {
 
         public void nonToolMethod() {
             // This method should be ignored as it doesn't have @Tool annotation
+        }
+
+    }
+
+    static class TestComponentWithDuplicates {
+
+        @Tool(name = "testMethod", value = "Test description")
+        public List<String> testMethod1(String input) {
+            return List.of(input);
+        }
+
+        @Tool(name = "testMethod", value = "Test description")
+        public List<String> testMethod2(String input) {
+            return List.of(input);
         }
 
     }

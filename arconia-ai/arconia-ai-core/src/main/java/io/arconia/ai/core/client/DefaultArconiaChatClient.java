@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import io.micrometer.observation.ObservationRegistry;
 
@@ -44,8 +43,8 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import io.arconia.ai.core.tools.ToolCallbackResolver;
-import io.arconia.ai.core.tools.method.MethodToolCallbackResolver;
+import io.arconia.ai.core.tools.ToolCallbackProvider;
+import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
 
 /**
  * Default implementation of {@link ArconiaChatClient} based on {@link DefaultChatClient}.
@@ -607,20 +606,16 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
         public ArconiaChatClientRequestSpec tools(Class<?>... toolBoxes) {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
-            ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-                .map(toolBox -> MethodToolCallbackResolver.builder().type(toolBox).build())
-                .toArray(ToolCallbackResolver[]::new);
-            return toolCallbackResolvers(toolCallbackResolvers);
+            ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
+            return toolCallbackProviders(toolCallbackProvider);
         }
 
         @Override
         public ArconiaChatClientRequestSpec tools(Object... toolBoxes) {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
-            ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-                .map(toolBox -> MethodToolCallbackResolver.builder().object(toolBox).build())
-                .toArray(ToolCallbackResolver[]::new);
-            return toolCallbackResolvers(toolCallbackResolvers);
+            ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
+            return toolCallbackProviders(toolCallbackProvider);
         }
 
         @Override
@@ -632,9 +627,9 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
         }
 
         @Override
-        public ArconiaChatClientRequestSpec toolCallbackResolvers(ToolCallbackResolver... toolCallbackResolvers) {
-            for (ToolCallbackResolver toolCallbackResolver : toolCallbackResolvers) {
-                this.toolCallbacks.addAll(Arrays.asList(toolCallbackResolver.getToolCallbacks()));
+        public ArconiaChatClientRequestSpec toolCallbackProviders(ToolCallbackProvider... toolCallbackProviders) {
+            for (ToolCallbackProvider toolCallbackProvider : toolCallbackProviders) {
+                this.toolCallbacks.addAll(Arrays.asList(toolCallbackProvider.getToolCallbacks()));
             }
             return this;
         }

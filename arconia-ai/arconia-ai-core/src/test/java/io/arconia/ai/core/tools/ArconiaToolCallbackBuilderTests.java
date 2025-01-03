@@ -169,72 +169,69 @@ class ArconiaToolCallbackBuilderTests {
 
     @Test
     void whenMethodDescriptionIsNullThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).description(null))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).description(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Description must not be empty");
     }
 
     @Test
     void whenMethodDescriptionIsEmptyThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).description(""))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).description(""))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Description must not be empty");
     }
 
     @Test
     void whenMethodInputTypeSchemaIsNullThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).inputTypeSchema(null))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).inputTypeSchema(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("InputTypeSchema must not be empty");
     }
 
     @Test
     void whenMethodInputTypeSchemaIsEmptyThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).inputTypeSchema(""))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).inputTypeSchema(""))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("InputTypeSchema must not be empty");
     }
 
     @Test
     void whenMethodSchemaTypeIsNullThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).schemaType(null))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).schemaType(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("SchemaType must not be null");
     }
 
     @Test
     void whenMethodResponseConverterIsNullThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).responseConverter(null))
+        assertThatThrownBy(() -> ToolCallback.builder().method(getTestMethod()).responseConverter(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("ResponseConverter must not be null");
     }
 
     @Test
-    void whenMethodNameIsNullThenThrow() {
+    void whenMethodIsNullThenThrow() {
         assertThatThrownBy(() -> ToolCallback.builder().method(null)).isInstanceOf(IllegalArgumentException.class)
             .hasMessage("method cannot be null");
     }
 
     @Test
+    void whenMethodNameIsNullThenThrow() {
+        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("method name cannot be null or empty");
+    }
+
+    @Test
     void whenMethodThenReturn() {
-        FunctionCallback.MethodInvokingSpec methodInvokeBuilder = ToolCallback.builder().method(mock(Method.class));
+        FunctionCallback.MethodInvokingSpec methodInvokeBuilder = ToolCallback.builder().method(getTestMethod());
         assertThat(methodInvokeBuilder).isNotNull();
     }
 
     @Test
-    void whenMethodWithMissingTargetObjectOrTargetClassThenThrow() {
-        assertThatThrownBy(() -> ToolCallback.builder().method(mock(Method.class)).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("targetClass or targetObject cannot be null");
-    }
-
-    @Test
     void whenMethodWithMissingTargetObjectThenThrow() {
-        var method = Arrays.stream(ReflectionUtils.getDeclaredMethods(TestClass.class))
-            .filter(m -> m.getName().equals("methodName"))
-            .findFirst();
-        assertThat(method).isPresent();
-        assertThatThrownBy(() -> ToolCallback.builder().method(method.get()).targetClass(TestClass.class).build())
+        var method = getTestMethod();
+        assertThatThrownBy(() -> ToolCallback.builder().method(method).targetClass(TestClass.class).build())
             .isInstanceOf(IllegalStateException.class)
             .hasRootCauseMessage("Function object must be provided for non-static methods!");
     }
@@ -242,29 +239,37 @@ class ArconiaToolCallbackBuilderTests {
     @Test
     void whenMethodAndNameIsNullThenThrow() {
         assertThatThrownBy(
-                () -> ToolCallback.builder().method(mock(Method.class)).targetClass(TestClass.class).name(null).build())
+                () -> ToolCallback.builder().method(getTestMethod()).targetClass(TestClass.class).name(null).build())
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("name cannot be null or empty");
     }
 
     @Test
     void whenMethodAndTargetClassThenReturn() {
-        var method = Arrays.stream(ReflectionUtils.getDeclaredMethods(TestClass.class))
-            .filter(m -> m.getName().equals("staticMethodName"))
-            .findFirst();
-        assertThat(method).isPresent();
-        var functionCallback = ToolCallback.builder().method(method.get()).targetClass(TestClass.class).build();
+        var method = getStaticTestMethod();
+        var functionCallback = ToolCallback.builder().method(method).targetClass(TestClass.class).build();
         assertThat(functionCallback).isNotNull();
     }
 
     @Test
     void whenMethodAndTargetObjectThenReturn() {
-        var method = Arrays.stream(ReflectionUtils.getDeclaredMethods(TestClass.class))
-            .filter(m -> m.getName().equals("methodName"))
-            .findFirst();
-        assertThat(method).isPresent();
-        var functionCallback = ToolCallback.builder().method(method.get()).targetObject(new TestClass()).build();
+        var method = getTestMethod();
+        var functionCallback = ToolCallback.builder().method(method).targetObject(new TestClass()).build();
         assertThat(functionCallback).isNotNull();
+    }
+
+    private static Method getTestMethod() {
+        return Arrays.stream(ReflectionUtils.getDeclaredMethods(TestClass.class))
+            .filter(m -> m.getName().equals("methodName"))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private static Method getStaticTestMethod() {
+        return Arrays.stream(ReflectionUtils.getDeclaredMethods(TestClass.class))
+            .filter(m -> m.getName().equals("staticMethodName"))
+            .findFirst()
+            .orElseThrow();
     }
 
     public static class TestClass {

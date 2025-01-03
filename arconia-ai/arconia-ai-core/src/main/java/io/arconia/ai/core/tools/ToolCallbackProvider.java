@@ -3,9 +3,9 @@ package io.arconia.ai.core.tools;
 import org.springframework.ai.model.function.FunctionCallback;
 
 /**
- * Resolves {@link ToolCallback} instances from different sources.
+ * Provides {@link ToolCallback} instances for tools defined in different sources.
  */
-public interface ToolCallbackResolver {
+public interface ToolCallbackProvider {
 
     FunctionCallback[] getToolCallbacks();
 

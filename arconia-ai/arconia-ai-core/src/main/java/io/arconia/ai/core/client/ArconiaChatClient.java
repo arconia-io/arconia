@@ -22,7 +22,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.ai.core.tools.ToolCallbackResolver;
+import io.arconia.ai.core.tools.ToolCallbackProvider;
 
 /**
  * A {@link ChatClient} enhanced for more advanced features.
@@ -133,7 +133,7 @@ public interface ArconiaChatClient extends ChatClient {
 
         ArconiaChatClientRequestSpec toolCallbacks(FunctionCallback... toolCallbacks);
 
-        ArconiaChatClientRequestSpec toolCallbackResolvers(ToolCallbackResolver... toolCallbackResolvers);
+        ArconiaChatClientRequestSpec toolCallbackProviders(ToolCallbackProvider... toolCallbackProviders);
 
         ArconiaChatClientRequestSpec functions(FunctionCallback... functionCallbacks);
 
@@ -215,7 +215,7 @@ public interface ArconiaChatClient extends ChatClient {
 
         ArconiaBuilder defaultToolCallbacks(FunctionCallback... toolCallbacks);
 
-        ArconiaBuilder defaultToolCallbackResolvers(ToolCallbackResolver... toolCallbackResolvers);
+        ArconiaBuilder defaultToolCallbackProviders(ToolCallbackProvider... toolCallbackProviders);
 
         ArconiaBuilder defaultFunctions(String... functionNames);
 

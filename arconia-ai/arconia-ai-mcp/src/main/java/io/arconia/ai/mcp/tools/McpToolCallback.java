@@ -11,8 +11,8 @@ import io.arconia.ai.core.tools.ToolCallback;
  */
 public class McpToolCallback extends McpFunctionCallback implements ToolCallback {
 
-    public McpToolCallback(McpSyncClient clientSession, McpSchema.Tool tool) {
-        super(clientSession, tool);
+    public McpToolCallback(McpSyncClient mcpClient, McpSchema.Tool tool) {
+        super(mcpClient, tool);
     }
 
 }

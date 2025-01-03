@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import io.micrometer.observation.ObservationRegistry;
 
@@ -21,8 +20,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 import io.arconia.ai.core.client.DefaultArconiaChatClient.DefaultArconiaChatClientRequestSpec;
-import io.arconia.ai.core.tools.ToolCallbackResolver;
-import io.arconia.ai.core.tools.method.MethodToolCallbackResolver;
+import io.arconia.ai.core.tools.ToolCallbackProvider;
+import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
 
 /**
  * Default implementation of {@link ArconiaChatClient.ArconiaBuilder} based on
@@ -143,18 +142,14 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Class<?>... toolBoxes) {
-        ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-            .map(toolBox -> MethodToolCallbackResolver.builder().type(toolBox).build())
-            .toArray(ToolCallbackResolver[]::new);
-        return defaultToolCallbackResolvers(toolCallbackResolvers);
+        ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
+        return defaultToolCallbackProviders(toolCallbackProvider);
     }
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Object... toolBoxes) {
-        ToolCallbackResolver[] toolCallbackResolvers = Stream.of(toolBoxes)
-            .map(toolBox -> MethodToolCallbackResolver.builder().object(toolBox).build())
-            .toArray(ToolCallbackResolver[]::new);
-        return defaultToolCallbackResolvers(toolCallbackResolvers);
+        ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
+        return defaultToolCallbackProviders(toolCallbackProvider);
     }
 
     @Override
@@ -164,10 +159,10 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     @Override
-    public ArconiaChatClient.ArconiaBuilder defaultToolCallbackResolvers(
-            ToolCallbackResolver... toolCallbackResolvers) {
-        for (ToolCallbackResolver toolCallbackResolver : toolCallbackResolvers) {
-            this.arconiaRequest.functions(toolCallbackResolver.getToolCallbacks());
+    public ArconiaChatClient.ArconiaBuilder defaultToolCallbackProviders(
+            ToolCallbackProvider... toolCallbackProviders) {
+        for (ToolCallbackProvider toolCallbackProvider : toolCallbackProviders) {
+            this.arconiaRequest.functions(toolCallbackProvider.getToolCallbacks());
         }
         return this;
     }

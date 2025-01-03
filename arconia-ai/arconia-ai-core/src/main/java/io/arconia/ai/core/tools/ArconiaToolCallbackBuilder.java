@@ -20,6 +20,8 @@ import org.springframework.ai.model.function.FunctionInvokingFunctionCallback;
 import org.springframework.ai.model.function.MethodInvokingFunctionCallback;
 import org.springframework.ai.util.ParsingUtils;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -32,24 +34,23 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
     private final static Logger logger = LoggerFactory.getLogger(ArconiaToolCallbackBuilder.class);
 
     @Override
-    public <I, O> FunctionCallback.FunctionInvokingSpec<I, O> function(String name, Function<I, O> function) {
+    public <I, O> ArconiaFunctionInvokingSpec<I, O> function(String name, Function<I, O> function) {
         return new ArconiaFunctionInvokingSpec<>(name, function);
     }
 
     @Override
-    public <I, O> FunctionCallback.FunctionInvokingSpec<I, O> function(String name,
-            BiFunction<I, ToolContext, O> biFunction) {
+    public <I, O> ArconiaFunctionInvokingSpec<I, O> function(String name, BiFunction<I, ToolContext, O> biFunction) {
         return new ArconiaFunctionInvokingSpec<>(name, biFunction);
     }
 
     @Override
-    public <O> FunctionCallback.FunctionInvokingSpec<Void, O> function(String name, Supplier<O> supplier) {
+    public <O> ArconiaFunctionInvokingSpec<Void, O> function(String name, Supplier<O> supplier) {
         Function<Void, O> function = input -> supplier.get();
         return new ArconiaFunctionInvokingSpec<>(name, function).inputType(Void.class);
     }
 
     @Override
-    public <I> FunctionCallback.FunctionInvokingSpec<I, Void> function(String name, Consumer<I> consumer) {
+    public <I> ArconiaFunctionInvokingSpec<I, Void> function(String name, Consumer<I> consumer) {
         Function<I, Void> function = (I input) -> {
             consumer.accept(input);
             return null;
@@ -58,14 +59,14 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
     }
 
     @Override
-    public FunctionCallback.MethodInvokingSpec method(String methodName, Class<?>... argumentTypes) {
+    public ArconiaMethodInvokingSpec method(String methodName, Class<?>... argumentTypes) {
         throw new UnsupportedOperationException("Use the 'method(Method method)' method instead");
     }
 
     /**
      * Create a {@link FunctionCallback.MethodInvokingSpec} for the given method.
      */
-    public FunctionCallback.MethodInvokingSpec method(Method method) {
+    public ArconiaMethodInvokingSpec method(Method method) {
         return new ArconiaMethodInvokingSpec(method);
     }
 
@@ -82,19 +83,21 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
     /**
      * Arconia {@link FunctionCallback.FunctionInvokingSpec} implementation.
      */
-    final class ArconiaFunctionInvokingSpec<I, O>
+    public final class ArconiaFunctionInvokingSpec<I, O>
             extends DefaultCommonCallbackInvokingSpec<FunctionCallback.FunctionInvokingSpec<I, O>>
             implements FunctionCallback.FunctionInvokingSpec<I, O> {
 
         private final String name;
 
-        private Type inputType;
-
+        @Nullable
         private final BiFunction<I, ToolContext, O> biFunction;
 
+        @Nullable
         private final Function<I, O> function;
 
-        private ArconiaFunctionInvokingSpec(String name, BiFunction<I, ToolContext, O> biFunction) {
+        private Type inputType;
+
+        private ArconiaFunctionInvokingSpec(String name, @NonNull BiFunction<I, ToolContext, O> biFunction) {
             Assert.hasText(name, "name cannot be null or empty");
             Assert.notNull(biFunction, "biFunction cannot be null");
             this.name = name;
@@ -102,7 +105,7 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
             this.function = null;
         }
 
-        private ArconiaFunctionInvokingSpec(String name, Function<I, O> function) {
+        private ArconiaFunctionInvokingSpec(String name, @NonNull Function<I, O> function) {
             Assert.hasText(name, "name cannot be null or empty");
             Assert.notNull(function, "function cannot be null");
             this.name = name;
@@ -111,14 +114,14 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
         }
 
         @Override
-        public FunctionCallback.FunctionInvokingSpec<I, O> inputType(Class<?> inputType) {
+        public ArconiaFunctionInvokingSpec<I, O> inputType(Class<?> inputType) {
             Assert.notNull(inputType, "inputType cannot be null");
             this.inputType = inputType;
             return this;
         }
 
         @Override
-        public FunctionCallback.FunctionInvokingSpec<I, O> inputType(ParameterizedTypeReference<?> inputType) {
+        public ArconiaFunctionInvokingSpec<I, O> inputType(ParameterizedTypeReference<?> inputType) {
             Assert.notNull(inputType, "inputType cannot be null");
             this.inputType = inputType.getType();
             return this;
@@ -126,9 +129,6 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
 
         @Override
         public FunctionCallback build() {
-            Assert.notNull(this.getObjectMapper(), "objectMapper cannot be null");
-            Assert.hasText(this.name, "name cannot be null or empty");
-            Assert.notNull(this.getResponseConverter(), "responseConverter cannot be null");
             Assert.notNull(this.inputType, "inputType cannot be null");
 
             if (this.getInputTypeSchema() == null) {
@@ -143,7 +143,7 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
                 var constructor = FunctionInvokingFunctionCallback.class.getDeclaredConstructor(String.class,
                         String.class, String.class, Type.class, Function.class, ObjectMapper.class, BiFunction.class);
                 constructor.setAccessible(true);
-                return constructor.newInstance(this.name, this.getDescriptionExt(), this.getInputTypeSchema(),
+                return constructor.newInstance(this.name, this.getToolDescription(), this.getInputTypeSchema(),
                         this.inputType, this.getResponseConverter(), this.getObjectMapper(), finalBiFunction);
             }
             catch (ReflectiveOperationException ex) {
@@ -151,11 +151,11 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
             }
         }
 
-        private String getDescriptionExt() {
+        private String getToolDescription() {
             if (StringUtils.hasText(this.getDescription())) {
                 return this.getDescription();
             }
-            return generateDescription(this.name);
+            return ParsingUtils.reConcatenateCamelCase(this.name, " ");
         }
 
     }
@@ -163,66 +163,83 @@ public class ArconiaToolCallbackBuilder implements FunctionCallback.Builder {
     /**
      * Arconia {@link FunctionCallback.MethodInvokingSpec} implementation.
      */
-    final class ArconiaMethodInvokingSpec extends DefaultCommonCallbackInvokingSpec<FunctionCallback.MethodInvokingSpec>
+    public static final class ArconiaMethodInvokingSpec
+            extends DefaultCommonCallbackInvokingSpec<FunctionCallback.MethodInvokingSpec>
             implements FunctionCallback.MethodInvokingSpec {
 
         private final Method method;
 
         private String name;
 
-        private Class<?> targetClass;
-
-        private Object targetObject;
+        @Nullable
+        private Object source;
 
         private ArconiaMethodInvokingSpec(Method method) {
             Assert.notNull(method, "method cannot be null");
+            Assert.hasText(method.getName(), "method name cannot be null or empty");
+
             this.method = method;
+            this.name = getToolName(method.getAnnotation(Tool.class), method.getName());
+            this.description = getToolDescription(method.getAnnotation(Tool.class), method.getName());
+            this.schemaType = getToolSchemaType(method.getAnnotation(Tool.class));
         }
 
         @Override
-        public FunctionCallback.MethodInvokingSpec name(String name) {
+        public ArconiaMethodInvokingSpec name(String name) {
             Assert.hasText(name, "name cannot be null or empty");
             this.name = name;
             return this;
         }
 
-        @Override
-        public FunctionCallback.MethodInvokingSpec targetClass(Class<?> targetClass) {
-            Assert.notNull(targetClass, "targetClass cannot be null");
-            this.targetClass = targetClass;
+        public ArconiaMethodInvokingSpec source(Object source) {
+            Assert.notNull(source, "source cannot be null");
+            this.source = source;
             return this;
         }
 
         @Override
-        public FunctionCallback.MethodInvokingSpec targetObject(Object methodObject) {
-            Assert.notNull(methodObject, "methodObject cannot be null");
-            this.targetObject = methodObject;
-            this.targetClass = methodObject.getClass();
+        public ArconiaMethodInvokingSpec targetClass(Class<?> targetClass) {
             return this;
+        }
+
+        @Override
+        public ArconiaMethodInvokingSpec targetObject(Object targetObject) {
+            return source(targetObject);
         }
 
         @Override
         public FunctionCallback build() {
-            Assert.isTrue(this.targetClass != null || this.targetObject != null,
-                    "targetClass or targetObject cannot be null");
-
             try {
                 var constructor = MethodInvokingFunctionCallback.class.getDeclaredConstructor(Object.class,
                         Method.class, String.class, ObjectMapper.class, String.class, Function.class);
                 constructor.setAccessible(true);
-                return constructor.newInstance(this.targetObject, method, this.getDescriptionExt(),
-                        this.getObjectMapper(), this.name, this.getResponseConverter());
+                return constructor.newInstance(this.source, method, this.getDescription(), this.getObjectMapper(),
+                        this.name, this.getResponseConverter());
             }
             catch (ReflectiveOperationException ex) {
                 throw new IllegalStateException("Failed to create MethodInvokingFunctionCallback instance", ex);
             }
         }
 
-        private String getDescriptionExt() {
-            if (StringUtils.hasText(this.getDescription())) {
-                return this.getDescription();
+        private static String getToolName(@Nullable Tool tool, String methodName) {
+            if (tool == null) {
+                return methodName;
             }
-            return generateDescription(StringUtils.hasText(this.name) ? this.name : this.method.getName());
+            return StringUtils.hasText(tool.name()) ? tool.name() : methodName;
+        }
+
+        private static String getToolDescription(@Nullable Tool tool, String methodName) {
+            if (tool == null) {
+                return ParsingUtils.reConcatenateCamelCase(methodName, " ");
+            }
+            return StringUtils.hasText(tool.value()) ? tool.value() : methodName;
+        }
+
+        private static FunctionCallback.SchemaType getToolSchemaType(@Nullable Tool tool) {
+            if (tool == null) {
+                return FunctionCallback.SchemaType.JSON_SCHEMA;
+            }
+            return tool.schemaType();
         }
 
     }
