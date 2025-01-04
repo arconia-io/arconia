@@ -1,4 +1,4 @@
-package io.arconia.ai.core.tools;
+package io.arconia.ai.core.tools.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

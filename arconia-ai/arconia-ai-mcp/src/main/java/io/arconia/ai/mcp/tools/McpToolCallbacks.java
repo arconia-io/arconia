@@ -11,12 +11,12 @@ import io.arconia.ai.core.tools.ToolCallback;
  */
 public final class McpToolCallbacks {
 
-    public static FunctionCallback[] from(McpSyncClient source) {
-        return McpToolCallbackProvider.builder().mcpClients(source).build().getToolCallbacks();
+    public static FunctionCallback[] from(McpSyncClient... sources) {
+        return McpToolCallbackProvider.builder().mcpClients(sources).build().getToolCallbacks();
     }
 
-    public static FunctionCallback[] from(McpAsyncClient source) {
-        return McpToolCallbackProvider.builder().mcpClients(source).build().getToolCallbacks();
+    public static FunctionCallback[] from(McpAsyncClient... sources) {
+        return McpToolCallbackProvider.builder().mcpClients(sources).build().getToolCallbacks();
     }
 
 }

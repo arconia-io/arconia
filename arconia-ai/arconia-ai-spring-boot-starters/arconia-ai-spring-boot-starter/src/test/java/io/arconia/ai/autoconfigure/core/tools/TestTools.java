@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import io.arconia.ai.core.tools.Tool;
+import io.arconia.ai.core.tools.annotation.Tool;
 
 @Component
 public class TestTools {

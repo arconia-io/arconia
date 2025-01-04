@@ -5,10 +5,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.MethodInvokingFunctionCallback;
 
-import io.arconia.ai.core.tools.Tool;
+import io.arconia.ai.core.tools.ToolCallback;
+import io.arconia.ai.core.tools.annotation.Tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,22 +22,16 @@ class MethodToolCallbackProviderTests {
         TestComponent testComponent = new TestComponent();
         MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().sources(testComponent).build();
 
-        FunctionCallback[] callbacks = provider.getToolCallbacks();
+        ToolCallback[] callbacks = provider.getToolCallbacks();
 
         assertThat(callbacks).hasSize(2);
 
-        var callback1 = Stream.of(callbacks)
-            .filter(c -> c.getName().equals("testMethod"))
-            .map(m -> (MethodInvokingFunctionCallback) m)
-            .findFirst();
+        var callback1 = Stream.of(callbacks).filter(c -> c.getName().equals("testMethod")).findFirst();
         assertThat(callback1).isPresent();
         assertThat(callback1.get().getName()).isEqualTo("testMethod");
         assertThat(callback1.get().getDescription()).isEqualTo("Test description");
 
-        var callback2 = Stream.of(callbacks)
-            .filter(c -> c.getName().equals("testStaticMethod"))
-            .map(m -> (MethodInvokingFunctionCallback) m)
-            .findFirst();
+        var callback2 = Stream.of(callbacks).filter(c -> c.getName().equals("testStaticMethod")).findFirst();
         assertThat(callback2).isPresent();
         assertThat(callback2.get().getName()).isEqualTo("testStaticMethod");
         assertThat(callback2.get().getDescription()).isEqualTo("Test description");
@@ -50,14 +43,11 @@ class MethodToolCallbackProviderTests {
             .sources(OtherTestComponent.class)
             .build();
 
-        FunctionCallback[] callbacks = provider.getToolCallbacks();
+        ToolCallback[] callbacks = provider.getToolCallbacks();
 
         assertThat(callbacks).hasSize(1);
 
-        var callback2 = Stream.of(callbacks)
-            .filter(c -> c.getName().equals("testStaticMethod"))
-            .map(m -> (MethodInvokingFunctionCallback) m)
-            .findFirst();
+        var callback2 = Stream.of(callbacks).filter(c -> c.getName().equals("testStaticMethod")).findFirst();
         assertThat(callback2).isPresent();
         assertThat(callback2.get().getName()).isEqualTo("testStaticMethod");
         assertThat(callback2.get().getDescription()).isEqualTo("Test description");

@@ -22,27 +22,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbackProvider;
 
 /**
  * A {@link ChatClient} enhanced for more advanced features.
  */
 public interface ArconiaChatClient extends ChatClient {
-
-    static ArconiaChatClient create(ChatModel chatModel) {
-        return create(chatModel, ObservationRegistry.NOOP);
-    }
-
-    static ArconiaChatClient create(ChatModel chatModel, ObservationRegistry observationRegistry) {
-        return create(chatModel, observationRegistry, null);
-    }
-
-    static ArconiaChatClient create(ChatModel chatModel, ObservationRegistry observationRegistry,
-            @Nullable ChatClientObservationConvention observationConvention) {
-        Assert.notNull(chatModel, "chatModel cannot be null");
-        Assert.notNull(observationRegistry, "observationRegistry cannot be null");
-        return builder(chatModel, observationRegistry, observationConvention).build();
-    }
 
     static ArconiaBuilder builder(ChatModel chatModel) {
         return builder(chatModel, ObservationRegistry.NOOP, null);
@@ -55,6 +41,8 @@ public interface ArconiaChatClient extends ChatClient {
         return new DefaultArconiaChatClientBuilder(chatModel, observationRegistry, customObservationConvention);
     }
 
+    // @formatter:off
+
     ArconiaChatClientRequestSpec prompt();
 
     ArconiaChatClientRequestSpec prompt(String content);
@@ -64,49 +52,25 @@ public interface ArconiaChatClient extends ChatClient {
     ArconiaBuilder mutate();
 
     // PROMPT
+    interface ArconiaPromptUserSpec extends PromptUserSpec {}
 
-    interface ArconiaPromptUserSpec extends PromptUserSpec {
-
-    }
-
-    interface ArconiaPromptSystemSpec extends PromptSystemSpec {
-
-    }
+    interface ArconiaPromptSystemSpec extends PromptSystemSpec {}
 
     // ADVISOR
-
-    interface ArconiaAdvisorSpec extends AdvisorSpec {
-
-    }
+    interface ArconiaAdvisorSpec extends AdvisorSpec {}
 
     // RESPONSE
+    interface ArconiaCallResponseSpec extends CallResponseSpec {}
 
-    interface ArconiaCallResponseSpec extends CallResponseSpec {
-
-    }
-
-    interface ArconiaStreamResponseSpec extends StreamResponseSpec {
-
-    }
-
-    interface ArconiaCallPromptResponseSpec extends CallPromptResponseSpec {
-
-    }
-
-    interface ArconiaStreamPromptResponseSpec extends StreamPromptResponseSpec {
-
-    }
+    interface ArconiaStreamResponseSpec extends StreamResponseSpec {}
 
     // REQUEST
-
     interface ArconiaChatClientRequestSpec extends ChatClientRequestSpec {
 
         // BUILD
-
         ArconiaBuilder mutate();
 
         // ADVISORS
-
         ArconiaChatClientRequestSpec advisors(Consumer<AdvisorSpec> consumer);
 
         ArconiaChatClientRequestSpec advisors(Advisor... advisors);
@@ -114,24 +78,21 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaChatClientRequestSpec advisors(List<Advisor> advisors);
 
         // MESSAGES
-
         ArconiaChatClientRequestSpec messages(Message... messages);
 
         ArconiaChatClientRequestSpec messages(List<Message> messages);
 
         // OPTIONS
-
         <T extends ChatOptions> ArconiaChatClientRequestSpec options(T options);
 
         // TOOLS
-
         ArconiaChatClientRequestSpec tools(String... toolNames);
 
         ArconiaChatClientRequestSpec tools(Class<?>... toolBoxes);
 
         ArconiaChatClientRequestSpec tools(Object... toolBoxes);
 
-        ArconiaChatClientRequestSpec toolCallbacks(FunctionCallback... toolCallbacks);
+        ArconiaChatClientRequestSpec toolCallbacks(ToolCallback... toolCallbacks);
 
         ArconiaChatClientRequestSpec toolCallbackProviders(ToolCallbackProvider... toolCallbackProviders);
 
@@ -142,7 +103,6 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaChatClientRequestSpec toolContext(Map<String, Object> toolContext);
 
         // SYSTEM
-
         ArconiaChatClientRequestSpec system(String text);
 
         ArconiaChatClientRequestSpec system(Resource textResource, Charset charset);
@@ -152,7 +112,6 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaChatClientRequestSpec system(Consumer<PromptSystemSpec> consumer);
 
         // USER
-
         ArconiaChatClientRequestSpec user(String text);
 
         ArconiaChatClientRequestSpec user(Resource text, Charset charset);
@@ -162,19 +121,15 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaChatClientRequestSpec user(Consumer<PromptUserSpec> consumer);
 
         // CALL
-
         ArconiaCallResponseSpec call();
 
         ArconiaStreamResponseSpec stream();
-
     }
 
     // BUILDER
-
     interface ArconiaBuilder extends Builder {
 
         // ADVISORS
-
         ArconiaBuilder defaultAdvisors(Advisor... advisors);
 
         ArconiaBuilder defaultAdvisors(List<Advisor> advisors);
@@ -182,11 +137,9 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaBuilder defaultAdvisors(Consumer<AdvisorSpec> advisorSpecConsumer);
 
         // OPTIONS
-
         ArconiaBuilder defaultOptions(ChatOptions chatOptions);
 
         // USER
-
         ArconiaBuilder defaultUser(String text);
 
         ArconiaBuilder defaultUser(Resource text, Charset charset);
@@ -196,7 +149,6 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaBuilder defaultUser(Consumer<PromptUserSpec> userSpecConsumer);
 
         // SYSTEM
-
         ArconiaBuilder defaultSystem(String text);
 
         ArconiaBuilder defaultSystem(Resource text, Charset charset);
@@ -206,14 +158,13 @@ public interface ArconiaChatClient extends ChatClient {
         ArconiaBuilder defaultSystem(Consumer<PromptSystemSpec> systemSpecConsumer);
 
         // TOOLS
-
         ArconiaBuilder defaultTools(String... toolNames);
 
         ArconiaBuilder defaultTools(Class<?>... toolBoxes);
 
         ArconiaBuilder defaultTools(Object... toolBoxes);
 
-        ArconiaBuilder defaultToolCallbacks(FunctionCallback... toolCallbacks);
+        ArconiaBuilder defaultToolCallbacks(ToolCallback... toolCallbacks);
 
         ArconiaBuilder defaultToolCallbackProviders(ToolCallbackProvider... toolCallbackProviders);
 
@@ -233,11 +184,11 @@ public interface ArconiaChatClient extends ChatClient {
         }
 
         // BUILD
-
         ArconiaBuilder clone();
 
         ArconiaChatClient build();
-
     }
+
+    // @formatter:on
 
 }

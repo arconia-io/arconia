@@ -6,12 +6,11 @@ import java.util.stream.Stream;
 
 import org.springframework.ai.mcp.client.McpAsyncClient;
 import org.springframework.ai.mcp.client.McpSyncClient;
-import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.util.Assert;
 
 import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbackProvider;
-import io.arconia.ai.core.tools.ToolUtils;
+import io.arconia.ai.core.tools.util.ToolUtils;
 
 /**
  * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances from MCP
@@ -28,7 +27,7 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
     }
 
     @Override
-    public FunctionCallback[] getToolCallbacks() {
+    public ToolCallback[] getToolCallbacks() {
         var toolCallbacks = mcpClients.stream()
             .flatMap(mcpClient -> mcpClient.listTools()
                 .tools()

@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import io.micrometer.observation.ObservationRegistry;
 
@@ -17,9 +18,11 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.core.io.Resource;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import io.arconia.ai.core.client.DefaultArconiaChatClient.DefaultArconiaChatClientRequestSpec;
+import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbackProvider;
 import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
 
@@ -32,7 +35,7 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     private final DefaultArconiaChatClientRequestSpec arconiaRequest;
 
     public DefaultArconiaChatClientBuilder(ChatModel chatModel, ObservationRegistry observationRegistry,
-            ChatClientObservationConvention customObservationConvention) {
+            @Nullable ChatClientObservationConvention customObservationConvention) {
         Assert.notNull(chatModel, "the " + ChatModel.class.getName() + " must be non-null");
         Assert.notNull(observationRegistry, "the " + ObservationRegistry.class.getName() + " must be non-null");
         this.arconiaRequest = new DefaultArconiaChatClientRequestSpec(chatModel, null, Map.of(), null, Map.of(),
@@ -41,7 +44,6 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     // ADVISORS
-
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultAdvisors(Advisor... advisors) {
         this.arconiaRequest.advisors(advisors);
@@ -61,7 +63,6 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     // OPTIONS
-
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultOptions(ChatOptions chatOptions) {
         this.arconiaRequest.options(chatOptions);
@@ -69,7 +70,6 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     // USER
-
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultUser(String text) {
         this.arconiaRequest.user(text);
@@ -101,7 +101,6 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     // SYSTEM
-
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultSystem(String text) {
         this.arconiaRequest.system(text);
@@ -133,7 +132,6 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     // TOOLS
-
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(String... toolNames) {
         this.arconiaRequest.functions(toolNames);
@@ -153,7 +151,7 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
     }
 
     @Override
-    public ArconiaChatClient.ArconiaBuilder defaultToolCallbacks(FunctionCallback... toolCallbacks) {
+    public ArconiaChatClient.ArconiaBuilder defaultToolCallbacks(ToolCallback... toolCallbacks) {
         this.arconiaRequest.functions(toolCallbacks);
         return this;
     }
@@ -174,7 +172,8 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultFunctions(FunctionCallback... functionCallbacks) {
-        return defaultToolCallbacks(functionCallbacks);
+        return defaultToolCallbacks(
+                Stream.of(functionCallbacks).map(f -> (ToolCallback) f).toArray(ToolCallback[]::new));
     }
 
     @Override

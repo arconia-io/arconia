@@ -12,16 +12,16 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
-import io.arconia.ai.core.tools.Tool;
 import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbackProvider;
-import io.arconia.ai.core.tools.ToolUtils;
+import io.arconia.ai.core.tools.annotation.Tool;
+import io.arconia.ai.core.tools.metadata.ToolMetadata;
+import io.arconia.ai.core.tools.util.ToolUtils;
 
 /**
  * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances from
@@ -50,20 +50,24 @@ public class MethodToolCallbackProvider implements ToolCallbackProvider {
     }
 
     @Override
-    public FunctionCallback[] getToolCallbacks() {
+    public ToolCallback[] getToolCallbacks() {
         if (sourceObjects != null) {
             return getToolCallbacksFromObjects();
         }
         return getToolCallbacksFromTypes();
     }
 
-    private FunctionCallback[] getToolCallbacksFromObjects() {
+    private ToolCallback[] getToolCallbacksFromObjects() {
         var toolCallbacks = sourceObjects.stream()
             .map(sourceObject -> getDeclaredMethodsWithToolAnnotation(sourceObject.getClass())
-                .map(method -> ToolCallback.builder().method(method).source(sourceObject).build())
-                .toArray(FunctionCallback[]::new))
+                .map(method -> MethodToolCallback.builder()
+                    .toolMetadata(ToolMetadata.from(method))
+                    .toolMethod(method)
+                    .toolObject(sourceObject)
+                    .build())
+                .toArray(ToolCallback[]::new))
             .flatMap(Stream::of)
-            .toArray(FunctionCallback[]::new);
+            .toArray(ToolCallback[]::new);
 
         if (ToolUtils.hasDuplicateToolNames(toolCallbacks)) {
             throw new IllegalStateException("Multiple tools with the same name found in sources: "
@@ -73,14 +77,17 @@ public class MethodToolCallbackProvider implements ToolCallbackProvider {
         return toolCallbacks;
     }
 
-    private FunctionCallback[] getToolCallbacksFromTypes() {
+    private ToolCallback[] getToolCallbacksFromTypes() {
         var toolCallbacks = sourceTypes.stream()
             .map(sourceType -> getDeclaredMethodsWithToolAnnotation(sourceType)
                 .filter(method -> Modifier.isStatic(method.getModifiers()))
-                .map(method -> ToolCallback.builder().method(method).build())
-                .toArray(FunctionCallback[]::new))
+                .map(method -> MethodToolCallback.builder()
+                    .toolMetadata(ToolMetadata.from(method))
+                    .toolMethod(method)
+                    .build())
+                .toArray(ToolCallback[]::new))
             .flatMap(Stream::of)
-            .toArray(FunctionCallback[]::new);
+            .toArray(ToolCallback[]::new);
 
         if (ToolUtils.hasDuplicateToolNames(toolCallbacks)) {
             throw new IllegalStateException("Multiple tools with the same name found in sources: "

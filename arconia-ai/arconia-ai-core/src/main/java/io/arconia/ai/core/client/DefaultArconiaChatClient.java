@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import io.micrometer.observation.ObservationRegistry;
 
@@ -43,6 +44,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbackProvider;
 import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
 
@@ -619,7 +621,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
         }
 
         @Override
-        public ArconiaChatClientRequestSpec toolCallbacks(FunctionCallback... toolCallbacks) {
+        public ArconiaChatClientRequestSpec toolCallbacks(ToolCallback... toolCallbacks) {
             Assert.notNull(toolCallbacks, "toolCallbacks cannot be null");
             Assert.noNullElements(toolCallbacks, "toolCallbacks cannot contain null elements");
             this.toolCallbacks.addAll(Arrays.asList(toolCallbacks));
@@ -641,7 +643,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
         @Override
         public ArconiaChatClientRequestSpec functions(FunctionCallback... functionCallbacks) {
-            return toolCallbacks(functionCallbacks);
+            return toolCallbacks(Stream.of(functionCallbacks).map(f -> (ToolCallback) f).toArray(ToolCallback[]::new));
         }
 
         @Override
