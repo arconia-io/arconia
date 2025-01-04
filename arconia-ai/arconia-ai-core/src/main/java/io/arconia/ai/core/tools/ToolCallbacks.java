@@ -1,7 +1,5 @@
 package io.arconia.ai.core.tools;
 
-import org.springframework.ai.model.function.FunctionCallback;
-
 import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
 
 /**
@@ -12,11 +10,11 @@ public final class ToolCallbacks {
     private ToolCallbacks() {
     }
 
-    public static FunctionCallback[] from(Class<?>... sources) {
+    public static ToolCallback[] from(Class<?>... sources) {
         return MethodToolCallbackProvider.builder().sources(sources).build().getToolCallbacks();
     }
 
-    public static FunctionCallback[] from(Object... sources) {
+    public static ToolCallback[] from(Object... sources) {
         return MethodToolCallbackProvider.builder().sources(sources).build().getToolCallbacks();
     }
 
