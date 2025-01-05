@@ -19,8 +19,8 @@ class MethodToolCallbackProviderTests {
 
     @Test
     void shouldProvideToolCallbacksFromObject() {
-        TestComponent testComponent = new TestComponent();
-        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().toolObjects(testComponent).build();
+        Tools tools = new Tools();
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().toolObjects(tools).build();
 
         ToolCallback[] callbacks = provider.getToolCallbacks();
 
@@ -39,7 +39,7 @@ class MethodToolCallbackProviderTests {
 
     @Test
     void shouldEnsureUniqueToolNames() {
-        TestComponentWithDuplicates testComponent = new TestComponentWithDuplicates();
+        ToolsWithDuplicates testComponent = new ToolsWithDuplicates();
         MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().toolObjects(testComponent).build();
 
         assertThatThrownBy(provider::getToolCallbacks).isInstanceOf(IllegalStateException.class)
@@ -47,40 +47,40 @@ class MethodToolCallbackProviderTests {
                     + testComponent.getClass().getName());
     }
 
-    static class TestComponent {
+    static class Tools {
 
         @Tool("Test description")
-        public static List<String> testStaticMethod(String input) {
+        static List<String> testStaticMethod(String input) {
             return List.of(input);
         }
 
         @Tool("Test description")
-        public List<String> testMethod(String input) {
+        List<String> testMethod(String input) {
             return List.of(input);
         }
 
         @Tool("Test description")
-        public Function<String, Integer> testFunction(String input) {
+        Function<String, Integer> testFunction(String input) {
             // This method should be ignored as it's a functional type, which is not
             // supported.
             return String::length;
         }
 
-        public void nonToolMethod() {
+        void nonToolMethod() {
             // This method should be ignored as it doesn't have @Tool annotation
         }
 
     }
 
-    static class TestComponentWithDuplicates {
+    static class ToolsWithDuplicates {
 
         @Tool(name = "testMethod", value = "Test description")
-        public List<String> testMethod1(String input) {
+        List<String> testMethod1(String input) {
             return List.of(input);
         }
 
         @Tool(name = "testMethod", value = "Test description")
-        public List<String> testMethod2(String input) {
+        List<String> testMethod2(String input) {
             return List.of(input);
         }
 

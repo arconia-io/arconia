@@ -75,7 +75,7 @@ public class MethodToolCallback implements ToolCallback {
 
         Object[] methodArguments = buildMethodArguments(toolArguments, toolContext);
 
-        Object result = ReflectionUtils.invokeMethod(toolMethod, toolObject, methodArguments);
+        Object result = callMethod(methodArguments);
 
         Class<?> returnType = toolMethod.getReturnType();
 
@@ -112,6 +112,22 @@ public class MethodToolCallback implements ToolCallback {
             return null;
         }
         return JsonParser.toTypedObject(value, type);
+    }
+
+    @Nullable
+    private Object callMethod(Object[] methodArguments) {
+        if (isObjectNotPublic() || isMethodNotPublic()) {
+            toolMethod.setAccessible(true);
+        }
+        return ReflectionUtils.invokeMethod(toolMethod, toolObject, methodArguments);
+    }
+
+    private boolean isObjectNotPublic() {
+        return !Modifier.isPublic(toolObject.getClass().getModifiers());
+    }
+
+    private boolean isMethodNotPublic() {
+        return !Modifier.isPublic(toolMethod.getModifiers());
     }
 
     // Based on the implementation in MethodInvokingFunctionCallback.
