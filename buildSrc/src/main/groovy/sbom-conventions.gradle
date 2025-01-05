@@ -6,5 +6,5 @@ tasks.named('cyclonedxBom') {
     includeConfigs = ["runtimeClasspath"]
     outputFormat = "json"
     projectType = "library"
-    schemaVersion = "1.5"
+    schemaVersion = "1.6"
 }
