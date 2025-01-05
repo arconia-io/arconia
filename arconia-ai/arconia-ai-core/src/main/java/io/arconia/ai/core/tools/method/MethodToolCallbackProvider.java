@@ -22,8 +22,8 @@ import io.arconia.ai.core.tools.metadata.ToolMetadata;
 import io.arconia.ai.core.tools.util.ToolUtils;
 
 /**
- * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances from
- * {@link Tool}-annotated methods.
+ * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances
+ * from {@link Tool}-annotated methods.
  */
 public class MethodToolCallbackProvider implements ToolCallbackProvider {
 
@@ -86,6 +86,8 @@ public class MethodToolCallbackProvider implements ToolCallbackProvider {
     public static class Builder {
 
         private List<Object> toolObjects;
+
+        private Builder() {}
 
         public Builder toolObjects(Object... toolObjects) {
             Assert.notNull(toolObjects, "toolObjects cannot be null");

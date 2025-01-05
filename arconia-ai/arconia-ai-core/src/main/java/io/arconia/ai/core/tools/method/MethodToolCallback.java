@@ -92,8 +92,7 @@ public class MethodToolCallback implements ToolCallback {
     }
 
     private Map<String, Object> extractToolArguments(String toolInput) {
-        return JsonParser.fromJson(toolInput, new TypeReference<>() {
-        });
+        return JsonParser.fromJson(toolInput, new TypeReference<>() {});
     }
 
     // Based on the implementation in MethodInvokingFunctionCallback.
@@ -119,11 +118,9 @@ public class MethodToolCallback implements ToolCallback {
     private String formatResult(@Nullable Object result, Class<?> returnType) {
         if (returnType == Void.TYPE) {
             return "Done";
-        }
-        else if (returnType == String.class) {
+        } else if (returnType == String.class) {
             return result != null ? (String) result : "";
-        }
-        else {
+        } else {
             return JsonParser.toJson(result);
         }
     }
@@ -139,6 +136,8 @@ public class MethodToolCallback implements ToolCallback {
         private Method toolMethod;
 
         private Object toolObject;
+
+        private Builder() {}
 
         public Builder toolMetadata(ToolMetadata toolMetadata) {
             this.toolMetadata = toolMetadata;

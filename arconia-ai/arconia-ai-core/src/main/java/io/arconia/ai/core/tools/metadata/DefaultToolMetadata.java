@@ -39,8 +39,7 @@ public record DefaultToolMetadata(String name, String description, String inputT
 
         private String inputTypeSchema;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         public Builder name(String name) {
             this.name = name;

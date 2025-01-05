@@ -40,8 +40,6 @@ public interface ArconiaChatClient extends ChatClient {
         return new DefaultArconiaChatClientBuilder(chatModel, observationRegistry, customObservationConvention);
     }
 
-    // @formatter:off
-
     ArconiaChatClientRequestSpec prompt();
 
     ArconiaChatClientRequestSpec prompt(String content);
@@ -183,7 +181,5 @@ public interface ArconiaChatClient extends ChatClient {
 
         ArconiaChatClient build();
     }
-
-    // @formatter:on
 
 }

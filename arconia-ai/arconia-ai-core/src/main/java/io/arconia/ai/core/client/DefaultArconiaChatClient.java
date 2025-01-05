@@ -5,7 +5,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +18,7 @@ import org.springframework.ai.chat.client.DefaultChatClient.DefaultCallResponseS
 import org.springframework.ai.chat.client.DefaultChatClient.DefaultChatClientRequestSpec;
 import org.springframework.ai.chat.client.DefaultChatClient.DefaultStreamResponseSpec;
 import org.springframework.ai.chat.client.advisor.DefaultAroundAdvisorChain;
-import org.springframework.ai.chat.client.advisor.api.AdvisedRequest;
-import org.springframework.ai.chat.client.advisor.api.AdvisedResponse;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisor;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisorChain;
-import org.springframework.ai.chat.client.advisor.api.StreamAroundAdvisor;
-import org.springframework.ai.chat.client.advisor.api.StreamAroundAdvisorChain;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
 import org.springframework.ai.chat.messages.Message;
@@ -34,16 +27,14 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
 
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
-
+import io.arconia.ai.core.client.advisor.CallAdvisor;
+import io.arconia.ai.core.client.advisor.StreamAdvisor;
 import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbacks;
 
@@ -52,7 +43,8 @@ import io.arconia.ai.core.tools.ToolCallbacks;
  */
 public class DefaultArconiaChatClient implements ArconiaChatClient {
 
-    private static final ChatClientObservationConvention DEFAULT_CHAT_CLIENT_OBSERVATION_CONVENTION = new DefaultChatClientObservationConvention();
+    private static final ChatClientObservationConvention DEFAULT_CHAT_CLIENT_OBSERVATION_CONVENTION
+            = new DefaultChatClientObservationConvention();
 
     private final DefaultArconiaChatClientRequestSpec defaultArconiaChatClientRequest;
 
@@ -142,8 +134,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             Assert.notNull(charset, "charset cannot be null");
             try {
                 this.text(text.getContentAsString(charset));
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             return this;
@@ -208,8 +199,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             Assert.notNull(charset, "charset cannot be null");
             try {
                 this.text(text.getContentAsString(charset));
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             return this;
@@ -393,59 +383,23 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             this.userParams.putAll(userParams);
             this.systemText = systemText;
             this.systemParams.putAll(systemParams);
+            this.messages.addAll(messages);
+            this.media.addAll(media);
 
             this.toolNames.addAll(toolNames);
             this.toolCallbacks.addAll(toolCallbacks);
-            this.messages.addAll(messages);
-            this.media.addAll(media);
-            this.advisors.addAll(advisors);
-            this.advisorParams.putAll(advisorParams);
+            this.toolContext.putAll(toolContext);
+
             this.observationRegistry = observationRegistry;
             this.customObservationConvention = customObservationConvention != null ? customObservationConvention
                     : DEFAULT_CHAT_CLIENT_OBSERVATION_CONVENTION;
-            this.toolContext.putAll(toolContext);
 
-            this.advisors.add(new CallAroundAdvisor() {
-                @Override
-                public String getName() {
-                    return CallAroundAdvisor.class.getSimpleName();
-                }
+            this.advisors.addAll(advisors);
+            this.advisorParams.putAll(advisorParams);
+            this.advisors.add(new CallAdvisor(chatModel));
+            this.advisors.add(new StreamAdvisor(chatModel));
 
-                @Override
-                public int getOrder() {
-                    return Ordered.LOWEST_PRECEDENCE;
-                }
-
-                @Override
-                public AdvisedResponse aroundCall(AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
-                    return new AdvisedResponse(chatModel.call(advisedRequest.toPrompt()),
-                            Collections.unmodifiableMap(advisedRequest.adviseContext()));
-                }
-            });
-
-            this.advisors.add(new StreamAroundAdvisor() {
-                @Override
-                public String getName() {
-                    return StreamAroundAdvisor.class.getSimpleName();
-                }
-
-                @Override
-                public int getOrder() {
-                    return Ordered.LOWEST_PRECEDENCE;
-                }
-
-                @Override
-                public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest,
-                        StreamAroundAdvisorChain chain) {
-                    return chatModel.stream(advisedRequest.toPrompt())
-                        .map(chatResponse -> new AdvisedResponse(chatResponse,
-                                Collections.unmodifiableMap(advisedRequest.adviseContext())))
-                        .publishOn(Schedulers.boundedElastic());
-                }
-            });
-
-            this.aroundAdvisorChainBuilder = DefaultAroundAdvisorChain.builder(observationRegistry)
-                .pushAll(this.advisors);
+            this.aroundAdvisorChainBuilder = DefaultAroundAdvisorChain.builder(observationRegistry).pushAll(this.advisors);
         }
 
         private ObservationRegistry getObservationRegistry() {
@@ -516,12 +470,16 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
                 .defaultTools(StringUtils.toStringArray(this.toolNames));
 
             if (StringUtils.hasText(this.userText)) {
-                builder.defaultUser(
-                        u -> u.text(this.userText).params(this.userParams).media(this.media.toArray(new Media[0])));
+                builder.defaultUser(u -> u
+                        .text(this.userText)
+                        .params(this.userParams)
+                        .media(this.media.toArray(new Media[0])));
             }
 
             if (StringUtils.hasText(this.systemText)) {
-                builder.defaultSystem(s -> s.text(this.systemText).params(this.systemParams));
+                builder.defaultSystem(s -> s
+                        .text(this.systemText)
+                        .params(this.systemParams));
             }
 
             if (this.chatOptions != null) {
@@ -657,10 +615,10 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
             try {
                 this.systemText = text.getContentAsString(charset);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
             return this;
         }
 
@@ -696,8 +654,7 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
             try {
                 this.userText = text.getContentAsString(charset);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             return this;

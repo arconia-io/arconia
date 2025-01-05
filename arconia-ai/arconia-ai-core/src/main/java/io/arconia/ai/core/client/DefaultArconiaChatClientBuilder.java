@@ -26,8 +26,8 @@ import io.arconia.ai.core.tools.ToolCallback;
 import io.arconia.ai.core.tools.ToolCallbacks;
 
 /**
- * Default implementation of {@link ArconiaChatClient.ArconiaBuilder} based on
- * {@link DefaultChatClientBuilder}.
+ * Default implementation of {@link ArconiaChatClient.ArconiaBuilder}
+ * based on {@link DefaultChatClientBuilder}.
  */
 public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.ArconiaBuilder {
 
@@ -81,8 +81,7 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
         Assert.notNull(charset, "charset cannot be null");
         try {
             this.arconiaRequest.user(text.getContentAsString(charset));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return this;
@@ -112,8 +111,7 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
         Assert.notNull(charset, "charset cannot be null");
         try {
             this.arconiaRequest.system(text.getContentAsString(charset));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return this;
@@ -161,8 +159,7 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultFunctions(FunctionCallback... functionCallbacks) {
-        return defaultToolCallbacks(
-                Stream.of(functionCallbacks).map(f -> (ToolCallback) f).toArray(ToolCallback[]::new));
+        return defaultToolCallbacks(Stream.of(functionCallbacks).map(f -> (ToolCallback) f).toArray(ToolCallback[]::new));
     }
 
     @Override

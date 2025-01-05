@@ -56,6 +56,8 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
 
         private List<McpSyncClient> mcpClients;
 
+        private Builder() {}
+
         public Builder mcpClients(List<McpSyncClient> mcpClients) {
             this.mcpClients = mcpClients;
             return this;

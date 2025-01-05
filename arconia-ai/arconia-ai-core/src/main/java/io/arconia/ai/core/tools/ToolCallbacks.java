@@ -7,8 +7,7 @@ import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
  */
 public final class ToolCallbacks {
 
-    private ToolCallbacks() {
-    }
+    private ToolCallbacks() {}
 
     public static ToolCallback[] from(Object... sources) {
         return MethodToolCallbackProvider.builder().toolObjects(sources).build().getToolCallbacks();

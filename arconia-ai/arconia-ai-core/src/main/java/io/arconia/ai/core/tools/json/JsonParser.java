@@ -26,8 +26,7 @@ public class JsonParser {
     public static <T> T fromJson(String json, TypeReference<T> type) {
         try {
             return OBJECT_MAPPER.readValue(json, type);
-        }
-        catch (JsonProcessingException ex) {
+        } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Conversion from JSON to %s failed".formatted(type.getType().getTypeName()),
                     ex);
         }
@@ -36,8 +35,7 @@ public class JsonParser {
     public static String toJson(@Nullable Object object) {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
-        }
-        catch (JsonProcessingException ex) {
+        } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Conversion from Object to JSON failed", ex);
         }
     }
@@ -52,37 +50,28 @@ public class JsonParser {
 
         if (javaType == String.class) {
             return value.toString();
-        }
-        else if (javaType == Byte.class) {
+        } else if (javaType == Byte.class) {
             return Byte.parseByte(value.toString());
-        }
-        else if (javaType == Integer.class) {
+        } else if (javaType == Integer.class) {
             return Integer.parseInt(value.toString());
-        }
-        else if (javaType == Short.class) {
+        } else if (javaType == Short.class) {
             return Short.parseShort(value.toString());
-        }
-        else if (javaType == Long.class) {
+        } else if (javaType == Long.class) {
             return Long.parseLong(value.toString());
-        }
-        else if (javaType == Double.class) {
+        } else if (javaType == Double.class) {
             return Double.parseDouble(value.toString());
-        }
-        else if (javaType == Float.class) {
+        } else if (javaType == Float.class) {
             return Float.parseFloat(value.toString());
-        }
-        else if (javaType == Boolean.class) {
+        } else if (javaType == Boolean.class) {
             return Boolean.parseBoolean(value.toString());
-        }
-        else if (javaType.isEnum()) {
+        } else if (javaType.isEnum()) {
             return Enum.valueOf((Class<Enum>) javaType, value.toString());
         }
 
         try {
             String json = OBJECT_MAPPER.writeValueAsString(value);
             return OBJECT_MAPPER.readValue(json, javaType);
-        }
-        catch (JsonProcessingException ex) {
+        } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Conversion from Object to %s failed".formatted(type.getName()), ex);
         }
     }
