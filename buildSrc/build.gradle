@@ -12,13 +12,11 @@ ext {
     set("apacheCommonsCompressVersion", '1.27.1')
     set("cycloneDxVersion", '1.10.0')
     set("springBootVersion", '3.4.1')
-    set("springJavaFormatVersion", '0.0.43')
     set("dependencyManagementVersion", '1.1.7')
 }
 
 dependencies {
     implementation "org.cyclonedx:cyclonedx-gradle-plugin:${cycloneDxVersion}"
-    implementation "io.spring.javaformat:spring-javaformat-gradle-plugin:${springJavaFormatVersion}"
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     implementation "org.apache.commons:commons-compress:${apacheCommonsCompressVersion}"
