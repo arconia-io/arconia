@@ -45,8 +45,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import io.arconia.ai.core.tools.ToolCallback;
-import io.arconia.ai.core.tools.ToolCallbackProvider;
-import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
+import io.arconia.ai.core.tools.ToolCallbacks;
 
 /**
  * Default implementation of {@link ArconiaChatClient} based on {@link DefaultChatClient}.
@@ -606,18 +605,15 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
 
         @Override
         public ArconiaChatClientRequestSpec tools(Class<?>... toolBoxes) {
-            Assert.notNull(toolBoxes, "toolBoxes cannot be null");
-            Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
-            ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
-            return toolCallbackProviders(toolCallbackProvider);
+            throw new UnsupportedOperationException("Not yet supported");
         }
 
         @Override
         public ArconiaChatClientRequestSpec tools(Object... toolBoxes) {
             Assert.notNull(toolBoxes, "toolBoxes cannot be null");
             Assert.noNullElements(toolBoxes, "toolBoxes cannot contain null elements");
-            ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
-            return toolCallbackProviders(toolCallbackProvider);
+            this.toolCallbacks.addAll(Arrays.asList(ToolCallbacks.from(toolBoxes)));
+            return this;
         }
 
         @Override
@@ -625,14 +621,6 @@ public class DefaultArconiaChatClient implements ArconiaChatClient {
             Assert.notNull(toolCallbacks, "toolCallbacks cannot be null");
             Assert.noNullElements(toolCallbacks, "toolCallbacks cannot contain null elements");
             this.toolCallbacks.addAll(Arrays.asList(toolCallbacks));
-            return this;
-        }
-
-        @Override
-        public ArconiaChatClientRequestSpec toolCallbackProviders(ToolCallbackProvider... toolCallbackProviders) {
-            for (ToolCallbackProvider toolCallbackProvider : toolCallbackProviders) {
-                this.toolCallbacks.addAll(Arrays.asList(toolCallbackProvider.getToolCallbacks()));
-            }
             return this;
         }
 

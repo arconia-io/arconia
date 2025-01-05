@@ -1,8 +1,10 @@
 package io.arconia.ai.core.tools;
 
-import io.arconia.ai.core.tools.util.ToolUtils;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import io.arconia.ai.core.tools.util.ToolUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +18,11 @@ class ToolUtilsTests {
         ToolCallback callback1 = new TestToolCallback("tool_a");
         ToolCallback callback2 = new TestToolCallback("tool_a");
         ToolCallback callback3 = new TestToolCallback("tool_b");
-        assertThat(ToolUtils.hasDuplicateToolNames(callback1, callback2, callback3)).isTrue();
+
+        List<String> duplicates = ToolUtils.getDuplicateToolNames(callback1, callback2, callback3);
+
+        assertThat(duplicates).isNotEmpty();
+        assertThat(duplicates).contains("tool_a");
     }
 
     @Test
@@ -24,7 +30,10 @@ class ToolUtilsTests {
         ToolCallback callback1 = new TestToolCallback("tool_a");
         ToolCallback callback2 = new TestToolCallback("tool_b");
         ToolCallback callback3 = new TestToolCallback("tool_c");
-        assertThat(ToolUtils.hasDuplicateToolNames(callback1, callback2, callback3)).isFalse();
+
+        List<String> duplicates = ToolUtils.getDuplicateToolNames(callback1, callback2, callback3);
+
+        assertThat(duplicates).isEmpty();
     }
 
     static class TestToolCallback implements ToolCallback {

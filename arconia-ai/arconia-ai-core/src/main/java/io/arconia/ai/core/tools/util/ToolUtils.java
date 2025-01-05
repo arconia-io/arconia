@@ -1,5 +1,8 @@
 package io.arconia.ai.core.tools.util;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.ai.model.function.FunctionCallback;
@@ -35,11 +38,14 @@ public final class ToolUtils {
         return tool.schemaType();
     }
 
-    public static boolean hasDuplicateToolNames(FunctionCallback... functionCallbacks) {
+    public static List<String> getDuplicateToolNames(FunctionCallback... functionCallbacks) {
         return Stream.of(functionCallbacks)
-            .map(FunctionCallback::getName)
-            .distinct()
-            .count() != functionCallbacks.length;
+            .collect(Collectors.groupingBy(FunctionCallback::getName, Collectors.counting()))
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getValue() > 1)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
     }
 
 }

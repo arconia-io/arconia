@@ -10,12 +10,8 @@ public final class ToolCallbacks {
     private ToolCallbacks() {
     }
 
-    public static ToolCallback[] from(Class<?>... sources) {
-        return MethodToolCallbackProvider.builder().sources(sources).build().getToolCallbacks();
-    }
-
     public static ToolCallback[] from(Object... sources) {
-        return MethodToolCallbackProvider.builder().sources(sources).build().getToolCallbacks();
+        return MethodToolCallbackProvider.builder().toolObjects(sources).build().getToolCallbacks();
     }
 
 }

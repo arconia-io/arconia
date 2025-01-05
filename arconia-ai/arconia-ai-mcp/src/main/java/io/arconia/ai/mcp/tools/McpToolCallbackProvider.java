@@ -35,11 +35,17 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
                 .map(tool -> (ToolCallback) new McpToolCallback(mcpClient, tool)))
             .toArray(ToolCallback[]::new);
 
-        if (ToolUtils.hasDuplicateToolNames(toolCallbacks)) {
-            throw new IllegalStateException("Multiple tools with the same name found in MCP sources");
-        }
+        validateToolCallbacks(toolCallbacks);
 
         return toolCallbacks;
+    }
+
+    private void validateToolCallbacks(ToolCallback[] toolCallbacks) {
+        List<String> duplicateToolNames = ToolUtils.getDuplicateToolNames(toolCallbacks);
+        if (!duplicateToolNames.isEmpty()) {
+            throw new IllegalStateException("Multiple tools with the same name (%s) found in MCP sources"
+                .formatted(String.join(", ", duplicateToolNames)));
+        }
     }
 
     public static Builder builder() {

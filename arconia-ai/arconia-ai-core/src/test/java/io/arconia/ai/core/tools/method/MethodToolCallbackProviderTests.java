@@ -20,7 +20,7 @@ class MethodToolCallbackProviderTests {
     @Test
     void shouldProvideToolCallbacksFromObject() {
         TestComponent testComponent = new TestComponent();
-        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().sources(testComponent).build();
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().toolObjects(testComponent).build();
 
         ToolCallback[] callbacks = provider.getToolCallbacks();
 
@@ -38,29 +38,13 @@ class MethodToolCallbackProviderTests {
     }
 
     @Test
-    void shouldProvideToolCallbacksOnlyFromStaticMethodsInType() {
-        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder()
-            .sources(OtherTestComponent.class)
-            .build();
-
-        ToolCallback[] callbacks = provider.getToolCallbacks();
-
-        assertThat(callbacks).hasSize(1);
-
-        var callback2 = Stream.of(callbacks).filter(c -> c.getName().equals("testStaticMethod")).findFirst();
-        assertThat(callback2).isPresent();
-        assertThat(callback2.get().getName()).isEqualTo("testStaticMethod");
-        assertThat(callback2.get().getDescription()).isEqualTo("Test description");
-    }
-
-    @Test
     void shouldEnsureUniqueToolNames() {
         TestComponentWithDuplicates testComponent = new TestComponentWithDuplicates();
-        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().sources(testComponent).build();
+        MethodToolCallbackProvider provider = MethodToolCallbackProvider.builder().toolObjects(testComponent).build();
 
         assertThatThrownBy(provider::getToolCallbacks).isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining(
-                    "Multiple tools with the same name found in sources: " + testComponent.getClass().getName());
+            .hasMessageContaining("Multiple tools with the same name (testMethod) found in sources: "
+                    + testComponent.getClass().getName());
     }
 
     static class TestComponent {
@@ -80,28 +64,6 @@ class MethodToolCallbackProviderTests {
             // This method should be ignored as it's a functional type, which is not
             // supported.
             return String::length;
-        }
-
-        public void nonToolMethod() {
-            // This method should be ignored as it doesn't have @Tool annotation
-        }
-
-    }
-
-    static class OtherTestComponent {
-
-        public OtherTestComponent(String something) {
-            System.out.println(something);
-        }
-
-        @Tool("Test description")
-        public static List<String> testStaticMethod(String input) {
-            return List.of(input);
-        }
-
-        @Tool("Test description")
-        public List<String> testMethod(String input) {
-            return List.of(input);
         }
 
         public void nonToolMethod() {

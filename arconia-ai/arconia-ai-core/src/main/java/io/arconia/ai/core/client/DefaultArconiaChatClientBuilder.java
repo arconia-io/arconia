@@ -23,8 +23,7 @@ import org.springframework.util.Assert;
 
 import io.arconia.ai.core.client.DefaultArconiaChatClient.DefaultArconiaChatClientRequestSpec;
 import io.arconia.ai.core.tools.ToolCallback;
-import io.arconia.ai.core.tools.ToolCallbackProvider;
-import io.arconia.ai.core.tools.method.MethodToolCallbackProvider;
+import io.arconia.ai.core.tools.ToolCallbacks;
 
 /**
  * Default implementation of {@link ArconiaChatClient.ArconiaBuilder} based on
@@ -140,28 +139,18 @@ public class DefaultArconiaChatClientBuilder implements ArconiaChatClient.Arconi
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Class<?>... toolBoxes) {
-        ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
-        return defaultToolCallbackProviders(toolCallbackProvider);
+        throw new UnsupportedOperationException("Not yet supported");
     }
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultTools(Object... toolBoxes) {
-        ToolCallbackProvider toolCallbackProvider = MethodToolCallbackProvider.builder().sources(toolBoxes).build();
-        return defaultToolCallbackProviders(toolCallbackProvider);
+        this.arconiaRequest.functions(ToolCallbacks.from(toolBoxes));
+        return this;
     }
 
     @Override
     public ArconiaChatClient.ArconiaBuilder defaultToolCallbacks(ToolCallback... toolCallbacks) {
         this.arconiaRequest.functions(toolCallbacks);
-        return this;
-    }
-
-    @Override
-    public ArconiaChatClient.ArconiaBuilder defaultToolCallbackProviders(
-            ToolCallbackProvider... toolCallbackProviders) {
-        for (ToolCallbackProvider toolCallbackProvider : toolCallbackProviders) {
-            this.arconiaRequest.functions(toolCallbackProvider.getToolCallbacks());
-        }
         return this;
     }
 
