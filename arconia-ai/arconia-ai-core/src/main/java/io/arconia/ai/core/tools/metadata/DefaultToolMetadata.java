@@ -11,7 +11,7 @@ import io.arconia.ai.core.tools.util.ToolUtils;
 /**
  * Default implementation of {@link ToolMetadata}.
  */
-public record DefaultToolMetadata(String name, String description, String inputTypeSchema) implements ToolMetadata {
+public record DefaultToolMetadata(String name, String description, String inputTypeSchema, boolean returnDirect) implements ToolMetadata {
 
     public DefaultToolMetadata {
         Assert.hasText(name, "name cannot be null");
@@ -39,6 +39,8 @@ public record DefaultToolMetadata(String name, String description, String inputT
 
         private String inputTypeSchema;
 
+        private boolean returnDirect;
+
         private Builder() {}
 
         public Builder name(String name) {
@@ -56,8 +58,13 @@ public record DefaultToolMetadata(String name, String description, String inputT
             return this;
         }
 
+        public Builder returnDirect(boolean returnDirect) {
+            this.returnDirect = returnDirect;
+            return this;
+        }
+
         public DefaultToolMetadata build() {
-            return new DefaultToolMetadata(name, description, inputTypeSchema);
+            return new DefaultToolMetadata(name, description, inputTypeSchema, returnDirect);
         }
 
     }

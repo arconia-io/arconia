@@ -23,6 +23,13 @@ public interface ToolMetadata {
     String inputTypeSchema();
 
     /**
+     * Whether the tool result should be returned directly or passed back to the model.
+     */
+    default boolean returnDirect() {
+        return false;
+    }
+
+    /**
      * Create {@link ToolMetadata} from a {@link Method}.
      */
     static ToolMetadata from(Method method) {

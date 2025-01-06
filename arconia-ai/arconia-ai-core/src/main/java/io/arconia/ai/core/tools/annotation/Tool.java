@@ -17,18 +17,18 @@ import org.springframework.ai.model.function.FunctionCallback;
 public @interface Tool {
 
     /**
-     * The description of the tool. If not provided, the method name will be used.
-     */
-    String value() default "";
-
-    /**
      * The name of the tool. If not provided, the method name will be used.
      */
     String name() default "";
 
     /**
-     * The schema type of the tool. JSON Schema will work for most cases. Vertex AI
-     * requires OpenAPI Schema.
+     * The description of the tool. If not provided, the method name will be used.
+     */
+    String value() default "";
+
+    /**
+     * The schema type of the tool. JSON Schema will work for most cases.
+     * Vertex AI requires OpenAPI Schema.
      */
     FunctionCallback.SchemaType schemaType() default FunctionCallback.SchemaType.JSON_SCHEMA;
 
