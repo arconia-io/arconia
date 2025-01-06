@@ -41,7 +41,6 @@ public class MethodToolCallback implements ToolCallback {
         this.toolObject = toolObject;
     }
 
-    @Override
     public ToolMetadata getToolMetadata() {
         return toolMetadata;
     }
