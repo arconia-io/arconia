@@ -41,23 +41,9 @@ public class MethodToolCallback implements ToolCallback {
         this.toolObject = toolObject;
     }
 
+    @Override
     public ToolMetadata getToolMetadata() {
         return toolMetadata;
-    }
-
-    @Override
-    public String getName() {
-        return toolMetadata.name();
-    }
-
-    @Override
-    public String getDescription() {
-        return toolMetadata.description();
-    }
-
-    @Override
-    public String getInputTypeSchema() {
-        return toolMetadata.inputTypeSchema();
     }
 
     @Override

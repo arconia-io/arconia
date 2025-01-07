@@ -32,7 +32,7 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
             .flatMap(mcpClient -> mcpClient.listTools()
                 .tools()
                 .stream()
-                .map(tool -> (ToolCallback) new McpToolCallback(mcpClient, tool)))
+                .map(tool -> new McpToolCallback(tool, mcpClient)))
             .toArray(ToolCallback[]::new);
 
         validateToolCallbacks(toolCallbacks);

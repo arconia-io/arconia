@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.ai.core.tools.metadata.DefaultToolMetadata;
+import io.arconia.ai.core.tools.metadata.ToolMetadata;
 import io.arconia.ai.core.tools.util.ToolUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,37 +40,19 @@ class ToolUtilsTests {
 
     static class TestToolCallback implements ToolCallback {
 
-        private final String name;
-
-        private final String description;
-
-        private final String inputTypeSchema;
+        private final ToolMetadata toolMetadata;
 
         public TestToolCallback(String name) {
-            this.name = name;
-            this.description = "";
-            this.inputTypeSchema = "";
-        }
-
-        public TestToolCallback(String name, String description, String inputTypeSchema) {
-            this.name = name;
-            this.description = description;
-            this.inputTypeSchema = inputTypeSchema;
+            this.toolMetadata = DefaultToolMetadata.builder()
+                .name(name)
+                .description(name)
+                .inputTypeSchema("{}")
+                .build();
         }
 
         @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getDescription() {
-            return description;
-        }
-
-        @Override
-        public String getInputTypeSchema() {
-            return inputTypeSchema;
+        public ToolMetadata getToolMetadata() {
+            return toolMetadata;
         }
 
         @Override
