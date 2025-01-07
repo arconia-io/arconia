@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 
-import io.arconia.ai.core.client.ArconiaChatClient;
+import io.arconia.ai.client.ArconiaChatClient;
 
 @AutoConfiguration
 public class ArconiaChatClientAutoConfiguration {

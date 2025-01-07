@@ -8,9 +8,9 @@ import org.springframework.ai.mcp.client.McpAsyncClient;
 import org.springframework.ai.mcp.client.McpSyncClient;
 import org.springframework.util.Assert;
 
-import io.arconia.ai.core.tools.ToolCallback;
-import io.arconia.ai.core.tools.ToolCallbackProvider;
-import io.arconia.ai.core.tools.util.ToolUtils;
+import io.arconia.ai.tools.ToolCallback;
+import io.arconia.ai.tools.ToolCallbackProvider;
+import io.arconia.ai.tools.util.ToolUtils;
 
 /**
  * A {@link ToolCallbackProvider} that builds {@link ToolCallback} instances from MCP
@@ -32,7 +32,10 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
             .flatMap(mcpClient -> mcpClient.listTools()
                 .tools()
                 .stream()
-                .map(tool -> new McpToolCallback(tool, mcpClient)))
+                .map(tool -> McpToolCallback.builder()
+                        .tool(tool)
+                        .mcpClient(mcpClient)
+                        .build()))
             .toArray(ToolCallback[]::new);
 
         validateToolCallbacks(toolCallbacks);

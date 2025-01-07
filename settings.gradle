@@ -5,8 +5,9 @@ plugins {
 rootProject.name = 'arconia'
 
 // AI
-include 'arconia-ai:arconia-ai-core'
+include 'arconia-ai:arconia-ai-client'
 include 'arconia-ai:arconia-ai-mcp'
+include 'arconia-ai:arconia-ai-tools'
 
 include 'arconia-ai:arconia-ai-spring-boot-starters:arconia-ai-spring-boot-starter'
 

@@ -16,19 +16,17 @@ dependencies {
     implementation "org.springframework:spring-context"
 
     compileOnly "org.springframework.ai:spring-ai-core:${springAiVersion}"
-    compileOnly "org.springframework.experimental:spring-ai-mcp:${springAiMcpVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.ai:spring-ai-core:${springAiVersion}"
-    testImplementation "org.springframework.experimental:spring-ai-mcp:${springAiMcpVersion}"
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia AI MCP"
-                description = "Arconia AI MCP."
+                name = "Arconia AI Client"
+                description = "Arconia AI Client."
             }
         }
     }

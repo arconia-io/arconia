@@ -2,9 +2,8 @@ package io.arconia.ai.mcp.tools;
 
 import org.springframework.ai.mcp.client.McpAsyncClient;
 import org.springframework.ai.mcp.client.McpSyncClient;
-import org.springframework.ai.model.function.FunctionCallback;
 
-import io.arconia.ai.core.tools.ToolCallback;
+import io.arconia.ai.tools.ToolCallback;
 
 /**
  * Provides {@link ToolCallback} instances for tools defined in different sources.

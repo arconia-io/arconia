@@ -13,7 +13,8 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    api project(":arconia-ai:arconia-ai-core")
+    api project(":arconia-ai:arconia-ai-client")
+    api project(":arconia-ai:arconia-ai-tools")
 
     implementation "org.slf4j:slf4j-api"
     implementation "org.springframework.boot:spring-boot-starter"

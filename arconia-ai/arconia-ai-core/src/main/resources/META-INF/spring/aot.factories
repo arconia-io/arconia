@@ -1,2 +1,0 @@
-org.springframework.aot.hint.RuntimeHintsRegistrar=\
-    io.arconia.ai.core.tools.aot.JacksonJsonSchemaRuntimeHints
