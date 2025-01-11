@@ -169,7 +169,8 @@ class MethodToolCallbackTests {
                 """);
 
         assertThat(result)
-            .contains("Test error");
+                .contains("Tool execution error")
+                .contains("Test error");
     }
 
     @Test

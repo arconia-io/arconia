@@ -19,7 +19,7 @@ class ToolExecutionExceptionTests {
         ToolExecutionException exception = new ToolExecutionException(mock(ToolDefinition.class), cause);
 
         assertThat(exception.getCause()).isEqualTo(cause);
-        assertThat(exception.getMessage()).isEqualTo(errorMessage);
+        assertThat(exception.getMessage()).isEqualTo("Tool execution error - Test error message");
     }
 
     @Test

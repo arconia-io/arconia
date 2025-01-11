@@ -10,7 +10,7 @@ public class ToolExecutionException extends RuntimeException {
     private final ToolDefinition toolDefinition;
 
     public ToolExecutionException(ToolDefinition toolDefinition, Throwable cause) {
-        super(cause.getMessage(), cause);
+        super("Tool execution error - %s".formatted(cause.getMessage()), cause);
         this.toolDefinition = toolDefinition;
     }
 
