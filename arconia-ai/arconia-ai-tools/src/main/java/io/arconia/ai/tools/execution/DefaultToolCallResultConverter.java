@@ -10,6 +10,8 @@ import io.arconia.ai.tools.json.JsonParser;
  */
 public class DefaultToolCallResultConverter implements ToolCallResultConverter {
 
+    public DefaultToolCallResultConverter() {}
+
     @Override
     public String apply(@Nullable Object result, Class<?> returnType) {
         Assert.notNull(returnType, "returnType cannot be null");
