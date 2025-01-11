@@ -82,19 +82,9 @@ public class MethodToolCallback implements ToolCallback {
 
         Object[] methodArguments = buildMethodArguments(toolArguments, toolContext);
 
-        Object result;
-        try {
-            result = callMethod(methodArguments);
-            logger.debug("Successful execution of tool: {}", toolDefinition.name());
-        } catch (ToolExecutionException ex) {
-            if (toolMetadata.returnDirect()) {
-                // When the tool result should be returned directly to the user instead of back to the model,
-                // we should rethrow the exception to be handled by the caller.
-                throw ex;
-            }
-            logger.error("Failed execution of tool: {}", toolDefinition.name(), ex);
-            return ex.getMessage();
-        }
+        Object result = callMethod(methodArguments);
+
+        logger.debug("Successful execution of tool: {}", toolDefinition.name());
 
         Class<?> returnType = toolMethod.getReturnType();
 

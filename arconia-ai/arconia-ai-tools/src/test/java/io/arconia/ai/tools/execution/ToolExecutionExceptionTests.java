@@ -1,7 +1,8 @@
 package io.arconia.ai.tools.execution;
 
-import io.arconia.ai.tools.definition.ToolDefinition;
 import org.junit.jupiter.api.Test;
+
+import io.arconia.ai.tools.definition.ToolDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -19,7 +20,7 @@ class ToolExecutionExceptionTests {
         ToolExecutionException exception = new ToolExecutionException(mock(ToolDefinition.class), cause);
 
         assertThat(exception.getCause()).isEqualTo(cause);
-        assertThat(exception.getMessage()).isEqualTo("Tool execution error - Test error message");
+        assertThat(exception.getMessage()).isEqualTo(errorMessage);
     }
 
     @Test

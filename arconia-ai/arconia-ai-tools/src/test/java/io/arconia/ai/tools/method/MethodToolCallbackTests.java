@@ -153,29 +153,8 @@ class MethodToolCallbackTests {
     }
 
     @Test
-    void shouldHandleMethodExecutionError() {
+    void shouldThrowExceptionWhenToolExecutionFails() {
         Method toolMethod = getMethod("errorMethod", ErrorTools.class);
-        MethodToolCallback callback = MethodToolCallback.builder()
-                .toolDefinition(ToolDefinition.from(toolMethod))
-                .toolMetadata(ToolMetadata.from(toolMethod))
-                .toolMethod(toolMethod)
-                .toolObject(new ErrorTools())
-                .build();
-
-        String result = callback.call("""
-                {
-                    "input": "test"
-                }
-                """);
-
-        assertThat(result)
-                .contains("Tool execution error")
-                .contains("Test error");
-    }
-
-    @Test
-    void shouldThrowExceptionWhenExecutionErrorAndReturnDirect() {
-        Method toolMethod = getMethod("errorMethodDirect", ErrorTools.class);
         MethodToolCallback callback = MethodToolCallback.builder()
                 .toolDefinition(ToolDefinition.from(toolMethod))
                 .toolMetadata(ToolMetadata.from(toolMethod))
@@ -348,11 +327,6 @@ class MethodToolCallbackTests {
 
         @Tool("Test description")
         public String errorMethod(String input) {
-            throw new IllegalArgumentException("Test error");
-        }
-
-        @Tool(value = "Test description", returnDirect = true)
-        public String errorMethodDirect(String input) {
             throw new IllegalArgumentException("Test error");
         }
 
