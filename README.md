@@ -1,9 +1,16 @@
 # Arconia
 
+![Build](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml/badge.svg)
+[![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Arconia is a framework to build modern applications using Java and Spring Boot.
 It provides support for multitenancy and AI.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
+
+> [!NOTE]
+> The Arconia Framework is currently in active development. We're working hard to improve it and appreciate your patience
+> as we refine the tool. Feel free to try it out and share your feedback!
 
 ## ⚙️Requirements
 
