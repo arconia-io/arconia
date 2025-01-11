@@ -23,10 +23,31 @@ public class JsonParser {
         .addModules(JacksonUtils.instantiateAvailableModules())
         .build();
 
+    /**
+     * Returns a Jackson {@link ObjectMapper} instance tailored for
+     * JSON-parsing operations for tool calling and structured output.
+     */
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
     }
 
+    /**
+     * Converts a JSON string to a Java object.
+     */
+    public static <T> T fromJson(String json, Class<T> type) {
+        Assert.notNull(json, "json cannot be null");
+        Assert.notNull(type, "type cannot be null");
+
+        try {
+            return OBJECT_MAPPER.readValue(json, type);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Conversion from JSON to %s failed".formatted(type.getName()), ex);
+        }
+    }
+
+    /**
+     * Converts a JSON string to a Java object.
+     */
     public static <T> T fromJson(String json, TypeReference<T> type) {
         Assert.notNull(json, "json cannot be null");
         Assert.notNull(type, "type cannot be null");
@@ -38,6 +59,9 @@ public class JsonParser {
         }
     }
 
+    /**
+     * Converts a Java object to a JSON string.
+     */
     public static String toJson(@Nullable Object object) {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
@@ -46,7 +70,10 @@ public class JsonParser {
         }
     }
 
-    // Based on the implementation in MethodInvokingFunctionCallback.
+    /**
+     * Convert a Java Object to a typed Object.
+     * Based on the implementation in MethodInvokingFunctionCallback.
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Object toTypedObject(Object value, Class<?> type) {
         Assert.notNull(value, "value cannot be null");
@@ -74,12 +101,8 @@ public class JsonParser {
             return Enum.valueOf((Class<Enum>) javaType, value.toString());
         }
 
-        try {
-            String json = OBJECT_MAPPER.writeValueAsString(value);
-            return OBJECT_MAPPER.readValue(json, javaType);
-        } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Conversion from Object to %s failed".formatted(type.getName()), ex);
-        }
+        String json = JsonParser.toJson(value);
+        return JsonParser.fromJson(json, javaType);
     }
 
 }

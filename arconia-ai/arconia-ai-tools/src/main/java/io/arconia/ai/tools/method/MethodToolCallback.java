@@ -1,5 +1,6 @@
 package io.arconia.ai.tools.method;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -7,15 +8,19 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ReflectionUtils;
 
 import io.arconia.ai.tools.ToolCallback;
 import io.arconia.ai.tools.definition.ToolDefinition;
+import io.arconia.ai.tools.execution.DefaultToolCallResultConverter;
+import io.arconia.ai.tools.execution.ToolCallResultConverter;
+import io.arconia.ai.tools.execution.ToolExecutionException;
 import io.arconia.ai.tools.json.JsonParser;
 import io.arconia.ai.tools.metadata.ToolMetadata;
 
@@ -24,26 +29,30 @@ import io.arconia.ai.tools.metadata.ToolMetadata;
  */
 public class MethodToolCallback implements ToolCallback {
 
+    private static final Logger logger = LoggerFactory.getLogger(MethodToolCallback.class);
+
+    private static final ToolCallResultConverter DEFAULT_RESULT_CONVERTER = new DefaultToolCallResultConverter();
+
     private final ToolDefinition toolDefinition;
 
     private final ToolMetadata toolMetadata;
 
     private final Method toolMethod;
 
-    @Nullable
     private final Object toolObject;
 
-    public MethodToolCallback(ToolDefinition toolDefinition, ToolMetadata toolMetadata, Method toolMethod, @Nullable Object toolObject) {
+    private final ToolCallResultConverter toolCallResultConverter;
+
+    public MethodToolCallback(ToolDefinition toolDefinition, ToolMetadata toolMetadata, Method toolMethod, Object toolObject, @Nullable ToolCallResultConverter toolCallResultConverter) {
         Assert.notNull(toolDefinition, "toolDefinition cannot be null");
         Assert.notNull(toolMetadata, "toolMetadata cannot be null");
         Assert.notNull(toolMethod, "toolMethod cannot be null");
-        if (!Modifier.isStatic(toolMethod.getModifiers())) {
-            Assert.notNull(toolObject, "toolObject cannot be null for non-static method");
-        }
+        Assert.notNull(toolObject, "toolObject cannot be null");
         this.toolDefinition = toolDefinition;
         this.toolMetadata = toolMetadata;
         this.toolMethod = toolMethod;
         this.toolObject = toolObject;
+        this.toolCallResultConverter = toolCallResultConverter != null ? toolCallResultConverter : DEFAULT_RESULT_CONVERTER;
     }
 
     @Override
@@ -65,23 +74,37 @@ public class MethodToolCallback implements ToolCallback {
     public String call(String toolInput, @Nullable ToolContext toolContext) {
         Assert.hasText(toolInput, "toolInput cannot be null or empty");
 
+        logger.debug("Starting execution of tool: {}", toolDefinition.name());
+
         validateToolContextSupport(toolContext);
 
         Map<String, Object> toolArguments = extractToolArguments(toolInput);
 
         Object[] methodArguments = buildMethodArguments(toolArguments, toolContext);
 
-        Object result = callMethod(methodArguments);
+        Object result;
+        try {
+            result = callMethod(methodArguments);
+            logger.debug("Successful execution of tool: {}", toolDefinition.name());
+        } catch (ToolExecutionException ex) {
+            if (toolMetadata.returnDirect()) {
+                // When the tool result should be returned directly to the user instead of back to the model,
+                // we should rethrow the exception to be handled by the caller.
+                throw ex;
+            }
+            logger.error("Failed execution of tool: {}", toolDefinition.name(), ex);
+            return ex.getMessage();
+        }
 
         Class<?> returnType = toolMethod.getReturnType();
 
-        return formatResult(result, returnType);
+        return toolCallResultConverter.apply(result, returnType);
     }
 
     private void validateToolContextSupport(@Nullable ToolContext toolContext) {
         var isToolContextRequired = toolContext != null && !CollectionUtils.isEmpty(toolContext.getContext());
-        var isToolContextAcceptedByMethod = Stream.of(toolMethod.getGenericParameterTypes())
-            .anyMatch(type -> ClassUtils.isAssignable(type.getClass(), ToolContext.class));
+        var isToolContextAcceptedByMethod = Stream.of(toolMethod.getParameterTypes())
+            .anyMatch(type -> ClassUtils.isAssignable(type, ToolContext.class));
         if (isToolContextRequired && !isToolContextAcceptedByMethod) {
             throw new IllegalArgumentException("ToolContext is not supported by the method as an argument");
         }
@@ -115,7 +138,16 @@ public class MethodToolCallback implements ToolCallback {
         if (isObjectNotPublic() || isMethodNotPublic()) {
             toolMethod.setAccessible(true);
         }
-        return ReflectionUtils.invokeMethod(toolMethod, toolObject, methodArguments);
+
+        Object result;
+        try {
+            result = toolMethod.invoke(toolObject, methodArguments);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException("Could not access method: " + ex.getMessage(), ex);
+        } catch (InvocationTargetException ex) {
+            throw new ToolExecutionException(toolDefinition, ex.getCause());
+        }
+        return result;
     }
 
     private boolean isObjectNotPublic() {
@@ -124,17 +156,6 @@ public class MethodToolCallback implements ToolCallback {
 
     private boolean isMethodNotPublic() {
         return !Modifier.isPublic(toolMethod.getModifiers());
-    }
-
-    // Based on the implementation in MethodInvokingFunctionCallback.
-    private String formatResult(@Nullable Object result, Class<?> returnType) {
-        if (returnType == Void.TYPE) {
-            return "Done";
-        } else if (returnType == String.class) {
-            return result != null ? (String) result : "";
-        } else {
-            return JsonParser.toJson(result);
-        }
     }
 
     public static Builder builder() {
@@ -150,6 +171,8 @@ public class MethodToolCallback implements ToolCallback {
         private Method toolMethod;
 
         private Object toolObject;
+
+        private ToolCallResultConverter toolCallResultConverter;
 
         private Builder() {}
 
@@ -173,8 +196,13 @@ public class MethodToolCallback implements ToolCallback {
             return this;
         }
 
+        public Builder toolCallResultConverter(ToolCallResultConverter toolCallResultConverter) {
+            this.toolCallResultConverter = toolCallResultConverter;
+            return this;
+        }
+
         public MethodToolCallback build() {
-            return new MethodToolCallback(toolDefinition, toolMetadata, toolMethod, toolObject);
+            return new MethodToolCallback(toolDefinition, toolMetadata, toolMethod, toolObject, toolCallResultConverter);
         }
 
     }

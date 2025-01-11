@@ -11,6 +11,8 @@ import org.springframework.ai.util.ParsingUtils;
 import org.springframework.util.StringUtils;
 
 import io.arconia.ai.tools.annotation.Tool;
+import io.arconia.ai.tools.execution.DefaultToolCallResultConverter;
+import io.arconia.ai.tools.execution.ToolCallResultConverter;
 import io.arconia.ai.tools.execution.ToolExecutionMode;
 
 /**
@@ -42,6 +44,19 @@ public final class ToolUtils {
     public static boolean getToolReturnDirect(Method method) {
         var tool = method.getAnnotation(Tool.class);
         return tool != null && tool.returnDirect();
+    }
+
+    public static ToolCallResultConverter getToolCallResultConverter(Method method) {
+        var tool = method.getAnnotation(Tool.class);
+        if (tool == null) {
+            return new DefaultToolCallResultConverter();
+        }
+        var type = tool.resultConverter();
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to instantiate ToolCallResultConverter: " + type, e);
+        }
     }
 
     public static List<String> getDuplicateToolNames(FunctionCallback... functionCallbacks) {

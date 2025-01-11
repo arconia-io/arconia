@@ -49,6 +49,7 @@ public class MethodToolCallbackProvider implements ToolCallbackProvider {
                         .toolMetadata(ToolMetadata.from(toolMethod))
                         .toolMethod(toolMethod)
                         .toolObject(toolObject)
+                        .toolCallResultConverter(ToolUtils.getToolCallResultConverter(toolMethod))
                         .build())
                     .toArray(ToolCallback[]::new))
                 .flatMap(Stream::of)
@@ -59,7 +60,7 @@ public class MethodToolCallbackProvider implements ToolCallbackProvider {
         return toolCallbacks;
     }
 
-    private static boolean isFunctionalType(Method toolMethod) {
+    private boolean isFunctionalType(Method toolMethod) {
         var isFunction = ClassUtils.isAssignable(toolMethod.getReturnType(), Function.class)
                 || ClassUtils.isAssignable(toolMethod.getReturnType(), Supplier.class)
                 || ClassUtils.isAssignable(toolMethod.getReturnType(), Consumer.class);

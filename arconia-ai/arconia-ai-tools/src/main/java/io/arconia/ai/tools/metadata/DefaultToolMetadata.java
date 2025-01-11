@@ -1,21 +1,11 @@
 package io.arconia.ai.tools.metadata;
 
-import java.lang.reflect.Method;
-
 import io.arconia.ai.tools.execution.ToolExecutionMode;
-import io.arconia.ai.tools.util.ToolUtils;
 
 /**
  * Default implementation of {@link ToolMetadata}.
  */
 public record DefaultToolMetadata(ToolExecutionMode executionMode, boolean returnDirect) implements ToolMetadata {
-
-    static DefaultToolMetadata from(Method method) {
-        return DefaultToolMetadata.builder()
-            .executionMode(ToolUtils.getToolExecutionMode(method))
-            .returnDirect(ToolUtils.getToolReturnDirect(method))
-            .build();
-    }
 
     public static Builder builder() {
         return new Builder();

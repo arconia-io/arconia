@@ -6,17 +6,17 @@ import io.arconia.ai.tools.definition.ToolDefinition;
 import io.arconia.ai.tools.metadata.ToolMetadata;
 
 /**
- * Specialization of {@link FunctionCallback} to identify tools in Spring AI.
+ * Represents a tool whose execution can be triggered by an AI model.
  */
 public interface ToolCallback extends FunctionCallback {
 
     /**
-     * Definition of the tool.
+     * Definition used by the AI model to determine when and how to call the tool.
      */
     ToolDefinition getToolDefinition();
 
     /**
-     * Metadata for the tool.
+     * Metadata providing additional information on how to handle the tool.
      */
     default ToolMetadata getToolMetadata() {
         return ToolMetadata.builder().build();

@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import io.arconia.ai.tools.execution.DefaultToolCallResultConverter;
+import io.arconia.ai.tools.execution.ToolCallResultConverter;
 import io.arconia.ai.tools.execution.ToolExecutionMode;
 
 /**
@@ -35,5 +37,10 @@ public @interface Tool {
      * Whether the tool result should be returned directly or passed back to the model.
      */
     boolean returnDirect() default false;
+
+    /**
+     * The class to use to convert the tool call result to a String.
+     */
+    Class<? extends ToolCallResultConverter> resultConverter() default DefaultToolCallResultConverter.class;
 
 }

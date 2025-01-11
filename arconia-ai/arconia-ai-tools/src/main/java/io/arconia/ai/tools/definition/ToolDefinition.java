@@ -2,8 +2,11 @@ package io.arconia.ai.tools.definition;
 
 import java.lang.reflect.Method;
 
+import io.arconia.ai.tools.json.JsonSchemaGenerator;
+import io.arconia.ai.tools.util.ToolUtils;
+
 /**
- * Definition of a tool that can be used by a model.
+ * Definition used by the AI model to determine when and how to call the tool.
  */
 public interface ToolDefinition {
 
@@ -13,7 +16,7 @@ public interface ToolDefinition {
     String name();
 
     /**
-     * The tool description, used by the model to decide if and when to use the tool.
+     * The tool description, used by the AI model to determine what the tool does.
      */
     String description();
 
@@ -30,10 +33,14 @@ public interface ToolDefinition {
     }
 
     /**
-     * Create {@link ToolDefinition} from a {@link Method}.
+     * Create a default {@link ToolDefinition} instance from a {@link Method}.
      */
     static ToolDefinition from(Method method) {
-        return DefaultToolDefinition.from(method);
+        return DefaultToolDefinition.builder()
+                .name(ToolUtils.getToolName(method))
+                .description(ToolUtils.getToolDescription(method))
+                .inputTypeSchema(JsonSchemaGenerator.generateForMethodInput(method))
+                .build();
     }
 
 }
