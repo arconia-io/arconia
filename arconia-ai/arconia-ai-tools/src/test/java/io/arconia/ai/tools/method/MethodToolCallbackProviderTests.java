@@ -25,7 +25,7 @@ class MethodToolCallbackProviderTests {
 
         @Test
         void shouldRejectNullToolObjects() {
-            assertThatThrownBy(() -> MethodToolCallbackProvider.builder().toolObjects(null))
+            assertThatThrownBy(() -> MethodToolCallbackProvider.builder().toolObjects((Object) null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("toolObjects cannot be null");
         }
