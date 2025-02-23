@@ -1,0 +1,41 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional project(':arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure')
+
+    optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:${openTelemetryInstrumentationVersion}-alpha") {
+        exclude group: 'io.opentelemetry', module: 'opentelemetry-api-incubator'
+        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+    }
+
+    optional 'org.springframework.boot:spring-boot-starter-actuator'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry Logback Appender Autoconfigure"
+                description = "Arconia OpenTelemetry Logback Appender Autoconfigure."
+            }
+        }
+    }
+}

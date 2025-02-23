@@ -1,0 +1,21 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Service Core"
+                description = "Arconia Dev Service Core."
+            }
+        }
+    }
+}

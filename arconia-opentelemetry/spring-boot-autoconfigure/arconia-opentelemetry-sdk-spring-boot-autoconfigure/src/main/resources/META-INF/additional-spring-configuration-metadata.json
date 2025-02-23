@@ -1,0 +1,38 @@
+{
+  "properties": [
+    {
+      "name": "arconia.opentelemetry.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether OpenTelemetry support should be enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.opentelemetry.logs.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether support for OpenTelemetry logs is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.opentelemetry.metrics.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether support for OpenTelemetry metrics is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.opentelemetry.traces.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether support for OpenTelemetry traces is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.opentelemetry.logs.processor.schedule-delay",
+      "type": "java.time.Duration",
+      "defaultValue": "1s"
+    },
+    {
+      "name": "arconia.opentelemetry.traces.processor.schedule-delay",
+      "type": "java.time.Duration",
+      "defaultValue": "5s"
+    }
+  ]
+}

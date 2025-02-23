@@ -1,0 +1,64 @@
+{
+  "properties": [
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether OpenTelemetry instrumentation for the Logback Appender is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-arguments",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of arguments.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-code-attributes",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of source code attributes. It might have performance impact.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-experimental-attributes",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of experimental attributes.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-key-value-pair-attributes",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of Logback key-value pair as attributes.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-logger-context",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of Logback logger context properties as attributes.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-logstash-attributes",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of Logstash attributes.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-marker-attribute",
+      "type": "java.lang.Boolean",
+      "description": "Enable capturing of Logback markers as attributes.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.capture-mdc-attributes",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of MDC attributes to capture.",
+      "defaultValue": "*"
+    },
+    {
+      "name": "arconia.otel.instrumentation.logback-appender.num-logs-captured-before-otel-install",
+      "type": "java.lang.Integer",
+      "description": "Size of the cache used to replay the logs generated before the initialization of the appender.",
+      "defaultValue": 1000
+    }
+  ]
+}

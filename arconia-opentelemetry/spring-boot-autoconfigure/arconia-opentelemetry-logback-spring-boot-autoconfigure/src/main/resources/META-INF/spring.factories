@@ -1,0 +1,7 @@
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+io.arconia.opentelemetry.autoconfigure.logback.OpenTelemetryLogbackAppenderApplicationListener
+
+# Environment Post Processors
+org.springframework.boot.env.EnvironmentPostProcessor=\
+io.arconia.opentelemetry.autoconfigure.logback.OpenTelemetryLogbackAppenderEnvironmentPostProcessor

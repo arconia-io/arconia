@@ -4,7 +4,7 @@
 [![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Arconia is a framework to build modern applications using Java and Spring Boot.
-It provides support for multitenancy and AI.
+It provides support for multitenancy, observability with OpenTelemetry, and GenAI/Large Language Models.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 

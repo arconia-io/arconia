@@ -1,0 +1,27 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    optional project(":arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
+    optional 'org.testcontainers:grafana'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Service Connection Details"
+                description = "Arconia Dev Service Connection Details."
+            }
+        }
+    }
+}

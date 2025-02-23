@@ -1,0 +1,50 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional 'io.opentelemetry:opentelemetry-sdk'
+    optional 'io.opentelemetry.semconv:opentelemetry-semconv'
+    optional("io.opentelemetry:opentelemetry-exporter-otlp") {
+        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
+    }
+    optional 'io.opentelemetry:opentelemetry-exporter-sender-jdk'
+
+    optional 'io.micrometer:micrometer-tracing-bridge-otel'
+
+    optional 'io.opentelemetry:opentelemetry-exporter-logging'
+    optional 'io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel'
+    // TODO: Add grpc transport.
+    optional 'org.springframework.boot:spring-boot-starter-actuator'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry SDK Spring Boot Autoconfigure"
+                description = "Arconia OpenTelemetry SDK Spring Boot Autoconfigure."
+            }
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
