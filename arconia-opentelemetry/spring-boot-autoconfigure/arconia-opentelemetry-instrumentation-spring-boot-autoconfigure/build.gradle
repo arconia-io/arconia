@@ -10,6 +10,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation project(":arconia-core")
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
     optional project(':arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure')

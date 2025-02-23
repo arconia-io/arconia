@@ -16,6 +16,7 @@ dependencies {
     api 'org.testcontainers:grafana'
 
     implementation project(":arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation 'org.springframework.boot:spring-boot-starter'
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

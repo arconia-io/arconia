@@ -16,6 +16,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
 
     optional project(':arconia-multitenancy:arconia-multitenancy-core')
     optional project(':arconia-multitenancy:arconia-multitenancy-web')

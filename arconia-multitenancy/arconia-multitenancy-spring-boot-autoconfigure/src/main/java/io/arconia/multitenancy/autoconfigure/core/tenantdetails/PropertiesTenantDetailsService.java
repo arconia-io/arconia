@@ -2,7 +2,7 @@ package io.arconia.multitenancy.autoconfigure.core.tenantdetails;
 
 import java.util.List;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import io.arconia.multitenancy.core.tenantdetails.Tenant;

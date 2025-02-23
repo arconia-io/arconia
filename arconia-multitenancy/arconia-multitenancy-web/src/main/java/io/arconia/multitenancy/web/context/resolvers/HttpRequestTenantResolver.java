@@ -2,7 +2,7 @@ package io.arconia.multitenancy.web.context.resolvers;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import io.arconia.multitenancy.core.context.resolvers.TenantResolver;
 

@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 

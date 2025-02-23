@@ -1,7 +1,7 @@
 package io.arconia.multitenancy.web.context.resolvers;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 /**

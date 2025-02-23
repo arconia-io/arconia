@@ -1,4 +1,4 @@
 @NullMarked
-package io.arconia.multitenancy.core.context.events;
+package io.arconia.multitenancy.autoconfigure.web;
 
 import org.jspecify.annotations.NullMarked;

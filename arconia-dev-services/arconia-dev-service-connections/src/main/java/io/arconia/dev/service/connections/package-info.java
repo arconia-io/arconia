@@ -1,4 +1,4 @@
 @NullMarked
-package io.arconia.multitenancy.core.context.events;
+package io.arconia.dev.service.connections;
 
 import org.jspecify.annotations.NullMarked;

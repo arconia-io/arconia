@@ -1,6 +1,6 @@
 package io.arconia.multitenancy.core.context.resolvers;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Strategy used to resolve the current tenant from a given source context.

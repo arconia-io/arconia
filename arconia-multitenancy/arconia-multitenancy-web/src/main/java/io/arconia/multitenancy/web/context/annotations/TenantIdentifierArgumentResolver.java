@@ -1,7 +1,7 @@
 package io.arconia.multitenancy.web.context.annotations;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

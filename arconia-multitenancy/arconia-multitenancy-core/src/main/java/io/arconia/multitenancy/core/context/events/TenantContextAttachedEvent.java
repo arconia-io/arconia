@@ -1,8 +1,8 @@
 package io.arconia.multitenancy.core.context.events;
 
-import io.micrometer.observation.Observation;
+import io.micrometer.observation.Observation.Context;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import io.arconia.multitenancy.core.events.TenantEvent;
@@ -14,18 +14,18 @@ import io.arconia.multitenancy.core.events.TenantEvent;
 public final class TenantContextAttachedEvent extends TenantEvent {
 
     @Nullable
-    private Observation.Context observationContext;
+    private Context observationContext;
 
     public TenantContextAttachedEvent(String tenantIdentifier, Object object) {
         super(tenantIdentifier, object);
     }
 
     @Nullable
-    public Observation.Context getObservationContext() {
+    public Context getObservationContext() {
         return observationContext;
     }
 
-    public void setObservationContext(Observation.Context observationContext) {
+    public void setObservationContext(Context observationContext) {
         Assert.notNull(observationContext, "observationContext cannot be null");
         this.observationContext = observationContext;
     }
