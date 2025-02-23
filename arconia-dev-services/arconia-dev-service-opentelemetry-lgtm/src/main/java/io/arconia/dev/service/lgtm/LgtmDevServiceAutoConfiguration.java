@@ -13,13 +13,13 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnEnabledOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 
 /**
  * Auto-configuration for OpenTelemetry LGTM Dev Service.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnEnabledOpenTelemetry
+@ConditionalOnOpenTelemetry
 @ConditionalOnProperty(prefix = LgtmDevServiceProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(LgtmDevServiceProperties.class)
 public class LgtmDevServiceAutoConfiguration {

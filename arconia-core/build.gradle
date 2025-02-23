@@ -1,0 +1,25 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.slf4j:slf4j-api"
+    implementation "org.springframework:spring-context"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Core"
+                description = "Arconia Core."
+            }
+        }
+    }
+}

@@ -4,6 +4,9 @@ plugins {
 
 rootProject.name = 'arconia'
 
+// Core
+include 'arconia-core'
+
 // Dev Services
 include 'arconia-dev-services:arconia-dev-service-connections'
 include 'arconia-dev-services:arconia-dev-service-core'
@@ -16,7 +19,6 @@ include 'arconia-multitenancy:arconia-multitenancy-spring-boot-autoconfigure'
 include 'arconia-multitenancy:arconia-multitenancy-spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 
 // OpenTelemetry
-include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-logback-spring-boot-autoconfigure'
-include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-micrometer-spring-boot-autoconfigure'
+include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
