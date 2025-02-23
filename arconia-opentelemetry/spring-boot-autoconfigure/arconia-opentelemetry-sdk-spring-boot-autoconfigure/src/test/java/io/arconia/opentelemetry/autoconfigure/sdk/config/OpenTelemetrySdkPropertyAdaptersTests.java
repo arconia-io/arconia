@@ -82,7 +82,7 @@ class OpenTelemetrySdkPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get("spring.application.name")).isEqualTo("test-service");
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
             .isEqualTo(Map.of("key1", "value1", "key2", "value2"));
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".disabled-keys"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".filter.disabled-keys"))
             .isEqualTo(List.of("key1", "key2"));
     }
 

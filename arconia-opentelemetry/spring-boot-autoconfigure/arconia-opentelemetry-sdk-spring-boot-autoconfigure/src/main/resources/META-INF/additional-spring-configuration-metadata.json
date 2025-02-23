@@ -33,6 +33,24 @@
       "name": "arconia.opentelemetry.traces.processor.schedule-delay",
       "type": "java.time.Duration",
       "defaultValue": "5s"
+    },
+    {
+      "name": "arconia.opentelemetry.resource.build.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Build resource contributor is enabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.opentelemetry.resource.environment.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Environment resource contributor is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.opentelemetry.resource.filter.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Filter resource contributor is enabled.",
+      "defaultValue": true
     }
   ]
 }

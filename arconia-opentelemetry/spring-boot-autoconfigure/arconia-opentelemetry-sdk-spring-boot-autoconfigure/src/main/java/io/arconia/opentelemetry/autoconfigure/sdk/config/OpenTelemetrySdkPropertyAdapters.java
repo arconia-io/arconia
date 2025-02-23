@@ -1,5 +1,10 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.config;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.Assert;
 
@@ -60,8 +65,12 @@ class OpenTelemetrySdkPropertyAdapters {
         return PropertyAdapter.builder(environment)
             // Resource Attributes
             .mapString("otel.service.name", "spring.application.name")
-            .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes")
-            .mapList("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".disabled-keys")
+            .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes",
+                    // See: https://opentelemetry.io/docs/specs/otel/resource/sdk/#specifying-resource-information-via-an-environment-variable
+                    map -> map.entrySet().stream()
+                            .map(e -> Map.entry(e.getKey(), URLDecoder.decode(e.getValue(), StandardCharsets.UTF_8)))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .mapList("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".filter.disabled-keys")
             .build();
     }
 

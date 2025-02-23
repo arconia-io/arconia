@@ -447,4 +447,56 @@ class PropertyAdapterTests {
         assertThat(adapter.getArconiaProperties())
             .doesNotContainKey("arconia.duration");
     }
+
+    @Test
+    void shouldProcessMapWithPostProcessor() {
+        when(environment.getProperty("external.map")).thenReturn("key1=value1,key2=value2");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapMap("external.map", "arconia.map", map -> {
+                map.put("key3", "value3");
+                return map;
+            })
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.map", Map.of("key1", "value1", "key2", "value2", "key3", "value3"));
+    }
+
+    @Test
+    void shouldHandleEmptyKeyValuePairsInMap() {
+        when(environment.getProperty("external.map")).thenReturn("=value1,key2=");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapMap("external.map", "arconia.map")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .doesNotContainKey("arconia.map");
+    }
+
+    @Test
+    void shouldHandleMultipleInvalidEntriesInMap() {
+        when(environment.getProperty("external.map")).thenReturn("invalid1,key1=value1,invalid2,key2=value2");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapMap("external.map", "arconia.map")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.map", Map.of("key1", "value1", "key2", "value2"));
+    }
+
+    @Test
+    void shouldHandleAllInvalidEntriesInMap() {
+        when(environment.getProperty("external.map")).thenReturn("invalid1,invalid2,invalid3");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapMap("external.map", "arconia.map")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .doesNotContainKey("arconia.map");
+    }
+    
 }

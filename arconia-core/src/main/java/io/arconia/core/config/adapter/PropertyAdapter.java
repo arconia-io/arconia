@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -126,16 +127,23 @@ public class PropertyAdapter {
         }
 
         public Builder mapMap(String externalKey, String arconiaKey) {
+            return mapMap(externalKey, arconiaKey, null);
+        }
+
+        public Builder mapMap(String externalKey, String arconiaKey, @Nullable Function<Map<String,String>,Map<String,String>> postProcessor) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 Map<String, String> propertyMap = new HashMap<>();
-                String[] keyValuePairs = value.split(",");
+                String[] keyValuePairs = value.split("\\s*,\\s*");
                 for (String pair : keyValuePairs) {
                     String[] entry = pair.split("=");
-                    if (entry.length == 2) {
-                        propertyMap.put(entry[0], entry[1]);
+                    if (entry.length == 2 && StringUtils.hasText(entry[0]) && StringUtils.hasText(entry[1])) {
+                        propertyMap.put(entry[0].trim(), entry[1].trim());
                     } else {
                         logger.warn("Invalid key-value pair in {}: {}", externalKey, pair);
                     }
+                }
+                if (postProcessor != null) {
+                    propertyMap = postProcessor.apply(propertyMap);
                 }
                 return CollectionUtils.isEmpty(propertyMap) ? null : propertyMap;
             });

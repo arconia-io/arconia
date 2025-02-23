@@ -9,6 +9,8 @@ import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
+
 /**
  * Configuration properties for OpenTelemetry {@link Resource},
  * a set of attributes defining the telemetry source.
@@ -19,58 +21,32 @@ public class OpenTelemetryResourceProperties {
     public static final String CONFIG_PREFIX = "arconia.opentelemetry.resource";
 
     /**
-     * Providers of attributes to include in the resource.
-     */
-    private final Providers providers = new Providers();
-
-    /**
      * Additional attributes to include in the resource.
      */
     private final Map<String, String> attributes = new HashMap<>();
 
     /**
-     * Keys for attributes to exclude from the resource.
+     * Configuration for the {@link FilterResourceContributor}.
      */
-    private final List<String> disabledKeys = new ArrayList<>();
-
-    public Providers getProviders() {
-        return providers;
-    }
+    private final Filter filter = new Filter();
 
     public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public List<String> getDisabledKeys() {
-        return disabledKeys;
+    public Filter getFilter() {
+        return filter;
     }
 
-    public static class Providers {
+    public static class Filter {
 
         /**
-         * Whether to include environment attributes in the resource, such as "service.name" and "service.group".
+         * Keys for attributes to exclude from the resource.
          */
-        private boolean environment = true;
+        private final List<String> disabledKeys = new ArrayList<>();
 
-        /**
-         * Whether to include build attributes in the resource, such as "service.version".
-         */
-        private boolean build = true;
-
-        public boolean isEnvironment() {
-            return environment;
-        }
-
-        public void setEnvironment(boolean environment) {
-            this.environment = environment;
-        }
-
-        public boolean isBuild() {
-            return build;
-        }
-
-        public void setBuild(boolean build) {
-            this.build = build;
+        public List<String> getDisabledKeys() {
+            return disabledKeys;
         }
 
     }
