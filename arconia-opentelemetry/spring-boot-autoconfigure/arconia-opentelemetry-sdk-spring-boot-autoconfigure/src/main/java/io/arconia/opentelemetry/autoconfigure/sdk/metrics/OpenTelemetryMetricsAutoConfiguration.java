@@ -10,11 +10,15 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnThreading;
@@ -28,58 +32,30 @@ import org.springframework.core.task.VirtualThreadTaskExecutor;
  */
 @AutoConfiguration
 @ConditionalOnClass(SdkMeterProvider.class)
-@ConditionalOnEnabledOpenTelemetryMetrics
+@ConditionalOnOpenTelemetryMetrics
 @EnableConfigurationProperties(OpenTelemetryMetricsProperties.class)
 public class OpenTelemetryMetricsAutoConfiguration {
 
-    private static final String THREAD_NAME_PREFIX = "otel-metrics-publisher";
+    public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
+
+    private static final String THREAD_NAME_PREFIX = "otel-metrics";
 
     @Bean
     @ConditionalOnMissingBean
     SdkMeterProvider otelSdkMeterProvider(Clock clock,
+                                          CardinalityLimitSelector cardinalityLimitSelector,
+                                          ExemplarFilter exemplarFilter,
                                           Resource resource,
+                                          ObjectProvider<MetricReader> metricReaders,
                                           ObjectProvider<SdkMeterProviderBuilderCustomizer> customizers
     ) {
-        // TODO: Configure ExemplarFilter when it becomes GA
         SdkMeterProviderBuilder builder = SdkMeterProvider.builder()
                 .setClock(clock)
                 .setResource(resource);
+        SdkMeterProviderUtil.setExemplarFilter(builder, exemplarFilter); // Still experimental, so we need to use the internal utility method.
+        metricReaders.orderedStream().forEach(metricReader -> builder.registerMetricReader(metricReader, cardinalityLimitSelector));
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
         return builder.build();
-    }
-
-    @Bean
-    @ConditionalOnThreading(Threading.PLATFORM)
-    SdkMeterProviderBuilderCustomizer metricReaderPlatformThreads(OpenTelemetryMetricsProperties properties,
-                                                                  CardinalityLimitSelector cardinalityLimitSelector,
-                                                                  ObjectProvider<MetricExporter> metricExporters
-    ) {
-        NamedThreadFactory threadFactory = new NamedThreadFactory(THREAD_NAME_PREFIX);
-        return builder -> metricExporters.orderedStream().forEach(exporter -> builder
-                .registerMetricReader(
-                    PeriodicMetricReader.builder(exporter)
-                            .setInterval(properties.getInterval())
-                            .setExecutor(Executors.newSingleThreadScheduledExecutor(threadFactory))
-                            .build(),
-                    cardinalityLimitSelector
-                ));
-    }
-
-    @Bean
-    @ConditionalOnThreading(Threading.VIRTUAL)
-    SdkMeterProviderBuilderCustomizer metricReaderVirtualThreads(OpenTelemetryMetricsProperties properties,
-                                                                 CardinalityLimitSelector cardinalityLimitSelector,
-                                                                 ObjectProvider<MetricExporter> metricExporters
-    ) {
-        VirtualThreadTaskExecutor taskExecutor = new VirtualThreadTaskExecutor(THREAD_NAME_PREFIX + "-");
-        return builder -> metricExporters.orderedStream().forEach(exporter -> builder
-                .registerMetricReader(
-                    PeriodicMetricReader.builder(exporter)
-                            .setInterval(properties.getInterval())
-                            .setExecutor(Executors.newSingleThreadScheduledExecutor(taskExecutor.getVirtualThreadFactory()))
-                            .build(),
-                    cardinalityLimitSelector
-                ));
     }
 
     @Bean
@@ -90,8 +66,48 @@ public class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    ExemplarFilter exemplarFilter(OpenTelemetryMetricsProperties properties) {
+        return switch(properties.getExemplarFilter()) {
+            case ALWAYS_ON -> ExemplarFilter.alwaysOn();
+            case ALWAYS_OFF -> ExemplarFilter.alwaysOff();
+            case TRACE_BASED -> ExemplarFilter.traceBased();
+        };
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnThreading(Threading.PLATFORM)
+    @ConditionalOnBean(MetricExporter.class)
+    PeriodicMetricReader metricReaderPlatformThreads(OpenTelemetryMetricsProperties properties,
+                                                     CardinalityLimitSelector cardinalityLimitSelector,
+                                                     MetricExporter metricExporter
+    ) {
+        NamedThreadFactory threadFactory = new NamedThreadFactory(THREAD_NAME_PREFIX);
+        return PeriodicMetricReader.builder(metricExporter)
+            .setInterval(properties.getInterval())
+            .setExecutor(Executors.newSingleThreadScheduledExecutor(threadFactory))
+            .build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnThreading(Threading.VIRTUAL)
+    @ConditionalOnBean(MetricExporter.class)
+    PeriodicMetricReader metricReaderVirtualThreads(OpenTelemetryMetricsProperties properties,
+                                                    CardinalityLimitSelector cardinalityLimitSelector,
+                                                    MetricExporter metricExporter
+    ) {
+        VirtualThreadTaskExecutor taskExecutor = new VirtualThreadTaskExecutor(THREAD_NAME_PREFIX + "-");
+        return PeriodicMetricReader.builder(metricExporter)
+            .setInterval(properties.getInterval())
+            .setExecutor(Executors.newSingleThreadScheduledExecutor(taskExecutor.getVirtualThreadFactory()))
+            .build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     Meter meter(OpenTelemetry openTelemetry) {
-        return openTelemetry.getMeter("org.springframework.boot");
+        return openTelemetry.getMeter(INSTRUMENTATION_SCOPE_NAME);
     }
 
 }

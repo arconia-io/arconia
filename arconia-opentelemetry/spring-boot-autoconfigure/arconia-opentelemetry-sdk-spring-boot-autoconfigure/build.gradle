@@ -14,15 +14,17 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
 
     // OpenTelemetry
-    optional 'io.opentelemetry:opentelemetry-sdk'
-    optional 'io.opentelemetry.semconv:opentelemetry-semconv'
+    optional "io.opentelemetry:opentelemetry-sdk"
+    optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
     optional("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
     }
     optional 'io.opentelemetry:opentelemetry-exporter-logging'
 
     // Spring/Micrometer
-    optional 'io.micrometer:micrometer-tracing-bridge-otel'
+    optional ("io.micrometer:micrometer-tracing-bridge-otel") {
+        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+    }
     optional 'org.springframework.boot:spring-boot-starter-actuator'
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

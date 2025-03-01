@@ -20,9 +20,9 @@ import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.AggregationTe
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties.SamplingStrategy;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.OpenTelemetryTracingExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties.SamplingStrategy;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.OpenTelemetryTracingExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -79,10 +79,10 @@ class OpenTelemetrySdkPropertyAdaptersTests {
 
         var adapter = OpenTelemetrySdkPropertyAdapters.resource(environment);
 
-        assertThat(adapter.getArconiaProperties().get("spring.application.name")).isEqualTo("test-service");
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isEqualTo("test-service");
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
             .isEqualTo(Map.of("key1", "value1", "key2", "value2"));
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".filter.disabled-keys"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".contributors.filter.disabled-keys"))
             .isEqualTo(List.of("key1", "key2"));
     }
 

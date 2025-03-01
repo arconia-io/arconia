@@ -9,7 +9,8 @@ import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.OpenTelemetryTracingExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.OpenTelemetryTracingExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,7 +50,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorTests {
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         assertThat(environment.getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isEqualTo("false");
-        assertThat(environment.getProperty("spring.application.name")).isEqualTo("test-service");
+        assertThat(environment.getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isEqualTo("test-service");
         assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
         assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
         assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());

@@ -73,6 +73,19 @@
       "type": "java.lang.Boolean",
       "description": "Whether OpenTelemetry instrumentation for the Micrometer bridge is enabled.",
       "defaultValue": true
+    },
+
+    {
+      "name": "arconia.otel.resource.contributors.container.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Container resource contributor is enabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.resource.contributors.host-id.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Host ID resource contributor is enabled.",
+      "defaultValue": false
     }
   ]
 }

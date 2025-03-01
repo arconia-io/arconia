@@ -19,7 +19,10 @@ import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.BuildResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
-import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.MapResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.HostResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.JavaResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.OsResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ProcessResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ResourceContributor;
 
 /**
@@ -42,30 +45,52 @@ public class OpenTelemetryResourceAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnEnabledResourceContributor(value = "environment", matchIfMissing = true)
-    @Order(DEFAULT_ORDER)
-    EnvironmentResourceContributor environmentResourceContributor(Environment environment) {
-        return new EnvironmentResourceContributor(environment);
-    }
-
-    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "build", matchIfMissing = true)
     @ConditionalOnBean(BuildProperties.class)
-    @ConditionalOnEnabledResourceContributor("build")
     @Order(DEFAULT_ORDER)
     BuildResourceContributor buildResourceContributor(BuildProperties properties) {
         return new BuildResourceContributor(properties);
     }
 
     @Bean
-    @Order(DEFAULT_ORDER + 10)
-    MapResourceContributor propertyResourceContributor(OpenTelemetryResourceProperties properties) {
-        return new MapResourceContributor(properties.getAttributes());
+    @ConditionalOnOpenTelemetryResourceContributor(value = "environment", matchIfMissing = true)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    EnvironmentResourceContributor environmentResourceContributor(Environment environment, OpenTelemetryResourceProperties properties) {
+        return new EnvironmentResourceContributor(environment, properties);
     }
 
     @Bean
-    @ConditionalOnEnabledResourceContributor(value = "filter", matchIfMissing = true)
+    @ConditionalOnOpenTelemetryResourceContributor(value = "filter", matchIfMissing = true)
     FilterResourceContributor filterResourceContributor(OpenTelemetryResourceProperties properties) {
-        return new FilterResourceContributor(properties.getFilter().getDisabledKeys());
+        return new FilterResourceContributor(properties.getContributors().getFilter().getDisabledKeys());
+    }
+
+    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "host")
+    @Order(DEFAULT_ORDER)
+    HostResourceContributor hostResourceContributor() {
+        return new HostResourceContributor();
+    }
+
+    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "java")
+    @Order(DEFAULT_ORDER)
+    JavaResourceContributor javaRuntimeResourceContributor() {
+        return new JavaResourceContributor();
+    }
+
+    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "os")
+    @Order(DEFAULT_ORDER)
+    OsResourceContributor osResourceContributor() {
+        return new OsResourceContributor();
+    }
+
+    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "process")
+    @Order(DEFAULT_ORDER)
+    ProcessResourceContributor processRuntimeResourceContributor() {
+        return new ProcessResourceContributor();
     }
 
 }

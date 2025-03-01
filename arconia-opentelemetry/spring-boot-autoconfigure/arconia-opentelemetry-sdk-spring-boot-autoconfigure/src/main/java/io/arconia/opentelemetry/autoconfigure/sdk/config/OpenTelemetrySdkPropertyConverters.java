@@ -16,9 +16,10 @@ import org.springframework.util.CollectionUtils;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties.SamplingStrategy;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties.SamplingStrategy;
 
 /**
  * Utility class for converting OpenTelemetry SDK configuration types to Arconia configuration types.
@@ -150,6 +151,23 @@ class OpenTelemetrySdkPropertyConverters {
             }
             List<PropagationType> propagatorLists = propagators.stream().toList();
             return CollectionUtils.isEmpty(propagatorLists) ? null : propagatorLists;
+        };
+    }
+
+    static Function<String,@Nullable ExemplarFilter> exemplarFilter(String externalKey) {
+        Assert.hasText(externalKey, "externalKey cannot be null or empty");
+        return value -> {
+            var exemplarFilter = switch (value.trim().toLowerCase()) {
+                case "always_on" -> ExemplarFilter.ALWAYS_ON;
+                case "always_off" -> ExemplarFilter.ALWAYS_OFF;
+                case "trace_based" -> ExemplarFilter.TRACE_BASED;
+                default -> null;
+            };
+            if (exemplarFilter == null) {
+                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                return null;
+            }
+            return exemplarFilter;
         };
     }
 

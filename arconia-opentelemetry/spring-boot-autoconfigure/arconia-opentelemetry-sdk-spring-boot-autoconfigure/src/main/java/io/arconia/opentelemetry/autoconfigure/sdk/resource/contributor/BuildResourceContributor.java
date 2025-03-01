@@ -8,6 +8,11 @@ import org.springframework.util.StringUtils;
 
 /**
  * A {@link ResourceContributor} that contributes build information.
+ * <p>
+ * The following attributes are populated:
+ * <ul>
+ *     <li>{@code service.version}</li>
+ * </ul>
  */
 public class BuildResourceContributor implements ResourceContributor {
 

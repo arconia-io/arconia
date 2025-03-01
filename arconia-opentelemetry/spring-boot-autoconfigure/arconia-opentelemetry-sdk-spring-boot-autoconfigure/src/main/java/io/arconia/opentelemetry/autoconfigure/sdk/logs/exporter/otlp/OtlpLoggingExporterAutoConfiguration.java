@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.logs.ConditionalOnEnabledOpenTelemetryLogging;
+import io.arconia.opentelemetry.autoconfigure.sdk.logs.ConditionalOnOpenTelemetryLogging;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
 
 /**
@@ -30,7 +30,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLog
 @AutoConfiguration
 @ConditionalOnClass(OtlpHttpLogRecordExporter.class)
 @ConditionalOnProperty(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
-@ConditionalOnEnabledOpenTelemetryLogging
+@ConditionalOnOpenTelemetryLogging
 public class OtlpLoggingExporterAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OtlpLoggingExporterAutoConfiguration.class);

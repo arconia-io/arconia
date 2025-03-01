@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.logs.ConditionalOnEnabledOpenTelemetryLogging;
+import io.arconia.opentelemetry.autoconfigure.sdk.logs.ConditionalOnOpenTelemetryLogging;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
 
 /**
@@ -17,7 +17,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLog
 @AutoConfiguration
 @ConditionalOnClass({ SystemOutLogRecordExporter.class })
 @ConditionalOnProperty(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "console")
-@ConditionalOnEnabledOpenTelemetryLogging
+@ConditionalOnOpenTelemetryLogging
 public class ConsoleLoggingExporterAutoConfiguration {
 
     @Bean

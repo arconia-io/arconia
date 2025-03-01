@@ -34,7 +34,7 @@ class OpenTelemetryAutoConfigurationTests {
 
     @Test
     void noopOpenTelemetryWhenSdkMissing() {
-        contextRunner.withPropertyValues("arconia.opentelemetry.enabled=true")
+        contextRunner.withPropertyValues("arconia.otel.enabled=true")
                 .withClassLoader(new FilteredClassLoader("io.opentelemetry.sdk.OpenTelemetrySdk"))
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
@@ -44,7 +44,7 @@ class OpenTelemetryAutoConfigurationTests {
 
     @Test
     void openTelemetryWhenEnabled() {
-        contextRunner.withPropertyValues("arconia.opentelemetry.enabled=true")
+        contextRunner.withPropertyValues("arconia.otel.enabled=true")
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
                     assertThat(context.getBean(OpenTelemetry.class)).isNotSameAs(OpenTelemetry.noop());
@@ -53,7 +53,7 @@ class OpenTelemetryAutoConfigurationTests {
 
     @Test
     void openTelemetryWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.opentelemetry.enabled=false")
+        contextRunner.withPropertyValues("arconia.otel.enabled=false")
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
                     assertThat(context.getBean(OpenTelemetry.class)).isSameAs(OpenTelemetry.noop());

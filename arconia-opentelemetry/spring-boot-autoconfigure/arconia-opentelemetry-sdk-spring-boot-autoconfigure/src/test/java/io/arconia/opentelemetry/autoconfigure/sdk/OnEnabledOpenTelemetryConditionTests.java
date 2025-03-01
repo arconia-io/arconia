@@ -23,28 +23,28 @@ class OnEnabledOpenTelemetryConditionTests {
     void matchWhenPropertyTrueAndAnnotationTrue() {
         ConditionOutcome outcome = getMatchOutcome(true, true);
         assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage()).contains("arconia.opentelemetry.enabled is true and annotation requested enabled to be true");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is true and annotation requested enabled to be true");
     }
 
     @Test
     void noMatchWhenPropertyTrueAndAnnotationFalse() {
         ConditionOutcome outcome = getMatchOutcome(true, false);
         assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage()).contains("arconia.opentelemetry.enabled is true and annotation requested enabled to be false");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is true and annotation requested enabled to be false");
     }
 
     @Test
     void noMatchWhenPropertyFalseAndAnnotationTrue() {
         ConditionOutcome outcome = getMatchOutcome(false, true);
         assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage()).contains("arconia.opentelemetry.enabled is false and annotation requested enabled to be true");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is false and annotation requested enabled to be true");
     }
 
     @Test
     void matchWhenPropertyFalseAndAnnotationFalse() {
         ConditionOutcome outcome = getMatchOutcome(false, false);
         assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage()).contains("arconia.opentelemetry.enabled is false and annotation requested enabled to be false");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is false and annotation requested enabled to be false");
     }
 
     @Test
@@ -67,7 +67,7 @@ class OnEnabledOpenTelemetryConditionTests {
         MockEnvironment environment = new MockEnvironment();
 
         if (propertyValue != null) {
-            environment.setProperty("arconia.opentelemetry.enabled", propertyValue.toString());
+            environment.setProperty("arconia.otel.enabled", propertyValue.toString());
         }
 
         when(context.getEnvironment()).thenReturn(environment);

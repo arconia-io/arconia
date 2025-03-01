@@ -15,7 +15,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties.SamplingStrategy;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties.SamplingStrategy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

@@ -25,10 +25,10 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnEnabledOpenTelemetryMetrics;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.otlp.OtlpTracingConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 /**
  * Auto-configuration for exporting metrics via OTLP.
@@ -36,7 +36,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.otlp.OtlpTrac
 @AutoConfiguration
 @ConditionalOnClass(OtlpHttpMetricExporter.class)
 @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
-@ConditionalOnEnabledOpenTelemetryMetrics
+@ConditionalOnOpenTelemetryMetrics
 public class OtlpMetricsExporterAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OtlpMetricsExporterAutoConfiguration.class);

@@ -1,56 +1,71 @@
 {
   "properties": [
     {
-      "name": "arconia.opentelemetry.enabled",
+      "name": "arconia.otel.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether OpenTelemetry support should be enabled.",
       "defaultValue": true
     },
     {
-      "name": "arconia.opentelemetry.logs.enabled",
+      "name": "arconia.otel.logs.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether support for OpenTelemetry logs is enabled.",
       "defaultValue": true
     },
     {
-      "name": "arconia.opentelemetry.metrics.enabled",
+      "name": "arconia.otel.metrics.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether support for OpenTelemetry metrics is enabled.",
       "defaultValue": true
     },
     {
-      "name": "arconia.opentelemetry.traces.enabled",
+      "name": "arconia.otel.traces.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether support for OpenTelemetry traces is enabled.",
       "defaultValue": true
     },
+
     {
-      "name": "arconia.opentelemetry.logs.processor.schedule-delay",
-      "type": "java.time.Duration",
-      "defaultValue": "1s"
-    },
-    {
-      "name": "arconia.opentelemetry.traces.processor.schedule-delay",
-      "type": "java.time.Duration",
-      "defaultValue": "5s"
-    },
-    {
-      "name": "arconia.opentelemetry.resource.build.enabled",
+      "name": "arconia.otel.resource.contributors.build.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether the Build resource contributor is enabled.",
-      "defaultValue": false
+      "defaultValue": true
     },
     {
-      "name": "arconia.opentelemetry.resource.environment.enabled",
+      "name": "arconia.otel.resource.contributors.environment.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether the Environment resource contributor is enabled.",
       "defaultValue": true
     },
     {
-      "name": "arconia.opentelemetry.resource.filter.enabled",
+      "name": "arconia.otel.resource.contributors.filter.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether the Filter resource contributor is enabled.",
       "defaultValue": true
+    },
+    {
+      "name": "arconia.otel.resource.contributors.host.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Host resource contributor is enabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.resource.contributors.java.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Java resource contributor is enabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.resource.contributors.os.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the OS resource contributor is enabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.resource.contributors.process.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Process resource contributor is enabled.",
+      "defaultValue": false
     }
   ]
 }

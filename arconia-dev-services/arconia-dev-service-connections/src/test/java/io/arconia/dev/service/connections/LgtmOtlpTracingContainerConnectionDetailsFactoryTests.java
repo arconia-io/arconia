@@ -9,8 +9,8 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.arconia.dev.service.connections.testcontainers.LgtmTestcontainers;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.otlp.OtlpTracingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.otlp.OtlpTracingExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.otlp.OtlpTracingConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.otlp.OtlpTracingExporterAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link LgtmOtlpTracingContainerConnectionDetailsFactory}.
  */
 @SpringJUnitConfig
-@TestPropertySource(properties = "arconia.opentelemetry.traces.enabled=false")
+@TestPropertySource(properties = "arconia.otel.traces.enabled=false")
 class LgtmOtlpTracingContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
 
     @Autowired

@@ -1,9 +1,8 @@
 project:
   name: arconia
-  description: Framework to build multitenant and AI applications using Java and Spring Boot.
+  description: Framework to build modern applications using Java and Spring Boot.
   longDescription: |
-    Arconia is a framework to build modern applications using Java and Spring Boot.
-    It provides support for multitenancy and AI/Large Language Models.
+    Arconia is a framework to build modern applications using Java and Spring Boot, focused on developer experience and cloud native architectures.
   links:
     homepage: https://{{repoHost}}/{{repoOwner}}/{{repoName}}
     faq: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/discussions
@@ -11,12 +10,6 @@ project:
     - Thomas Vitale
   license: Apache-2.0
   inceptionYear: "2024"
-  tags:
-    - ai
-    - arconia
-    - java
-    - multitenancy
-    - spring-boot
 
 checksum:
   algorithms:

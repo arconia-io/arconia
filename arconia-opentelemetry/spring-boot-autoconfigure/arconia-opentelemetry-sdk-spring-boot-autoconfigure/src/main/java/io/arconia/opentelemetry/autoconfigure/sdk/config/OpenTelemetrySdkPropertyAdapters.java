@@ -1,10 +1,5 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.config;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.Assert;
 
@@ -16,8 +11,8 @@ import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLog
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.OpenTelemetryTracingExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.OpenTelemetryTracingExporterProperties;
 
 /**
  * Provides adapters from OpenTelemetry SDK properties to Arconia properties.
@@ -58,19 +53,15 @@ class OpenTelemetrySdkPropertyAdapters {
      *      <li>{@code otel.java.disabled.resource.providers}</li>
      * </ul>
      *
-     * @link <a href="https://opentelemetry.io/docs/languages/java/configuration/#properties-resource">...</a>
+     * @link <a href="https://opentelemetry.io/docs/languages/java/configuration/#properties-resource">Resource Properties</a>
      */
     static PropertyAdapter resource(ConfigurableEnvironment environment) {
         Assert.notNull(environment, "environment cannot be null");
         return PropertyAdapter.builder(environment)
             // Resource Attributes
-            .mapString("otel.service.name", "spring.application.name")
-            .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes",
-                    // See: https://opentelemetry.io/docs/specs/otel/resource/sdk/#specifying-resource-information-via-an-environment-variable
-                    map -> map.entrySet().stream()
-                            .map(e -> Map.entry(e.getKey(), URLDecoder.decode(e.getValue(), StandardCharsets.UTF_8)))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-            .mapList("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".filter.disabled-keys")
+            .mapString("otel.service.name", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")
+            .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes")
+            .mapList("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".contributors.filter.disabled-keys")
             .build();
     }
 
@@ -97,7 +88,6 @@ class OpenTelemetrySdkPropertyAdapters {
      * <p>
      * All properties supported, except:
      * <ul>
-     *      <li>{@code otel.metrics.exemplar.filter} (still experimental)</li>
      *      <li>{@code otel.experimental.metrics.cardinality.limit} (still experimental)</li>
      * </ul>
      *
@@ -107,6 +97,7 @@ class OpenTelemetrySdkPropertyAdapters {
         Assert.notNull(environment, "environment cannot be null");
         return PropertyAdapter.builder(environment)
             .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".interval")
+            .mapEnum("otel.metrics.exemplar.filter", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter", OpenTelemetrySdkPropertyConverters::exemplarFilter)
             .build();
     }
 

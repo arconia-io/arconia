@@ -15,13 +15,19 @@ dependencies {
 
     optional project(':arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure')
 
+    optional "io.opentelemetry:opentelemetry-sdk"
     optional "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
+    optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
     optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:${openTelemetryInstrumentationVersion}-alpha") {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-api-incubator'
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
     optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:${openTelemetryInstrumentationVersion}-alpha") {
+        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: 'io.opentelemetry.semconv', module: 'opentelemetry-semconv'
+    }
+    optional("io.opentelemetry.instrumentation:opentelemetry-resources:${openTelemetryInstrumentationVersion}-alpha") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
         exclude group: 'io.opentelemetry.semconv', module: 'opentelemetry-semconv'
     }

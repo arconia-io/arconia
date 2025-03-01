@@ -7,6 +7,7 @@ import java.util.Map;
 
 import io.opentelemetry.sdk.resources.Resource;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
@@ -18,7 +19,13 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterRes
 @ConfigurationProperties(prefix = OpenTelemetryResourceProperties.CONFIG_PREFIX)
 public class OpenTelemetryResourceProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.opentelemetry.resource";
+    public static final String CONFIG_PREFIX = "arconia.otel.resource";
+
+    /**
+     * Name identifying the service.
+     */
+    @Nullable
+    private String serviceName;
 
     /**
      * Additional attributes to include in the resource.
@@ -26,16 +33,38 @@ public class OpenTelemetryResourceProperties {
     private final Map<String, String> attributes = new HashMap<>();
 
     /**
-     * Configuration for the {@link FilterResourceContributor}.
+     * Configuration for the resource contributors.
      */
-    private final Filter filter = new Filter();
+    private final Contributors contributors = new Contributors();
+
+    @Nullable
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
     public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public Filter getFilter() {
-        return filter;
+    public Contributors getContributors() {
+        return contributors;
+    }
+
+    public static class Contributors {
+
+        /**
+         * Configuration for the {@link FilterResourceContributor}.
+         */
+        private final Filter filter = new Filter();
+
+        public Filter getFilter() {
+            return filter;
+        }
+
     }
 
     public static class Filter {

@@ -11,7 +11,7 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.StringUtils;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.tracing.OpenTelemetryTracingProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties;
 
 /**
  * Adapts properties between Actuator and Arconia, and disables replaced auto-configurations.

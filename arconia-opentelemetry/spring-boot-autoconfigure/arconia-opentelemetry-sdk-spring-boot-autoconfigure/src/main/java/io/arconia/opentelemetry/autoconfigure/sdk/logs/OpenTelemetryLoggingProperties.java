@@ -3,9 +3,6 @@ package io.arconia.opentelemetry.autoconfigure.sdk.logs;
 import java.time.Duration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-
-import io.arconia.opentelemetry.autoconfigure.sdk.exporter.BatchProcessorConfig;
 
 /**
  * Configuration properties for OpenTelemetry logs.
@@ -13,7 +10,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.BatchProcessorConfig;
 @ConfigurationProperties(prefix = OpenTelemetryLoggingProperties.CONFIG_PREFIX)
 public class OpenTelemetryLoggingProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.opentelemetry.logs";
+    public static final String CONFIG_PREFIX = "arconia.otel.logs";
 
     /**
      * Constraints for the data captured by log records.
@@ -21,20 +18,15 @@ public class OpenTelemetryLoggingProperties {
     private final LogLimits logLimits = new LogLimits();
 
     /**
-     * Configuration for the log record batch processor.
+     * Configuration for the batch log record processor.
      */
-    @NestedConfigurationProperty
-    private final BatchProcessorConfig processor = new BatchProcessorConfig();
-
-    public OpenTelemetryLoggingProperties() {
-        this.processor.setScheduleDelay(Duration.ofSeconds(1));
-    }
+    private final LogRecordProcessorConfig processor = new LogRecordProcessorConfig();
 
     public LogLimits getLogLimits() {
         return logLimits;
     }
 
-    public BatchProcessorConfig getProcessor() {
+    public LogRecordProcessorConfig getProcessor() {
         return processor;
     }
 
@@ -64,6 +56,78 @@ public class OpenTelemetryLoggingProperties {
 
         public void setMaxNumberOfAttributes(int maxNumberOfAttributes) {
             this.maxNumberOfAttributes = maxNumberOfAttributes;
+        }
+
+    }
+
+    /**
+     * Configuration for the batch log record processor.
+     */
+    public static class LogRecordProcessorConfig {
+
+        /**
+         * The interval between two consecutive exports.
+         */
+        private Duration scheduleDelay = Duration.ofSeconds(1);
+
+        /**
+         * The maximum allowed time to export log records.
+         */
+        private Duration exportTimeout = Duration.ofSeconds(30);
+
+        /**
+         * The maximum number of log records that can be queued before batching.
+         */
+        private int maxQueueSize = 2048;
+
+        /**
+         * The maximum number of log records to export in a single batch.
+         */
+        private int maxExportBatchSize = 512;
+
+        /**
+         * Whether to generate metrics for the log record processor.
+         */
+        private boolean metrics = false;
+
+        public Duration getScheduleDelay() {
+            return scheduleDelay;
+        }
+
+        public void setScheduleDelay(Duration scheduleDelay) {
+            this.scheduleDelay = scheduleDelay;
+        }
+
+        public Duration getExportTimeout() {
+            return exportTimeout;
+        }
+
+        public void setExportTimeout(Duration exporterTimeout) {
+            this.exportTimeout = exporterTimeout;
+        }
+
+        public int getMaxQueueSize() {
+            return maxQueueSize;
+        }
+
+        public void setMaxQueueSize(int maxQueueSize) {
+            this.maxQueueSize = maxQueueSize;
+        }
+
+        public int getMaxExportBatchSize() {
+            return maxExportBatchSize;
+        }
+
+        public void setMaxExportBatchSize(int maxExportBatchSize) {
+            this.maxExportBatchSize = maxExportBatchSize;
+        }
+
+        public boolean isMetrics() {
+            return metrics;
+        }
+
+        public void setMetrics(boolean metrics) {
+            this.metrics = metrics;
         }
 
     }
