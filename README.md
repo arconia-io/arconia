@@ -2,6 +2,8 @@
 
 ![Build](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml/badge.svg)
 [![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Follow us on Bluesky](https://img.shields.io/static/v1?label=Bluesky&message=Follow&color=1DA1F2)](https://bsky.app/profile/arconia.bsky.social)
+
 
 Arconia is a framework to build modern applications using Java and Spring Boot, focused on developer experience and cloud native architectures.
 It provides support for multitenancy, observability with OpenTelemetry, and GenAI/Large Language Models.
