@@ -10,7 +10,7 @@ io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.console.ConsoleMetri
 io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterAutoConfiguration
 io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsAutoConfiguration
 
-io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAutoConfiguration
+io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration
 
 io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.OpenTelemetryTracingExporterAutoConfiguration
 io.arconia.opentelemetry.autoconfigure.sdk.tracing.exporter.console.ConsoleTracingExporterAutoConfiguration
