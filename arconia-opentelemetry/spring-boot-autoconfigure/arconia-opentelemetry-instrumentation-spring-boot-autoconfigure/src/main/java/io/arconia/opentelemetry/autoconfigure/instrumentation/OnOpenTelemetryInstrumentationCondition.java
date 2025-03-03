@@ -12,9 +12,9 @@ import org.springframework.util.StringUtils;
 /**
  * Determines if OpenTelemetry Instrumentation is enabled.
  *
- * @see ConditionalOnEnabledInstrumentation
+ * @see ConditionalOnOpenTelemetryInstrumentation
  */
-public class OnEnabledInstrumentationCondition extends SpringBootCondition {
+public class OnOpenTelemetryInstrumentationCondition extends SpringBootCondition {
 
     private static final String GLOBAL_PROPERTY = "arconia.otel.instrumentation.enabled";
     private static final String INSTRUMENTATION_PROPERTY = "arconia.otel.instrumentation.%s.enabled";
@@ -27,22 +27,22 @@ public class OnEnabledInstrumentationCondition extends SpringBootCondition {
                     .getProperty(INSTRUMENTATION_PROPERTY.formatted(instrumentationName), Boolean.class);
             if (instrumentationEnabled != null) {
                 return new ConditionOutcome(instrumentationEnabled,
-                        ConditionMessage.forCondition(ConditionalOnEnabledInstrumentation.class)
+                        ConditionMessage.forCondition(ConditionalOnOpenTelemetryInstrumentation.class)
                                 .because(INSTRUMENTATION_PROPERTY.formatted(instrumentationName) + " is " + instrumentationEnabled));
             }
         }
         Boolean globalInstrumentationEnabled = context.getEnvironment().getProperty(GLOBAL_PROPERTY, Boolean.class);
         if (globalInstrumentationEnabled != null) {
             return new ConditionOutcome(globalInstrumentationEnabled,
-                    ConditionMessage.forCondition(ConditionalOnEnabledInstrumentation.class)
+                    ConditionMessage.forCondition(ConditionalOnOpenTelemetryInstrumentation.class)
                             .because(GLOBAL_PROPERTY + " is " + globalInstrumentationEnabled));
         }
-        return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnEnabledInstrumentation.class)
+        return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnOpenTelemetryInstrumentation.class)
                 .because("instrumentation is enabled by default"));
     }
 
     private static String getInstrumentationName(AnnotatedTypeMetadata metadata) {
-        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnEnabledInstrumentation.class.getName());
+        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetryInstrumentation.class.getName());
         if (attributes == null) {
             return null;
         }

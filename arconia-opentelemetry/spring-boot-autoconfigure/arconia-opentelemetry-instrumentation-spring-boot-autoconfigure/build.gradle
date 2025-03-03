@@ -25,11 +25,9 @@ dependencies {
     }
     optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:${openTelemetryInstrumentationVersion}-alpha") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
-        exclude group: 'io.opentelemetry.semconv', module: 'opentelemetry-semconv'
     }
     optional("io.opentelemetry.instrumentation:opentelemetry-resources:${openTelemetryInstrumentationVersion}-alpha") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
-        exclude group: 'io.opentelemetry.semconv', module: 'opentelemetry-semconv'
     }
 
     optional 'org.springframework.boot:spring-boot-starter-actuator'

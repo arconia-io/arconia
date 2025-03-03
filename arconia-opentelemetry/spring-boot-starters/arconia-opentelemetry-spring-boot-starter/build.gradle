@@ -25,7 +25,9 @@ dependencies {
     }
     api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:${openTelemetryInstrumentationVersion}-alpha") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
-        exclude group: 'io.opentelemetry.semconv', module: 'opentelemetry-semconv'
+    }
+    api("io.opentelemetry.instrumentation:opentelemetry-resources:${openTelemetryInstrumentationVersion}-alpha") {
+        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
 
     api("io.micrometer:micrometer-tracing-bridge-otel") {

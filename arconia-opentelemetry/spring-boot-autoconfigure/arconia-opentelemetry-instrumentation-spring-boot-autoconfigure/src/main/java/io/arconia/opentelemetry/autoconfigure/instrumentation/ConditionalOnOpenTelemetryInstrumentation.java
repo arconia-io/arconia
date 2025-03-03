@@ -17,8 +17,8 @@ import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
 @ConditionalOnOpenTelemetry
-@Conditional(OnEnabledInstrumentationCondition.class)
-public @interface ConditionalOnEnabledInstrumentation {
+@Conditional(OnOpenTelemetryInstrumentationCondition.class)
+public @interface ConditionalOnOpenTelemetryInstrumentation {
 
     /**
      * The instrumentation name.

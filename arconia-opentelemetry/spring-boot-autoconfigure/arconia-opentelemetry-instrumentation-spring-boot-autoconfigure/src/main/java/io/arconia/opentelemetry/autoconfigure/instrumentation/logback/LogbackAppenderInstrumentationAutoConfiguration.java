@@ -1,6 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.instrumentation.logback;
 
-import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnEnabledInstrumentation;
+import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnOpenTelemetryInstrumentation;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
@@ -25,7 +25,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.logs.ConditionalOnOpenTelemetr
 @AutoConfiguration(after = OpenTelemetryAutoConfiguration.class)
 @ConditionalOnBean(OpenTelemetry.class)
 @ConditionalOnClass(Appender.class)
-@ConditionalOnEnabledInstrumentation(LogbackAppenderProperties.INSTRUMENTATION_NAME)
+@ConditionalOnOpenTelemetryInstrumentation(LogbackAppenderProperties.INSTRUMENTATION_NAME)
 @ConditionalOnOpenTelemetryLogging
 @EnableConfigurationProperties(LogbackAppenderProperties.class)
 public class LogbackAppenderInstrumentationAutoConfiguration {

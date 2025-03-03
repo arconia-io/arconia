@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryAutoConfiguration;
-import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnEnabledInstrumentation;
+import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnOpenTelemetryInstrumentation;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
@@ -33,7 +33,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetry
 )
 @ConditionalOnClass(MeterRegistry.class)
 @ConditionalOnOpenTelemetryMetrics
-@ConditionalOnEnabledInstrumentation(MicrometerProperties.INSTRUMENTATION_NAME)
+@ConditionalOnOpenTelemetryInstrumentation(MicrometerProperties.INSTRUMENTATION_NAME)
 @Conditional(MicrometerInstrumentationAutoConfiguration.MetricsExportEnabled.class)
 @EnableConfigurationProperties(MicrometerProperties.class)
 public class MicrometerInstrumentationAutoConfiguration {
