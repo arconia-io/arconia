@@ -4,6 +4,8 @@ import java.time.Duration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
+
 /**
  * Configuration properties for OpenTelemetry metrics.
  */
@@ -22,6 +24,11 @@ public class OpenTelemetryMetricsProperties {
      */
     private ExemplarFilter exemplarFilter = ExemplarFilter.TRACE_BASED;
 
+    /**
+     * The aggregation strategy to use for exporting histograms.
+     */
+    private HistogramAggregationStrategy histogramAggregation = HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM;
+
     public Duration getInterval() {
         return interval;
     }
@@ -36,6 +43,14 @@ public class OpenTelemetryMetricsProperties {
 
     public void setExemplarFilter(ExemplarFilter exemplarFilter) {
         this.exemplarFilter = exemplarFilter;
+    }
+
+    public HistogramAggregationStrategy getHistogramAggregation() {
+        return histogramAggregation;
+    }
+
+    public void setHistogramAggregation(HistogramAggregationStrategy histogramAggregation) {
+        this.histogramAggregation = histogramAggregation;
     }
 
     /**

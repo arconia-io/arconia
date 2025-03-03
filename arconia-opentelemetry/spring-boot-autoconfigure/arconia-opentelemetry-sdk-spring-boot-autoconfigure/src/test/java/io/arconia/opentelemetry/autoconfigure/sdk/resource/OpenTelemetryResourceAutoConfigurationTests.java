@@ -30,12 +30,12 @@ class OpenTelemetryResourceAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(OpenTelemetryResourceAutoConfiguration.class))
-            .withPropertyValues("arconia.otel.enabled=true");
+            .withPropertyValues("arconia.opentelemetry.enabled=true");
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         contextRunner
-            .withPropertyValues("arconia.otel.enabled=false")
+            .withPropertyValues("arconia.opentelemetry.enabled=false")
             .withClassLoader(new FilteredClassLoader(Resource.class))
             .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
     }

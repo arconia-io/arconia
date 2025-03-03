@@ -58,6 +58,12 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             assertThat(context).hasSingleBean(SdkMeterProvider.class);
             assertThat(context).hasSingleBean(CardinalityLimitSelector.class);
             assertThat(context).hasSingleBean(ExemplarFilter.class);
+            assertThat(context).hasBean("histogramAggregation");
+            
+            // Verify default histogram aggregation
+            OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+            assertThat(properties.getHistogramAggregation().name())
+                .isEqualTo("EXPLICIT_BUCKET_HISTOGRAM");
         });
     }
 
@@ -94,7 +100,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
                 "spring.threads.virtual.enabled=false"
             )
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
                 assertThat(context).hasBean("metricBuilderPlatformThreads");
                 assertThat(context).doesNotHaveBean("metricBuilderVirtualThreads");
             });
@@ -109,7 +115,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
                 "spring.threads.virtual.enabled=true"
             )
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
                 assertThat(context).hasBean("metricBuilderVirtualThreads");
                 assertThat(context).doesNotHaveBean("metricBuilderPlatformThreads");
             });
@@ -121,7 +127,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
             .withPropertyValues("spring.threads.virtual.enabled=true")
             .run(context -> {
-                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(3);
                 assertThat(context).hasBean("customMetricBuilderCustomizer");
                 assertThat(context).hasBean("metricBuilderVirtualThreads");
             });
@@ -130,7 +136,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
             .withPropertyValues("spring.threads.virtual.enabled=false")
             .run(context -> {
-                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(3);
                 assertThat(context).hasBean("customMetricBuilderCustomizer");
                 assertThat(context).hasBean("metricBuilderPlatformThreads");
             });
@@ -152,6 +158,33 @@ class OpenTelemetryMetricsAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(Meter.class);
         });
+    }
+
+    @Test
+    void histogramAggregationConfigurationApplied() {
+        contextRunner
+            .withPropertyValues("arconia.otel.metrics.histogram-aggregation=base2-exponential-bucket-histogram")
+            .run(context -> {
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context).hasBean("histogramAggregation");
+                
+                // Verify the histogram aggregation property is set correctly
+                OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+                assertThat(properties.getHistogramAggregation().name())
+                    .isEqualTo("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
+            });
+
+        contextRunner
+            .withPropertyValues("arconia.otel.metrics.histogram-aggregation=explicit-bucket-histogram")
+            .run(context -> {
+                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context).hasBean("histogramAggregation");
+                
+                // Verify the histogram aggregation property is set correctly
+                OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+                assertThat(properties.getHistogramAggregation().name())
+                    .isEqualTo("EXPLICIT_BUCKET_HISTOGRAM");
+            });
     }
 
     @Configuration(proxyBeanMethods = false)

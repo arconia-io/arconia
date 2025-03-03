@@ -6,13 +6,18 @@ import io.micrometer.core.instrument.util.NamedThreadFactory;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -99,6 +104,20 @@ public class OpenTelemetryMetricsAutoConfiguration {
                             .setExecutor(Executors.newSingleThreadScheduledExecutor(taskExecutor.getVirtualThreadFactory()))
                             .build(), cardinalityLimitSelector));
         };
+    }
+
+    @Bean
+    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsProperties properties) {
+        return builder -> builder.registerView(
+                InstrumentSelector.builder()
+                        .setType(InstrumentType.HISTOGRAM)
+                        .build(),
+                View.builder()
+                        .setAggregation(switch(properties.getHistogramAggregation()) {
+                            case BASE2_EXPONENTIAL_BUCKET_HISTOGRAM -> Base2ExponentialHistogramAggregation.getDefault();
+                            case EXPLICIT_BUCKET_HISTOGRAM -> ExplicitBucketHistogramAggregation.getDefault();
+                        })
+                        .build());
     }
 
     @Bean

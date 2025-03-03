@@ -1,53 +1,51 @@
-package io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.otlp;
+package io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.otlp;
 
 import java.util.Locale;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.traces.ConditionalOnOpenTelemetryTracing;
-import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.OpenTelemetryTracingExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
 
 /**
- * Auto-configuration for exporting traces via OTLP.
+ * Configuration for exporting logs via OTLP.
  */
-@AutoConfiguration
-@ConditionalOnClass(OtlpHttpSpanExporter.class)
-@ConditionalOnProperty(prefix = OpenTelemetryTracingExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
-@ConditionalOnOpenTelemetryTracing
-public class OtlpTracingExporterAutoConfiguration {
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(OtlpHttpLogRecordExporter.class)
+@ConditionalOnProperty(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
+public class OtlpLoggingExporterConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(OtlpTracingExporterAutoConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(OtlpLoggingExporterConfiguration.class);
 
     @Bean
-    @ConditionalOnMissingBean(OtlpTracingConnectionDetails.class)
-    PropertiesOtlpTracingConnectionDetails otlpTracingConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties) {
-        return new PropertiesOtlpTracingConnectionDetails(commonProperties, properties);
+    @ConditionalOnMissingBean
+    OtlpLoggingConnectionDetails otlpLoggingConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties) {
+        return new PropertiesOtlpLoggingConnectionDetails(commonProperties, properties);
     }
 
     // TODO: Add certificates/TLS, retry, and proxy.
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OtlpTracingConnectionDetails.class)
-    @ConditionalOnProperty(prefix = OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "http_protobuf", matchIfMissing = true)
-    OtlpHttpSpanExporter otlpHttpSpanExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
-        OtlpHttpSpanExporterBuilder builder = OtlpHttpSpanExporter.builder()
+    @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
+    @ConditionalOnProperty(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "http_protobuf", matchIfMissing = true)
+    OtlpHttpLogRecordExporter otlpHttpLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
+        OtlpHttpLogRecordExporterBuilder builder = OtlpHttpLogRecordExporter.builder()
                 .setEndpoint(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
@@ -58,17 +56,17 @@ public class OtlpTracingExporterAutoConfiguration {
         if (properties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
-        logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", connectionDetails.getUrl(Protocol.HTTP_PROTOBUF));
+        logger.info("Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: {}", connectionDetails.getUrl(Protocol.HTTP_PROTOBUF));
         return builder.build();
     }
 
     // TODO: Add certificates/TLS, retry, and proxy.
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OtlpTracingConnectionDetails.class)
-    @ConditionalOnProperty(prefix = OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "grpc")
-    OtlpGrpcSpanExporter otlpGrpcSpanExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
-        OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder()
+    @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
+    @ConditionalOnProperty(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "grpc")
+    OtlpGrpcLogRecordExporter otlpGrpcLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
+        OtlpGrpcLogRecordExporterBuilder builder = OtlpGrpcLogRecordExporter.builder()
                 .setEndpoint(connectionDetails.getUrl(Protocol.GRPC))
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
@@ -79,24 +77,19 @@ public class OtlpTracingExporterAutoConfiguration {
         if (properties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
-        logger.info("Configuring OpenTelemetry gRPC span exporter with endpoint: {}", connectionDetails.getUrl(Protocol.GRPC));
+        logger.info("Configuring OpenTelemetry gRPC log exporter with endpoint: {}", connectionDetails.getUrl(Protocol.GRPC));
         return builder.build();
     }
 
     /**
-     * Implementation of {@link OtlpTracingConnectionDetails} that uses properties to determine the OTLP endpoint.
+     * Implementation of {@link OtlpLoggingConnectionDetails} that uses properties to determine the OTLP endpoint.
      */
-    static class PropertiesOtlpTracingConnectionDetails implements OtlpTracingConnectionDetails {
-
-        private static final String TRACES_PATH = "/v1/traces";
-
-        private static final String DEFAULT_HTTP_PROTOBUF_ENDPOINT = "http://localhost:4318" + TRACES_PATH;
-        private static final String DEFAULT_GRPC_ENDPOINT = "http://localhost:4317";
+    static class PropertiesOtlpLoggingConnectionDetails implements OtlpLoggingConnectionDetails {
 
         private final OpenTelemetryExporterProperties commonProperties;
-        private final OpenTelemetryTracingExporterProperties properties;
+        private final OpenTelemetryLoggingExporterProperties properties;
 
-        public PropertiesOtlpTracingConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties) {
+        public PropertiesOtlpLoggingConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties) {
             this.commonProperties = commonProperties;
             this.properties = properties;
         }
@@ -110,7 +103,7 @@ public class OtlpTracingExporterAutoConfiguration {
             if (properties.getOtlp().getEndpoint() != null) {
                 url = properties.getOtlp().getEndpoint().toString();
             } else if (commonProperties.getOtlp().getEndpoint() != null) {
-                url = protocolProperty == Protocol.HTTP_PROTOBUF ? commonProperties.getOtlp().getEndpoint().resolve(TRACES_PATH).toString() : commonProperties.getOtlp().getEndpoint().toString();
+                url = protocolProperty == Protocol.HTTP_PROTOBUF ? commonProperties.getOtlp().getEndpoint().resolve(LOGS_PATH).toString() : commonProperties.getOtlp().getEndpoint().toString();
             } else {
                 url = protocolProperty == Protocol.HTTP_PROTOBUF ? DEFAULT_HTTP_PROTOBUF_ENDPOINT : DEFAULT_GRPC_ENDPOINT;
             }

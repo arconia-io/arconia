@@ -12,7 +12,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.OtlpExporterConf
 @ConfigurationProperties(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX)
 public class OpenTelemetryLoggingExporterProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.opentelemetry.logs.exporter";
+    public static final String CONFIG_PREFIX = "arconia.otel.logs.exporter";
 
     /**
      * The type of OpenTelemetry exporter to use for logs.

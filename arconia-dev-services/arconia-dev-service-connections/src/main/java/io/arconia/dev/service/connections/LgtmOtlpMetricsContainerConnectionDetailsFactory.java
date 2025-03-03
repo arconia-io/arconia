@@ -6,7 +6,7 @@ import org.testcontainers.grafana.LgtmStackContainer;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
 
 /**
  * Factory for creating {@link OtlpMetricsConnectionDetails} for LGTM containers.
@@ -15,7 +15,7 @@ public class LgtmOtlpMetricsContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<LgtmStackContainer, OtlpMetricsConnectionDetails> {
 
     LgtmOtlpMetricsContainerConnectionDetailsFactory() {
-        super(ANY_CONNECTION_NAME, OtlpMetricsExporterAutoConfiguration.class.getName());
+        super(ANY_CONNECTION_NAME, OtlpMetricsExporterConfiguration.class.getName());
     }
 
     @Override

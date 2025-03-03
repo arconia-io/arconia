@@ -6,40 +6,31 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
-import io.opentelemetry.sdk.metrics.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 /**
  * Auto-configuration for exporting metrics via OTLP.
  */
-@AutoConfiguration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OtlpHttpMetricExporter.class)
 @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
-@ConditionalOnOpenTelemetryMetrics
-public class OtlpMetricsExporterAutoConfiguration {
+public class OtlpMetricsExporterConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(OtlpMetricsExporterAutoConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(OtlpMetricsExporterConfiguration.class);
 
     @Bean
     @ConditionalOnMissingBean(OtlpMetricsConnectionDetails.class)
@@ -58,7 +49,7 @@ public class OtlpMetricsExporterAutoConfiguration {
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
-                //.setAggregationTemporalitySelector(aggregationTemporalitySelector)
+                .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
                 .setMemoryMode(commonProperties.getMemoryMode());
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
@@ -71,13 +62,13 @@ public class OtlpMetricsExporterAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpMetricsConnectionDetails.class)
     @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "grpc")
-    OtlpGrpcMetricExporter otlpGrpcMetricExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, AggregationTemporalitySelector aggregationTemporalitySelector) {
+    OtlpGrpcMetricExporter otlpGrpcMetricExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties, OtlpMetricsConnectionDetails connectionDetails) {
         OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder()
                 .setEndpoint(connectionDetails.getUrl(Protocol.GRPC))
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
-                .setAggregationTemporalitySelector(aggregationTemporalitySelector)
+                .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
                 .setMemoryMode(commonProperties.getMemoryMode());
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
@@ -85,9 +76,7 @@ public class OtlpMetricsExporterAutoConfiguration {
         return builder.build();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    AggregationTemporalitySelector aggregationTemporalitySelector(OpenTelemetryMetricsExporterProperties properties) {
+    AggregationTemporalitySelector getAggregationTemporalitySelector(OpenTelemetryMetricsExporterProperties properties) {
         return switch (properties.getAggregationTemporality()) {
             case CUMULATIVE -> AggregationTemporalitySelector.alwaysCumulative();
             case DELTA -> AggregationTemporalitySelector.deltaPreferred();
@@ -95,29 +84,10 @@ public class OtlpMetricsExporterAutoConfiguration {
         };
     }
 
-    @Bean
-    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsExporterProperties properties) {
-        return builder -> builder.registerView(
-                InstrumentSelector.builder()
-                        .setType(InstrumentType.HISTOGRAM)
-                        .build(),
-                View.builder()
-                        .setAggregation(switch(properties.getHistogramAggregation()) {
-                            case BASE2_EXPONENTIAL_BUCKET_HISTOGRAM -> Base2ExponentialHistogramAggregation.getDefault();
-                            case EXPLICIT_BUCKET_HISTOGRAM -> ExplicitBucketHistogramAggregation.getDefault();
-                        })
-                        .build());
-    }
-
     /**
      * Implementation of {@link OtlpMetricsConnectionDetails} that uses properties to determine the OTLP endpoint.
      */
     static class PropertiesOtlpMetricsConnectionDetails implements OtlpMetricsConnectionDetails {
-
-        private static final String METRICS_PATH = "/v1/metrics";
-
-        private static final String DEFAULT_HTTP_PROTOBUF_ENDPOINT = "http://localhost:4318" + METRICS_PATH;
-        private static final String DEFAULT_GRPC_ENDPOINT = "http://localhost:4317";
 
         private final OpenTelemetryExporterProperties commonProperties;
         private final OpenTelemetryMetricsExporterProperties properties;

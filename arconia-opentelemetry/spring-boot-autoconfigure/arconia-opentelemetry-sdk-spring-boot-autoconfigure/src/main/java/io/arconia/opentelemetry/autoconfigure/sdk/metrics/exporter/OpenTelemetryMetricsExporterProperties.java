@@ -12,7 +12,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.OtlpExporterConf
 @ConfigurationProperties(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX)
 public class OpenTelemetryMetricsExporterProperties{
 
-    public static final String CONFIG_PREFIX = "arconia.opentelemetry.metrics.exporter";
+    public static final String CONFIG_PREFIX = "arconia.otel.metrics.exporter";
 
     /**
      * The type of OpenTelemetry exporter to use for metrics.
@@ -23,11 +23,6 @@ public class OpenTelemetryMetricsExporterProperties{
      * The aggregation temporality to use for exporting metrics.
      */
     private AggregationTemporalityStrategy aggregationTemporality = AggregationTemporalityStrategy.CUMULATIVE;
-
-    /**
-     * The aggregation strategy to use for exporting histograms.
-     */
-    private HistogramAggregationStrategy histogramAggregation = HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM;
 
     /**
      * Options for the OTLP metrics exporter.
@@ -49,14 +44,6 @@ public class OpenTelemetryMetricsExporterProperties{
 
     public void setAggregationTemporality(AggregationTemporalityStrategy aggregationTemporality) {
         this.aggregationTemporality = aggregationTemporality;
-    }
-
-    public HistogramAggregationStrategy getHistogramAggregation() {
-        return histogramAggregation;
-    }
-
-    public void setHistogramAggregation(HistogramAggregationStrategy histogramAggregation) {
-        this.histogramAggregation = histogramAggregation;
     }
 
     public OtlpExporterConfig getOtlp() {

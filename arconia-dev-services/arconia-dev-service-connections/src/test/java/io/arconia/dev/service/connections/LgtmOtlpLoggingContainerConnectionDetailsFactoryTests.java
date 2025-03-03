@@ -10,7 +10,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import io.arconia.dev.service.connections.testcontainers.LgtmTestcontainers;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.otlp.OtlpLoggingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.otlp.OtlpLoggingExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +37,7 @@ class LgtmOtlpLoggingContainerConnectionDetailsFactoryTests extends LgtmTestcont
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ImportAutoConfiguration(OtlpLoggingExporterAutoConfiguration.class)
+    @ImportAutoConfiguration(OtlpLoggingExporterConfiguration.class)
     static class TestConfiguration {}
 
 }
