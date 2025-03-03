@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link LgtmOtlpTracingContainerConnectionDetailsFactory}.
  */
 @SpringJUnitConfig
-@TestPropertySource(properties = "arconia.otel.traces.enabled=false")
+@TestPropertySource(properties = "arconia.otel.traces.exporter.type=none")
 class LgtmOtlpTracingContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
 
     @Autowired
