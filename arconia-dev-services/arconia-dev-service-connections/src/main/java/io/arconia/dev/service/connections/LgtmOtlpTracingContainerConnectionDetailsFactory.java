@@ -34,7 +34,7 @@ public class LgtmOtlpTracingContainerConnectionDetailsFactory
                 case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl();
                 case GRPC -> getContainer().getOtlpGrpcUrl();
             };
-            return protocol == Protocol.HTTP_PROTOBUF ? "%s/v1/traces".formatted(url) : url;
+            return protocol == Protocol.HTTP_PROTOBUF ? url + TRACES_PATH : url;
         }
     }
 

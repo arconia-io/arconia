@@ -34,7 +34,7 @@ public class LgtmOtlpMetricsContainerConnectionDetailsFactory
                 case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl();
                 case GRPC -> getContainer().getOtlpGrpcUrl();
             };
-            return protocol == Protocol.HTTP_PROTOBUF ? "%s/v1/metrics".formatted(url) : url;
+            return protocol == Protocol.HTTP_PROTOBUF ? url + METRICS_PATH : url;
         }
     }
 
