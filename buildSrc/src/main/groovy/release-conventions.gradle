@@ -2,26 +2,32 @@ plugins {
     id 'maven-publish'
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
+if (!project.plugins.hasPlugin('java-platform')) {
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
 
-javadoc {
-    options.addStringOption("Xdoclint:none", "-quiet")
+    javadoc {
+        options.addStringOption("Xdoclint:none", "-quiet")
+    }
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
-
-            versionMapping {
-                usage('java-api') {
-                    fromResolutionOf('runtimeClasspath')
-                }
-                usage('java-runtime') {
-                    fromResolutionResult()
+            if (project.plugins.hasPlugin('java-platform')) {
+                from components.javaPlatform
+            } else {
+                from components.java
+                
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
                 }
             }
 

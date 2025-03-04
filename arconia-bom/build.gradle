@@ -1,5 +1,5 @@
 plugins {
-    id 'java-library'
+    id 'java-platform'
     id 'release-conventions'
 }
 
@@ -8,23 +8,25 @@ repositories {
 }
 
 dependencies {
-    api "io.arconia:arconia-core:${project.version}"
+    constraints {
+        api project(":arconia-core")
 
-    api "io.arconia:arconia-dev-service-connections:${project.version}"
-    api "io.arconia:arconia-dev-service-core:${project.version}"
-    api "io.arconia:arconia-dev-service-opentelemetry-lgtm:${project.version}"
+        api project(":arconia-dev-services:arconia-dev-service-connections")
+        api project(":arconia-dev-services:arconia-dev-service-core")
+        api project(":arconia-dev-services:arconia-dev-service-opentelemetry-lgtm")
 
-    api "io.arconia:arconia-multitenancy-core:${project.version}"
-    api "io.arconia:arconia-multitenancy-web:${project.version}"
-    api "io.arconia:arconia-multitenancy-spring-boot-autoconfigure:${project.version}"
-    api "io.arconia:arconia-multitenancy-web-spring-boot-starter:${project.version}"
+        api project(":arconia-multitenancy:arconia-multitenancy-core")
+        api project(":arconia-multitenancy:arconia-multitenancy-web")
+        api project(":arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure")
+        api project(":arconia-multitenancy:spring-boot-starters:arconia-multitenancy-web-spring-boot-starter")
 
-    api "io.arconia:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure:${project.version}"
-    api "io.arconia:arconia-opentelemetry-sdk-spring-boot-autoconfigure:${project.version}"
-    api "io.arconia:arconia-opentelemetry-spring-boot-starter:${project.version}"
+        api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure")
+        api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
+        api project(":arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
 
-    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
-    api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+        api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
+        api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+    }
 }
 
 publishing {
