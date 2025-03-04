@@ -35,7 +35,8 @@ publishing {
             pom {
                 name = "Arconia BOM"
                 description = "Arconia Bill of Materials."
-            }
+                packaging = 'pom'
+            } 
         }
     }
 }
