@@ -15,8 +15,8 @@ include 'arconia-dev-services:arconia-dev-service-opentelemetry-lgtm'
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
-include 'arconia-multitenancy:arconia-multitenancy-spring-boot-autoconfigure'
-include 'arconia-multitenancy:arconia-multitenancy-spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
+include 'arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure'
+include 'arconia-multitenancy:spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 
 // OpenTelemetry
 include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure'
