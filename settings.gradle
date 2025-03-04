@@ -5,6 +5,7 @@ plugins {
 rootProject.name = 'arconia'
 
 // Core
+include 'arconia-bom'
 include 'arconia-core'
 
 // Dev Services

@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+    id 'release-conventions'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api "io.arconia:arconia-core:${project.version}"
+
+    api "io.arconia:arconia-dev-service-connections:${project.version}"
+    api "io.arconia:arconia-dev-service-core:${project.version}"
+    api "io.arconia:arconia-dev-service-opentelemetry-lgtm:${project.version}"
+
+    api "io.arconia:arconia-multitenancy-core:${project.version}"
+    api "io.arconia:arconia-multitenancy-web:${project.version}"
+    api "io.arconia:arconia-multitenancy-spring-boot-autoconfigure:${project.version}"
+    api "io.arconia:arconia-multitenancy-web-spring-boot-starter:${project.version}"
+
+    api "io.arconia:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure:${project.version}"
+    api "io.arconia:arconia-opentelemetry-sdk-spring-boot-autoconfigure:${project.version}"
+    api "io.arconia:arconia-opentelemetry-spring-boot-starter:${project.version}"
+
+    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
+    api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia BOM"
+                description = "Arconia Bill of Materials."
+            }
+        }
+    }
+}
