@@ -30,7 +30,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    testImplementation "io.grpc:grpc-netty-shaded:1.70.0"
+    testImplementation "io.grpc:grpc-netty-shaded:1.71.0"
 }
 
 dependencyManagement {
