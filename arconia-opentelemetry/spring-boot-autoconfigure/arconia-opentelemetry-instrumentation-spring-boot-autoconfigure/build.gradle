@@ -19,14 +19,13 @@ dependencies {
     optional "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
-    optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:${openTelemetryInstrumentationVersion}-alpha") {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-api-incubator'
+    optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
-    optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:${openTelemetryInstrumentationVersion}-alpha") {
+    optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
-    optional("io.opentelemetry.instrumentation:opentelemetry-resources:${openTelemetryInstrumentationVersion}-alpha") {
+    optional("io.opentelemetry.instrumentation:opentelemetry-resources") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
 
@@ -37,7 +36,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}-alpha"
     }
 }
 

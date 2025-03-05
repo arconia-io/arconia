@@ -15,18 +15,15 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
     }
     api "io.opentelemetry:opentelemetry-exporter-sender-jdk"
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api") {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-api-incubator'
-    }
+    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
 
-    api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:${openTelemetryInstrumentationVersion}-alpha") {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-api-incubator'
+    api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
-    api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:${openTelemetryInstrumentationVersion}-alpha") {
+    api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
-    api("io.opentelemetry.instrumentation:opentelemetry-resources:${openTelemetryInstrumentationVersion}-alpha") {
+    api("io.opentelemetry.instrumentation:opentelemetry-resources") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
 
@@ -41,7 +38,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}-alpha"
     }
 }
 
