@@ -7,9 +7,9 @@ plugins {
 
 dependencies {
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    implementation 'org.springframework.boot:spring-boot-testcontainers'
 
-    optional project(":arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
+    optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
+    optional 'org.springframework.boot:spring-boot-testcontainers'
     optional 'org.testcontainers:grafana'
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

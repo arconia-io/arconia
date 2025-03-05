@@ -18,7 +18,7 @@ public class LgtmDevServiceProperties implements DevServiceProperties {
     private boolean enabled = true;
 
     /**
-     * The name of the container image used in the dev service.
+     * Full name of the container image used in the dev service.
      */
     private String imageName = "grafana/otel-lgtm:0.8.6";
 

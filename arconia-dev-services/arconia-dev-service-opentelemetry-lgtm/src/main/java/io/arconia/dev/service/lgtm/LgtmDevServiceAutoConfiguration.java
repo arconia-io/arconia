@@ -28,11 +28,24 @@ public class LgtmDevServiceAutoConfiguration {
     @RestartScope
     @ServiceConnection
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "spring.devtools.restart", name = "enabled", havingValue = "true", matchIfMissing = true)
     LgtmStackContainer lgtmContainer(LgtmDevServiceProperties properties) {
         return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                 .asCompatibleSubstituteFor("grafana/otel-lgtm"))
                 .withStartupTimeout(Duration.ofMinutes(2))
                 .withReuse(properties.isReusable());
     }
+
+    @Bean
+    @ServiceConnection
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "spring.devtools.restart", name = "enabled", havingValue = "false")
+    LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServiceProperties properties) {
+        return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
+                .asCompatibleSubstituteFor("grafana/otel-lgtm"))
+                .withStartupTimeout(Duration.ofMinutes(2))
+                .withReuse(properties.isReusable());
+    }
+
 
 }
