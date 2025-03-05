@@ -2,12 +2,14 @@ package io.arconia.opentelemetry.autoconfigure.instrumentation.resource;
 
 import io.opentelemetry.instrumentation.resources.ContainerResource;
 import io.opentelemetry.instrumentation.resources.HostIdResource;
+import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.ConditionalOnOpenTelemetryResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ResourceContributor;
@@ -16,6 +18,8 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ResourceC
  * Auto-configuration for OpenTelemetry resource instrumentation.
  */
 @AutoConfiguration(before = OpenTelemetryResourceAutoConfiguration.class)
+@ConditionalOnClass(Resource.class)
+@ConditionalOnOpenTelemetry
 public class ResourceInstrumentationAutoConfiguration {
 
     @Bean
