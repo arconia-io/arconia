@@ -1,7 +1,5 @@
 package io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer;
 
-import java.util.concurrent.TimeUnit;
-
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -19,8 +17,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnOpenTelemetryInstrumentation;
+import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
@@ -40,11 +38,11 @@ public class MicrometerInstrumentationAutoConfiguration {
 
     @Bean
     @ConditionalOnBean({ Clock.class, OpenTelemetry.class })
-    MeterRegistry meterRegistry(Clock clock, OpenTelemetry openTelemetry) {
+    MeterRegistry meterRegistry(MicrometerProperties properties, Clock clock, OpenTelemetry openTelemetry) {
         return OpenTelemetryMeterRegistry.builder(openTelemetry)
-                .setBaseTimeUnit(TimeUnit.MILLISECONDS)
+                .setBaseTimeUnit(properties.getBaseTimeUnit())
                 .setClock(clock)
-                .setMicrometerHistogramGaugesEnabled(true)
+                .setMicrometerHistogramGaugesEnabled(properties.isHistogramGauges())
                 .setPrometheusMode(false)
                 .build();
     }

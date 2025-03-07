@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenTelemetryTracingExporterAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class, 
+            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class,
                 OpenTelemetryTracingExporterAutoConfiguration.class));
 
     @Test
@@ -30,6 +30,7 @@ class OpenTelemetryTracingExporterAutoConfigurationTests {
     void autoConfigurationNotActivatedWhenTracingDisabled() {
         contextRunner
             .withPropertyValues("arconia.otel.traces.enabled=false")
+            .withPropertyValues("management.tracing.enabled=true")
             .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetryTracingExporterAutoConfiguration.class));
     }
 

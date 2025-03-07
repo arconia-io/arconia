@@ -91,11 +91,21 @@ public class OpenTelemetryResourceAutoConfiguration {
     SdkResourceBuilderCustomizer filterAttributes(OpenTelemetryResourceProperties properties) {
         return builder -> {
             var attributeKeysMap = properties.getEnable();
-            attributeKeysMap.forEach((key, enabled) -> {
-                if (!enabled) {
-                    builder.removeIf(attributeKey -> attributeKey.getKey().startsWith(key));
-                }
-            });
+
+            var allKeys = attributeKeysMap.get("all");
+            if (allKeys == null) {
+                attributeKeysMap.forEach((key, enabled) -> {
+                    if (!enabled) {
+                        builder.removeIf(attributeKey -> attributeKey.getKey().startsWith(key));
+                    }
+                });
+                return;
+            }
+
+            if (!allKeys) {
+                builder.removeIf(attributeKey -> true);
+            }
+
         };
     }
 

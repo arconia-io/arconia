@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.console.ConsoleMetricsExporterConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
 
@@ -16,8 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenTelemetryMetricsExporterAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class, 
-                OpenTelemetryMetricsExporterAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class,
+                OpenTelemetryMetricsExporterAutoConfiguration.class))
+            .withBean(OpenTelemetryMetricsProperties.class, OpenTelemetryMetricsProperties::new);
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {

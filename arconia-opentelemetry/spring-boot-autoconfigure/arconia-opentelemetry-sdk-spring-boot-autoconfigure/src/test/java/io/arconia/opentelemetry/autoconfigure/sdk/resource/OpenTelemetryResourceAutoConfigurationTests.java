@@ -196,14 +196,38 @@ class OpenTelemetryResourceAutoConfigurationTests {
     }
 
     @Test
-    void attributeFilteringAppliedWhenConfigured() {
+    void attributeFilteringAppliedWhenSpecificAttributesDisabled() {
         contextRunner.withPropertyValues(
-                "arconia.otel.resource.enable.host.name=false",
+                "arconia.otel.resource.enable.host=false",
                 "arconia.otel.resource.enable.process.pid=false"
         ).run(context -> {
             assertThat(context).hasSingleBean(Resource.class);
             assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
 
+            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            ResourceBuilder builder = Resource.getDefault().toBuilder();
+            builder.put("host.name", "test-host");
+            builder.put("host.id", "test-id");
+            builder.put("process.pid", "123");
+            builder.put("service.name", "test-service");
+
+            customizer.customize(builder);
+            Resource resource = builder.build();
+
+            // Attributes starting with disabled prefixes should be removed
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.id"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNull();
+            // Other attributes should remain
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isEqualTo("test-service");
+        });
+    }
+
+    @Test
+    void attributeFilteringNotAppliedWhenAllEnabled() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.all=true"
+        ).run(context -> {
             SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
             ResourceBuilder builder = Resource.getDefault().toBuilder();
             builder.put("host.name", "test-host");
@@ -213,32 +237,57 @@ class OpenTelemetryResourceAutoConfigurationTests {
             customizer.customize(builder);
             Resource resource = builder.build();
 
-            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
-            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNull();
-            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isNotNull();
+            // All attributes should be preserved when all=true
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isEqualTo("test-host");
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isEqualTo("123");
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isEqualTo("test-service");
         });
     }
 
     @Test
-    void attributeFilteringNotAppliedWhenEnabled() {
+    void allAttributesRemovedWhenAllDisabled() {
         contextRunner.withPropertyValues(
-                "arconia.otel.resource.enable.host.name=true",
-                "arconia.otel.resource.enable.process.pid=true"
+                "arconia.otel.resource.enable.all=false"
         ).run(context -> {
-            assertThat(context).hasSingleBean(Resource.class);
-            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
-
             SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
             ResourceBuilder builder = Resource.getDefault().toBuilder();
             builder.put("host.name", "test-host");
             builder.put("process.pid", "123");
+            builder.put("service.name", "test-service");
 
             customizer.customize(builder);
             Resource resource = builder.build();
 
-            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isEqualTo("test-host");
-            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isEqualTo("123");
+            // All attributes should be removed when all=false
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isNull();
         });
+    }
+
+    @Test
+    void resourceContributorsAndCustomizersAppliedInOrder() {
+        contextRunner
+                .withPropertyValues("arconia.otel.resource.attributes.custom.attribute=test-value")
+                .withUserConfiguration(OrderedCustomizerConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(Resource.class);
+                    Resource resource = context.getBean(Resource.class);
+                    
+                    // Verify the final resource has attributes from both contributors and customizers
+                    assertThat(resource.getAttribute(AttributeKey.stringKey("custom.attribute"))).isEqualTo("another-value");
+                    assertThat(context.getBean(EnvironmentResourceContributor.class)).isNotNull();
+                });
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class OrderedCustomizerConfiguration {
+
+        @Bean
+        SdkResourceBuilderCustomizer orderedCustomizer() {
+            return builder -> builder.put("custom.attribute", "another-value");
+        }
+
     }
 
     @Configuration(proxyBeanMethods = false)

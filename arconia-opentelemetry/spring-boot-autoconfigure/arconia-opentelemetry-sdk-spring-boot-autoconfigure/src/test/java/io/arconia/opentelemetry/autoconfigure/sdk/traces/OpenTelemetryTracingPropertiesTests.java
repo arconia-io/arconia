@@ -31,7 +31,6 @@ class OpenTelemetryTracingPropertiesTests {
         OpenTelemetryTracingProperties.Sampling sampling = properties.getSampling();
 
         assertThat(sampling.getStrategy()).isEqualTo(OpenTelemetryTracingProperties.SamplingStrategy.PARENT_BASED_ALWAYS_ON);
-        assertThat(sampling.getProbability()).isEqualTo(0.1);
     }
 
     @Test
@@ -40,10 +39,8 @@ class OpenTelemetryTracingPropertiesTests {
         OpenTelemetryTracingProperties.Sampling sampling = properties.getSampling();
 
         sampling.setStrategy(OpenTelemetryTracingProperties.SamplingStrategy.TRACE_ID_RATIO);
-        sampling.setProbability(0.5);
 
         assertThat(sampling.getStrategy()).isEqualTo(OpenTelemetryTracingProperties.SamplingStrategy.TRACE_ID_RATIO);
-        assertThat(sampling.getProbability()).isEqualTo(0.5);
     }
 
     @Test

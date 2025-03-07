@@ -14,6 +14,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.AggregationTemporalityStrategy;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties.SamplingStrategy;
 
@@ -192,6 +193,36 @@ class OpenTelemetrySdkPropertyConvertersTests {
         Function<String, List<PropagationType>> converter = OpenTelemetrySdkPropertyConverters.propagationType("test.key");
         List<PropagationType> result = converter.apply("baggage,invalid,b3");
         assertThat(result).containsExactlyInAnyOrder(PropagationType.W3C, PropagationType.B3);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "always_on, ALWAYS_ON",
+            "always_off, ALWAYS_OFF",
+            "trace_based, TRACE_BASED",
+            "ALWAYS_ON, ALWAYS_ON",
+            "ALWAYS_OFF, ALWAYS_OFF",
+            "TRACE_BASED, TRACE_BASED",
+            "' always_on ', ALWAYS_ON",
+            "'\ttrace_based\n', TRACE_BASED"
+    })
+    void exemplarFilterShouldConvertValidValues(String input, ExemplarFilter expected) {
+        Function<String, ExemplarFilter> converter = OpenTelemetrySdkPropertyConverters.exemplarFilter("test.key");
+        assertThat(converter.apply(input)).isEqualTo(expected);
+    }
+
+    @Test
+    void exemplarFilterShouldReturnNullForInvalidValue() {
+        Function<String, ExemplarFilter> converter = OpenTelemetrySdkPropertyConverters.exemplarFilter("test.key");
+        assertThat(converter.apply("invalid")).isNull();
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void exemplarFilterShouldThrowExceptionForInvalidKey(String key) {
+        assertThatThrownBy(() -> OpenTelemetrySdkPropertyConverters.exemplarFilter(key))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("externalKey cannot be null or empty");
     }
 
 }

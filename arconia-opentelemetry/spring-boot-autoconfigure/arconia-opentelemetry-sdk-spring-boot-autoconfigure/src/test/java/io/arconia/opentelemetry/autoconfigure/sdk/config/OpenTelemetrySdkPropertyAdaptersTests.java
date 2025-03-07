@@ -16,6 +16,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.OpenTelemetryLoggingProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -82,8 +83,8 @@ class OpenTelemetrySdkPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isEqualTo("test-service");
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
             .isEqualTo(Map.of("key1", "value1", "key2", "value2"));
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".contributors.filter.disabled-keys"))
-            .isEqualTo(List.of("key1", "key2"));
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".enable"))
+            .isEqualTo(Map.of("key1", false, "key2", false));
     }
 
     @Test
@@ -123,12 +124,15 @@ class OpenTelemetrySdkPropertyAdaptersTests {
     @Test
     void metricsShouldMapProperties() {
         var environment = new MockEnvironment()
-            .withProperty("otel.metric.export.interval", "60000");
+            .withProperty("otel.metric.export.interval", "60000")
+            .withProperty("otel.metrics.exemplar.filter", "always_on");
 
         var adapter = OpenTelemetrySdkPropertyAdapters.metrics(environment);
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".interval"))
             .isEqualTo(Duration.ofSeconds(60));
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter"))
+            .isEqualTo(ExemplarFilter.ALWAYS_ON);
     }
 
     @Test
@@ -164,7 +168,7 @@ class OpenTelemetrySdkPropertyAdaptersTests {
             .isEqualTo(Duration.ofSeconds(30));
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy"))
             .isEqualTo(SamplingStrategy.TRACE_ID_RATIO);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.probability"))
+        assertThat(adapter.getArconiaProperties().get("management.tracing.sampling.probability"))
             .isEqualTo(0.5);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length"))
             .isEqualTo(100);

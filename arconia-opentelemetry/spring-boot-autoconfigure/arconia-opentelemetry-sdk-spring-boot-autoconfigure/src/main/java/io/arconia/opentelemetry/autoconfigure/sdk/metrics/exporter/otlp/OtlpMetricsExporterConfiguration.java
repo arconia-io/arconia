@@ -2,11 +2,20 @@ package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp;
 
 import java.util.Locale;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
+
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+
+import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
+import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +91,20 @@ public class OtlpMetricsExporterConfiguration {
             case DELTA -> AggregationTemporalitySelector.deltaPreferred();
             case LOW_MEMORY -> AggregationTemporalitySelector.lowMemory();
         };
+    }
+
+    @Bean
+    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsProperties properties) {
+        return builder -> builder.registerView(
+                InstrumentSelector.builder()
+                        .setType(InstrumentType.HISTOGRAM)
+                        .build(),
+                View.builder()
+                        .setAggregation(switch(properties.getHistogramAggregation()) {
+                            case BASE2_EXPONENTIAL_BUCKET_HISTOGRAM -> Base2ExponentialHistogramAggregation.getDefault();
+                            case EXPLICIT_BUCKET_HISTOGRAM -> ExplicitBucketHistogramAggregation.getDefault();
+                        })
+                        .build());
     }
 
     /**

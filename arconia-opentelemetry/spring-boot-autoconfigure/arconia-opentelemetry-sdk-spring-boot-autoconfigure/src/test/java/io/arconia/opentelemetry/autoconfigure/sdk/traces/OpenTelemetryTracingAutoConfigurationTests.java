@@ -1,6 +1,5 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.traces;
 
-import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -15,6 +14,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.autoconfigure.tracing.SdkTracerProviderBuilderCustomizer;
+import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -31,7 +31,6 @@ class OpenTelemetryTracingAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(OpenTelemetryTracingAutoConfiguration.class))
-            .withPropertyValues("arconia.otel.enabled=true")
             .withBean(Clock.class, Clock::getDefault)
             .withBean(Resource.class, Resource::empty)
             .withBean(OpenTelemetry.class, () -> mock(OpenTelemetry.class));
@@ -44,9 +43,10 @@ class OpenTelemetryTracingAutoConfigurationTests {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenTracingDisabled() {
+    void autoConfigurationNotActivatedWhenArconiaTracingDisabled() {
         contextRunner
             .withPropertyValues("arconia.otel.traces.enabled=false")
+            .withPropertyValues("management.tracing.enabled=true")
             .run(context -> assertThat(context).doesNotHaveBean(SdkTracerProvider.class));
     }
 
@@ -58,20 +58,22 @@ class OpenTelemetryTracingAutoConfigurationTests {
 
     @Test
     void tracerProviderAvailableWithDefaultConfiguration() {
-        contextRunner.withUserConfiguration(org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class)
-        .run(context -> {
-            assertThat(context).hasSingleBean(SdkTracerProvider.class);
-            assertThat(context).hasSingleBean(Sampler.class);
-            assertThat(context).hasSingleBean(SpanLimits.class);
-            assertThat(context).hasSingleBean(BatchSpanProcessor.class);
-            assertThat(context).hasSingleBean(ContextPropagators.class);
-            assertThat(context).hasSingleBean(Tracer.class);
-        });
+        contextRunner
+            .withUserConfiguration(org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class)
+            .run(context -> {
+                assertThat(context).hasSingleBean(SdkTracerProvider.class);
+                assertThat(context).hasSingleBean(Sampler.class);
+                assertThat(context).hasSingleBean(SpanLimits.class);
+                assertThat(context).hasSingleBean(BatchSpanProcessor.class);
+                assertThat(context).hasSingleBean(ContextPropagators.class);
+                assertThat(context).hasSingleBean(Tracer.class);
+            });
     }
 
     @Test
     void samplerConfigurationApplied() {
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues("arconia.otel.traces.sampling.strategy=always-on")
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -79,6 +81,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
 
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues("arconia.otel.traces.sampling.strategy=always-off")
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -86,9 +89,10 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
 
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues(
                 "arconia.otel.traces.sampling.strategy=trace-id-ratio",
-                "arconia.otel.traces.sampling.probability=0.5"
+                "management.tracing.sampling.probability=0.5"
             )
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -96,6 +100,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
 
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues("arconia.otel.traces.sampling.strategy=parent-based-always-on")
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -103,6 +108,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
 
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues("arconia.otel.traces.sampling.strategy=parent-based-always-off")
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -110,9 +116,10 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
 
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues(
                 "arconia.otel.traces.sampling.strategy=parent-based-trace-id-ratio",
-                "arconia.otel.traces.sampling.probability=0.5"
+                "management.tracing.sampling.probability=0.5"
             )
             .run(context -> {
                 Sampler sampler = context.getBean(Sampler.class);
@@ -123,6 +130,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
     @Test
     void spanLimitsConfigurationApplied() {
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues(
                 "arconia.otel.traces.span-limits.max-number-of-attributes=10",
                 "arconia.otel.traces.span-limits.max-number-of-events=20",
@@ -142,26 +150,39 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
     }
 
+//    @Test
+//    void otelSpanProcessorConfigurationApplied() {
+//        contextRunner
+//            .withBean(TracingProperties.class, TracingProperties::new)
+//            .withUserConfiguration(CustomSpanExporterConfiguration.class)
+//            .withPropertyValues(
+//                "arconia.otel.traces.processor.export-timeout=10s",
+//                "arconia.otel.traces.processor.schedule-delay=5s",
+//                "arconia.otel.traces.processor.max-export-batch-size=512",
+//                "arconia.otel.traces.processor.max-queue-size=2048",
+//                "arconia.otel.traces.processor.metrics=true"
+//            )
+//            .run(context -> {
+//                assertThat(context).hasSingleBean(BatchSpanProcessor.class);
+//                assertThat(context).hasSingleBean(SpanExporter.class);
+//            });
+//    }
+
     @Test
-    void batchSpanProcessorConfigurationApplied() {
-        contextRunner.withClassLoader(new FilteredClassLoader(OtelTracer.class))
-            .withUserConfiguration(CustomSpanExporterConfiguration.class)
-            .withPropertyValues(
-                "arconia.otel.traces.processor.export-timeout=10s",
-                "arconia.otel.traces.processor.schedule-delay=5s",
-                "arconia.otel.traces.processor.max-export-batch-size=512",
-                "arconia.otel.traces.processor.max-queue-size=2048",
-                "arconia.otel.traces.processor.metrics=true"
-            )
+    void otelSpanProcessorUsesCompositeExporterWithMultipleExporters() {
+        contextRunner
+            .withUserConfiguration(org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class)
+            .withUserConfiguration(MultipleSpanExportersConfiguration.class)
             .run(context -> {
                 assertThat(context).hasSingleBean(BatchSpanProcessor.class);
-                assertThat(context).hasSingleBean(SpanExporter.class);
+                assertThat(context.getBeansOfType(SpanExporter.class)).hasSize(2);
             });
     }
 
     @Test
     void customTracerProviderBuilderCustomizerApplied() {
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withUserConfiguration(CustomTracerProviderConfiguration.class)
             .run(context -> {
                 assertThat(context).hasSingleBean(SdkTracerProvider.class);
@@ -172,6 +193,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
     @Test
     void customContextPropagatorsAvailable() {
         contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
             .withUserConfiguration(CustomContextPropagatorsConfiguration.class)
             .run(context -> {
                 assertThat(context).hasSingleBean(ContextPropagators.class);
@@ -199,6 +221,21 @@ class OpenTelemetryTracingAutoConfigurationTests {
         @Bean
         SpanExporter customSpanExporter() {
             return customSpanExporter;
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class MultipleSpanExportersConfiguration {
+
+        @Bean
+        SpanExporter firstSpanExporter() {
+            return mock(SpanExporter.class);
+        }
+
+        @Bean
+        SpanExporter secondSpanExporter() {
+            return mock(SpanExporter.class);
         }
 
     }

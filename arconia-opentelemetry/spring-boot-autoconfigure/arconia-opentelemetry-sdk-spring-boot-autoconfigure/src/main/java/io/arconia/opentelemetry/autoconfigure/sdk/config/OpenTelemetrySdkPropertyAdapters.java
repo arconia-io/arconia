@@ -1,7 +1,11 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import io.arconia.core.config.adapter.PropertyAdapter;
 import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryProperties;
@@ -61,7 +65,15 @@ class OpenTelemetrySdkPropertyAdapters {
             // Resource Attributes
             .mapString("otel.service.name", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")
             .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes")
-            .mapList("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".contributors.filter.disabled-keys")
+            .mapProperty("otel.resource.disabled.keys", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".enable", (String value) -> {
+                Map<String,Boolean> disabledKeys = new HashMap<>();
+                for (String key : value.trim().split("\\s*,\\s*")) {
+                    if (StringUtils.hasText(key)) {
+                        disabledKeys.put(key.trim(), false);
+                    }
+                }
+                return disabledKeys;
+            })
             .build();
     }
 
@@ -119,7 +131,7 @@ class OpenTelemetrySdkPropertyAdapters {
 
             // Sampler
             .mapEnum("otel.tracer.sampler", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy", OpenTelemetrySdkPropertyConverters::samplingStrategy)
-            .mapDouble("otel.tracer.sampler.arg", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.probability")
+            .mapDouble("otel.tracer.sampler.arg", "management.tracing.sampling.probability")
 
             // Span Limits
             .mapInteger("otel.span.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length")

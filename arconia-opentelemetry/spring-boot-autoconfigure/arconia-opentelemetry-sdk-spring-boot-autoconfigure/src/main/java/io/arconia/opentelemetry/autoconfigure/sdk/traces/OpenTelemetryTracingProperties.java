@@ -46,12 +46,6 @@ public class OpenTelemetryTracingProperties {
          */
         private SamplingStrategy strategy = SamplingStrategy.PARENT_BASED_ALWAYS_ON;
 
-        /**
-         * Probability of sampling a trace when using {@link SamplingStrategy#TRACE_ID_RATIO}
-         * or {@link SamplingStrategy#PARENT_BASED_TRACE_ID_RATIO}.
-         */
-        private double probability = 0.1;
-
         public SamplingStrategy getStrategy() {
             return strategy;
         }
@@ -60,13 +54,6 @@ public class OpenTelemetryTracingProperties {
             this.strategy = strategy;
         }
 
-        public double getProbability() {
-            return probability;
-        }
-
-        public void setProbability(double probability) {
-            this.probability = probability;
-        }
     }
 
     public static class SpanLimits {

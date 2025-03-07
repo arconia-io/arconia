@@ -1,4 +1,4 @@
-package io.arconia.opentelemetry.autoconfigure.sdk.actuator;
+package io.arconia.opentelemetry.autoconfigure.sdk.config;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,19 +9,22 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingProperties;
-
 /**
- * Adapts properties between Actuator and Arconia, and disables replaced auto-configurations.
+ * Disable auto-configurations from Spring Boot Actuator partial integration with OpenTelemetry.
  */
 public class ActuatorEnvironmentPostProcessor implements EnvironmentPostProcessor {
+
+    private static final String PROPERTY_SOURCE_NAME = "arconia-opentelemetry-actuator";
 
     private static final String SPRING_AUTOCONFIGURE_EXCLUDE = "spring.autoconfigure.exclude";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        Assert.notNull(environment, "environment cannot be null");
+
         Map<String, Object> arconiaProperties = new HashMap<>();
 
         setExcludedAutoConfigurations(List.of(
@@ -35,9 +38,7 @@ public class ActuatorEnvironmentPostProcessor implements EnvironmentPostProcesso
                     "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration"
                 ), environment, arconiaProperties);
 
-        arconiaProperties.put("management.tracing.enabled", environment.getProperty(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".enabled", Boolean.class, true));
-
-        MapPropertySource mapPropertySource = new MapPropertySource("Arconia Observability", arconiaProperties);
+        MapPropertySource mapPropertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, arconiaProperties);
         MutablePropertySources mutablePropertySources = environment.getPropertySources();
         mutablePropertySources.addFirst(mapPropertySource);
     }
