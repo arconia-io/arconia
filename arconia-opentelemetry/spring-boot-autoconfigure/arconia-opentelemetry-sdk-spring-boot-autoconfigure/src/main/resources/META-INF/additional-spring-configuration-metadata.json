@@ -38,12 +38,6 @@
       "defaultValue": true
     },
     {
-      "name": "arconia.otel.resource.contributors.filter.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Whether the Filter resource contributor is enabled.",
-      "defaultValue": true
-    },
-    {
       "name": "arconia.otel.resource.contributors.host.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether the Host resource contributor is enabled.",

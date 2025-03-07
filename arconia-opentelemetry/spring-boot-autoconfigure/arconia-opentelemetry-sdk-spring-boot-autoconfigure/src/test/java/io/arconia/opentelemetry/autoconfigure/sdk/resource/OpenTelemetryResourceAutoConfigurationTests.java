@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.sdk.resource;
 
 import java.util.Properties;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.junit.jupiter.api.Test;
@@ -14,14 +15,13 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.BuildResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor;
-import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.HostResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.JavaResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.OsResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ProcessResourceContributor;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 
 /**
  * Unit tests for {@link OpenTelemetryResourceAutoConfiguration}.
@@ -30,14 +30,20 @@ class OpenTelemetryResourceAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(OpenTelemetryResourceAutoConfiguration.class))
-            .withPropertyValues("arconia.opentelemetry.enabled=true");
+            .withPropertyValues("arconia.otel.enabled=true");
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         contextRunner
-            .withPropertyValues("arconia.opentelemetry.enabled=false")
-            .withClassLoader(new FilteredClassLoader(Resource.class))
+            .withPropertyValues("arconia.otel.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
+    }
+
+    @Test
+    void autoConfigurationNotActivatedWhenSdkNotPresent() {
+        contextRunner
+                .withClassLoader(new FilteredClassLoader(Resource.class))
+                .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
     }
 
     @Test
@@ -52,7 +58,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
             assertThat(context).hasSingleBean(Resource.class);
             assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
             assertThat(context).hasSingleBean(EnvironmentResourceContributor.class);
-            assertThat(context).hasSingleBean(FilterResourceContributor.class);
+            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
             assertThat(context).doesNotHaveBean(HostResourceContributor.class);
             assertThat(context).doesNotHaveBean(JavaResourceContributor.class);
             assertThat(context).doesNotHaveBean(OsResourceContributor.class);
@@ -104,24 +110,6 @@ class OpenTelemetryResourceAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(Resource.class);
                     assertThat(context).doesNotHaveBean(EnvironmentResourceContributor.class);
-                });
-    }
-
-    @Test
-    void filterResourceContributorCreatedWhenEnabled() {
-        contextRunner.withPropertyValues("arconia.otel.resource.contributors.filter.enabled=true")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(Resource.class);
-                    assertThat(context).hasSingleBean(FilterResourceContributor.class);
-                });
-    }
-
-    @Test
-    void filterResourceContributorNotCreatedWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.otel.resource.contributors.filter.enabled=false")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(Resource.class);
-                    assertThat(context).doesNotHaveBean(FilterResourceContributor.class);
                 });
     }
 
@@ -208,16 +196,48 @@ class OpenTelemetryResourceAutoConfigurationTests {
     }
 
     @Test
-    void disabledKeysAreConfiguredOnFilterResourceContributor() {
+    void attributeFilteringAppliedWhenConfigured() {
         contextRunner.withPropertyValues(
-                "arconia.otel.resource.contributors.filter.enabled=true",
-                "arconia.otel.resource.contributors.filter.disabled-keys[0]=key1",
-                "arconia.otel.resource.contributors.filter.disabled-keys[1]=key2"
+                "arconia.otel.resource.enable.host.name=false",
+                "arconia.otel.resource.enable.process.pid=false"
         ).run(context -> {
             assertThat(context).hasSingleBean(Resource.class);
-            FilterResourceContributor contributor = context.getBean(FilterResourceContributor.class);
-            assertThat(contributor).extracting("disabledKeys", LIST)
-                    .containsExactly("key1", "key2");
+            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
+
+            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            ResourceBuilder builder = Resource.getDefault().toBuilder();
+            builder.put("host.name", "test-host");
+            builder.put("process.pid", "123");
+            builder.put("service.name", "test-service");
+
+            customizer.customize(builder);
+            Resource resource = builder.build();
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isNotNull();
+        });
+    }
+
+    @Test
+    void attributeFilteringNotAppliedWhenEnabled() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.host.name=true",
+                "arconia.otel.resource.enable.process.pid=true"
+        ).run(context -> {
+            assertThat(context).hasSingleBean(Resource.class);
+            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
+
+            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            ResourceBuilder builder = Resource.getDefault().toBuilder();
+            builder.put("host.name", "test-host");
+            builder.put("process.pid", "123");
+
+            customizer.customize(builder);
+            Resource resource = builder.build();
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isEqualTo("test-host");
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isEqualTo("123");
         });
     }
 

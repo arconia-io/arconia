@@ -1,16 +1,13 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
 
 /**
  * Configuration properties for OpenTelemetry {@link Resource},
@@ -33,9 +30,10 @@ public class OpenTelemetryResourceProperties {
     private final Map<String, String> attributes = new HashMap<>();
 
     /**
-     * Configuration for the resource contributors.
+     * Whether resource attributes having keys starting with the specified name
+     * should be enabled. The longest match wins.
      */
-    private final Contributors contributors = new Contributors();
+    private final Map<String, Boolean> enable = new LinkedHashMap<>();
 
     @Nullable
     public String getServiceName() {
@@ -50,34 +48,8 @@ public class OpenTelemetryResourceProperties {
         return attributes;
     }
 
-    public Contributors getContributors() {
-        return contributors;
-    }
-
-    public static class Contributors {
-
-        /**
-         * Configuration for the {@link FilterResourceContributor}.
-         */
-        private final Filter filter = new Filter();
-
-        public Filter getFilter() {
-            return filter;
-        }
-
-    }
-
-    public static class Filter {
-
-        /**
-         * Keys for attributes to exclude from the resource.
-         */
-        private final List<String> disabledKeys = new ArrayList<>();
-
-        public List<String> getDisabledKeys() {
-            return disabledKeys;
-        }
-
+    public Map<String, Boolean> getEnable() {
+        return enable;
     }
 
 }

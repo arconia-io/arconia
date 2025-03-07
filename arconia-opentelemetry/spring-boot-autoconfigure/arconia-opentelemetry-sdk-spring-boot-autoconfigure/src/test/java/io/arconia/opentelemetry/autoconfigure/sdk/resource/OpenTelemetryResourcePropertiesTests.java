@@ -20,9 +20,7 @@ class OpenTelemetryResourcePropertiesTests {
 
         assertThat(properties.getServiceName()).isNull();
         assertThat(properties.getAttributes()).isNotNull().isEmpty();
-        assertThat(properties.getContributors()).isNotNull();
-        assertThat(properties.getContributors().getFilter()).isNotNull();
-        assertThat(properties.getContributors().getFilter().getDisabledKeys()).isNotNull().isEmpty();
+        assertThat(properties.getEnable()).isNotNull().isEmpty();
     }
 
     @Test
@@ -49,15 +47,16 @@ class OpenTelemetryResourcePropertiesTests {
     }
 
     @Test
-    void shouldAddDisabledKeys() {
+    void shouldConfigureEnabledAttributes() {
         OpenTelemetryResourceProperties properties = new OpenTelemetryResourceProperties();
 
-        properties.getContributors().getFilter().getDisabledKeys().add("key1");
-        properties.getContributors().getFilter().getDisabledKeys().add("key2");
+        properties.getEnable().put("host", true);
+        properties.getEnable().put("process", false);
 
-        assertThat(properties.getContributors().getFilter().getDisabledKeys())
+        assertThat(properties.getEnable())
             .hasSize(2)
-            .contains("key1", "key2");
+            .containsEntry("host", true)
+            .containsEntry("process", false);
     }
 
 }

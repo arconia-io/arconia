@@ -18,7 +18,6 @@ import org.springframework.core.env.Environment;
 import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.BuildResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor;
-import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.FilterResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.HostResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.JavaResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.OsResourceContributor;
@@ -38,9 +37,10 @@ public class OpenTelemetryResourceAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    Resource resource(ObjectProvider<ResourceContributor> resourceContributors) {
+    Resource resource(ObjectProvider<ResourceContributor> resourceContributors, ObjectProvider<SdkResourceBuilderCustomizer> customizers) {
         ResourceBuilder builder = Resource.getDefault().toBuilder();
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
+        customizers.orderedStream().forEach(contributor -> contributor.customize(builder));
         return builder.build();
     }
 
@@ -57,12 +57,6 @@ public class OpenTelemetryResourceAutoConfiguration {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     EnvironmentResourceContributor environmentResourceContributor(Environment environment, OpenTelemetryResourceProperties properties) {
         return new EnvironmentResourceContributor(environment, properties);
-    }
-
-    @Bean
-    @ConditionalOnOpenTelemetryResourceContributor(value = "filter", matchIfMissing = true)
-    FilterResourceContributor filterResourceContributor(OpenTelemetryResourceProperties properties) {
-        return new FilterResourceContributor(properties.getContributors().getFilter().getDisabledKeys());
     }
 
     @Bean
@@ -91,6 +85,18 @@ public class OpenTelemetryResourceAutoConfiguration {
     @Order(DEFAULT_ORDER)
     ProcessResourceContributor processRuntimeResourceContributor() {
         return new ProcessResourceContributor();
+    }
+
+    @Bean
+    SdkResourceBuilderCustomizer filterAttributes(OpenTelemetryResourceProperties properties) {
+        return builder -> {
+            var attributeKeysMap = properties.getEnable();
+            attributeKeysMap.forEach((key, enabled) -> {
+                if (!enabled) {
+                    builder.removeIf(attributeKey -> attributeKey.getKey().startsWith(key));
+                }
+            });
+        };
     }
 
 }
