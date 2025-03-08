@@ -1,2 +1,2 @@
 .Examples
-* xref:index.adoc[Overview]
+* xref:overview.adoc[Overview]
