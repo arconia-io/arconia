@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.instrumentation.config;
 
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.Assert;
 
 import io.arconia.core.config.adapter.PropertyAdapter;
 import io.arconia.opentelemetry.autoconfigure.instrumentation.logback.LogbackAppenderProperties;
@@ -12,6 +13,8 @@ import io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer.Microme
 public final class OpenTelemetryInstrumentationPropertyAdapters {
 
     public static PropertyAdapter logbackAppender(ConfigurableEnvironment environment) {
+        Assert.notNull(environment, "environment cannot be null");
+
         return PropertyAdapter.builder(environment)
             .mapBoolean("otel.instrumentation.logback-appender.enabled",
                 LogbackAppenderProperties.CONFIG_PREFIX + ".enabled")
@@ -35,6 +38,8 @@ public final class OpenTelemetryInstrumentationPropertyAdapters {
     }
 
     public static PropertyAdapter micrometer(ConfigurableEnvironment environment) {
+        Assert.notNull(environment, "environment cannot be null");
+        
         return PropertyAdapter.builder(environment)
             .mapBoolean("otel.instrumentation.micrometer.enabled",
                 MicrometerProperties.CONFIG_PREFIX + ".enabled")

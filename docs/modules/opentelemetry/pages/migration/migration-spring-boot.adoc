@@ -141,6 +141,9 @@ NOTE: The property `management.otlp.logging.connect-timeout` is not supported.
 |`management.otlp.metrics.export.aggregation-temporality`
 |`arconia.otel.metrics.exporter.aggregation-temporality`
 
+| `management.otlp.metrics.export.base-time-unit`
+| `arconia.otel.instrumentation.micrometer.base-time-unit`
+
 |`management.otlp.metrics.export.headers`
 |`arconia.otel.metrics.exporter.otlp.headers`
 
@@ -157,7 +160,7 @@ NOTE: The property `management.otlp.logging.connect-timeout` is not supported.
 |`arconia.otel.metrics.exporter.otlp.endpoint`
 |===
 
-NOTE: The property `management.otlp.metrics.export.connect-timeout` is not supported.
+NOTE: The properties `management.otlp.metrics.export.connect-timeout`, `management.otlp.metrics.export.batch-size`, `management.otlp.metrics.export.max-bucket-count`, and `management.otlp.metrics.export.max-scale` are not supported.
 
 === Traces Configuration
 

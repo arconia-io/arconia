@@ -4,4 +4,5 @@ io.arconia.opentelemetry.autoconfigure.instrumentation.logback.LogbackAppenderAp
 
 # Environment Post Processors
 org.springframework.boot.env.EnvironmentPostProcessor=\
+io.arconia.opentelemetry.autoconfigure.instrumentation.config.ActuatorInstrumentationEnvironmentPostProcessor,\
 io.arconia.opentelemetry.autoconfigure.instrumentation.config.OpenTelemetryInstrumentationEnvironmentPostProcessor

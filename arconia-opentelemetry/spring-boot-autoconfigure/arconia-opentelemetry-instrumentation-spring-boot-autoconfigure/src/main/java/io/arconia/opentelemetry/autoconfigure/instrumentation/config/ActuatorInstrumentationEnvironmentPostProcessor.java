@@ -12,24 +12,23 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.Assert;
 
 /**
- * Converts OpenTelemetry Instrumentation properties to Arconia properties.
+ * Converts Actuator properties to Arconia properties.
  */
-class OpenTelemetryInstrumentationEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
+class ActuatorInstrumentationEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final String PROPERTY_SOURCE_NAME = "arconia-opentelemetry-instrumentation";
+    private static final String PROPERTY_SOURCE_NAME = "arconia-opentelemetry-instrumentation-actuator";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Assert.notNull(environment, "environment cannot be null");
 
-        Boolean enabled = environment.getProperty("arconia.otel.compatibility.opentelemetry", Boolean.class, true);
+        Boolean enabled = environment.getProperty("arconia.otel.compatibility.actuator", Boolean.class, false);
         if (!enabled) {
             return;
         }
 
         Map<String,Object> arconiaProperties = new HashMap<>();
-        arconiaProperties.putAll(OpenTelemetryInstrumentationPropertyAdapters.logbackAppender(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryInstrumentationPropertyAdapters.micrometer(environment).getArconiaProperties());
+        arconiaProperties.putAll(ActuatorInstrumentationPropertyAdapters.metrics(environment).getArconiaProperties());
 
         MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, arconiaProperties);
         MutablePropertySources propertySources = environment.getPropertySources();

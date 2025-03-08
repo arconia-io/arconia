@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Tests for {@link ActuatorPropertyConverters}.
+ * Unit tests for {@link ActuatorPropertyConverters}.
  */
 class ActuatorPropertyConvertersTests {
 

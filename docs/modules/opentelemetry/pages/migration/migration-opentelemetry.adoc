@@ -254,6 +254,19 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |`arconia.otel.traces.exporter.otlp.timeout`
 |===
 
+=== Instrumentation Configuration
+
+.Instrumentation Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.instrumentation.logback-appender.enabled`
+|`arconia.otel.instrumentation.logback-appender.enabled`
+
+|`otel.instrumentation.micrometer.enabled`
+|`arconia.otel.instrumentation.micrometer.enabled`
+|===
+
 === Property Value Conversions
 
 Some properties have specific value mappings:
