@@ -20,7 +20,7 @@ dependencies {
 
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia OpenTelemetry Spring Boot Starter. Whether not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
 dependencyManagement {
 	imports {
