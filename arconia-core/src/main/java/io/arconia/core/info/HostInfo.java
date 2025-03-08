@@ -7,9 +7,12 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Information about the host the application is running on.
  */
+@Incubating
 public final class HostInfo {
 
     private static final Logger logger = LoggerFactory.getLogger(HostInfo.class);

@@ -17,6 +17,7 @@ import org.springframework.boot.SpringBootVersion;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.support.Internal;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
 
 /**
@@ -38,6 +39,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResource
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/webengine">Resource WebEngine Semantic Conventions</a>
  */
+@Internal
 public class EnvironmentResourceContributor implements ResourceContributor {
 
     // These semantic conventions are experimental, so we define them explicitly to be able to ensure backward

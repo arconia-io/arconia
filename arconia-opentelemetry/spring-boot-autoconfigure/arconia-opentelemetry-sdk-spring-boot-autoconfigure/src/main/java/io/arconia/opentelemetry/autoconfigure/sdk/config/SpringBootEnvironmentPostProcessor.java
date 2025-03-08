@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 /**
  * Disable auto-configurations from Spring Boot Actuator partial integration with OpenTelemetry.
  */
-public class SpringBootEnvironmentPostProcessor implements EnvironmentPostProcessor {
+class SpringBootEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String PROPERTY_SOURCE_NAME = "arconia-opentelemetry-spring-boot";
 

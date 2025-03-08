@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
+import io.arconia.core.support.Internal;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.ServiceAttributes;
 
@@ -16,6 +17,7 @@ import org.springframework.util.StringUtils;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
  */
+@Internal
 public class BuildResourceContributor implements ResourceContributor {
 
     private final BuildProperties buildProperties;

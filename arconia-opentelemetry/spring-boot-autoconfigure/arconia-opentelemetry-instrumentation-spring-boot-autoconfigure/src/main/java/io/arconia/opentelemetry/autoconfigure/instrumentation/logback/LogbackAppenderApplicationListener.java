@@ -22,7 +22,7 @@ import ch.qos.logback.classic.Logger;
  * An {@link ApplicationListener} that configures the OpenTelemetry Logback appender
  * with the root Logback logger.
  */
-public class LogbackAppenderApplicationListener implements GenericApplicationListener {
+class LogbackAppenderApplicationListener implements GenericApplicationListener {
 
     private static final Class<?>[] EVENT_TYPES = {ApplicationEnvironmentPreparedEvent.class};
     private static final Class<?>[] SOURCE_TYPES = {ApplicationContext.class, SpringApplication.class};

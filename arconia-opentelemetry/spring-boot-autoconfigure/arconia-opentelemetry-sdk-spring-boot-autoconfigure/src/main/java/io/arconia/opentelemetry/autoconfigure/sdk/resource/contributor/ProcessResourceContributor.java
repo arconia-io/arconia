@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
+import io.arconia.core.support.Internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
@@ -19,6 +20,7 @@ import org.springframework.util.StringUtils;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process">Resource Process Semantic Conventions</a>
  */
+@Internal
 public class ProcessResourceContributor implements ResourceContributor {
 
     public static final AttributeKey<String> PROCESS_OWNER = AttributeKey.stringKey("process.owner");

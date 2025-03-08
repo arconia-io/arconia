@@ -14,7 +14,7 @@ import org.springframework.util.StringUtils;
  *
  * @see ConditionalOnOpenTelemetryInstrumentation
  */
-public class OnOpenTelemetryInstrumentationCondition extends SpringBootCondition {
+class OnOpenTelemetryInstrumentationCondition extends SpringBootCondition {
 
     private static final String GLOBAL_PROPERTY = "arconia.otel.instrumentation.enabled";
     private static final String INSTRUMENTATION_PROPERTY = "arconia.otel.instrumentation.%s.enabled";

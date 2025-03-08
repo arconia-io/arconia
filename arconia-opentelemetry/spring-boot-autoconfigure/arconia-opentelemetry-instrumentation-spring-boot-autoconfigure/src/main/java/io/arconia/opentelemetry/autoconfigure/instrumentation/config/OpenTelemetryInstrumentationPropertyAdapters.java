@@ -10,9 +10,9 @@ import io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer.Microme
 /**
  * Provides adapters for OpenTelemetry instrumentation properties.
  */
-public final class OpenTelemetryInstrumentationPropertyAdapters {
+class OpenTelemetryInstrumentationPropertyAdapters {
 
-    public static PropertyAdapter logbackAppender(ConfigurableEnvironment environment) {
+    static PropertyAdapter logbackAppender(ConfigurableEnvironment environment) {
         Assert.notNull(environment, "environment cannot be null");
 
         return PropertyAdapter.builder(environment)
@@ -37,7 +37,7 @@ public final class OpenTelemetryInstrumentationPropertyAdapters {
             .build();
     }
 
-    public static PropertyAdapter micrometer(ConfigurableEnvironment environment) {
+    static PropertyAdapter micrometer(ConfigurableEnvironment environment) {
         Assert.notNull(environment, "environment cannot be null");
         
         return PropertyAdapter.builder(environment)

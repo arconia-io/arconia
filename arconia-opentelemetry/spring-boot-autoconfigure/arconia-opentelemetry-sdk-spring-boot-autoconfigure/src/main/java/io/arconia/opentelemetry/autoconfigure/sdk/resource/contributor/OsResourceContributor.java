@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
+import io.arconia.core.support.Internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
@@ -21,6 +22,7 @@ import org.springframework.util.StringUtils;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/os">Resource OS Semantic Conventions</a>
  */
+@Internal
 public class OsResourceContributor implements ResourceContributor {
 
     // These semantic conventions are experimental, so we define them explicitly to be able to ensure backward
