@@ -60,7 +60,7 @@ The application logs will show you the URL where you can access the Grafana obse
 
 NOTE: Learn more about the Arconia OpenTelemetry Dev Service LGTM in the xref:dev-services.adoc[Dev Services] section.
 
-== Observability Signal
+== Observability Signals
 
 The Arconia OpenTelemetry Spring Boot Starter provides sensible defaults for configuring observability. By default, logs, metrics, and traces are enabled and exported via OTLP.
 
@@ -89,9 +89,27 @@ You can disable individual observability signals or even disable the entire Open
 
 == Exporters
 
-By default, all observability signals are exported via OTLP. Global properties are available to configure the exporters for logs, metrics, and traces.
+By default, all observability signals are exported via OTLP. You can change the type of the exporter in use for each observability signal. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
 
-.Exporter Configuration Properties
+.Exporter Type Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.exporter.type`
+|	`otlp`
+|	The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
+|	`arconia.otel.metrics.exporter.type`
+|	`otlp`
+|	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
+|	`arconia.otel.traces.exporter.type`
+|	`otlp`
+|	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
+|===
+
+=== OTLP
+
+Global properties are available to configure the OTLP exporters for logs, metrics, and traces.
+
+.OTLP Exporter Configuration Properties
 |===
 |Property |Default |Description
 |	`arconia.otel.exporter.otlp.compression`
@@ -101,7 +119,7 @@ By default, all observability signals are exported via OTLP. Global properties a
 |	`10s`
 |	The maximum waiting time for the exporter to establish a connection to the endpoint.
 |	`arconia.otel.exporter.otlp.endpoint`
-|	`http://localhost:4317` (gPRC) or `http://localhost:4318` (HTTP/PROTOBUF)
+|	`http://localhost:4317` (gPRC) or `http://localhost:4318` (HTTP)
 |	The endpoint to which telemetry data will be sent.
 |	`arconia.otel.exporter.otlp.headers`
 |	-
@@ -120,21 +138,36 @@ By default, all observability signals are exported via OTLP. Global properties a
 |	Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
 |===
 
-You can change the type of the exporter in use for each observability signal. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+You can override any of these properties for each observability signal, as documented in the sections dedicated to logs, metrics, and traces.
 
-.Exporter Type Configuration Properties
-|===
-|Property |Default |Description
-|	`arconia.otel.logs.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
-|	`arconia.otel.metrics.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
-|	`arconia.otel.traces.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
-|===
+==== HTTP
+
+By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In particular, it relies on the JDK Http Client to send telemetry data to the endpoint.
+
+==== gRPC
+
+You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` property to `grpc`. Additionally, you need to add the following dependencies:
+
+[source,groovy]
+----
+dependencies {
+	implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
+  implementation "io.grpc:grpc-netty-shaded:1.71.0"
+}
+----
+
+NOTE: The OpenTelemetry SDK Exporter for OTLP gRPC requires a transport implementation. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs.
+
+=== Console
+
+Instead of OTLP, you can use the console exporter to print the telemetry data to the console. This is useful for debugging and testing purposes. Besides setting the exporter type to `console` for the observability signals you want to export, you also need to add the following dependency:
+
+[source,groovy]
+----
+dependencies {
+	implementation "io.opentelemetry:opentelemetry-exporter-logging"
+}
+----
 
 == Instrumentation
 
