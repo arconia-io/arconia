@@ -47,7 +47,21 @@ arconia:
       opentelemetry: false
 ----
 
-The following tables show the mapping between the OpenTelemetry Spring Boot Starter configuration properties and the Arconia OpenTelemetry configuration properties that is used by the compatibility layer.
+Check xref:_appendix_property_mappings for more information.
+
+== Beans
+
+If you customized the OpenTelemetry SDK in your Spring Boot application, the same code will work with Arconia Opentelemetry. Therefore, no changes are required in this area.
+
+WARNING: If you customized the OpenTelemetry SDK Autoconfigure module via code, that same code will not work with Arconia OpenTelemetry because that module is not supported since Spring Boot comes already with an autoconfiguration strategy and we didn't see the benefits in adding an extra layer. You can apply equivalent changes directly against the OpenTelemetry SDK.
+
+== Dev Service
+
+The OpenTelemetry Spring Boot Starter doesn't support dev services. Learn more about the Arconia OpenTelemetry Dev Services for OpenTelemetry in the xref:dev-services.adoc[Dev Services] section.
+
+== Appendix: Property Mappings
+
+This section shows the mapping between the OpenTelemetry Spring Boot Starter configuration properties and the Arconia OpenTelemetry configuration properties that is used by the compatibility layer.
 
 === General Configuration
 
@@ -358,13 +372,3 @@ Some properties have specific value mappings:
 |`b3multi`
 |`PropagationType.B3_MULTI`
 |===
-
-== Beans
-
-If you customized the OpenTelemetry SDK in your Spring Boot application, the same code will work with Arconia Opentelemetry. Therefore, no changes are required in this area.
-
-WARNING: If you customized the OpenTelemetry SDK Autoconfigure module via code, that same code will not work with Arconia OpenTelemetry because that module is not supported since Spring Boot comes already with an autoconfiguration strategy and we didn't see the benefits in adding an extra layer. You can apply equivalent changes directly against the OpenTelemetry SDK.
-
-== Dev Service
-
-The OpenTelemetry Spring Boot Starter doesn't support dev services. Learn more about the Arconia OpenTelemetry Dev Services for OpenTelemetry in the xref:dev-services.adoc[Dev Services] section.
