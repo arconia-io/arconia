@@ -11,13 +11,13 @@ TIP: Learn more about resources in the https://opentelemetry.io/docs/concepts/re
 
 By default, Arconia automatically creates a `Resource` instance with the following attributes:
 
-* `service.name`. The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-* `service.namespace`. The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
-* `service.version`. The version of the application resolved from the artifact at build time. If not set, no value is added.
-* `service.instance.id`. A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
-* `webengine.name`. The name of the web engine. It's always `Spring Boot`.
-* `webengine.version`. The version of the web engine in use.
-* `webengine.description`. Additional description of the web engine.
+* **`service.name`**. The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* **`service.namespace`**. The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+* **`service.version`**. The version of the application resolved from the artifact at build time. If not set, no value is added.
+* **`service.instance.id`**. A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* **`webengine.name`**. The name of the web engine. It's always `Spring Boot`.
+* **`webengine.version`**. The version of the web engine in use.
+* **`webengine.description`**. Additional description of the web engine.
 
 == Configuration Properties
 
@@ -61,9 +61,9 @@ arconia:
 
 Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure Resource attributes using environment variables as well.
 
-* `OTEL_SERVICE_NAME`: The name of the application.
-* `OTEL_RESOURCE_ATTRIBUTES`: A comma-separated list of key-value pairs to add to the `Resource` instance.
-* `OTEL_RESOURCE_DISABLED_KEYS`: A comma-separated list of keys to disable in the `Resource` instance.
+* **`OTEL_SERVICE_NAME`**: The name of the application.
+* **`OTEL_RESOURCE_ATTRIBUTES`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
+* **`OTEL_RESOURCE_DISABLED_KEYS`**: A comma-separated list of keys to disable in the `Resource` instance.
 
 When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
 
@@ -73,9 +73,9 @@ This support is especially useful during deployment, where you can use the same 
 
 Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure Resource attributes using system properties as well.
 
-* `otel.service.name`: The name of the application.
-* `otel.resource.attributes`: A comma-separated list of key-value pairs to add to the `Resource` instance.
-* `otel.resource.disabled.keys`: A comma-separated list of keys to disable in the `Resource` instance.
+* **`otel.service.name`**: The name of the application.
+* **`otel.resource.attributes`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
+* **`otel.resource.disabled.keys`**: A comma-separated list of keys to disable in the `Resource` instance.
 
 When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
 
@@ -101,12 +101,12 @@ Arconia comes with a set of built-in resource contributors that automatically ad
 
 The `EnvironmentResourceContributor` contributes attributes to the `Resource` instance from the Spring environment and configuration properties, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `service.name`: The name of the application as defined in the `arconia.otel.resource.service-name` property, or `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-* `service.namespace`: The namespace of the application as defined in the `arconia.otel.resource.attributes` property, or `spring.application.group`. If none of these properties are set, no value is added.
-* `service.instance.id`: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
-* `webengine.name`: The name of the web engine. It's always `Spring Boot`.
-* `webengine.version`: The version of the web engine in use.
-* `webengine.description`: Additional description of the web engine.
+* **`service.name`**: The name of the application as defined in the `arconia.otel.resource.service-name` property, or `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* **`service.namespace`**: The namespace of the application as defined in the `arconia.otel.resource.attributes` property, or `spring.application.group`. If none of these properties are set, no value is added.
+* **`service.instance.id`**: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* **`webengine.name`**: The name of the web engine. It's always `Spring Boot`.
+* **`webengine.version`**: The version of the web engine in use.
+* **`webengine.description`**: Additional description of the web engine.
 
 Furthermore, any additional attribute defined in the `arconia.otel.resource.attributes` property will be added to the `Resource` instance.
 
@@ -128,7 +128,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `BuildResourceContributor` contributes build information to the `Resource` instance, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `service.version`: The version of the application resolved from the artifact at build time. If not set, no value is added.
+* **`service.version`**: The version of the application resolved from the artifact at build time. If not set, no value is added.
 
 The information is extracted from the `META-INF/build-info.properties` file generated by the Spring Boot Maven and Gradle plugins when the feature is enabled. In Gradle projects, you can enable it by adding the following configuration to your `build.gradle` file:
 
@@ -161,8 +161,8 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `HostResourceContributor` contributes attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `host.arch`: The CPU architecture of the host the application is running on.
-* `host.name`: The name of the host the application is running on.
+* **`host.arch`**: The CPU architecture of the host the application is running on.
+* **`host.name`**: The name of the host the application is running on.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
@@ -182,9 +182,9 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `JavaResourceContributor` contributes attributes to the `Resource` instance about the Java Runtime Environment the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `process.runtime.description`: Additional description about the Java Runtime Environment for the application process.
-* `process.runtime.name`: The name of the Java Runtime Environment for the application process.
-* `process.runtime.version`: The version of the Java Runtime Environment for the application process.
+* **`process.runtime.description`**: Additional description about the Java Runtime Environment for the application process.
+* **`process.runtime.name`**: The name of the Java Runtime Environment for the application process.
+* **`process.runtime.version`**: The version of the Java Runtime Environment for the application process.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `java` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.java-information[Spring Boot Actuator documentation] for more details.
 
@@ -206,11 +206,11 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `OsResourceContributor` contributes attributes to the `Resource` instance about the operating system the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `os.arch`: The CPU architecture of the operating system the application is running on.
-* `os.description`: Additional description of the operating system the application is running on.
-* `os.name`: The name of the operating system the application is running on.
-* `os.type`: The type of the operating system the application is running on.
-* `os.version`: The version of the operating system the application is running on.
+* **`os.arch`**: The CPU architecture of the operating system the application is running on.
+* **`os.description`**: Additional description of the operating system the application is running on.
+* **`os.name`**: The name of the operating system the application is running on.
+* **`os.type`**: The type of the operating system the application is running on.
+* **`os.version`**: The version of the operating system the application is running on.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `os` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.os-information[Spring Boot Actuator documentation] for more details.
 
@@ -232,9 +232,9 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `ProcessResourceContributor` contributes attributes to the `Resource` instance about the Java process, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `process.owner`: The username of the user that owns the Java process.
-* `process.parent_pid`: The parent process ID of the Java process.
-* `process.pid`: The process ID of the Java process.
+* **`process.owner`**: The username of the user that owns the Java process.
+* **`process.parent_pid`**: The parent process ID of the Java process.
+* **`process.pid`**: The process ID of the Java process.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `process` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.process-information[Spring Boot Actuator documentation] for more details.
 
@@ -256,7 +256,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 This contributor provides attributes to the `Resource` instance about the OCI container the application is running in, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `container.id`: The ID of the OCI container the application is running in, retrieved from the cgroup filesystem.
+* **`container.id`**: The ID of the OCI container the application is running in, retrieved from the cgroup filesystem.
 
 NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
 
@@ -278,7 +278,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* `host.id`: The ID of the host the application is running on.
+* **`host.id`**: The ID of the host the application is running on.
 
 NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
 
