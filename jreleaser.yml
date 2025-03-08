@@ -1,8 +1,8 @@
 project:
   name: arconia
-  description: Framework to build modern applications using Java and Spring Boot.
+  description: Framework for building modern applications with Java and Spring Boot.
   longDescription: |
-    Arconia is a framework to build modern applications using Java and Spring Boot, focused on developer experience and cloud native architectures.
+    Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot, emphasizing developer experience and cloud native architectures.
   links:
     homepage: https://{{repoHost}}/{{repoOwner}}/{{repoName}}
     faq: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/discussions

@@ -1,12 +1,12 @@
-= Arconia
-:description: Welcome to the documentation for the Arconia framework for Java and Spring Boot applications.
+= Arconia Framework
+:description: Welcome to the documentation about the Arconia Framework for Java and Spring Boot applications.
 
 [.hero]
 Welcome to Arconia Framework! This documentation will help you get started with the framework and explore its features.
 
 == What is Arconia?
 
-Arconia is a framework built on top of Java and Spring Boot that helps developers build modern enterprise applications with developer experience in mind.
+Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot, emphasizing developer experience and cloud native architectures.
 
 NOTE: The Arconia Framework is currently in active development. We're working hard to improve it and appreciate your patience as we continue to refine the tool. Feel free to try it out and share your feedback!
 

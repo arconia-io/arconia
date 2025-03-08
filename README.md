@@ -1,11 +1,13 @@
-# Arconia
+# Arconia Framework
 
 ![Build](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml/badge.svg)
 [![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Follow us on Bluesky](https://img.shields.io/static/v1?label=Bluesky&message=Follow&color=1DA1F2)](https://bsky.app/profile/arconia.bsky.social)
 
-Arconia is a framework to build modern applications using Java and Spring Boot, focused on developer experience and cloud native architectures.
-It provides support for multitenancy, observability with OpenTelemetry, and GenAI/Large Language Models.
+Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot,
+emphasizing developer experience and cloud native architectures.
+
+It provides support for multitenancy, observability, and artificial intelligence.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
@@ -17,9 +19,13 @@ It provides support for multitenancy, observability with OpenTelemetry, and GenA
 
 * Java 21+
 
+## 📙&nbsp; Documentation
+
+Check the [Arconia Framework](https://arconia.io/docs) documentation for more information.
+
 ## 🌟&nbsp; Examples
 
-Check these [examples](https://github.com/arconia-io/arconia-examples) to see Arconia and Spring Boot in action.
+Check these [examples](https://github.com/arconia-io/arconia-examples) to see Arconia Framework and Spring Boot in action.
 
 ## 🛡️&nbsp; Security
 

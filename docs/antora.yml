@@ -1,6 +1,6 @@
-name: arconia
+name: arconia-framework
 version: true
-title: Arconia
+title: Arconia Framework
 nav:
   - modules/ROOT/nav.adoc
   - modules/opentelemetry/nav.adoc
