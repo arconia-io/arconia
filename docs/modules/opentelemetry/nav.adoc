@@ -1,5 +1,5 @@
 .OpenTelemetry
-* xref:getting-started.adoc[Getting Started]
+* xref:introduction.adoc[Introduction]
 * xref:resource.adoc[Resource]
 * xref:dev-services.adoc[Dev Services]
 * xref:migration.adoc[Migration]
