@@ -24,7 +24,7 @@ Arconia publishes a BOM (Bill of Materials) that you can use to manage the versi
 ----
 dependencyManagement {
 	imports {
-		mavenBom "io.arconia:arconia-bom:{page-component-version.replaceAll('^v', '')}"
+		mavenBom "io.arconia:arconia-bom:{page-component-version}"
 	}
 }
 ----
