@@ -18,6 +18,7 @@ It provides support for multitenancy, observability, and artificial intelligence
 ## ⚙️&nbsp; Requirements
 
 * Java 21+
+* Spring Boot 3.4+
 
 ## 📙&nbsp; Documentation
 
