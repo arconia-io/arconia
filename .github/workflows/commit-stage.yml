@@ -100,24 +100,3 @@ jobs:
           path: |
             out/jreleaser/trace.log
             out/jreleaser/output.properties
-
-#      - name: Deploy and release artifacts
-#        if: ${{ github.ref == 'refs/heads/main' }}
-#        run: |
-#          VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
-#          if [[ $VERSION == *"SNAPSHOT"* ]]; then
-#            ./gradlew jreleaserDeploy
-#          else
-#            ./gradlew jreleaserFullRelease
-#          fi
-#        env:
-#
-#      - name: Upload JReleaser output
-#        if: always()
-#        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
-#        with:
-#          retention-days: 1
-#          name: jreleaser-output
-#          path: |
-#            build/jreleaser/trace.log
-#            build/jreleaser/output.properties
