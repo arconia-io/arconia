@@ -60,6 +60,19 @@
       "type": "java.lang.Boolean",
       "description": "Whether the Process resource contributor is enabled.",
       "defaultValue": false
+    },
+
+    {
+      "name": "arconia.otel.compatibility.actuator",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable compatibility for Spring Boot Actuator OpenTelemetry/OTLP properties.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.compatibility.opentelemetry",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable compatibility for OpenTelemetry SDK Autoconfigure properties.",
+      "defaultValue": true
     }
   ]
 }

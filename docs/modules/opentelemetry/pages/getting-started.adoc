@@ -44,7 +44,7 @@ dependencies {
 
 === Running the Application
 
-Once you have added the dependencies, you can run your Spring Boot application using the Spring Boot plugins for Gradle or Maven. Unlike the lower level Testcontainers support in Spring Boot, with Arconia you don't need special tasks to run your application in order to benefit from the dev services (e.g. `./gradlew bootTestRun`). You can simply run your application as usual.
+Once you have added the dependencies, you can run your Spring Boot application using the Spring Boot plugins for Gradle or Maven. Unlike the lower level Testcontainers support in Spring Boot, with Arconia you don't need special tasks to run your application in order to benefit from the dev services (e.g. './gradlew bootTestRun'). You can simply run your application as usual.
 
 [source,shell]
 ----
@@ -55,10 +55,10 @@ The application logs will show you the URL where you can access the Grafana obse
 
 [source,logs]
 ----
-... Access to the Grafana dashboard: http://localhost:38125
-... Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: http://localhost:39117/v1/logs
-... Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: http://localhost:39117/v1/metrics
-... Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: http://localhost:39117/v1/traces
+...o.t.grafana.LgtmStackContainer           : Access to the Grafana dashboard: http://localhost:38125
+...s.l.e.o.OtlpLoggingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: http://localhost:39117/v1/logs
+...s.m.e.o.OtlpMetricsExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: http://localhost:39117/v1/metrics
+...s.t.e.o.OtlpTracingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: http://localhost:39117/v1/traces
 ----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.

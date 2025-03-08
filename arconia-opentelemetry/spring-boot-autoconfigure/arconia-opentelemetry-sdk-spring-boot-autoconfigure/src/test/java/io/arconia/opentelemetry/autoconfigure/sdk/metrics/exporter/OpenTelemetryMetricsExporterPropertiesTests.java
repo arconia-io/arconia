@@ -21,6 +21,7 @@ class OpenTelemetryMetricsExporterPropertiesTests {
 
         assertThat(properties.getType()).isEqualTo(ExporterType.OTLP);
         assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.CUMULATIVE);
+        assertThat(properties.getHistogramAggregation()).isEqualTo(HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM);
         assertThat(properties.getOtlp()).isNotNull();
     }
 
@@ -40,6 +41,15 @@ class OpenTelemetryMetricsExporterPropertiesTests {
         properties.setAggregationTemporality(AggregationTemporalityStrategy.DELTA);
 
         assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.DELTA);
+    }
+
+    @Test
+    void shouldUpdateHistogramAggregation() {
+        OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
+
+        properties.setHistogramAggregation(HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
+
+        assertThat(properties.getHistogramAggregation()).isEqualTo(HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
     }
 
     @Test

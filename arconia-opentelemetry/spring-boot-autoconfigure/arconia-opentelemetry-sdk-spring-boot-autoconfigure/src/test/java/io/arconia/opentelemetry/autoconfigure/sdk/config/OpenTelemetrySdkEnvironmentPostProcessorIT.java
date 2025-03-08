@@ -41,11 +41,85 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
 
     @AfterEach
     void cleanup() {
+        System.clearProperty("arconia.otel.compatibility.opentelemetry");
         System.clearProperty("otel.sdk.disabled");
         System.clearProperty("otel.service.name");
         System.clearProperty("otel.logs.exporter");
         System.clearProperty("otel.metrics.exporter");
         System.clearProperty("otel.traces.exporter");
+    }
+
+    @Test
+    void runWhenCompatibilityIsDisabledInSystemPropertiesShouldNotConvertProperties() {
+        System.setProperty("arconia.otel.compatibility.opentelemetry", "false");
+        System.setProperty("otel.sdk.disabled", "true");
+        System.setProperty("otel.service.name", "test-service");
+        System.setProperty("otel.logs.exporter", "otlp");
+        System.setProperty("otel.metrics.exporter", "otlp");
+        System.setProperty("otel.traces.exporter", "otlp");
+
+        ConfigurableApplicationContext context = this.application.run();
+
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+    }
+
+    @Test
+    void runWhenCompatibilityIsDisabledInEnvironmentVariablesShouldNotConvertProperties() {
+        ConfigurableEnvironment environment = new StandardEnvironment();
+        Map<String, Object> envVars = new HashMap<>();
+        envVars.put("ARCONIA_OTEL_COMPATIBILITY_OPENTELEMETRY", "false");
+        envVars.put("OTEL_SDK_DISABLED", "true");
+        envVars.put("OTEL_SERVICE_NAME", "test-service");
+        envVars.put("OTEL_LOGS_EXPORTER", "otlp");
+        envVars.put("OTEL_METRICS_EXPORTER", "otlp");
+        envVars.put("OTEL_TRACES_EXPORTER", "otlp");
+        environment.getPropertySources().addFirst(new MapPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, envVars));
+        this.application.setEnvironment(environment);
+
+        ConfigurableApplicationContext context = this.application.run();
+
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+    }
+
+    @Test
+    void runWhenCompatibilityIsDisabledInCommandLineArgumentsShouldNotConvertProperties() {
+        ConfigurableApplicationContext context = this.application.run(
+            "--arconia.otel.compatibility.opentelemetry=false",
+            "--otel.sdk.disabled=true",
+            "--otel.service.name=test-service",
+            "--otel.logs.exporter=otlp",
+            "--otel.metrics.exporter=otlp",
+            "--otel.traces.exporter=otlp"
+        );
+
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
     }
 
     @Test
@@ -152,6 +226,42 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
             .isEqualTo(ExporterType.OTLP.name());
         assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
             .isEqualTo(ExporterType.OTLP.name());
+    }
+
+    @Test
+    void runWhenCompatibilityIsDisabledInApplicationPropertiesShouldNotConvertProperties() {
+        ConfigurableApplicationContext context = this.application.run(
+            "--spring.config.location=classpath:application-otel-disabled.properties"
+        );
+
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+    }
+
+    @Test
+    void runWhenCompatibilityIsDisabledInApplicationYamlShouldNotConvertProperties() {
+        ConfigurableApplicationContext context = this.application.run(
+            "--spring.config.location=classpath:application-otel-disabled.yml"
+        );
+
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
+        assertThat(context.getEnvironment().getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+            .isNull();
     }
 
     static class Config {

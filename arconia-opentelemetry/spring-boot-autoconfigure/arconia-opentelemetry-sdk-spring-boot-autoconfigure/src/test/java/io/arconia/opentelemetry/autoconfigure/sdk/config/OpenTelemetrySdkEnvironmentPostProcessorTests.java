@@ -39,7 +39,26 @@ class OpenTelemetrySdkEnvironmentPostProcessorTests {
     }
 
     @Test
-    void postProcessEnvironmentShouldMapAllProperties() {
+    void postProcessEnvironmentShouldMapAllPropertiesWhenCompatibilityIsEnabled() {
+        var environment = new MockEnvironment()
+            .withProperty("arconia.otel.compatibility.opentelemetry", "true")
+            .withProperty("otel.sdk.disabled", "true")
+            .withProperty("otel.service.name", "test-service")
+            .withProperty("otel.logs.exporter", "otlp")
+            .withProperty("otel.metrics.exporter", "otlp")
+            .withProperty("otel.traces.exporter", "otlp");
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isEqualTo("false");
+        assertThat(environment.getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isEqualTo("test-service");
+        assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
+        assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
+        assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
+    }
+
+    @Test
+    void postProcessEnvironmentShouldMapAllPropertiesWhenCompatibilityIsDefault() {
         var environment = new MockEnvironment()
             .withProperty("otel.sdk.disabled", "true")
             .withProperty("otel.service.name", "test-service")
@@ -54,6 +73,25 @@ class OpenTelemetrySdkEnvironmentPostProcessorTests {
         assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
         assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
         assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type")).isEqualTo(ExporterType.OTLP.name());
+    }
+
+    @Test
+    void postProcessEnvironmentShouldNotMapPropertiesWhenCompatibilityIsDisabled() {
+        var environment = new MockEnvironment()
+            .withProperty("arconia.otel.compatibility.opentelemetry", "false")
+            .withProperty("otel.sdk.disabled", "true")
+            .withProperty("otel.service.name", "test-service")
+            .withProperty("otel.logs.exporter", "otlp")
+            .withProperty("otel.metrics.exporter", "otlp")
+            .withProperty("otel.traces.exporter", "otlp");
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type")).isNull();
     }
 
     @Test

@@ -1,0 +1,8 @@
+= Migration
+
+Arconia provides unified observability for Spring Boot applications, combining full support for OpenTelemetry API, SDK, and Instrumentation while also providing a seamless integration with Micrometer API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
+
+If you're currently using Spring Boot OpenTelemetry/OTLP or the OpenTelemetry Spring Boot Starter and want to migrate to Arconia OpenTelemetry, these guides will help you understand the differences between the two and how to migrate your existing Spring Boot applications to Arconia OpenTelemetry.
+
+* xref:migration/spring-boot.adoc[Migrating from Spring Boot OpenTelemetry to Arconia OpenTelemetry]
+* xref:migration/opentelemetry-spring-boot-starter.adoc[Migrating from OpenTelemetry Spring Boot Starter to Arconia OpenTelemetry].

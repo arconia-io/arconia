@@ -2,7 +2,6 @@ package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp;
 
 import java.util.Locale;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -94,7 +93,7 @@ public class OtlpMetricsExporterConfiguration {
     }
 
     @Bean
-    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsProperties properties) {
+    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsExporterProperties properties) {
         return builder -> builder.registerView(
                 InstrumentSelector.builder()
                         .setType(InstrumentType.HISTOGRAM)

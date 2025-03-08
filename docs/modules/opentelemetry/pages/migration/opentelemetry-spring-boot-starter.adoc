@@ -1,0 +1,370 @@
+= Migrating from OpenTelemetry Spring Boot Starter to Arconia OpenTelemetry
+
+Arconia provides unified observability for Spring Boot applications, combining full support for OpenTelemetry API, SDK, and Instrumentation while also providing a seamless integration with Micrometer API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
+
+If you're currently using the OpenTelemetry Spring Boot Starter, you can easily migrate to Arconia OpenTelemetry and benefit from the full OpenTelemetry API, SDK, and Instrumentation support while also gaining full support for Micrometer API and Instrumentation, and developer experience improvements.
+
+== Dependencies
+
+For starters, include the Arconia OpenTelemetry Spring Boot Starter dependency to your project.
+
+[source,groovy,subs="attributes"]
+----
+dependencies {
+  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "io.arconia:arconia-bom:{page-component-version}"
+  }
+}
+----
+
+Next, you can remove the dependencies you previously used for the OpenTelemetry Spring Boot Starter, including the following.
+
+[cols="2,2",options="header"]
+|===
+| Dependency | Why Remove
+| `io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter` | Replaced by Arconia OpenTelemetry Spring Boot Starter.
+|===
+
+== Configuration Properties
+
+The OpenTelemetry Spring Boot Starter provides a set of configuration properties to customize the OpenTelemetry SDK and Instrumentation. Arconia OpenTelemetry provides a similar set of configuration properties, but with some differences.
+
+To ease the migration, Arconia accepts most of the configuration properties used by the OpenTelemetry Spring Boot Starter. This means that you can continue using the same configuration properties without any changes. However, whenever possible, it's recommended to adopt the Arconia OpenTelemetry configuration properties to benefit from the full feature set.
+
+This compatibility layer is enabled by default since it supports both the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification] and https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties]
+
+Should you want to disable the compatibility layer, you can set the following configuration property.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    compatibility:
+      opentelemetry: false
+----
+
+The following tables show the mapping between the OpenTelemetry Spring Boot Starter configuration properties and the Arconia OpenTelemetry configuration properties that is used by the compatibility layer.
+
+=== General Configuration
+
+.General Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.sdk.disabled`
+|`arconia.otel.enabled`
+
+|`otel.attribute.value.length.limit`
+|`arconia.otel.logs.log-limits.max-attribute-value-length` +
+`arconia.otel.traces.span-limits.max-attribute-value-length`
+
+|`otel.attribute.count.limit`
+|`arconia.otel.logs.log-limits.max-number-of-attributes` +
+`arconia.otel.traces.span-limits.max-number-of-attributes`
+
+|`otel.propagators`
+|`management.tracing.propagation.produce`
+|===
+
+=== Resource Configuration
+
+.Resource Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.service.name`
+|`arconia.otel.resource.service-name`
+
+|`otel.resource.attributes`
+|`arconia.otel.resource.attributes`
+
+|`otel.resource.disabled.keys`
+|`arconia.otel.resource.enable`
+|===
+
+=== Logs Configuration
+
+.Logs Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.blrp.schedule.delay`
+|`arconia.otel.logs.processor.schedule-delay`
+
+|`otel.blrp.max.queue.size`
+|`arconia.otel.logs.processor.max-queue-size`
+
+|`otel.blrp.max.export.batch.size`
+|`arconia.otel.logs.processor.max-export-batch-size`
+
+|`otel.blrp.export.timeout`
+|`arconia.otel.logs.processor.exporter-timeout`
+|===
+
+=== Metrics Configuration
+
+.Metrics Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.metric.export.interval`
+|`arconia.otel.metrics.interval`
+
+|`otel.metrics.exemplar.filter`
+|`arconia.otel.metrics.exemplar-filter`
+|===
+
+=== Traces Configuration
+
+.Traces Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.bsp.schedule.delay`
+|`arconia.otel.traces.processor.schedule-delay`
+
+|`otel.bsp.max.queue.size`
+|`arconia.otel.traces.processor.max-queue-size`
+
+|`otel.bsp.max.export.batch.size`
+|`arconia.otel.traces.processor.max-export-batch-size`
+
+|`otel.bsp.export.timeout`
+|`arconia.otel.traces.processor.exporter-timeout`
+
+|`otel.tracer.sampler`
+|`arconia.otel.traces.sampling.strategy`
+
+|`otel.tracer.sampler.arg`
+|`management.tracing.sampling.probability`
+
+|`otel.span.attribute.value.length.limit`
+|`arconia.otel.traces.span-limits.max-attribute-value-length`
+
+|`otel.span.attribute.count.limit`
+|`arconia.otel.traces.span-limits.max-number-of-attributes`
+
+|`otel.span.event.count.limit`
+|`arconia.otel.traces.span-limits.max-number-of-events`
+
+|`otel.span.link.count.limit`
+|`arconia.otel.traces.span-limits.max-number-of-links`
+|===
+
+=== Exporters Configuration
+
+.Exporters Configuration
+|===
+|OpenTelemetry Property |Arconia Property
+
+|`otel.logs.exporter`
+|`arconia.otel.logs.exporter.type`
+
+|`otel.metrics.exporter`
+|`arconia.otel.metrics.exporter.type`
+
+|`otel.traces.exporter`
+|`arconia.otel.traces.exporter.type`
+
+|`otel.java.exporter.memory_mode`
+|`arconia.otel.exporter.memoryMode`
+
+|`otel.exporter.otlp.protocol`
+|`arconia.otel.exporter.otlp.protocol`
+
+|`otel.exporter.otlp.endpoint`
+|`arconia.otel.exporter.otlp.endpoint`
+
+|`otel.exporter.otlp.headers`
+|`arconia.otel.exporter.otlp.headers`
+
+|`otel.exporter.otlp.compression`
+|`arconia.otel.exporter.otlp.compression`
+
+|`otel.exporter.otlp.timeout`
+|`arconia.otel.exporter.otlp.timeout`
+
+|`otel.exporter.otlp.logs.protocol`
+|`arconia.otel.logs.exporter.otlp.protocol`
+
+|`otel.exporter.otlp.logs.endpoint`
+|`arconia.otel.logs.exporter.otlp.endpoint`
+
+|`otel.exporter.otlp.logs.headers`
+|`arconia.otel.logs.exporter.otlp.headers`
+
+|`otel.exporter.otlp.logs.compression`
+|`arconia.otel.logs.exporter.otlp.compression`
+
+|`otel.exporter.otlp.logs.timeout`
+|`arconia.otel.logs.exporter.otlp.timeout`
+
+|`otel.exporter.otlp.metrics.protocol`
+|`arconia.otel.metrics.exporter.otlp.protocol`
+
+|`otel.exporter.otlp.metrics.endpoint`
+|`arconia.otel.metrics.exporter.otlp.endpoint`
+
+|`otel.exporter.otlp.metrics.headers`
+|`arconia.otel.metrics.exporter.otlp.headers`
+
+|`otel.exporter.otlp.metrics.compression`
+|`arconia.otel.metrics.exporter.otlp.compression`
+
+|`otel.exporter.otlp.metrics.timeout`
+|`arconia.otel.metrics.exporter.otlp.timeout`
+
+|`otel.exporter.otlp.metrics.default.histogram.aggregation`
+|`arconia.otel.metrics.exporter.histogram-aggregation`
+
+|`otel.exporter.otlp.metrics.temporality.preference`
+|`arconia.otel.metrics.exporter.aggregation-temporality`
+
+|`otel.exporter.otlp.traces.protocol`
+|`arconia.otel.traces.exporter.otlp.protocol`
+
+|`otel.exporter.otlp.traces.endpoint`
+|`arconia.otel.traces.exporter.otlp.endpoint`
+
+|`otel.exporter.otlp.traces.headers`
+|`arconia.otel.traces.exporter.otlp.headers`
+
+|`otel.exporter.otlp.traces.compression`
+|`arconia.otel.traces.exporter.otlp.compression`
+
+|`otel.exporter.otlp.traces.timeout`
+|`arconia.otel.traces.exporter.otlp.timeout`
+|===
+
+=== Property Value Conversions
+
+Some properties have specific value mappings:
+
+.Exporter Type Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`console`
+|`ExporterType.CONSOLE`
+
+|`none`
+|`ExporterType.NONE`
+
+|`otlp`
+|`ExporterType.OTLP`
+|===
+
+.Protocol Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`grpc`
+|`Protocol.GRPC`
+
+|`http/protobuf`
+|`Protocol.HTTP_PROTOBUF`
+|===
+
+.Compression Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`gzip`
+|`Compression.GZIP`
+
+|`none`
+|`Compression.NONE`
+|===
+
+.Histogram Aggregation Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
+|`HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
+
+|`EXPLICIT_BUCKET_HISTOGRAM`
+|`HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM`
+|===
+
+.Aggregation Temporality Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`CUMULATIVE`
+|`AggregationTemporalityStrategy.CUMULATIVE`
+
+|`DELTA`
+|`AggregationTemporalityStrategy.DELTA`
+
+|`LOWMEMORY`
+|`AggregationTemporalityStrategy.LOW_MEMORY`
+|===
+
+.Sampling Strategy Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`always_on`
+|`SamplingStrategy.ALWAYS_ON`
+
+|`always_off`
+|`SamplingStrategy.ALWAYS_OFF`
+
+|`traceidratio`
+|`SamplingStrategy.TRACE_ID_RATIO`
+
+|`parentbased_always_on`
+|`SamplingStrategy.PARENT_BASED_ALWAYS_ON`
+
+|`parentbased_always_off`
+|`SamplingStrategy.PARENT_BASED_ALWAYS_OFF`
+
+|`parentbased_traceidratio`
+|`SamplingStrategy.PARENT_BASED_TRACE_ID_RATIO`
+|===
+
+.Exemplar Filter Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`always_on`
+|`ExemplarFilter.ALWAYS_ON`
+
+|`always_off`
+|`ExemplarFilter.ALWAYS_OFF`
+
+|`trace_based`
+|`ExemplarFilter.TRACE_BASED`
+|===
+
+.Propagation Values
+|===
+|OpenTelemetry Value |Arconia Value
+
+|`baggage`
+|`PropagationType.W3C`
+
+|`tracecontext`
+|PropagationType.W3C`
+
+|`b3`
+|`PropagationType.B3`
+
+|`b3multi`
+|`PropagationType.B3_MULTI`
+|===
+
+== Beans
+
+If you customized the OpenTelemetry SDK in your Spring Boot application, the same code will work with Arconia Opentelemetry. Therefore, no changes are required in this area.
+
+WARNING: If you customized the OpenTelemetry SDK Autoconfigure module via code, that same code will not work with Arconia OpenTelemetry because that module is not supported since Spring Boot comes already with an autoconfiguration strategy and we didn't see the benefits in adding an extra layer. You can apply equivalent changes directly against the OpenTelemetry SDK.
+
+== Dev Service
+
+The OpenTelemetry Spring Boot Starter doesn't support dev services. Check out our xref:getting-started.adoc#_dev-service[ getting started guide] to learn how to use the Arconia OpenTelemetry Dev Service LGTM and improve your developer experience while working with OpenTelemetry.

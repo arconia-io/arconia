@@ -1,0 +1,16 @@
+arconia:
+  otel:
+    compatibility:
+      opentelemetry: false
+
+otel:
+  sdk:
+    disabled: true
+  service:
+    name: test-service
+  logs:
+    exporter: otlp
+  metrics:
+    exporter: otlp
+  traces:
+    exporter: otlp

@@ -22,6 +22,11 @@ class OpenTelemetrySdkEnvironmentPostProcessor implements EnvironmentPostProcess
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Assert.notNull(environment, "environment cannot be null");
 
+        Boolean enabled = environment.getProperty("arconia.otel.compatibility.opentelemetry", Boolean.class, true);
+        if (!enabled) {
+            return;
+        }
+
         Map<String,Object> arconiaProperties = new HashMap<>();
         arconiaProperties.putAll(OpenTelemetrySdkPropertyAdapters.general(environment).getArconiaProperties());
         arconiaProperties.putAll(OpenTelemetrySdkPropertyAdapters.resource(environment).getArconiaProperties());

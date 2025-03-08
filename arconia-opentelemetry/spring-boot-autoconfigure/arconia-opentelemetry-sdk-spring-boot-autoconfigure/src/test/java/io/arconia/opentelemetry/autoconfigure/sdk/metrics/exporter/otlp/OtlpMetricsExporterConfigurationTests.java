@@ -12,6 +12,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,7 +36,7 @@ class OtlpMetricsExporterConfigurationTests {
                 assertThat(context).hasBean("histogramAggregation");
 
                 // Verify default histogram aggregation
-                OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+                OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
                 assertThat(properties.getHistogramAggregation().name())
                         .isEqualTo("EXPLICIT_BUCKET_HISTOGRAM");
             });
@@ -186,25 +187,25 @@ class OtlpMetricsExporterConfigurationTests {
     @Test
     void histogramAggregationConfigurationApplied() {
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.histogram-aggregation=base2-exponential-bucket-histogram")
+            .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram")
             .run(context -> {
                 assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("histogramAggregation");
 
                 // Verify the histogram aggregation property is set correctly
-                OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+                OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
                 assertThat(properties.getHistogramAggregation().name())
                         .isEqualTo("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.histogram-aggregation=explicit-bucket-histogram")
+            .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=explicit-bucket-histogram")
             .run(context -> {
                 assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("histogramAggregation");
 
                 // Verify the histogram aggregation property is set correctly
-                OpenTelemetryMetricsProperties properties = context.getBean(OpenTelemetryMetricsProperties.class);
+                OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
                 assertThat(properties.getHistogramAggregation().name())
                         .isEqualTo("EXPLICIT_BUCKET_HISTOGRAM");
             });

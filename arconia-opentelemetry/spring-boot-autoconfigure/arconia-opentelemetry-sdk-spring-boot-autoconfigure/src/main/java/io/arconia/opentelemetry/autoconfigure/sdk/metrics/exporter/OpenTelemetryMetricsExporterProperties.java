@@ -25,6 +25,11 @@ public class OpenTelemetryMetricsExporterProperties{
     private AggregationTemporalityStrategy aggregationTemporality = AggregationTemporalityStrategy.CUMULATIVE;
 
     /**
+     * The aggregation strategy to use for exporting histograms.
+     */
+    private HistogramAggregationStrategy histogramAggregation = HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM;
+
+    /**
      * Options for the OTLP metrics exporter.
      */
     @NestedConfigurationProperty
@@ -44,6 +49,14 @@ public class OpenTelemetryMetricsExporterProperties{
 
     public void setAggregationTemporality(AggregationTemporalityStrategy aggregationTemporality) {
         this.aggregationTemporality = aggregationTemporality;
+    }
+
+    public HistogramAggregationStrategy getHistogramAggregation() {
+        return histogramAggregation;
+    }
+
+    public void setHistogramAggregation(HistogramAggregationStrategy histogramAggregation) {
+        this.histogramAggregation = histogramAggregation;
     }
 
     public OtlpExporterConfig getOtlp() {

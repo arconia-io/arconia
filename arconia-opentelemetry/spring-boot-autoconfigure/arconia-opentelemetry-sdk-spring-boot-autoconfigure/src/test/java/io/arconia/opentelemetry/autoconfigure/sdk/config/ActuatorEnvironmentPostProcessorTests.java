@@ -2,7 +2,12 @@ package io.arconia.opentelemetry.autoconfigure.sdk.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.core.Ordered;
 import org.springframework.mock.env.MockEnvironment;
+
+import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.OpenTelemetryLoggingExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.traces.exporter.OpenTelemetryTracingExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,7 +28,8 @@ class ActuatorEnvironmentPostProcessorTests {
 
     @Test
     void postProcessEnvironmentShouldAddPropertySourceFirst() {
-        var environment = new MockEnvironment();
+        var environment = new MockEnvironment()
+            .withProperty("arconia.otel.compatibility.actuator", "true");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         assertThat(environment.getPropertySources().stream().findFirst())
@@ -31,36 +37,41 @@ class ActuatorEnvironmentPostProcessorTests {
     }
 
     @Test
-    void postProcessEnvironmentShouldExcludeActuatorAutoConfigurations() {
-        var environment = new MockEnvironment();
+    void postProcessEnvironmentShouldMapAllPropertiesWhenCompatibilityIsEnabled() {
+        var environment = new MockEnvironment()
+            .withProperty("arconia.otel.compatibility.actuator", "true")
+            .withProperty("management.otlp.metrics.export.url", "http://localhost:4318/v1/metrics")
+            .withProperty("management.otlp.tracing.endpoint", "http://localhost:4318/v1/traces")
+            .withProperty("management.otlp.logging.endpoint", "http://localhost:4318/v1/logs");
+
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        String excludedConfigs = environment.getProperty("spring.autoconfigure.exclude");
-        assertThat(excludedConfigs).contains(
-            "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration",
-            "org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration",
-            "org.springframework.boot.actuate.autoconfigure.logging.otlp.OtlpLoggingAutoConfiguration",
-            "org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration",
-            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration"
-        );
+        assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.endpoint"))
+            .isEqualTo("http://localhost:4318/v1/metrics");
+        assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.endpoint"))
+            .isEqualTo("http://localhost:4318/v1/traces");
+        assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.endpoint"))
+            .isEqualTo("http://localhost:4318/v1/logs");
     }
 
     @Test
-    void postProcessEnvironmentShouldAppendToExistingExclusions() {
+    void postProcessEnvironmentShouldNotMapPropertiesWhenCompatibilityIsDisabled() {
         var environment = new MockEnvironment()
-            .withProperty("spring.autoconfigure.exclude", "com.example.ExistingAutoConfiguration");
+            .withProperty("arconia.otel.compatibility.actuator", "false")
+            .withProperty("management.otlp.metrics.export.url", "http://localhost:4318/v1/metrics")
+            .withProperty("management.otlp.tracing.endpoint", "http://localhost:4318/v1/traces")
+            .withProperty("management.otlp.logging.endpoint", "http://localhost:4318/v1/logs");
+
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        String excludedConfigs = environment.getProperty("spring.autoconfigure.exclude");
-        assertThat(excludedConfigs)
-            .startsWith("com.example.ExistingAutoConfiguration,")
-            .contains(
-                "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration",
-                "org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration",
-                "org.springframework.boot.actuate.autoconfigure.logging.otlp.OtlpLoggingAutoConfiguration",
-                "org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration",
-                "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration"
-            );
+        assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.endpoint")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.endpoint")).isNull();
+        assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.endpoint")).isNull();
+    }
+
+    @Test
+    void getOrderShouldReturnLowestPrecedence() {
+        assertThat(processor.getOrder()).isEqualTo(Ordered.LOWEST_PRECEDENCE);
     }
 
 }
