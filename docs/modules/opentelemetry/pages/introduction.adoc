@@ -14,7 +14,7 @@ If you already have a Spring Boot application and want to add OpenTelemetry supp
 [source,groovy]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
+    implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
 }
 ----
 
@@ -152,7 +152,7 @@ You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` pro
 ----
 dependencies {
 	implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-  implementation "io.grpc:grpc-netty-shaded:1.71.0"
+    implementation "io.grpc:grpc-netty-shaded:1.71.0"
 }
 ----
 
