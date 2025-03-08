@@ -4,3 +4,4 @@ title: Arconia Framework
 nav:
   - modules/ROOT/nav.adoc
   - modules/opentelemetry/nav.adoc
+  - modules/examples
