@@ -1,0 +1,6 @@
+name: arconia
+version: true
+title: Arconia
+nav:
+  - modules/ROOT/nav.adoc
+  - modules/opentelemetry/nav.adoc

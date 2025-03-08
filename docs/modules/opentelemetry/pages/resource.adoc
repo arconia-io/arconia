@@ -1,0 +1,360 @@
+= OpenTelemetry Resource
+:description: Configure an OpenTelemetry Resource to capture information about the entity that produced a telemetry event.
+
+A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes
+to the telemetry event to provide context about the event's source, such as the entity name, version,
+deployment environment, and more.
+
+TIP: Learn more about resources in the https://opentelemetry.io/docs/concepts/resources[OpenTelemetry specification].
+
+== Default Attributes
+
+By default, Arconia automatically creates a `Resource` instance with the following attributes:
+
+* `service.name`. The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* `service.namespace`. The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+* `service.version`. The version of the application resolved from the artifact at build time. If not set, no value is added.
+* `service.instance.id`. A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* `webengine.name`. The name of the web engine. It's always `Spring Boot`.
+* `webengine.version`. The version of the web engine in use.
+* `webengine.description`. Additional description of the web engine.
+
+== Configuration Properties
+
+You can add new attributes or override the default values via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      service-name: my-service
+      attributes:
+        service.namespace: my-namespace
+        cluster: production-3
+----
+
+You can also control whether certain attributes should be added or disabled altogether via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      enable:
+        service.instance.id: false
+        webengine.description: false
+----
+
+The `all` special key can be used to enable or disable all attributes at once via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      enable:
+        all: false
+----
+
+=== OpenTelemetry Environment Variables
+
+Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure Resource attributes using environment variables as well.
+
+* `OTEL_SERVICE_NAME`: The name of the application.
+* `OTEL_RESOURCE_ATTRIBUTES`: A comma-separated list of key-value pairs to add to the `Resource` instance.
+* `OTEL_RESOURCE_DISABLED_KEYS`: A comma-separated list of keys to disable in the `Resource` instance.
+
+When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+
+This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry across different languages and frameworks.
+
+=== OpenTelemetry Java System Properties
+
+Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure Resource attributes using system properties as well.
+
+* `otel.service.name`: The name of the application.
+* `otel.resource.attributes`: A comma-separated list of key-value pairs to add to the `Resource` instance.
+* `otel.resource.disabled.keys`: A comma-separated list of keys to disable in the `Resource` instance.
+
+When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+
+This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration.
+
+== Resource Contributors
+
+A `ResourceContributor` is a component that contributes resource attributes to a `Resource` instance.
+
+[source,java]
+----
+@FunctionalInterface
+public interface ResourceContributor {
+
+    void contribute(ResourceBuilder builder);
+
+}
+----
+
+Arconia comes with a set of built-in resource contributors that automatically add common attributes.
+
+=== Environment Resource Contributor
+
+The `EnvironmentResourceContributor` contributes attributes to the `Resource` instance from the Spring environment and configuration properties, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `service.name`: The name of the application as defined in the `arconia.otel.resource.service-name` property, or `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* `service.namespace`: The namespace of the application as defined in the `arconia.otel.resource.attributes` property, or `spring.application.group`. If none of these properties are set, no value is added.
+* `service.instance.id`: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* `webengine.name`: The name of the web engine. It's always `Spring Boot`.
+* `webengine.version`: The version of the web engine in use.
+* `webengine.description`: Additional description of the web engine.
+
+Furthermore, any additional attribute defined in the `arconia.otel.resource.attributes` property will be added to the `Resource` instance.
+
+This contributor is enabled by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        environment:
+          enabled: false
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#service[Resource Service Semantic Conventions] and https://opentelemetry.io/docs/specs/semconv/resource/webengine[Resource WebEngine Semantic Conventions].
+
+=== Build Resource Contributor
+
+The `BuildResourceContributor` contributes build information to the `Resource` instance, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `service.version`: The version of the application resolved from the artifact at build time. If not set, no value is added.
+
+The information is extracted from the `META-INF/build-info.properties` file generated by the Spring Boot Maven and Gradle plugins when the feature is enabled. In Gradle projects, you can enable it by adding the following configuration to your `build.gradle` file:
+
+[source,groovy]
+----
+springBoot {
+	buildInfo {
+		excludes = ['time']
+	}
+}
+----
+
+NOTE: Find more information about the `build-info.properties` file in the https://docs.spring.io/spring-boot/gradle-plugin/integrating-with-actuator.html[Spring Boot Gradle Plugin Reference] and https://docs.spring.io/spring-boot/maven-plugin/build-info.html[Spring Boot Maven Plugin Reference].
+
+This contributor is enabled by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        build:
+          enabled: false
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#service[Resource Service Semantic Conventions].
+
+=== Host Resource Contributor
+
+The `HostResourceContributor` contributes attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `host.arch`: The CPU architecture of the host the application is running on.
+* `host.name`: The name of the host the application is running on.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        host:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/host/[Resource Host Semantic Conventions].
+
+=== Java Resource Contributor
+
+The `JavaResourceContributor` contributes attributes to the `Resource` instance about the Java Runtime Environment the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `process.runtime.description`: Additional description about the Java Runtime Environment for the application process.
+* `process.runtime.name`: The name of the Java Runtime Environment for the application process.
+* `process.runtime.version`: The version of the Java Runtime Environment for the application process.
+
+NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `java` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.java-information[Spring Boot Actuator documentation] for more details.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        java:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes[Resource Process Runtime Semantic Conventions].
+
+=== OS Resource Contributor
+
+The `OsResourceContributor` contributes attributes to the `Resource` instance about the operating system the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `os.arch`: The CPU architecture of the operating system the application is running on.
+* `os.description`: Additional description of the operating system the application is running on.
+* `os.name`: The name of the operating system the application is running on.
+* `os.type`: The type of the operating system the application is running on.
+* `os.version`: The version of the operating system the application is running on.
+
+NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `os` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.os-information[Spring Boot Actuator documentation] for more details.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        os:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/os[Resource OS Semantic Conventions].
+
+=== Process Resource Contributor
+
+The `ProcessResourceContributor` contributes attributes to the `Resource` instance about the Java process, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `process.owner`: The username of the user that owns the Java process.
+* `process.parent_pid`: The parent process ID of the Java process.
+* `process.pid`: The process ID of the Java process.
+
+NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `process` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.process-information[Spring Boot Actuator documentation] for more details.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        process:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process[Resource Process Semantic Conventions].
+
+=== Container Resource Contributor (incubating)
+
+This contributor provides attributes to the `Resource` instance about the OCI container the application is running in, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `container.id`: The ID of the OCI container the application is running in, retrieved from the cgroup filesystem.
+
+NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        container:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/container[Resource Container Semantic Conventions].
+
+=== HostId Resource Contributor (incubating)
+
+This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
+
+* `host.id`: The ID of the host the application is running on.
+
+NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        host-id:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/host[Resource Host Semantic Conventions].
+
+=== Custom Resource Contributors
+
+You can define custom `ResourceContributor`(s), register them as beans, and they will be automatically picked up by the autoconfiguration when building the final `Resource` instance.
+
+When defining custom attributes, consider adopting the https://opentelemetry.io/docs/specs/semconv/resource[OpenTelemetry Semantic Conventions]
+to ensure that your telemetry data is compatible with other systems and tools.
+
+You can also use this API to adapt `Resource` or `ResourceProvider` implementations from the OpenTelemetry Java Instrumentation. For example, you can include resource attributes about https://opentelemetry.io/docs/zero-code/java/agent/configuration/#enable-resource-providers-that-are-disabled-by-default[AWS or GCP].
+
+== Configuration Beans
+
+Besides the `ResourceContributor` API, you can further customize the auto-configured `Resource` instance via the `SdkResourceBuilderCustomizer` API.
+
+[source,java]
+----
+@FunctionalInterface
+public interface SdkResourceBuilderCustomizer {
+
+    void customize(ResourceBuilder builder);
+
+}
+----
+
+== Disabling the Auto-Configuration
+
+The auto-configuration provided by Arconia for the OpenTelemetry Resource is only enabled when the OpenTelemetry support is enabled (by default, it is).
+
+If you define a custom `Resource` bean, the auto-configuration will back off, and your custom bean will be used instead.
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+public class MyResourceConfiguration {
+
+    @Bean
+    public Resource myResource() {
+        return Resource.getDefault().toBuilder().put("custom-key", "custom-value").build();
+    }
+
+}
+----
+
+You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration` class from the Spring Boot auto-configuration:
+
+[source,yaml]
+----
+spring:
+  autoconfigure:
+    exclude:
+      - io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration
+----
+
+The additional instrumentation provided by the OpenTelemetry Java Instrumentation can be disabled via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    instrumentation:
+      resource:
+        enabled: false
+----

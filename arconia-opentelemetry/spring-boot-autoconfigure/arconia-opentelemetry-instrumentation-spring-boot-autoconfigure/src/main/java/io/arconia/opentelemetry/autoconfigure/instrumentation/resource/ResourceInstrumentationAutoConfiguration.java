@@ -22,6 +22,17 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ResourceC
 @ConditionalOnOpenTelemetry
 public class ResourceInstrumentationAutoConfiguration {
 
+    /**
+     * A {@link ResourceContributor} that contributes attributes about the OCI container
+     * the application is running in, following the OpenTelemetry Semantic Conventions.
+     * <p>
+     * The following attributes are populated:
+     * <ul>
+     *     <li>{@code container.id</li>
+     * </ul>
+     *
+     * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/container">Resource Container Semantic Conventions</a>
+     */
     @Bean
     @ConditionalOnOpenTelemetryResourceContributor("container")
     @ConditionalOnClass(ContainerResource.class)
@@ -30,6 +41,17 @@ public class ResourceInstrumentationAutoConfiguration {
         return builder -> builder.putAll(ContainerResource.get().getAttributes());
     }
 
+    /**
+     * A {@link ResourceContributor} that contributes attributes about the host the application is running on,
+     * following the OpenTelemetry Semantic Conventions.
+     * <p>
+     * The following attributes are populated:
+     * <ul>
+     *     <li>{@code host.id</li>
+     * </ul>
+     *
+     * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/host">Resource Host Semantic Conventions</a>
+     */
     @Bean
     @ConditionalOnOpenTelemetryResourceContributor("host-id")
     @ConditionalOnClass(HostIdResource.class)

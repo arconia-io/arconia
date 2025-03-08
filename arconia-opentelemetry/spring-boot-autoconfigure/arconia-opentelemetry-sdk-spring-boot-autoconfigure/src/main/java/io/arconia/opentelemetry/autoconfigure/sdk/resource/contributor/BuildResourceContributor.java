@@ -13,6 +13,8 @@ import org.springframework.util.StringUtils;
  * <ul>
  *     <li>{@code service.version}</li>
  * </ul>
+ *
+ * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
  */
 public class BuildResourceContributor implements ResourceContributor {
 
