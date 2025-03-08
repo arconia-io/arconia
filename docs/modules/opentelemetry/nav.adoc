@@ -1,6 +1,7 @@
 .OpenTelemetry
 * xref:getting-started.adoc[Getting Started]
 * xref:resource.adoc[Resource]
+* xref:dev-services.adoc[Dev Services]
 * xref:migration.adoc[Migration]
-** xref:migration/opentelemetry-spring-boot-starter.adoc[OpenTelemetry Spring Boot Starter]
-** xref:migration/spring-boot.adoc[Spring Boot Actuator OpenTelemetry/OTLP]
+** xref:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]
+** xref:migration/migration-spring-boot.adoc[Spring Boot Actuator OpenTelemetry/OTLP]

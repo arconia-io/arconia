@@ -4,5 +4,5 @@ Arconia provides unified observability for Spring Boot applications, combining f
 
 If you're currently using Spring Boot OpenTelemetry/OTLP or the OpenTelemetry Spring Boot Starter and want to migrate to Arconia OpenTelemetry, these guides will help you understand the differences between the two and how to migrate your existing Spring Boot applications to Arconia OpenTelemetry.
 
-* xref:migration/spring-boot.adoc[Migrating from Spring Boot OpenTelemetry to Arconia OpenTelemetry]
-* xref:migration/opentelemetry-spring-boot-starter.adoc[Migrating from OpenTelemetry Spring Boot Starter to Arconia OpenTelemetry].
+* xref:migration/migration-spring-boot.adoc[Migrating from Spring Boot OpenTelemetry to Arconia OpenTelemetry]
+* xref:migration/migration-opentelemetry.adoc[Migrating from OpenTelemetry Spring Boot Starter to Arconia OpenTelemetry].
