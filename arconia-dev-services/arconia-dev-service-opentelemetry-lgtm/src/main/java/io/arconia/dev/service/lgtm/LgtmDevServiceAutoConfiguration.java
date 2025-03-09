@@ -24,6 +24,8 @@ import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 @EnableConfigurationProperties(LgtmDevServiceProperties.class)
 public class LgtmDevServiceAutoConfiguration {
 
+    public static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
+
     @Bean
     @RestartScope
     @ServiceConnection
@@ -31,7 +33,7 @@ public class LgtmDevServiceAutoConfiguration {
     @ConditionalOnProperty(prefix = "spring.devtools.restart", name = "enabled", havingValue = "true", matchIfMissing = true)
     LgtmStackContainer lgtmContainer(LgtmDevServiceProperties properties) {
         return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor("grafana/otel-lgtm"))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                 .withStartupTimeout(Duration.ofMinutes(2))
                 .withReuse(properties.isReusable());
     }
@@ -42,7 +44,7 @@ public class LgtmDevServiceAutoConfiguration {
     @ConditionalOnProperty(prefix = "spring.devtools.restart", name = "enabled", havingValue = "false")
     LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServiceProperties properties) {
         return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor("grafana/otel-lgtm"))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                 .withStartupTimeout(Duration.ofMinutes(2))
                 .withReuse(properties.isReusable());
     }
