@@ -1,0 +1,34 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev-services:arconia-dev-service-core")
+    api project(":arconia-dev-services:arconia-dev-service-connections")
+    api "org.springframework.boot:spring-boot-devtools"
+    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.testcontainers:postgresql"
+
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-devtools"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Service PostgreSQL"
+                description = "Arconia Dev Service PostgreSQL."
+            }
+        }
+    }
+}
