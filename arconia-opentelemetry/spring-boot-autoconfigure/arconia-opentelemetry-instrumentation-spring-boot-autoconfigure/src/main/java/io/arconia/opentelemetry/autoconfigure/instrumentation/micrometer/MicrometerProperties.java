@@ -14,7 +14,7 @@ public class MicrometerProperties {
     /**
      * The base time unit for Micrometer metrics.
      */
-    private TimeUnit baseTimeUnit = TimeUnit.MILLISECONDS;
+    private TimeUnit baseTimeUnit = TimeUnit.SECONDS;
 
     /**
      * Whether to generate gauge-based Micrometer histograms.
