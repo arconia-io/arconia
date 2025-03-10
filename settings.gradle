@@ -12,6 +12,7 @@ include 'arconia-core'
 include 'arconia-dev-services:arconia-dev-service-connections'
 include 'arconia-dev-services:arconia-dev-service-core'
 include 'arconia-dev-services:arconia-dev-service-opentelemetry-lgtm'
+include 'arconia-dev-services:arconia-dev-service-redis'
 include 'arconia-dev-services:arconia-dev-service-postgresql'
 
 // Multitenancy
