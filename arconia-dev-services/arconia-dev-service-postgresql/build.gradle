@@ -10,7 +10,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev-services:arconia-dev-service-core")
-    api project(":arconia-dev-services:arconia-dev-service-connections")
     api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:postgresql"
