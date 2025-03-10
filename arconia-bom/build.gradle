@@ -17,6 +17,7 @@ dependencies {
 
         api project(":arconia-dev-services:arconia-dev-service-connections")
         api project(":arconia-dev-services:arconia-dev-service-core")
+        api project(":arconia-dev-services:arconia-dev-service-ollama")
         api project(":arconia-dev-services:arconia-dev-service-opentelemetry-lgtm")
         api project(":arconia-dev-services:arconia-dev-service-postgresql")
         api project(":arconia-dev-services:arconia-dev-service-redis")

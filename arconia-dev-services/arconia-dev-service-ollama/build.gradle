@@ -1,0 +1,39 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev-services:arconia-dev-service-core")
+    api "org.springframework.boot:spring-boot-devtools"
+    api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
+    api "org.testcontainers:ollama"
+
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-devtools"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Service Ollama"
+                description = "Arconia Dev Service Ollama."
+            }
+        }
+    }
+}
