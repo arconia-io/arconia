@@ -18,8 +18,8 @@ dependencies {
         api project(":arconia-dev-services:arconia-dev-service-connections")
         api project(":arconia-dev-services:arconia-dev-service-core")
         api project(":arconia-dev-services:arconia-dev-service-opentelemetry-lgtm")
-        api project(":arconia-dev-services:arconia-dev-service-redis")
         api project(":arconia-dev-services:arconia-dev-service-postgresql")
+        api project(":arconia-dev-services:arconia-dev-service-redis")
 
         api project(":arconia-multitenancy:arconia-multitenancy-core")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
