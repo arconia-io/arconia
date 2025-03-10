@@ -1,14 +1,16 @@
 = OpenTelemetry Dev Services
 
-Arconia Dev Services provides zero-code integrations to services your application depends on, both at development and test time, relying on the power of Testcontainers and Spring Boot. This page describes the Arconia Dev Services for OpenTelemetry.
+Arconia Dev Services provide a zero-code integration to services your application depends on, both at development and test time, relying on the power of Testcontainers and Spring Boot. This page describes the Arconia Dev Service for OpenTelemetry.
+
+NOTE: For more information, see the xref:../../dev-services/introduction.adoc[Dev Services] page.
 
 == Grafana LGTM
 
-When your application uses OpenTelemetry for observability, you can use the Arconia OpenTelemetry Dev Service LGTM to automatically start a full Grafana observability platform based on OpenTelemetry. This enables you to visualize and explore your application's telemetry data during development and testing.
+When your application uses OpenTelemetry for observability, you can use the Arconia OpenTelemetry LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry. This enables you to visualize and explore your application's telemetry data during development and testing.
 
 === Dependencies
 
-First, you need to add the Arconia OpenTelemetry Dev Service LGTM dependency to your project.
+First, you need to add the Arconia OpenTelemetry LGTM Dev Service dependency to your project.
 
 [source,groovy]
 ----
@@ -28,6 +30,8 @@ Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't re
 
 Your integration tests will automatically use the Arconia Dev Services without any additional configuration.
 
+NOTE: Whenever the application is reloaded via Spring Boot DevTools, the Dev Service will not be restarted. If you want to disable the live reload feature, you can do so by setting the `spring.devtools.restart.enabled` property to `false`. When doing so, the Dev Service will be shut down and restarted along with the application.
+
 The application logs will show you the URL where you can access the Grafana observability platform and information about logs, metrics, and traces being exported to the platform.
 
 [source,logs]
@@ -42,7 +46,7 @@ By default, logs, metrics, and traces are exported via OTLP using the HTTP/Proto
 
 === Customizing the Dev Service
 
-You can customize the Arconia OpenTelemetry Dev Service LGTM via configuration properties, such as changing the image name or not reusing the service across multiple applications and tests.
+You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications and tests.
 
 [source,yaml]
 ----
@@ -56,7 +60,7 @@ arconia:
 
 === Disabling the Dev Service
 
-If you want to disable the Arconia OpenTelemetry Dev Service LGTM, you can do so via configuration properties.
+If you want to disable the Dev Service, you can do so via configuration properties.
 
 [source,yaml]
 ----
@@ -68,3 +72,5 @@ arconia:
 ----
 
 TIP: You can disable the Dev Service for a specific test class or method by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+
+Alternatively, you can disable it by excluding the auto-configuration class directly: `LgtmDevServiceAutoConfiguration`.

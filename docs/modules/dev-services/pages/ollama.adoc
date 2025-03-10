@@ -1,0 +1,60 @@
+= Ollama Dev Service
+
+When your application uses Spring AI to consume large language models from Ollama, you can use the Arconia Ollama Dev Service to automatically start a full Ollama service. This enables you to develop and test your LLM-powered application without having to manually provide a model inference service.
+
+== Dependencies
+
+First, you need to add the Arconia Ollama Dev Service dependency to your project.
+
+[source,groovy]
+----
+dependencies {
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-ollama'
+}
+----
+
+TIP: This dependency also includes the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow.
+
+== Running the Application
+
+By default, the Dev Service is disabled since it might be resource-intensive, and running native Ollama might be more suitable for development. You can enable it globally or selectively for specific tests.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      ollama:
+        enabled: true
+----
+
+TIP: You can enable/disable the Dev Service for a specific test class or method by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+
+Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply use:
+
+* Gradle: `./gradlew bootRun`
+* Maven: `./mvnw spring-boot:run`
+
+Your integration tests will automatically use the Arconia Dev Services without any additional configuration.
+
+NOTE: Whenever the application is reloaded via Spring Boot DevTools, the Dev Service will not be restarted. If you want to disable the live reload feature, you can do so by setting the `spring.devtools.restart.enabled` property to `false`. When doing so, the Dev Service will be shut down and restarted along with the application.
+
+== Customizing the Dev Service
+
+You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications and tests.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      ollama:
+        image-name: ollama/ollama:0.5.13
+        reusable: false
+----
+
+== Disabling the Dev Service
+
+By default, the Ollama Dev Service is disabled.
+
+Alternatively, you can disable it by excluding the auto-configuration class directly: `OllamaDevServiceAutoConfiguration`.

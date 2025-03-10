@@ -1,0 +1,87 @@
+= Redis Dev Service
+
+When your application needs a Redis data store (such as when using Spring Data Redis or Spring AI Vector Store Redis), you can use the Arconia Redis Dev Service to automatically start a Redis server. This enables you to develop and test your application without having to manually start and manage the Redis server.
+
+== Dependencies
+
+First, you need to add the Arconia Redis Dev Service dependency to your project.
+
+[source,groovy]
+----
+dependencies {
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-redis'
+}
+----
+
+TIP: This dependency also includes the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow.
+
+== Running the Application
+
+Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply use:
+
+* Gradle: `./gradlew bootRun`
+* Maven: `./mvnw spring-boot:run`
+
+Your integration tests will automatically use the Arconia Dev Services without any additional configuration.
+
+NOTE: Whenever the application is reloaded via Spring Boot DevTools, the Dev Service will not be restarted. If you want to disable the live reload feature, you can do so by setting the `spring.devtools.restart.enabled` property to `false`. When doing so, the Dev Service will be shut down and restarted along with the application.
+
+== Choosing the Redis Edition
+
+By default, the Arconia Redis Dev Service enables the Community Edition of Redis, but you can also activate the Stack Edition if you need to.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        edition: stack
+----
+
+== Customizing the Dev Service
+
+You can customize the Dev Service via configuration properties, such as changing the image name or reusing the service across multiple applications and tests.
+
+For Redis Community:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        community:
+          image-name: redis:7.2-alpine
+          reusable: true
+----
+
+For Redis Stack:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        stack:
+          image-name: redis/redis-stack-server:7.2.0-v3
+          reusable: true
+----
+
+=== Disabling the Dev Service
+
+If you want to disable the Dev Service, you can do so via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        enabled: false
+----
+
+TIP: You can disable the Dev Service for a specific test class or method by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+
+Alternatively, you can disable it by excluding the auto-configuration class directly: `RedisDevServiceAutoConfiguration`.
