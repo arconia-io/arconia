@@ -2,7 +2,7 @@
 
 Arconia Dev Services provide a zero-code integration to services your application depends on, both at development and test time, relying on the power of Testcontainers and Spring Boot. This page describes the Arconia Dev Service for OpenTelemetry.
 
-NOTE: For more information, see the xref:../../dev-services/introduction.adoc[Dev Services] page.
+NOTE: For more information, see the xref:dev-services:introduction.adoc[Dev Services] page.
 
 == Grafana LGTM
 
