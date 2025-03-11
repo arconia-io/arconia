@@ -3,6 +3,8 @@
 
 Arconia provides unified observability for Spring Boot applications, combining full support for https://opentelemetry.io/docs/what-is-opentelemetry/[OpenTelemetry] API, SDK, and Instrumentation while also providing a seamless integration with https://micrometer.io[Micrometer] API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
 
+image::arconia-otel.png[Arconia provides full support for OpenTelemetry and Micrometer, max-width=620px]
+
 == Quick Start
 
 Let's see how you can get started with Arconia OpenTelemetry in your Spring Boot application.
