@@ -7,8 +7,6 @@
 Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot,
 emphasizing developer experience and cloud native architectures.
 
-It provides support for multitenancy, observability, and artificial intelligence.
-
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
 > [!NOTE]
