@@ -1,11 +1,11 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp;
 
-import org.junit.jupiter.api.Test;
-
 import java.net.URI;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,12 +19,12 @@ class OtlpExporterConfigTests {
         OtlpExporterConfig config = new OtlpExporterConfig();
 
         assertThat(config.getEndpoint()).isNull();
-        assertThat(config.getTimeout()).isEqualTo(Duration.ofSeconds(10));
-        assertThat(config.getConnectTimeout()).isEqualTo(Duration.ofSeconds(10));
-        assertThat(config.getProtocol()).isEqualTo(Protocol.HTTP_PROTOBUF);
-        assertThat(config.getCompression()).isEqualTo(Compression.GZIP);
-        assertThat(config.getHeaders()).isNotNull().isEmpty();
-        assertThat(config.isMetrics()).isFalse();
+        assertThat(config.getTimeout()).isNull();
+        assertThat(config.getConnectTimeout()).isNull();
+        assertThat(config.getProtocol()).isNull();
+        assertThat(config.getCompression()).isNull();
+        assertThat(config.getHeaders()).isEmpty();
+        assertThat(config.isMetrics()).isNull();
     }
 
     @Test

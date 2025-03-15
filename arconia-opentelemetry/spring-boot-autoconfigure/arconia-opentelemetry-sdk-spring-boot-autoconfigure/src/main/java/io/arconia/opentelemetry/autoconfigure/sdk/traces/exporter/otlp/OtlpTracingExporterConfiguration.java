@@ -53,7 +53,8 @@ public class OtlpTracingExporterConfiguration {
                 .setMemoryMode(commonProperties.getMemoryMode());
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
-        if (properties.getOtlp().isMetrics()) {
+        if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
+                || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", connectionDetails.getUrl(Protocol.HTTP_PROTOBUF));
@@ -74,7 +75,8 @@ public class OtlpTracingExporterConfiguration {
                 .setMemoryMode(commonProperties.getMemoryMode());
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
-        if (properties.getOtlp().isMetrics()) {
+        if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
+                || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
         logger.info("Configuring OpenTelemetry gRPC span exporter with endpoint: {}", connectionDetails.getUrl(Protocol.GRPC));

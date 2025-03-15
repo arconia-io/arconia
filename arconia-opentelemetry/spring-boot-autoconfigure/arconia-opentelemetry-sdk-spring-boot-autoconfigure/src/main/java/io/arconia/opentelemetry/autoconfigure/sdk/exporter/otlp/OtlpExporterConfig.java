@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Configuration properties for exporting OpenTelemetry telemetry data using OTLP.
  */
@@ -13,27 +15,32 @@ public class OtlpExporterConfig {
     /**
      * The endpoint to which telemetry data will be sent.
      */
+    @Nullable
     private URI endpoint;
 
     /**
      * The maximum waiting time for the exporter to send each telemetry batch.
      */
-    private Duration timeout = Duration.ofSeconds(10);
+    @Nullable
+    private Duration timeout;
 
     /**
      * The maximum waiting time for the exporter to establish a connection to the endpoint.
      */
-    private Duration connectTimeout = Duration.ofSeconds(10);
+    @Nullable
+    private Duration connectTimeout;
 
     /**
      * Transport protocol to use for OTLP requests.
      */
-    private Protocol protocol = Protocol.HTTP_PROTOBUF;
+    @Nullable
+    private Protocol protocol;
 
     /**
      * Compression type to use for OTLP requests.
      */
-    private Compression compression = Compression.GZIP;
+    @Nullable
+    private Compression compression;
 
     /**
      * Additional headers to include in each request to the endpoint.
@@ -43,8 +50,10 @@ public class OtlpExporterConfig {
     /**
      * Whether to generate metrics for the exporter.
      */
-    private boolean metrics = false;
+    @Nullable
+    private Boolean metrics;
 
+    @Nullable
     public URI getEndpoint() {
         return endpoint;
     }
@@ -53,6 +62,7 @@ public class OtlpExporterConfig {
         this.endpoint = endpoint;
     }
 
+    @Nullable
     public Duration getTimeout() {
         return timeout;
     }
@@ -61,6 +71,7 @@ public class OtlpExporterConfig {
         this.timeout = timeout;
     }
 
+    @Nullable
     public Duration getConnectTimeout() {
         return connectTimeout;
     }
@@ -69,6 +80,7 @@ public class OtlpExporterConfig {
         this.connectTimeout = connectTimeout;
     }
 
+    @Nullable
     public Protocol getProtocol() {
         return protocol;
     }
@@ -77,6 +89,7 @@ public class OtlpExporterConfig {
         this.protocol = protocol;
     }
 
+    @Nullable
     public Compression getCompression() {
         return compression;
     }
@@ -93,11 +106,12 @@ public class OtlpExporterConfig {
         this.headers = headers;
     }
 
-    public boolean isMetrics() {
+    @Nullable
+    public Boolean isMetrics() {
         return metrics;
     }
 
-    public void setMetrics(boolean metrics) {
+    public void setMetrics(Boolean metrics) {
         this.metrics = metrics;
     }
 

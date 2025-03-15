@@ -2,8 +2,6 @@ package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp;
 
 import java.util.Locale;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
-
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -12,7 +10,6 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-
 import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
 
@@ -28,6 +25,7 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 /**
