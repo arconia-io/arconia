@@ -287,7 +287,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 === HostId Resource Contributor (incubating)
 
-This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
+This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible. It only works on Windows and Linux machines.
 
 * **`host.id`**: The ID of the host the application is running on.
 
