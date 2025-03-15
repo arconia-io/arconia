@@ -1,7 +1,5 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -13,17 +11,17 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.mock.env.MockEnvironment;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceProperties;
+
+import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.SERVICE_INSTANCE_ID;
+import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.SERVICE_NAMESPACE;
+import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.WEBENGINE_NAME;
+import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.WEBENGINE_VERSION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-
-import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.SERVICE_INSTANCE_ID;
-import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.SERVICE_NAMESPACE;
-import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.WEBENGINE_DESCRIPTION;
-import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.WEBENGINE_NAME;
-import static io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.EnvironmentResourceContributor.WEBENGINE_VERSION;
 
 /**
  * Unit tests for {@link EnvironmentResourceContributor}.
@@ -36,7 +34,7 @@ class EnvironmentResourceContributorTests {
     private ResourceBuilder resourceBuilder;
     private MockEnvironment environment;
     private OpenTelemetryResourceProperties properties;
-    
+
     @BeforeEach
     void setUp() {
         resourceBuilder = mock(ResourceBuilder.class);
@@ -54,7 +52,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -69,7 +66,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -85,7 +81,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -100,7 +95,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -115,7 +109,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -129,7 +122,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -146,10 +138,9 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
-    
+
     @Test
     void shouldUseServiceNameFromPropertiesWhenSet() {
         properties.setServiceName("property-service");
@@ -161,7 +152,6 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
     }
 
@@ -176,8 +166,7 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
-        
+
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
         assertThat(attributesCaptor.getValue().get(ServiceAttributes.SERVICE_NAME)).isEqualTo("attribute-service");
@@ -195,8 +184,7 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
-        
+
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
         assertThat(attributesCaptor.getValue().get(ServiceAttributes.SERVICE_NAME)).isEqualTo("attribute-service");
@@ -214,8 +202,7 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
-        
+
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
         assertThat(attributesCaptor.getValue().get(SERVICE_NAMESPACE)).isEqualTo("attribute-namespace");
@@ -232,8 +219,7 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), eq("custom-instance-id"));
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        verify(resourceBuilder).put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
-        
+
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
         assertThat(attributesCaptor.getValue().get(SERVICE_INSTANCE_ID)).isEqualTo("custom-instance-id");
@@ -264,5 +250,5 @@ class EnvironmentResourceContributorTests {
         assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("custom.key1"))).isEqualTo("value1");
         assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("custom.key2"))).isEqualTo("value2");
     }
-    
+
 }

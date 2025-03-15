@@ -31,7 +31,6 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResource
  *     <li>{@code service.instance.id}</li>
  *     <li>{@code webengine.name}</li>
  *     <li>{@code webengine.version}</li>
- *     <li>{@code webengine.description}</li>
  * </ul>
  * <p>
  * Furthermore, any additional attributes defined in the {@link OpenTelemetryResourceProperties} are also populated.
@@ -47,7 +46,6 @@ public class EnvironmentResourceContributor implements ResourceContributor {
     // without considering backward compatibility.
     public static final AttributeKey<String> SERVICE_INSTANCE_ID = AttributeKey.stringKey("service.instance.id");
     public static final AttributeKey<String> SERVICE_NAMESPACE = AttributeKey.stringKey("service.namespace");
-    public static final AttributeKey<String> WEBENGINE_DESCRIPTION = AttributeKey.stringKey("webengine.description");
     public static final AttributeKey<String> WEBENGINE_NAME = AttributeKey.stringKey("webengine.name");
     public static final AttributeKey<String> WEBENGINE_VERSION = AttributeKey.stringKey("webengine.version");
 
@@ -79,7 +77,6 @@ public class EnvironmentResourceContributor implements ResourceContributor {
 
         builder.put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         builder.put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
-        builder.put(WEBENGINE_DESCRIPTION, SPRING_BOOT_NAME + " " + SpringBootVersion.getVersion());
     }
 
     /**

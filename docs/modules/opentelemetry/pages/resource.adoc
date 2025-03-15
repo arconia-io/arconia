@@ -31,9 +31,6 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |	`webengine.version`
 |	`3.5.0`
 |	The version of the web engine (Spring Boot) in use.
-|	`webengine.description`
-|	`Spring Boot 3.5.0`
-|	Additional description of the web engine (Spring Boot).
 |===
 
 == Configuration Properties
@@ -121,7 +118,6 @@ The `EnvironmentResourceContributor` contributes attributes to the `Resource` in
 * **`service.instance.id`**: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
 * **`webengine.name`**: The name of the web engine. It's always `Spring Boot`.
 * **`webengine.version`**: The version of the web engine (Spring Boot) in use.
-* **`webengine.description`**: Additional description of the web engine (Spring Boot).
 
 Furthermore, any additional attribute defined in the `arconia.otel.resource.attributes` property will be added to the `Resource` instance.
 
