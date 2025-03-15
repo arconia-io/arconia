@@ -1,0 +1,51 @@
+= OpenTelemetry Instrumentation
+
+Arconia OpenTelemetry supports instrumentation for Spring Boot applications in two ways:
+
+* **Micrometer Instrumentation**. Micrometer provides APIs for instrumenting Java applications, including `Observation`, `MeterRegistry`, and `Tracer`. Most libraries in the Spring ecosystem are already instrumented with Micrometer. Arconia OpenTelemetry includes a bridge between Micrometer and OpenTelemetry, allowing you to export metrics and traces to OpenTelemetry.
+* **OpenTelemetry Java Instrumentation**. OpenTelemetry provides a set of instrumentation libraries for Java applications. Arconia OpenTelemetry includes out-of-the-box support for several of them whenever native alternatives are not available.
+
+You can instrument your applications either by using the Micrometer APIs or the OpenTelemetry APIs. The choice depends on your requirements and the libraries you are using.
+
+NOTE: The OpenTelemetry Java Agent is not supported by Arconia OpenTelemetry. If you'd like to continue using the Agent, check out the https://paketo.io/docs/howto/app-monitor/#opentelemetry[OpenTelemetry Buildpack] for adding it to your application out-of-the-box.
+
+== Micrometer Instrumentation
+
+Micrometer-based instrumentation is recommended by the Spring Boot project, and it can be customized via the usual Spring Boot facilities. Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
+
+There are three types of instrumentation you can find in the libraries from the Spring ecosystem:
+
+* Metrics instrumentation using the `MeterRegistry` API. Such metrics are automatically bridged and exported to OpenTelemetry.
+* Traces instrumentation using the `Tracer` API. Such traces are automatically bridged and exported to OpenTelemetry.
+* Unified instrumentation using the `Observation` API, which results in both metrics and traced being generated. Both of them are automatically bridged and exported to OpenTelemetry.
+
+The `Observation` API is the recommended way to instrument your applications, as it provides a unified way to generate observability signals and offers great flexibility since it decouples the capturing of contextual information from the actual generation of telemetry data.
+
+NOTE: Micrometer-based instrumentation follows its own semantic conventions, which have been stable for a long time. It doesn't follow the OpenTelemetry Semantic Conventions. Work is in progress in Arconia to provide a mapping between the two sets of conventions, giving you the possibility to use the OpenTelemetry Semantic Conventions in your Micrometer-based instrumentation, should you decide to do so.
+
+== OpenTelemetry Instrumentation
+
+The OpenTelemetry Java Instrumentation project provides a set of libraries that automatically instrument your Java applications to generate telemetry data. Arconia OpenTelemetry includes out-of-the-box support for several of them whenever native alternatives are not available.
+
+Such instrumentation libraries can be customized via the configuration properties provided by Arconia OpenTelemetry.
+
+.OpenTelemetry Java Instrumentation Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.instrumentation.enabled`
+|	`true`
+|	Whether OpenTelemetry instrumentation is globally enabled.
+|	`arconia.otel.instrumentation.logback-appender.enabled`
+|	`true`
+|	Whether OpenTelemetry instrumentation for the Logback Appender is enabled.
+|	`arconia.otel.instrumentation.micrometer.enabled`
+|	`true`
+|	Whether OpenTelemetry instrumentation for the Micrometer bridge is enabled.
+|	`arconia.otel.instrumentation.resource.enabled`
+|	`true`
+|	Whether OpenTelemetry instrumentation for the Resource is enabled.
+|===
+
+Additional instrumentation libraries can be added to your project to enable more features and integrations with other libraries. Check out the https://opentelemetry.io/docs/languages/java/instrumentation/#library-instrumentation[OpenTelemetry documentation] for more information.
+
+NOTE: OpenTelemetry-based instrumentation follows the OpenTelemetry Semantic Conventions, including those that are still experimental and subject to change. Care should be taken, as they might change in a non-backward-compatible way in the future without notice.

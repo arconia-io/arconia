@@ -5,6 +5,8 @@ Arconia provides unified observability for Spring Boot applications, combining f
 
 image::arconia-otel.png[Arconia provides full support for OpenTelemetry and Micrometer, width=500]
 
+TIP: If you are currently using OpenTelemetry Spring Boot Starter or relying on the Spring Boot Observability support, check out our xref:migration/migration-opentelemetry.adoc[Migration Guides] to learn how to migrate seamlessly to Arconia OpenTelemetry.
+
 == Quick Start
 
 Let's see how you can get started with Arconia OpenTelemetry in your Spring Boot application.
@@ -170,35 +172,3 @@ dependencies {
 	implementation "io.opentelemetry:opentelemetry-exporter-logging"
 }
 ----
-
-== Instrumentation
-
-Arconia OpenTelemetry supports instrumentation for Spring Boot applications in two ways:
-
-* **Micrometer Instrumentation**. Micrometer provides APIs for instrumenting Java applications, including `Observation`, `MeterRegistry`, and `Tracer`. Most libraries in the Spring ecosystem are already instrumented with Micrometer. Arconia OpenTelemetry includes a bridge between Micrometer and OpenTelemetry, allowing you to export metrics and traces to OpenTelemetry.
-* **OpenTelemetry Java Instrumentation**. OpenTelemetry provides a set of instrumentation libraries for Java applications. Arconia OpenTelemetry includes out-of-the-box support for several of them whenever more stable and feature-rich alternatives with Micrometer are not available.
-
-You can instrument your applications either by using the Micrometer APIs or the OpenTelemetry APIs. The choice depends on your requirements and the libraries you are using.
-
-Micrometer-based instrumentation is recommended by the Spring Boot project and it can be customized via the usual Spring Boot facilities. Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
-
-Instrumentation coming from the OpenTelemetry Java Instrumentation can be customized via the configuration properties provided by Arconia OpenTelemetry.
-
-.OpenTelemetry Java Instrumentation Configuration Properties
-|===
-|Property |Default |Description
-|	`arconia.otel.instrumentation.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation is globally enabled.
-|	`arconia.otel.instrumentation.logback-appender.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation for the Logback Appender is enabled.
-|	`arconia.otel.instrumentation.micrometer.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation for the Micrometer bridge is enabled.
-|	`arconia.otel.instrumentation.resource.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation for the Resource is enabled.
-|===
-
-Additional instrumentation libraries can be added to your project to enable more features and integrations with other libraries. Check out the https://opentelemetry.io/docs/languages/java/instrumentation/#library-instrumentation[OpenTelemetry documentation] for more information.
