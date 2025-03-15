@@ -1,0 +1,190 @@
+= OpenTelemetry Metrics
+:description: Configure OpenTelemetry Metrics.
+
+Metrics are...
+
+This page describes how to configure the metrics support in OpenTelemetry.
+
+TIP: Learn more about metrics in the https://opentelemetry.io/docs/concepts/metrics[OpenTelemetry specification].
+
+== Enabling/Disabling Metrics
+
+Support for OpenTelemetry Metrics is enabled by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    metrics:
+      enabled: false
+----
+
+== Configuration Properties
+
+You can configure the support for OpenTelemetry Metrics via configuration properties.
+
+.Metrics Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.metrics.exemplar-filter`
+|	`trace-based`
+|	Filter for which measurements can become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
+
+|	`arconia.otel.metrics.interval`
+|	`60s`
+|	The interval between two consecutive exports of metrics.
+|===
+
+=== OpenTelemetry Environment Variables
+
+Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure the support for OpenTelemetry Metrics using environment variables as well.
+
+This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Metrics across different languages and frameworks.
+
+=== OpenTelemetry Java System Properties
+
+Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure the support for OpenTelemetry Metrics using system properties as well.
+
+This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
+
+When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+
+== Programmatic Configuration
+
+You can further customize the auto-configured `SdkMeterProvider` instance via the `SdkMeterProviderBuilderCustomizer` API.
+
+[source,java]
+----
+@FunctionalInterface
+public interface SdkMeterProviderBuilderCustomizer {
+
+    void customize(SdkMeterProviderBuilder builder);
+
+}
+----
+
+== Disabling the Auto-Configuration
+
+The auto-configuration provided by Arconia for OpenTelemetry Metrics is enabled by default, but you can disable it as explained in the xref:_enablingdisabling_metrics[Enabling/Disabling Metrics] section.
+
+If you define a custom `SdkMeterProvider` bean, the auto-configuration will back off, and your custom bean will be used instead.
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+public class MyMetricsConfiguration {
+
+  @Bean
+  public SdkLoggerProvider myLoggerProvider() {
+    ...
+  }
+
+}
+----
+
+You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsAutoConfiguration` class from the Spring Boot auto-configuration:
+
+[source,yaml]
+----
+spring:
+  autoconfigure:
+    exclude:
+      - io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsAutoConfiguration
+----
+
+== Exporting Metrics
+
+By default, metrics are enabled and exported via OTLP, but you can change the type of exporter. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+
+.General Metrics Exporter Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.metrics.exporter.aggregation-temporality`
+|	`cumulative`
+|	The aggregation temporality to use for exporting metrics. Options: `cumulative`, `delta`, `low-memory`.
+
+|	`arconia.otel.metrics.exporter.histogram-aggregation`
+|	`explicit-bucket-histogram`
+|	The aggregation strategy to use for exporting histograms. Options: `base2-exponential-bucket-histogram`, `explicit-bucket-histogram`.
+
+|	`arconia.otel.metrics.exporter.type`
+|	`otlp`
+|	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
+|===
+
+NOTE: For more information on exporting metrics to the console, refer to xref:getting-started.adoc#_console[Console Exporter].
+
+=== OTLP
+
+When metrics are exported via OTLP (default behavior), you can configure the following properties. 
+
+NOTE: If a value is not provided specifically for metrics, the value configured for the general OTLP export is used, if available. See xref:getting-started.adoc#_otlp[OTLP].
+
+.OTLP Metrics Exporter Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.metrics.exporter.otlp.compression`
+|	`gzip`
+|	Compression type to use for OTLP requests. Options: `none`, `gzip`.
+
+|	`arconia.otel.metrics.exporter.otlp.connect-timeout`
+|	`10s`
+|	The maximum waiting time for the exporter to establish a connection to the endpoint.
+
+|	`arconia.otel.metrics.exporter.otlp.endpoint`
+|	`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/metrics` (HTTP)
+|	The endpoint to which telemetry data will be sent.
+
+|	`arconia.otel.metrics.exporter.otlp.headers`
+|	-
+|	Additional headers to include in each request to the endpoint.
+
+|	`arconia.otel.metrics.exporter.otlp.metrics`
+|	`false`
+|	Whether to generate metrics for the exporter itself.
+
+|	`arconia.otel.metrics.exporter.otlp.protocol`
+|	`http-protobuf`
+|	Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+
+|	`arconia.otel.metrics.exporter.otlp.timeout`
+|	`10s`
+|	The maximum waiting time for the exporter to send each telemetry batch.
+|===
+
+NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:getting-started.adoc#_grpc_[OTLP gRPC].
+
+== Micrometer Metrics Bridge
+
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer metrics into OpenTelemetry Metrics and export them via OTLP. 
+
+=== Enabling/Disabling the Bridge
+
+The bridge logic is provided by the https://example.net[OpenTelemetry Java Instrumentation for Micrometer] and can be disabled selectively via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    instrumentation:
+      micrometer:
+        enabled: false
+----
+
+Note: Refer to the xref:instrumentation.adoc[Instrumentation] section for more information on how Arconia integrates the OpenTelemetry Java Instrumentation.
+
+=== Configuration Properties
+
+The Micrometer Metrics Bridge can be configured via configuration properties.
+
+.Micrometer Metrics Bridge Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.instrumentation.micrometer.base-time-unit`
+|	`seconds`
+|	The base time unit for Micrometer metrics.
+
+|	`arconia.otel.instrumentation.micrometer.histogram-gauges`
+|	`true`
+|	Whether to generate gauge-based Micrometer histograms.
+|===

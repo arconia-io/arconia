@@ -1,7 +1,10 @@
 .OpenTelemetry
 * xref:getting-started.adoc[Getting Started]
-* xref:instrumentation.adoc[Instrumentation]
 * xref:resource.adoc[Resource]
+* xref:logs.adoc[Logs]
+* xref:metrics.adoc[Metrics]
+* xref:traces.adoc[Traces]
+* xref:instrumentation.adoc[Instrumentation]
 * xref:dev-services.adoc[Dev Services]
 * xref:migration.adoc[Migration]
 ** xref:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]

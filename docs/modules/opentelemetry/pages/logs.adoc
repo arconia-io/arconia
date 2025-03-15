@@ -1,0 +1,242 @@
+= OpenTelemetry Logs
+:description: Configure OpenTelemetry Logs.
+
+Logs are...
+
+This page describes how to configure the logging support in OpenTelemetry.
+
+TIP: Learn more about logs in the https://opentelemetry.io/docs/concepts/logs[OpenTelemetry specification].
+
+== Enabling/Disabling Logs
+
+Support for OpenTelemetry Logs is enabled by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    logs:
+      enabled: false
+----
+
+== Configuration Properties
+
+You can configure the support for OpenTelemetry Logs via configuration properties.
+
+=== Log Limits
+
+Constraints for the data captured by log records.
+
+.Log Limits Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.log-limits.max-attribute-value-length`
+|	-
+|	The maximum length of an attribute value.
+
+|	`arconia.otel.logs.log-limits.max-number-of-attributes`
+|	`128`
+|	The maximum number of attributes that can be attached to a log record.
+|===
+
+=== Log Record Processor
+
+Configuration for the batch log record processor.
+
+.Log Record Processor Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.processor.export-timeout`
+|	`30s`
+|	The maximum allowed time to export log records.
+
+|	`arconia.otel.logs.processor.max-export-batch-size`
+|	`512`
+|	The maximum number of log records to export in a single batch.
+
+|	`arconia.otel.logs.processor.max-queue-size`
+|	`2048`
+|	The maximum number of log records that can be queued before batching.
+
+|	`arconia.otel.logs.processor.metrics`
+|	`false`
+|	Whether to generate metrics for the log record processor.
+
+|	`arconia.otel.logs.processor.schedule-delay`
+|	`1s`
+|	The interval between two consecutive exports.
+|===
+
+=== OpenTelemetry Environment Variables
+
+Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure the support for OpenTelemetry Logs using environment variables as well.
+
+This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Logs across different languages and frameworks.
+
+=== OpenTelemetry Java System Properties
+
+Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure the support for OpenTelemetry Logs using system properties as well.
+
+This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
+
+When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+
+== Programmatic Configuration
+
+You can further customize the auto-configured `SdkLoggerProvider` instance via the `SdkLoggerProviderBuilderCustomizer` API.
+
+[source,java]
+----
+@FunctionalInterface
+public interface SdkLoggerProviderBuilderCustomizer {
+
+    void customize(SdkLoggerProviderBuilder builder);
+
+}
+----
+
+== Disabling the Auto-Configuration
+
+The auto-configuration provided by Arconia for OpenTelemetry Logs is enabled by default, but you can disable it as explained in the xref:_enablingdisabling_logs[Enabling/Disabling Logs] section.
+
+If you define a custom `SdkLoggerProvider` bean, the auto-configuration will back off, and your custom bean will be used instead.
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+public class MyLoggingConfiguration {
+
+  @Bean
+  public SdkLoggerProvider myLoggerProvider() {
+    ...
+  }
+
+}
+----
+
+You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.logs.OpenTelemetryLoggingAutoConfiguration` class from the Spring Boot auto-configuration:
+
+[source,yaml]
+----
+spring:
+  autoconfigure:
+    exclude:
+      - io.arconia.opentelemetry.autoconfigure.sdk.logs.OpenTelemetryLoggingAutoConfiguration
+----
+
+== Exporting Logs
+
+By default, logs are enabled and exported via OTLP, but you can change the type of exporter. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+
+.General Logs Exporter Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.exporter.type`
+|	`otlp`
+|	The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
+|===
+
+NOTE: For more information on exporting logs to the console, refer to xref:getting-started.adoc#_console[Console Exporter].
+
+=== OTLP
+
+When logs are exported via OTLP (default behavior), you can configure the following properties. 
+
+NOTE: If a value is not provided specifically for logs, the value configured for the general OTLP export is used, if available. See xref:getting-started.adoc#_otlp[OTLP].
+
+.OTLP Logs Exporter Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.exporter.otlp.compression`
+|	`gzip`
+|	Compression type to use for OTLP requests. Options: `none`, `gzip`.
+
+|	`arconia.otel.logs.exporter.otlp.connect-timeout`
+|	`10s`
+|	The maximum waiting time for the exporter to establish a connection to the endpoint.
+
+|	`arconia.otel.logs.exporter.otlp.endpoint`
+|	`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/logs` (HTTP)
+|	The endpoint to which telemetry data will be sent.
+
+|	`arconia.otel.logs.exporter.otlp.headers`
+|	-
+|	Additional headers to include in each request to the endpoint.
+
+|	`arconia.otel.logs.exporter.otlp.metrics`
+|	`false`
+|	Whether to generate metrics for the exporter itself.
+
+|	`arconia.otel.logs.exporter.otlp.protocol`
+|	`http-protobuf`
+|	Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+
+|	`arconia.otel.logs.exporter.otlp.timeout`
+|	`10s`
+|	The maximum waiting time for the exporter to send each telemetry batch.
+|===
+
+NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:getting-started.adoc#_grpc[OTLP gRPC].
+
+== Logback Appender Bridge
+
+Java applications typically configure logging via SLF4J and use one of the popular implementations such as Logback or Log4J2. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert log events generated by Logback to OpenTelemetry Logs and export them via OTLP.
+
+=== Enabling/Disabling the Bridge
+
+The bridge logic is provided by the https://example.net[OpenTelemetry Java Instrumentation for Logback Appender] and can be disabled selectively via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    instrumentation:
+      logback-appender:
+        enabled: false
+----
+
+Note: Refer to the xref:instrumentation.adoc[Instrumentation] section for more information on how Arconia integrates the OpenTelemetry Java Instrumentation.
+
+=== Configuration Properties
+
+The Logback Appender Bridge can be configured via configuration properties.
+
+.Logback Appender Bridge Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.instrumentation.logback-appender.capture-arguments`
+|	`false`
+|	Enable the capture of Logback logger arguments.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-code-attributes`
+|	`false`
+|	Enable the capture of source code attributes. Note that capturing source code attributes at logging sites might add a performance overhead.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-experimental-attributes`
+|	`false`
+|	Enable the capture of experimental log attributes `thread.name` and `thread.id`.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-key-value-pair-attributes`
+|	`false`
+|	Enable the capture of Logback key value pairs as attributes.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-logger-context`
+|	`false`
+|	Enable the capture of Logback logger context properties as attributes.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-logstash-attributes`
+|	`false`
+|	Enable the capture of Logstash attributes, added to logs via `Markers.append()`, `Markers.appendEntries()`, `Markers.appendArray()` and `Markers.appendRaw()` methods.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-marker-attribute`
+|	`false`
+|	Enable the capture of Logback markers as attributes.
+
+|	`arconia.otel.instrumentation.logback-appender.capture-mdc-attributes`
+|	``
+|	Comma separated list of MDC attributes to capture. Use the wildcard character `*` to capture all attributes.
+
+|	`arconia.otel.instrumentation.logback-appender.num-logs-captured-before-otel-install`
+|	`1000`
+|	Log telemetry is emitted after the initialization of the OpenTelemetry Logback appender with an OpenTelemetry object. This setting allows you to modify the size of the cache used to replay the first logs. `thread.id` attribute is not captured.
+|===

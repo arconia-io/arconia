@@ -1,23 +1,40 @@
 = OpenTelemetry Resource
 :description: Configure an OpenTelemetry Resource to capture information about the entity that produced a telemetry event.
 
-A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes
-to the telemetry event to provide context about the event's source, such as the entity name, version,
+A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes to the telemetry event to provide context about the event's source, such as the entity name, version,
 deployment environment, and more.
 
 TIP: Learn more about resources in the https://opentelemetry.io/docs/concepts/resources[OpenTelemetry specification].
 
-== Default Attributes
+== Default Resource Attributes
 
 By default, Arconia automatically creates a `Resource` instance with the following attributes:
 
-* **`service.name`**. The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-* **`service.namespace`**. The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
-* **`service.version`**. The version of the application resolved from the artifact at build time. If not set, no value is added.
-* **`service.instance.id`**. A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
-* **`webengine.name`**. The name of the web engine. It's always `Spring Boot`.
-* **`webengine.version`**. The version of the web engine in use.
-* **`webengine.description`**. Additional description of the web engine.
+.Default Resource Attributes
+|===
+|Property |Example |Description
+|	`service.name`
+|	`inventory-service`
+|	The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+|	`service.namespace`
+|	`ecommerce`
+|	The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+|	`service.version`
+|	`4.2.0`
+|	The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
+|	`service.instance.id`
+|	`123e4567-e89b-12d3-a456-42683e5064da`
+|	A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+|	`webengine.name`
+|	`Spring Boot`
+|	The name of the web engine. It's always `Spring Boot`.
+|	`webengine.version`
+|	`3.5.0`
+|	The version of the web engine (Spring Boot) in use.
+|	`webengine.description`
+|	`Spring Boot 3.5.0`
+|	Additional description of the web engine (Spring Boot).
+|===
 
 == Configuration Properties
 
@@ -65,8 +82,6 @@ Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-
 * **`OTEL_RESOURCE_ATTRIBUTES`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
 * **`OTEL_RESOURCE_DISABLED_KEYS`**: A comma-separated list of keys to disable in the `Resource` instance.
 
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
-
 This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry across different languages and frameworks.
 
 === OpenTelemetry Java System Properties
@@ -77,9 +92,9 @@ Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/
 * **`otel.resource.attributes`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
 * **`otel.resource.disabled.keys`**: A comma-separated list of keys to disable in the `Resource` instance.
 
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
 
-This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration.
+When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
 
 == Resource Contributors
 
@@ -101,12 +116,12 @@ Arconia comes with a set of built-in resource contributors that automatically ad
 
 The `EnvironmentResourceContributor` contributes attributes to the `Resource` instance from the Spring environment and configuration properties, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`service.name`**: The name of the application as defined in the `arconia.otel.resource.service-name` property, or `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-* **`service.namespace`**: The namespace of the application as defined in the `arconia.otel.resource.attributes` property, or `spring.application.group`. If none of these properties are set, no value is added.
+* **`service.name`**: The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* **`service.namespace`**: The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
 * **`service.instance.id`**: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
 * **`webengine.name`**: The name of the web engine. It's always `Spring Boot`.
-* **`webengine.version`**: The version of the web engine in use.
-* **`webengine.description`**: Additional description of the web engine.
+* **`webengine.version`**: The version of the web engine (Spring Boot) in use.
+* **`webengine.description`**: Additional description of the web engine (Spring Boot).
 
 Furthermore, any additional attribute defined in the `arconia.otel.resource.attributes` property will be added to the `Resource` instance.
 
@@ -128,7 +143,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `BuildResourceContributor` contributes build information to the `Resource` instance, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`service.version`**: The version of the application resolved from the artifact at build time. If not set, no value is added.
+* **`service.version`**: The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
 
 The information is extracted from the `META-INF/build-info.properties` file generated by the Spring Boot Maven and Gradle plugins when the feature is enabled. In Gradle projects, you can enable it by adding the following configuration to your `build.gradle` file:
 
@@ -305,7 +320,7 @@ to ensure that your telemetry data is compatible with other systems and tools.
 
 You can also use this API to adapt `Resource` or `ResourceProvider` implementations from the OpenTelemetry Java Instrumentation. For example, you can include resource attributes about https://opentelemetry.io/docs/zero-code/java/agent/configuration/#enable-resource-providers-that-are-disabled-by-default[AWS or GCP].
 
-== Configuration Beans
+== Programmatic Configuration
 
 Besides the `ResourceContributor` API, you can further customize the auto-configured `Resource` instance via the `SdkResourceBuilderCustomizer` API.
 
@@ -330,10 +345,10 @@ If you define a custom `Resource` bean, the auto-configuration will back off, an
 @Configuration(proxyBeanMethods = false)
 public class MyResourceConfiguration {
 
-    @Bean
-    public Resource myResource() {
-        return Resource.getDefault().toBuilder().put("custom-key", "custom-value").build();
-    }
+  @Bean
+  public Resource myResource() {
+    return Resource.getDefault().toBuilder().put("custom-key", "custom-value").build();
+  }
 
 }
 ----
@@ -348,7 +363,7 @@ spring:
       - io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration
 ----
 
-The additional instrumentation provided by the OpenTelemetry Java Instrumentation can be disabled via configuration properties.
+The additional instrumentation provided by the OpenTelemetry Java Instrumentation can be disabled selectively via configuration properties.
 
 [source,yaml]
 ----
@@ -358,3 +373,5 @@ arconia:
       resource:
         enabled: false
 ----
+
+Note: Refer to the xref:instrumentation.adoc[Instrumentation] section for more information on how Arconia integrates the OpenTelemetry Java Instrumentation.
