@@ -1,11 +1,10 @@
 = OpenTelemetry Traces
 :description: Configure OpenTelemetry Traces.
 
-Traces are...
-
+Traces track requests as they flow through all the services and components of an application.
 This page describes how to configure the tracing support in OpenTelemetry.
 
-TIP: Learn more about traces in the https://opentelemetry.io/docs/concepts/traces[OpenTelemetry specification].
+TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/traces[traces] and https://opentelemetry.io/docs/concepts/signals/baggage[baggage] in the OpenTelemetry documentation.
 
 == Enabling/Disabling Traces
 
@@ -43,7 +42,7 @@ How to sample traces.
 Arconia OpenTelemetry relies on Spring Boot Actuator for configuring propagation, based on Micrometer Tracing.
 For convenience, the configuration properties from Spring Boot Actuator are included here.
 
-NOTE: For more information, refer to the https://example.net[Micrometer Tracing] and https://example.net[Spring Boot Actuator] documentation.
+NOTE: For more information, refer to the https://docs.micrometer.io/tracing/reference/index.html[Micrometer Tracing] and https://docs.spring.io/spring-boot/reference/actuator/tracing.html[Spring Boot Actuator] documentation.
 
 .Propagation Configuration Properties
 |===
@@ -64,7 +63,7 @@ NOTE: For more information, refer to the https://example.net[Micrometer Tracing]
 
 Arconia OpenTelemetry relies on Spring Boot Actuator for configuring baggage management, based on Micrometer Tracing. For convenience, the configuration properties from Spring Boot Actuator are included here.
 
-NOTE: For more information, refer to the https://example.net[Micrometer Tracing] and https://example.net[Spring Boot Actuator] documentation.
+NOTE: For more information, refer to the https://docs.micrometer.io/tracing/reference/index.html[Micrometer Tracing] and https://docs.spring.io/spring-boot/reference/actuator/tracing.html[Spring Boot Actuator] documentation.
 
 .Baggage Configuration Properties
 |===
@@ -266,7 +265,7 @@ Spring libraries and other libraries from the Java ecosystem are instrumented us
 
 === Enabling/Disabling the Bridge
 
-The bridge logic is provided by the https://example.net[Micrometer Tracing] project and it's bundled with the Arconia OpenTelemetry Spring Boot Starter.
+The bridge logic is provided by the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing] project, and it's bundled with the Arconia OpenTelemetry Spring Boot Starter.
 
 If you want to disable the bridge, you'll need to exclude the dependency from the starter.
 

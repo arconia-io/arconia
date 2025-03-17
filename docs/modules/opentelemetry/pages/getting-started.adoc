@@ -11,7 +11,7 @@ TIP: If you're currently using OpenTelemetry Spring Boot Starter or Spring Boot 
 
 Let's see how you can get started with Arconia OpenTelemetry in your Spring Boot application.
 
-TIP: You can refer to our https://github.com/arconia-io/arconia-examples[sample application] for a minimal example of how Arconia OpenTelemetry works.
+TIP: You can refer to our https://github.com/arconia-io/arconia-examples/tree/main/arconia-opentelemetry/observability-signals[sample application] for a minimal example of how Arconia OpenTelemetry works.
 
 === Dependencies
 
@@ -150,7 +150,7 @@ You can override any of these properties for each observability signal using the
 
 ==== HTTP
 
-By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In particular, it relies on the https://example.net[JDK Http Client] to send telemetry data to the endpoint.
+By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In particular, it relies on the https://opentelemetry.io/docs/languages/java/sdk/#senders[JDK Http Client] to send telemetry data to the endpoint.
 
 ==== gRPC
 
@@ -159,12 +159,12 @@ You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` pro
 [source,groovy]
 ----
 dependencies {
-	implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
+  implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
   implementation "io.grpc:grpc-netty-shaded:1.71.0"
 }
 ----
 
-NOTE: The https://example.net[OpenTelemetry SDK Exporter for OTLP gRPC] requires a transport implementation. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs.
+NOTE: The https://opentelemetry.io/docs/languages/java/sdk/#senders[`opentelemetry-exporter-sender-grpc-managed-channel`] requires a transport implementation. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs.
 
 === Console
 

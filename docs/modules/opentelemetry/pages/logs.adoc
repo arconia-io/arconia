@@ -1,11 +1,10 @@
 = OpenTelemetry Logs
 :description: Configure OpenTelemetry Logs.
 
-Logs are...
-
+Logs record something that happened at a specific point in time within an application.
 This page describes how to configure the logging support in OpenTelemetry.
 
-TIP: Learn more about logs in the https://opentelemetry.io/docs/concepts/logs[OpenTelemetry specification].
+TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/logs[logs] in the OpenTelemetry documentation.
 
 == Enabling/Disabling Logs
 
@@ -184,7 +183,7 @@ Java applications typically configure logging via SLF4J and use one of the popul
 
 === Enabling/Disabling the Bridge
 
-The bridge logic is provided by the https://example.net[OpenTelemetry Java Instrumentation for Logback Appender] and can be disabled selectively via configuration properties.
+The bridge logic is provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library[OpenTelemetry Java Instrumentation for Logback Appender] and can be disabled selectively via configuration properties.
 
 [source,yaml]
 ----

@@ -1,11 +1,10 @@
 = OpenTelemetry Metrics
 :description: Configure OpenTelemetry Metrics.
 
-Metrics are...
-
+Metrics are quantitative measurements of an application, captured and aggregated at runtime in regular time intervals.
 This page describes how to configure the metrics support in OpenTelemetry.
 
-TIP: Learn more about metrics in the https://opentelemetry.io/docs/concepts/metrics[OpenTelemetry specification].
+TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/metrics[metrics] in the OpenTelemetry documentation.
 
 == Enabling/Disabling Metrics
 
@@ -160,7 +159,7 @@ Spring libraries and many other libraries from the Java ecosystem are instrument
 
 === Enabling/Disabling the Bridge
 
-The bridge logic is provided by the https://example.net[OpenTelemetry Java Instrumentation for Micrometer] and can be disabled selectively via configuration properties.
+The bridge logic is provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer] and can be disabled selectively via configuration properties.
 
 [source,yaml]
 ----
