@@ -11,7 +11,7 @@ For each supported service, Arconia provides a dedicated module that you can inc
 [source,groovy]
 ----
 dependencies {
-	testAndDevelopmentOnly 'io.arconia:arconia-dev-service-postgresql'
+	testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
 }
 ----
 

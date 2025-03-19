@@ -9,7 +9,7 @@ First, you need to add the Arconia PostgreSQL Dev Service dependency to your pro
 [source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-postgresql'
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
 }
 ----
 

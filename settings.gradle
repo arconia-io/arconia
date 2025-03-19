@@ -9,12 +9,12 @@ include 'arconia-bom'
 include 'arconia-core'
 
 // Dev Services
-include 'arconia-dev-services:arconia-dev-service-connections'
-include 'arconia-dev-services:arconia-dev-service-core'
-include 'arconia-dev-services:arconia-dev-service-ollama'
-include 'arconia-dev-services:arconia-dev-service-opentelemetry-lgtm'
-include 'arconia-dev-services:arconia-dev-service-postgresql'
-include 'arconia-dev-services:arconia-dev-service-redis'
+include 'arconia-dev-services:arconia-dev-services-connections'
+include 'arconia-dev-services:arconia-dev-services-core'
+include 'arconia-dev-services:arconia-dev-services-ollama'
+include 'arconia-dev-services:arconia-dev-services-opentelemetry-lgtm'
+include 'arconia-dev-services:arconia-dev-services-postgresql'
+include 'arconia-dev-services:arconia-dev-services-redis'
 
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'

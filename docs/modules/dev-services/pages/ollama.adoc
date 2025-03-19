@@ -9,7 +9,7 @@ First, you need to add the Arconia Ollama Dev Service dependency to your project
 [source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-ollama'
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-ollama'
 }
 ----
 

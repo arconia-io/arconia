@@ -9,7 +9,7 @@ First, you need to add the Arconia Redis Dev Service dependency to your project.
 [source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-redis'
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-redis'
 }
 ----
 

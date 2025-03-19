@@ -15,12 +15,12 @@ dependencies {
     constraints {
         api project(":arconia-core")
 
-        api project(":arconia-dev-services:arconia-dev-service-connections")
-        api project(":arconia-dev-services:arconia-dev-service-core")
-        api project(":arconia-dev-services:arconia-dev-service-ollama")
-        api project(":arconia-dev-services:arconia-dev-service-opentelemetry-lgtm")
-        api project(":arconia-dev-services:arconia-dev-service-postgresql")
-        api project(":arconia-dev-services:arconia-dev-service-redis")
+        api project(":arconia-dev-services:arconia-dev-services-connections")
+        api project(":arconia-dev-services:arconia-dev-services-core")
+        api project(":arconia-dev-services:arconia-dev-services-ollama")
+        api project(":arconia-dev-services:arconia-dev-services-opentelemetry-lgtm")
+        api project(":arconia-dev-services:arconia-dev-services-postgresql")
+        api project(":arconia-dev-services:arconia-dev-services-redis")
 
         api project(":arconia-multitenancy:arconia-multitenancy-core")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
