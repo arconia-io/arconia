@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'io.spring.dependency-management'
     id 'io.arconia.optional-dependencies'
+    id 'org.graalvm.buildtools.native'
 }
 
 java {

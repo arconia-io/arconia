@@ -10,6 +10,7 @@ repositories {
 
 ext {
     set("cycloneDxVersion", '2.2.0')
+    set("graalvmToolsVersion", '0.10.6')
     set("springBootVersion", '3.4.3')
     set("dependencyManagementVersion", '1.1.7')
 }
@@ -17,6 +18,7 @@ ext {
 dependencies {
     implementation "org.cyclonedx:cyclonedx-gradle-plugin:${cycloneDxVersion}"
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
+    implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
 }
 
