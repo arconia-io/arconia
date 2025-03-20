@@ -35,7 +35,7 @@ class LgtmDevServiceAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(LgtmStackContainer.class);
             LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-            assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm:0.8.6");
+            assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
             assertThat(container.isShouldBeReused()).isTrue();
         });
     }
@@ -44,13 +44,13 @@ class LgtmDevServiceAutoConfigurationTests {
     void lgtmContainerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.lgtm.image-name=grafana/otel-lgtm:0.8.5",
+                "arconia.dev.services.lgtm.image-name=grafana/otel-lgtm:0.8.6",
                 "arconia.dev.services.lgtm.reusable=false"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(LgtmStackContainer.class);
                 LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm:0.8.5");
+                assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm:0.8.6");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }

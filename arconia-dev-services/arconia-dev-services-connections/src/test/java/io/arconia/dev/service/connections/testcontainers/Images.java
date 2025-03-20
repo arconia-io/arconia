@@ -5,9 +5,9 @@ package io.arconia.dev.service.connections.testcontainers;
  */
 public final class Images {
 
-    public static final String LGTM = "grafana/otel-lgtm:0.8.6";
+    public static final String LGTM = "grafana/otel-lgtm:0.9.1";
 
     private Images() {
     }
-    
+
 }
