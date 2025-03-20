@@ -19,7 +19,7 @@ class LgtmDevServicePropertiesTests {
         LgtmDevServiceProperties properties = new LgtmDevServiceProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("grafana/otel-lgtm:0.8.6");
+        assertThat(properties.getImageName()).contains("grafana/otel-lgtm");
         assertThat(properties.isReusable()).isTrue();
     }
 

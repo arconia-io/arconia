@@ -20,7 +20,7 @@ public class OllamaDevServiceProperties implements DevServiceProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ollama/ollama:0.5.13";
+    private String imageName = "ollama/ollama:0.6.2";
 
     /**
      * Whether the container used in the dev service is reusable across applications.
