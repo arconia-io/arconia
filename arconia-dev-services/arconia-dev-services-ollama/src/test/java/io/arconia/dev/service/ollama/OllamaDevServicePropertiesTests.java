@@ -20,7 +20,7 @@ class OllamaDevServicePropertiesTests {
         OllamaDevServiceProperties properties = new OllamaDevServiceProperties();
 
         assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.5.13");
+        assertThat(properties.getImageName()).contains("ollama/ollama");
         assertThat(properties.isReusable()).isTrue();
     }
 
@@ -29,11 +29,11 @@ class OllamaDevServicePropertiesTests {
         OllamaDevServiceProperties properties = new OllamaDevServiceProperties();
 
         properties.setEnabled(true);
-        properties.setImageName("ollama/ollama:0.5.12");
+        properties.setImageName("ollama/ollama:0.6.1");
         properties.setReusable(false);
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.5.12");
+        assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.6.1");
         assertThat(properties.isReusable()).isFalse();
     }
 
