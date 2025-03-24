@@ -20,7 +20,7 @@ emphasizing developer experience and cloud native architectures.
 
 ## 📙&nbsp; Documentation
 
-Check the [Arconia Framework](https://arconia.io/docs) documentation for more information.
+Check the [Arconia Framework](https://arconia.io/docs/arconia/latest/index.html) documentation for more information.
 
 ## 🌟&nbsp; Examples
 
