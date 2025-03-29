@@ -1,0 +1,3 @@
+.Kubernetes
+* xref:introduction.adoc[Introduction]
+* xref:service-binding.adoc[Service Binding]

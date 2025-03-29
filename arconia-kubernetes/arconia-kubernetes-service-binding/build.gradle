@@ -1,0 +1,22 @@
+plugins {
+    id 'code-quality-conventions'
+    id 'java-conventions'
+    id 'sbom-conventions'
+    id 'release-conventions'
+}
+
+dependencies {
+    api "org.springframework.cloud:spring-cloud-bindings:${springCloudBindingsVersion}"
+    api "org.springframework.ai:spring-ai-spring-cloud-bindings:${springAiVersion}"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Kubernetes Service Binding"
+                description = "Arconia Kubernetes Service Binding."
+            }
+        }
+    }
+}

@@ -1,0 +1,63 @@
+= Arconia Kubernetes Service Binding
+
+Arconia supports binding services running in Kubernetes to Spring Boot applications, relying on the https://servicebinding.io[Kubernetes Service Binding Specification].
+
+The Spring ecosystem comes with support for this specification via the https://github.com/spring-cloud/spring-cloud-bindings[Spring Cloud Bindings] library, which is used by other libraries in the Spring ecosystem as a foundation, such as https://docs.spring.io/spring-ai/reference/api/cloud-bindings.html[Spring AI].
+
+Arconia Kubernetes Service Binding extends this support to provide a more seamless experience for developers.
+
+== Dependencies
+
+First, you need to add the Arconia Kubernetes Service Binding dependency to your project.
+
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-kubernetes-service-binding'
+}
+----
+
+== Services
+
+When you deploy your Spring Boot application on a Kubernetes cluster which defines services via the Service Binding Specification, your application will automatically detect and bind to these services.
+
+=== Core Services
+
+The Spring Cloud Bindings library included in Arconia Kubernetes Service Binding will automatically configure the application to consume the following services:
+
+* ActiveMQ Artemis
+* Cassandra
+* Couchbase
+* DB2 RDBMS
+* Elasticsearch
+* Kafka
+* LDAP
+* MongoDB
+* MySQL RDBMS
+* Neo4J
+* Oracle RDBMS
+* PostgreSQL RDBMS
+* RabbitMQ
+* Redis
+* SAP Hana
+* SCS Config Server
+* SCS Eureka
+* Spring Security OAuth2
+* SQLServer RDBMS
+* Vault
+* Wavefront
+
+The bindings are enabled by default. Check out the https://github.com/spring-cloud/spring-cloud-bindings[Spring Cloud Bindings] documentation for more details about the supported services and how to configure them, including how to disable the bindings if you don't want them.
+
+== AI Services
+
+The Spring AI Cloud Bindings library included in Arconia Kubernetes Service Binding will automatically configure the application to consume the following AI services:
+
+* Chroma
+* Mistral AI
+* Ollama
+* OpenAI
+* Weaviate
+* Tanzu GenAI
+
+The bindings are enabled by default. Check out the https://docs.spring.io/spring-ai/reference/api/cloud-bindings.html[https://github.com/spring-ai/spring-ai-cloud-bindings][Spring AI Cloud Bindings] documentation for more details about the supported services and how to configure them, including how to disable the bindings if you don't want them.

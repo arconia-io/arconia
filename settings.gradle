@@ -16,6 +16,9 @@ include 'arconia-dev-services:arconia-dev-services-opentelemetry-lgtm'
 include 'arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev-services:arconia-dev-services-redis'
 
+// Kubernetes
+include 'arconia-kubernetes:arconia-kubernetes-service-binding'
+
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
