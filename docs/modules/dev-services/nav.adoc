@@ -1,7 +1,7 @@
 .Dev Services
 * xref:introduction.adoc[Introduction]
 * Services
-** xref:opentelemetry:dev-services.adoc[Grafana LGTM]
 ** xref:ollama.adoc[Ollama]
+** xref:opentelemetry:dev-services.adoc[OpenTelemetry]
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
