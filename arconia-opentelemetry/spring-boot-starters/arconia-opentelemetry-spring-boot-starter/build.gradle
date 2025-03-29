@@ -29,6 +29,7 @@ dependencies {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
 
+    api "io.micrometer:micrometer-java21"
     api("io.micrometer:micrometer-tracing-bridge-otel") {
         exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
     }
