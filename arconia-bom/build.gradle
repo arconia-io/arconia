@@ -22,6 +22,8 @@ dependencies {
         api project(":arconia-dev-services:arconia-dev-services-postgresql")
         api project(":arconia-dev-services:arconia-dev-services-redis")
 
+        api project(":arconia-kubernetes:arconia-kubernetes-service-binding")
+
         api project(":arconia-multitenancy:arconia-multitenancy-core")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
         api project(":arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure")
