@@ -1,1 +1,1 @@
-io.arconia.dev.service.ollama.OllamaDevServiceAutoConfiguration
+io.arconia.dev.services.ollama.OllamaDevServiceAutoConfiguration

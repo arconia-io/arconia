@@ -1,1 +1,1 @@
-io.arconia.dev.service.postgresql.PostgresqlDevServiceAutoConfiguration
+io.arconia.dev.services.postgresql.PostgresqlDevServiceAutoConfiguration

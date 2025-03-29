@@ -1,5 +1,5 @@
 # Connection Details Factories
 org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
-io.arconia.dev.service.connections.LgtmOtlpLoggingContainerConnectionDetailsFactory,\
-io.arconia.dev.service.connections.LgtmOtlpMetricsContainerConnectionDetailsFactory,\
-io.arconia.dev.service.connections.LgtmOtlpTracingContainerConnectionDetailsFactory
+io.arconia.dev.services.connections.LgtmOtlpLoggingContainerConnectionDetailsFactory,\
+io.arconia.dev.services.connections.LgtmOtlpMetricsContainerConnectionDetailsFactory,\
+io.arconia.dev.services.connections.LgtmOtlpTracingContainerConnectionDetailsFactory
