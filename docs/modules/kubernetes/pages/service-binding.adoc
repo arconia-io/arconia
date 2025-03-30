@@ -60,4 +60,4 @@ The Spring AI Cloud Bindings library included in Arconia Kubernetes Service Bind
 * Weaviate
 * Tanzu GenAI
 
-The bindings are enabled by default. Check out the https://docs.spring.io/spring-ai/reference/api/cloud-bindings.html[https://github.com/spring-ai/spring-ai-cloud-bindings][Spring AI Cloud Bindings] documentation for more details about the supported services and how to configure them, including how to disable the bindings if you don't want them.
+The bindings are enabled by default. Check out the https://docs.spring.io/spring-ai/reference/api/cloud-bindings.html[Spring AI Cloud Bindings] documentation for more details about the supported services and how to configure them, including how to disable the bindings if you don't want them.
