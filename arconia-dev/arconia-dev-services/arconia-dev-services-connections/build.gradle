@@ -21,8 +21,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service Connection Details"
-                description = "Arconia Dev Service Connection Details."
+                name = "Arconia Dev Services Connection Details"
+                description = "Arconia Dev Services Connection Details."
             }
         }
     }

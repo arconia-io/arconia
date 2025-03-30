@@ -5,17 +5,20 @@ import com.redis.testcontainers.RedisStackContainer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.devtools.restart.RestartScope;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link RedisDevServiceAutoConfiguration}.
+ * Unit tests for {@link RedisDevServicesAutoConfiguration}.
  */
-class RedisDevServiceAutoConfigurationTests {
+class RedisDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(RedisDevServiceAutoConfiguration.class));
+            .withClassLoader(new FilteredClassLoader(RestartScope.class))
+            .withConfiguration(AutoConfigurations.of(RedisDevServicesAutoConfiguration.class));
 
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {

@@ -2,19 +2,21 @@ package io.arconia.dev.services.postgresql;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.devtools.restart.RestartScope;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link PostgresqlDevServiceAutoConfiguration}.
+ * Unit tests for {@link PostgresqlDevServicesAutoConfiguration}.
  */
-class PostgresqlDevServiceAutoConfigurationTests {
+class PostgresqlDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withPropertyValues("spring.devtools.restart.enabled=false")
-            .withConfiguration(AutoConfigurations.of(PostgresqlDevServiceAutoConfiguration.class));
+            .withClassLoader(new FilteredClassLoader(RestartScope.class))
+            .withConfiguration(AutoConfigurations.of(PostgresqlDevServicesAutoConfiguration.class));
 
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {

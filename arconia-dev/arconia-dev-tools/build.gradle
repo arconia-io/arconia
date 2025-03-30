@@ -6,16 +6,15 @@ plugins {
 }
 
 dependencies {
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    api "org.springframework.boot:spring-boot-devtools"
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Services Core"
-                description = "Arconia Dev Services Core."
+                name = "Arconia Dev Tools"
+                description = "Arconia Dev Tools."
             }
         }
     }

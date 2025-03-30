@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link PostgresqlDevServiceProperties}.
+ * Unit tests for {@link PostgresqlDevServicesProperties}.
  */
-class PostgresqlDevServicePropertiesTests {
+class PostgresqlDevServicesPropertiesTests {
 
     @Test
     void shouldHaveCorrectConfigPrefix() {
-        assertThat(PostgresqlDevServiceProperties.CONFIG_PREFIX)
+        assertThat(PostgresqlDevServicesProperties.CONFIG_PREFIX)
                 .isEqualTo("arconia.dev.services.postgresql");
     }
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
-        PostgresqlDevServiceProperties properties = new PostgresqlDevServiceProperties();
+        PostgresqlDevServicesProperties properties = new PostgresqlDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).isEqualTo("postgres:17.4-alpine");
@@ -26,7 +26,7 @@ class PostgresqlDevServicePropertiesTests {
 
     @Test
     void shouldUpdateValues() {
-        PostgresqlDevServiceProperties properties = new PostgresqlDevServiceProperties();
+        PostgresqlDevServicesProperties properties = new PostgresqlDevServicesProperties();
 
         properties.setEnabled(false);
         properties.setImageName("postgres:latest");

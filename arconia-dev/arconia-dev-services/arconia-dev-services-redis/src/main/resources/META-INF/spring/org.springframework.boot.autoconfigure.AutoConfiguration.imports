@@ -1,1 +1,1 @@
-io.arconia.dev.services.redis.RedisDevServiceAutoConfiguration
+io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration

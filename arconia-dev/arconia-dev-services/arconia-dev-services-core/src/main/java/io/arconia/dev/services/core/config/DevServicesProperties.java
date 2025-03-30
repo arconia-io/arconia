@@ -3,7 +3,7 @@ package io.arconia.dev.services.core.config;
 /**
  * Base properties for dev services.
  */
-public interface DevServiceProperties {
+public interface DevServicesProperties {
 
     /**
      * Whether the dev service is enabled.

@@ -10,11 +10,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "com.redis:testcontainers-redis:${redisTestcontainersVersion}"
 
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -25,8 +25,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service Redis"
-                description = "Arconia Dev Service Redis."
+                name = "Arconia Dev Services Redis"
+                description = "Arconia Dev Services Redis."
             }
         }
     }

@@ -15,11 +15,11 @@ First, you need to add the Arconia OpenTelemetry LGTM Dev Service dependency to 
 [source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-opentelemetry-lgtm'
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-opentelemetry-lgtm'
 }
 ----
 
-TIP: This dependency also includes the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow.
+TIP: You can combine this with `io.arconia:arconia-dev-tools`, including the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow, while keeping the Dev Service up and running.
 
 === Running the Application
 
@@ -54,7 +54,7 @@ arconia:
   dev:
     services:
       lgtm:
-        image-name: grafana/otel-lgtm:0.8.6
+        image-name: grafana/otel-lgtm:0.9.1
         reusable: false
 ----
 
@@ -73,4 +73,4 @@ arconia:
 
 TIP: You can disable the Dev Service for a specific test class or method by using the `@TestProperty` annotation or equivalent Spring testing utilities.
 
-Alternatively, you can disable it by excluding the auto-configuration class directly: `LgtmDevServiceAutoConfiguration`.
+Alternatively, you can disable it by excluding the auto-configuration class directly: `LgtmDevServicesAutoConfiguration`.

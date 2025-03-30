@@ -8,6 +8,9 @@ rootProject.name = 'arconia'
 include 'arconia-bom'
 include 'arconia-core'
 
+// Dev Tools
+include 'arconia-dev:arconia-dev-tools'
+
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-connections'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'

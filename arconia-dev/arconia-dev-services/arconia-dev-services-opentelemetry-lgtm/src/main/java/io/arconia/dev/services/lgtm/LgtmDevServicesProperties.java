@@ -1,16 +1,16 @@
-package io.arconia.dev.services.postgresql;
+package io.arconia.dev.services.lgtm;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.core.config.DevServiceProperties;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 /**
- * Properties for the PostgreSQL Dev Service.
+ * Properties for the OpenTelemetry LGTM Dev Services.
  */
-@ConfigurationProperties(prefix = PostgresqlDevServiceProperties.CONFIG_PREFIX)
-public class PostgresqlDevServiceProperties implements DevServiceProperties {
+@ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
+public class LgtmDevServicesProperties implements DevServicesProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.dev.services.postgresql";
+    public static final String CONFIG_PREFIX = "arconia.dev.services.lgtm";
 
     /**
      * Whether the dev service is enabled.
@@ -20,12 +20,12 @@ public class PostgresqlDevServiceProperties implements DevServiceProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "postgres:17.4-alpine";
+    private String imageName = "grafana/otel-lgtm:0.9.1";
 
     /**
      * Whether the container used in the dev service is reusable across applications.
      */
-    private boolean reusable = false;
+    private boolean reusable = true;
 
     @Override
     public boolean isEnabled() {

@@ -13,7 +13,7 @@ dependencies {
 }
 ----
 
-TIP: This dependency also includes the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow.
+TIP: You can combine this with `io.arconia:arconia-dev-tools`, including the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow, while keeping the Dev Service up and running.
 
 == Running the Application
 
@@ -49,7 +49,7 @@ arconia:
   dev:
     services:
       ollama:
-        image-name: ollama/ollama:0.5.13
+        image-name: ollama/ollama:0.6.3
         reusable: false
 ----
 
@@ -57,4 +57,4 @@ arconia:
 
 By default, the Ollama Dev Service is disabled.
 
-Alternatively, you can disable it by excluding the auto-configuration class directly: `OllamaDevServiceAutoConfiguration`.
+Alternatively, you can disable it by excluding the auto-configuration class directly: `OllamaDevServicesAutoConfiguration`.

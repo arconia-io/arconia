@@ -3,10 +3,10 @@ package io.arconia.dev.services.redis;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Properties for the Redis Dev Service.
+ * Properties for the Redis Dev Services.
  */
-@ConfigurationProperties(prefix = RedisDevServiceProperties.CONFIG_PREFIX)
-public class RedisDevServiceProperties {
+@ConfigurationProperties(prefix = RedisDevServicesProperties.CONFIG_PREFIX)
+public class RedisDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.redis";
 

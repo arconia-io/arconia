@@ -10,11 +10,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
     api "org.testcontainers:ollama"
 
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -31,8 +31,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service Ollama"
-                description = "Arconia Dev Service Ollama."
+                name = "Arconia Dev Services Ollama"
+                description = "Arconia Dev Services Ollama."
             }
         }
     }

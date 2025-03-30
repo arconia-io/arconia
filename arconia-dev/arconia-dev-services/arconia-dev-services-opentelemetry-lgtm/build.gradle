@@ -11,12 +11,12 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-connections")
-    api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:grafana"
 
     implementation project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -27,8 +27,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service OpenTelemetry LGTM"
-                description = "Arconia Dev Service OpenTelemetry LGTM."
+                name = "Arconia Dev Services OpenTelemetry LGTM"
+                description = "Arconia Dev Services OpenTelemetry LGTM."
             }
         }
     }

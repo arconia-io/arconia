@@ -10,11 +10,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:postgresql"
 
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -25,8 +25,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service PostgreSQL"
-                description = "Arconia Dev Service PostgreSQL."
+                name = "Arconia Dev Services PostgreSQL"
+                description = "Arconia Dev Services PostgreSQL."
             }
         }
     }

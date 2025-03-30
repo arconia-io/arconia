@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link OllamaDevServiceProperties}.
+ * Unit tests for {@link OllamaDevServicesProperties}.
  */
-class OllamaDevServicePropertiesTests {
+class OllamaDevServicesPropertiesTests {
 
     @Test
     void shouldHaveCorrectConfigPrefix() {
-        assertThat(OllamaDevServiceProperties.CONFIG_PREFIX)
+        assertThat(OllamaDevServicesProperties.CONFIG_PREFIX)
                 .isEqualTo("arconia.dev.services.ollama");
     }
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
-        OllamaDevServiceProperties properties = new OllamaDevServiceProperties();
+        OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).contains("ollama/ollama");
@@ -26,14 +26,14 @@ class OllamaDevServicePropertiesTests {
 
     @Test
     void shouldUpdateValues() {
-        OllamaDevServiceProperties properties = new OllamaDevServiceProperties();
+        OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
 
         properties.setEnabled(true);
-        properties.setImageName("ollama/ollama:0.6.1");
+        properties.setImageName("ollama/ollama:0.6.3");
         properties.setReusable(false);
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.6.1");
+        assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.6.3");
         assertThat(properties.isReusable()).isFalse();
     }
 
