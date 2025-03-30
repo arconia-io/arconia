@@ -35,15 +35,16 @@ dependencyManagement {
 }
 ----
 
-=== Dev Service
+=== Dev Services
 
 Building on top of Spring Boot support for Testcontainers, Arconia provides zero-code dev services for a superior developer experience. When working with OpenTelemetry, you can use the Arconia OpenTelemetry Dev Service LGTM to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
 
-To enable the Arconia OpenTelemetry Dev Service LGTM, add the following dependency to your project.
+To enable the Arconia OpenTelemetry Dev Service LGTM, add the following dependencies to your project.
 
 [source,groovy]
 ----
 dependencies {
+    testAndDevelopmentOnly 'io.arconia:arconia-dev-tools'
 	testAndDevelopmentOnly 'io.arconia:arconia-dev-service-opentelemetry-lgtm'
 }
 ----
