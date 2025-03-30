@@ -9,13 +9,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev-services:arconia-dev-services-core")
-    api project(":arconia-dev-services:arconia-dev-services-connections")
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.boot:spring-boot-devtools"
     api "org.springframework.boot:spring-boot-testcontainers"
-    api "org.testcontainers:grafana"
+    api "org.testcontainers:postgresql"
 
-    implementation project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
@@ -27,8 +25,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service OpenTelemetry LGTM"
-                description = "Arconia Dev Service OpenTelemetry LGTM."
+                name = "Arconia Dev Service PostgreSQL"
+                description = "Arconia Dev Service PostgreSQL."
             }
         }
     }

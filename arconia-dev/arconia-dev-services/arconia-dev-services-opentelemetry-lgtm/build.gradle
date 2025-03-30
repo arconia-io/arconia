@@ -9,11 +9,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-connections")
     api "org.springframework.boot:spring-boot-devtools"
-    api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
-    api "org.testcontainers:ollama"
+    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.testcontainers:grafana"
 
+    implementation project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
@@ -21,18 +23,12 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-devtools"
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-    }
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Service Ollama"
-                description = "Arconia Dev Service Ollama."
+                name = "Arconia Dev Service OpenTelemetry LGTM"
+                description = "Arconia Dev Service OpenTelemetry LGTM."
             }
         }
     }
