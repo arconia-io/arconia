@@ -153,6 +153,11 @@ class ProfilesEnvironmentPostProcessorTests {
             });
     }
 
+    @Test
+    void shouldHaveHighestPrecedence() {
+        assertThat(processor.getOrder()).isEqualTo(org.springframework.core.Ordered.HIGHEST_PRECEDENCE);
+    }
+
     @Configuration
     static class TestConfig {
     }
