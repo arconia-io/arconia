@@ -45,7 +45,7 @@ To enable the Arconia OpenTelemetry Dev Service LGTM, add the following dependen
 ----
 dependencies {
     testAndDevelopmentOnly 'io.arconia:arconia-dev-tools'
-	testAndDevelopmentOnly 'io.arconia:arconia-dev-service-opentelemetry-lgtm'
+	testAndDevelopmentOnly 'io.arconia:arconia-dev-services-opentelemetry-lgtm'
 }
 ----
 

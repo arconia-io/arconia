@@ -15,7 +15,7 @@ dependencies {
 }
 ----
 
-You can combine Arconia Dev Services with `io.arconia:arconia-dev-tools`, including the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow, while keeping the Dev Services up and running.
+You can combine Arconia Dev Services the with xref:arconia:dev-tools:introduction.adoc[Arconia Dev Tools], a module that you can include in your project with `io.arconia:arconia-dev-tools`. One of the included tools will automatically restart your application when you make changes to your code as part of your development workflow, while keeping the Dev Services up and running.
 
 You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
 

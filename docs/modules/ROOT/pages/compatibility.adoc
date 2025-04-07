@@ -22,6 +22,7 @@ This page describes the compatibility requirements for Arconia.
 
 [options="header"]
 |===
-|Arconia |OpenTelemetry Java API |OpenTelemetry Java Instrumentation
-|0.5+ |1.47+ |2.13+
+|Arconia |OpenTelemetry Java API
+|0.5+ |1.47+
+|0.8+ |1.48+
 |===

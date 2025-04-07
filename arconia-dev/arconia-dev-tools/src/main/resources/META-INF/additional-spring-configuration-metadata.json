@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.profiles.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the dev profiles are enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.dev.profiles.development",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Name of the development profiles.",
+      "defaultValue": "dev"
+    },
+    {
+      "name": "arconia.dev.profiles.test",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Name of the test profiles.",
+      "defaultValue": "test"
+    }
+  ]
+}

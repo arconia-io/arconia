@@ -12,7 +12,7 @@ NOTE: The Arconia Framework is currently in active development. We're working ha
 
 == Key Features
 
-* *Dev Services* - Support for transparent, zero-code integrations for services your application depends on, both at development and test time.
+* *Developer Experience* - Support for transparent, zero-code integrations for services your application depends on, both at development and test time.
 * *Multitenancy* - Support for multiple tenants across the application, including web, data, security, and configuration.
 * *Observability* - Support for OpenTelemetry, bridging the gap between Spring Boot and the rest of the observability ecosystem.
 
