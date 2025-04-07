@@ -54,7 +54,7 @@ arconia:
   dev:
     services:
       lgtm:
-        image-name: grafana/otel-lgtm:0.9.1
+        image-name: grafana/otel-lgtm
         reusable: false
 ----
 
