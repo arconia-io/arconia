@@ -8,7 +8,7 @@ Arconia enhances the developer experience by building on top of Spring Boot. It 
 
 By default, the Arconia Dev Tools library provides two profiles that are enabled automatically in certain conditions:
 
-* `dev`: Enabled when running the application in development mode (e.g. `./gradlew bootRun` or `./mvnw spring-boot:run).
+* `dev`: Enabled when running the application in development mode (e.g. `./gradlew bootRun` or `./mvnw spring-boot:run`).
 * `test`: Enabled when running tests or when running the application in test mode (e.g. `./gradlew bootTestRun` or `./mvnw spring-boot:test-run`).
 
 == Enabling/Disabling Profiles
