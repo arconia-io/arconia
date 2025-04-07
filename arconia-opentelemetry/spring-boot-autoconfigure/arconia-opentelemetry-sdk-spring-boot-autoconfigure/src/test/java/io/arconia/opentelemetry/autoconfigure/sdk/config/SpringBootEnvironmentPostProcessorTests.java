@@ -63,4 +63,21 @@ class SpringBootEnvironmentPostProcessorTests {
             );
     }
 
+    @Test
+    void postProcessEnvironmentShouldExcludeTracingAutoConfigurationWhenArconiaOtelDisabled() {
+        var environment = new MockEnvironment()
+            .withProperty("arconia.otel.enabled", "false");
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        String excludedConfigs = environment.getProperty("spring.autoconfigure.exclude");
+        assertThat(excludedConfigs).contains(
+            "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.logging.otlp.OtlpLoggingAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration"
+        );
+    }
+
 }
