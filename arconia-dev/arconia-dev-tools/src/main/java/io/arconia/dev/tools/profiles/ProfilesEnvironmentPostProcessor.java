@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -14,7 +15,7 @@ import org.springframework.util.StringUtils;
 /**
  * Configures development and test profiles.
  */
-public class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor {
+public class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ProfilesEnvironmentPostProcessor.class);
 
@@ -49,6 +50,11 @@ public class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcesso
                 }
             }
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
 }
