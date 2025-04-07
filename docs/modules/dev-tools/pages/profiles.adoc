@@ -13,7 +13,7 @@ By default, the Arconia Dev Tools library provides two profiles that are enabled
 
 == Enabling/Disabling Profiles
 
-Arconia profiles are enabled by default. You can disable them via configuration properties.
+Arconia profiles are enabled by default in development mode or during testing. You can disable them via configuration properties.
 
 [source,yaml]
 ----
@@ -32,11 +32,11 @@ Each organization may have its own set of custom profiles to manage development 
 |Property |Default |Description
 |	`arconia.dev.profiles.development`
 |	`dev`
-|	Name of the development profiles.
+|	Names of the development profiles.
 
 |	`arconia.dev.profiles.test`
 |	`test`
-|	Name of the test profiles.
+|	Names of the test profiles.
 |===
 
 Both properties accept a list of profiles. For example, you can define multiple profiles to be activated when running tests:
