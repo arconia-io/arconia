@@ -1,8 +1,10 @@
 = Profiles
 
-When working with Spring Boot applications, it's common to define specific configurations for different environments, such as development, testing, and production. Spring Boot provides a powerful way to manage these configurations using https://docs.spring.io/spring-boot/reference/features/profiles.html[profiles].
+When developing Spring Boot applications, it's common to define specific configurations for different environments, such as development, testing, and production. Spring Boot provides a powerful way to manage these configurations using https://docs.spring.io/spring-boot/reference/features/profiles.html[profiles].
 
-Even more common is to have custom configuration when running the application in development mode or when running tests, to the point that it's almost boilerplate code to define these configurations in each project. Arconia aims at improving the developer experience on top of Spring Boot, which is why it provides that out of the box.
+Frequently, developers need custom configurations when running applications in development mode or during testing. This necessity has become so routine that it's almost considered boilerplate code to define these configurations in every project.
+
+Arconia enhances the developer experience by building on top of Spring Boot. It provides these common configurations out of the box, allowing developers to focus more on writing application logic and less on repetitive setup tasks.
 
 By default, the Arconia Dev Tools library provides two profiles that are enabled automatically in certain conditions:
 
