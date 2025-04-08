@@ -1,3 +1,3 @@
-# Environment Post Processors
-org.springframework.boot.env.EnvironmentPostProcessor=\
-io.arconia.dev.tools.profiles.ProfilesEnvironmentPostProcessor
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+io.arconia.dev.tools.profiles.ProfilesApplicationListener

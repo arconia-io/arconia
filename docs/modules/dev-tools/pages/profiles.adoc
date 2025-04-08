@@ -48,5 +48,3 @@ arconia:
     profiles:
       test: dev, test
 ----
-
-WARNING: Custom dev profiles need to be provided using one of the higher-priority configuration strategies, such as JVM system properties or environment variables. It's not currently supported to define custom dev profiles in `application.yml` or `application.properties`.
