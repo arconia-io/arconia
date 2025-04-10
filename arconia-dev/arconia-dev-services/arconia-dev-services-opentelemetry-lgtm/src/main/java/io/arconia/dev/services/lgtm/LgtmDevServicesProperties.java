@@ -20,7 +20,7 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "grafana/otel-lgtm:0.9.3";
+    private String imageName = "grafana/otel-lgtm:0.10.0";
 
     /**
      * Whether the container used in the dev service is reusable across applications.
