@@ -130,6 +130,9 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 
 |`otel.metrics.exemplar.filter`
 |`arconia.otel.metrics.exemplar-filter`
+
+|`otel.java.metrics.cardinality.limit`
+|`arconia.otel.metrics.cardinality-limit`
 |===
 
 === Traces Configuration

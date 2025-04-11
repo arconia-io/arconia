@@ -55,8 +55,8 @@ public class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    CardinalityLimitSelector cardinalityLimitSelector() {
-        return CardinalityLimitSelector.defaultCardinalityLimitSelector();
+    CardinalityLimitSelector cardinalityLimitSelector(OpenTelemetryMetricsProperties properties) {
+        return instrumentType -> properties.getCardinalityLimit();
     }
 
     @Bean

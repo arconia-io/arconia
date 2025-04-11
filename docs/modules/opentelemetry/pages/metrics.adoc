@@ -25,6 +25,10 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 .Metrics Configuration Properties
 |===
 |Property |Default |Description
+|	`arconia.otel.metrics.cardinality-limit`
+|	`2000`
+|	Maximum number of distinct points per metric.
+
 |	`arconia.otel.metrics.exemplar-filter`
 |	`trace-based`
 |	Filter for which measurements can become Exemplars. Options: `always-on`, `always-off`, `trace-based`.

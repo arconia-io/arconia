@@ -17,12 +17,3 @@ This page describes the compatibility requirements for Arconia.
 |Arconia |Spring Boot
 |0.5+ |3.4+
 |===
-
-== OpenTelemetry
-
-[options="header"]
-|===
-|Arconia |OpenTelemetry Java API
-|0.5+ |1.47+
-|0.8+ |1.48+
-|===

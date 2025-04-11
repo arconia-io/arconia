@@ -22,6 +22,11 @@ public class OpenTelemetryMetricsProperties {
      */
     private ExemplarFilter exemplarFilter = ExemplarFilter.TRACE_BASED;
 
+    /**
+     * Maximum number of distinct points per metric.
+     */
+    private Integer cardinalityLimit = 2000;
+
     public Duration getInterval() {
         return interval;
     }
@@ -36,6 +41,14 @@ public class OpenTelemetryMetricsProperties {
 
     public void setExemplarFilter(ExemplarFilter exemplarFilter) {
         this.exemplarFilter = exemplarFilter;
+    }
+
+    public Integer getCardinalityLimit() {
+        return cardinalityLimit;
+    }
+
+    public void setCardinalityLimit(Integer cardinalityLimit) {
+        this.cardinalityLimit = cardinalityLimit;
     }
 
     /**

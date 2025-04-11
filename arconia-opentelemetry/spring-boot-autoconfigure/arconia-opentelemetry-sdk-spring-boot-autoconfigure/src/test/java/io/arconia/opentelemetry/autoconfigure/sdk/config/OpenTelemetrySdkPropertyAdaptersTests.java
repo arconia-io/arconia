@@ -125,7 +125,8 @@ class OpenTelemetrySdkPropertyAdaptersTests {
     void metricsShouldMapProperties() {
         var environment = new MockEnvironment()
             .withProperty("otel.metric.export.interval", "60000")
-            .withProperty("otel.metrics.exemplar.filter", "always_on");
+            .withProperty("otel.metrics.exemplar.filter", "always_on")
+            .withProperty("otel.java.metrics.cardinality.limit", "100");
 
         var adapter = OpenTelemetrySdkPropertyAdapters.metrics(environment);
 
@@ -133,6 +134,8 @@ class OpenTelemetrySdkPropertyAdaptersTests {
             .isEqualTo(Duration.ofSeconds(60));
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter"))
             .isEqualTo(ExemplarFilter.ALWAYS_ON);
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".cardinality-limit"))
+                .isEqualTo(100);
     }
 
     @Test

@@ -4,6 +4,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -58,6 +59,16 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             assertThat(context).hasSingleBean(CardinalityLimitSelector.class);
             assertThat(context).hasSingleBean(ExemplarFilter.class);
         });
+    }
+
+    @Test
+    void cardinalityLimitSelectorConfigurationApplied() {
+        contextRunner
+                .withPropertyValues("arconia.otel.metrics.cardinality-limit=200")
+                .run(context -> {
+                    CardinalityLimitSelector cardinalityLimitSelector = context.getBean(CardinalityLimitSelector.class);
+                    assertThat(cardinalityLimitSelector.getCardinalityLimit(InstrumentType.COUNTER)).isEqualTo(200);
+                });
     }
 
     @Test

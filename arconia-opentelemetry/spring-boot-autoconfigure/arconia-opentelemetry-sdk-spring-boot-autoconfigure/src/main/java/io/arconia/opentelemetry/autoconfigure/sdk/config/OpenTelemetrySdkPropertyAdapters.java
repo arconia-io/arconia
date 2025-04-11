@@ -98,10 +98,7 @@ class OpenTelemetrySdkPropertyAdapters {
     /**
      * Properties for configuring the OpenTelemetry SDK metrics.
      * <p>
-     * All properties supported, except:
-     * <ul>
-     *      <li>{@code otel.experimental.metrics.cardinality.limit} (still experimental)</li>
-     * </ul>
+     * All properties supported.
      *
      * @link <a href="https://opentelemetry.io/docs/languages/java/configuration/#properties-metrics">...</a>
      */
@@ -110,6 +107,7 @@ class OpenTelemetrySdkPropertyAdapters {
         return PropertyAdapter.builder(environment)
             .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".interval")
             .mapEnum("otel.metrics.exemplar.filter", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter", OpenTelemetrySdkPropertyConverters::exemplarFilter)
+            .mapInteger("otel.java.metrics.cardinality.limit", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".cardinality-limit")
             .build();
     }
 
