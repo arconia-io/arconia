@@ -1,8 +1,8 @@
 # Arconia Framework
 
-![Build](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml/badge.svg)
-[![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Follow us on Bluesky](https://img.shields.io/static/v1?label=Bluesky&message=Follow&color=1DA1F2)](https://bsky.app/profile/arconia.io)
+[![GitHub Actions Status](https://img.shields.io/github/actions/workflow/status/arconia-io/arconia/commit-stage.yml?branch=main&logo=GitHub&style=for-the-badge)](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml)
+[![Follow Arconia on Bluesky](https://img.shields.io/static/v1?label=Bluesky&message=Follow&logo=bluesky&logoColor=F5F5F5&color=1185FE&style=for-the-badge)](https://bsky.app/profile/arconia.io)
+[![Apache 2.0 License](https://img.shields.io/github/license/arconia-io/arconia?style=for-the-badge&logo=apache&color=brightgreen)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot,
 emphasizing developer experience and cloud native architectures.
