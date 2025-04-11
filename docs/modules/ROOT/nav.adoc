@@ -1,2 +1,4 @@
 * xref:index.adoc[Introduction]
 * xref:compatibility.adoc[Compatibility]
+* xref:core-features/index.adoc[Core Features]
+** xref:core-features/profiles.adoc[Profiles]

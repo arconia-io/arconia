@@ -1,5 +1,4 @@
-.OpenTelemetry
-* xref:getting-started.adoc[Getting Started]
+.xref:index.adoc[OpenTelemetry]
 * xref:resource.adoc[Resource]
 * xref:logs.adoc[Logs]
 * xref:metrics.adoc[Metrics]

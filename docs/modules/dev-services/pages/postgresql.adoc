@@ -1,34 +1,35 @@
 = PostgreSQL Dev Service
 
-When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the Arconia PostgreSQL Dev Service to automatically start a PostgreSQL database. This enables you to develop and test your application without having to manually start and manage the database.
+When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the PostgreSQL Dev Service to automatically start a PostgreSQL database or one of its variants (such as PGVector when working with vectors in LLM-powered applications). This enables you to develop and test your application without having to manually start and manage a database server.
 
 == Dependencies
 
-First, you need to add the Arconia PostgreSQL Dev Service dependency to your project.
+First, you need to add the PostgreSQL Dev Service dependency to your project. You can also include the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] dependency to enable live reload of your application during development.
 
 [source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
+  developmentOnly "org.springframework.boot:spring-boot-devtools"
+  testAndDevelopmentOnly "io.arconia:arconia-dev-services-postgresql"
 }
 ----
 
-TIP: You can combine this with `io.arconia:arconia-dev-tools`, including the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], which automatically restarts your application when you make changes to your code as part of your development workflow, while keeping the Dev Service up and running.
+NOTE: When you use the Spring Boot DevTools in your project, Arconia will keep the Dev Services running while you make changes to your code instead of restarting them with the application. This allows you to see the changes in real-time without having to restart the Dev Services.
 
 == Running the Application
 
-Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply use:
+Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply run your application using the usual tasks provided by the Spring Boot plugins for Gradle or Maven.
 
 * Gradle: `./gradlew bootRun`
 * Maven: `./mvnw spring-boot:run`
 
-Your integration tests will automatically use the Arconia Dev Services without any additional configuration.
+The Dev Service will automatically start when you run your application.
 
-NOTE: Whenever the application is reloaded via Spring Boot DevTools, the Dev Service will not be restarted. If you want to disable the live reload feature, you can do so by setting the `spring.devtools.restart.enabled` property to `false`. When doing so, the Dev Service will be shut down and restarted along with the application.
+Your integration tests will automatically use the Dev Services without any additional configuration.
 
 == Customizing the Dev Service
 
-You can customize the Dev Service via configuration properties, such as changing the image name or reusing the service across multiple applications and tests.
+You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
 
 [source,yaml]
 ----
@@ -37,7 +38,7 @@ arconia:
     services:
       postgresql:
         image-name: pgvector/pgvector:pg17
-        reusable: true
+        reusable: false
 ----
 
 === Disabling the Dev Service
@@ -53,6 +54,6 @@ arconia:
         enabled: false
 ----
 
-TIP: You can disable the Dev Service for a specific test class or method by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.
 
-Alternatively, you can disable it by excluding the auto-configuration class directly: `PostgresqlDevServicesAutoConfiguration`.
+TIP: You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:../../ROOT/core-features/profiles.adoc[Profiles]).

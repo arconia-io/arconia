@@ -111,13 +111,13 @@ By default, metrics are enabled and exported via OTLP, but you can change the ty
 |	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
 |===
 
-NOTE: For more information on exporting metrics to the console, refer to xref:getting-started.adoc#_console[Console Exporter].
+NOTE: For more information on exporting metrics to the console, refer to xref:index.adoc#_console[Console Exporter].
 
 === OTLP
 
 When metrics are exported via OTLP (default behavior), you can configure the following properties. 
 
-NOTE: If a value is not provided specifically for metrics, the value configured for the general OTLP export is used, if available. See xref:getting-started.adoc#_otlp[OTLP].
+NOTE: If a value is not provided specifically for metrics, the value configured for the general OTLP export is used, if available. See xref:index.adoc#_otlp[OTLP].
 
 .OTLP Metrics Exporter Configuration Properties
 |===
@@ -151,7 +151,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 |	The maximum waiting time for the exporter to send each telemetry batch.
 |===
 
-NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:getting-started.adoc#_grpc_[OTLP gRPC].
+NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
 
 == Micrometer Metrics Bridge
 

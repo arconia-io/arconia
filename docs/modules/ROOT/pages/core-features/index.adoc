@@ -1,0 +1,25 @@
+= Core Features
+
+This section provides information on using the core features and capabilities of Arconia.
+
+== Dependencies
+
+To get started with Arconia, add the Arconia Spring Boot Starter dependency to your project.
+
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter'
+}
+----
+
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
+
+[source,groovy,subs="attributes,regexp"]
+----
+dependencyManagement {
+	imports {
+		mavenBom "io.arconia:arconia-bom:{page-component-version}"
+	}
+}
+----

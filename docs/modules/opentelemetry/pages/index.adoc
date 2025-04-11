@@ -37,15 +37,15 @@ dependencyManagement {
 
 === Dev Services
 
-Building on top of Spring Boot support for Testcontainers, Arconia provides zero-code dev services for a superior developer experience. When working with OpenTelemetry, you can use the Arconia OpenTelemetry Dev Service LGTM to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
+Building on top of Spring Boot support for Testcontainers, Arconia provides zero-code dev services for a superior developer experience. When working with OpenTelemetry, you can use the OpenTelemetry LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
 
-To enable the Arconia OpenTelemetry Dev Service LGTM, add the following dependencies to your project.
+To enable the OpenTelemetry LGTM Dev Service, add the following dependencies to your project.
 
 [source,groovy]
 ----
 dependencies {
-    testAndDevelopmentOnly 'io.arconia:arconia-dev-tools'
-	testAndDevelopmentOnly 'io.arconia:arconia-dev-services-opentelemetry-lgtm'
+    developmentOnly "org.springframework.boot:spring-boot-devtools"
+	testAndDevelopmentOnly "io.arconia:arconia-dev-services-opentelemetry-lgtm"
 }
 ----
 
@@ -58,7 +58,7 @@ Once you have added the dependencies, you can run your Spring Boot application u
 ./gradlew bootRun
 ----
 
-NOTE: Unlike the lower level Testcontainers support in Spring Boot, with Arconia you don't need special tasks to run your application with dev services (e.g. `./gradlew bootTestRun`).
+NOTE: Unlike the lower level Testcontainers support in Spring Boot, with Arconia you don't need special tasks to run your application with Dev Services (e.g. `./gradlew bootTestRun`).
 
 The application logs will show you the URL where you can access the Grafana observability platform.
 
@@ -67,7 +67,7 @@ The application logs will show you the URL where you can access the Grafana obse
 ...o.t.grafana.LgtmStackContainer: Access to the Grafana dashboard: http://localhost:38125
 ----
 
-NOTE: Learn more about the Arconia OpenTelemetry Dev Service LGTM in the xref:dev-services.adoc[Dev Services] section.
+NOTE: Learn more about the OpenTelemetry LGTM Dev Service in the xref:dev-services.adoc[Dev Services] section.
 
 == Configuring Observability
 
