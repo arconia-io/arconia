@@ -1,22 +1,22 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {
-    implementation project(':arconia-multitenancy:arconia-multitenancy-core')
+    implementation project(":arconia-multitenancy:arconia-multitenancy-core")
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'jakarta.servlet:jakarta.servlet-api'
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "jakarta.servlet:jakarta.servlet-api"
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    implementation 'org.slf4j:slf4j-api'
+    implementation "org.slf4j:slf4j-api"
 
-    implementation 'org.springframework:spring-context'
-    implementation 'org.springframework:spring-web'
+    implementation "org.springframework:spring-context"
+    implementation "org.springframework:spring-web"
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 publishing {

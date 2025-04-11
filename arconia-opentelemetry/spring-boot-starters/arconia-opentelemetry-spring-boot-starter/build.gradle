@@ -1,11 +1,12 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {
+    api project(":arconia-core:spring-boot-starters:arconia-spring-boot-starter")
     api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure")
 
@@ -14,24 +15,24 @@ dependencies {
     api "io.opentelemetry:opentelemetry-sdk"
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
     api("io.opentelemetry:opentelemetry-exporter-otlp") {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
+        exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
     api "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
 
     api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
     api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
     api("io.opentelemetry.instrumentation:opentelemetry-resources") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 
     api "io.micrometer:micrometer-java21"
     api("io.micrometer:micrometer-tracing-bridge-otel") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 
     implementation "org.springframework.boot:spring-boot-starter"

@@ -1,35 +1,35 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {
-    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
+    implementation project(":arconia-core:arconia-core")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
-    optional project(':arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure')
+    optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
 
     optional "io.opentelemetry:opentelemetry-sdk"
     optional "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
     optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
     optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
     optional("io.opentelemetry.instrumentation:opentelemetry-resources") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 
-    optional 'org.springframework.boot:spring-boot-starter-actuator'
+    optional "org.springframework.boot:spring-boot-starter-actuator"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }

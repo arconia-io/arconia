@@ -1,8 +1,8 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 configurations {
@@ -12,25 +12,25 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
 
-    optional project(':arconia-multitenancy:arconia-multitenancy-core')
-    optional project(':arconia-multitenancy:arconia-multitenancy-web')
+    optional project(":arconia-multitenancy:arconia-multitenancy-core")
+    optional project(":arconia-multitenancy:arconia-multitenancy-web")
 
-    optional 'jakarta.servlet:jakarta.servlet-api'
+    optional "jakarta.servlet:jakarta.servlet-api"
 
-    optional 'org.springframework:spring-context'
-    optional 'org.springframework:spring-webmvc'
+    optional "org.springframework:spring-context"
+    optional "org.springframework:spring-webmvc"
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-tasks.named('compileJava') {
-    inputs.files(tasks.named('processResources'))
+tasks.named("compileJava") {
+    inputs.files(tasks.named("processResources"))
 }
 
 publishing {

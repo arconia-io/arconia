@@ -1,8 +1,8 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {

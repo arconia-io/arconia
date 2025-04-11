@@ -1,29 +1,29 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {
-    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
+    implementation project(":arconia-core:arconia-core")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
     // OpenTelemetry
     optional "io.opentelemetry:opentelemetry-sdk"
     optional("io.opentelemetry:opentelemetry-exporter-otlp") {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
+        exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
     optional "io.opentelemetry:opentelemetry-exporter-logging"
     optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
     // Spring/Micrometer
     optional ("io.micrometer:micrometer-tracing-bridge-otel") {
-        exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-incubator'
+        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
@@ -50,6 +50,6 @@ publishing {
     }
 }
 
-tasks.named('compileJava') {
-    inputs.files(tasks.named('processResources'))
+tasks.named("compileJava") {
+    inputs.files(tasks.named("processResources"))
 }

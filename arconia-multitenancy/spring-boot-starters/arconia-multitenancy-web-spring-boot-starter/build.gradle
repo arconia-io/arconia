@@ -1,17 +1,18 @@
 plugins {
-    id 'code-quality-conventions'
-    id 'java-conventions'
-    id 'sbom-conventions'
-    id 'release-conventions'
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
+    api project(":arconia-core:spring-boot-starters:arconia-spring-boot-starter")
+    api project(":arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure")
 
-    api project(':arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure')
+    api project(":arconia-multitenancy:arconia-multitenancy-core")
+    api project(":arconia-multitenancy:arconia-multitenancy-web")
 
-    api project(':arconia-multitenancy:arconia-multitenancy-core')
-    api project(':arconia-multitenancy:arconia-multitenancy-web')
+    implementation "org.springframework.boot:spring-boot-starter"
 }
 
 publishing {
