@@ -7,9 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
-import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
-import org.springframework.boot.env.EnvironmentPostProcessorApplicationListener;
-import org.springframework.context.ApplicationListener;
+import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
@@ -20,17 +18,15 @@ import org.springframework.util.StringUtils;
 /**
  * Configures development and test profiles.
  */
-public class ProfilesApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
+public class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfilesApplicationListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProfilesEnvironmentPostProcessor.class);
 
     @Override
     @SuppressWarnings("unchecked")
-    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
-        Assert.notNull(event, "event cannot be null");
-
-        ConfigurableEnvironment environment = event.getEnvironment();
-        SpringApplication application = event.getSpringApplication();
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        Assert.notNull(environment, "environment cannot be null");
+        Assert.notNull(application, "application cannot be null");
 
         Boolean profilesEnabled = environment.getProperty("arconia.dev.profiles.enabled", Boolean.class, true);
         if (!profilesEnabled) {
@@ -66,7 +62,7 @@ public class ProfilesApplicationListener implements ApplicationListener<Applicat
 
     @Override
     public int getOrder() {
-        return EnvironmentPostProcessorApplicationListener.DEFAULT_ORDER + 10;
+        return ConfigDataEnvironmentPostProcessor.ORDER + 5;
     }
 
 }
