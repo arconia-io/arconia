@@ -11,7 +11,7 @@ emphasizing developer experience and cloud native architectures.
 
 > [!NOTE]
 > The Arconia Framework is currently in active development. We're working hard to improve it and appreciate your patience
-> as we refine the tool. Feel free to try it out and share your feedback!
+> as we refine the tool. Feel free to try it out and share your feedback! Thank you!
 
 ## ⚙️&nbsp; Requirements
 
