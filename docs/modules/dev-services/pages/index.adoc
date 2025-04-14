@@ -17,6 +17,8 @@ Arconia Dev Services are also transparent to the developer, meaning that you don
 
 Your integration tests will also automatically use the Arconia Dev Services without any additional configuration.
 
+TIP: For an even better developer experience, you can use the Arconia CLI to run your application in development mode with the Dev Services enabled (`arconia dev`). Check out the https://arconia.io/docs/arconia-cli/latest/development/dev/[xref:cli.adoc][CLI documentation] for more information.
+
 == Services
 
 * xref:ollama.adoc[Ollama]

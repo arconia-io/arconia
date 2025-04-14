@@ -1,4 +1,5 @@
 * xref:index.adoc[Introduction]
-* xref:compatibility.adoc[Compatibility]
+* xref:system-requirements.adoc[System Requirements]
+* xref:upgrading-arconia.adoc[Upgrading Arconia]
 * xref:core-features/index.adoc[Core Features]
 ** xref:core-features/profiles.adoc[Profiles]

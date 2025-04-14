@@ -1,4 +1,4 @@
-= Compatibility
+= System Requirements
 
 This page describes the compatibility requirements for Arconia.
 

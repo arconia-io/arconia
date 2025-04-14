@@ -1,0 +1,18 @@
+= Upgrade
+
+Arconia is currently in active development. We're working hard to improve it and appreciate your patience as we continue to refine the tool.
+
+We're moving fast, and the APIs may change frequently, but we're committed to keeping the documentation up to date and make it easy to upgrade to the latest version.
+
+In fact, we built a tool to help you upgrade your project to the latest version of Arconia automatically: the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI].
+
+Check out the https://arconia.io/docs/arconia-cli/latest/installation/[xref:cli.adoc][CLI documentation] for instructions on how to install it.
+
+Then, run the following command to upgrade your project to the latest version of Arconia:
+
+[source,shell]
+----
+arconia update framework
+----
+
+Under the hood, the Arconia CLI is using https://docs.openrewrite.org[OpenRewrite] to automate the upgrade process in a determinist and predictable way.
