@@ -40,6 +40,7 @@ public class OllamaDevServicesAutoConfiguration {
         OllamaContainer ollamaContainer(OllamaDevServicesProperties properties) {
             return new OllamaContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withReuse(properties.isReusable());
         }
 
@@ -55,6 +56,7 @@ public class OllamaDevServicesAutoConfiguration {
         OllamaContainer ollamaContainerNoRestartScope(OllamaDevServicesProperties properties) {
             return new OllamaContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withReuse(properties.isReusable());
         }
 

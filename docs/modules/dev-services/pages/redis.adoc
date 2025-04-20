@@ -54,6 +54,8 @@ arconia:
       redis:
         community:
           image-name: redis
+          environment:
+            REDIS_PASSWORD: redis
           reusable: false
 ----
 
@@ -67,6 +69,8 @@ arconia:
       redis:
         stack:
           image-name: redis/redis-stack-server
+          environment:
+            REDIS_PASSWORD: redis
           reusable: false
 ----
 

@@ -46,13 +46,15 @@ class LgtmDevServicesAutoConfigurationTests {
     void lgtmContainerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.lgtm.image-name=grafana/otel-lgtm:0.9.1",
+                "arconia.dev.services.lgtm.image-name=docker.io/grafana/otel-lgtm",
+                "arconia.dev.services.lgtm.environment.ENABLE_LOGS_ALL=true",
                 "arconia.dev.services.lgtm.reusable=false"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(LgtmStackContainer.class);
                 LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm:0.9.1");
+                assertThat(container.getDockerImageName()).contains("docker.io/grafana/otel-lgtm");
+                assertThat(container.getEnv()).contains("ENABLE_LOGS_ALL=true");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }

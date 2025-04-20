@@ -53,5 +53,7 @@ arconia:
     services:
       ollama:
         image-name: ollama/ollama
+        environment:
+          OLLAMA_NUM_PARALLEL: "4"
         reusable: true
 ----

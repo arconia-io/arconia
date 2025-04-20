@@ -52,6 +52,8 @@ arconia:
     services:
       postgresql:
         enabled: false
+        environment:
+          POSTGRES_USER: postgres
 ----
 
 TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.

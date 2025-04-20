@@ -40,6 +40,7 @@ public class PostgresqlDevServicesAutoConfiguration {
         PostgreSQLContainer<?> postgresqlContainer(PostgresqlDevServicesProperties properties) {
             return new PostgreSQLContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withReuse(properties.isReusable());
         }
 
@@ -55,6 +56,7 @@ public class PostgresqlDevServicesAutoConfiguration {
         PostgreSQLContainer<?> postgresqlContainerNoRestartScope(PostgresqlDevServicesProperties properties) {
             return new PostgreSQLContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withReuse(properties.isReusable());
         }
 

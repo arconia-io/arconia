@@ -2,6 +2,8 @@ package io.arconia.dev.services.postgresql;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -21,6 +23,7 @@ class PostgresqlDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).isEqualTo("postgres:17.4-alpine");
+        assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.isReusable()).isFalse();
     }
 
@@ -30,10 +33,12 @@ class PostgresqlDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("postgres:latest");
+        properties.setEnvironment(Map.of("KEY", "value"));
         properties.setReusable(false);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("postgres:latest");
+        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.isReusable()).isFalse();
     }
 

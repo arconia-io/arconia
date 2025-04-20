@@ -2,6 +2,9 @@ package io.arconia.dev.services.redis;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Properties for the Redis Dev Services.
  */
@@ -59,6 +62,11 @@ public class RedisDevServicesProperties {
         private String imageName = "redis:7.4-alpine";
 
         /**
+         * Environment variables to set in the container.
+         */
+        private Map<String,String> environment = new HashMap<>();
+
+        /**
          * Whether the container used in the dev service is reusable across applications.
          */
         private boolean reusable = false;
@@ -69,6 +77,14 @@ public class RedisDevServicesProperties {
 
         public void setImageName(String imageName) {
             this.imageName = imageName;
+        }
+
+        public Map<String, String> getEnvironment() {
+            return environment;
+        }
+
+        public void setEnvironment(Map<String, String> environment) {
+            this.environment = environment;
         }
 
         public boolean isReusable() {
@@ -92,6 +108,11 @@ public class RedisDevServicesProperties {
         private String imageName = "redis/redis-stack-server:7.4.0-v3";
 
         /**
+         * Environment variables to set in the container.
+         */
+        private Map<String,String> environment = new HashMap<>();
+
+        /**
          * Whether the container used in the dev service is reusable across applications.
          */
         private boolean reusable = false;
@@ -102,6 +123,14 @@ public class RedisDevServicesProperties {
 
         public void setImageName(String imageName) {
             this.imageName = imageName;
+        }
+
+        public Map<String, String> getEnvironment() {
+            return environment;
+        }
+
+        public void setEnvironment(Map<String, String> environment) {
+            this.environment = environment;
         }
 
         public boolean isReusable() {

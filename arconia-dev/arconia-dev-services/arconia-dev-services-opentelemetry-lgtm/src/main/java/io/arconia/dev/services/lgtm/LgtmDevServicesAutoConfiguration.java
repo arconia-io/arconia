@@ -44,6 +44,7 @@ public class LgtmDevServicesAutoConfiguration {
         LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withStartupTimeout(Duration.ofMinutes(2))
                     .withReuse(properties.isReusable());
         }
@@ -60,6 +61,7 @@ public class LgtmDevServicesAutoConfiguration {
         LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServicesProperties properties) {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withEnv(properties.getEnvironment())
                     .withStartupTimeout(Duration.ofMinutes(2))
                     .withReuse(properties.isReusable());
         }

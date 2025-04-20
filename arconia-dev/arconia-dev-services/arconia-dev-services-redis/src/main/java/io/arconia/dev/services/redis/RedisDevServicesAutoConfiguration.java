@@ -46,6 +46,7 @@ public class RedisDevServicesAutoConfiguration {
             RedisContainer redisContainer(RedisDevServicesProperties properties) {
                 return new RedisContainer(DockerImageName.parse(properties.getCommunity().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                        .withEnv(properties.getCommunity().getEnvironment())
                         .withReuse(properties.getCommunity().isReusable());
             }
 
@@ -61,6 +62,7 @@ public class RedisDevServicesAutoConfiguration {
             RedisContainer postgresqlContainerNoRestartScope(RedisDevServicesProperties properties) {
                 return new RedisContainer(DockerImageName.parse(properties.getCommunity().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                        .withEnv(properties.getCommunity().getEnvironment())
                         .withReuse(properties.getCommunity().isReusable());
             }
 
@@ -85,6 +87,7 @@ public class RedisDevServicesAutoConfiguration {
             RedisStackContainer redisContainer(RedisDevServicesProperties properties) {
                 return new RedisStackContainer(DockerImageName.parse(properties.getStack().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                        .withEnv(properties.getStack().getEnvironment())
                         .withReuse(properties.getStack().isReusable());
             }
 
@@ -100,6 +103,7 @@ public class RedisDevServicesAutoConfiguration {
             RedisStackContainer postgresqlContainerNoRestartScope(RedisDevServicesProperties properties) {
                 return new RedisStackContainer(DockerImageName.parse(properties.getStack().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                        .withEnv(properties.getStack().getEnvironment())
                         .withReuse(properties.getStack().isReusable());
             }
 

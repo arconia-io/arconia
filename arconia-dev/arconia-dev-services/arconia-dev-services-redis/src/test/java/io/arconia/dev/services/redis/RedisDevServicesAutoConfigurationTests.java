@@ -33,7 +33,6 @@ class RedisDevServicesAutoConfigurationTests {
     @Test
     void redisCommunityContainerAvailableWithDefaultConfiguration() {
         contextRunner
-            .withPropertyValues("spring.devtools.restart.enabled=false")
             .run(context -> {
                 assertThat(context).hasSingleBean(RedisContainer.class);
                 RedisContainer container = context.getBean(RedisContainer.class);
@@ -46,14 +45,15 @@ class RedisDevServicesAutoConfigurationTests {
     void redisCommunityContainerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "spring.devtools.restart.enabled=false",
-                "arconia.dev.services.redis.community.image-name=redis:7.2-alpine",
+                "arconia.dev.services.redis.community.image-name=docker.io/redis",
+                "arconia.dev.services.redis.community.environment.REDIS_PASSWORD=redis",
                 "arconia.dev.services.redis.community.reusable=false"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RedisContainer.class);
                 RedisContainer container = context.getBean(RedisContainer.class);
-                assertThat(container.getDockerImageName()).contains("redis:7.2-alpine");
+                assertThat(container.getDockerImageName()).contains("docker.io/redis");
+                assertThat(container.getEnv()).contains("REDIS_PASSWORD=redis");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }
@@ -62,7 +62,6 @@ class RedisDevServicesAutoConfigurationTests {
     void redisStackContainerAvailableWithStackEdition() {
         contextRunner
             .withPropertyValues(
-                "spring.devtools.restart.enabled=false",
                 "arconia.dev.services.redis.edition=stack"
             )
             .run(context -> {
@@ -77,15 +76,16 @@ class RedisDevServicesAutoConfigurationTests {
     void redisStackContainerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "spring.devtools.restart.enabled=false",
                 "arconia.dev.services.redis.edition=stack",
-                "arconia.dev.services.redis.stack.image-name=redis/redis-stack-server:7.2.0-v0",
+                "arconia.dev.services.redis.stack.image-name=docker.io/redis/redis-stack-server",
+                "arconia.dev.services.redis.stack.environment.REDIS_PASSWORD=redis",
                 "arconia.dev.services.redis.stack.reusable=false"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RedisStackContainer.class);
                 RedisStackContainer container = context.getBean(RedisStackContainer.class);
-                assertThat(container.getDockerImageName()).contains("redis/redis-stack-server:7.2.0-v0");
+                assertThat(container.getDockerImageName()).contains("docker.io/redis/redis-stack-server");
+                assertThat(container.getEnv()).contains("REDIS_PASSWORD=redis");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }

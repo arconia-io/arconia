@@ -1,5 +1,7 @@
 package io.arconia.dev.services.core.config;
 
+import java.util.Map;
+
 /**
  * Base properties for dev services.
  */
@@ -19,5 +21,10 @@ public interface DevServicesProperties {
      * Whether the container used in the dev service is reusable across applications.
      */
     boolean isReusable();
+
+    /**
+     * Environment variables to set in the container.
+     */
+    Map<String,String> getEnvironment();
 
 }

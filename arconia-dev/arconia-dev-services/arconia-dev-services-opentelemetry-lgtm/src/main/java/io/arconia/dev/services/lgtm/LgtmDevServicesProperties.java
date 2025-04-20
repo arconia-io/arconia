@@ -4,6 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.core.config.DevServicesProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Properties for the OpenTelemetry LGTM Dev Services.
  */
@@ -21,6 +24,11 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
      * Full name of the container image used in the dev service.
      */
     private String imageName = "grafana/otel-lgtm:0.10.0";
+
+    /**
+     * Environment variables to set in the container.
+     */
+    private Map<String,String> environment = new HashMap<>();
 
     /**
      * Whether the container used in the dev service is reusable across applications.
@@ -43,6 +51,15 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    @Override
+    public Map<String, String> getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(Map<String, String> environment) {
+        this.environment = environment;
     }
 
     @Override
