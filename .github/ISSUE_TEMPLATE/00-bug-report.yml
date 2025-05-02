@@ -12,14 +12,14 @@ body:
       > For instance, if you were filing a bug report for the OpenTelemetry module, your title would be as follows:
       > `[OpenTelemetry]: Failure when exporting logs via gRPC`
       ---
-- type: "textarea"
+- type: "input"
   id: "java-version"
   attributes:
     label: "Java version"
     description: "The Java version used in your project."
   validations:
     required: true
-- type: "textarea"
+- type: "input"
   id: "arconia-version"
   attributes:
     label: "Arconia version"
@@ -54,17 +54,25 @@ body:
     description: "Additional information that will assist in solving the issue."
   validations:
     required: false
-- type: "textarea"
-  id: "metadata"
+- type: "input"
+  id: "build-tool"
   attributes:
-    label: "Project metadata"
-    description: "More information about your project and setup that can assis in solving the issue."
-    value: |
-      If relevant:
-      
-      * Build tool (e.g. Gradle, Maven):
-      * Container runtime (e.g. Podman, Docker):
-      * IDE (e.g. IntelliJ IDEA, Visual Studio Code):
+    label: "Build tool"
+    description: "Which build tool are you using? (e.g. Gradle, Maven)"
+  validations:
+    required: false
+- type: "input"
+  id: "ide"
+  attributes:
+    label: "IDE/Editor"
+    description: "Which IDE/Editor are you using? (e.g. IntelliJ IDEA, Visual Studio Code)"
+  validations:
+    required: false
+- type: "input"
+  id: "container-runtime"
+  attributes:
+    label: "Container runtime"
+    description: "Which container runtime are you using? (e.g. Podman, Docker)"
   validations:
     required: false
 - type: "checkboxes"
