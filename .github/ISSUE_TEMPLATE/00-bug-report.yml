@@ -1,0 +1,86 @@
+name: "Bug: Generic"
+description: "Create a bug report for a module."
+title: "[MODULE] BUG TITLE"
+labels: [bug, triage]
+body:
+- type: "markdown"
+  attributes:
+    value: |
+      Welcome to Arconia! Please replace the **`[MODULE] BUG TITLE`** template above with the correct module name and a short title summarizing what the bug entails.
+      
+      > [!TIP]
+      > For instance, if you were filing a bug report for the OpenTelemetry module, your title would be as follows:
+      > `[OpenTelemetry]: Failure when exporting logs via gRPC`
+      ---
+- type: "textarea"
+  id: "java-version"
+  attributes:
+    label: "Java version"
+    description: "The Java version used in your project."
+  validations:
+    required: true
+- type: "textarea"
+  id: "arconia-version"
+  attributes:
+    label: "Arconia version"
+    description: "The Arconia version used in your project."
+  validations:
+    required: true
+- type: "textarea"
+  id: "what-happened"
+  attributes:
+    label: "What happened"
+    description: "A small description of the issue."
+  validations:
+    required: true
+- type: "textarea"
+  id: "what-expected"
+  attributes:
+    label: "What did you expect"
+    description: "A description of what was expected."
+  validations:
+    required: true
+- type: "textarea"
+  id: "what-steps-taken"
+  attributes:
+    label: "What steps did you take"
+    description: "A clear and concise description steps that can be used to reproduce the problem."
+  validations:
+    required: true
+- type: "textarea"
+  id: "additional-context"
+  attributes:
+    label: "Anything else you would like to add"
+    description: "Additional information that will assist in solving the issue."
+  validations:
+    required: false
+- type: "textarea"
+  id: "metadata"
+  attributes:
+    label: "Project metadata"
+    description: "More information about your project and setup that can assis in solving the issue."
+    value: |
+      If relevant:
+      
+      * Build tool (e.g. Gradle, Maven):
+      * Container runtime (e.g. Podman, Docker):
+      * IDE (e.g. IntelliJ IDEA, Visual Studio Code):
+      ---
+  validations:
+    required: false
+- type: "checkboxes"
+  id: "sanity-check"
+  attributes:
+    label: "I assert that this issue is relevant for Arconia"
+    options:
+      - label: "I assert that this is a bug and not a support request. If you need assistance, please use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions)."
+        required: true
+      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
+        required: true
+      - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
+        required: true
+- type: "markdown"
+  attributes:
+    value: |
+      Thank you for helping improve Arconia!
+      ---

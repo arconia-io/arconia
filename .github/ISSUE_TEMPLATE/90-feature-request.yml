@@ -1,0 +1,51 @@
+name: "Feature Request: Generic"
+description: "Create a feature request for a module."
+title: "[MODULE] FEATURE TITLE"
+labels: [enhancement, triage]
+body:
+- type: "markdown"
+  attributes:
+    value: |
+      Welcome to Arconia! Please replace the **`[MODULE] FEATURE TITLE`** template above with the correct module name and a short title summarizing what the feature entails.
+      
+      > [!TIP]
+      > For instance, if you were filing a feature request for the MultiTenancy module, your title would be as follows:
+      > `[MultiTenancy]: Multitenancy support for Spring Data Relational`
+      ---
+- type: "textarea"
+  id: "what-happened"
+  attributes:
+    label: "Describe the problem/challenge you have"
+    description: "A description of the current challenge that you are experiencing."
+  validations:
+    required: true
+- type: "textarea"
+  id: "what-expected"
+  attributes:
+    label: "Describe the solution you'd like"
+    description: "A clear and concise description of what you want to happen. If applicable, include a visual representation."
+  validations:
+    required: true
+- type: "textarea"
+  id: "additional-context"
+  attributes:
+    label: "Anything else you would like to add"
+    description: "Additional information that will assist in handling the issue."
+  validations:
+    required: false
+- type: "checkboxes"
+  id: "sanity-check"
+  attributes:
+    label: "I assert that this issue is relevant for Arconia"
+    options:
+      - label: "I assert that this is a feature request and not a support request. If you need assistance, please use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions)."
+        required: true
+      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
+        required: true
+      - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
+        required: true
+- type: "markdown"
+  attributes:
+    value: |
+      Thank you for helping improve Arconia!
+      ---

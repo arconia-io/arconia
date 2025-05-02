@@ -1,54 +1,52 @@
----
 name: "Request: Dev Service"
 description: "Create a request for a new Dev Service."
-title: "Dev Service Request: DEV_SERVICE_NAME"
-labels: enhancement, triage
+title: "[Dev Service]: Add NAME"
+labels: [enhancement, triage]
 body:
 - type: "markdown"
   attributes:
-  value: |
-      Welcome to Arconia! Please replace the **`Dev Service Request: DEV_SERVICE_NAME`** template above with the correct Dev Service name.
+    value: |
+      Welcome to Arconia! Please replace the **`[Dev Service]: Add NAME`** template above with the correct Dev Service name.
 
       > [!TIP]
       > For instance, if you were filing a request for a PostgreSQL Dev Service, your title would be as follows:
-      > `Dev Service Request: PostgreSQL`
+      > `[Dev Service]: Add PostgreSQL`
       ---
 - type: "dropdown"
   id: "spring-boot-support"
   attributes:
-  label: "Spring Boot support"
-  description: |
-    Does Spring Boot provide integration with the service you are requesting?
-
-    > [!NOTE]
-    > Arconia Dev Services are designed to be used with Spring Boot. If the service you are requesting is not supported by Spring Boot, it may not be possible to create a Dev Service for it.
-    ---
-  options:
-  - "Yes"
-  - "No"
+    label: "Spring Boot support"
+    description: |
+      Does Spring Boot provide integration with the service you are requesting?
+  
+      > [!NOTE]
+      > Arconia Dev Services are designed to be used with Spring Boot. If the service you are requesting is not supported by Spring Boot, it may not be possible to create a Dev Service for it.
+      ---
+    options:
+    - "Yes"
+    - "No"
   validations:
-  required: true
+    required: true
 - type: "textarea"
   id: "additional-context"
   attributes:
-  label: "Additional context"
-  description: "Add any other context about the proposed Dev Service here."
+    label: "Additional context"
+    description: "Add any other context about the proposed Dev Service here."
   validations:
-  required: false
+    required: false
 - type: "checkboxes"
   id: "sanity-check"
   attributes:
-  label: "I assert that this issue is relevant for Arconia"
-  options:
-  - label: "I assert that this Dev Service does not yet exist in an [open pull request](https://github.com/arconia-io/arconia/pulls)."
-  required: true
-  - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
-  required: true
-  - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
-  required: true
+    label: "I assert that this issue is relevant for Arconia"
+    options:
+      - label: "I assert that this Dev Service does not yet exist in an [open pull request](https://github.com/arconia-io/arconia/pulls)."
+        required: true
+      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
+        required: true
+      - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
+        required: true
 - type: "markdown"
   attributes:
-  value: |
+    value: |
       Thank you for helping improve Arconia!
       ---
----
