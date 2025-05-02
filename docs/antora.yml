@@ -7,7 +7,6 @@ title: Arconia Framework
 nav:
   - modules/ROOT/nav.adoc
   - modules/dev-services/nav.adoc
-  - modules/dev-tools/nav.adoc
   - modules/kubernetes/nav.adoc
   - modules/opentelemetry/nav.adoc
   - modules/examples/nav.adoc

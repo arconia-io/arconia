@@ -57,7 +57,7 @@ WARNING: If you customized the OpenTelemetry SDK Autoconfigure module via code, 
 
 == Dev Service
 
-The OpenTelemetry Spring Boot Starter doesn't support dev services. Learn more about the Arconia OpenTelemetry Dev Services for OpenTelemetry in the xref:dev-services.adoc[Dev Services] section.
+The OpenTelemetry Spring Boot Starter doesn't support dev services. Learn more about the xref:dev-services:lgtm.adoc[Arconia OpenTelemetry LGTM Dev Service] in the dedicated section.
 
 == Appendix: Property Mappings
 

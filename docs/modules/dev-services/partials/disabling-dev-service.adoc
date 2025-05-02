@@ -1,0 +1,14 @@
+If you want to disable the Dev Service, you can do so via configuration properties.
+
+[source,yaml,subs="attributes"]
+----
+arconia:
+  dev:
+    services:
+      {service-name}:
+        enabled: false
+----
+
+You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:ROOT:core-features/profiles.adoc[Profiles]).
+
+TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.

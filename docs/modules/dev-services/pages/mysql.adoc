@@ -1,31 +1,15 @@
 = MySQL Dev Service
+:service-name: mysql
 
 When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the MySQL Dev Service to automatically start a MySQL database. This enables you to develop and test your application without having to manually start and manage a database server.
 
 == Dependencies
 
-First, you need to add the MySQL Dev Service dependency to your project. You can also include the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] dependency to enable live reload of your application during development.
-
-[source,groovy]
-----
-dependencies {
-  developmentOnly "org.springframework.boot:spring-boot-devtools"
-  testAndDevelopmentOnly "io.arconia:arconia-dev-services-mysql"
-}
-----
-
-NOTE: When you use the Spring Boot DevTools in your project, Arconia will keep the Dev Services running while you make changes to your code instead of restarting them with the application. This allows you to see the changes in real-time without having to restart the Dev Services.
+include::partial$dependencies.adoc[]
 
 == Running the Application
 
-Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply run your application using the usual tasks provided by the Spring Boot plugins for Gradle or Maven.
-
-* Gradle: `./gradlew bootRun`
-* Maven: `./mvnw spring-boot:run`
-
-The Dev Service will automatically start when you run your application.
-
-Your integration tests will automatically use the Dev Services without any additional configuration.
+include::partial$running-application.adoc[]
 
 == Customizing the Dev Service
 
@@ -39,23 +23,10 @@ arconia:
       mysql:
         image-name: mysql:9.3.0-oracle
         reusable: false
-----
-
-=== Disabling the Dev Service
-
-If you want to disable the Dev Service, you can do so via configuration properties.
-
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      mysql:
-        enabled: false
         environment:
           MYSQL_USER: test
 ----
 
-TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+== Disabling the Dev Service
 
-TIP: You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:../../ROOT/core-features/profiles.adoc[Profiles]).
+include::partial$disabling-dev-service.adoc[]

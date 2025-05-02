@@ -26,7 +26,7 @@ dependencies {
 
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia OpenTelemetry libraries. Whether not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
 
-[source,groovy,subs="attributes,regexp"]
+[source,groovy,subs="attributes"]
 ----
 dependencyManagement {
 	imports {
@@ -67,7 +67,7 @@ The application logs will show you the URL where you can access the Grafana obse
 ...o.t.grafana.LgtmStackContainer: Access to the Grafana dashboard: http://localhost:38125
 ----
 
-NOTE: Learn more about the OpenTelemetry LGTM Dev Service in the xref:dev-services.adoc[Dev Services] section.
+NOTE: Learn more about the xref:dev-services:lgtm.adoc[OpenTelemetry LGTM Dev Service] in the dedicated section.
 
 == Configuring Observability
 

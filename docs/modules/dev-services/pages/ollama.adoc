@@ -1,22 +1,13 @@
 = Ollama Dev Service
+:service-name: ollama
 
 When your application uses Spring AI to consume large language models from Ollama, you can use the Ollama Dev Service to start automatically an Ollama service. This enables you to develop and test your LLM-powered application without having to manually provide a model inference service.
 
 == Dependencies
 
-First, you need to add the Ollama Dev Service dependency to your project. You can also include the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] dependency to enable live reload of your application during development.
+include::partial$dependencies.adoc[]
 
-[source,groovy]
-----
-dependencies {
-  developmentOnly "org.springframework.boot:spring-boot-devtools"
-  testAndDevelopmentOnly "io.arconia:arconia-dev-services-ollama"
-}
-----
-
-NOTE: When you use the Spring Boot DevTools in your project, Arconia will keep the Dev Services running while you make changes to your code instead of restarting them with the application. This allows you to see the changes in real-time without having to restart the Dev Services.
-
-== Running the Application
+=== Enabling the Dev Service
 
 By default, the Ollama Dev Service is disabled since it might be resource-intensive, and running native Ollama might be more suitable for development. You can enable it globally or selectively for specific tests.
 
@@ -29,18 +20,13 @@ arconia:
         enabled: true
 ----
 
+You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:ROOT:core-features/profiles.adoc[Profiles]).
+
 TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.
 
-TIP: You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:../../ROOT/core-features/profiles.adoc[Profiles]).
+== Running the Application
 
-Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply run your application using the usual tasks provided by the Spring Boot plugins for Gradle or Maven.
-
-* Gradle: `./gradlew bootRun`
-* Maven: `./mvnw spring-boot:run`
-
-The Dev Service will automatically start when you run your application. By default, the Dev Service will be reused across multiple applications, useful for reducing resource consumption, speeding up the startup time, and sharing large language models across multiple applications.
-
-Your integration tests will automatically use the Dev Services without any additional configuration.
+include::partial$running-application.adoc[]
 
 == Customizing the Dev Service
 
@@ -53,7 +39,7 @@ arconia:
     services:
       ollama:
         image-name: ollama/ollama
+        reusable: true
         environment:
           OLLAMA_NUM_PARALLEL: "4"
-        reusable: true
 ----

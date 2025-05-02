@@ -4,7 +4,8 @@
 * xref:metrics.adoc[Metrics]
 * xref:traces.adoc[Traces]
 * xref:instrumentation.adoc[Instrumentation]
-* xref:dev-services.adoc[Dev Services]
+* Dev Services
+** xref:dev-services:lgtm.adoc[Grafana LGTM]
 * xref:migration.adoc[Migration]
 ** xref:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]
 ** xref:migration/migration-spring-boot.adoc[Spring Boot Actuator OpenTelemetry/OTLP]

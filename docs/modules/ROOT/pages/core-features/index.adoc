@@ -15,7 +15,7 @@ dependencies {
 
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
 
-[source,groovy,subs="attributes,regexp"]
+[source,groovy,subs="attributes"]
 ----
 dependencyManagement {
 	imports {

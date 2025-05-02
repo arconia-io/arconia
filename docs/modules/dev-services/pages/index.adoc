@@ -2,7 +2,7 @@
 
 Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
 
-For example, if your application needs a database, you can use Arconia Dev Services for PostgreSQL to automatically start a PostgreSQL database when you run your application or integration tests. This eliminates the need to manually start and manage the database during development.
+For example, if your application needs a database, you can use PostgreSQL Dev Service to automatically start a PostgreSQL database when you run your application or integration tests. This eliminates the need to manually start and manage the database during development.
 
 == How They Work
 
@@ -10,19 +10,38 @@ For each supported service, Arconia provides a dedicated module that you can inc
 
 You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
 
-Arconia Dev Services are also transparent to the developer, meaning that you don't need to change your development workflow to use them. Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`). You can simply run your application using the usual tasks provided by the Spring Boot plugins for Gradle or Maven.
+Arconia Dev Services are also transparent to the developer, meaning that you don't need to change your development workflow to use them. Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers. Instead, it lets you run your application via the usual tasks provided by the Spring Boot plugins for Gradle or Maven, or using the https://arconia.io/docs/arconia-cli/latest/development/dev[Arconia CLI].
 
-* Gradle: `./gradlew bootRun`
-* Maven: `./mvnw spring-boot:run`
+[tabs]
+======
+CLI::
++
+[source,shell]
+----
+arconia dev
+----
+
+Gradle::
++
+[source,shell]
+----
+./gradlew bootRun
+----
+
+Maven::
++
+[source, shell]
+----
+./mvnw spring-boot:run
+----
+======
 
 Your integration tests will also automatically use the Arconia Dev Services without any additional configuration.
 
-TIP: For an even better developer experience, you can use the Arconia CLI to run your application in development mode with the Dev Services enabled (`arconia dev`). Check out the https://arconia.io/docs/arconia-cli/latest/development/dev/[CLI documentation] for more information.
-
 == Services
 
-* xref:ollama.adoc[Ollama]
-* xref:opentelemetry:dev-services.adoc[OpenTelemetry]
-* xref:postgresql.adoc[PostgreSQL]
+* xref:lgtm.adoc[Grafana LGTM]
 * xref:mysql.adoc[MySQL]
+* xref:ollama.adoc[Ollama]
+* xref:postgresql.adoc[PostgreSQL]
 * xref:redis.adoc[Redis]

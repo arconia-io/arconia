@@ -1,0 +1,29 @@
+When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
+
+[tabs]
+======
+CLI::
++
+[source,shell]
+----
+arconia dev
+----
+
+Gradle::
++
+[source,shell]
+----
+./gradlew bootRun
+----
+
+Maven::
++
+[source, shell]
+----
+./mvnw spring-boot:run
+----
+======
+
+NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
+
+Your integration tests will automatically use the Dev Services without any additional configuration.
