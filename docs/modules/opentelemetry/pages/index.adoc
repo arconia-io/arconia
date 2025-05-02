@@ -37,28 +37,26 @@ dependencyManagement {
 
 === Dev Services
 
-Building on top of Spring Boot support for Testcontainers, Arconia provides zero-code dev services for a superior developer experience. When working with OpenTelemetry, you can use the OpenTelemetry LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
+Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
 
-To enable the OpenTelemetry LGTM Dev Service, add the following dependencies to your project.
+When working with OpenTelemetry, you can use the Grafana LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
+
+To enable the Grafana LGTM Dev Service, add the following dependency to your project.
 
 [source,groovy]
 ----
 dependencies {
-    developmentOnly "org.springframework.boot:spring-boot-devtools"
-	testAndDevelopmentOnly "io.arconia:arconia-dev-services-opentelemetry-lgtm"
+	testAndDevelopmentOnly "io.arconia:arconia-dev-services-lgtm"
 }
 ----
 
 === Running the Application
 
-Once you have added the dependencies, you can run your Spring Boot application using the usual tasks provided by the Spring Boot plugins for Gradle or Maven.
+When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
 
-[source,shell]
-----
-./gradlew bootRun
-----
+include::ROOT:partial$app-run.adoc[]
 
-NOTE: Unlike the lower level Testcontainers support in Spring Boot, with Arconia you don't need special tasks to run your application with Dev Services (e.g. `./gradlew bootTestRun`).
+NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
 
 The application logs will show you the URL where you can access the Grafana observability platform.
 
@@ -67,7 +65,7 @@ The application logs will show you the URL where you can access the Grafana obse
 ...o.t.grafana.LgtmStackContainer: Access to the Grafana dashboard: http://localhost:38125
 ----
 
-NOTE: Learn more about the xref:dev-services:lgtm.adoc[OpenTelemetry LGTM Dev Service] in the dedicated section.
+NOTE: Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service] in the dedicated section.
 
 == Configuring Observability
 

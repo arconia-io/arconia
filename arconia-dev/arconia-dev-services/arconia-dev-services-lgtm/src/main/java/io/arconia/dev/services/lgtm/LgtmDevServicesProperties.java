@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Properties for the OpenTelemetry LGTM Dev Services.
+ * Properties for the Grafana LGTM Dev Services.
  */
 @ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
 public class LgtmDevServicesProperties implements DevServicesProperties {

@@ -27,8 +27,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Services OpenTelemetry LGTM"
-                description = "Arconia Dev Services OpenTelemetry LGTM."
+                name = "Arconia Dev Services Grafana LGTM"
+                description = "Arconia Dev Services Grafana LGTM."
             }
         }
     }

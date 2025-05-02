@@ -1,5 +1,5 @@
 = Grafana LGTM
-:service-name: opentelemetry-lgtm
+:service-name: lgtm
 
 When your application uses OpenTelemetry for observability, you can use the OpenTelemetry LGTM Dev Service to start automatically a Grafana observability platform based on OpenTelemetry. This enables you to visualize and explore your application's telemetry data during development and testing.
 
@@ -45,5 +45,4 @@ arconia:
 
 == Disabling the Dev Service
 
-:service-name: lgtm
 include::partial$disabling-dev-service.adoc[]

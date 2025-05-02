@@ -17,9 +17,9 @@ include 'arconia-dev:arconia-dev-tools'
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-connections'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-lgtm'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-mysql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-opentelemetry-lgtm'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
 

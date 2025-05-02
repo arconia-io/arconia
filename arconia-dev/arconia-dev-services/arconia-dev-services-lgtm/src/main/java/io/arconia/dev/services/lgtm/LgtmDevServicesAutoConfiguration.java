@@ -22,7 +22,7 @@ import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.Configurati
 import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
 
 /**
- * Auto-configuration for OpenTelemetry LGTM Dev Services.
+ * Auto-configuration for Grafana LGTM Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry

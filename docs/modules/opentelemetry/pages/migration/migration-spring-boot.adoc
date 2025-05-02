@@ -61,14 +61,14 @@ WARNING: If you customized the Micrometer OTLP exporter via code, that same code
 
 == Dev Service
 
-If you're using the Grafana LGTM Testcontainers support in Spring Boot to run a full Grafana observability platform based on OpenTelemetry at development and test time, you can migrate that to the more powerful Arconia OpenTelemetry Dev Service LGTM.
+If you're using the Grafana LGTM Testcontainers support in Spring Boot to run a full Grafana observability platform based on OpenTelemetry at development and test time, you can migrate that to the more powerful Arconia Grafana LGTM Dev Service.
 
-First, include the Arconia OpenTelemetry Dev Service LGTM dependency to your project.
+First, include the Arconia Grafana LGTM Dev Service dependency to your project.
 
 [source,groovy,subs="attributes"]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-service-opentelemetry-lgtm'
+  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-lgtm'
 }
 ----
 
