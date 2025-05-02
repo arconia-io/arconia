@@ -19,9 +19,8 @@ body:
     description: |
       Does Spring Boot provide integration with the service you are requesting?
   
-      > [!NOTE]
+      > [!TIP]
       > Arconia Dev Services are designed to be used with Spring Boot. If the service you are requesting is not supported by Spring Boot, it may not be possible to create a Dev Service for it.
-      ---
     options:
     - "Yes"
     - "No"

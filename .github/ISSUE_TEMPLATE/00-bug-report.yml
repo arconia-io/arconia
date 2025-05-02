@@ -65,7 +65,6 @@ body:
       * Build tool (e.g. Gradle, Maven):
       * Container runtime (e.g. Podman, Docker):
       * IDE (e.g. IntelliJ IDEA, Visual Studio Code):
-      ---
   validations:
     required: false
 - type: "checkboxes"
