@@ -2,4 +2,5 @@
 * xref:ollama.adoc[Ollama]
 * xref:opentelemetry:dev-services.adoc[OpenTelemetry]
 * xref:postgresql.adoc[PostgreSQL]
+* xref:mysql.adoc[MySQL]
 * xref:redis.adoc[Redis]
