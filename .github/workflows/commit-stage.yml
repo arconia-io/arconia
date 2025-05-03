@@ -5,11 +5,14 @@ on:
       - main
     paths-ignore:
       - '.editorconfig'
+      - '.gitattributes'
       - '.gitignore'
       - '.sdkmanrc'
       - '*.adoc'
       - '*.png'
       - '*.md'
+      - '*.txt'
+      - 'catalog-info.yaml'
       - 'docs/**'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/*.md'
@@ -18,18 +21,6 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - '.editorconfig'
-      - '.gitignore'
-      - '.sdkmanrc'
-      - '*.adoc'
-      - '*.png'
-      - '*.md'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/*.md'
-      - '.github/*.yml'
-      - '.github/*.yaml'
 
 permissions:
   contents: read
