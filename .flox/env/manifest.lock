@@ -1,0 +1,267 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "version": 1,
+    "install": {
+      "httpie": {
+        "pkg-path": "httpie"
+      },
+      "jbang": {
+        "pkg-path": "jbang"
+      }
+    },
+    "vars": {
+      "FLOX_DISABLE_METRICS": "true"
+    },
+    "hook": {
+      "on-activate": "  eval $(jbang jdk env 24)\n"
+    },
+    "profile": {},
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "aarch64-linux",
+        "x86_64-darwin",
+        "x86_64-linux"
+      ]
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "httpie",
+      "broken": false,
+      "derivation": "/nix/store/5nbs5n5kyfsq3c4yry5rhf7fasw6czqg-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:19:31.593224Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.2.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/n8yfbyikd4hnd0f0xkqsnvikxy7mrvj1-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/ns2krspnj9618mpizk4jamgiwdccrj5d-python3.12-httpie-3.2.4"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "httpie",
+      "broken": false,
+      "derivation": "/nix/store/c18jz3xz62h9zv5wqy2iz9992wyzv7pj-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:37:48.193150Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.2.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/9mrnc2mfqpzkcnn7z9azwv0rblwg74wf-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/lpa7hvydfdr9yffizm3yjvllpdnkh74y-python3.12-httpie-3.2.4"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "httpie",
+      "broken": false,
+      "derivation": "/nix/store/40ym7xma2izhivrny5i0zysdc0dpbhsk-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:55:06.659102Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.2.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/s0vl58cxlh9xrk0z1f6xv9ax46z5dhpd-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/jlkdkscx6xrlhjgxl0psrkqcj1b053xh-python3.12-httpie-3.2.4"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "httpie",
+      "broken": false,
+      "derivation": "/nix/store/vflkw90myrx0mmwph558xqi0dck9sq6x-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T05:18:33.662698Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.2.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/c4r7g0rlb52mlvqxhag0w24brmc2p8fk-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/j9ya9sdqqvbcvila7fvmpzpkdsxgaa2m-python3.12-httpie-3.2.4"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jbang",
+      "broken": false,
+      "derivation": "/nix/store/f7mw9wgrrswbcab3rxji6f6biyjh939i-jbang-0.125.1.drv",
+      "description": "Run java as scripts anywhere",
+      "install_id": "jbang",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "jbang-0.125.1",
+      "pname": "jbang",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:19:31.760419Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.125.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/083m71qqayzz3jrh26y2z2i4avsz2x4f-jbang-0.125.1"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jbang",
+      "broken": false,
+      "derivation": "/nix/store/q58bf8ydxgm921wj53pz0h5qqb4c9f4m-jbang-0.125.1.drv",
+      "description": "Run java as scripts anywhere",
+      "install_id": "jbang",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "jbang-0.125.1",
+      "pname": "jbang",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:37:48.571730Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.125.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/3wjpyz87ig89n28q3p6rvj0v37xyq11c-jbang-0.125.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jbang",
+      "broken": false,
+      "derivation": "/nix/store/m5xay4dkdcvkbnki2c8x8m39a8ddyyyp-jbang-0.125.1.drv",
+      "description": "Run java as scripts anywhere",
+      "install_id": "jbang",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "jbang-0.125.1",
+      "pname": "jbang",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T04:55:06.827340Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.125.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/55h4ia8l476c2ka4w73vhhfyq135li5y-jbang-0.125.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jbang",
+      "broken": false,
+      "derivation": "/nix/store/cflgn2bil4c1jq31b0vb1dfjjcpaacxy-jbang-0.125.1.drv",
+      "description": "Run java as scripts anywhere",
+      "install_id": "jbang",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "name": "jbang-0.125.1",
+      "pname": "jbang",
+      "rev": "f02fddb8acef29a8b32f10a335d44828d7825b78",
+      "rev_count": 793008,
+      "rev_date": "2025-05-01T23:19:08Z",
+      "scrape_date": "2025-05-03T05:18:34.087370Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.125.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/d13gcq46ixnm0jwrndj7j8rmrsqnyxy3-jbang-0.125.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}
