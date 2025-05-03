@@ -1,6 +1,6 @@
 name: "Request: Dev Service"
 description: "Create a request for a new Dev Service."
-title: "[Dev Service]: Add NAME"
+title: "[Dev Service] Add NAME"
 labels: [enhancement, triage]
 body:
 - type: "markdown"
