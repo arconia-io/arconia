@@ -1,5 +1,0 @@
-= Examples
-:description: Demos and examples showcasing the features of the Arconia Framework.
-
-[.hero]
-Check out our https://github.com/arconia-io/arconia-examples[collection of examples and sample applications] showcasing the features of Arconia, a framework designed to build modern enterprise applications using Java and Spring Boot, emphasizing developer experience and cloud native architectures.
