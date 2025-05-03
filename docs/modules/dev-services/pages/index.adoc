@@ -40,8 +40,10 @@ Your integration tests will also automatically use the Arconia Dev Services with
 
 == Services
 
+* Databases
+** xref:mariadb.adoc[MariaDB]
+** xref:mysql.adoc[MySQL]
+** xref:postgresql.adoc[PostgreSQL]
+** xref:redis.adoc[Redis]
 * xref:lgtm.adoc[Grafana LGTM]
-* xref:mysql.adoc[MySQL]
 * xref:ollama.adoc[Ollama]
-* xref:postgresql.adoc[PostgreSQL]
-* xref:redis.adoc[Redis]
