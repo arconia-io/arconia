@@ -47,3 +47,4 @@ Your integration tests will also automatically use the Arconia Dev Services with
 ** xref:redis.adoc[Redis]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
+* xref:rabbitmq.adoc[RabbitMQ]

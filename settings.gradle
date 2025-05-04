@@ -22,6 +22,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-mariadb'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-mysql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
 
 // Kubernetes

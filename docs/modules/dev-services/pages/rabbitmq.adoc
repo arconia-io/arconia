@@ -1,0 +1,33 @@
+= RabbitMQ Dev Service
+:service-name: rabbitmq
+
+When your application needs a RabbitMQ message broker (such as when using Spring for RabbitMQ or Spring for RabbitMQ Streams), you can use the RabbitMQ Dev Service to automatically start a RabbitMQ instance. This enables you to develop and test your application without having to manually start and manage the RabbitMQ instance.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Customizing the Dev Service
+
+You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      rabbitmq:
+        image-name: rabbitmq:4.1.0-management
+        reusable: false
+        environment:
+          RABBITMQ_DEFAULT_USER: user
+          RABBITMQ_DEFAULT_PASS: secret
+----
+
+== Disabling the Dev Service
+
+include::partial$disabling-dev-service.adoc[]
