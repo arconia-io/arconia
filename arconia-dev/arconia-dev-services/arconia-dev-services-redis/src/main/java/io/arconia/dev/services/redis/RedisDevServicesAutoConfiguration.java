@@ -59,7 +59,7 @@ public class RedisDevServicesAutoConfiguration {
             @Bean
             @ServiceConnection
             @ConditionalOnMissingBean
-            RedisContainer postgresqlContainerNoRestartScope(RedisDevServicesProperties properties) {
+            RedisContainer redisContainerNoRestartScope(RedisDevServicesProperties properties) {
                 return new RedisContainer(DockerImageName.parse(properties.getCommunity().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                         .withEnv(properties.getCommunity().getEnvironment())
@@ -100,7 +100,7 @@ public class RedisDevServicesAutoConfiguration {
             @Bean
             @ServiceConnection
             @ConditionalOnMissingBean
-            RedisStackContainer postgresqlContainerNoRestartScope(RedisDevServicesProperties properties) {
+            RedisStackContainer redisContainerNoRestartScope(RedisDevServicesProperties properties) {
                 return new RedisStackContainer(DockerImageName.parse(properties.getStack().getImageName())
                         .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                         .withEnv(properties.getStack().getEnvironment())
