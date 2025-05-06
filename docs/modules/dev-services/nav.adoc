@@ -6,3 +6,4 @@
 ** xref:redis.adoc[Redis]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
+* xref:rabbitmq.adoc[RabbitMQ]
