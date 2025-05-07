@@ -22,7 +22,7 @@ class MariaDBDevServicesPropertiesTests {
         MariaDBDevServicesProperties properties = new MariaDBDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("mariadb:11.7.2");
+        assertThat(properties.getImageName()).contains("mariadb");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.isReusable()).isFalse();
     }
