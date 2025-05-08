@@ -105,7 +105,7 @@ public class RedisDevServicesProperties {
         /**
          * Full name of the container image used in the dev service.
          */
-        private String imageName = "redis/redis-stack-server:7.4.0-v3";
+        private String imageName = "redis/redis-stack-server:7.4.0-v4";
 
         /**
          * Environment variables to set in the container.

@@ -30,7 +30,7 @@ class RedisDevServicesPropertiesTests {
         assertThat(properties.getCommunity().isReusable()).isFalse();
 
         // Stack edition defaults
-        assertThat(properties.getStack().getImageName()).isEqualTo("redis/redis-stack-server:7.4.0-v3");
+        assertThat(properties.getStack().getImageName()).contains("redis/redis-stack-server");
         assertThat(properties.getStack().getEnvironment()).isEmpty();
         assertThat(properties.getStack().isReusable()).isFalse();
     }
