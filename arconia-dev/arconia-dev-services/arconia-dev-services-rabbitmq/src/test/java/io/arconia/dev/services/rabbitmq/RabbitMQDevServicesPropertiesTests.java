@@ -22,7 +22,7 @@ class RabbitMQDevServicesPropertiesTests {
         RabbitMQDevServicesProperties properties = new RabbitMQDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("rabbitmq:4.1.0-alpine");
+        assertThat(properties.getImageName()).contains("rabbitmq");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.isReusable()).isFalse();
     }

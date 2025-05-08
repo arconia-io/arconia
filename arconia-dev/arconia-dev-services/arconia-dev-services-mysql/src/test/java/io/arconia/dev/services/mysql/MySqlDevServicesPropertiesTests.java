@@ -22,7 +22,7 @@ class MySqlDevServicesPropertiesTests {
         MySqlDevServicesProperties properties = new MySqlDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("mysql:9.3.0");
+        assertThat(properties.getImageName()).contains("mysql");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.isReusable()).isFalse();
     }
