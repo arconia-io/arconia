@@ -2,6 +2,7 @@
 * Databases
 ** xref:mariadb.adoc[MariaDB]
 ** xref:mysql.adoc[MySQL]
+** xref:oracle.adoc[Oracle]
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
 * xref:lgtm.adoc[Grafana LGTM]
