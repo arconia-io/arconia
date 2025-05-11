@@ -1,4 +1,4 @@
-name: "Bug: Generic"
+name: "Report: Bug"
 description: "Create a bug report for a module."
 title: "[MODULE] BUG TITLE"
 labels: [bug, triage]
@@ -10,7 +10,7 @@ body:
       
       > [!TIP]
       > For instance, if you were filing a bug report for the OpenTelemetry module, your title would be as follows:
-      > `[OpenTelemetry]: Failure when exporting logs via gRPC`
+      > `[OpenTelemetry] Failure when exporting logs via gRPC`
       ---
 - type: "input"
   id: "java-version"

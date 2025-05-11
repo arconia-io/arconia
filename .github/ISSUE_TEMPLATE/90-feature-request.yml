@@ -10,7 +10,7 @@ body:
       
       > [!TIP]
       > For instance, if you were filing a feature request for the MultiTenancy module, your title would be as follows:
-      > `[MultiTenancy]: Multitenancy support for Spring Data Relational`
+      > `[MultiTenancy] Multitenancy support for Spring Data Relational`
       ---
 - type: "textarea"
   id: "what-happened"

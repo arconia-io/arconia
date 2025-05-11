@@ -1,16 +1,16 @@
-name: "Request: Dev Service"
-description: "Create a request for a new Dev Service."
-title: "[Dev Service] Add NAME"
+name: "Request: Dev Services"
+description: "Create a request for new Dev Services."
+title: "[Dev Services] Add NAME"
 labels: [enhancement, triage]
 body:
 - type: "markdown"
   attributes:
     value: |
-      Welcome to Arconia! Please replace the **`[Dev Service]: Add NAME`** template above with the correct Dev Service name.
+      Welcome to Arconia! Please replace the **`[Dev Services] Add NAME`** template above with the correct Dev Service name.
 
       > [!TIP]
       > For instance, if you were filing a request for a PostgreSQL Dev Service, your title would be as follows:
-      > `[Dev Service]: Add PostgreSQL`
+      > `[Dev Services] Add PostgreSQL`
       ---
 - type: "dropdown"
   id: "spring-boot-support"
