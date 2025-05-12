@@ -1,0 +1,33 @@
+= Oracle XE Dev Service
+:service-name: oracle-xe
+
+When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the Oracle XE Dev Service to automatically start an Oracle XE database. This enables you to develop and test your application without having to manually start and manage a database server.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Customizing the Dev Service
+
+You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      oracle-xe:
+        image-name: gvenzl/oracle-xe:21-full-faststart
+        startup-timeout: 120s
+        reusable: false
+        environment:
+          ORACLE_PASSWORD: secret
+----
+
+== Disabling the Dev Service
+
+include::partial$disabling-dev-service.adoc[]
