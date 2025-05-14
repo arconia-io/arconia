@@ -1,16 +1,14 @@
 version = 1
 
 [install]
-jbang.pkg-path = "jbang"
+graalvm-ce.pkg-path = "graalvm-ce"
+graalvm-ce.version = "24.0.1"
 httpie.pkg-path = "httpie"
 
 [vars]
 FLOX_DISABLE_METRICS="true"
 
 [hook]
-on-activate = """
-  eval $(jbang jdk env 24)
-"""
 
 [profile]
 
