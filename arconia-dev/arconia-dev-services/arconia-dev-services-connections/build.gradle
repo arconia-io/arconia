@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    implementation project(":arconia-core:arconia-core")
+    implementation project(":arconia-core")
 
     optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     optional "org.springframework.boot:spring-boot-testcontainers"

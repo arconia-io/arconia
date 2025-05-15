@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-core:spring-boot-starters:arconia-spring-boot-starter")
+    api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
     api project(":arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spring-boot-autoconfigure")
 
     api project(":arconia-multitenancy:arconia-multitenancy-core")

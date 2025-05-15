@@ -41,7 +41,7 @@ class MariaDBDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.mariadb.image-name=docker.io/mariadb",
                 "arconia.dev.services.mariadb.environment.MARIADB_USER=test",
-                "arconia.dev.services.mariadb.reusable=false"
+                "arconia.dev.services.mariadb.shared=never"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MariaDBContainer.class);
@@ -51,4 +51,5 @@ class MariaDBDevServicesAutoConfigurationTests {
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }
+
 }

@@ -11,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,12 +42,12 @@ public class LgtmDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
+        LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties, ApplicationContext applicationContext) {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(Duration.ofMinutes(2))
-                    .withReuse(properties.isReusable());
+                    .withReuse(properties.getShared().asBoolean(applicationContext));
         }
 
     }
@@ -58,12 +59,12 @@ public class LgtmDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServicesProperties properties) {
+        LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServicesProperties properties, ApplicationContext applicationContext) {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(Duration.ofMinutes(2))
-                    .withReuse(properties.isReusable());
+                    .withReuse(properties.getShared().asBoolean(applicationContext));
         }
 
     }

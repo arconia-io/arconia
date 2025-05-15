@@ -1,8 +1,10 @@
 package io.arconia.dev.services.lgtm;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +25,7 @@ class LgtmDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("grafana/otel-lgtm");
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isTrue();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
     }
 
     @Test
@@ -33,12 +35,12 @@ class LgtmDevServicesPropertiesTests {
         properties.setEnabled(false);
         properties.setImageName("grafana/otel-lgtm:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("grafana/otel-lgtm:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

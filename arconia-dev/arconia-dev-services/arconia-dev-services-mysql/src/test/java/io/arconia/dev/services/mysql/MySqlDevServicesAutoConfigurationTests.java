@@ -41,7 +41,7 @@ class MySqlDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.mysql.image-name=docker.io/mysql",
                 "arconia.dev.services.mysql.environment.MYSQL_USER=test",
-                "arconia.dev.services.mysql.reusable=false"
+                "arconia.dev.services.mysql.shared=never"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MySQLContainer.class);

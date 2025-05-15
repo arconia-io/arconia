@@ -1,11 +1,11 @@
 package io.arconia.dev.services.ollama;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.core.config.DevServicesProperties;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Properties for the Ollama Dev Services.
@@ -26,14 +26,14 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     private String imageName = "ollama/ollama:0.6.7";
 
     /**
-     * Environment variables to set in the container.
+     * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * Whether the container used in the dev service is reusable across applications.
+     * When the dev service is shared across applications.
      */
-    private boolean reusable = true;
+    private Shared shared = Shared.ALWAYS;
 
     @Override
     public boolean isEnabled() {
@@ -63,12 +63,12 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public boolean isReusable() {
-        return reusable;
+    public Shared getShared() {
+        return shared;
     }
 
-    public void setReusable(boolean reusable) {
-        this.reusable = reusable;
+    public void setShared(Shared shared) {
+        this.shared = shared;
     }
 
 }

@@ -26,14 +26,14 @@ public class RabbitMQDevServicesProperties implements DevServicesProperties {
     private String imageName = "rabbitmq:4.1-management-alpine";
 
     /**
-     * Environment variables to set in the container.
+     * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * Whether the container used in the dev service is reusable across applications.
+     * When the dev service is shared across applications.
      */
-    private boolean reusable = false;
+    private Shared shared = Shared.DEV_MODE;
 
     @Override
     public boolean isEnabled() {
@@ -63,11 +63,12 @@ public class RabbitMQDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public boolean isReusable() {
-        return reusable;
+    public Shared getShared() {
+        return shared;
     }
 
-    public void setReusable(boolean reusable) {
-        this.reusable = reusable;
+    public void setShared(Shared shared) {
+        this.shared = shared;
     }
+
 }

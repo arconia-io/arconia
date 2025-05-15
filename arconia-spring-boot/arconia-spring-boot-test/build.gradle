@@ -1,0 +1,29 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api "org.springframework.boot:spring-boot-devtools"
+
+    implementation project(":arconia-core")
+
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.slf4j:slf4j-api"
+    implementation "org.springframework.boot:spring-boot-test"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Spring Boot Test"
+                description = "Arconia Spring Boot Test."
+            }
+        }
+    }
+}

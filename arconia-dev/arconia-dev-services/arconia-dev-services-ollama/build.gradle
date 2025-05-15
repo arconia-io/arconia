@@ -13,12 +13,13 @@ dependencies {
     api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
     api "org.testcontainers:ollama"
 
+    implementation project(":arconia-core")
+
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.springframework.boot:spring-boot-devtools"
 }
 
 dependencyManagement {

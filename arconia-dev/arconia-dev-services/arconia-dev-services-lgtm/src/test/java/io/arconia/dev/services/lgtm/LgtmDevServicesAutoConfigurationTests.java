@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.grafana.LgtmStackContainer;
 
+import io.arconia.boot.test.context.DevelopmentModeClassLoader;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -33,13 +35,27 @@ class LgtmDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(LgtmStackContainer.class);
-            LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-            assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
-            assertThat(container.isShouldBeReused()).isTrue();
-        });
+    void lgtmContainerAvailableInDevelopmentMode() {
+        contextRunner
+                .withClassLoader(new DevelopmentModeClassLoader(new FilteredClassLoader(RestartScope.class)))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
+                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
+                    assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
+                    assertThat(container.isShouldBeReused()).isTrue();
+                });
+    }
+
+    @Test
+    void lgtmContainerAvailableInTestMode() {
+        contextRunner
+                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
+                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
+                    assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
+                    assertThat(container.isShouldBeReused()).isFalse();
+                });
     }
 
     @Test
@@ -48,7 +64,7 @@ class LgtmDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.lgtm.image-name=docker.io/grafana/otel-lgtm",
                 "arconia.dev.services.lgtm.environment.ENABLE_LOGS_ALL=true",
-                "arconia.dev.services.lgtm.reusable=false"
+                "arconia.dev.services.lgtm.shared=never"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(LgtmStackContainer.class);

@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.core.config.DevServicesProperties;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -26,7 +28,7 @@ class OracleXeDevServicesPropertiesTests {
         assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-xe:21-slim-faststart");
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(60));
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
 
     @Test
@@ -37,13 +39,13 @@ class OracleXeDevServicesPropertiesTests {
         properties.setImageName("gvenzl/oracle-xe:latest");
         properties.setStartupTimeout(Duration.ofSeconds(120));
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-xe:latest");
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

@@ -1,5 +1,7 @@
 package io.arconia.dev.services.mysql;
 
+import io.arconia.dev.services.core.config.DevServicesProperties;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -24,7 +26,7 @@ class MySqlDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("mysql");
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
 
     @Test
@@ -34,12 +36,12 @@ class MySqlDevServicesPropertiesTests {
         properties.setEnabled(false);
         properties.setImageName("mysql:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("mysql:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

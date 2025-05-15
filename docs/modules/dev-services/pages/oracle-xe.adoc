@@ -1,7 +1,12 @@
 = Oracle XE Dev Service
 :service-name: oracle-xe
 
-When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the Oracle XE Dev Service to automatically start an Oracle XE database. This enables you to develop and test your application without having to manually start and manage a database server.
+A service providing an https://www.oracle.com/database/[Oracle] database for development and testing purposes. The maximum supported version is 21c. For newer versions, use the xref:oracle.adoc[Oracle Dev Service].
+
+It works with Spring Boot libraries that support Oracle via JDBC, including:
+
+* https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
+* https://spring.io/projects/spring-data-jpa[Spring Data JPA]
 
 == Dependencies
 
@@ -11,23 +16,32 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-== Customizing the Dev Service
+== Configuring the Dev Service
 
-You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+You can configure the Dev Service via configuration properties.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      oracle-xe:
-        image-name: gvenzl/oracle-xe:21-full-faststart
-        startup-timeout: 120s
-        reusable: false
-        environment:
-          ORACLE_PASSWORD: secret
-----
+|===
+|Property |Default |Description
 
-== Disabling the Dev Service
+| `arconia.dev.services.oracle-xe.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.oracle-xe.image-name`
+| `gvenzl/oracle-xe`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.oracle-xe.environment`
+| `{}`
+| Environment variables to set in the service. Example: `ORACLE_PASSWORD: "secret"`.
+
+| `arconia.dev.services.oracle-xe.shared`
+| `never`
+| When the dev service is shared across applications.
+
+| `arconia.dev.services.oracle-xe.startup-timeout`
+| `60s`
+| Maximum waiting time for the service to start.
+|===
 
 include::partial$disabling-dev-service.adoc[]

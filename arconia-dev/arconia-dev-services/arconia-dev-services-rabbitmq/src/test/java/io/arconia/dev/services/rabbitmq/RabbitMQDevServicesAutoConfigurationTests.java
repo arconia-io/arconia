@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.RabbitMQContainer;
 
+import io.arconia.boot.test.context.DevelopmentModeClassLoader;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -14,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RabbitMQDevServicesAutoConfigurationTests {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+    private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(RabbitMQDevServicesAutoConfiguration.class));
 
@@ -26,13 +28,27 @@ class RabbitMQDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void rabbitmqContainerAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(RabbitMQContainer.class);
-            RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
-            assertThat(container.getDockerImageName()).contains("rabbitmq");
-            assertThat(container.isShouldBeReused()).isFalse();
-        });
+    void lgtmContainerAvailableInDevelopmentMode() {
+        contextRunner
+                .withClassLoader(new DevelopmentModeClassLoader(new FilteredClassLoader(RestartScope.class)))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(RabbitMQContainer.class);
+                    RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
+                    assertThat(container.getDockerImageName()).contains("rabbitmq");
+                    assertThat(container.isShouldBeReused()).isTrue();
+                });
+    }
+
+    @Test
+    void lgtmContainerAvailableInTestMode() {
+        contextRunner
+                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(RabbitMQContainer.class);
+                    RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
+                    assertThat(container.getDockerImageName()).contains("rabbitmq");
+                    assertThat(container.isShouldBeReused()).isFalse();
+                });
     }
 
     @Test
@@ -41,7 +57,7 @@ class RabbitMQDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.rabbitmq.image-name=docker.io/rabbitmq",
                 "arconia.dev.services.rabbitmq.environment.RABBITMQ_DEFAULT_USER=user",
-                "arconia.dev.services.rabbitmq.reusable=false"
+                "arconia.dev.services.rabbitmq.shared=never"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RabbitMQContainer.class);

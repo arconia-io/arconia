@@ -38,9 +38,24 @@ Maven::
 
 Your integration tests will also automatically use the Arconia Dev Services without any additional configuration.
 
+=== Sharing Dev Services
+
+Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default and when. There are three options:
+
+* `never`: The service is never shared across applications.
+* `dev-mode`: The service is shared across applications only if the application is running in development mode.
+* `always`: The service is always shared across applications when enabled (development and test mode).
+
+This capability relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. You can enable it in the `~/.testcontainers.properties` file in your home directory. If the file does not exist, you can create it. It should contain the following line:
+
+[source,properties]
+----
+testcontainers.reuse.enable=true
+----
+
 == Services
 
-* Databases
+* Data Stores
 ** xref:mariadb.adoc[MariaDB]
 ** xref:mysql.adoc[MySQL]
 ** xref:oracle.adoc[Oracle]

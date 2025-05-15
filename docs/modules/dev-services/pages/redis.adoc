@@ -1,7 +1,13 @@
 = Redis Dev Service
 :service-name: redis
 
-When your application needs a Redis data store (such as when using Spring Data Redis or Spring AI Redis Vector Store), you can use the Redis Dev Service to automatically start a Redis server. This enables you to develop and test your application without having to manually start and manage the Redis server.
+A service providing a https://redis.io[Redis] data store for development and testing purposes.
+
+It works with Spring Boot libraries that support REPL or Redis, including:
+
+* https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
+* https://spring.io/projects/spring-data-redis[Spring Data Redis]
+* https://spring.io/projects/spring-session[Spring Session]
 
 == Dependencies
 
@@ -11,53 +17,28 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-== Choosing the Redis Edition
+== Configuring the Dev Service
 
-By default, the Redis Dev Service enables the Community Edition of Redis, but you can also activate the Stack Edition if you need to.
+You can configure the Dev Service via configuration properties.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      redis:
-        edition: stack
-----
+|===
+|Property |Default |Description
 
-== Customizing the Dev Service
+| `arconia.dev.services.redis.enabled`
+| `true`
+| Whether the dev service is enabled.
 
-You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+| `arconia.dev.services.redis.image-name`
+| `redis`
+| Full name of the container image used in the dev service.
 
-For Redis Community:
+| `arconia.dev.services.redis.environment`
+| `{}`
+| Environment variables to set in the service. Example: `REDIS_PASSWORD: "redis"`.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      redis:
-        community:
-          image-name: redis
-          reusable: false
-          environment:
-            REDIS_PASSWORD: redis
-----
-
-For Redis Stack:
-
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      redis:
-        stack:
-          image-name: redis/redis-stack-server
-          reusable: false
-          environment:
-            REDIS_PASSWORD: redis
-----
-
-== Disabling the Dev Service
+| `arconia.dev.services.redis.shared`
+| `never`
+| When the dev service is shared across applications.
+|===
 
 include::partial$disabling-dev-service.adoc[]

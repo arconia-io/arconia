@@ -1,8 +1,10 @@
 package io.arconia.dev.services.mariadb;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +26,7 @@ class MariaDBDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("mariadb");
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
 
     @Test
@@ -34,12 +36,12 @@ class MariaDBDevServicesPropertiesTests {
         properties.setEnabled(false);
         properties.setImageName("mariadb:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("mariadb:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

@@ -13,8 +13,8 @@ repositories {
 
 dependencies {
     constraints {
-        api project(":arconia-core:arconia-core")
-        api project(":arconia-core:spring-boot-starters:arconia-spring-boot-starter")
+        api project(":arconia-core")
+        api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
 
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-connections")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")

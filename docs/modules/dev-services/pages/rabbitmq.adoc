@@ -1,7 +1,12 @@
 = RabbitMQ Dev Service
 :service-name: rabbitmq
 
-When your application needs a RabbitMQ message broker (such as when using Spring for RabbitMQ or Spring for RabbitMQ Streams), you can use the RabbitMQ Dev Service to automatically start a RabbitMQ instance. This enables you to develop and test your application without having to manually start and manage the RabbitMQ instance.
+A service providing a https://www.rabbitmq.com[RabbitMQ] event broker for development and testing purposes.
+
+It works with Spring Boot libraries that support AMQP or RabbitMQ, including:
+
+* https://spring.io/projects/spring-amqp[Spring AMQP]
+* https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
 
 == Dependencies
 
@@ -11,23 +16,28 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-== Customizing the Dev Service
+== Configuring the Dev Service
 
-You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+You can configure the Dev Service via configuration properties.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      rabbitmq:
-        image-name: rabbitmq:4.1.0-management
-        reusable: false
-        environment:
-          RABBITMQ_DEFAULT_USER: user
-          RABBITMQ_DEFAULT_PASS: secret
-----
+|===
+|Property |Default |Description
 
-== Disabling the Dev Service
+| `arconia.dev.services.rabbitmq.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.rabbitmq.image-name`
+| `rabbitmq`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.rabbitmq.environment`
+| `{}`
+| Environment variables to set in the service. Example: `RABBITMQ_DEFAULT_USER: "user"`.
+
+| `arconia.dev.services.rabbitmq.shared`
+| `dev-mode`
+| When the dev service is shared across applications.
+|===
 
 include::partial$disabling-dev-service.adoc[]

@@ -1,8 +1,10 @@
 package io.arconia.dev.services.ollama;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +26,7 @@ class OllamaDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).contains("ollama/ollama");
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isTrue();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
     @Test
@@ -34,12 +36,12 @@ class OllamaDevServicesPropertiesTests {
         properties.setEnabled(true);
         properties.setImageName("ollama/ollama:0.6.3");
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.NEVER);
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.6.3");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
 
 }

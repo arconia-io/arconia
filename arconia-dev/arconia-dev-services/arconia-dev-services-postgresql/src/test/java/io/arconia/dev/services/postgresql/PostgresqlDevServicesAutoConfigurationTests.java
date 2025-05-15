@@ -41,7 +41,7 @@ class PostgresqlDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.postgresql.image-name=docker.io/postgres",
                 "arconia.dev.services.postgresql.environment.POSTGRES_USER=postgres",
-                "arconia.dev.services.postgresql.reusable=false"
+                "arconia.dev.services.postgresql.shared=never"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(PostgreSQLContainer.class);

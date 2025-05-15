@@ -14,13 +14,15 @@ dependencies {
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:grafana"
 
+    implementation project(":arconia-core")
     implementation project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
+
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
+    testImplementation project(":arconia-spring-boot:arconia-spring-boot-test")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.springframework.boot:spring-boot-devtools"
 }
 
 publishing {

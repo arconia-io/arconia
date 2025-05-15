@@ -27,19 +27,19 @@ public class OracleXeDevServicesProperties implements DevServicesProperties {
     private String imageName = "gvenzl/oracle-xe:21-slim-faststart";
 
     /**
-     * The maximum waiting time for the container to start.
-     */
-    private Duration startupTimeout = Duration.ofSeconds(60);
-
-    /**
-     * Environment variables to set in the container.
+     * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * Whether the container used in the dev service is reusable across applications.
+     * When the dev service is shared across applications.
      */
-    private boolean reusable = false;
+    private Shared shared = Shared.NEVER;
+
+    /**
+     * Maximum waiting time for the service to start.
+     */
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     @Override
     public boolean isEnabled() {
@@ -59,14 +59,6 @@ public class OracleXeDevServicesProperties implements DevServicesProperties {
         this.imageName = imageName;
     }
 
-    public Duration getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public void setStartupTimeout(Duration startupTimeout) {
-        this.startupTimeout = startupTimeout;
-    }
-
     @Override
     public Map<String, String> getEnvironment() {
         return environment;
@@ -77,12 +69,20 @@ public class OracleXeDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public boolean isReusable() {
-        return reusable;
+    public Shared getShared() {
+        return shared;
     }
 
-    public void setReusable(boolean reusable) {
-        this.reusable = reusable;
+    public void setShared(Shared shared) {
+        this.shared = shared;
+    }
+
+    public Duration getStartupTimeout() {
+        return startupTimeout;
+    }
+
+    public void setStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
     }
 
 }

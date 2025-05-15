@@ -1,45 +1,44 @@
 = Ollama Dev Service
 :service-name: ollama
 
-When your application uses Spring AI to consume large language models from Ollama, you can use the Ollama Dev Service to start automatically an Ollama service. This enables you to develop and test your LLM-powered application without having to manually provide a model inference service.
+A service providing an https://ollama.com[Ollama] model inference service for development and testing purposes.
+
+It works with Spring Boot libraries that support Ollama, including:
+
+* https://spring.io/projects/spring-ai[Spring AI]
+
+NOTE: By default, the Ollama Dev Service is disabled since it might be resource-intensive, and running native Ollama might be more suitable for development. You can enable it globally or selectively for specific tests.
 
 == Dependencies
 
 include::partial$dependencies.adoc[]
 
-=== Enabling the Dev Service
-
-By default, the Ollama Dev Service is disabled since it might be resource-intensive, and running native Ollama might be more suitable for development. You can enable it globally or selectively for specific tests.
-
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      ollama:
-        enabled: true
-----
-
-You can enable/disable the Dev Service for a specific application mode (development, test, production), relying on one of the profiles which are automatically configured by Arconia (see xref:ROOT:core-features/profiles.adoc[Profiles]).
-
-TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.
-
 == Running the Application
 
 include::partial$running-application.adoc[]
 
-== Customizing the Dev Service
+== Configuring the Dev Service
 
-You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+You can configure the Dev Service via configuration properties.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      ollama:
-        image-name: ollama/ollama
-        reusable: true
-        environment:
-          OLLAMA_NUM_PARALLEL: "4"
-----
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.ollama.enabled`
+| `false`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.ollama.image-name`
+| `ollama/ollama`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.ollama.environment`
+| `{}`
+| Environment variables to set in the service. Example: `OLLAMA_NUM_PARALLEL: "4"`.
+
+| `arconia.dev.services.ollama.shared`
+| `always`
+| When the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]

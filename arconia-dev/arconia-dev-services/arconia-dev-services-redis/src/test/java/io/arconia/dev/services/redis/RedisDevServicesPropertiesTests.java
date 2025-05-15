@@ -1,8 +1,10 @@
 package io.arconia.dev.services.redis;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,51 +24,24 @@ class RedisDevServicesPropertiesTests {
         RedisDevServicesProperties properties = new RedisDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getEdition()).isEqualTo(RedisDevServicesProperties.Edition.COMMUNITY);
-
-        // Community edition defaults
-        assertThat(properties.getCommunity().getImageName()).isEqualTo("redis:7.4-alpine");
-        assertThat(properties.getCommunity().getEnvironment()).isEmpty();
-        assertThat(properties.getCommunity().isReusable()).isFalse();
-
-        // Stack edition defaults
-        assertThat(properties.getStack().getImageName()).contains("redis/redis-stack-server");
-        assertThat(properties.getStack().getEnvironment()).isEmpty();
-        assertThat(properties.getStack().isReusable()).isFalse();
+        assertThat(properties.getImageName()).isEqualTo("redis:7.4-alpine");
+        assertThat(properties.getEnvironment()).isEmpty();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
 
     @Test
-    void shouldUpdateCommunityEditionValues() {
+    void shouldUpdateValues() {
         RedisDevServicesProperties properties = new RedisDevServicesProperties();
 
         properties.setEnabled(false);
-        properties.setEdition(RedisDevServicesProperties.Edition.COMMUNITY);
-        properties.getCommunity().setImageName("redis:latest");
-        properties.getCommunity().setEnvironment(Map.of("REDIS_PASSWORD", "redis"));
-        properties.getCommunity().setReusable(true);
+        properties.setImageName("redis:latest");
+        properties.setEnvironment(Map.of("REDIS_PASSWORD", "redis"));
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getEdition()).isEqualTo(RedisDevServicesProperties.Edition.COMMUNITY);
-        assertThat(properties.getCommunity().getImageName()).isEqualTo("redis:latest");
-        assertThat(properties.getCommunity().getEnvironment()).containsEntry("REDIS_PASSWORD", "redis");
-        assertThat(properties.getCommunity().isReusable()).isTrue();
-    }
-
-    @Test
-    void shouldUpdateStackEditionValues() {
-        RedisDevServicesProperties properties = new RedisDevServicesProperties();
-
-        properties.setEnabled(false);
-        properties.setEdition(RedisDevServicesProperties.Edition.STACK);
-        properties.getStack().setImageName("redis/redis-stack:latest");
-        properties.getStack().setEnvironment(Map.of("REDIS_PASSWORD", "redis"));
-        properties.getStack().setReusable(true);
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getEdition()).isEqualTo(RedisDevServicesProperties.Edition.STACK);
-        assertThat(properties.getStack().getImageName()).isEqualTo("redis/redis-stack:latest");
-        assertThat(properties.getStack().getEnvironment()).containsEntry("REDIS_PASSWORD", "redis");
-        assertThat(properties.getStack().isReusable()).isTrue();
+        assertThat(properties.getImageName()).isEqualTo("redis:latest");
+        assertThat(properties.getEnvironment()).containsEntry("REDIS_PASSWORD", "redis");
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

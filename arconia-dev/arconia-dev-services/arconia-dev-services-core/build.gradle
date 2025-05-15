@@ -6,7 +6,12 @@ plugins {
 }
 
 dependencies {
+    implementation project(":arconia-core")
+    implementation project(":arconia-spring-boot:arconia-spring-boot")
+
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework:spring-context"
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 

@@ -13,12 +13,13 @@ dependencies {
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:oracle-free"
 
+    implementation project(":arconia-core")
+
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.springframework.boot:spring-boot-devtools"
 }
 
 publishing {

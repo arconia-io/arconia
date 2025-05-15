@@ -8,11 +8,7 @@ rootProject.name = 'arconia'
 include 'arconia-bom'
 
 // Core
-include 'arconia-core:arconia-core'
-include 'arconia-core:spring-boot-starters:arconia-spring-boot-starter'
-
-// Dev Tools
-include 'arconia-dev:arconia-dev-tools'
+include 'arconia-core'
 
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-connections'
@@ -40,3 +36,9 @@ include 'arconia-multitenancy:spring-boot-starters:arconia-multitenancy-web-spri
 include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
+
+// Spring Boot
+include 'arconia-spring-boot:arconia-spring-boot'
+include 'arconia-spring-boot:arconia-spring-boot-test'
+include 'arconia-spring-boot:spring-boot-autoconfigure:arconia-spring-boot-autoconfigure'
+include 'arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter'

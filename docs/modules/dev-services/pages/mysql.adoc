@@ -1,7 +1,12 @@
 = MySQL Dev Service
 :service-name: mysql
 
-When your application needs a relational database (such as when using Spring Data JDBC or Spring Data JPA), you can use the MySQL Dev Service to automatically start a MySQL database. This enables you to develop and test your application without having to manually start and manage a database server.
+A service providing a https://www.mysql.com[MySQL] database for development and testing purposes.
+
+It works with Spring Boot libraries that support MySQL via JDBC, including:
+
+* https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
+* https://spring.io/projects/spring-data-jpa[Spring Data JPA]
 
 == Dependencies
 
@@ -11,22 +16,28 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-== Customizing the Dev Service
+== Configuring the Dev Service
 
-You can customize the Dev Service via configuration properties, such as changing the image name or not reusing the service across multiple applications.
+You can configure the Dev Service via configuration properties.
 
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      mysql:
-        image-name: mysql:9.3.0-oracle
-        reusable: false
-        environment:
-          MYSQL_USER: test
-----
+|===
+|Property |Default |Description
 
-== Disabling the Dev Service
+| `arconia.dev.services.mysql.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.mysql.image-name`
+| `mysql`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.mysql.environment`
+| `{}`
+| Environment variables to set in the container. Example: `MYSQL_USER: "test"`.
+
+| `arconia.dev.services.mysql.shared`
+| `never`
+| When the dev service is shared across applications.
+|===
 
 include::partial$disabling-dev-service.adoc[]

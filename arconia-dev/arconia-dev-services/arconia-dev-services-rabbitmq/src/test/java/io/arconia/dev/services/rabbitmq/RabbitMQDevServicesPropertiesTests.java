@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.core.config.DevServicesProperties;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -24,7 +26,7 @@ class RabbitMQDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("rabbitmq");
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
     }
 
     @Test
@@ -34,12 +36,12 @@ class RabbitMQDevServicesPropertiesTests {
         properties.setEnabled(false);
         properties.setImageName("rabbitmq:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setReusable(false);
+        properties.setShared(DevServicesProperties.Shared.ALWAYS);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("rabbitmq:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.isReusable()).isFalse();
+        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
     }
 
 }

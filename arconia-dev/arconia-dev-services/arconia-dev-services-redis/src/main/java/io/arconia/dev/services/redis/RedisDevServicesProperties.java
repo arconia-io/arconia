@@ -1,15 +1,17 @@
 package io.arconia.dev.services.redis;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 /**
  * Properties for the Redis Dev Services.
  */
 @ConfigurationProperties(prefix = RedisDevServicesProperties.CONFIG_PREFIX)
-public class RedisDevServicesProperties {
+public class RedisDevServicesProperties implements DevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.redis";
 
@@ -19,14 +21,21 @@ public class RedisDevServicesProperties {
     private boolean enabled = true;
 
     /**
-     * The edition of Redis to use.
+     * Full name of the container image used in the dev service.
      */
-    private Edition edition = Edition.COMMUNITY;
+    private String imageName = "redis:7.4-alpine";
 
-    private final Community community = new Community();
+    /**
+     * Environment variables to set in the service.
+     */
+    private Map<String,String> environment = new HashMap<>();
 
-    private final Stack stack = new Stack();
+    /**
+     * When the dev service is shared across applications.
+     */
+    private Shared shared = Shared.NEVER;
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -35,120 +44,31 @@ public class RedisDevServicesProperties {
         this.enabled = enabled;
     }
 
-    public Edition getEdition() {
-        return edition;
+    @Override
+    public String getImageName() {
+        return imageName;
     }
 
-    public void setEdition(Edition edition) {
-        this.edition = edition;
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 
-    public Community getCommunity() {
-        return community;
+    @Override
+    public Map<String, String> getEnvironment() {
+        return environment;
     }
 
-    public Stack getStack() {
-        return stack;
+    public void setEnvironment(Map<String, String> environment) {
+        this.environment = environment;
     }
 
-    /**
-     * Configuration for the community edition of Redis.
-     */
-    public static class Community {
-
-        /**
-         * Full name of the container image used in the dev service.
-         */
-        private String imageName = "redis:7.4-alpine";
-
-        /**
-         * Environment variables to set in the container.
-         */
-        private Map<String,String> environment = new HashMap<>();
-
-        /**
-         * Whether the container used in the dev service is reusable across applications.
-         */
-        private boolean reusable = false;
-
-        public String getImageName() {
-            return imageName;
-        }
-
-        public void setImageName(String imageName) {
-            this.imageName = imageName;
-        }
-
-        public Map<String, String> getEnvironment() {
-            return environment;
-        }
-
-        public void setEnvironment(Map<String, String> environment) {
-            this.environment = environment;
-        }
-
-        public boolean isReusable() {
-            return reusable;
-        }
-
-        public void setReusable(boolean reusable) {
-            this.reusable = reusable;
-        }
-
+    @Override
+    public Shared getShared() {
+        return shared;
     }
 
-    /**
-     * Configuration for the stack edition of Redis.
-     */
-    public static class Stack {
-
-        /**
-         * Full name of the container image used in the dev service.
-         */
-        private String imageName = "redis/redis-stack-server:7.4.0-v4";
-
-        /**
-         * Environment variables to set in the container.
-         */
-        private Map<String,String> environment = new HashMap<>();
-
-        /**
-         * Whether the container used in the dev service is reusable across applications.
-         */
-        private boolean reusable = false;
-
-        public String getImageName() {
-            return imageName;
-        }
-
-        public void setImageName(String imageName) {
-            this.imageName = imageName;
-        }
-
-        public Map<String, String> getEnvironment() {
-            return environment;
-        }
-
-        public void setEnvironment(Map<String, String> environment) {
-            this.environment = environment;
-        }
-
-        public boolean isReusable() {
-            return reusable;
-        }
-
-        public void setReusable(boolean reusable) {
-            this.reusable = reusable;
-        }
-
-    }
-
-    /**
-     * The edition of Redis to use.
-     */
-    public enum Edition {
-        COMMUNITY,
-        STACK;
+    public void setShared(Shared shared) {
+        this.shared = shared;
     }
 
 }
