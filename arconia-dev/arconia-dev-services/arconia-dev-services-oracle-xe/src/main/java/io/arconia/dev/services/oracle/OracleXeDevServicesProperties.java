@@ -39,7 +39,7 @@ public class OracleXeDevServicesProperties implements DevServicesProperties {
     /**
      * Maximum waiting time for the service to start.
      */
-    private Duration startupTimeout = Duration.ofSeconds(60);
+    private Duration startupTimeout = Duration.ofSeconds(120);
 
     @Override
     public boolean isEnabled() {

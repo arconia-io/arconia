@@ -27,11 +27,6 @@ public class OracleDevServicesProperties implements DevServicesProperties {
     private String imageName = "gvenzl/oracle-free:23.7-slim-faststart";
 
     /**
-     * The maximum waiting time for the container to start.
-     */
-    private Duration startupTimeout = Duration.ofSeconds(60);
-
-    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
@@ -40,6 +35,11 @@ public class OracleDevServicesProperties implements DevServicesProperties {
      * When the dev service is shared across applications.
      */
     private Shared shared = Shared.NEVER;
+
+    /**
+     * Maximum waiting time for the service to start.
+     */
+    private Duration startupTimeout = Duration.ofSeconds(120);
 
     @Override
     public boolean isEnabled() {

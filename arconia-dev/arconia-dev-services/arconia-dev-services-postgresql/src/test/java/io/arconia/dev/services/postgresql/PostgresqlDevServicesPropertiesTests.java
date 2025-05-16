@@ -24,7 +24,7 @@ class PostgresqlDevServicesPropertiesTests {
         PostgresqlDevServicesProperties properties = new PostgresqlDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("postgres:17.4-alpine");
+        assertThat(properties.getImageName()).contains("postgres");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }

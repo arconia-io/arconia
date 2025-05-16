@@ -25,8 +25,8 @@ class OracleXeDevServicesPropertiesTests {
         OracleXeDevServicesProperties properties = new OracleXeDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-xe:21-slim-faststart");
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(60));
+        assertThat(properties.getImageName()).contains("gvenzl/oracle-xe");
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }

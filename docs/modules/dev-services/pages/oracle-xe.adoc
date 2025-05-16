@@ -40,7 +40,7 @@ You can configure the Dev Service via configuration properties.
 | When the dev service is shared across applications.
 
 | `arconia.dev.services.oracle-xe.startup-timeout`
-| `60s`
+| `120s`
 | Maximum waiting time for the service to start.
 |===
 

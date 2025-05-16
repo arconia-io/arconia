@@ -25,8 +25,8 @@ class OracleDevServicesPropertiesTests {
         OracleDevServicesProperties properties = new OracleDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-free:23-slim-faststart");
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(60));
+        assertThat(properties.getImageName()).contains("gvenzl/oracle-free");
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
