@@ -47,6 +47,11 @@ public class MicrometerInstrumentationAutoConfiguration {
                 .build();
     }
 
+    @Bean
+    public static CompositeMeterRegistryBeanPostProcessor compositeMeterRegistryBeanPostProcessor() {
+        return new CompositeMeterRegistryBeanPostProcessor();
+    }
+
     /**
      * Condition to check if OpenTelemetry metrics export is enabled.
      * This can be removed after upgrading to Spring Boot 3.5,
