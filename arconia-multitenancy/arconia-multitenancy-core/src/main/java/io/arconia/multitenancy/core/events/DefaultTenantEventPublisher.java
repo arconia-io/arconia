@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.core.events;
 
+import io.arconia.core.support.Incubating;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.Assert;
 
@@ -7,6 +9,7 @@ import org.springframework.util.Assert;
  * An implementation of {@link TenantEventPublisher} that uses Spring's event publishing
  * support.
  */
+@Incubating
 public class DefaultTenantEventPublisher implements TenantEventPublisher {
 
     private final ApplicationEventPublisher applicationEventPublisher;

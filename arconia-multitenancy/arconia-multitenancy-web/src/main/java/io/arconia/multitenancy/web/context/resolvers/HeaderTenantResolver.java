@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.web.context.resolvers;
 
+import io.arconia.core.support.Incubating;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
@@ -7,6 +9,7 @@ import org.springframework.util.Assert;
 /**
  * Strategy used to resolve the current tenant from a header in an HTTP request.
  */
+@Incubating
 public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
     public static final String DEFAULT_HEADER_NAME = "X-TenantId";

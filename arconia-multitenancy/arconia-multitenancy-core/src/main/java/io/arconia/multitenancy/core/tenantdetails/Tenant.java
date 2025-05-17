@@ -4,12 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import io.arconia.core.support.Incubating;
+
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * Default implementation to hold tenant details.
  */
+@Incubating
 public class Tenant implements TenantDetails {
 
     private final String identifier;

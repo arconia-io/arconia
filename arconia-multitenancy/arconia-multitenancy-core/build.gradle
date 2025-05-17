@@ -6,6 +6,8 @@ plugins {
 }
 
 dependencies {
+    implementation project(":arconia-core")
+    
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.slf4j:slf4j-api"
     implementation "org.springframework:spring-context"

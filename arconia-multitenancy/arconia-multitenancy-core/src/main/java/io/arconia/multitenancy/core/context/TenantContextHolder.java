@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.core.context;
 
+import io.arconia.core.support.Incubating;
+
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +13,14 @@ import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
 /**
  * A shared, thread-local store for the current tenant.
  */
+@Incubating
 public final class TenantContextHolder {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantContextHolder.class);
 
     private static final ThreadLocal<String> tenantIdentifier = new ThreadLocal<>();
 
-    private TenantContextHolder() {
-    }
+    private TenantContextHolder() {}
 
     public static void setTenantIdentifier(String tenant) {
         Assert.hasText(tenant, "tenant cannot be null or empty");

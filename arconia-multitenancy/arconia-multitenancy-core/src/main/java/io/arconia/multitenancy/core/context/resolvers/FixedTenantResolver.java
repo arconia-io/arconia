@@ -1,11 +1,14 @@
 package io.arconia.multitenancy.core.context.resolvers;
 
+import io.arconia.core.support.Incubating;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.util.Assert;
 
 /**
  * Strategy to use a fixed value as the current tenant, regardless of the source context.
  */
+@Incubating
 public final class FixedTenantResolver implements TenantResolver<Object> {
 
     public static final String DEFAULT_FIXED_TENANT_IDENTIFIER = "default";

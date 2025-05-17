@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(":arconia-core")
     implementation project(":arconia-multitenancy:arconia-multitenancy-core")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"

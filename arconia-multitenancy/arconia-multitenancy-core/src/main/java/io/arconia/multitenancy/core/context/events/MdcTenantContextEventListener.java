@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.core.context.events;
 
+import io.arconia.core.support.Incubating;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -12,6 +14,7 @@ import io.arconia.multitenancy.core.events.TenantEventListener;
  * A {@link TenantEventListener} that sets/clears the tenant identifier from the current
  * context on the SLF4J's {@link MDC}.
  */
+@Incubating
 public final class MdcTenantContextEventListener implements TenantEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MdcTenantContextEventListener.class);

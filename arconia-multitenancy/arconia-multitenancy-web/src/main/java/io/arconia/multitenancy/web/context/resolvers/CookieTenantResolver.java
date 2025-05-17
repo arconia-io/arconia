@@ -2,6 +2,8 @@ package io.arconia.multitenancy.web.context.resolvers;
 
 import java.util.Arrays;
 
+import io.arconia.core.support.Incubating;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -11,6 +13,7 @@ import org.springframework.util.Assert;
 /**
  * Strategy used to resolve the current tenant from a cookie in an HTTP request.
  */
+@Incubating
 public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
     public static final String DEFAULT_COOKIE_NAME = "TENANT-ID";

@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.web.context.annotations;
 
+import io.arconia.core.support.Incubating;
+
 import org.springframework.core.MethodParameter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -25,6 +27,7 @@ import io.arconia.multitenancy.core.context.TenantContextHolder;
  * }
  * </pre>
  */
+@Incubating
 public final class TenantIdentifierArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override

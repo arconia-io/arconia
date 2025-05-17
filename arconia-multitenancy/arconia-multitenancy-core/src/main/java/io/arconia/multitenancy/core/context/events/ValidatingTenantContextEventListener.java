@@ -1,5 +1,7 @@
 package io.arconia.multitenancy.core.context.events;
 
+import io.arconia.core.support.Incubating;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +13,7 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 /**
  * A {@link TenantEventListener} that validates the tenant for the current context.
  */
+@Incubating
 public final class ValidatingTenantContextEventListener implements TenantEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidatingTenantContextEventListener.class);

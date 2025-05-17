@@ -18,6 +18,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
 
+    optional project(":arconia-core")
     optional project(":arconia-multitenancy:arconia-multitenancy-core")
     optional project(":arconia-multitenancy:arconia-multitenancy-web")
 

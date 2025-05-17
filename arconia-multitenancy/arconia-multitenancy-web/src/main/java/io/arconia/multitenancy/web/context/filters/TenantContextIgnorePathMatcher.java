@@ -3,6 +3,8 @@ package io.arconia.multitenancy.web.context.filters;
 import java.util.List;
 import java.util.Set;
 
+import io.arconia.core.support.Incubating;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
 /**
  * Matches HTTP requests paths for which a tenant context is not attached.
  */
+@Incubating
 public class TenantContextIgnorePathMatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);
