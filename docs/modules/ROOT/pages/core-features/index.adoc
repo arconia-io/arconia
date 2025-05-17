@@ -6,6 +6,10 @@ This section provides information on using the core features and capabilities of
 
 To get started with Arconia, add the Arconia Spring Boot Starter dependency to your project.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy]
 ----
 dependencies {
@@ -13,8 +17,23 @@ dependencies {
 }
 ----
 
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencyManagement {
@@ -23,3 +42,21 @@ dependencyManagement {
 	}
 }
 ----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.arconia</groupId>
+        <artifactId>arconia-bom</artifactId>
+        <version>{page-component-version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+----
+======

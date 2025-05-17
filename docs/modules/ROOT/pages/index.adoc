@@ -18,4 +18,4 @@ NOTE: The Arconia Framework is currently in active development. We're working ha
 
 == Authors
 
-The Arconia Framework is maintained by https://thomasvitale.com[Thomas Vitale].
+The Arconia Framework was created by https://thomasvitale.com[Thomas Vitale].
