@@ -58,9 +58,7 @@ public class PropertyAdapter {
             String value = environment.getProperty(externalKey);
             if (StringUtils.hasText(value)) {
                 var convertedValue = converter.apply(value.trim());
-                if (convertedValue != null) {
-                    adapter.arconiaProperties.put(arconiaKey, convertedValue);
-                }
+                adapter.arconiaProperties.put(arconiaKey, convertedValue);
             }
             return this;
         }
@@ -156,5 +154,7 @@ public class PropertyAdapter {
         public PropertyAdapter build() {
             return adapter;
         }
+
     }
+
 }
