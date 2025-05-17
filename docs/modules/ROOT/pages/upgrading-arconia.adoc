@@ -6,6 +6,8 @@ We're moving fast, and the APIs may change frequently, but we're committed to ke
 
 We maintain an https://docs.openrewrite.org[OpenRewrite] recipe to help you upgrade your projects to the latest version of Arconia automatically. You can run it with the Arconia CLI, Gradle, or Maven.
 
+Furthermore, make sure you check the https://github.com/arconia-io/arconia/releases[release notes] to see if there are any breaking changes or new features that you should be aware of.
+
 == Arconia CLI
 
 Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgrade your project to the latest version of Arconia:
