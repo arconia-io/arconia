@@ -2,11 +2,11 @@
 
 Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
 
-For example, if your application needs a database, you can use PostgreSQL Dev Service to automatically start a PostgreSQL database when you run your application or integration tests. This eliminates the need to manually start and manage the database during development.
+For example, if your application needs a database, you can use PostgreSQL Dev Service to automatically start a PostgreSQL database when you run your application or integration tests. This eliminates the need to manually start and manage the database during development and testing.
 
 == How They Work
 
-For each supported service, Arconia provides a dedicated module that you can include in your project. When you add the module to your project, the service is automatically started when you run your application or integration tests.
+For each supported service, Arconia provides a dedicated module that you can include in your project. When you add the module to your project, the service is automatically started when you run your application in development mode or integration tests.
 
 You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
 

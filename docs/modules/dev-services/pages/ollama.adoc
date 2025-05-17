@@ -17,6 +17,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+By default, the Dev Service will be shared across multiple applications.
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.

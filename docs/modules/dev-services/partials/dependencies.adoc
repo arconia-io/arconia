@@ -1,5 +1,9 @@
 First, you need to add the Dev Service dependency to your project.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencies {
@@ -7,14 +11,43 @@ dependencies {
 }
 ----
 
-You can optionally include also the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] dependency to enable live reload of your application during development.
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-{service-name}</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
 
+You can optionally include the https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] dependency to enable live reload of your application during development.
+
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencies {
   developmentOnly "org.springframework.boot:spring-boot-devtools"
-  testAndDevelopmentOnly "io.arconia:arconia-dev-services-{service-name}"
 }
 ----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
 
 NOTE: When you use the Spring Boot DevTools in your project, Arconia will keep the Dev Services running while you make changes to your code instead of restarting them with the application. This allows you to see the changes in real-time without having to restart the Dev Services.
