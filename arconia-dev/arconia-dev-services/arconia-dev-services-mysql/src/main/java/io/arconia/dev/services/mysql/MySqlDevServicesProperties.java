@@ -23,7 +23,7 @@ public class MySqlDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mysql:9.3";
+    private String imageName = "mysql:8.4";
 
     /**
      * Environment variables to set in the service.
