@@ -3,19 +3,18 @@
   "manifest": {
     "version": 1,
     "install": {
+      "graalvm-ce": {
+        "pkg-path": "graalvm-ce",
+        "version": "24.0.1"
+      },
       "httpie": {
         "pkg-path": "httpie"
-      },
-      "jbang": {
-        "pkg-path": "jbang"
       }
     },
     "vars": {
       "FLOX_DISABLE_METRICS": "true"
     },
-    "hook": {
-      "on-activate": "  eval $(jbang jdk env 24)\n"
-    },
+    "hook": {},
     "profile": {},
     "options": {
       "systems": [
@@ -28,236 +27,236 @@
   },
   "packages": [
     {
-      "attr_path": "httpie",
+      "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/xcpn75bpryh7k4kw69g7kzp5h07xixrj-python3.12-httpie-3.2.4.drv",
-      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
-      "install_id": "httpie",
-      "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "httpie-3.2.4",
-      "pname": "httpie",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T04:25:17.378987Z",
+      "derivation": "/nix/store/ka1q1lzasny39hlc9q1r6fw87f6fsq08-graalvm-ce-24.0.1.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "graalvm-ce-24.0.1",
+      "pname": "graalvm-ce",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T04:26:06.507948Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "3.2.4",
+      "version": "24.0.1",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "dist": "/nix/store/vqnr7bbp8zia3qlxz5vdks3gmb2nbci9-python3.12-httpie-3.2.4-dist",
-        "out": "/nix/store/2q7rqmq41wb44nhi1bair0pqdvj8qvlk-python3.12-httpie-3.2.4"
+        "out": "/nix/store/jiv5r4l347h7s5gkplszkkji3si9cys3-graalvm-ce-24.0.1"
       },
       "system": "aarch64-darwin",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "httpie",
+      "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/i7g8w102xbnvm2ma7z44cx8hijwck6fb-python3.12-httpie-3.2.4.drv",
-      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
-      "install_id": "httpie",
-      "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "httpie-3.2.4",
-      "pname": "httpie",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T04:48:09.714626Z",
+      "derivation": "/nix/store/r18nfsdg4xhqbqy6wwxk38z4yjw620wa-graalvm-ce-24.0.1.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "graalvm-ce-24.0.1",
+      "pname": "graalvm-ce",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T04:48:48.803476Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "3.2.4",
+      "version": "24.0.1",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "dist": "/nix/store/3vm216h7rvp8ywjz18d4mnh8bjppf0as-python3.12-httpie-3.2.4-dist",
-        "out": "/nix/store/0sss39gxk87pgvm0r0ggp6r13c5zfpjf-python3.12-httpie-3.2.4"
+        "out": "/nix/store/md9b8faqbhx1rh2jgb0i1kkga2c3wxnz-graalvm-ce-24.0.1"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "httpie",
+      "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/ckj8n7wjzfgrw7gk30y9qmpzr6y335ij-python3.12-httpie-3.2.4.drv",
-      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
-      "install_id": "httpie",
-      "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "httpie-3.2.4",
-      "pname": "httpie",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T05:08:12.077546Z",
+      "derivation": "/nix/store/yp0brzpz1wbdb19qqhyb2xdmflc5ac9x-graalvm-ce-24.0.1.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "graalvm-ce-24.0.1",
+      "pname": "graalvm-ce",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T05:09:14.257946Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "3.2.4",
+      "version": "24.0.1",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "dist": "/nix/store/gqa11qlhhbfkzpjgvlpygsrcvljskvd8-python3.12-httpie-3.2.4-dist",
-        "out": "/nix/store/jl26n6zl5j57m0fgal3q5yil1pz7w5c8-python3.12-httpie-3.2.4"
+        "out": "/nix/store/ygsbqnfxa82jq7ckdi0xahm4pzgd2fx6-graalvm-ce-24.0.1"
       },
       "system": "x86_64-darwin",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "httpie",
+      "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/pid1nf2j9p85wcrf9zydrs8gc6fyb1gb-python3.12-httpie-3.2.4.drv",
-      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
-      "install_id": "httpie",
-      "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "httpie-3.2.4",
-      "pname": "httpie",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T05:34:21.579279Z",
+      "derivation": "/nix/store/1v1bpwiysdmhnra5vsl2v783mjsqc6w0-graalvm-ce-24.0.1.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "graalvm-ce-24.0.1",
+      "pname": "graalvm-ce",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T05:44:50.711796Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "3.2.4",
+      "version": "24.0.1",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "dist": "/nix/store/rbicxiz6rz2ji6h0m555zv20k12j4rn2-python3.12-httpie-3.2.4-dist",
-        "out": "/nix/store/wbszs2bz89s2jj6in3mdcwzldvlwgwyi-python3.12-httpie-3.2.4"
+        "out": "/nix/store/8ca2h2dk00iwn725dr46n7zd1j18jvn8-graalvm-ce-24.0.1"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "jbang",
+      "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/i9s9mh012v5368xpkmqmjdaqm410vr7y-jbang-0.125.1.drv",
-      "description": "Run java as scripts anywhere",
-      "install_id": "jbang",
-      "license": "MIT",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "jbang-0.125.1",
-      "pname": "jbang",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T04:25:17.541301Z",
+      "derivation": "/nix/store/g87275daajldcc82m6hl9a4f9y7gzfzm-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T04:26:06.665500Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "0.125.1",
+      "version": "3.2.4",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/q6ava5yjm84b3kzzy0l3f6rbp40qir0m-jbang-0.125.1"
+        "dist": "/nix/store/xy7gki5ak3v8d2yy7p6vkh4vw000c8a9-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/sh2p1km67z504fn1gfdwf01jahqikwfr-python3.12-httpie-3.2.4"
       },
       "system": "aarch64-darwin",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "jbang",
+      "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/n9is9zlmspivbrc1ndkbml0pyi2wq3pd-jbang-0.125.1.drv",
-      "description": "Run java as scripts anywhere",
-      "install_id": "jbang",
-      "license": "MIT",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "jbang-0.125.1",
-      "pname": "jbang",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T04:48:10.092272Z",
+      "derivation": "/nix/store/0k1rfil96gajmzb0gnmjb72695lymwgc-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T04:48:49.503798Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "0.125.1",
+      "version": "3.2.4",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/yhfsmv295nqv038ib3cwq14d3dyshy2p-jbang-0.125.1"
+        "dist": "/nix/store/zyi6pl0iwvw823j8m6wr6fs6yc576pag-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/93xhm7h1lchy5klvqhzbingayaqh4l8k-python3.12-httpie-3.2.4"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "jbang",
+      "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/8k1y131sxfqifhkiax7zc4mivmpicn7i-jbang-0.125.1.drv",
-      "description": "Run java as scripts anywhere",
-      "install_id": "jbang",
-      "license": "MIT",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "jbang-0.125.1",
-      "pname": "jbang",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T05:08:12.245415Z",
+      "derivation": "/nix/store/msi2ncbnhafh94csx9zh1fky4d7lzm4s-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T05:09:14.421402Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "0.125.1",
+      "version": "3.2.4",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/zp0klnqzx69x1j88p9gw0p9vk9iabnf6-jbang-0.125.1"
+        "dist": "/nix/store/zfklbgb73zpagkrx4229bsyijclkacxn-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/miii02j3q046j8y206imqhyqr62j3kd9-python3.12-httpie-3.2.4"
       },
       "system": "x86_64-darwin",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "jbang",
+      "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/w4cbxyxrcs84ywc0gg9g36v065c0zl23-jbang-0.125.1.drv",
-      "description": "Run java as scripts anywhere",
-      "install_id": "jbang",
-      "license": "MIT",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "name": "jbang-0.125.1",
-      "pname": "jbang",
-      "rev": "d89fc19e405cb2d55ce7cc114356846a0ee5e956",
-      "rev_count": 797896,
-      "rev_date": "2025-05-10T19:10:37Z",
-      "scrape_date": "2025-05-13T05:34:22.000618Z",
+      "derivation": "/nix/store/gmwh2skaiydy3qbk5q93615prh0bm1m3-python3.12-httpie-3.2.4.drv",
+      "description": "Command line HTTP client whose goal is to make CLI human-friendly",
+      "install_id": "httpie",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "name": "httpie-3.2.4",
+      "pname": "httpie",
+      "rev": "292fa7d4f6519c074f0a50394dbbe69859bb6043",
+      "rev_count": 802366,
+      "rev_date": "2025-05-18T04:33:40Z",
+      "scrape_date": "2025-05-20T05:44:51.448243Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "0.125.1",
+      "version": "3.2.4",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/4af4d1l0hvy4ah3ar0z4xyhv2v7midkc-jbang-0.125.1"
+        "dist": "/nix/store/c183p34628v1c5adl8zf0pqgabbd5wh6-python3.12-httpie-3.2.4-dist",
+        "out": "/nix/store/klvk4jm9vpjv4jmwqsxk6d4dwl77b3gp-python3.12-httpie-3.2.4"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
