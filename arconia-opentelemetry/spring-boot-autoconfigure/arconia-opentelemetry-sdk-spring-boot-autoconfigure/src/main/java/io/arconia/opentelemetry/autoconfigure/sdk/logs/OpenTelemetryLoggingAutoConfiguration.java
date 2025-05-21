@@ -11,6 +11,8 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.logging.SdkLoggerProviderBuilderCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -28,13 +30,16 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(OpenTelemetryLoggingProperties.class)
 public class OpenTelemetryLoggingAutoConfiguration {
 
+    private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryLoggingAutoConfiguration.class);
+
     @Bean
     @ConditionalOnMissingBean
     SdkLoggerProvider loggerProvider(Clock clock,
                                      LogLimits logLimits,
                                      Resource resource,
                                      ObjectProvider<LogRecordProcessor> logRecordProcessors,
-                                     ObjectProvider<SdkLoggerProviderBuilderCustomizer> customizers
+                                     ObjectProvider<OpenTelemetryLoggerProviderBuilderCustomizer> customizers,
+                                     ObjectProvider<SdkLoggerProviderBuilderCustomizer> sdkCustomizers
     ) {
         SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder()
                 .setClock(clock)
@@ -42,6 +47,11 @@ public class OpenTelemetryLoggingAutoConfiguration {
                 .setResource(resource);
         logRecordProcessors.orderedStream().forEach(loggerProviderBuilder::addLogRecordProcessor);
         customizers.orderedStream().forEach((customizer) -> customizer.customize(loggerProviderBuilder));
+        sdkCustomizers.orderedStream().forEach((customizer) -> customizer.customize(loggerProviderBuilder));
+        sdkCustomizers.ifAvailable(customizer -> logger.warn("""
+                You are using Spring Boot's SdkLoggerProviderBuilderCustomizer to customize the SdkLoggerProviderBuilder.
+                For better compatibility with Arconia OpenTelemetry, use the OpenTelemetryLoggerProviderBuilderCustomizer instead.
+                """));
         return loggerProviderBuilder.build();
     }
 

@@ -1,0 +1,29 @@
+[what-is-new]
+= What's New in Arconia {page-component-version}
+
+Arconia {page-component-version} provides a number of new features and enhancements. This page includes  the highlights of the release, but you can also check out the full release notes for more details about each new feature and bug fix.
+
+== Dev Services
+
+* The Arconia Dev Service for MySQL was using version 9.3 as the default. This has been updated to 8.4 (the current LTS version) due to a bug in Testcontainers that caused any 9.x version to fail. See https://github.com/testcontainers/testcontainers-java/issues/10184[testcontainers/testcontainers-java#10184] for more information.
+
+== OpenTelemetry
+
+=== New Features
+
+* The documentation for Arconia OpenTelemetry has been improved to include instructions in both Gradle and Maven.
+* Arconia OpenTelemetry provides auto-configuration for the OpenTelemetry Java SDK. In this release, we consolidated the interfaces for customizing the auto-configured SDK components:
+
+** `OpenTelemetryLoggerProviderBuilderCustomizer` for customizing the auto-configured `SdkLoggerProviderBuilder` bean.
+** `OpenTelemetryMeterProviderBuilderCustomizer` for customizing the auto-configured `SdkMeterProviderBuilder` bean, which supersedes the previous `SdkMeterProviderBuilderCustomizer` now deprecated.
+** `OpenTelemetryTracerProviderBuilderCustomizer` for customizing the auto-configured `SdkTracerProviderBuilder` bean.
+** `OpenTelemetryResourceBuilderCustomizer` for customizing the auto-configured `ResourceBuilder` bean, which supersedes the previous `SdkResourceBuilderCustomizer` now deprecated.
+
+=== Deprecations
+
+TIP: If you upgrade Arconia using the OpenRewrite recipe described in xref:upgrading-arconia.adoc[Upgrading Arconia], the deprecated types will be automatically replaced with the new ones.
+
+The following type have been deprecated in this release:
+
+* `SdkMeterProviderBuilderCustomizer` - Use `OpenTelemetryMeterProviderBuilderCustomizer` instead.
+* `SdkResourceBuilderCustomizer` - Use `OpenTelemetryResourceBuilderCustomizer` instead.

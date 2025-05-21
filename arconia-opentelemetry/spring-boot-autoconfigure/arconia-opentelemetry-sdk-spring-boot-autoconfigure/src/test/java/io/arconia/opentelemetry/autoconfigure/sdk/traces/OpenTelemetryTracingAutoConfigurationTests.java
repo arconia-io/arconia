@@ -185,9 +185,20 @@ class OpenTelemetryTracingAutoConfigurationTests {
             .withBean(TracingProperties.class, TracingProperties::new)
             .withUserConfiguration(CustomTracerProviderConfiguration.class)
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkTracerProvider.class);
-                assertThat(context).hasSingleBean(SdkTracerProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryTracerProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryTracerProviderBuilderCustomizer.class);
             });
+    }
+
+    @Test
+    void customSpringBootTracerProviderBuilderCustomizerApplied() {
+        contextRunner
+                .withBean(TracingProperties.class, TracingProperties::new)
+                .withUserConfiguration(CustomSpringBootTracerProviderConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(SdkTracerProvider.class);
+                    assertThat(context).hasSingleBean(SdkTracerProviderBuilderCustomizer.class);
+                });
     }
 
     @Test
@@ -204,10 +215,22 @@ class OpenTelemetryTracingAutoConfigurationTests {
     @Configuration(proxyBeanMethods = false)
     static class CustomTracerProviderConfiguration {
 
+        private final OpenTelemetryTracerProviderBuilderCustomizer customizer = mock(OpenTelemetryTracerProviderBuilderCustomizer.class);
+
+        @Bean
+        OpenTelemetryTracerProviderBuilderCustomizer customTracerProviderBuilderCustomizer() {
+            return customizer;
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomSpringBootTracerProviderConfiguration {
+
         private final SdkTracerProviderBuilderCustomizer customizer = mock(SdkTracerProviderBuilderCustomizer.class);
 
         @Bean
-        SdkTracerProviderBuilderCustomizer customTracerProviderBuilderCustomizer() {
+        SdkTracerProviderBuilderCustomizer customSpringBootTracerProviderBuilderCustomizer() {
             return customizer;
         }
 

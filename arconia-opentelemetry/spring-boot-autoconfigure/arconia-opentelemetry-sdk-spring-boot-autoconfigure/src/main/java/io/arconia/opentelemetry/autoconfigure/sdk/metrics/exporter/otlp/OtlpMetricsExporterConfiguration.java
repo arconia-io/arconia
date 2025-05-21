@@ -2,6 +2,8 @@ package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp;
 
 import java.util.Locale;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
+
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
@@ -27,7 +29,6 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 /**
@@ -101,7 +102,7 @@ public class OtlpMetricsExporterConfiguration {
     }
 
     @Bean
-    SdkMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsExporterProperties properties) {
+    OpenTelemetryMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsExporterProperties properties) {
         return builder -> builder.registerView(
                 InstrumentSelector.builder()
                         .setType(InstrumentType.HISTOGRAM)

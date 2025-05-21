@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -19,7 +20,6 @@ import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.HostResou
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.JavaResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.OsResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor.ProcessResourceContributor;
-import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,7 +58,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
             assertThat(context).hasSingleBean(Resource.class);
             assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
             assertThat(context).hasSingleBean(EnvironmentResourceContributor.class);
-            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
+            assertThat(context).hasSingleBean(OpenTelemetryResourceBuilderCustomizer.class);
             assertThat(context).doesNotHaveBean(HostResourceContributor.class);
             assertThat(context).doesNotHaveBean(JavaResourceContributor.class);
             assertThat(context).doesNotHaveBean(OsResourceContributor.class);
@@ -202,9 +202,9 @@ class OpenTelemetryResourceAutoConfigurationTests {
                 "arconia.otel.resource.enable.process.pid=false"
         ).run(context -> {
             assertThat(context).hasSingleBean(Resource.class);
-            assertThat(context).hasSingleBean(SdkResourceBuilderCustomizer.class);
+            assertThat(context).hasSingleBean(OpenTelemetryResourceBuilderCustomizer.class);
 
-            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            OpenTelemetryResourceBuilderCustomizer customizer = context.getBean(OpenTelemetryResourceBuilderCustomizer.class);
             ResourceBuilder builder = Resource.getDefault().toBuilder();
             builder.put("host.name", "test-host");
             builder.put("host.id", "test-id");
@@ -228,7 +228,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
         contextRunner.withPropertyValues(
                 "arconia.otel.resource.enable.all=true"
         ).run(context -> {
-            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            OpenTelemetryResourceBuilderCustomizer customizer = context.getBean(OpenTelemetryResourceBuilderCustomizer.class);
             ResourceBuilder builder = Resource.getDefault().toBuilder();
             builder.put("host.name", "test-host");
             builder.put("process.pid", "123");
@@ -249,7 +249,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
         contextRunner.withPropertyValues(
                 "arconia.otel.resource.enable.all=false"
         ).run(context -> {
-            SdkResourceBuilderCustomizer customizer = context.getBean(SdkResourceBuilderCustomizer.class);
+            OpenTelemetryResourceBuilderCustomizer customizer = context.getBean(OpenTelemetryResourceBuilderCustomizer.class);
             ResourceBuilder builder = Resource.getDefault().toBuilder();
             builder.put("host.name", "test-host");
             builder.put("process.pid", "123");
@@ -273,7 +273,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(Resource.class);
                     Resource resource = context.getBean(Resource.class);
-                    
+
                     // Verify the final resource has attributes from both contributors and customizers
                     assertThat(resource.getAttribute(AttributeKey.stringKey("custom.attribute"))).isEqualTo("another-value");
                     assertThat(context.getBean(EnvironmentResourceContributor.class)).isNotNull();

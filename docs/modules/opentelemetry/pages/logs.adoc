@@ -82,17 +82,19 @@ When possible, we recommend using the Arconia-specific properties instead of the
 
 == Programmatic Configuration
 
-You can further customize the auto-configured `SdkLoggerProvider` instance via the `SdkLoggerProviderBuilderCustomizer` API.
+You can further customize the auto-configured `SdkLoggerProvider` instance via the `OpenTelemetryLoggerProviderBuilderCustomizer` API.
 
 [source,java]
 ----
 @FunctionalInterface
-public interface SdkLoggerProviderBuilderCustomizer {
+public interface OpenTelemetryLoggerProviderBuilderCustomizer {
 
     void customize(SdkLoggerProviderBuilder builder);
 
 }
 ----
+
+INFO: Arconia OpenTelemetry also supports the `SdkLoggerProviderBuilderCustomizer` interface (from Spring Boot) for customizing a `SdkLoggerProviderBuilder` instance.
 
 == Disabling the Auto-Configuration
 

@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.actuate.autoconfigure.tracing.SdkTracerProviderBuilderCustomizer;
@@ -31,6 +33,8 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(OpenTelemetryTracingProperties.class)
 public class OpenTelemetryTracingAutoConfiguration {
 
+    private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTracingAutoConfiguration.class);
+
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
 
     @Bean
@@ -40,7 +44,8 @@ public class OpenTelemetryTracingAutoConfiguration {
                                      Sampler sampler,
                                      SpanLimits spanLimits,
                                      ObjectProvider<SpanProcessor> spanProcessors,
-                                     ObjectProvider<SdkTracerProviderBuilderCustomizer> customizers
+                                     ObjectProvider<OpenTelemetryTracerProviderBuilderCustomizer> customizers,
+                                     ObjectProvider<SdkTracerProviderBuilderCustomizer> sdkCustomizers
     ) {
         SdkTracerProviderBuilder builder = SdkTracerProvider.builder()
                 .setResource(resource)
@@ -49,6 +54,11 @@ public class OpenTelemetryTracingAutoConfiguration {
                 .setSpanLimits(spanLimits);
         spanProcessors.orderedStream().forEach(builder::addSpanProcessor);
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+        sdkCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+        sdkCustomizers.ifAvailable(customizer -> logger.warn("""
+                You are using Spring Boot's SdkTracerProviderBuilderCustomizer to customize the SdkTracerProviderBuilder.
+                For better compatibility with Arconia OpenTelemetry, use the OpenTelemetryTracerProviderBuilderCustomizer instead.
+                """));
         return builder.build();
     }
 

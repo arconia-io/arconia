@@ -322,12 +322,12 @@ You can also use this API to adapt `Resource` or `ResourceProvider` implementati
 
 == Programmatic Configuration
 
-Besides the `ResourceContributor` API, you can further customize the auto-configured `Resource` instance via the `SdkResourceBuilderCustomizer` API.
+Besides the `ResourceContributor` API, you can further customize the auto-configured `ResourceBuilder` instance via the `OpenTelemetryResourceBuilderCustomizer` API.
 
 [source,java]
 ----
 @FunctionalInterface
-public interface SdkResourceBuilderCustomizer {
+public interface OpenTelemetryResourceBuilderCustomizer {
 
     void customize(ResourceBuilder builder);
 

@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp;
 
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
+
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 
@@ -10,7 +12,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsProperties;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.SdkMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
@@ -189,7 +190,7 @@ class OtlpMetricsExporterConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram")
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("histogramAggregation");
 
                 // Verify the histogram aggregation property is set correctly
@@ -201,7 +202,7 @@ class OtlpMetricsExporterConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=explicit-bucket-histogram")
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("histogramAggregation");
 
                 // Verify the histogram aggregation property is set correctly

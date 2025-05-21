@@ -37,10 +37,14 @@ public class OpenTelemetryResourceAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    Resource resource(ObjectProvider<ResourceContributor> resourceContributors, ObjectProvider<SdkResourceBuilderCustomizer> customizers) {
+    Resource resource(ObjectProvider<ResourceContributor> resourceContributors,
+                      ObjectProvider<OpenTelemetryResourceBuilderCustomizer> customizers,
+                      ObjectProvider<SdkResourceBuilderCustomizer> sdkCustomizers
+    ) {
         ResourceBuilder builder = Resource.getDefault().toBuilder();
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
         customizers.orderedStream().forEach(contributor -> contributor.customize(builder));
+        sdkCustomizers.orderedStream().forEach(contributor -> contributor.customize(builder));
         return builder.build();
     }
 
@@ -88,7 +92,7 @@ public class OpenTelemetryResourceAutoConfiguration {
     }
 
     @Bean
-    SdkResourceBuilderCustomizer filterAttributes(OpenTelemetryResourceProperties properties) {
+    OpenTelemetryResourceBuilderCustomizer filterAttributes(OpenTelemetryResourceProperties properties) {
         return builder -> {
             var attributeKeysMap = properties.getEnable();
 

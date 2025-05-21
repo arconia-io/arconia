@@ -54,12 +54,12 @@ When possible, we recommend using the Arconia-specific properties instead of the
 
 == Programmatic Configuration
 
-You can further customize the auto-configured `SdkMeterProvider` instance via the `SdkMeterProviderBuilderCustomizer` API.
+You can further customize the auto-configured `SdkMeterProvider` instance via the `OpenTelemetryMeterProviderBuilderCustomizer` API.
 
 [source,java]
 ----
 @FunctionalInterface
-public interface SdkMeterProviderBuilderCustomizer {
+public interface OpenTelemetryMeterProviderBuilderCustomizer {
 
     void customize(SdkMeterProviderBuilder builder);
 

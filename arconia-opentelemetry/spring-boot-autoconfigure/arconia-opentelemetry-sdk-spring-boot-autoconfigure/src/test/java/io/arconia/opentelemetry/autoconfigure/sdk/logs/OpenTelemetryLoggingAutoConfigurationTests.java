@@ -96,8 +96,18 @@ class OpenTelemetryLoggingAutoConfigurationTests {
             .withUserConfiguration(CustomLoggerProviderConfiguration.class)
             .run(context -> {
                 assertThat(context).hasSingleBean(SdkLoggerProvider.class);
-                assertThat(context).hasSingleBean(SdkLoggerProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryLoggerProviderBuilderCustomizer.class);
             });
+    }
+
+    @Test
+    void customSpringBootLoggerProviderBuilderCustomizerApplied() {
+        contextRunner
+                .withUserConfiguration(CustomSpringBootLoggerProviderConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(SdkLoggerProvider.class);
+                    assertThat(context).hasSingleBean(SdkLoggerProviderBuilderCustomizer.class);
+                });
     }
 
     @Test
@@ -124,10 +134,22 @@ class OpenTelemetryLoggingAutoConfigurationTests {
     @Configuration(proxyBeanMethods = false)
     static class CustomLoggerProviderConfiguration {
 
+        private final OpenTelemetryLoggerProviderBuilderCustomizer customizer = mock(OpenTelemetryLoggerProviderBuilderCustomizer.class);
+
+        @Bean
+        OpenTelemetryLoggerProviderBuilderCustomizer customLoggerProviderBuilderCustomizer() {
+            return customizer;
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomSpringBootLoggerProviderConfiguration {
+
         private final SdkLoggerProviderBuilderCustomizer customizer = mock(SdkLoggerProviderBuilderCustomizer.class);
 
         @Bean
-        SdkLoggerProviderBuilderCustomizer customLoggerProviderBuilderCustomizer() {
+        SdkLoggerProviderBuilderCustomizer customSpringBootLoggerProviderBuilderCustomizer() {
             return customizer;
         }
 

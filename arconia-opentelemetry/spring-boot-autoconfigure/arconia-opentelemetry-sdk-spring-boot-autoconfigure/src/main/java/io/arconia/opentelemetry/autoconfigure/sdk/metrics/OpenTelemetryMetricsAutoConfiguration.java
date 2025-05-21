@@ -43,13 +43,15 @@ public class OpenTelemetryMetricsAutoConfiguration {
     SdkMeterProvider otelSdkMeterProvider(Clock clock,
                                           ExemplarFilter exemplarFilter,
                                           Resource resource,
-                                          ObjectProvider<SdkMeterProviderBuilderCustomizer> customizers
+                                          ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers,
+                                          ObjectProvider<SdkMeterProviderBuilderCustomizer> sdkCustomizers
     ) {
         SdkMeterProviderBuilder builder = SdkMeterProvider.builder()
                 .setClock(clock)
                 .setResource(resource);
         SdkMeterProviderUtil.setExemplarFilter(builder, exemplarFilter); // Still experimental, so we need to use the internal utility method.
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+        sdkCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
         return builder.build();
     }
 
@@ -71,7 +73,7 @@ public class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnThreading(Threading.PLATFORM)
-    SdkMeterProviderBuilderCustomizer metricBuilderPlatformThreads(OpenTelemetryMetricsProperties properties,
+    OpenTelemetryMeterProviderBuilderCustomizer metricBuilderPlatformThreads(OpenTelemetryMetricsProperties properties,
                                                                    CardinalityLimitSelector cardinalityLimitSelector,
                                                                    ObjectProvider<MetricExporter> metricExporters
     ) {
@@ -87,7 +89,7 @@ public class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnThreading(Threading.VIRTUAL)
-    SdkMeterProviderBuilderCustomizer metricBuilderVirtualThreads(OpenTelemetryMetricsProperties properties,
+    OpenTelemetryMeterProviderBuilderCustomizer metricBuilderVirtualThreads(OpenTelemetryMetricsProperties properties,
                                                       CardinalityLimitSelector cardinalityLimitSelector,
                                                       ObjectProvider<MetricExporter> metricExporters
     ) {

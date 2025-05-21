@@ -104,7 +104,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
                 "spring.threads.virtual.enabled=false"
             )
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("metricBuilderPlatformThreads");
                 assertThat(context).doesNotHaveBean("metricBuilderVirtualThreads");
             });
@@ -119,7 +119,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
                 "spring.threads.virtual.enabled=true"
             )
             .run(context -> {
-                assertThat(context).hasSingleBean(SdkMeterProviderBuilderCustomizer.class);
+                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
                 assertThat(context).hasBean("metricBuilderVirtualThreads");
                 assertThat(context).doesNotHaveBean("metricBuilderPlatformThreads");
             });
@@ -131,7 +131,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
             .withPropertyValues("spring.threads.virtual.enabled=true")
             .run(context -> {
-                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context.getBeansOfType(OpenTelemetryMeterProviderBuilderCustomizer.class)).hasSize(2);
                 assertThat(context).hasBean("customMetricBuilderCustomizer");
                 assertThat(context).hasBean("metricBuilderVirtualThreads");
             });
@@ -140,7 +140,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
             .withPropertyValues("spring.threads.virtual.enabled=false")
             .run(context -> {
-                assertThat(context.getBeansOfType(SdkMeterProviderBuilderCustomizer.class)).hasSize(2);
+                assertThat(context.getBeansOfType(OpenTelemetryMeterProviderBuilderCustomizer.class)).hasSize(2);
                 assertThat(context).hasBean("customMetricBuilderCustomizer");
                 assertThat(context).hasBean("metricBuilderPlatformThreads");
             });
@@ -167,10 +167,10 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     @Configuration(proxyBeanMethods = false)
     static class CustomMeterProviderConfiguration {
 
-        private final SdkMeterProviderBuilderCustomizer customizer = mock(SdkMeterProviderBuilderCustomizer.class);
+        private final OpenTelemetryMeterProviderBuilderCustomizer customizer = mock(OpenTelemetryMeterProviderBuilderCustomizer.class);
 
         @Bean
-        SdkMeterProviderBuilderCustomizer customMeterProviderBuilderCustomizer() {
+        OpenTelemetryMeterProviderBuilderCustomizer customMeterProviderBuilderCustomizer() {
             return customizer;
         }
 
@@ -203,10 +203,10 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     @Configuration(proxyBeanMethods = false)
     static class CustomMetricBuilderCustomizerConfiguration {
 
-        private final SdkMeterProviderBuilderCustomizer customMetricBuilderCustomizer = mock(SdkMeterProviderBuilderCustomizer.class);
+        private final OpenTelemetryMeterProviderBuilderCustomizer customMetricBuilderCustomizer = mock(OpenTelemetryMeterProviderBuilderCustomizer.class);
 
         @Bean
-        SdkMeterProviderBuilderCustomizer customMetricBuilderCustomizer() {
+        OpenTelemetryMeterProviderBuilderCustomizer customMetricBuilderCustomizer() {
             return customMetricBuilderCustomizer;
         }
 
