@@ -15,17 +15,36 @@ TIP: You can refer to our https://github.com/arconia-io/arconia-examples/tree/ma
 
 === Dependencies
 
-If you already have a Spring Boot application and want to add OpenTelemetry support, you can add the Arconia OpenTelemetry Spring Boot Starter dependency to your project. This will automatically configure OpenTelemetry, Micrometer, and Spring Boot Actuator for you. 
+If you already have a Spring Boot application and want to add OpenTelemetry support, you can add the Arconia OpenTelemetry Spring Boot Starter dependency to your project. This will automatically configure OpenTelemetry, Micrometer, and Spring Boot Actuator for you.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
+    implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
 }
 ----
 
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia OpenTelemetry libraries. Whether not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencyManagement {
@@ -35,6 +54,24 @@ dependencyManagement {
 }
 ----
 
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
+
 === Dev Services
 
 Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
@@ -43,12 +80,29 @@ When working with OpenTelemetry, you can use the Grafana LGTM Dev Service to aut
 
 To enable the Grafana LGTM Dev Service, add the following dependency to your project.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy]
 ----
 dependencies {
-	testAndDevelopmentOnly "io.arconia:arconia-dev-services-lgtm"
+    testAndDevelopmentOnly "io.arconia:arconia-dev-services-lgtm"
 }
 ----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-lgtm</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
 
 === Running the Application
 
@@ -155,13 +209,33 @@ By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In 
 
 You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` property to `grpc`. Additionally, you need to add the following dependencies:
 
+[tabs]
+======
+Gradle::
++
 [source,groovy]
 ----
 dependencies {
-  implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-  implementation "io.grpc:grpc-netty-shaded:1.71.0"
+    implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
+    implementation "io.grpc:grpc-netty-shaded:1.72.0"
 }
 ----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-sender-grpc-managed-channel</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-netty-shaded</artifactId>
+    <version>1.72.0</version>
+</dependency>
+----
+======
 
 NOTE: The https://opentelemetry.io/docs/languages/java/sdk/#senders[`opentelemetry-exporter-sender-grpc-managed-channel`] requires a transport implementation. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs.
 
@@ -169,11 +243,26 @@ NOTE: The https://opentelemetry.io/docs/languages/java/sdk/#senders[`opentelemet
 
 Instead of OTLP, you can use the console exporter to print the telemetry data to the console. This is useful for debugging and testing purposes. Besides setting the exporter type to `console` for the observability signals you want to export, you also need to add the following dependency:
 
+[tabs]
+======
+Gradle::
++
 [source,groovy]
 ----
 dependencies {
-	implementation "io.opentelemetry:opentelemetry-exporter-logging"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging"
 }
 ----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-logging</artifactId>
+</dependency>
+----
+======
 
 WARNING: This exporter option is not recommended for production.

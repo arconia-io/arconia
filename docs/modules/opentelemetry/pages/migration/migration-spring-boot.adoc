@@ -8,10 +8,14 @@ If you're currently relying on the partial OpenTelemetry support available in Sp
 
 For starters, include the Arconia OpenTelemetry Spring Boot Starter dependency to your project.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
+    implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
 }
 
 dependencyManagement {
@@ -20,6 +24,29 @@ dependencyManagement {
 	}
 }
 ----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+</dependency>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
 
 Next, you can remove the dependencies you previously used to bring OpenTelemetry support to your Spring Boot application, including the following.
 
@@ -65,12 +92,29 @@ If you're using the Grafana LGTM Testcontainers support in Spring Boot to run a 
 
 First, include the Arconia Grafana LGTM Dev Service dependency to your project.
 
-[source,groovy,subs="attributes"]
+[tabs]
+======
+Gradle::
++
+[source,groovy]
 ----
 dependencies {
-  testAndDevelopmentOnly 'io.arconia:arconia-dev-services-lgtm'
+    testAndDevelopmentOnly "io.arconia:arconia-dev-services-lgtm"
 }
 ----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-lgtm</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
 
 Next, you can remove the dependencies you previously used to bring Grafana Testcontainers support to your Spring Boot application, including the following.
 

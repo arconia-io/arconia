@@ -49,14 +49,14 @@ Maven::
 ----
 <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>io.arconia</groupId>
-        <artifactId>arconia-bom</artifactId>
-        <version>{page-component-version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
     </dependencies>
-  </dependencyManagement>
+</dependencyManagement>
 ----
 ======

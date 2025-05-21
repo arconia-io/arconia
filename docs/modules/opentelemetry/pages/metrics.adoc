@@ -85,16 +85,6 @@ public class MyMetricsConfiguration {
 }
 ----
 
-You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsAutoConfiguration` class from the Spring Boot auto-configuration:
-
-[source,yaml]
-----
-spring:
-  autoconfigure:
-    exclude:
-      - io.arconia.opentelemetry.autoconfigure.sdk.metrics.OpenTelemetryMetricsAutoConfiguration
-----
-
 == Exporting Metrics
 
 By default, metrics are enabled and exported via OTLP, but you can change the type of exporter. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
@@ -159,7 +149,9 @@ NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, r
 
 == Micrometer Metrics Bridge
 
-Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer metrics into OpenTelemetry Metrics and export them via OTLP. 
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer metrics into OpenTelemetry Metrics and export them via OTLP.
+
+WARNING: The Micrometer Metrics Bridge is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
 
 === Enabling/Disabling the Bridge
 

@@ -8,18 +8,45 @@ If you're currently using the OpenTelemetry Spring Boot Starter, you can easily 
 
 For starters, include the Arconia OpenTelemetry Spring Boot Starter dependency to your project.
 
+[tabs]
+======
+Gradle::
++
 [source,groovy,subs="attributes"]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
+    implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
 }
 
 dependencyManagement {
-  imports {
-    mavenBom "io.arconia:arconia-bom:{page-component-version}"
-  }
+	imports {
+		mavenBom "io.arconia:arconia-bom:{page-component-version}"
+	}
 }
 ----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+</dependency>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
 
 Next, you can remove the dependencies you previously used for the OpenTelemetry Spring Boot Starter, including the following.
 

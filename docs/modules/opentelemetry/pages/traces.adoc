@@ -195,16 +195,6 @@ public class MyTracingConfiguration {
 }
 ----
 
-You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingAutoConfiguration` class from the Spring Boot auto-configuration:
-
-[source,yaml]
-----
-spring:
-  autoconfigure:
-    exclude:
-      - io.arconia.opentelemetry.autoconfigure.sdk.traces.OpenTelemetryTracingAutoConfiguration
-----
-
 == Exporting Traces
 
 By default, traces are enabled and exported via OTLP, but you can change the type of exporter. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.

@@ -263,13 +263,15 @@ arconia:
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process[Resource Process Semantic Conventions].
 
-=== Container Resource Contributor (incubating)
+=== Container Resource Contributor
 
 This contributor provides attributes to the `Resource` instance about the OCI container the application is running in, following the OpenTelemetry Semantic Conventions whenever possible.
 
 * **`container.id`**: The ID of the OCI container the application is running in, retrieved from the cgroup filesystem.
 
 NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
+
+WARNING: The Container Resource is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
@@ -285,13 +287,15 @@ arconia:
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/container[Resource Container Semantic Conventions].
 
-=== HostId Resource Contributor (incubating)
+=== HostId Resource Contributor
 
 This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible. It only works on Windows and Linux machines.
 
 * **`host.id`**: The ID of the host the application is running on.
 
 NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
+
+WARNING: The Container Resource is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
@@ -347,16 +351,6 @@ public class MyResourceConfiguration {
   }
 
 }
-----
-
-You can also disable the auto-configuration entirely by excluding the `io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration` class from the Spring Boot auto-configuration:
-
-[source,yaml]
-----
-spring:
-  autoconfigure:
-    exclude:
-      - io.arconia.opentelemetry.autoconfigure.sdk.resource.OpenTelemetryResourceAutoConfiguration
 ----
 
 The additional instrumentation provided by the OpenTelemetry Java Instrumentation can be disabled selectively via configuration properties.
