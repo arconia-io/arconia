@@ -284,7 +284,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
     static class OrderedCustomizerConfiguration {
 
         @Bean
-        SdkResourceBuilderCustomizer orderedCustomizer() {
+        OpenTelemetryResourceBuilderCustomizer orderedCustomizer() {
             return builder -> builder.put("custom.attribute", "another-value");
         }
 

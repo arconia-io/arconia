@@ -43,15 +43,13 @@ public class OpenTelemetryMetricsAutoConfiguration {
     SdkMeterProvider otelSdkMeterProvider(Clock clock,
                                           ExemplarFilter exemplarFilter,
                                           Resource resource,
-                                          ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers,
-                                          ObjectProvider<SdkMeterProviderBuilderCustomizer> sdkCustomizers
+                                          ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers
     ) {
         SdkMeterProviderBuilder builder = SdkMeterProvider.builder()
                 .setClock(clock)
                 .setResource(resource);
         SdkMeterProviderUtil.setExemplarFilter(builder, exemplarFilter); // Still experimental, so we need to use the internal utility method.
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
-        sdkCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
         return builder.build();
     }
 
