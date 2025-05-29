@@ -16,7 +16,7 @@ emphasizing developer experience and cloud native architectures.
 ## ⚙️&nbsp; Requirements
 
 * Java 21+
-* Spring Boot 3.4+
+* Spring Boot 3.5+
 
 ## 📙&nbsp; Documentation
 
