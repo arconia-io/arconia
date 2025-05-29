@@ -150,23 +150,25 @@ class OpenTelemetryTracingAutoConfigurationTests {
             });
     }
 
-//    @Test
-//    void otelSpanProcessorConfigurationApplied() {
-//        contextRunner
-//            .withBean(TracingProperties.class, TracingProperties::new)
-//            .withUserConfiguration(CustomSpanExporterConfiguration.class)
-//            .withPropertyValues(
-//                "arconia.otel.traces.processor.export-timeout=10s",
-//                "arconia.otel.traces.processor.schedule-delay=5s",
-//                "arconia.otel.traces.processor.max-export-batch-size=512",
-//                "arconia.otel.traces.processor.max-queue-size=2048",
-//                "arconia.otel.traces.processor.metrics=true"
-//            )
-//            .run(context -> {
-//                assertThat(context).hasSingleBean(BatchSpanProcessor.class);
-//                assertThat(context).hasSingleBean(SpanExporter.class);
-//            });
-//    }
+    @Test
+    void otelSpanProcessorConfigurationApplied() {
+        contextRunner
+            .withBean(TracingProperties.class, TracingProperties::new)
+            .withUserConfiguration(CustomSpanExporterConfiguration.class)
+            .withPropertyValues(
+                "arconia.otel.traces.processor.export-timeout=10s",
+                "arconia.otel.traces.processor.schedule-delay=5s",
+                "arconia.otel.traces.processor.max-export-batch-size=512",
+                "arconia.otel.traces.processor.max-queue-size=2048",
+                "arconia.otel.traces.processor.metrics=true"
+            )
+            .run(context -> {
+                assertThat(context).hasSingleBean(SpanExporter.class);
+                assertThat(context).getBeanNames(BatchSpanProcessor.class)
+                        .hasSize(1)
+                        .containsExactly("micrometerBatchSpanProcessor");
+            });
+    }
 
     @Test
     void otelSpanProcessorUsesCompositeExporterWithMultipleExporters() {

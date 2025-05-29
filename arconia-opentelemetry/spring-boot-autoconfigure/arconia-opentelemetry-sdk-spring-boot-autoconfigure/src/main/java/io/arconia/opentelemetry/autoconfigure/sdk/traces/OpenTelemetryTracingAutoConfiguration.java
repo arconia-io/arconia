@@ -1,6 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.traces;
 
+import io.micrometer.tracing.exporter.SpanExportingPredicate;
+import io.micrometer.tracing.exporter.SpanFilter;
+import io.micrometer.tracing.exporter.SpanReporter;
+import io.micrometer.tracing.otel.bridge.CompositeSpanExporter;
+import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -10,6 +16,9 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.slf4j.Logger;
@@ -88,28 +97,28 @@ public class OpenTelemetryTracingAutoConfiguration {
                 .build();
     }
 
-//    @Bean
-//    @ConditionalOnMissingBean
-//    @ConditionalOnClass(OtelTracer.class)
-//    BatchSpanProcessor micrometerSpanProcessor(OpenTelemetryTracingProperties properties,
-//                                               ObjectProvider<SpanExporter> spanExporters,
-//                                               ObjectProvider<SpanExportingPredicate> spanExportingPredicates,
-//                                               ObjectProvider<SpanReporter> spanReporters,
-//                                               ObjectProvider<SpanFilter> spanFilters,
-//                                               ObjectProvider<MeterProvider> meterProvider
-//    ) {
-//        SpanExporter spanExporter = new CompositeSpanExporter(spanExporters.orderedStream().toList(), spanExportingPredicates.orderedStream().toList(),
-//                spanReporters.orderedStream().toList(), spanFilters.orderedStream().toList());
-//        BatchSpanProcessorBuilder spanProcessorBuilder = BatchSpanProcessor.builder(spanExporter)
-//                .setExporterTimeout(properties.getProcessor().getExporterTimeout())
-//                .setScheduleDelay(properties.getProcessor().getScheduleDelay())
-//                .setMaxExportBatchSize(properties.getProcessor().getMaxExportBatchSize())
-//                .setMaxQueueSize(properties.getProcessor().getMaxQueueSize());
-//        if (properties.getProcessor().isMetrics()) {
-//            meterProvider.ifAvailable(spanProcessorBuilder::setMeterProvider);
-//        }
-//        return spanProcessorBuilder.build();
-//    }
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnClass(OtelTracer.class)
+    BatchSpanProcessor micrometerBatchSpanProcessor(OpenTelemetryTracingProperties properties,
+                                               ObjectProvider<SpanExporter> spanExporters,
+                                               ObjectProvider<SpanExportingPredicate> spanExportingPredicates,
+                                               ObjectProvider<SpanReporter> spanReporters,
+                                               ObjectProvider<SpanFilter> spanFilters,
+                                               ObjectProvider<MeterProvider> meterProvider
+    ) {
+        SpanExporter spanExporter = new CompositeSpanExporter(spanExporters.orderedStream().toList(), spanExportingPredicates.orderedStream().toList(),
+                spanReporters.orderedStream().toList(), spanFilters.orderedStream().toList());
+        BatchSpanProcessorBuilder spanProcessorBuilder = BatchSpanProcessor.builder(spanExporter)
+                .setExporterTimeout(properties.getProcessor().getExportTimeout())
+                .setScheduleDelay(properties.getProcessor().getScheduleDelay())
+                .setMaxExportBatchSize(properties.getProcessor().getMaxExportBatchSize())
+                .setMaxQueueSize(properties.getProcessor().getMaxQueueSize());
+        if (properties.getProcessor().isMetrics()) {
+            meterProvider.ifAvailable(spanProcessorBuilder::setMeterProvider);
+        }
+        return spanProcessorBuilder.build();
+    }
 
     @Bean
     @ConditionalOnMissingBean
