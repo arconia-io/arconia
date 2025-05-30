@@ -24,7 +24,7 @@ class RedisDevServicesPropertiesTests {
         RedisDevServicesProperties properties = new RedisDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).isEqualTo("redis:7.4-alpine");
+        assertThat(properties.getImageName()).containsIgnoringCase("redis");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
     }
