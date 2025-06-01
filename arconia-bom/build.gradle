@@ -43,6 +43,7 @@ dependencies {
         api project(":arconia-spring-boot:spring-boot-autoconfigure:arconia-spring-boot-autoconfigure")
         api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
 
+        api "org.jspecify:jspecify:${jSpecifyVersion}"
         api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
     }
 
