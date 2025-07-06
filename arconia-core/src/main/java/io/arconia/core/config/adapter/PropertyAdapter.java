@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -50,14 +51,19 @@ public class PropertyAdapter {
         private final PropertyAdapter adapter;
 
         private Builder(ConfigurableEnvironment environment) {
+            Assert.notNull(environment, "environment cannot be null");
             this.environment = environment;
             this.adapter = new PropertyAdapter();
         }
 
         public <T> Builder mapProperty(String externalKey, String arconiaKey, Function<String, T> converter) {
+            Assert.hasText(externalKey, "externalKey cannot be null or empty");
+            Assert.hasText(arconiaKey, "arconiaKey cannot be null or empty");
+            Assert.notNull(converter, "converter cannot be null");
+
             String value = environment.getProperty(externalKey);
             if (StringUtils.hasText(value)) {
-                var convertedValue = converter.apply(value.trim());
+                var convertedValue = converter.apply(value.strip());
                 if (convertedValue != null) {
                     adapter.arconiaProperties.put(arconiaKey, convertedValue);
                 }
@@ -66,6 +72,7 @@ public class PropertyAdapter {
         }
 
         public <T> Builder mapEnum(String externalKey, String arconiaKey, Function<String, Function<String, T>> converterFactory) {
+            Assert.notNull(converterFactory, "converterFactory cannot be null");
             return mapProperty(externalKey, arconiaKey, converterFactory.apply(externalKey));
         }
 
@@ -98,7 +105,7 @@ public class PropertyAdapter {
         public Builder mapDuration(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
-                    Matcher matcher = DURATION_PATTERN.matcher(value.trim());
+                    Matcher matcher = DURATION_PATTERN.matcher(value.strip());
                     if (matcher.matches()) {
                         long amount = Long.parseLong(matcher.group(1));
                         String unit = matcher.group(2);
@@ -111,7 +118,7 @@ public class PropertyAdapter {
                         };
                     }
                     // Try parsing as milliseconds
-                    return Duration.ofMillis(Long.parseLong(value.trim()));
+                    return Duration.ofMillis(Long.parseLong(value.strip()));
                 } catch (Exception e) {
                     logger.warn("Unsupported value for {}: {}", externalKey, value);
                     return null;
@@ -137,7 +144,7 @@ public class PropertyAdapter {
                 for (String pair : keyValuePairs) {
                     String[] entry = pair.split("=");
                     if (entry.length == 2 && StringUtils.hasText(entry[0]) && StringUtils.hasText(entry[1])) {
-                        propertyMap.put(entry[0].trim(), entry[1].trim());
+                        propertyMap.put(entry[0].strip(), entry[1].strip());
                     } else {
                         logger.warn("Invalid key-value pair in {}: {}", externalKey, pair);
                     }

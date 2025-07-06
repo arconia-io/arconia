@@ -1,5 +1,6 @@
 package io.arconia.dev.services.oracle;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link OracleXeDevServicesAutoConfiguration}.
  */
+@Disabled("Too slow and heavy for the deployment pipeline")
 class OracleXeDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()

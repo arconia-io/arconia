@@ -2,9 +2,7 @@ package io.arconia.dev.services.core.config;
 
 import java.util.Map;
 
-import org.springframework.context.ApplicationContext;
-
-import io.arconia.boot.mode.ApplicationMode;
+import io.arconia.boot.bootstrap.BootstrapMode;
 
 /**
  * Base properties for dev services.
@@ -48,10 +46,10 @@ public interface DevServicesProperties {
          */
         NEVER;
 
-        public boolean asBoolean(ApplicationContext applicationContext) {
+        public boolean asBoolean() {
             return switch(this) {
                 case ALWAYS -> true;
-                case DEV_MODE -> ApplicationMode.DEVELOPMENT.equals(ApplicationMode.of(applicationContext));
+                case DEV_MODE -> BootstrapMode.DEV.equals(BootstrapMode.detect());
                 case NEVER -> false;
             };
         }

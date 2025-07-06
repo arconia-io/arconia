@@ -1,4 +1,4 @@
-package io.arconia.boot.autoconfigure.env;
+package io.arconia.boot.autoconfigure.bootstrap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +14,16 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.arconia.boot.mode.ApplicationMode;
+import io.arconia.boot.autoconfigure.bootstrap.dev.BootstrapDevProperties;
+import io.arconia.boot.autoconfigure.bootstrap.test.BootstrapTestProperties;
+import io.arconia.boot.bootstrap.BootstrapMode;
 
 /**
- * Configures profiles based on the application mode.
+ * Configures the environment for the application based on the bootstrap mode.
  */
-class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
+class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfilesEnvironmentPostProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(BootstrapEnvironmentPostProcessor.class);
 
     @Override
     @SuppressWarnings("unchecked")
@@ -29,7 +31,7 @@ class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Orde
         Assert.notNull(environment, "environment cannot be null");
         Assert.notNull(application, "application cannot be null");
 
-        Boolean profilesEnabled = environment.getProperty(ProfilesProperties.CONFIG_PREFIX + ".enabled", Boolean.class, true);
+        Boolean profilesEnabled = environment.getProperty(BootstrapProperties.CONFIG_PREFIX + ".profiles.enabled", Boolean.class, true);
         if (!profilesEnabled) {
             return;
         }
@@ -37,22 +39,24 @@ class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Orde
         List<String> currentProfiles = environment.getProperty(StandardEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, List.class, List.of());
         List<String> additionalProfiles = new ArrayList<>();
 
-        ApplicationMode mode = ApplicationMode.of(application.getClassLoader());
+        BootstrapMode mode = BootstrapMode.detect();
 
         switch (mode) {
-            case DEVELOPMENT -> {
-                List<String> developmentProfiles = environment.getProperty(ProfilesProperties.CONFIG_PREFIX + ".development", List.class, List.of("dev"));
+            case DEV -> {
+                logger.info("The application is running in dev mode");
+                List<String> developmentProfiles = environment.getProperty(BootstrapDevProperties.CONFIG_PREFIX + ".profiles", List.class, List.of("dev"));
                 if (!developmentProfiles.isEmpty()) {
                     for (String profile : developmentProfiles) {
                         if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
-                            logger.debug("Adding active profile '{}' for development mode", profile);
+                            logger.debug("Adding active profile '{}' for dev mode", profile);
                             additionalProfiles.add(profile);
                         }
                     }
                 }
             }
             case TEST -> {
-                List<String> testProfiles = environment.getProperty(ProfilesProperties.CONFIG_PREFIX + ".test", List.class, List.of("test"));
+                logger.info("The application is running in test mode");
+                List<String> testProfiles = environment.getProperty(BootstrapTestProperties.CONFIG_PREFIX + ".profiles", List.class, List.of("test"));
                 if (!testProfiles.isEmpty()) {
                     for (String profile : testProfiles) {
                         if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
@@ -62,16 +66,9 @@ class ProfilesEnvironmentPostProcessor implements EnvironmentPostProcessor, Orde
                     }
                 }
             }
-            case PRODUCTION -> {
-                List<String> productionProfiles = environment.getProperty(ProfilesProperties.CONFIG_PREFIX + ".production", List.class, List.of("prod"));
-                if (!productionProfiles.isEmpty()) {
-                    for (String profile : productionProfiles) {
-                        if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
-                            logger.debug("Adding active profile '{}' for production mode", profile);
-                            additionalProfiles.add(profile);
-                        }
-                    }
-                }
+            case PROD -> {
+                // No additional profiles for prod mode
+                logger.debug("The application is running in prod mode");
             }
         }
 

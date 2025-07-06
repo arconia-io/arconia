@@ -16,7 +16,6 @@ dependencies {
     implementation "org.slf4j:slf4j-api"
     implementation "org.springframework.boot:spring-boot-starter"
 
-    testImplementation project(":arconia-spring-boot:arconia-spring-boot-test")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 

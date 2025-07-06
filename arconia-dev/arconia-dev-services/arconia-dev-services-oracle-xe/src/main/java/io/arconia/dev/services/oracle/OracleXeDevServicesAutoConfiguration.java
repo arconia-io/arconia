@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -38,12 +37,12 @@ public class OracleXeDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        OracleContainer oracleXeContainer(OracleXeDevServicesProperties properties, ApplicationContext applicationContext) {
+        OracleContainer oracleXeContainer(OracleXeDevServicesProperties properties) {
             return new OracleContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }
@@ -55,12 +54,12 @@ public class OracleXeDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        OracleContainer oracleXeContainerNoRestartScope(OracleXeDevServicesProperties properties, ApplicationContext applicationContext) {
+        OracleContainer oracleXeContainerNoRestartScope(OracleXeDevServicesProperties properties) {
             return new OracleContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }

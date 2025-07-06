@@ -11,7 +11,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -39,11 +38,11 @@ public class RedisDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        RedisContainer redisContainer(RedisDevServicesProperties properties, ApplicationContext applicationContext) {
+        RedisContainer redisContainer(RedisDevServicesProperties properties) {
             return new RedisContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }
@@ -55,11 +54,11 @@ public class RedisDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        RedisContainer redisContainerNoRestartScope(RedisDevServicesProperties properties, ApplicationContext applicationContext) {
+        RedisContainer redisContainerNoRestartScope(RedisDevServicesProperties properties) {
             return new RedisContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }

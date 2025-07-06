@@ -1,11 +1,20 @@
 [what-is-new]
 = What's New in Arconia {page-component-version}
 
-Arconia {page-component-version} provides a number of new features and enhancements. This page includes  the highlights of the release, but you can also check out the full release notes for more details about each new feature and bug fix.
+Arconia {page-component-version} provides a number of new features and enhancements. This page includes the highlights of the release, but you can also check out the full release notes for more details about each new feature and bug fix.
+
+We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
 == Spring Boot
 
 Starting from version 0.13, Arconia is based on Spring Boot 3.5. If you are still using Spring Boot 3.4, you can continue to use Arconia 0.12.
+
+== Developer Experience
+
+* Arconia configures a bootstrap mode for your application based on whether it's running in dev, test, or prod mode. The heuristics used to determine the bootstrap mode have been improved, making it more reliable and consistent across different setups.
+* The `arconia.dev.profiles` and `arconia.test.profiles` properties can now be configured to specify the profiles to activate in dev and test modes, respectively. They replace the previous `arconia.config.profiles.development` and `arconia.config.profiles.test` properties.
+* The `arconia.config.profiles.prod` property has been removed. In its place, we recommend using the `spring.profiles.active` property to specify the profiles to activate in production mode.
+* You can disable the automatic activation of the profiles based on the bootstrap mode by setting the `arconia.bootstrap.profiles.enabled` property to `false`. It replaces the previous `arconia.config.profiles.enabled` property.
 
 == OpenTelemetry
 
