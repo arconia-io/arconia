@@ -21,7 +21,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-devtools"
     implementation "org.springframework.boot:spring-boot-starter"
 
-    testImplementation project(":arconia-spring-boot:arconia-spring-boot-test")
+    testImplementation project(":arconia-spring-boot:arconia-spring-boot")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 

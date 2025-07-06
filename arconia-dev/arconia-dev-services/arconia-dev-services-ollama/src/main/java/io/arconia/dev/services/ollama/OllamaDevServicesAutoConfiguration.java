@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -38,11 +37,11 @@ public class OllamaDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        OllamaContainer ollamaContainer(OllamaDevServicesProperties properties, ApplicationContext applicationContext) {
+        OllamaContainer ollamaContainer(OllamaDevServicesProperties properties) {
             return new OllamaContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }
@@ -54,11 +53,11 @@ public class OllamaDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        OllamaContainer ollamaContainerNoRestartScope(OllamaDevServicesProperties properties, ApplicationContext applicationContext) {
+        OllamaContainer ollamaContainerNoRestartScope(OllamaDevServicesProperties properties) {
             return new OllamaContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }

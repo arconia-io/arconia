@@ -2,54 +2,48 @@
 
 When developing Spring Boot applications, it's common to define specific configurations for different environments, such as development, test, and production. Spring Boot provides a powerful way to manage these configurations using https://docs.spring.io/spring-boot/reference/features/profiles.html[profiles].
 
-Frequently, developers need custom configurations when running applications in development, test, or production mode. This necessity has become so routine that it's almost considered boilerplate code to define these configurations in every project.
+Frequently, developers need custom configurations when running applications in development or when running tests. This necessity has become so routine that it's almost considered boilerplate code to define these configurations in every project.
 
 Arconia enhances the developer experience by building on top of Spring Boot. It provides these common configurations out of the box, allowing developers to focus more on writing application logic and less on repetitive setup tasks.
 
-By default, the Arconia Spring Boot Starter provides three profiles that are enabled automatically in certain conditions:
+By default, the Arconia Spring Boot Starter provides two profiles that are enabled automatically in certain conditions:
 
-* `dev`: Enabled when running the application in development mode (e.g. `./gradlew bootRun` or `./mvnw spring-boot:run`).
-* `test`: Enabled when running tests or when running the application in test mode (e.g. `./gradlew bootTestRun` or `./mvnw spring-boot:test-run`).
-* `prod`: Enabled when running the application in production mode (e.g. when packaged as a JAR, OCI image, or native executable).
+* `dev`: Enabled when running the application in dev mode.
+* `test`: Enabled when running the application in test mode.
 
 == Enabling/Disabling Profiles
 
-The profiles are enabled by default based on the application mode. You can disable them via configuration properties.
+The profiles are enabled by default based on the application bootstrap mode. You can disable them via configuration properties.
 
 [source,yaml]
 ----
 arconia:
-  config:
+  bootstrap:
     profiles:
       enabled: false
 ----
 
 == Configuration Properties
 
-Each organization may have its own set of custom profiles to manage development, test, and production configurations. For example, instead of having a `dev` profile, you may have a `local` profile where you define the configuration to use when running the application in development mode. That's why Arconia makes these profiles configurable.
+Each organization may have its own set of custom profiles to manage development, test, and production configurations. For example, instead of having a `dev` profile, you may have a `local` profile where you define the configuration to use when running the application in dev mode. That's why Arconia makes these profiles configurable.
 
 .Profiles Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.config.profiles.development`
+|	`arconia.dev.profiles`
 |	`dev`
-|	Names of the profiles to activate in development mode.
+|	Names of the profiles to activate in dev mode.
 
-|	`arconia.config.profiles.test`
+|	`arconia.test.profiles`
 |	`test`
 |	Names of the profiles to activate in test mode.
-
-|	`arconia.config.profiles.production`
-|	`prod`
-|	Names of the profiles to activate in production mode.
 |===
 
-All three properties accept a list of profiles. For example, you can define multiple profiles to be activated when running in development mode:
+Both properties accept a list of profiles. For example, you can define multiple profiles to be activated when running in dev mode:
 
 [source,yaml]
 ----
 arconia:
-  config:
-    profiles:
-      development: dev, local
+  dev:
+    profiles: dev, local
 ----

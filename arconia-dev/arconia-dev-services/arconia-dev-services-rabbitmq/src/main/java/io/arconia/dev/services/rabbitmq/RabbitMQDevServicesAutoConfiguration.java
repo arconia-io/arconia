@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -18,8 +17,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.rabbitmq.RabbitMQDevServicesAutoConfiguration.ConfigurationWithRestart;
 import io.arconia.dev.services.rabbitmq.RabbitMQDevServicesAutoConfiguration.ConfigurationWithoutRestart;
-
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 /**
  * Auto-configuration for RabbitMQ Dev Services.
@@ -40,11 +37,11 @@ public class RabbitMQDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        RabbitMQContainer rabbitmqContainer(RabbitMQDevServicesProperties properties, ApplicationContext applicationContext) {
+        RabbitMQContainer rabbitmqContainer(RabbitMQDevServicesProperties properties) {
             return new RabbitMQContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }
@@ -56,11 +53,11 @@ public class RabbitMQDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        RabbitMQContainer rabbitmqContainerNoRestartScope(RabbitMQDevServicesProperties properties, ApplicationContext applicationContext) {
+        RabbitMQContainer rabbitmqContainerNoRestartScope(RabbitMQDevServicesProperties properties) {
             return new RabbitMQContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withReuse(properties.getShared().asBoolean(applicationContext));
+                    .withReuse(properties.getShared().asBoolean());
         }
 
     }
