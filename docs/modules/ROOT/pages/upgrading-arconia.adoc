@@ -21,7 +21,7 @@ Optionally, you can provide the `--to-version` flag to specify the version you w
 
 [source,shell]
 ----
-arconia update framework --to-version 0.13.0
+arconia update framework --to-version 0.13
 ----
 
 == Gradle OpenRewrite Plugin
