@@ -52,11 +52,6 @@ public class MicrometerInstrumentationAutoConfiguration {
         return new CompositeMeterRegistryBeanPostProcessor();
     }
 
-    /**
-     * Condition to check if OpenTelemetry metrics export is enabled.
-     * This can be removed after upgrading to Spring Boot 3.5,
-     * which supports stacking @ConditionalOnProperty annotations.
-     */
     static class MetricsExportEnabled extends AnyNestedCondition {
 
         MetricsExportEnabled() {
