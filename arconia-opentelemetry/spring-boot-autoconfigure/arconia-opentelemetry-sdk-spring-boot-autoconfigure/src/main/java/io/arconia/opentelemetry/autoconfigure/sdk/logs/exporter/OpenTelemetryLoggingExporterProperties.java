@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -17,7 +18,8 @@ public class OpenTelemetryLoggingExporterProperties {
     /**
      * The type of OpenTelemetry exporter to use for logs.
      */
-    private ExporterType type = ExporterType.OTLP;
+    @Nullable
+    private ExporterType type;
 
     /**
      * Options for the OTLP log exporter.
@@ -25,11 +27,12 @@ public class OpenTelemetryLoggingExporterProperties {
     @NestedConfigurationProperty
     private final OtlpExporterConfig otlp = new OtlpExporterConfig();
 
+    @Nullable
     public ExporterType getType() {
         return type;
     }
 
-    public void setType(ExporterType type) {
+    public void setType(@Nullable ExporterType type) {
         this.type = type;
     }
 

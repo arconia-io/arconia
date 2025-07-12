@@ -133,7 +133,7 @@ You can disable individual observability signals or even disable the entire Open
 
 |`arconia.otel.enabled`
 |`true`
-|Whether OpenTelemetry SDK support should be enabled.
+|Whether OpenTelemetry support should be enabled.
 
 |`arconia.otel.logs.enabled`
 |`true`
@@ -150,19 +150,29 @@ You can disable individual observability signals or even disable the entire Open
 
 == Exporting Telemetry
 
-By default, all observability signals are exported via OTLP. You can change the type of the exporter in use for each observability signal. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+By default, all observability signals are exported via OTLP. If you set the exporter type to `none`, the observability signals will be disabled from exporting.
 
 .Exporter Type Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.logs.exporter.type`
+|	`arconia.otel.exporter.type`
 |	`otlp`
+|	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+|===
+
+You can change the type of the exporter in use for each observability signal using the `arconia.otel.<signal>.exporter.type` property, where `<signal>` is one of `logs`, `metrics`, or `traces`.
+
+.Specific Exporter Type Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.logs.exporter.type`
+|	``
 |	The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
 |	`arconia.otel.metrics.exporter.type`
-|	`otlp`
+|	``
 |	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
 |	`arconia.otel.traces.exporter.type`
-|	`otlp`
+|	``
 |	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
 |===
 
@@ -217,7 +227,7 @@ Gradle::
 ----
 dependencies {
     implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    implementation "io.grpc:grpc-netty-shaded:1.72.0"
+    runtimeOnly "io.grpc:grpc-netty-shaded:1.72.0"
 }
 ----
 

@@ -1,7 +1,8 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 import org.junit.jupiter.api.Test;
+
+import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +20,7 @@ class OpenTelemetryMetricsExporterPropertiesTests {
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
 
-        assertThat(properties.getType()).isEqualTo(ExporterType.OTLP);
+        assertThat(properties.getType()).isNull();
         assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.CUMULATIVE);
         assertThat(properties.getHistogramAggregation()).isEqualTo(HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM);
         assertThat(properties.getOtlp()).isNotNull();

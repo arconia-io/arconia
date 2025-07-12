@@ -7,9 +7,9 @@ import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.OtlpConnectionDe
  */
 public interface OtlpLoggingConnectionDetails extends OtlpConnectionDetails {
 
-    static final String LOGS_PATH = "/v1/logs";
+    String LOGS_PATH = "/v1/logs";
 
-    static final String DEFAULT_GRPC_ENDPOINT = "http://localhost:4317";
-    static final String DEFAULT_HTTP_PROTOBUF_ENDPOINT = "http://localhost:4318" + LOGS_PATH;
+    String DEFAULT_GRPC_ENDPOINT = "http://localhost:4317";
+    String DEFAULT_HTTP_PROTOBUF_ENDPOINT = "http://localhost:4318" + LOGS_PATH;
 
 }

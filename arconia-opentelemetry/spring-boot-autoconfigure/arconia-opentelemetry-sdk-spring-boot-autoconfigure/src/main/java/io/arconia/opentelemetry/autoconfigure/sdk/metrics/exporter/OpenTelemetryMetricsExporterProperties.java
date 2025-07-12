@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -17,7 +18,8 @@ public class OpenTelemetryMetricsExporterProperties{
     /**
      * The type of OpenTelemetry exporter to use for metrics.
      */
-    private ExporterType type = ExporterType.OTLP;
+    @Nullable
+    private ExporterType type;
 
     /**
      * The aggregation temporality to use for exporting metrics.
@@ -35,11 +37,12 @@ public class OpenTelemetryMetricsExporterProperties{
     @NestedConfigurationProperty
     private final OtlpExporterConfig otlp = new OtlpExporterConfig();
 
+    @Nullable
     public ExporterType getType() {
         return type;
     }
 
-    public void setType(ExporterType type) {
+    public void setType(@Nullable ExporterType type) {
         this.type = type;
     }
 

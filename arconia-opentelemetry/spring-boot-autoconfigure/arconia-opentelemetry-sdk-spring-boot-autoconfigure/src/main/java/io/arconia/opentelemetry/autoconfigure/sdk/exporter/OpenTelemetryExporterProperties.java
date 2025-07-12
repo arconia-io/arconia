@@ -22,6 +22,11 @@ public class OpenTelemetryExporterProperties {
     public static final String CONFIG_PREFIX = "arconia.otel.exporter";
 
     /**
+     * The type of OpenTelemetry exporter to use.
+     */
+    private ExporterType type = ExporterType.OTLP;
+
+    /**
      * Common options for the OTLP exporters.
      */
     private final Otlp otlp = new Otlp();
@@ -30,6 +35,14 @@ public class OpenTelemetryExporterProperties {
      * Whether to reuse objects to reduce allocation or work with immutable data structures.
      */
     private MemoryMode memoryMode = MemoryMode.REUSABLE_DATA;
+
+    public ExporterType getType() {
+        return type;
+    }
+
+    public void setType(ExporterType type) {
+        this.type = type;
+    }
 
     public Otlp getOtlp() {
         return otlp;

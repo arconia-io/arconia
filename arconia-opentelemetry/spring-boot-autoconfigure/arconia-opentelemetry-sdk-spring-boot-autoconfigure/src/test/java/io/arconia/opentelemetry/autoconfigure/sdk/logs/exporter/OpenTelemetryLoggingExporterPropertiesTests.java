@@ -1,7 +1,8 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter;
 
-import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 import org.junit.jupiter.api.Test;
+
+import io.arconia.opentelemetry.autoconfigure.sdk.exporter.ExporterType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +20,7 @@ class OpenTelemetryLoggingExporterPropertiesTests {
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryLoggingExporterProperties properties = new OpenTelemetryLoggingExporterProperties();
 
-        assertThat(properties.getType()).isEqualTo(ExporterType.OTLP);
+        assertThat(properties.getType()).isNull();
         assertThat(properties.getOtlp()).isNotNull();
     }
 

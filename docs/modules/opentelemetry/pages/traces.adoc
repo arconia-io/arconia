@@ -201,13 +201,18 @@ public class MyTracingConfiguration {
 
 == Exporting Traces
 
-By default, traces are enabled and exported via OTLP, but you can change the type of exporter. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+By default, traces are enabled and exported via OTLP, but you can change the type of exporter globally or specifically for traces. If you set the exporter type to `none`, the corresponding signal will be disabled from exporting.
+
+NOTE: If a value is not provided specifically for traces, the value configured for the general exporter is used.
 
 .General Traces Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.traces.exporter.type`
+|	`arconia.otel.exporter.type`
 |	`otlp`
+|	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+|	`arconia.otel.traces.exporter.type`
+|	``
 |	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
 |===
 
