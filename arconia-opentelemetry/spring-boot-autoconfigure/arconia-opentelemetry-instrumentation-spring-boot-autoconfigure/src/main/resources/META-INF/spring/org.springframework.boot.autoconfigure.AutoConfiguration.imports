@@ -1,3 +1,2 @@
 io.arconia.opentelemetry.autoconfigure.instrumentation.logback.LogbackAppenderInstrumentationAutoConfiguration
 io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer.MicrometerInstrumentationAutoConfiguration
-io.arconia.opentelemetry.autoconfigure.instrumentation.resource.ResourceInstrumentationAutoConfiguration

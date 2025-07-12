@@ -18,12 +18,9 @@ public final class HostInfo {
     private static final Logger logger = LoggerFactory.getLogger(HostInfo.class);
 
     @Nullable
-    private final String arch;
-    @Nullable
     private final String name;
 
     public HostInfo() {
-        this.arch = System.getProperty("os.arch");
         String hostName = null;
         try {
             hostName = InetAddress.getLocalHost().getHostName();
@@ -31,11 +28,6 @@ public final class HostInfo {
             logger.debug("Failed to get hostname", ex);
         }
         this.name = hostName;
-    }
-
-    @Nullable
-    public String getArch() {
-        return arch;
     }
 
     @Nullable

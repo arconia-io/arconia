@@ -3,6 +3,7 @@ package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
+import org.springframework.boot.info.OsInfo;
 import org.springframework.util.StringUtils;
 
 import io.arconia.core.info.HostInfo;
@@ -30,11 +31,12 @@ public class HostResourceContributor implements ResourceContributor {
     public static final AttributeKey<String> HOST_NAME = AttributeKey.stringKey("host.name");
 
     private final HostInfo hostInfo = new HostInfo();
+    private final OsInfo osInfo = new OsInfo();
 
     @Override
     public void contribute(ResourceBuilder builder) {
-        if (StringUtils.hasText(hostInfo.getArch())) {
-            builder.put(HOST_ARCH, hostInfo.getArch());
+        if (StringUtils.hasText(osInfo.getArch())) {
+            builder.put(HOST_ARCH, osInfo.getArch());
         }
         if (StringUtils.hasText(hostInfo.getName())) {
             builder.put(HOST_NAME, hostInfo.getName());

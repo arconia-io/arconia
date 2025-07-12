@@ -5,17 +5,12 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Spring Boot
+== Core
 
-Starting from version 0.13, Arconia is based on Spring Boot 3.5. If you are still using Spring Boot 3.4, you can continue to use Arconia 0.12.
-
-== Developer Experience
-
-* Arconia configures a bootstrap mode for your application based on whether it's running in dev, test, or prod mode. The heuristics used to determine the bootstrap mode have been improved, making it more reliable and consistent across different setups.
-* The `arconia.dev.profiles` and `arconia.test.profiles` properties can now be configured to specify the profiles to activate in dev and test modes, respectively. They replace the previous `arconia.config.profiles.development` and `arconia.config.profiles.test` properties.
-* The `arconia.config.profiles.prod` property has been removed. In its place, we recommend using the `spring.profiles.active` property to specify the profiles to activate in production mode.
-* You can disable the automatic activation of the profiles based on the bootstrap mode by setting the `arconia.bootstrap.profiles.enabled` property to `false`. It replaces the previous `arconia.config.profiles.enabled` property.
+* The `HostInfo.getArch()` method has been replaced by Spring Boot's `OsInfo.getArch()`.
 
 == OpenTelemetry
 
-* The `BatchSpanProcessor` can now be customized via configuration properties (`arconia.otel.traces.processor`). Furthermore, if you provide a custom `BatchSpanProcessor` bean, it will be used instead of the auto-configured one.
+* The `os.arch` and `host.arch` Resource attributes contained the same value, which is now consolidated in the `host.arch` attribute. The `os.arch` attribute has been removed.
+* The experimental `container.id` and `host.id` Resource attributes have been removed from the auto-configured OpenTelemetry Resource. You can re-add them by including the `io.opentelemetry.instrumentation:opentelemetry-resources` dependency in your project and defining custom `ResourceContributor` beans populating these attributes from the `ContainerResource` and `HostIdResource` classes (in the `io.opentelemetry.instrumentation.resources` package).
+

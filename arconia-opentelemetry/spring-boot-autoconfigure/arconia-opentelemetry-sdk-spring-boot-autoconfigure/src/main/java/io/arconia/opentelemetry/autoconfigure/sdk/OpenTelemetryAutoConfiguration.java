@@ -13,7 +13,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -21,15 +20,14 @@ import org.springframework.context.annotation.Bean;
  * Auto-configuration for {@link OpenTelemetry}.
  */
 @AutoConfiguration
-@ConditionalOnClass(OpenTelemetry.class)
+@ConditionalOnClass(OpenTelemetrySdk.class)
 @EnableConfigurationProperties(OpenTelemetryProperties.class)
 public class OpenTelemetryAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(OpenTelemetry.class)
     @ConditionalOnOpenTelemetry
-    @ConditionalOnClass(OpenTelemetrySdk.class)
-    OpenTelemetry openTelemetrySdk(ObjectProvider<SdkLoggerProvider> loggerProvider,
+    OpenTelemetrySdk openTelemetrySdk(ObjectProvider<SdkLoggerProvider> loggerProvider,
                                 ObjectProvider<SdkMeterProvider> meterProvider,
                                 ObjectProvider<SdkTracerProvider> tracerProvider,
                                 ObjectProvider<ContextPropagators> propagators
@@ -40,14 +38,6 @@ public class OpenTelemetryAutoConfiguration {
         tracerProvider.ifAvailable(openTelemetryBuilder::setTracerProvider);
         propagators.ifAvailable(openTelemetryBuilder::setPropagators);
         return openTelemetryBuilder.build();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnOpenTelemetry
-    @ConditionalOnMissingClass("io.opentelemetry.sdk.OpenTelemetrySdk")
-    OpenTelemetry openTelemetryNoSdk() {
-        return OpenTelemetry.noop();
     }
 
     @Bean

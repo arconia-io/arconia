@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OsResourceContributorTests {
 
-    private OsResourceContributor contributor = new OsResourceContributor();
+    private final OsResourceContributor contributor = new OsResourceContributor();
 
     @Mock
     private OsInfo osInfo;
@@ -34,38 +34,29 @@ class OsResourceContributorTests {
     }
 
     @Test
-    void shouldContributeOsArchWhenAvailable() {
-        when(osInfo.getArch()).thenReturn("aarch64");
-        
-        contributor.contribute(resourceBuilder);
-        
-        verify(resourceBuilder).put(OsResourceContributor.OS_ARCH, "aarch64");
-    }
-
-    @Test
     void shouldContributeOsNameWhenAvailable() {
         when(osInfo.getName()).thenReturn("Mac OS X");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_NAME, "Mac OS X");
     }
 
     @Test
     void shouldContributeOsTypeWhenNameAvailable() {
         when(osInfo.getName()).thenReturn("Mac OS X");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "darwin");
     }
 
     @Test
     void shouldContributeOsVersionWhenAvailable() {
         when(osInfo.getVersion()).thenReturn("14.2.1");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_VERSION, "14.2.1");
     }
 
@@ -74,9 +65,9 @@ class OsResourceContributorTests {
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("14.2.1");
         when(osInfo.getArch()).thenReturn("aarch64");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X [Version: 14.2.1, Architecture: aarch64]");
     }
 
@@ -85,9 +76,9 @@ class OsResourceContributorTests {
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("14.2.1");
         when(osInfo.getArch()).thenReturn("");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X [Version: 14.2.1]");
     }
 
@@ -95,64 +86,45 @@ class OsResourceContributorTests {
     void shouldContributeOsDescriptionWithNameOnlyWhenOtherAttributesUnavailable() {
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("");
-        when(osInfo.getArch()).thenReturn("");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X");
-    }
-
-    @Test
-    void shouldSkipOsArchWhenEmpty() {
-        when(osInfo.getArch()).thenReturn("");
-        
-        contributor.contribute(resourceBuilder);
-        
-        verify(resourceBuilder, never()).put(OsResourceContributor.OS_ARCH, "");
-    }
-
-    @Test
-    void shouldSkipOsArchWhenNull() {
-        when(osInfo.getArch()).thenReturn(null);
-        
-        contributor.contribute(resourceBuilder);
-        
-        verify(resourceBuilder, never()).put(OsResourceContributor.OS_ARCH, null);
     }
 
     @Test
     void shouldSkipOsNameWhenEmpty() {
         when(osInfo.getName()).thenReturn("");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder, never()).put(OsResourceContributor.OS_NAME, "");
     }
 
     @Test
     void shouldSkipOsNameWhenNull() {
         when(osInfo.getName()).thenReturn(null);
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder, never()).put(OsResourceContributor.OS_NAME, null);
     }
 
     @Test
     void shouldSkipOsVersionWhenEmpty() {
         when(osInfo.getVersion()).thenReturn("");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder, never()).put(OsResourceContributor.OS_VERSION, "");
     }
 
     @Test
     void shouldSkipOsVersionWhenNull() {
         when(osInfo.getVersion()).thenReturn(null);
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder, never()).put(OsResourceContributor.OS_VERSION, null);
     }
 
@@ -161,10 +133,9 @@ class OsResourceContributorTests {
         when(osInfo.getArch()).thenReturn("aarch64");
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("14.2.1");
-        
+
         contributor.contribute(resourceBuilder);
-        
-        verify(resourceBuilder).put(OsResourceContributor.OS_ARCH, "aarch64");
+
         verify(resourceBuilder).put(OsResourceContributor.OS_NAME, "Mac OS X");
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "darwin");
         verify(resourceBuilder).put(OsResourceContributor.OS_VERSION, "14.2.1");
@@ -174,28 +145,28 @@ class OsResourceContributorTests {
     @Test
     void shouldContributeOsTypeForLinux() {
         when(osInfo.getName()).thenReturn("Linux");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "linux");
     }
 
     @Test
     void shouldContributeOsTypeForWindows() {
         when(osInfo.getName()).thenReturn("Windows 11");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "windows");
     }
 
     @Test
     void shouldContributeOriginalNameWhenOsTypeUnknown() {
         when(osInfo.getName()).thenReturn("CustomOS");
-        
+
         contributor.contribute(resourceBuilder);
-        
+
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "CustomOS");
     }
-    
+
 }

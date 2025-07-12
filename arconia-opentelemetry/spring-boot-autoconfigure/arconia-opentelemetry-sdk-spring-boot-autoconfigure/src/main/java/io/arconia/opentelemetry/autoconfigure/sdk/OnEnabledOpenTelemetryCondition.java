@@ -34,7 +34,7 @@ class OnEnabledOpenTelemetryCondition extends SpringBootCondition {
                     .because("OpenTelemetry is enabled by default"));
         } else {
             return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnOpenTelemetry.class)
-                    .because("OpenTelemetry is enabled by default"));
+                    .because("OpenTelemetry is disabled because annotation requested enabled to be false"));
         }
     }
 

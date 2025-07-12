@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.sdk;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;
@@ -58,10 +59,10 @@ class OnEnabledOpenTelemetryConditionTests {
     void noMatchWhenPropertyNotSetAndAnnotationFalse() {
         ConditionOutcome outcome = getMatchOutcome(null, false);
         assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage()).contains("OpenTelemetry is enabled by default");
+        assertThat(outcome.getMessage()).contains("OpenTelemetry is disabled because annotation requested enabled to be false");
     }
 
-    private ConditionOutcome getMatchOutcome(Boolean propertyValue, boolean annotationValue) {
+    private ConditionOutcome getMatchOutcome(@Nullable Boolean propertyValue, boolean annotationValue) {
         ConditionContext context = mock(ConditionContext.class);
         AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
         MockEnvironment environment = new MockEnvironment();

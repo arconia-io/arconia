@@ -1,11 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
-import io.arconia.core.support.Internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import org.springframework.boot.info.OsInfo;
 import org.springframework.util.StringUtils;
+
+import io.arconia.core.support.Internal;
 
 /**
  * A {@link ResourceContributor} that contributes attributes about the operating system,
@@ -13,7 +14,6 @@ import org.springframework.util.StringUtils;
  * <p>
  * The following attributes are populated:
  * <ul>
- *     <li>{@code os.arch}</li>
  *     <li>{@code os.description}</li>
  *     <li>{@code os.name}</li>
  *     <li>{@code os.type}</li>
@@ -33,20 +33,12 @@ public class OsResourceContributor implements ResourceContributor {
     public static final AttributeKey<String> OS_TYPE = AttributeKey.stringKey("os.type");
     public static final AttributeKey<String> OS_VERSION = AttributeKey.stringKey("os.version");
 
-    // Arconia-specific attribute.
-    public static final AttributeKey<String> OS_ARCH = AttributeKey.stringKey("os.arch");
-
     private final OsInfo osInfo = new OsInfo();
 
     @Override
     public void contribute(ResourceBuilder builder) {
-        if (StringUtils.hasText(osInfo.getArch())) {
-            builder.put(OS_ARCH, osInfo.getArch());
-        }
         if (StringUtils.hasText(osInfo.getName())) {
             builder.put(OS_NAME, osInfo.getName());
-        }
-        if (StringUtils.hasText(osInfo.getName())) {
             builder.put(OS_TYPE, computeOsType(osInfo.getName()));
         }
         if (StringUtils.hasText(osInfo.getVersion())) {
@@ -84,8 +76,8 @@ public class OsResourceContributor implements ResourceContributor {
             return OsType.SOLARIS.getValue();
         } else if (os.contains(OsType.WINDOWS.getMatcher())) {
             return OsType.WINDOWS.getValue();
-        } else if (os.contains(OsType.Z_OS.getMatcher())) {
-            return OsType.Z_OS.getValue();
+        } else if (os.contains(OsType.ZOS.getMatcher())) {
+            return OsType.ZOS.getValue();
         }
         return osName;
     }
@@ -101,7 +93,7 @@ public class OsResourceContributor implements ResourceContributor {
         OPENBSD("openbsd", "openbsd"),
         SOLARIS("solaris", "solaris"),
         WINDOWS("windows", "windows"),
-        Z_OS("z_os", "z/os");
+        ZOS("zos", "z/os");
 
         private final String value;
         private final String matcher;

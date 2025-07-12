@@ -28,18 +28,8 @@ class OpenTelemetryAutoConfigurationTests {
 
     @Test
     void autoConfigurationNotActivatedWhenApiMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(OpenTelemetry.class))
-                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetry.class));
-    }
-
-    @Test
-    void noopOpenTelemetryWhenSdkMissing() {
-        contextRunner.withPropertyValues("arconia.otel.enabled=true")
-                .withClassLoader(new FilteredClassLoader("io.opentelemetry.sdk.OpenTelemetrySdk"))
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OpenTelemetry.class);
-                    assertThat(context.getBean(OpenTelemetry.class)).isSameAs(OpenTelemetry.noop());
-                });
+        contextRunner.withClassLoader(new FilteredClassLoader(OpenTelemetrySdk.class))
+                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetrySdk.class));
     }
 
     @Test
@@ -47,7 +37,7 @@ class OpenTelemetryAutoConfigurationTests {
         contextRunner.withPropertyValues("arconia.otel.enabled=true")
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
-                    assertThat(context.getBean(OpenTelemetry.class)).isNotSameAs(OpenTelemetry.noop());
+                    assertThat(context.getBean(OpenTelemetry.class)).isInstanceOf(OpenTelemetrySdk.class);
                 });
     }
 
@@ -64,7 +54,7 @@ class OpenTelemetryAutoConfigurationTests {
     void openTelemetryWhenDefault() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OpenTelemetry.class);
-            assertThat(context.getBean(OpenTelemetry.class)).isNotSameAs(OpenTelemetry.noop());
+            assertThat(context.getBean(OpenTelemetry.class)).isInstanceOf(OpenTelemetrySdk.class);
         });
     }
 
@@ -83,11 +73,8 @@ class OpenTelemetryAutoConfigurationTests {
         contextRunner.withUserConfiguration(OptionalDependenciesConfiguration.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
-                    OpenTelemetry openTelemetry = context.getBean(OpenTelemetry.class);
-                    assertThat(openTelemetry).isInstanceOf(OpenTelemetrySdk.class);
-                    OpenTelemetrySdk sdk = (OpenTelemetrySdk) openTelemetry;
+                    OpenTelemetrySdk sdk = context.getBean(OpenTelemetrySdk.class);
 
-                    // Verify each optional dependency is properly configured
                     SdkLoggerProvider loggerProvider = context.getBean(SdkLoggerProvider.class);
                     SdkMeterProvider meterProvider = context.getBean(SdkMeterProvider.class);
                     SdkTracerProvider tracerProvider = context.getBean(SdkTracerProvider.class);

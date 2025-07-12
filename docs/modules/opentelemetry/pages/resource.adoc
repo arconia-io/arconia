@@ -1,8 +1,7 @@
 = OpenTelemetry Resource
 :description: Configure an OpenTelemetry Resource to capture information about the entity that produced a telemetry event.
 
-A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes to the telemetry event to provide context about the event's source, such as the entity name, version,
-deployment environment, and more.
+A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes to the telemetry event to provide context about the event's source, such as the entity name, version, deployment environment, and more.
 
 TIP: Learn more about resources in the https://opentelemetry.io/docs/concepts/resources[OpenTelemetry specification].
 
@@ -29,7 +28,7 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |	`Spring Boot`
 |	The name of the web engine. It's always `Spring Boot`.
 |	`webengine.version`
-|	`3.5.0`
+|	`3.5.3`
 |	The version of the web engine (Spring Boot) in use.
 |===
 
@@ -77,7 +76,6 @@ Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-
 
 * **`OTEL_SERVICE_NAME`**: The name of the application.
 * **`OTEL_RESOURCE_ATTRIBUTES`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
-* **`OTEL_RESOURCE_DISABLED_KEYS`**: A comma-separated list of keys to disable in the `Resource` instance.
 
 This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry across different languages and frameworks.
 
@@ -217,7 +215,6 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `OsResourceContributor` contributes attributes to the `Resource` instance about the operating system the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`os.arch`**: The CPU architecture of the operating system the application is running on.
 * **`os.description`**: Additional description of the operating system the application is running on.
 * **`os.name`**: The name of the operating system the application is running on.
 * **`os.type`**: The type of the operating system the application is running on.
@@ -263,54 +260,6 @@ arconia:
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process[Resource Process Semantic Conventions].
 
-=== Container Resource Contributor
-
-This contributor provides attributes to the `Resource` instance about the OCI container the application is running in, following the OpenTelemetry Semantic Conventions whenever possible.
-
-* **`container.id`**: The ID of the OCI container the application is running in, retrieved from the cgroup filesystem.
-
-NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
-
-WARNING: The Container Resource is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
-
-This contributor is disabled by default. You can enable it via configuration properties.
-
-[source,yaml]
-----
-arconia:
-  otel:
-    resource:
-      contributors:
-        container:
-          enabled: true
-----
-
-NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/container[Resource Container Semantic Conventions].
-
-=== HostId Resource Contributor
-
-This contributor provides attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible. It only works on Windows and Linux machines.
-
-* **`host.id`**: The ID of the host the application is running on.
-
-NOTE: The information provided by this contributor is the same contributed by the OpenTelemetry Java Instrumentation via the `ResourceProvider` SPI. Refer to the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/resources/library[OpenTelemetry Resource Providers documentation] for more details.
-
-WARNING: The Container Resource is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
-
-This contributor is disabled by default. You can enable it via configuration properties.
-
-[source,yaml]
-----
-arconia:
-  otel:
-    resource:
-      contributors:
-        host-id:
-          enabled: true
-----
-
-NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/host[Resource Host Semantic Conventions].
-
 === Custom Resource Contributors
 
 You can define custom `ResourceContributor`(s), register them as beans, and they will be automatically picked up by the autoconfiguration when building the final `Resource` instance.
@@ -352,16 +301,3 @@ public class MyResourceConfiguration {
 
 }
 ----
-
-The additional instrumentation provided by the OpenTelemetry Java Instrumentation can be disabled selectively via configuration properties.
-
-[source,yaml]
-----
-arconia:
-  otel:
-    instrumentation:
-      resource:
-        enabled: false
-----
-
-Note: Refer to the xref:instrumentation.adoc[Instrumentation] section for more information on how Arconia integrates the OpenTelemetry Java Instrumentation.

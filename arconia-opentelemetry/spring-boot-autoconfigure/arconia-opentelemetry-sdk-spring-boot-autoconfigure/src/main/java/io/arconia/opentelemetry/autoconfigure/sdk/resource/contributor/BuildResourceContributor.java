@@ -1,11 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.resource.contributor;
 
-import io.arconia.core.support.Internal;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.ServiceAttributes;
 
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.util.StringUtils;
+
+import io.arconia.core.support.Internal;
 
 /**
  * A {@link ResourceContributor} that contributes build information.

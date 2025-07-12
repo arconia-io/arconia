@@ -25,9 +25,6 @@ dependencies {
     optional("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
-    optional("io.opentelemetry.instrumentation:opentelemetry-resources") {
-        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
-    }
 
     optional "org.springframework.boot:spring-boot-starter-actuator"
 

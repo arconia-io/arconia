@@ -42,7 +42,7 @@ public class OpenTelemetryResourceAutoConfiguration {
     ) {
         ResourceBuilder builder = Resource.getDefault().toBuilder();
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
-        customizers.orderedStream().forEach(contributor -> contributor.customize(builder));
+        customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
         return builder.build();
     }
 
