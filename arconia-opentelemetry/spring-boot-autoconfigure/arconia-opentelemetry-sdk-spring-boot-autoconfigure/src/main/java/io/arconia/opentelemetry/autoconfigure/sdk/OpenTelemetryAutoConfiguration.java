@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
  * Auto-configuration for {@link OpenTelemetry}.
  */
 @AutoConfiguration
-@ConditionalOnClass(OpenTelemetrySdk.class)
+@ConditionalOnClass({ OpenTelemetry.class, OpenTelemetrySdk.class })
 @EnableConfigurationProperties(OpenTelemetryProperties.class)
 public class OpenTelemetryAutoConfiguration {
 

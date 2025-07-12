@@ -37,9 +37,9 @@ class OpenTelemetrySdkPropertyAdapters {
             .mapProperty("otel.sdk.disabled", OpenTelemetryProperties.CONFIG_PREFIX + ".enabled", value -> !Boolean.parseBoolean(value.toLowerCase()))
 
             // Attribute Limits
-            .mapInteger("otel.attribute.value.length.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".log-limits.max-attribute-value-length")
+            .mapInteger("otel.attribute.value.length.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length")
             .mapInteger("otel.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length")
-            .mapInteger("otel.attribute.count.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".log-limits.max-number-of-attributes")
+            .mapInteger("otel.attribute.count.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes")
             .mapInteger("otel.attribute.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes")
 
             // Context Propagation

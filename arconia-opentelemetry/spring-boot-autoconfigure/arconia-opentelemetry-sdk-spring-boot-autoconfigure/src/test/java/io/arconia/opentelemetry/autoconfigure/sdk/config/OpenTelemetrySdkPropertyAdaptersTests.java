@@ -52,11 +52,11 @@ class OpenTelemetrySdkPropertyAdaptersTests {
         var adapter = OpenTelemetrySdkPropertyAdapters.general(environment);
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isEqualTo(false);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".log-limits.max-attribute-value-length"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
             .isEqualTo(100);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length"))
             .isEqualTo(100);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".log-limits.max-number-of-attributes"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes"))
             .isEqualTo(50);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes"))
             .isEqualTo(50);

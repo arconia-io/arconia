@@ -1,8 +1,8 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.logs;
 
-import org.junit.jupiter.api.Test;
-
 import java.time.Duration;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,14 +20,14 @@ class OpenTelemetryLoggingPropertiesTests {
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
 
-        assertThat(properties.getLogLimits()).isNotNull();
+        assertThat(properties.getLimits()).isNotNull();
         assertThat(properties.getProcessor()).isNotNull();
     }
 
     @Test
     void shouldHaveDefaultLogLimitsValues() {
         OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
-        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLogLimits();
+        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLimits();
 
         assertThat(logLimits.getMaxAttributeValueLength()).isEqualTo(Integer.MAX_VALUE);
         assertThat(logLimits.getMaxNumberOfAttributes()).isEqualTo(128);
@@ -36,7 +36,7 @@ class OpenTelemetryLoggingPropertiesTests {
     @Test
     void shouldUpdateLogLimitsValues() {
         OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
-        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLogLimits();
+        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLimits();
 
         logLimits.setMaxAttributeValueLength(1000);
         logLimits.setMaxNumberOfAttributes(256);

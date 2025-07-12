@@ -11,6 +11,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == OpenTelemetry
 
+=== Resource
+
 * The `os.arch` and `host.arch` Resource attributes contained the same value, which is now consolidated in the `host.arch` attribute. The `os.arch` attribute has been removed.
 * The experimental `container.id` and `host.id` Resource attributes have been removed from the auto-configured OpenTelemetry Resource. You can re-add them by including the `io.opentelemetry.instrumentation:opentelemetry-resources` dependency in your project and defining custom `ResourceContributor` beans populating these attributes from the `ContainerResource` and `HostIdResource` classes (in the `io.opentelemetry.instrumentation.resources` package).
 
+=== Logs
+
+* The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.

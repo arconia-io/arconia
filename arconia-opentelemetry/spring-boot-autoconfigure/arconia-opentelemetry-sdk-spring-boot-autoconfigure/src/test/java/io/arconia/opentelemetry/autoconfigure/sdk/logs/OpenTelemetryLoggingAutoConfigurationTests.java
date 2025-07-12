@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.autoconfigure.logging.SdkLoggerProviderBuilderCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -64,8 +63,8 @@ class OpenTelemetryLoggingAutoConfigurationTests {
     void customLogLimitsConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.otel.logs.log-limits.max-attribute-value-length=100",
-                "arconia.otel.logs.log-limits.max-number-of-attributes=50"
+                "arconia.otel.logs.limits.max-attribute-value-length=100",
+                "arconia.otel.logs.limits.max-number-of-attributes=50"
             )
             .run(context -> {
                 LogLimits logLimits = context.getBean(LogLimits.class);
@@ -101,16 +100,6 @@ class OpenTelemetryLoggingAutoConfigurationTests {
     }
 
     @Test
-    void customSpringBootLoggerProviderBuilderCustomizerApplied() {
-        contextRunner
-                .withUserConfiguration(CustomSpringBootLoggerProviderConfiguration.class)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(SdkLoggerProvider.class);
-                    assertThat(context).hasSingleBean(SdkLoggerProviderBuilderCustomizer.class);
-                });
-    }
-
-    @Test
     void customLogRecordProcessorTakesPrecedence() {
         contextRunner
             .withUserConfiguration(CustomLogRecordProcessorConfiguration.class)
@@ -138,18 +127,6 @@ class OpenTelemetryLoggingAutoConfigurationTests {
 
         @Bean
         OpenTelemetryLoggerProviderBuilderCustomizer customLoggerProviderBuilderCustomizer() {
-            return customizer;
-        }
-
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class CustomSpringBootLoggerProviderConfiguration {
-
-        private final SdkLoggerProviderBuilderCustomizer customizer = mock(SdkLoggerProviderBuilderCustomizer.class);
-
-        @Bean
-        SdkLoggerProviderBuilderCustomizer customSpringBootLoggerProviderBuilderCustomizer() {
             return customizer;
         }
 

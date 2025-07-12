@@ -15,15 +15,15 @@ public class OpenTelemetryLoggingProperties {
     /**
      * Constraints for the data captured by log records.
      */
-    private final LogLimits logLimits = new LogLimits();
+    private final LogLimits limits = new LogLimits();
 
     /**
      * Configuration for the batch log record processor.
      */
     private final LogRecordProcessorConfig processor = new LogRecordProcessorConfig();
 
-    public LogLimits getLogLimits() {
-        return logLimits;
+    public LogLimits getLimits() {
+        return limits;
     }
 
     public LogRecordProcessorConfig getProcessor() {
