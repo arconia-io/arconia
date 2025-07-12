@@ -38,9 +38,9 @@ class OpenTelemetrySdkPropertyAdapters {
 
             // Attribute Limits
             .mapInteger("otel.attribute.value.length.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length")
-            .mapInteger("otel.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length")
+            .mapInteger("otel.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length")
             .mapInteger("otel.attribute.count.limit", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes")
-            .mapInteger("otel.attribute.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes")
+            .mapInteger("otel.attribute.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes")
 
             // Context Propagation
             .mapEnum("otel.propagators", "management.tracing.propagation.produce", OpenTelemetrySdkPropertyConverters::propagationType)
@@ -132,10 +132,10 @@ class OpenTelemetrySdkPropertyAdapters {
             .mapDouble("otel.tracer.sampler.arg", "management.tracing.sampling.probability")
 
             // Span Limits
-            .mapInteger("otel.span.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length")
-            .mapInteger("otel.span.attribute.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes")
-            .mapInteger("otel.span.event.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-events")
-            .mapInteger("otel.span.link.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-links")
+            .mapInteger("otel.span.attribute.value.length.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length")
+            .mapInteger("otel.span.attribute.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes")
+            .mapInteger("otel.span.event.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-events")
+            .mapInteger("otel.span.link.count.limit", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-links")
 
             .build();
     }

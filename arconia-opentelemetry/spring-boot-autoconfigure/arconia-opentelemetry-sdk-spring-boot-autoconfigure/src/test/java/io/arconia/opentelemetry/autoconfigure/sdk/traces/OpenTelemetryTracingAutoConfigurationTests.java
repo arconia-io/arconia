@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.autoconfigure.tracing.SdkTracerProviderBuilderCustomizer;
 import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -132,12 +131,12 @@ class OpenTelemetryTracingAutoConfigurationTests {
         contextRunner
             .withBean(TracingProperties.class, TracingProperties::new)
             .withPropertyValues(
-                "arconia.otel.traces.span-limits.max-number-of-attributes=10",
-                "arconia.otel.traces.span-limits.max-number-of-events=20",
-                "arconia.otel.traces.span-limits.max-number-of-links=30",
-                "arconia.otel.traces.span-limits.max-number-of-attributes-per-event=40",
-                "arconia.otel.traces.span-limits.max-number-of-attributes-per-link=50",
-                "arconia.otel.traces.span-limits.max-attribute-value-length=60"
+                "arconia.otel.traces.limits.max-number-of-attributes=10",
+                "arconia.otel.traces.limits.max-number-of-events=20",
+                "arconia.otel.traces.limits.max-number-of-links=30",
+                "arconia.otel.traces.limits.max-number-of-attributes-per-event=40",
+                "arconia.otel.traces.limits.max-number-of-attributes-per-link=50",
+                "arconia.otel.traces.limits.max-attribute-value-length=60"
             )
             .run(context -> {
                 SpanLimits spanLimits = context.getBean(SpanLimits.class);
@@ -160,6 +159,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
                 "arconia.otel.traces.processor.schedule-delay=5s",
                 "arconia.otel.traces.processor.max-export-batch-size=512",
                 "arconia.otel.traces.processor.max-queue-size=2048",
+                "arconia.otel.traces.processor.export-unsampled-spans=false",
                 "arconia.otel.traces.processor.metrics=true"
             )
             .run(context -> {
@@ -193,17 +193,6 @@ class OpenTelemetryTracingAutoConfigurationTests {
     }
 
     @Test
-    void customSpringBootTracerProviderBuilderCustomizerApplied() {
-        contextRunner
-                .withBean(TracingProperties.class, TracingProperties::new)
-                .withUserConfiguration(CustomSpringBootTracerProviderConfiguration.class)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(SdkTracerProvider.class);
-                    assertThat(context).hasSingleBean(SdkTracerProviderBuilderCustomizer.class);
-                });
-    }
-
-    @Test
     void customContextPropagatorsAvailable() {
         contextRunner
             .withBean(TracingProperties.class, TracingProperties::new)
@@ -221,18 +210,6 @@ class OpenTelemetryTracingAutoConfigurationTests {
 
         @Bean
         OpenTelemetryTracerProviderBuilderCustomizer customTracerProviderBuilderCustomizer() {
-            return customizer;
-        }
-
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class CustomSpringBootTracerProviderConfiguration {
-
-        private final SdkTracerProviderBuilderCustomizer customizer = mock(SdkTracerProviderBuilderCustomizer.class);
-
-        @Bean
-        SdkTracerProviderBuilderCustomizer customSpringBootTracerProviderBuilderCustomizer() {
             return customizer;
         }
 

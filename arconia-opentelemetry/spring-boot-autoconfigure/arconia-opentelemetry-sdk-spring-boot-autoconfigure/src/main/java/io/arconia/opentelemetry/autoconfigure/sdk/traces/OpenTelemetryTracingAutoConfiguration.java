@@ -21,11 +21,8 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
-import org.springframework.boot.actuate.autoconfigure.tracing.SdkTracerProviderBuilderCustomizer;
 import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -42,8 +39,6 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(OpenTelemetryTracingProperties.class)
 public class OpenTelemetryTracingAutoConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTracingAutoConfiguration.class);
-
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
 
     @Bean
@@ -53,8 +48,7 @@ public class OpenTelemetryTracingAutoConfiguration {
                                      Sampler sampler,
                                      SpanLimits spanLimits,
                                      ObjectProvider<SpanProcessor> spanProcessors,
-                                     ObjectProvider<OpenTelemetryTracerProviderBuilderCustomizer> customizers,
-                                     ObjectProvider<SdkTracerProviderBuilderCustomizer> sdkCustomizers
+                                     ObjectProvider<OpenTelemetryTracerProviderBuilderCustomizer> customizers
     ) {
         SdkTracerProviderBuilder builder = SdkTracerProvider.builder()
                 .setResource(resource)
@@ -63,11 +57,6 @@ public class OpenTelemetryTracingAutoConfiguration {
                 .setSpanLimits(spanLimits);
         spanProcessors.orderedStream().forEach(builder::addSpanProcessor);
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
-        sdkCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
-        sdkCustomizers.ifAvailable(customizer -> logger.warn("""
-                You are using Spring Boot's SdkTracerProviderBuilderCustomizer to customize the SdkTracerProviderBuilder.
-                For better compatibility with Arconia OpenTelemetry, use the OpenTelemetryTracerProviderBuilderCustomizer instead.
-                """));
         return builder.build();
     }
 
@@ -88,12 +77,12 @@ public class OpenTelemetryTracingAutoConfiguration {
     @ConditionalOnMissingBean
     SpanLimits spanLimits(OpenTelemetryTracingProperties properties) {
         return SpanLimits.builder()
-                .setMaxNumberOfAttributes(properties.getSpanLimits().getMaxNumberOfAttributes())
-                .setMaxNumberOfEvents(properties.getSpanLimits().getMaxNumberOfEvents())
-                .setMaxNumberOfLinks(properties.getSpanLimits().getMaxNumberOfLinks())
-                .setMaxNumberOfAttributesPerEvent(properties.getSpanLimits().getMaxNumberOfAttributesPerEvent())
-                .setMaxNumberOfAttributesPerLink(properties.getSpanLimits().getMaxNumberOfAttributesPerLink())
-                .setMaxAttributeValueLength(properties.getSpanLimits().getMaxAttributeValueLength())
+                .setMaxAttributeValueLength(properties.getLimits().getMaxAttributeValueLength())
+                .setMaxNumberOfAttributes(properties.getLimits().getMaxNumberOfAttributes())
+                .setMaxNumberOfEvents(properties.getLimits().getMaxNumberOfEvents())
+                .setMaxNumberOfLinks(properties.getLimits().getMaxNumberOfLinks())
+                .setMaxNumberOfAttributesPerEvent(properties.getLimits().getMaxNumberOfAttributesPerEvent())
+                .setMaxNumberOfAttributesPerLink(properties.getLimits().getMaxNumberOfAttributesPerLink())
                 .build();
     }
 
@@ -110,6 +99,7 @@ public class OpenTelemetryTracingAutoConfiguration {
         SpanExporter spanExporter = new CompositeSpanExporter(spanExporters.orderedStream().toList(), spanExportingPredicates.orderedStream().toList(),
                 spanReporters.orderedStream().toList(), spanFilters.orderedStream().toList());
         BatchSpanProcessorBuilder spanProcessorBuilder = BatchSpanProcessor.builder(spanExporter)
+                .setExportUnsampledSpans(properties.getProcessor().isExportUnsampledSpans())
                 .setExporterTimeout(properties.getProcessor().getExportTimeout())
                 .setScheduleDelay(properties.getProcessor().getScheduleDelay())
                 .setMaxExportBatchSize(properties.getProcessor().getMaxExportBatchSize())

@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * Auto-configuration for OpenTelemetry logging.
  */
-@AutoConfiguration
+@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration.class)
 @ConditionalOnClass(SdkLoggerProvider.class)
 @ConditionalOnOpenTelemetryLogging
 @EnableConfigurationProperties(OpenTelemetryLoggingProperties.class)

@@ -1,8 +1,8 @@
 package io.arconia.opentelemetry.autoconfigure.sdk.traces;
 
-import org.junit.jupiter.api.Test;
-
 import java.time.Duration;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +21,7 @@ class OpenTelemetryTracingPropertiesTests {
         OpenTelemetryTracingProperties properties = new OpenTelemetryTracingProperties();
 
         assertThat(properties.getSampling()).isNotNull();
-        assertThat(properties.getSpanLimits()).isNotNull();
+        assertThat(properties.getLimits()).isNotNull();
         assertThat(properties.getProcessor()).isNotNull();
     }
 
@@ -46,7 +46,7 @@ class OpenTelemetryTracingPropertiesTests {
     @Test
     void shouldHaveDefaultSpanLimitsValues() {
         OpenTelemetryTracingProperties properties = new OpenTelemetryTracingProperties();
-        OpenTelemetryTracingProperties.SpanLimits spanLimits = properties.getSpanLimits();
+        OpenTelemetryTracingProperties.SpanLimits spanLimits = properties.getLimits();
 
         assertThat(spanLimits.getMaxNumberOfAttributes()).isEqualTo(128);
         assertThat(spanLimits.getMaxNumberOfEvents()).isEqualTo(128);
@@ -59,7 +59,7 @@ class OpenTelemetryTracingPropertiesTests {
     @Test
     void shouldUpdateSpanLimitsValues() {
         OpenTelemetryTracingProperties properties = new OpenTelemetryTracingProperties();
-        OpenTelemetryTracingProperties.SpanLimits spanLimits = properties.getSpanLimits();
+        OpenTelemetryTracingProperties.SpanLimits spanLimits = properties.getLimits();
 
         spanLimits.setMaxNumberOfAttributes(256);
         spanLimits.setMaxNumberOfEvents(256);

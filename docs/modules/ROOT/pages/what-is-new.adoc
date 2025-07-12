@@ -19,3 +19,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Logs
 
 * The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.
+
+=== Traces
+
+* Introduced new `arconia.otel.traces.processor.export-unsampled-spans` configuration property to enable exporting of unsampled spans. This is disabled by default.
+* The `arconia.otel.traces.span-limits` configuration property group has been renamed to `arconia.otel.traces.limits`.

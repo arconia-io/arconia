@@ -20,7 +20,7 @@ public class OpenTelemetryTracingProperties {
     /**
      * Constraints for the data captured by spans.
      */
-    private final SpanLimits spanLimits = new SpanLimits();
+    private final SpanLimits limits = new SpanLimits();
 
     /**
      * Configuration for the batch span processor.
@@ -31,8 +31,8 @@ public class OpenTelemetryTracingProperties {
         return sampling;
     }
 
-    public SpanLimits getSpanLimits() {
-        return spanLimits;
+    public SpanLimits getLimits() {
+        return limits;
     }
 
     public SpanProcessorConfig getProcessor() {
@@ -57,6 +57,12 @@ public class OpenTelemetryTracingProperties {
     }
 
     public static class SpanLimits {
+
+        /**
+         * Maximum length of each attribute value.
+         */
+        private int maxAttributeValueLength = Integer.MAX_VALUE;
+
         /**
          * Maximum number of attributes per span.
          */
@@ -82,10 +88,13 @@ public class OpenTelemetryTracingProperties {
          */
         private int maxNumberOfAttributesPerLink = 128;
 
-        /**
-         * Maximum length of each attribute value.
-         */
-        private int maxAttributeValueLength = Integer.MAX_VALUE;
+        public int getMaxAttributeValueLength() {
+            return maxAttributeValueLength;
+        }
+
+        public void setMaxAttributeValueLength(int maxAttributeValueLength) {
+            this.maxAttributeValueLength = maxAttributeValueLength;
+        }
 
         public int getMaxNumberOfAttributes() {
             return maxNumberOfAttributes;
@@ -127,13 +136,6 @@ public class OpenTelemetryTracingProperties {
             this.maxNumberOfAttributesPerLink = maxNumberOfAttributesPerLink;
         }
 
-        public int getMaxAttributeValueLength() {
-            return maxAttributeValueLength;
-        }
-
-        public void setMaxAttributeValueLength(int maxAttributeValueLength) {
-            this.maxAttributeValueLength = maxAttributeValueLength;
-        }
     }
 
     public enum SamplingStrategy {
@@ -171,6 +173,11 @@ public class OpenTelemetryTracingProperties {
         private int maxExportBatchSize = 512;
 
         /**
+         * Whether to export unsampled spans.
+         */
+        private boolean exportUnsampledSpans = false;
+
+        /**
          * Whether to generate metrics for the span processor.
          */
         private boolean metrics = false;
@@ -205,6 +212,14 @@ public class OpenTelemetryTracingProperties {
 
         public void setMaxExportBatchSize(int maxExportBatchSize) {
             this.maxExportBatchSize = maxExportBatchSize;
+        }
+
+        public boolean isExportUnsampledSpans() {
+            return exportUnsampledSpans;
+        }
+
+        public void setExportUnsampledSpans(boolean exportUnsampledSpans) {
+            this.exportUnsampledSpans = exportUnsampledSpans;
         }
 
         public boolean isMetrics() {

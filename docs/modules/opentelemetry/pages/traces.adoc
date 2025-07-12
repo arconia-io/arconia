@@ -95,27 +95,27 @@ Constraints for the data captured by spans.
 .Span Limits Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.traces.span-limits.max-attribute-value-length`
+|	`arconia.otel.traces.limits.max-attribute-value-length`
 |	-
 |	Maximum length of each attribute value.
 
-|	`arconia.otel.traces.span-limits.max-number-of-attributes`
+|	`arconia.otel.traces.limits.max-number-of-attributes`
 |	`128`
 |	Maximum number of attributes per span.
 
-|	`arconia.otel.traces.span-limits.max-number-of-attributes-per-event`
+|	`arconia.otel.traces.limits.max-number-of-attributes-per-event`
 |	`128`
 |	Maximum number of attributes per event.
 
-|	`arconia.otel.traces.span-limits.max-number-of-attributes-per-link`
+|	`arconia.otel.traces.limits.max-number-of-attributes-per-link`
 |	`128`
 |	Maximum number of attributes per link.
 
-|	`arconia.otel.traces.span-limits.max-number-of-events`
+|	`arconia.otel.traces.limits.max-number-of-events`
 |	`128`
 |	Maximum number of events per span.
 
-|	`arconia.otel.traces.span-limits.max-number-of-links`
+|	`arconia.otel.traces.limits.max-number-of-links`
 |	`128`
 |	Maximum number of links per span.
 |===
@@ -127,6 +127,10 @@ Configuration for the batch span processor.
 .Span Processor Configuration Properties
 |===
 |Property |Default |Description
+|	`arconia.otel.traces.processor.export-unsampled-spans`
+|	`false`
+|	Whether to export unsampled spans.
+
 |	`arconia.otel.traces.processor.export-timeout`
 |	`30s`
 |	The maximum allowed time to export spans.
@@ -175,8 +179,6 @@ public interface OpenTelemetryTracerProviderBuilderCustomizer {
 
 }
 ----
-
-INFO: Arconia OpenTelemetry also supports the `SdkTracerProviderBuilderCustomizer` interface (from Spring Boot) for customizing a `SdkTracerProviderBuilder` instance.
 
 == Disabling the Auto-Configuration
 
@@ -269,3 +271,5 @@ dependencies {
   }
 }
 ----
+
+Notice, though, that without the bridge the support for OpenTelemetry Traces will be limited.

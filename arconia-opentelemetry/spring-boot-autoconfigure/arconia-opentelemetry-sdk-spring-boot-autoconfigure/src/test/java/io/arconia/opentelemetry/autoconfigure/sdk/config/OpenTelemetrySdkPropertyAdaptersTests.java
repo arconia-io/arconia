@@ -54,11 +54,11 @@ class OpenTelemetrySdkPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isEqualTo(false);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
             .isEqualTo(100);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
             .isEqualTo(100);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes"))
             .isEqualTo(50);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes"))
             .isEqualTo(50);
         assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.produce"))
             .containsExactlyInAnyOrder(PropagationType.W3C, PropagationType.B3);
@@ -173,13 +173,13 @@ class OpenTelemetrySdkPropertyAdaptersTests {
             .isEqualTo(SamplingStrategy.TRACE_ID_RATIO);
         assertThat(adapter.getArconiaProperties().get("management.tracing.sampling.probability"))
             .isEqualTo(0.5);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-attribute-value-length"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
             .isEqualTo(100);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-attributes"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-attributes"))
             .isEqualTo(50);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-events"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-events"))
             .isEqualTo(100);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".span-limits.max-number-of-links"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-number-of-links"))
             .isEqualTo(100);
     }
 
