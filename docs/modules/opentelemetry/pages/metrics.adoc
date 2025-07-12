@@ -78,7 +78,7 @@ If you define a custom `SdkMeterProvider` bean, the auto-configuration will back
 public class MyMetricsConfiguration {
 
   @Bean
-  public SdkLoggerProvider myLoggerProvider() {
+  public SdkMeterProvider myMeterProvider() {
     ...
   }
 

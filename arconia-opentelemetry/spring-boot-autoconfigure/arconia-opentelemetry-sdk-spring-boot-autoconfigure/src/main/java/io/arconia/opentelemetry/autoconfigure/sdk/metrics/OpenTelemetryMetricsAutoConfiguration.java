@@ -40,10 +40,10 @@ public class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    SdkMeterProvider otelSdkMeterProvider(Clock clock,
-                                          ExemplarFilter exemplarFilter,
-                                          Resource resource,
-                                          ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers
+    SdkMeterProvider meterProvider(Clock clock,
+                                   ExemplarFilter exemplarFilter,
+                                   Resource resource,
+                                   ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers
     ) {
         SdkMeterProviderBuilder builder = SdkMeterProvider.builder()
                 .setClock(clock)
