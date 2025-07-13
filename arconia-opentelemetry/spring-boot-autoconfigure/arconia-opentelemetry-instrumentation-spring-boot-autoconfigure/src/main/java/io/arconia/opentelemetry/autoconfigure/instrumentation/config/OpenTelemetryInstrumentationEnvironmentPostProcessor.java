@@ -29,7 +29,6 @@ class OpenTelemetryInstrumentationEnvironmentPostProcessor implements Environmen
 
         Map<String,Object> arconiaProperties = new HashMap<>();
         arconiaProperties.putAll(OpenTelemetryInstrumentationPropertyAdapters.logbackAppender(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryInstrumentationPropertyAdapters.micrometer(environment).getArconiaProperties());
 
         MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, arconiaProperties);
         MutablePropertySources propertySources = environment.getPropertySources();

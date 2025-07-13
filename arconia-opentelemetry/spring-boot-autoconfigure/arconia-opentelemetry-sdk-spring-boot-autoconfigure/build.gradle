@@ -22,15 +22,14 @@ dependencies {
     optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
     // Spring/Micrometer
-    optional ("io.micrometer:micrometer-tracing-bridge-otel") {
-        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
-    }
+    optional "io.micrometer:micrometer-registry-otlp"
+    optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    testImplementation "io.grpc:grpc-netty-shaded:1.73.0"
+    testRuntimeOnly "io.grpc:grpc-netty-shaded:1.73.0"
 }
 
 dependencyManagement {

@@ -22,6 +22,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.
 
+=== Metrics
+
+* The Micrometer Metrics OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `micrometer-metrics-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge.opentelemetry-api` group.
+
 === Traces
 
 * Introduced new `arconia.otel.traces.processor.export-unsampled-spans` configuration property to enable exporting of unsampled spans. This is disabled by default.

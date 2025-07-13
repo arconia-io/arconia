@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
+    api project(":arconia-opentelemetry:micrometer-metrics-opentelemetry-bridge")
     api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
     api project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure")
 
@@ -21,9 +22,6 @@ dependencies {
     api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
 
     api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
-        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
-    }
-    api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 

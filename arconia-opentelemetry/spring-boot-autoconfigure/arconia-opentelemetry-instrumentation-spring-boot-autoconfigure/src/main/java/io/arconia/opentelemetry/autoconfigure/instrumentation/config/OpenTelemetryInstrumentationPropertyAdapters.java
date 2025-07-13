@@ -5,7 +5,6 @@ import org.springframework.util.Assert;
 
 import io.arconia.core.config.adapter.PropertyAdapter;
 import io.arconia.opentelemetry.autoconfigure.instrumentation.logback.LogbackAppenderProperties;
-import io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer.MicrometerProperties;
 
 /**
  * Provides adapters for OpenTelemetry instrumentation properties.
@@ -34,15 +33,6 @@ class OpenTelemetryInstrumentationPropertyAdapters {
                 LogbackAppenderProperties.CONFIG_PREFIX + ".capture-arguments")
             .mapBoolean("otel.instrumentation.logback-appender.experimental.capture-logstash-attributes",
                 LogbackAppenderProperties.CONFIG_PREFIX + ".capture-logstash-attributes")
-            .build();
-    }
-
-    static PropertyAdapter micrometer(ConfigurableEnvironment environment) {
-        Assert.notNull(environment, "environment cannot be null");
-        
-        return PropertyAdapter.builder(environment)
-            .mapBoolean("otel.instrumentation.micrometer.enabled",
-                MicrometerProperties.CONFIG_PREFIX + ".enabled")
             .build();
     }
 

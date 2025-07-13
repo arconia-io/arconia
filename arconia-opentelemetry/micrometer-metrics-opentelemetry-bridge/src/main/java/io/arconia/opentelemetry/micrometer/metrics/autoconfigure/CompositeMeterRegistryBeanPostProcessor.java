@@ -1,4 +1,4 @@
-package io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer;
+package io.arconia.opentelemetry.micrometer.metrics.autoconfigure;
 
 import java.util.ArrayList;
 import java.util.Comparator;

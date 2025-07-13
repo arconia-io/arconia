@@ -42,25 +42,13 @@ class OpenTelemetryInstrumentationEnvironmentPostProcessorTests {
     }
 
     @Test
-    void postProcessEnvironmentShouldMapMicrometerProperties() {
-        var environment = new MockEnvironment()
-            .withProperty("otel.instrumentation.micrometer.enabled", "true");
-
-        processor.postProcessEnvironment(environment, new SpringApplication());
-
-        assertThat(environment.getProperty("arconia.otel.instrumentation.micrometer.enabled")).isEqualTo("true");
-    }
-
-    @Test
     void postProcessEnvironmentShouldNotProcessPropertiesWhenCompatibilityIsDisabled() {
         var environment = new MockEnvironment()
             .withProperty("arconia.otel.compatibility.opentelemetry", "false")
-            .withProperty("otel.instrumentation.micrometer.enabled", "true")
             .withProperty("otel.instrumentation.logback-appender.enabled", "true");
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("arconia.otel.instrumentation.micrometer.enabled")).isNull();
         assertThat(environment.getProperty("arconia.otel.instrumentation.logback-appender.enabled")).isNull();
     }
 
@@ -68,12 +56,10 @@ class OpenTelemetryInstrumentationEnvironmentPostProcessorTests {
     void postProcessEnvironmentShouldProcessPropertiesWhenCompatibilityIsEnabled() {
         var environment = new MockEnvironment()
             .withProperty("arconia.otel.compatibility.opentelemetry", "true")
-            .withProperty("otel.instrumentation.micrometer.enabled", "true")
             .withProperty("otel.instrumentation.logback-appender.enabled", "true");
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("arconia.otel.instrumentation.micrometer.enabled")).isEqualTo("true");
         assertThat(environment.getProperty("arconia.otel.instrumentation.logback-appender.enabled")).isEqualTo("true");
     }
 

@@ -13,17 +13,11 @@ dependencies {
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
-    optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
-
-    optional "io.opentelemetry:opentelemetry-sdk"
-    optional("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api") {
-        exclude group: "io.opentelemetry", module: "opentelemetry-api-incubator"
-    }
-    optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
-
-    optional("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
+    api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
+
+    optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
 
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
@@ -40,8 +34,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia OpenTelemetry Instrumentation Autoconfigure"
-                description = "Arconia OpenTelemetry Instrumentation Autoconfigure."
+                name = "Micrometer Metrics OpenTelemetry API Bridge"
+                description = "Micrometer Metrics OpenTelemetry API Bridge."
             }
         }
     }

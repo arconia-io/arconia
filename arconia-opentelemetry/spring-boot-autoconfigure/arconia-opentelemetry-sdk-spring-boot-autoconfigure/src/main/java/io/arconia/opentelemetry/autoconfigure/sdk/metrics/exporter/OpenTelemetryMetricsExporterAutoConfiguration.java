@@ -11,7 +11,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetr
 /**
  * Auto-configuration for exporting OpenTelemetry metrics.
  */
-@AutoConfiguration
+@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration.class)
 @ConditionalOnOpenTelemetryMetrics
 @Import({ ConsoleMetricsExporterConfiguration.class, OtlpMetricsExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryMetricsExporterProperties.class)

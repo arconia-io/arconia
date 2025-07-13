@@ -1,4 +1,4 @@
-package io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer;
+package io.arconia.opentelemetry.micrometer.metrics.autoconfigure;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -17,7 +17,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
-import io.arconia.opentelemetry.autoconfigure.instrumentation.ConditionalOnOpenTelemetryInstrumentation;
 import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -29,16 +28,16 @@ import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetry
     after = { MetricsAutoConfiguration.class, OpenTelemetryAutoConfiguration.class },
     before = { CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class }
 )
-@ConditionalOnClass(MeterRegistry.class)
+@ConditionalOnClass({MeterRegistry.class, OpenTelemetryMeterRegistry.class})
+@ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnOpenTelemetryMetrics
-@ConditionalOnOpenTelemetryInstrumentation(MicrometerProperties.INSTRUMENTATION_NAME)
-@Conditional(MicrometerInstrumentationAutoConfiguration.MetricsExportEnabled.class)
-@EnableConfigurationProperties(MicrometerProperties.class)
-public class MicrometerInstrumentationAutoConfiguration {
+@Conditional(MicrometerMetricsOpenTelemetryAutoConfiguration.MetricsExportEnabled.class)
+@EnableConfigurationProperties(MicrometerMetricsOpenTelemetryProperties.class)
+public class MicrometerMetricsOpenTelemetryAutoConfiguration {
 
     @Bean
     @ConditionalOnBean({ Clock.class, OpenTelemetry.class })
-    MeterRegistry meterRegistry(MicrometerProperties properties, Clock clock, OpenTelemetry openTelemetry) {
+    MeterRegistry meterRegistry(MicrometerMetricsOpenTelemetryProperties properties, Clock clock, OpenTelemetry openTelemetry) {
         return OpenTelemetryMeterRegistry.builder(openTelemetry)
                 .setBaseTimeUnit(properties.getBaseTimeUnit())
                 .setClock(clock)

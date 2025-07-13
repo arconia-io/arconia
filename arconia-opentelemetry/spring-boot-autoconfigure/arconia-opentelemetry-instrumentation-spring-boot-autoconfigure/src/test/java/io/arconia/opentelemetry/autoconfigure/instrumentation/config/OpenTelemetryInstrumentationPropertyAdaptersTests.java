@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.opentelemetry.autoconfigure.instrumentation.logback.LogbackAppenderProperties;
-import io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer.MicrometerProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,24 +52,6 @@ class OpenTelemetryInstrumentationPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get(LogbackAppenderProperties.CONFIG_PREFIX + ".capture-arguments"))
             .isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(LogbackAppenderProperties.CONFIG_PREFIX + ".capture-logstash-attributes"))
-            .isEqualTo(true);
-    }
-
-    @Test
-    void micrometerShouldThrowExceptionWhenEnvironmentIsNull() {
-        assertThatThrownBy(() -> OpenTelemetryInstrumentationPropertyAdapters.micrometer(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("environment cannot be null");
-    }
-
-    @Test
-    void micrometerShouldMapProperties() {
-        var environment = new MockEnvironment()
-            .withProperty("otel.instrumentation.micrometer.enabled", "true");
-
-        var adapter = OpenTelemetryInstrumentationPropertyAdapters.micrometer(environment);
-
-        assertThat(adapter.getArconiaProperties().get(MicrometerProperties.CONFIG_PREFIX + ".enabled"))
             .isEqualTo(true);
     }
 

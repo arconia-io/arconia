@@ -66,13 +66,6 @@
       "type": "java.lang.Integer",
       "description": "Log telemetry is emitted after the initialization of the OpenTelemetry Logback appender with an OpenTelemetry object. This setting allows you to modify the size of the cache used to replay the first logs. 'thread.id' attribute is not captured.",
       "defaultValue": 1000
-    },
-
-    {
-      "name": "arconia.otel.instrumentation.micrometer.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Whether OpenTelemetry instrumentation for the Micrometer bridge is enabled.",
-      "defaultValue": true
     }
   ]
 }

@@ -1,15 +1,18 @@
-package io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer;
+package io.arconia.opentelemetry.micrometer.metrics.autoconfigure;
 
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = MicrometerProperties.CONFIG_PREFIX)
-public class MicrometerProperties {
+@ConfigurationProperties(prefix = MicrometerMetricsOpenTelemetryProperties.CONFIG_PREFIX)
+public class MicrometerMetricsOpenTelemetryProperties {
 
-    public static final String INSTRUMENTATION_NAME = "micrometer";
+    public static final String CONFIG_PREFIX = "arconia.otel.metrics.micrometer-bridge.opentelemetry-api";
 
-    public static final String CONFIG_PREFIX = "arconia.otel.instrumentation." + INSTRUMENTATION_NAME;
+    /**
+     * Whether to enable the Micrometer Metrics OpenTelemetry bridge.
+     */
+    private boolean enabled = true;
 
     /**
      * The base time unit for Micrometer metrics.
@@ -20,6 +23,14 @@ public class MicrometerProperties {
      * Whether to generate gauge-based Micrometer histograms.
      */
     private boolean histogramGauges = true;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public TimeUnit getBaseTimeUnit() {
         return baseTimeUnit;

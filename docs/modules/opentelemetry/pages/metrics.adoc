@@ -155,37 +155,67 @@ NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, r
 
 == Micrometer Metrics Bridge
 
-Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer metrics into OpenTelemetry Metrics and export them via OTLP.
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports two different bridges to export Micrometer Metrics to OpenTelemetry.
 
-WARNING: The Micrometer Metrics Bridge is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
+=== Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
-=== Enabling/Disabling the Bridge
+The Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer Metrics OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
 
-The bridge logic is provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer] and can be disabled selectively via configuration properties.
+WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
+
+==== Enabling/Disabling the Bridge
+
+The Micrometer Metrics OpenTelemetry Bridge can be disabled via configuration properties.
 
 [source,yaml]
 ----
-arconia:
-  otel:
-    instrumentation:
-      micrometer:
-        enabled: false
+arconia.otel.metrics.micrometer-bridge.opentelemetry-api.enabled: false
 ----
 
-Note: Refer to the xref:instrumentation.adoc[Instrumentation] section for more information on how Arconia integrates the OpenTelemetry Java Instrumentation.
+Alternatively, you can exclude the `io.arconia:micrometer-metrics-opentelemetry-bridge` dependency from your project, which will disable the bridge entirely.
 
-=== Configuration Properties
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
+        exclude group: "io.arconia", module: "micrometer-metrics-opentelemetry-bridge"
+    }
+}
+----
 
-The Micrometer Metrics Bridge can be configured via configuration properties.
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>io.arconia</groupId>
+            <artifactId>micrometer-metrics-opentelemetry-bridge</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+----
+======
 
-.Micrometer Metrics Bridge Configuration Properties
+==== Configuration Properties
+
+The Micrometer Metrics OpenTelemetry Bridge can be configured via configuration properties.
+
+.Micrometer Metrics OpenTelemetry Bridge Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.instrumentation.micrometer.base-time-unit`
+|	`arconia.otel.metrics.micrometer-bridge.opentelemetry-api.base-time-unit`
 |	`seconds`
 |	The base time unit for Micrometer metrics.
 
-|	`arconia.otel.instrumentation.micrometer.histogram-gauges`
+|	`arconia.otel.metrics.micrometer-bridge.opentelemetry-api.histogram-gauges`
 |	`true`
 |	Whether to generate gauge-based Micrometer histograms.
 |===

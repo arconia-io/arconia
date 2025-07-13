@@ -11,7 +11,7 @@ import io.arconia.opentelemetry.autoconfigure.sdk.logs.exporter.otlp.OtlpLogging
 /**
  * Auto-configuration for exporting OpenTelemetry logs.
  */
-@AutoConfiguration
+@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.logging.otlp.OtlpLoggingAutoConfiguration.class)
 @ConditionalOnOpenTelemetryLogging
 @Import({ ConsoleLoggingExporterConfiguration.class, OtlpLoggingExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryLoggingExporterProperties.class)
