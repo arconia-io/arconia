@@ -21,10 +21,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Logs
 
 * The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.
+* The Logback OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `logback-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.logs.logback-bridge` group to the `arconia.otel.logs.logback-bridge` group. If you were using the Arconia OpenTelemetry Spring Boot Starter, the new module will be automatically included in your project.
 
 === Metrics
 
-* The Micrometer Metrics OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `micrometer-metrics-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge.opentelemetry-api` group.
+* The Micrometer Metrics OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `micrometer-metrics-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge.opentelemetry-api` group. If you were using the Arconia OpenTelemetry Spring Boot Starter, the new module will be automatically included in your project.
 
 === Traces
 

@@ -27,24 +27,8 @@ NOTE: Micrometer-based instrumentation follows its own semantic conventions, whi
 
 The OpenTelemetry Java Instrumentation project provides a set of libraries that automatically instrument your Java applications to generate telemetry data. Arconia OpenTelemetry includes out-of-the-box support for several of them whenever native alternatives are not available.
 
-Such instrumentation libraries can be customized via the configuration properties provided by Arconia OpenTelemetry.
-
-.OpenTelemetry Java Instrumentation Configuration Properties
-|===
-|Property |Default |Description
-|	`arconia.otel.instrumentation.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation is globally enabled.
-
-|	`arconia.otel.instrumentation.logback-appender.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation for the Logback Appender is enabled. This instrumentation is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
-
-|	`arconia.otel.instrumentation.micrometer.enabled`
-|	`true`
-|	Whether OpenTelemetry instrumentation for the Micrometer bridge is enabled. This instrumentation is provided by the OpenTelemetry Java Instrumentation project and is still experimental.
-|===
+Arconia relies on the OpenTelemetry Java Instrumentation project to provide bridges between Micrometer Metrics and OpenTelemetry, as well as between SLF4J and OpenTelemetry. You can find more information at xref:opentelemetry:metrics.adoc#_micrometer_metrics_bridge[Micrometer OpenTelemetry Bridge] and xref:opentelemetry:logs.adoc#_slf4j_bridge[SLF4J OpenTelemetry Bridge].
 
 Additional instrumentation libraries can be added to your project to enable more features and integrations with other libraries. Check out the https://opentelemetry.io/docs/languages/java/instrumentation/#library-instrumentation[OpenTelemetry documentation] for more information.
 
-NOTE: OpenTelemetry-based instrumentation follows the OpenTelemetry Semantic Conventions, including those that are still experimental and subject to change. Care should be taken, as they might change in a non-backward-compatible way in the future without notice.
+WARNING: OpenTelemetry-based instrumentation follows the OpenTelemetry Semantic Conventions, including those that are still experimental and subject to change. Care should be taken, as they might change in a non-backward-compatible way in the future without notice. Furthermore, some instrumentation libraries might still be experimental and not yet stable, so they might change in a non-backward-compatible way in the future without notice. Always check the documentation of the specific instrumentation library you are using for more information on its stability and compatibility.

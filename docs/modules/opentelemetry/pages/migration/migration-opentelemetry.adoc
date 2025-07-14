@@ -291,7 +291,7 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |OpenTelemetry Property |Arconia Property
 
 |`otel.instrumentation.logback-appender.enabled`
-|`arconia.otel.instrumentation.logback-appender.enabled`
+|`arconia.otel.logs.logback-bridge.enabled`
 
 |`otel.instrumentation.micrometer.enabled`
 |`arconia.otel.instrumentation.micrometer.enabled`

@@ -33,8 +33,8 @@ include 'arconia-multitenancy:spring-boot-autoconfigure:arconia-multitenancy-spr
 include 'arconia-multitenancy:spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 
 // OpenTelemetry
+include 'arconia-opentelemetry:logback-opentelemetry-bridge'
 include 'arconia-opentelemetry:micrometer-metrics-opentelemetry-bridge'
-include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-instrumentation-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure'
 include 'arconia-opentelemetry:spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
 

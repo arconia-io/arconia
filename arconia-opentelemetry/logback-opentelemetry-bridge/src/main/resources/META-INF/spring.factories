@@ -1,0 +1,3 @@
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+io.arconia.opentelemetry.logback.autoconfigure.LogbackAppenderApplicationListener
