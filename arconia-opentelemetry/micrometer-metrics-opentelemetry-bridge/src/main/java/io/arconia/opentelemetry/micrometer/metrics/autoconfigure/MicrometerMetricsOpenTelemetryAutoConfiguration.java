@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Conditional;
 
 import io.arconia.opentelemetry.autoconfigure.sdk.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.sdk.metrics.ConditionalOnOpenTelemetryMetrics;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
 
 /**
  * Auto-configuration for Micrometer metrics bridge to OpenTelemetry.
@@ -57,10 +57,10 @@ public class MicrometerMetricsOpenTelemetryAutoConfiguration {
             super(ConfigurationPhase.REGISTER_BEAN);
         }
 
-        @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "console")
+        @ConditionalOnOpenTelemetryMetricsExporter("console")
         static class ConsoleMetricsExportEnabled {}
 
-        @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX, name = "type", havingValue = "otlp", matchIfMissing = true)
+        @ConditionalOnOpenTelemetryMetricsExporter("otlp")
         static class OtlpMetricsExportEnabled {}
 
     }

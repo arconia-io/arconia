@@ -25,7 +25,7 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
             .withBean(Clock.class, () -> Clock.SYSTEM)
-            .withBean(OpenTelemetry.class, () -> OpenTelemetry.noop());
+            .withBean(OpenTelemetry.class, OpenTelemetry::noop);
 
     @Test
     void autoConfigurationNotActivatedWhenMeterRegistryClassMissing() {
