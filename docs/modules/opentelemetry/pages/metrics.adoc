@@ -163,6 +163,8 @@ The Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer
 
 WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
 
+NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't support reading metrics, but only bridging them to OpenTelemetry. For that reason, an additional `SimpleMeterRegistry` bean is registered for reading Micrometer metrics, which is typically done by the Spring Boot Actuator library.
+
 ==== Enabling/Disabling the Bridge
 
 The Micrometer Metrics OpenTelemetry Bridge can be disabled via configuration properties.
