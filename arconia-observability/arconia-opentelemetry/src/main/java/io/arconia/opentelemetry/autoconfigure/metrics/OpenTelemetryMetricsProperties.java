@@ -1,7 +1,5 @@
 package io.arconia.opentelemetry.autoconfigure.metrics;
 
-import java.time.Duration;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -13,38 +11,21 @@ public class OpenTelemetryMetricsProperties {
     public static final String CONFIG_PREFIX = "arconia.otel.metrics";
 
     /**
-     * The interval between two consecutive exports of metrics.
+     * Configuration for exemplars.
      */
-    private Duration interval = Duration.ofSeconds(60);
-
-    /**
-     * Filter for which measurements can become Exemplars.
-     */
-    private ExemplarFilter exemplarFilter = ExemplarFilter.TRACE_BASED;
+    private final Exemplars exemplars = new Exemplars();
 
     /**
      * Maximum number of distinct points per metric.
      */
     private Integer cardinalityLimit = 2000;
 
-    public Duration getInterval() {
-        return interval;
-    }
-
-    public void setInterval(Duration interval) {
-        this.interval = interval;
-    }
-
-    public ExemplarFilter getExemplarFilter() {
-        return exemplarFilter;
-    }
-
-    public void setExemplarFilter(ExemplarFilter exemplarFilter) {
-        this.exemplarFilter = exemplarFilter;
+    public Exemplars getExemplars() {
+        return this.exemplars;
     }
 
     public Integer getCardinalityLimit() {
-        return cardinalityLimit;
+        return this.cardinalityLimit;
     }
 
     public void setCardinalityLimit(Integer cardinalityLimit) {
@@ -52,22 +33,55 @@ public class OpenTelemetryMetricsProperties {
     }
 
     /**
-     * Filter for which measurements can become Exemplars.
+     * Configuration properties for exemplars.
+     */
+    public static class Exemplars {
+
+        /**
+         * Whether exemplars should be enabled.
+         */
+        private boolean enabled = true;
+
+        /**
+         * Determines which measurements are eligible to become Exemplars.
+         */
+        private ExemplarFilter filter = ExemplarFilter.TRACE_BASED;
+
+        public boolean isEnabled() {
+            return this.enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public ExemplarFilter getFilter() {
+            return this.filter;
+        }
+
+        public void setFilter(ExemplarFilter filter) {
+            this.filter = filter;
+        }
+
+    }
+
+    /**
+     * Filter for which measurements are eligible to become Exemplars.
      */
     public enum ExemplarFilter {
 
         /**
-         * A filter which makes all measurements eligible for being an exemplar.
+         * Filter which makes all measurements eligible for being an exemplar.
          */
         ALWAYS_ON,
 
         /**
-         * A filter which makes no measurements eligible for being an exemplar.
+         * Filter which makes no measurements eligible for being an exemplar.
          */
         ALWAYS_OFF,
 
         /**
-         * A filter that only accepts measurements where there is a span in context that is being sampled.
+         * Filter that only accepts measurements where there is a span in context that is being sampled.
          */
         TRACE_BASED;
 

@@ -26,6 +26,9 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 === Metrics
 
+* You can now enable/disable support for Exemplars via the `arconia.otel.metrics.exemplars.enabled` configuration property. This is enabled by default.
+* The `arconia.otel.metrics.exemplar-filter` configuration property group has been renamed to `arconia.otel.metrics.exemplars.filter`.
+* The `arconia.otel.metrics.interval` configuration property group has been renamed to `arconia.otel.metrics.export.interval`.
 * The Micrometer Metrics OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `micrometer-metrics-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge.opentelemetry-api` group. If you were using the Arconia OpenTelemetry Spring Boot Starter, the new module will be automatically included in your project.
 
 === Traces

@@ -2,10 +2,8 @@ package io.arconia.opentelemetry.autoconfigure.metrics;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link OpenTelemetryMetricsProperties}.
@@ -20,27 +18,25 @@ class OpenTelemetryMetricsPropertiesTests {
     @Test
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
-
-        assertThat(properties.getInterval()).isEqualTo(Duration.ofSeconds(60));
-        assertThat(properties.getExemplarFilter()).isEqualTo(ExemplarFilter.TRACE_BASED);
+        assertThat(properties.getExemplars().isEnabled()).isTrue();
+        assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.TRACE_BASED);
+        assertThat(properties.getCardinalityLimit()).isEqualTo(2000);
     }
 
     @Test
-    void shouldUpdateIntervalValue() {
+    void shouldUpdateCardinalityLimit() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
-
-        properties.setInterval(Duration.ofSeconds(30));
-
-        assertThat(properties.getInterval()).isEqualTo(Duration.ofSeconds(30));
+        properties.setCardinalityLimit(3000);
+        assertThat(properties.getCardinalityLimit()).isEqualTo(3000);
     }
 
     @Test
-    void shouldUpdateExemplarFilterValue() {
+    void shouldUpdateExemplars() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
-
-        properties.setExemplarFilter(ExemplarFilter.ALWAYS_ON);
-
-        assertThat(properties.getExemplarFilter()).isEqualTo(ExemplarFilter.ALWAYS_ON);
+        properties.getExemplars().setEnabled(false);
+        properties.getExemplars().setFilter(ExemplarFilter.ALWAYS_ON);
+        assertThat(properties.getExemplars().isEnabled()).isFalse();
+        assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.ALWAYS_ON);
     }
 
 }

@@ -121,7 +121,6 @@ Next, you can remove the dependencies you previously used to bring Grafana Testc
 [cols="2,2",options="header"]
 |===
 | Dependency | Why Remove
-| `org.springframework.boot:spring-boot-devtools` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 | `org.springframework.boot:spring-boot-testcontainers` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 | `org.testcontainers:grafana` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 |===
@@ -198,7 +197,7 @@ NOTE: The property `management.otlp.logging.connect-timeout` is not supported.
 |`arconia.otel.metrics.exporter.otlp.timeout`
 
 |`management.otlp.metrics.export.step`
-|`arconia.otel.metrics.interval`
+|`arconia.otel.metrics.export.interval`
 
 |`management.otlp.metrics.export.url`
 |`arconia.otel.metrics.exporter.otlp.endpoint`

@@ -100,12 +100,12 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |`arconia.otel.enabled`
 
 |`otel.attribute.value.length.limit`
-|`arconia.otel.logs.log-limits.max-attribute-value-length` +
-`arconia.otel.traces.span-limits.max-attribute-value-length`
+|`arconia.otel.logs.limits.max-attribute-value-length` +
+`arconia.otel.traces.limits.max-attribute-value-length`
 
 |`otel.attribute.count.limit`
-|`arconia.otel.logs.log-limits.max-number-of-attributes` +
-`arconia.otel.traces.span-limits.max-number-of-attributes`
+|`arconia.otel.logs.limits.max-number-of-attributes` +
+`arconia.otel.traces.limits.max-number-of-attributes`
 
 |`otel.propagators`
 |`management.tracing.propagation.produce`
@@ -153,10 +153,10 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |OpenTelemetry Property |Arconia Property
 
 |`otel.metric.export.interval`
-|`arconia.otel.metrics.interval`
+|`arconia.otel.metrics.export.interval`
 
 |`otel.metrics.exemplar.filter`
-|`arconia.otel.metrics.exemplar-filter`
+|`arconia.otel.metrics.exemplars.filter`
 
 |`otel.java.metrics.cardinality.limit`
 |`arconia.otel.metrics.cardinality-limit`
@@ -187,16 +187,16 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |`management.tracing.sampling.probability`
 
 |`otel.span.attribute.value.length.limit`
-|`arconia.otel.traces.span-limits.max-attribute-value-length`
+|`arconia.otel.traces.limits.max-attribute-value-length`
 
 |`otel.span.attribute.count.limit`
-|`arconia.otel.traces.span-limits.max-number-of-attributes`
+|`arconia.otel.traces.limits.max-number-of-attributes`
 
 |`otel.span.event.count.limit`
-|`arconia.otel.traces.span-limits.max-number-of-events`
+|`arconia.otel.traces.limits.max-number-of-events`
 
 |`otel.span.link.count.limit`
-|`arconia.otel.traces.span-limits.max-number-of-links`
+|`arconia.otel.traces.limits.max-number-of-links`
 |===
 
 === Exporters Configuration
@@ -294,7 +294,7 @@ This section shows the mapping between the OpenTelemetry Spring Boot Starter con
 |`arconia.otel.logs.logback-bridge.enabled`
 
 |`otel.instrumentation.micrometer.enabled`
-|`arconia.otel.instrumentation.micrometer.enabled`
+|`arconia.otel.metrics.micrometer-bridge.opentelemetry-api.enabled`
 |===
 
 === Property Value Conversions

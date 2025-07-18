@@ -191,7 +191,7 @@ The Logback OpenTelemetry Bridge can be disabled via configuration properties.
 arconia.otel.logs.logback-bridge.enabled: false
 ----
 
-Alternatively, you can exclude the `io.arconia:logback-opentelemetry-bridge` dependency from your project, which will disable the bridge entirely.
+Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-logback-bridge` dependency from your project, which will disable the bridge entirely.
 
 [tabs]
 ======
@@ -201,7 +201,7 @@ Gradle::
 ----
 dependencies {
     implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-        exclude group: "io.arconia", module: "logback-opentelemetry-bridge"
+        exclude group: "io.arconia", module: "arconia-opentelemetry-logback-bridge"
     }
 }
 ----
@@ -216,7 +216,7 @@ Maven::
     <exclusions>
         <exclusion>
             <groupId>io.arconia</groupId>
-            <artifactId>logback-opentelemetry-bridge</artifactId>
+            <artifactId>arconia-opentelemetry-logback-bridge</artifactId>
         </exclusion>
     </exclusions>
 </dependency>

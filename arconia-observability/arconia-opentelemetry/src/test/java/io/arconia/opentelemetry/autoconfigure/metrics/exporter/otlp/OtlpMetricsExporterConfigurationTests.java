@@ -1,9 +1,8 @@
 package io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp;
 
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
-
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -11,6 +10,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -24,6 +24,7 @@ class OtlpMetricsExporterConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
+            .withBean(CardinalityLimitSelector.class, CardinalityLimitSelector::defaultCardinalityLimitSelector)
             .withBean(OpenTelemetryMetricsProperties.class, OpenTelemetryMetricsProperties::new);
 
     @Test
@@ -190,8 +191,9 @@ class OtlpMetricsExporterConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram")
             .run(context -> {
-                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
+                assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
                 assertThat(context).hasBean("histogramAggregation");
+                assertThat(context).hasBean("metricBuilderPlatformThreads");
 
                 // Verify the histogram aggregation property is set correctly
                 OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
@@ -202,8 +204,9 @@ class OtlpMetricsExporterConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=explicit-bucket-histogram")
             .run(context -> {
-                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
+                assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
                 assertThat(context).hasBean("histogramAggregation");
+                assertThat(context).hasBean("metricBuilderPlatformThreads");
 
                 // Verify the histogram aggregation property is set correctly
                 OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);

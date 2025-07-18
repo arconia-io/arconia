@@ -2,12 +2,10 @@ package io.arconia.opentelemetry.autoconfigure.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 
@@ -49,7 +47,12 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     @Test
     void autoConfigurationNotActivatedWhenMeterProviderClassMissing() {
         contextRunner.withClassLoader(new FilteredClassLoader(SdkMeterProvider.class))
-                .run(context -> assertThat(context).doesNotHaveBean(SdkMeterProvider.class));
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(SdkMeterProvider.class);
+                    assertThat(context).doesNotHaveBean(CardinalityLimitSelector.class);
+                    assertThat(context).doesNotHaveBean(ExemplarFilter.class);
+                    assertThat(context).doesNotHaveBean(Meter.class);
+                });
     }
 
     @Test
@@ -58,6 +61,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             assertThat(context).hasSingleBean(SdkMeterProvider.class);
             assertThat(context).hasSingleBean(CardinalityLimitSelector.class);
             assertThat(context).hasSingleBean(ExemplarFilter.class);
+            assertThat(context).hasSingleBean(Meter.class);
         });
     }
 
@@ -74,75 +78,24 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     @Test
     void exemplarFilterConfigurationApplied() {
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplar-filter=always-on")
+            .withPropertyValues("arconia.otel.metrics.exemplars.filter=always-on")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.alwaysOn());
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplar-filter=always-off")
+            .withPropertyValues("arconia.otel.metrics.exemplars.filter=always-off")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.alwaysOff());
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplar-filter=trace-based")
+            .withPropertyValues("arconia.otel.metrics.exemplars.filter=trace-based")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.traceBased());
-            });
-    }
-
-    @Test
-    void platformThreadsMetricBuilderCustomizerConfigurationApplied() {
-        contextRunner
-            .withUserConfiguration(CustomMetricExporterConfiguration.class)
-            .withPropertyValues(
-                "arconia.otel.metrics.interval=10s",
-                "spring.threads.virtual.enabled=false"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
-                assertThat(context).hasBean("metricBuilderPlatformThreads");
-                assertThat(context).doesNotHaveBean("metricBuilderVirtualThreads");
-            });
-    }
-
-    @Test
-    void virtualThreadsMetricBuilderCustomizerConfigurationApplied() {
-        contextRunner
-            .withUserConfiguration(CustomMetricExporterConfiguration.class)
-            .withPropertyValues(
-                "arconia.otel.metrics.interval=10s",
-                "spring.threads.virtual.enabled=true"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(OpenTelemetryMeterProviderBuilderCustomizer.class);
-                assertThat(context).hasBean("metricBuilderVirtualThreads");
-                assertThat(context).doesNotHaveBean("metricBuilderPlatformThreads");
-            });
-    }
-
-    @Test
-    void customMetricBuilderCustomizerCoexistsWithAutoConfigured() {
-        contextRunner
-            .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
-            .withPropertyValues("spring.threads.virtual.enabled=true")
-            .run(context -> {
-                assertThat(context.getBeansOfType(OpenTelemetryMeterProviderBuilderCustomizer.class)).hasSize(2);
-                assertThat(context).hasBean("customMetricBuilderCustomizer");
-                assertThat(context).hasBean("metricBuilderVirtualThreads");
-            });
-
-        contextRunner
-            .withUserConfiguration(CustomMetricBuilderCustomizerConfiguration.class)
-            .withPropertyValues("spring.threads.virtual.enabled=false")
-            .run(context -> {
-                assertThat(context.getBeansOfType(OpenTelemetryMeterProviderBuilderCustomizer.class)).hasSize(2);
-                assertThat(context).hasBean("customMetricBuilderCustomizer");
-                assertThat(context).hasBean("metricBuilderPlatformThreads");
             });
     }
 
@@ -157,25 +110,6 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             });
     }
 
-    @Test
-    void meterAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(Meter.class);
-        });
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class CustomMeterProviderConfiguration {
-
-        private final OpenTelemetryMeterProviderBuilderCustomizer customizer = mock(OpenTelemetryMeterProviderBuilderCustomizer.class);
-
-        @Bean
-        OpenTelemetryMeterProviderBuilderCustomizer customMeterProviderBuilderCustomizer() {
-            return customizer;
-        }
-
-    }
-
     @Configuration(proxyBeanMethods = false)
     static class CustomCardinalityLimitSelectorConfiguration {
 
@@ -184,18 +118,6 @@ class OpenTelemetryMetricsAutoConfigurationTests {
         @Bean
         CardinalityLimitSelector customCardinalityLimitSelector() {
             return customCardinalityLimitSelector;
-        }
-
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class CustomMetricExporterConfiguration {
-
-        private final MetricExporter customMetricExporter = LoggingMetricExporter.create();
-
-        @Bean
-        MetricExporter customMetricExporter() {
-            return customMetricExporter;
         }
 
     }

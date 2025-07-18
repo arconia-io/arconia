@@ -124,15 +124,12 @@ class OpenTelemetrySdkPropertyAdaptersTests {
     @Test
     void metricsShouldMapProperties() {
         var environment = new MockEnvironment()
-            .withProperty("otel.metric.export.interval", "60000")
             .withProperty("otel.metrics.exemplar.filter", "always_on")
             .withProperty("otel.java.metrics.cardinality.limit", "100");
 
         var adapter = OpenTelemetrySdkPropertyAdapters.metrics(environment);
 
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".interval"))
-            .isEqualTo(Duration.ofSeconds(60));
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter"))
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter"))
             .isEqualTo(ExemplarFilter.ALWAYS_ON);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".cardinality-limit"))
                 .isEqualTo(100);
@@ -257,6 +254,7 @@ class OpenTelemetrySdkPropertyAdaptersTests {
     @Test
     void exportersShouldMapMetricsSpecificProperties() {
         var environment = new MockEnvironment()
+            .withProperty("otel.metric.export.interval", "60000")
             .withProperty("otel.exporter.otlp.metrics.protocol", "http/protobuf")
             .withProperty("otel.exporter.otlp.metrics.endpoint", "http://localhost:4318")
             .withProperty("otel.exporter.otlp.metrics.headers", "key1=value1,key2=value2")
@@ -265,6 +263,8 @@ class OpenTelemetrySdkPropertyAdaptersTests {
 
         var adapter = OpenTelemetrySdkPropertyAdapters.exporters(environment);
 
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".interval"))
+                .isEqualTo(Duration.ofSeconds(60));
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.protocol"))
             .isEqualTo(Protocol.HTTP_PROTOBUF);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.endpoint"))

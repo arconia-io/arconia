@@ -29,13 +29,13 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 |	`2000`
 |	Maximum number of distinct points per metric.
 
-|	`arconia.otel.metrics.exemplar-filter`
-|	`trace-based`
-|	Filter for which measurements can become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
+|	`arconia.otel.metrics.exemplars.enabled`
+|	`true`
+|	Whether exemplars should be enabled.
 
-|	`arconia.otel.metrics.interval`
-|	`60s`
-|	The interval between two consecutive exports of metrics.
+|	`arconia.otel.metrics.exemplars.filter`
+|	`trace-based`
+|	Determines which measurements are eligible to become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
 |===
 
 === OpenTelemetry Environment Variables
@@ -97,6 +97,10 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 |	`arconia.otel.exporter.type`
 |	`otlp`
 |	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+
+|	`arconia.otel.metrics.export.interval`
+|	`60s`
+|	The interval between two consecutive exports of metrics.
 
 |	`arconia.otel.metrics.exporter.type`
 |	``
@@ -174,7 +178,7 @@ The Micrometer Metrics OpenTelemetry Bridge can be disabled via configuration pr
 arconia.otel.metrics.micrometer-bridge.opentelemetry-api.enabled: false
 ----
 
-Alternatively, you can exclude the `io.arconia:micrometer-metrics-opentelemetry-bridge` dependency from your project, which will disable the bridge entirely.
+Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency from your project, which will disable the bridge entirely.
 
 [tabs]
 ======
@@ -184,7 +188,7 @@ Gradle::
 ----
 dependencies {
     implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-        exclude group: "io.arconia", module: "micrometer-metrics-opentelemetry-bridge"
+        exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-bridge"
     }
 }
 ----
@@ -199,7 +203,7 @@ Maven::
     <exclusions>
         <exclusion>
             <groupId>io.arconia</groupId>
-            <artifactId>micrometer-metrics-opentelemetry-bridge</artifactId>
+            <artifactId>arconia-opentelemetry-micrometer-metrics-bridge</artifactId>
         </exclusion>
     </exclusions>
 </dependency>

@@ -105,8 +105,7 @@ class OpenTelemetrySdkPropertyAdapters {
     static PropertyAdapter metrics(ConfigurableEnvironment environment) {
         Assert.notNull(environment, "environment cannot be null");
         return PropertyAdapter.builder(environment)
-            .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".interval")
-            .mapEnum("otel.metrics.exemplar.filter", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplar-filter", OpenTelemetrySdkPropertyConverters::exemplarFilter)
+            .mapEnum("otel.metrics.exemplar.filter", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter", OpenTelemetrySdkPropertyConverters::exemplarFilter)
             .mapInteger("otel.java.metrics.cardinality.limit", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".cardinality-limit")
             .build();
     }
@@ -184,6 +183,7 @@ class OpenTelemetrySdkPropertyAdapters {
             .mapDuration("otel.exporter.otlp.metrics.timeout", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
 
             // Metrics Aggregation
+            .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".interval")
             .mapEnum("otel.exporter.otlp.metrics.default.histogram.aggregation", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".histogram-aggregation", OpenTelemetrySdkPropertyConverters::histogramAggregation)
             .mapEnum("otel.exporter.otlp.metrics.temporality.preference", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".aggregation-temporality", OpenTelemetrySdkPropertyConverters::aggregationTemporality)
 
