@@ -26,6 +26,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.ConditionalOnOpenTelemetry
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 /**
  * Auto-configuration for Micrometer metrics bridge to OpenTelemetry.
@@ -46,9 +47,9 @@ public class MicrometerMetricsOpenTelemetryAutoConfiguration {
     // only bridging them to OpenTelemetry. We register this first so that it is the default
     // MeterRegistry used by the Actuator.
     @Bean
-    @ConditionalOnBean({ Clock.class, OpenTelemetry.class, OpenTelemetryMetricsProperties.class })
-    public SimpleMeterRegistry simpleMeterRegistry(Clock clock, OpenTelemetryMetricsProperties openTelemetryMetricsProperties) {
-        return new SimpleMeterRegistry(new OpenTelemetrySimpleConfig(openTelemetryMetricsProperties), clock);
+    @ConditionalOnBean({ Clock.class, OpenTelemetry.class, OpenTelemetryMetricsExporterProperties.class })
+    public SimpleMeterRegistry simpleMeterRegistry(Clock clock, OpenTelemetryMetricsExporterProperties properties) {
+        return new SimpleMeterRegistry(new OpenTelemetrySimpleConfig(properties), clock);
     }
 
     @Bean
@@ -78,10 +79,10 @@ public class MicrometerMetricsOpenTelemetryAutoConfiguration {
 
     static class OpenTelemetrySimpleConfig implements SimpleConfig {
 
-        private final OpenTelemetryMetricsProperties openTelemetryMetricsProperties;
+        private final OpenTelemetryMetricsExporterProperties properties;
 
-        OpenTelemetrySimpleConfig(OpenTelemetryMetricsProperties openTelemetryMetricsProperties) {
-            this.openTelemetryMetricsProperties = openTelemetryMetricsProperties;
+        OpenTelemetrySimpleConfig(OpenTelemetryMetricsExporterProperties properties) {
+            this.properties = properties;
         }
 
         @Override
@@ -91,7 +92,7 @@ public class MicrometerMetricsOpenTelemetryAutoConfiguration {
 
         @Override
         public Duration step() {
-            return openTelemetryMetricsProperties.getInterval();
+            return properties.getInterval();
         }
 
         @Override

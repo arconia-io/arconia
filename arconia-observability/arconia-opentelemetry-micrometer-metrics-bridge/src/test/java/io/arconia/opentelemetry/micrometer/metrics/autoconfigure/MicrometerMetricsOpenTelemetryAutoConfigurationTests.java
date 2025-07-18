@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.util.ReflectionUtils;
 
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,8 +30,8 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
             .withBean(Clock.class, () -> Clock.SYSTEM)
             .withBean(OpenTelemetry.class, OpenTelemetry::noop)
-            .withBean(OpenTelemetryMetricsProperties.class, () -> {
-                OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
+            .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
+                OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
                 properties.setInterval(Duration.ofSeconds(5));
                 return properties;
             });
@@ -154,8 +154,8 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
                 .withBean(OpenTelemetry.class, OpenTelemetry::noop)
-                .withBean(OpenTelemetryMetricsProperties.class, () -> {
-                    OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
+                .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
+                    OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
                     properties.setInterval(Duration.ofSeconds(5));
                     return properties;
                 })
@@ -167,8 +167,8 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
                 .withBean(Clock.class, () -> Clock.SYSTEM)
-                .withBean(OpenTelemetryMetricsProperties.class, () -> {
-                    OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
+                .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
+                    OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
                     properties.setInterval(Duration.ofSeconds(5));
                     return properties;
                 })
