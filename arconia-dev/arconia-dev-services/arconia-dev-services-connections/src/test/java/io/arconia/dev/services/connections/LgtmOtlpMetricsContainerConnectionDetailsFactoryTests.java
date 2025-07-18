@@ -8,9 +8,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.arconia.dev.services.connections.testcontainers.LgtmTestcontainers;
-import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

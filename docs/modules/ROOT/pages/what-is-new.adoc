@@ -12,6 +12,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == OpenTelemetry
 
 * A new `arconia.otel.exporter.type` configuration property has been introduced to configure an exporter type for all observability signals at once. This property can be set to `otlp`, `console`, or `none`. Each observability signal can still be configured individually using the existing `arconia.otel.logs.exporter.type`, `arconia.otel.metrics.exporter.type`, and `arconia.otel.traces.exporter.type` properties.
+* The `arconia-opentelemetry-sdk-spring-boot-autoconfigure` module has been renamed to `arconia-opentelemetry`.
 
 === Resource
 

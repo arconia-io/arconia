@@ -9,7 +9,7 @@ dependencies {
     implementation project(":arconia-core")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
 
-    optional project(":arconia-opentelemetry:spring-boot-autoconfigure:arconia-opentelemetry-sdk-spring-boot-autoconfigure")
+    optional project(":arconia-observability:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-testcontainers"
     optional "org.testcontainers:grafana"
 

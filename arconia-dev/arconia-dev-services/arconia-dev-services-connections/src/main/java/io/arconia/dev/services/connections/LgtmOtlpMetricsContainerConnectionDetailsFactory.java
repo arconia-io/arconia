@@ -5,9 +5,9 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
 import org.testcontainers.grafana.LgtmStackContainer;
 
 import io.arconia.core.support.Internal;
-import io.arconia.opentelemetry.autoconfigure.sdk.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.sdk.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
 
 /**
  * Factory for creating {@link OtlpMetricsConnectionDetails} for LGTM containers.

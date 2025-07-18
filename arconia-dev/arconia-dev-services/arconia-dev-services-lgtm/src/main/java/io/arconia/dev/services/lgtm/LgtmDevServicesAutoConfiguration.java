@@ -19,7 +19,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.ConfigurationWithRestart;
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.ConfigurationWithoutRestart;
-import io.arconia.opentelemetry.autoconfigure.sdk.ConditionalOnOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 
 /**
  * Auto-configuration for Grafana LGTM Dev Services.
