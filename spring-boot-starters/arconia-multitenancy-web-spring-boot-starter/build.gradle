@@ -1,0 +1,26 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
+
+    api project(":arconia-multitenancy:arconia-multitenancy-core")
+    api project(":arconia-multitenancy:arconia-multitenancy-web")
+
+    implementation "org.springframework.boot:spring-boot-starter"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Multitenancy Web Spring Boot Starter"
+                description = "Arconia Multitenancy Web Spring Boot Starter."
+            }
+        }
+    }
+}
