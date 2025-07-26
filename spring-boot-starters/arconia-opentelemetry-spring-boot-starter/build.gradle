@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-spring-boot:spring-boot-starters:arconia-spring-boot-starter")
+    api project(":arconia-spring-boot")
     api project(":arconia-observability:arconia-opentelemetry-logback-bridge")
     api project(":arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge")
     api project(":arconia-observability:arconia-opentelemetry")

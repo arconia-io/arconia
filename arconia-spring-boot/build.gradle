@@ -6,11 +6,12 @@ plugins {
 }
 
 dependencies {
-    implementation project(":arconia-core")
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+    implementation project(":arconia-core")
     implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    implementation "org.slf4j:slf4j-api"
-    implementation "org.springframework.boot:spring-boot"
+    implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-devtools"

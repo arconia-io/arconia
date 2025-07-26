@@ -20,7 +20,7 @@ dependencies {
 
     optional "org.springframework.boot:spring-boot-devtools"
 
-    testImplementation project(":arconia-spring-boot:arconia-spring-boot")
+    testImplementation project(":arconia-spring-boot")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
