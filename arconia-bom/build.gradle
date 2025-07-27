@@ -15,7 +15,6 @@ dependencies {
     constraints {
         api project(":arconia-core")
 
-        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-connections")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-lgtm")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mariadb")

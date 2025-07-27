@@ -11,7 +11,6 @@ include 'arconia-bom'
 include 'arconia-core'
 
 // Dev Services
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-connections'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-lgtm'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-mariadb'

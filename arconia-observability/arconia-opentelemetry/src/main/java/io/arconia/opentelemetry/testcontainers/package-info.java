@@ -1,4 +1,4 @@
 @NullMarked
-package io.arconia.dev.services.connections;
+package io.arconia.opentelemetry.testcontainers;
 
 import org.jspecify.annotations.NullMarked;

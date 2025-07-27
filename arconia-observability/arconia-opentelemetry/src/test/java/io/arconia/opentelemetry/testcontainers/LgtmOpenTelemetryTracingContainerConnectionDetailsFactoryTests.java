@@ -1,4 +1,4 @@
-package io.arconia.dev.services.connections;
+package io.arconia.opentelemetry.testcontainers;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,27 +7,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import io.arconia.dev.services.connections.testcontainers.LgtmTestcontainers;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingExporterConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link LgtmOtlpLoggingContainerConnectionDetailsFactory}.
+ * Integration tests for {@link LgtmOpenTelemetryTracingContainerConnectionDetailsFactory}.
  */
 @SpringJUnitConfig
-@TestPropertySource(properties = "arconia.otel.logs.exporter.type=none")
-class LgtmOtlpLoggingContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
+@TestPropertySource(properties = "arconia.otel.traces.exporter.type=none")
+class LgtmOpenTelemetryTracingContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
 
     @Autowired
-    OtlpLoggingConnectionDetails connectionDetails;
+    OtlpTracingConnectionDetails connectionDetails;
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
         String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
-        assertThat(url).isEqualTo(lgtmContainer.getOtlpHttpUrl() + "/v1/logs");
+        assertThat(url).isEqualTo(lgtmContainer.getOtlpHttpUrl() + "/v1/traces");
     }
 
     @Test
@@ -37,7 +36,7 @@ class LgtmOtlpLoggingContainerConnectionDetailsFactoryTests extends LgtmTestcont
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ImportAutoConfiguration(OtlpLoggingExporterConfiguration.class)
+    @ImportAutoConfiguration(OtlpTracingExporterConfiguration.class)
     static class TestConfiguration {}
 
 }

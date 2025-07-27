@@ -1,4 +1,4 @@
-package io.arconia.dev.services.connections.testcontainers;
+package io.arconia.opentelemetry.testcontainers;
 
 /**
  * Images used in tests.

@@ -26,9 +26,14 @@ dependencies {
     optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
+    // Testcontainers
+    optional "org.springframework.boot:spring-boot-testcontainers"
+    optional "org.testcontainers:grafana"
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
+    testImplementation "org.testcontainers:junit-jupiter"
     testRuntimeOnly "io.grpc:grpc-netty-shaded:1.73.0"
 }
 

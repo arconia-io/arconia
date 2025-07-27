@@ -1,4 +1,4 @@
-package io.arconia.dev.services.connections;
+package io.arconia.opentelemetry.testcontainers;
 
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
@@ -13,20 +13,20 @@ import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExpo
  * Factory for creating {@link OtlpLoggingConnectionDetails} for LGTM containers.
  */
 @Internal
-public class LgtmOtlpLoggingContainerConnectionDetailsFactory
+class LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<LgtmStackContainer, OtlpLoggingConnectionDetails> {
 
-    LgtmOtlpLoggingContainerConnectionDetailsFactory() {
+    LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory() {
         super(ANY_CONNECTION_NAME, OtlpLoggingExporterConfiguration.class.getName());
     }
 
     @Override
     protected OtlpLoggingConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
-        return new LgtmOtlpLoggingContainerConnectionDetails(source);
+        return new LgtmOpenTelemetryLoggingContainerConnectionDetails(source);
     }
 
-    private static final class LgtmOtlpLoggingContainerConnectionDetails extends ContainerConnectionDetails<LgtmStackContainer> implements OtlpLoggingConnectionDetails {
-        private LgtmOtlpLoggingContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
+    private static final class LgtmOpenTelemetryLoggingContainerConnectionDetails extends ContainerConnectionDetails<LgtmStackContainer> implements OtlpLoggingConnectionDetails {
+        private LgtmOpenTelemetryLoggingContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
             super(source);
         }
 

@@ -3,3 +3,9 @@ org.springframework.boot.env.EnvironmentPostProcessor=\
 io.arconia.opentelemetry.autoconfigure.config.ActuatorEnvironmentPostProcessor,\
 io.arconia.opentelemetry.autoconfigure.config.SpringBootEnvironmentPostProcessor,\
 io.arconia.opentelemetry.autoconfigure.config.OpenTelemetrySdkEnvironmentPostProcessor
+
+# Connection Details Factories
+org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
+io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory,\
+io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryMetricsContainerConnectionDetailsFactory,\
+io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryTracingContainerConnectionDetailsFactory
