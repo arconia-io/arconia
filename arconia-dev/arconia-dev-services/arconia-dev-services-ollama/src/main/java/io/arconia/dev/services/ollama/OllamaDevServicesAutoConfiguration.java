@@ -25,13 +25,15 @@ import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.Configu
 @ConditionalOnProperty(prefix = OllamaDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(OllamaDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class OllamaDevServicesAutoConfiguration {
+public final class OllamaDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
 
+    private OllamaDevServicesAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
@@ -48,7 +50,7 @@ public class OllamaDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection

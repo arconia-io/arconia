@@ -1,4 +1,4 @@
-package io.arconia.dev.services.rabbitmq;
+package io.arconia.dev.services.mariadb;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -12,33 +12,35 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.rabbitmq.RabbitMQDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.rabbitmq.RabbitMQDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.ConfigurationWithRestart;
+import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.ConfigurationWithoutRestart;
 
 /**
- * Auto-configuration for RabbitMQ Dev Services.
+ * Auto-configuration for MariaDB Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = RabbitMQDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties(RabbitMQDevServicesProperties.class)
+@ConditionalOnProperty(prefix = MariaDbDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(MariaDbDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class RabbitMQDevServicesAutoConfiguration {
+public final class MariaDbDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "rabbitmq";
+    public static final String COMPATIBLE_IMAGE_NAME = "mariadb";
+
+    private MariaDbDevServicesAutoConfiguration() {}
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        RabbitMQContainer rabbitmqContainer(RabbitMQDevServicesProperties properties) {
-            return new RabbitMQContainer(DockerImageName.parse(properties.getImageName())
+        MariaDBContainer<?> mariadbContainer(MariaDbDevServicesProperties properties) {
+            return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withReuse(properties.getShared().asBoolean());
@@ -48,13 +50,13 @@ public class RabbitMQDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        RabbitMQContainer rabbitmqContainerNoRestartScope(RabbitMQDevServicesProperties properties) {
-            return new RabbitMQContainer(DockerImageName.parse(properties.getImageName())
+        MariaDBContainer<?> mariadbContainerNoRestartScope(MariaDbDevServicesProperties properties) {
+            return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withReuse(properties.getShared().asBoolean());

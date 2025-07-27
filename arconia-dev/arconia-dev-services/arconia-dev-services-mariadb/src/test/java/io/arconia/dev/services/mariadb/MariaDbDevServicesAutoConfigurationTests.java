@@ -10,13 +10,13 @@ import org.testcontainers.containers.MariaDBContainer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link MariaDBDevServicesAutoConfiguration}.
+ * Unit tests for {@link MariaDbDevServicesAutoConfiguration}.
  */
-class MariaDBDevServicesAutoConfigurationTests {
+class MariaDbDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(MariaDBDevServicesAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(MariaDbDevServicesAutoConfiguration.class));
 
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {

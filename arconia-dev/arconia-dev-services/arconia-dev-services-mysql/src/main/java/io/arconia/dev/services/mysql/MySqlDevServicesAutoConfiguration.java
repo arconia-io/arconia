@@ -25,13 +25,15 @@ import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.Configura
 @ConditionalOnProperty(prefix = MySqlDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MySqlDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class MySqlDevServicesAutoConfiguration {
+public final class MySqlDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "mysql";
 
+    private MySqlDevServicesAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
@@ -48,7 +50,7 @@ public class MySqlDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection

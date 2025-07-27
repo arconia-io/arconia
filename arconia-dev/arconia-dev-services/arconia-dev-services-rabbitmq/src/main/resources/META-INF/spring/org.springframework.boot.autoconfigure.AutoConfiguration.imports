@@ -1,1 +1,1 @@
-io.arconia.dev.services.rabbitmq.RabbitMQDevServicesAutoConfiguration
+io.arconia.dev.services.rabbitmq.RabbitMqDevServicesAutoConfiguration

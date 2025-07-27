@@ -1,10 +1,10 @@
 package io.arconia.dev.services.mysql;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import io.arconia.dev.services.core.config.DevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -29,13 +29,15 @@ import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 @ConditionalOnProperty(prefix = LgtmDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class LgtmDevServicesAutoConfiguration {
+public final class LgtmDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
 
+    private LgtmDevServicesAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
@@ -53,7 +55,7 @@ public class LgtmDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection

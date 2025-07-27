@@ -25,13 +25,15 @@ import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration
 @ConditionalOnProperty(prefix = PostgresqlDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(PostgresqlDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class PostgresqlDevServicesAutoConfiguration {
+public final class PostgresqlDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "postgres";
 
+    private PostgresqlDevServicesAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
@@ -48,7 +50,7 @@ public class PostgresqlDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection

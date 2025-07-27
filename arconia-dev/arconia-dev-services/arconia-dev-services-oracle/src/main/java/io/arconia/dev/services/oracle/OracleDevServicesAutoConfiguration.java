@@ -25,13 +25,15 @@ import io.arconia.dev.services.oracle.OracleDevServicesAutoConfiguration.Configu
 @ConditionalOnProperty(prefix = OracleDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(OracleDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public class OracleDevServicesAutoConfiguration {
+public final class OracleDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-free";
 
+    private OracleDevServicesAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
-    public static class ConfigurationWithRestart {
+    public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
@@ -49,7 +51,7 @@ public class OracleDevServicesAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static class ConfigurationWithoutRestart {
+    public static final class ConfigurationWithoutRestart {
 
         @Bean
         @ServiceConnection

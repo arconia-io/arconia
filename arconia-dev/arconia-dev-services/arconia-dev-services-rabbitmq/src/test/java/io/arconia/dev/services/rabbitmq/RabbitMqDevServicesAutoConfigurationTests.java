@@ -13,13 +13,13 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link RabbitMQDevServicesAutoConfiguration}.
+ * Unit tests for {@link RabbitMqDevServicesAutoConfiguration}.
  */
-class RabbitMQDevServicesAutoConfigurationTests {
+class RabbitMqDevServicesAutoConfigurationTests {
 
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(RabbitMQDevServicesAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(RabbitMqDevServicesAutoConfiguration.class));
 
     @BeforeEach
     void setUp() {

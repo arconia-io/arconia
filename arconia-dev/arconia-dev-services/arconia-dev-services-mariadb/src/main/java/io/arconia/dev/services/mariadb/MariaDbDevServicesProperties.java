@@ -1,4 +1,4 @@
-package io.arconia.dev.services.rabbitmq;
+package io.arconia.dev.services.mariadb;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,12 +8,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import io.arconia.dev.services.core.config.DevServicesProperties;
 
 /**
- * Properties for the RabbitMQ Dev Services.
+ * Properties for the MariaDB Dev Services.
  */
-@ConfigurationProperties(prefix = RabbitMQDevServicesProperties.CONFIG_PREFIX)
-public class RabbitMQDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = MariaDbDevServicesProperties.CONFIG_PREFIX)
+public class MariaDbDevServicesProperties implements DevServicesProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.dev.services.rabbitmq";
+    public static final String CONFIG_PREFIX = "arconia.dev.services.mariadb";
 
     /**
      * Whether the dev service is enabled.
@@ -23,7 +23,7 @@ public class RabbitMQDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "rabbitmq:4.1-management-alpine";
+    private String imageName = "mariadb:11.8";
 
     /**
      * Environment variables to set in the service.
@@ -33,7 +33,7 @@ public class RabbitMQDevServicesProperties implements DevServicesProperties {
     /**
      * When the dev service is shared across applications.
      */
-    private Shared shared = Shared.DEV_MODE;
+    private Shared shared = Shared.NEVER;
 
     @Override
     public boolean isEnabled() {
