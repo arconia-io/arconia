@@ -43,6 +43,7 @@ public final class MariaDbDevServicesAutoConfiguration {
             return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 
@@ -59,6 +60,7 @@ public final class MariaDbDevServicesAutoConfiguration {
             return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 

@@ -26,9 +26,9 @@ class OracleDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("gvenzl/oracle-free");
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
     }
 
     @Test
@@ -37,15 +37,15 @@ class OracleDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("gvenzl/oracle-free:latest");
-        properties.setStartupTimeout(Duration.ofSeconds(120));
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
+        properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-free:latest");
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
     }
 
 }

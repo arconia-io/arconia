@@ -1,5 +1,6 @@
 package io.arconia.dev.services.postgresql;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class PostgresqlDevServicesPropertiesTests {
         assertThat(properties.getImageName()).contains("postgres");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
     }
 
     @Test
@@ -37,11 +39,13 @@ class PostgresqlDevServicesPropertiesTests {
         properties.setImageName("postgres:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
+        properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("postgres:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
     }
 
 }

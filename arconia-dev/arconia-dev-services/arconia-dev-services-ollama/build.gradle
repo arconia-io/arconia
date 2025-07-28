@@ -11,6 +11,7 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:ollama"
 
     implementation project(":arconia-core")

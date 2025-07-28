@@ -42,8 +42,8 @@ public final class OracleXeDevServicesAutoConfiguration {
         OracleContainer oracleXeContainer(OracleXeDevServicesProperties properties) {
             return new OracleContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withStartupTimeout(properties.getStartupTimeout())
                     .withEnv(properties.getEnvironment())
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 
@@ -59,8 +59,8 @@ public final class OracleXeDevServicesAutoConfiguration {
         OracleContainer oracleXeContainerNoRestartScope(OracleXeDevServicesProperties properties) {
             return new OracleContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withStartupTimeout(properties.getStartupTimeout())
                     .withEnv(properties.getEnvironment())
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 

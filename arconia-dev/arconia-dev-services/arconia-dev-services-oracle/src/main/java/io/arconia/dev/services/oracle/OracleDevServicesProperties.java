@@ -39,7 +39,7 @@ public class OracleDevServicesProperties implements DevServicesProperties {
     /**
      * Maximum waiting time for the service to start.
      */
-    private Duration startupTimeout = Duration.ofSeconds(120);
+    private Duration startupTimeout = Duration.ofMinutes(2);
 
     @Override
     public boolean isEnabled() {
@@ -59,14 +59,6 @@ public class OracleDevServicesProperties implements DevServicesProperties {
         this.imageName = imageName;
     }
 
-    public Duration getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public void setStartupTimeout(Duration startupTimeout) {
-        this.startupTimeout = startupTimeout;
-    }
-
     @Override
     public Map<String, String> getEnvironment() {
         return environment;
@@ -83,6 +75,15 @@ public class OracleDevServicesProperties implements DevServicesProperties {
 
     public void setShared(Shared shared) {
         this.shared = shared;
+    }
+
+    @Override
+    public Duration getStartupTimeout() {
+        return startupTimeout;
+    }
+
+    public void setStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
     }
 
 }

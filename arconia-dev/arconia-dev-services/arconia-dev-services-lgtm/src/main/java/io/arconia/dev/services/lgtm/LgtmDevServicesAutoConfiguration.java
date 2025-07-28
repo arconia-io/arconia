@@ -1,7 +1,5 @@
 package io.arconia.dev.services.lgtm;
 
-import java.time.Duration;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -47,7 +45,7 @@ public final class LgtmDevServicesAutoConfiguration {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(Duration.ofMinutes(2))
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 
@@ -64,7 +62,7 @@ public final class LgtmDevServicesAutoConfiguration {
             return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(Duration.ofMinutes(2))
+                    .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 

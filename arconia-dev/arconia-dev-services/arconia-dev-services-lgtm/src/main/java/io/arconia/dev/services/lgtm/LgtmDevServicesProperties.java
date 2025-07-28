@@ -1,5 +1,6 @@
 package io.arconia.dev.services.lgtm;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,11 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
      */
     private Shared shared = Shared.DEV_MODE;
 
+    /**
+     * Maximum waiting time for the service to start.
+     */
+    private Duration startupTimeout = Duration.ofMinutes(2);
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -69,6 +75,15 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
 
     public void setShared(Shared shared) {
         this.shared = shared;
+    }
+
+    @Override
+    public Duration getStartupTimeout() {
+        return startupTimeout;
+    }
+
+    public void setStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
     }
 
 }

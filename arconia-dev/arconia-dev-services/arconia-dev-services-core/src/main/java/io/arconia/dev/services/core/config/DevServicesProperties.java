@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.config;
 
+import java.time.Duration;
 import java.util.Map;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
@@ -12,7 +13,9 @@ public interface DevServicesProperties {
     /**
      * Whether the dev service is enabled.
      */
-    boolean isEnabled();
+    default boolean isEnabled() {
+        return true;
+    }
 
     /**
      * Full name of the container image used in the dev service. Example: "grafana/otel-lgtm:0.8.6".
@@ -22,12 +25,23 @@ public interface DevServicesProperties {
     /**
      * Environment variables to set in the service.
      */
-    Map<String,String> getEnvironment();
+    default Map<String,String> getEnvironment() {
+        return Map.of();
+    }
 
     /**
      * When the dev service is shared across applications.
      */
-    Shared getShared();
+    default Shared getShared() {
+        return Shared.NEVER;
+    };
+
+    /**
+     * Maximum waiting time for the service to start.
+     */
+    default Duration getStartupTimeout() {
+        return Duration.ofMinutes(2);
+    };
 
     enum Shared {
 
@@ -46,6 +60,9 @@ public interface DevServicesProperties {
          */
         NEVER;
 
+        /**
+         * Returns true if the service should be shared based on the current bootstrap mode.
+         */
         public boolean asBoolean() {
             return switch(this) {
                 case ALWAYS -> true;

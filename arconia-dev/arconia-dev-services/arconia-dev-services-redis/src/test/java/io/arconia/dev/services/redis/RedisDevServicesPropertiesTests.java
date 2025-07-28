@@ -1,5 +1,6 @@
 package io.arconia.dev.services.redis;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class RedisDevServicesPropertiesTests {
         assertThat(properties.getImageName()).containsIgnoringCase("redis");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
     }
 
     @Test
@@ -37,11 +39,13 @@ class RedisDevServicesPropertiesTests {
         properties.setImageName("redis:latest");
         properties.setEnvironment(Map.of("REDIS_PASSWORD", "redis"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
+        properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("redis:latest");
         assertThat(properties.getEnvironment()).containsEntry("REDIS_PASSWORD", "redis");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
     }
 
 }
