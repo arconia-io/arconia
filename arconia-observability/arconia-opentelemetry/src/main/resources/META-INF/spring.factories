@@ -6,6 +6,6 @@ io.arconia.opentelemetry.autoconfigure.config.OpenTelemetrySdkEnvironmentPostPro
 
 # Connection Details Factories
 org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
-io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory,\
-io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryMetricsContainerConnectionDetailsFactory,\
-io.arconia.opentelemetry.testcontainers.LgtmOpenTelemetryTracingContainerConnectionDetailsFactory
+io.arconia.opentelemetry.testcontainers.LgtmOtlpLoggingContainerConnectionDetailsFactory,\
+io.arconia.opentelemetry.testcontainers.LgtmOtlpMetricsContainerConnectionDetailsFactory,\
+io.arconia.opentelemetry.testcontainers.LgtmOtlpTracingContainerConnectionDetailsFactory

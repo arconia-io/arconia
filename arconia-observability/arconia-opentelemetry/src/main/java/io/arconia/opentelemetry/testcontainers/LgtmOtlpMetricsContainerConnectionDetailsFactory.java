@@ -13,10 +13,10 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsE
  * Factory for creating {@link OtlpMetricsConnectionDetails} for LGTM containers.
  */
 @Internal
-class LgtmOpenTelemetryMetricsContainerConnectionDetailsFactory
+class LgtmOtlpMetricsContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<LgtmStackContainer, OtlpMetricsConnectionDetails> {
 
-    LgtmOpenTelemetryMetricsContainerConnectionDetailsFactory() {
+    LgtmOtlpMetricsContainerConnectionDetailsFactory() {
         super(ANY_CONNECTION_NAME, OtlpMetricsExporterConfiguration.class.getName());
     }
 

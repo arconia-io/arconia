@@ -8,25 +8,25 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsExporterConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory}.
+ * Integration tests for {@link LgtmOtlpMetricsContainerConnectionDetailsFactory}.
  */
 @SpringJUnitConfig
-@TestPropertySource(properties = "arconia.otel.logs.exporter.type=none")
-class LgtmOpenTelemetryLoggingContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
+@TestPropertySource(properties = "arconia.otel.metrics.exporter.type=none")
+class LgtmOtlpMetricsContainerConnectionDetailsFactoryTests extends LgtmTestcontainers {
 
     @Autowired
-    OtlpLoggingConnectionDetails connectionDetails;
+    OtlpMetricsConnectionDetails connectionDetails;
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
         String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
-        assertThat(url).isEqualTo(lgtmContainer.getOtlpHttpUrl() + "/v1/logs");
+        assertThat(url).isEqualTo(lgtmContainer.getOtlpHttpUrl() + "/v1/metrics");
     }
 
     @Test
@@ -36,7 +36,7 @@ class LgtmOpenTelemetryLoggingContainerConnectionDetailsFactoryTests extends Lgt
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ImportAutoConfiguration(OtlpLoggingExporterConfiguration.class)
+    @ImportAutoConfiguration(OtlpMetricsExporterConfiguration.class)
     static class TestConfiguration {}
 
 }

@@ -13,10 +13,10 @@ import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExpo
  * Factory for creating {@link OtlpLoggingConnectionDetails} for LGTM containers.
  */
 @Internal
-class LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory
+class LgtmOtlpLoggingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<LgtmStackContainer, OtlpLoggingConnectionDetails> {
 
-    LgtmOpenTelemetryLoggingContainerConnectionDetailsFactory() {
+    LgtmOtlpLoggingContainerConnectionDetailsFactory() {
         super(ANY_CONNECTION_NAME, OtlpLoggingExporterConfiguration.class.getName());
     }
 

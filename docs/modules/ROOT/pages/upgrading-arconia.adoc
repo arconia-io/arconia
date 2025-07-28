@@ -4,11 +4,15 @@ Arconia is currently in active development. We're working hard to improve it and
 
 We're moving fast, and the APIs may change frequently, but we're committed to keeping the documentation up to date and making it easy to upgrade to the latest version.
 
-We maintain an https://docs.openrewrite.org[OpenRewrite] recipe to help you upgrade your projects to the latest version of Arconia automatically. You can run it with the Arconia CLI, Gradle, or Maven.
+We maintain an https://docs.openrewrite.org[OpenRewrite] recipe to help you upgrade your projects to the latest version of Arconia automatically. You can run it with the Arconia CLI, Gradle, or Maven as documented in the xref:_automated_upgrade[Automated Upgrade] section below.
 
-Furthermore, make sure you check the https://github.com/arconia-io/arconia/releases[release notes] to see if there are any breaking changes or new features that you should be aware of.
+If you'd rather upgrade manually, you can follow the instructions in the xref:_manual_upgrade[Manual Upgrade] section.
 
-== Arconia CLI
+Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia] page for the latest features and enhancements and the https://github.com/arconia-io/arconia/releases[release notes].
+
+== Automated Upgrade
+
+=== Arconia CLI
 
 Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgrade your project to the latest version of Arconia:
 
@@ -24,7 +28,7 @@ Optionally, you can provide the `--to-version` flag to specify the version you w
 arconia update framework --to-version 0.13
 ----
 
-== Gradle OpenRewrite Plugin
+=== Gradle OpenRewrite Plugin
 
 Using the https://docs.openrewrite.org[OpenRewrite Gradle Plugin], you can apply the recipe to your project as follows.
 
@@ -68,7 +72,7 @@ Then, run the following command:
 
 Finally, you can remove the `init.gradle` file.
 
-== Maven OpenRewrite Plugin
+=== Maven OpenRewrite Plugin
 
 Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply the recipe to your project as follows:
 
@@ -78,3 +82,12 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
   -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_13
 ----
+
+== Manual Upgrade
+
+=== Dev Services
+
+* The `arconia-dev-services-connections` module has been removed and its content moved to the `arconia-opentelemetry` module. As part of this change, the classes contained in the `io.arconia.dev.services.connections` package have been moved to the `io.arconia.opentelemetry.testcontainers` package.
+* The `MariaDBDevServicesAutoConfiguration` class has been renamed to `MariaDbDevServicesAutoConfiguration` to match the Arconia naming conventions.
+* The `RabbitMQDevServicesAutoConfiguration` class has been renamed to `RabbitMqDevServicesAutoConfiguration` to match the Arconia naming conventions.
+
