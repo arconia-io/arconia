@@ -1,14 +1,14 @@
 package io.arconia.multitenancy.core.events;
 
-import io.arconia.core.support.Incubating;
-
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.Assert;
+
+import io.arconia.core.support.Incubating;
 
 /**
  * Abstract superclass for all tenant-related events.
  */
-@Incubating
+@Incubating(since = "0.1.0")
 public abstract class TenantEvent extends ApplicationEvent {
 
     private final String tenantIdentifier;

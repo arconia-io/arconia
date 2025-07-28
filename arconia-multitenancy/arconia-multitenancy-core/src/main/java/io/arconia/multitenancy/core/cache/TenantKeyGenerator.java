@@ -7,6 +7,4 @@ import org.springframework.cache.interceptor.KeyGenerator;
  * (used as context) and its parameters.
  */
 @FunctionalInterface
-public interface TenantKeyGenerator extends KeyGenerator {
-
-}
+public interface TenantKeyGenerator extends KeyGenerator {}

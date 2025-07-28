@@ -14,12 +14,12 @@ import io.arconia.multitenancy.core.events.TenantEventPublisher;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link MultitenancyAutoConfiguration}.
+ * Unit tests for {@link MultitenancyCoreAutoConfiguration}.
  */
-class MultitenancyAutoConfigurationTests {
+class MultitenancyCoreAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(MultitenancyAutoConfiguration.class));
+        .withConfiguration(AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class));
 
     @Test
     void tenantKeyGenerator() {

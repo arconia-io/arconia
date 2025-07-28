@@ -25,7 +25,7 @@ Optionally, you can provide the `--to-version` flag to specify the version you w
 
 [source,shell]
 ----
-arconia update framework --to-version 0.13
+arconia update framework --to-version 0.14
 ----
 
 === Gradle OpenRewrite Plugin
@@ -67,7 +67,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_13
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_14
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -80,7 +80,7 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_13
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_14
 ----
 
 == Manual Upgrade
@@ -91,3 +91,6 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 * The `MariaDBDevServicesAutoConfiguration` class has been renamed to `MariaDbDevServicesAutoConfiguration` to match the Arconia naming conventions.
 * The `RabbitMQDevServicesAutoConfiguration` class has been renamed to `RabbitMqDevServicesAutoConfiguration` to match the Arconia naming conventions.
 
+=== Multitenancy
+
+* The `arconia-multitenancy-spring-boot-autoconfigure` class has been removed and its content moved to the `arconia-multitenancy-core` and `arconia-multitenancy-web` modules. As part of this change, the classes contained in the `io.arconia.multitenancy.autoconfigure.core` package have been moved to the `io.arconia.multitenancy.core.autoconfigure` package whereas the classes contained in the `io.arconia.multitenancy.autoconfigure.web` package have been moved to the `io.arconia.multitenancy.web.autoconfigure` package.

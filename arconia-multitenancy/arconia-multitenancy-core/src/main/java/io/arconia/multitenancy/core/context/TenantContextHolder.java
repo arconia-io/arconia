@@ -1,19 +1,18 @@
 package io.arconia.multitenancy.core.context;
 
-import io.arconia.core.support.Incubating;
-
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
 
 /**
  * A shared, thread-local store for the current tenant.
  */
-@Incubating
+@Incubating(since = "0.1.0")
 public final class TenantContextHolder {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantContextHolder.class);

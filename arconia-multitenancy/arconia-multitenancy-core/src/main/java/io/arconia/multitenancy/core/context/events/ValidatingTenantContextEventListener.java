@@ -1,10 +1,9 @@
 package io.arconia.multitenancy.core.context.events;
 
-import io.arconia.core.support.Incubating;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.events.TenantEvent;
 import io.arconia.multitenancy.core.events.TenantEventListener;
 import io.arconia.multitenancy.core.exceptions.TenantResolutionException;

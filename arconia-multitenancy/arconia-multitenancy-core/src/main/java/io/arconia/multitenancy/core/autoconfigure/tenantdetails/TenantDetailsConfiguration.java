@@ -17,9 +17,9 @@ public final class TenantDetailsConfiguration {
     private TenantDetailsConfiguration() {}
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(TenantDetailsService.class)
     @ConditionalOnProperty(prefix = TenantDetailsProperties.CONFIG_PREFIX, name = "source", havingValue = "properties")
-    TenantDetailsService tenantDetailsService(TenantDetailsProperties tenantDetailsProperties) {
+    PropertiesTenantDetailsService tenantDetailsService(TenantDetailsProperties tenantDetailsProperties) {
         return new PropertiesTenantDetailsService(tenantDetailsProperties);
     }
 

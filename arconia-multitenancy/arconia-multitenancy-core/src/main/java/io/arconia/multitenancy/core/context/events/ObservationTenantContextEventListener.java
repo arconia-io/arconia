@@ -1,7 +1,5 @@
 package io.arconia.multitenancy.core.context.events;
 
-import io.arconia.core.support.Incubating;
-
 import io.micrometer.common.KeyValue;
 import io.micrometer.observation.Observation;
 
@@ -9,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.events.TenantEvent;
 import io.arconia.multitenancy.core.events.TenantEventListener;
 
@@ -16,7 +15,7 @@ import io.arconia.multitenancy.core.events.TenantEventListener;
  * A {@link TenantEventListener} that sets the tenant identifier from the current context
  * on an existing {@link Observation}.
  */
-@Incubating
+@Incubating(since = "0.1.0")
 public final class ObservationTenantContextEventListener implements TenantEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ObservationTenantContextEventListener.class);
@@ -64,7 +63,8 @@ public final class ObservationTenantContextEventListener implements TenantEventL
 
     public enum Cardinality {
 
-        LOW, HIGH
+        LOW,
+        HIGH;
 
     }
 

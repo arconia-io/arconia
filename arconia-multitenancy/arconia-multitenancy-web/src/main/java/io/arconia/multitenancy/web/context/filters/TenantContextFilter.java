@@ -2,8 +2,6 @@ package io.arconia.multitenancy.web.context.filters;
 
 import java.io.IOException;
 
-import io.arconia.core.support.Incubating;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.filter.ServerHttpObservationFilter;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
 import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
 import io.arconia.multitenancy.core.events.TenantEventPublisher;
@@ -28,7 +27,7 @@ import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 /**
  * Establish a tenant context from an HTTP request, if tenant information is available.
  */
-@Incubating
+@Incubating(since = "0.1.0")
 public final class TenantContextFilter extends OncePerRequestFilter {
 
     private static final String MISSING_TENANT_ERROR_MESSAGE = "A tenant identifier must be specified for HTTP requests to %s";

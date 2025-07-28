@@ -1,12 +1,11 @@
 package io.arconia.multitenancy.core.context.events;
 
-import io.arconia.core.support.Incubating;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.util.Assert;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.events.TenantEvent;
 import io.arconia.multitenancy.core.events.TenantEventListener;
 
@@ -37,8 +36,7 @@ public final class MdcTenantContextEventListener implements TenantEventListener 
         if (tenantEvent instanceof TenantContextAttachedEvent event) {
             logger.trace("Setting current tenant in MDC to: {}", event.getTenantIdentifier());
             MDC.put(tenantIdentifierKey, event.getTenantIdentifier());
-        }
-        else if (tenantEvent instanceof TenantContextClosedEvent) {
+        } else if (tenantEvent instanceof TenantContextClosedEvent) {
             logger.trace("Removing current tenant from MDC to");
             MDC.remove(tenantIdentifierKey);
         }

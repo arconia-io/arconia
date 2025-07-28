@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import io.arconia.multitenancy.core.autoconfigure.MultitenancyAutoConfiguration;
+import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
 import io.arconia.multitenancy.web.context.filters.TenantContextIgnorePathMatcher;
 import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
@@ -22,12 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MultitenancyWebAutoConfigurationTests {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner().withConfiguration(
-            AutoConfigurations.of(MultitenancyAutoConfiguration.class, MultitenancyWebAutoConfiguration.class));
+            AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class, MultitenancyWebAutoConfiguration.class));
 
     @Test
     void whenNoServletContextThenBackOff() {
         var nonServletContextRunner = new ApplicationContextRunner().withConfiguration(
-                AutoConfigurations.of(MultitenancyAutoConfiguration.class, MultitenancyWebAutoConfiguration.class));
+                AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class, MultitenancyWebAutoConfiguration.class));
 
         nonServletContextRunner
                 .run(context -> assertThat(context).doesNotHaveBean(HttpTenantResolutionConfiguration.class));

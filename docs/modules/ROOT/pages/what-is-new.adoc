@@ -11,7 +11,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
-* Each Dev Service now supports a standardized `arconia.dev.services.<name>.startup-timeout` configuration property to configure the startup timeout for the service. The default value is `120s`.
+* Each Dev Service now supports a `arconia.dev.services.<name>.startup-timeout` configuration property to configure the startup timeout for the service. The default value is `120s`.
 
 == OpenTelemetry
 

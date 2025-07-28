@@ -9,15 +9,14 @@ import io.arconia.multitenancy.core.events.TenantEventListener;
  * A {@link TenantEventListener} that sets/clears the tenant identifier from the current
  * context on the {@link TenantContextHolder}.
  */
-@Incubating
+@Incubating(since = "0.1.0")
 public final class HolderTenantContextEventListener implements TenantEventListener {
 
     @Override
     public void onApplicationEvent(TenantEvent tenantEvent) {
         if (tenantEvent instanceof TenantContextAttachedEvent event) {
             TenantContextHolder.setTenantIdentifier(event.getTenantIdentifier());
-        }
-        else if (tenantEvent instanceof TenantContextClosedEvent) {
+        } else if (tenantEvent instanceof TenantContextClosedEvent) {
             TenantContextHolder.clear();
         }
     }
