@@ -12,7 +12,7 @@ import io.arconia.core.support.Incubating;
 /**
  * Information about the host the application is running on.
  */
-@Incubating
+@Incubating(since = "0.5.0")
 public final class HostInfo {
 
     private static final Logger logger = LoggerFactory.getLogger(HostInfo.class);
