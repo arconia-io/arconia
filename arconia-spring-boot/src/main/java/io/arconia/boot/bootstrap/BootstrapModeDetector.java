@@ -1,6 +1,5 @@
 package io.arconia.boot.bootstrap;
 
-import java.util.Objects;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -50,7 +49,7 @@ final class BootstrapModeDetector {
 
         // 2. Check the stack trace for known class prefixes that indicate a certain mode.
         long startTime = System.nanoTime();
-        StackTraceElement[] stackTrace = Objects.isNull(stackTraceElements) ? Thread.currentThread().getStackTrace() : stackTraceElements;
+        StackTraceElement[] stackTrace = (stackTraceElements == null || stackTraceElements.length == 0) ? Thread.currentThread().getStackTrace() : stackTraceElements;
         Set<String> testClassPrefixes = Set.of(
             "org.junit.runners.",
             "org.junit.platform.",

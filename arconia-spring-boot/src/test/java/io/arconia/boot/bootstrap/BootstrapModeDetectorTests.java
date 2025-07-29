@@ -70,6 +70,13 @@ class BootstrapModeDetectorTests {
         assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.PROD);
     }
 
+    @Test
+    void whenEmptyStackTrace() {
+        StackTraceElement[] emptyStackTrace = new StackTraceElement[] {};
+        // The test is running in a JUnit context, so we expect TEST mode.
+        assertThat(BootstrapModeDetector.detect(emptyStackTrace)).isEqualTo(BootstrapMode.TEST);
+    }
+
     // TEST (StackTrace)
 
     @Test
@@ -189,8 +196,12 @@ class BootstrapModeDetectorTests {
 
     @Test
     void devModeWhenDevToolsIsPresent() {
+        StackTraceElement[] cleanStackTrace = new StackTraceElement[] {
+                new StackTraceElement("com.example.Application", "main", "Application.java", 10),
+                new StackTraceElement("java.lang.Thread", "run", "Thread.java", 748)
+        };
         // DevTools is in the classpath, so we expect DEV mode here.
-        assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.DEV);
+        assertThat(BootstrapModeDetector.detect(cleanStackTrace)).isEqualTo(BootstrapMode.DEV);
     }
 
     @Test
@@ -220,28 +231,37 @@ class BootstrapModeDetectorTests {
     }
 
     @Test
-    void emptyStackTraceDefaultsToProdWithNativeContext() {
-        StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
+    void cleanStackTraceDefaultsToProdWithNativeContext() {
+        StackTraceElement[] cleanStackTrace = new StackTraceElement[] {
+                new StackTraceElement("com.example.Application", "main", "Application.java", 10),
+                new StackTraceElement("java.lang.Thread", "run", "Thread.java", 748)
+        };
 
         mockNativeContext(true);
-        assertThat(BootstrapModeDetector.detect(emptyStackTrace)).isEqualTo(BootstrapMode.PROD);
+        assertThat(BootstrapModeDetector.detect(cleanStackTrace)).isEqualTo(BootstrapMode.PROD);
     }
 
     @Test
-    void emptyStackTraceDefaultsToDevWithDevelopmentContext() {
-        StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
+    void cleanStackTraceDefaultsToDevWithDevelopmentContext() {
+        StackTraceElement[] cleanStackTrace = new StackTraceElement[] {
+                new StackTraceElement("com.example.Application", "main", "Application.java", 10),
+                new StackTraceElement("java.lang.Thread", "run", "Thread.java", 748)
+        };
 
         mockDevelopmentContext(true);
-        assertThat(BootstrapModeDetector.detect(emptyStackTrace)).isEqualTo(BootstrapMode.DEV);
+        assertThat(BootstrapModeDetector.detect(cleanStackTrace)).isEqualTo(BootstrapMode.DEV);
     }
 
     @Test
-    void emptyStackTraceDefaultsToProdWithNoSpecialContext() {
-        StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
+    void cleanStackTraceDefaultsToProdWithNoSpecialContext() {
+        StackTraceElement[] cleanStackTrace = new StackTraceElement[] {
+                new StackTraceElement("com.example.Application", "main", "Application.java", 10),
+                new StackTraceElement("java.lang.Thread", "run", "Thread.java", 748)
+        };
 
         mockNativeContext(false);
         mockDevelopmentContext(false);
-        assertThat(BootstrapModeDetector.detect(emptyStackTrace)).isEqualTo(BootstrapMode.PROD);
+        assertThat(BootstrapModeDetector.detect(cleanStackTrace)).isEqualTo(BootstrapMode.PROD);
     }
 
     // CACHE
