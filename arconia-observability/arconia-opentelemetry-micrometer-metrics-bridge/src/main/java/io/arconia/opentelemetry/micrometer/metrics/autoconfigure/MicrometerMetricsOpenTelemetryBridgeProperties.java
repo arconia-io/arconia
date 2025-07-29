@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = MicrometerMetricsOpenTelemetryProperties.CONFIG_PREFIX)
-public class MicrometerMetricsOpenTelemetryProperties {
+@ConfigurationProperties(prefix = MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX)
+public class MicrometerMetricsOpenTelemetryBridgeProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.otel.metrics.micrometer-bridge.opentelemetry-api";
+    public static final String CONFIG_PREFIX = "arconia.otel.metrics.micrometer-bridge";
 
     /**
      * Whether to enable the Micrometer Metrics OpenTelemetry bridge.

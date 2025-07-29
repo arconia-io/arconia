@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Conditional;
 
 import io.arconia.opentelemetry.autoconfigure.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
@@ -36,11 +35,11 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
     before = { CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class }
 )
 @ConditionalOnClass({MeterRegistry.class, OpenTelemetryMeterRegistry.class})
-@ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnOpenTelemetryMetrics
-@Conditional(MicrometerMetricsOpenTelemetryAutoConfiguration.MetricsExportEnabled.class)
-@EnableConfigurationProperties(MicrometerMetricsOpenTelemetryProperties.class)
-public class MicrometerMetricsOpenTelemetryAutoConfiguration {
+@Conditional(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.MetricsExportEnabled.class)
+@EnableConfigurationProperties(MicrometerMetricsOpenTelemetryBridgeProperties.class)
+public final class MicrometerMetricsOpenTelemetryBridgeAutoConfiguration {
 
     // A MeterRegistry used exclusively for reading metrics, e.g. from the Actuator /metrics endpoint.
     // This is necessary because the OpenTelemetryMeterRegistry doesn't support reading metrics, but
@@ -48,13 +47,13 @@ public class MicrometerMetricsOpenTelemetryAutoConfiguration {
     // MeterRegistry used by the Actuator.
     @Bean
     @ConditionalOnBean({ Clock.class, OpenTelemetry.class, OpenTelemetryMetricsExporterProperties.class })
-    public SimpleMeterRegistry simpleMeterRegistry(Clock clock, OpenTelemetryMetricsExporterProperties properties) {
+    SimpleMeterRegistry simpleMeterRegistry(Clock clock, OpenTelemetryMetricsExporterProperties properties) {
         return new SimpleMeterRegistry(new OpenTelemetrySimpleConfig(properties), clock);
     }
 
     @Bean
     @ConditionalOnBean({ Clock.class, OpenTelemetry.class })
-    MeterRegistry meterRegistry(MicrometerMetricsOpenTelemetryProperties properties, Clock clock, OpenTelemetry openTelemetry) {
+    MeterRegistry meterRegistry(MicrometerMetricsOpenTelemetryBridgeProperties properties, Clock clock, OpenTelemetry openTelemetry) {
         return OpenTelemetryMeterRegistry.builder(openTelemetry)
                 .setBaseTimeUnit(properties.getBaseTimeUnit())
                 .setClock(clock)

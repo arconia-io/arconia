@@ -13,12 +13,12 @@ import ch.qos.logback.core.Appender;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link LogbackAppenderInstrumentationAutoConfiguration}.
+ * Unit tests for {@link LogbackOpenTelemetryBridgeAutoConfiguration}.
  */
-class LogbackAppenderInstrumentationAutoConfigurationTests {
+class LogbackOpenTelemetryBridgeAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(LogbackAppenderInstrumentationAutoConfiguration.class))
+            .withConfiguration(AutoConfigurations.of(LogbackOpenTelemetryBridgeAutoConfiguration.class))
             .withBean(OpenTelemetry.class, OpenTelemetry::noop);
 
     @Test
@@ -97,7 +97,7 @@ class LogbackAppenderInstrumentationAutoConfigurationTests {
     @Test
     void listenersNotAvailableWhenOpenTelemetryMissing() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(LogbackAppenderInstrumentationAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(LogbackOpenTelemetryBridgeAutoConfiguration.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean("logbackAppenderOnReady");
                     assertThat(context).doesNotHaveBean("logbackAppenderOnFailed");

@@ -9,6 +9,6 @@ public enum ExporterType {
 
     OTLP,
 
-    NONE;
+    NONE
 
 }

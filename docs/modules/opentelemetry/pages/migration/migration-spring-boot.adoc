@@ -1,8 +1,8 @@
-= Migrating from Spring Boot Actuator OpenTelemetry/OTLP to Arconia OpenTelemetry
+= Migrating from Spring Boot OpenTelemetry/OTLP to Arconia OpenTelemetry
 
 Arconia provides unified observability for Spring Boot applications, combining full support for OpenTelemetry API, SDK, and Instrumentation while also providing a seamless integration with Micrometer API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
 
-If you're currently relying on the partial OpenTelemetry support available in Spring Boot Actuator, you can easily migrate to Arconia OpenTelemetry and benefit from the full OpenTelemetry API, SDK, and Instrumentation support while also maintaining full support for Micrometer API and Instrumentation.
+If you're currently relying on the partial OpenTelemetry/OTLP support available in Spring Boot, you can easily migrate to Arconia OpenTelemetry and benefit from the full OpenTelemetry API, SDK, and Instrumentation support while also maintaining full support for Micrometer API and Instrumentation.
 
 == Dependencies
 
@@ -62,33 +62,85 @@ Next, you can remove the dependencies you previously used to bring OpenTelemetry
 | `io.opentelemetry.instrumentation:opentelemetry-micrometer` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 |===
 
-== Configuration Properties
+== Configuration
 
 Spring Boot provides partial support for the OpenTelemetry SDK, including basic autoconfiguration for logs and traces. It also includes an OTLP-compatible exporter for metrics provided by Micrometer.
 
-To ease the migration, Arconia accepts the configuration properties used by Spring Boot. This means that you can continue using the same configuration properties without any changes. However, it's recommended to adopt the Arconia OpenTelemetry configuration properties at your earliest convenience to benefit from the full OpenTelemetry support.
-
-If you want to benefit from this compatibility layer, you need to activate it by setting the following configuration property.
-
-[source,yaml]
-----
-arconia:
-  otel:
-    compatibility:
-      actuator: true
-----
-
-Check xref:_appendix_property_mappings for more information.
-
-== Beans
-
-If you customized the OpenTelemetry SDK or Micrometer beans in your Spring Boot application, the same code will work with Arconia Opentelemetry. Therefore, no changes are required in this area.
+To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration (properties and beans) to the Arconia OpenTelemetry configuration properties.
 
 WARNING: If you customized the Micrometer OTLP exporter via code, that same code will not work with Arconia OpenTelemetry because the Micrometer OTLP project is not based on the OpenTelemetry API. You can apply equivalent changes directly against the OpenTelemetry API.
 
-== Dev Service
+There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
 
-If you're using the Grafana LGTM Testcontainers support in Spring Boot to run a full Grafana observability platform based on OpenTelemetry at development and test time, you can migrate that to the more powerful Arconia Grafana LGTM Dev Service.
+=== Arconia CLI
+
+Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can run the migration recipe as follows:
+
+[source,shell]
+----
+arconia rewrite \
+    --recipe-name io.arconia.rewrite.MigrateSpringBoot3OtlpToArconiaOpenTelemetry \
+    --recipe-library io.arconia.migrations:rewrite-arconia
+----
+
+=== Gradle OpenRewrite Plugin
+
+Using the https://docs.openrewrite.org[OpenRewrite Gradle Plugin], you can apply the recipe to your project as follows.
+
+First, create an `init.gradle` file in your Spring Boot project (root folder) with the following content:
+
+[source,groovy]
+----
+initscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2" }
+    }
+    dependencies {
+        classpath("org.openrewrite:plugin:latest.release")
+    }
+}
+
+rootProject {
+    plugins.apply(org.openrewrite.gradle.RewritePlugin)
+    dependencies {
+        rewrite("io.arconia.migrations:rewrite-arconia:latest.release")
+    }
+
+    afterEvaluate {
+        if (repositories.isEmpty()) {
+            repositories {
+                mavenCentral()
+            }
+        }
+    }
+}
+----
+
+Then, run the following command:
+
+[source, shell]
+----
+./gradlew rewriteRun \
+    --init-script init.gradle \
+    -DactiveRecipe=io.arconia.rewrite.MigrateSpringBoot3OtlpToArconiaOpenTelemetry
+----
+
+Finally, you can remove the `init.gradle` file.
+
+=== Maven OpenRewrite Plugin
+
+Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply the recipe to your project as follows:
+
+[source, shell]
+----
+./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
+  -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
+  -Drewrite.activeRecipes=io.arconia.rewrite.MigrateSpringBoot3OtlpToArconiaOpenTelemetry
+----
+
+== Dev Services
+
+If you're using the Grafana LGTM Testcontainers support in Spring Boot to run a full Grafana observability platform based on OpenTelemetry at development and test time, you can migrate that to the more powerful xref:dev-services:lgtm.adoc[Arconia Grafana LGTM Dev Service].
 
 First, include the Arconia Grafana LGTM Dev Service dependency to your project.
 
@@ -125,157 +177,8 @@ Next, you can remove the dependencies you previously used to bring Grafana Testc
 | `org.testcontainers:grafana` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 |===
 
-Arconia Dev Services requires no additional configuration or code. You can therefore remove the Testcontainers configuration you previously added to your test classpath and related Spring Boot application entry point from the test classpath.
+Arconia Dev Services requires no additional configuration or code (e.g. a separate `@SpringBootApplication` class for configuring Testcontainers). You can therefore remove the Testcontainers configuration you previously added to your test classpath and related Spring Boot application entry point from the test classpath.
 
 Arconia Dev Services are also transparent to the user, meaning that you don't need to change your development workflow to use it. If you were previously launching the application in development from `./gradlew bootTestRun` or `./mvnw spring-boot:test-run`, you can drop the special command and run your application as usual: `./gradlew bootRun` or `./mvnw spring-boot:run`. Furthermore, your integration tests will automatically benefit from the Arconia Dev Services without any additional configuration.
 
 TIP: You can keep using other dev services as provided by Spring Boot without conflicts. Arconia Dev Services are designed to be transparent and non-intrusive.
-
-== Appendix: Property Mappings
-
-This section shows the mapping between the Spring Boot OpenTelemetry configuration properties and the Arconia OpenTelemetry configuration properties that is used by the compatibility layer.
-
-=== Resource Configuration
-
-.Resource Configuration
-|===
-|Actuator Property |Arconia Property
-
-|`management.opentelemetry.resource-attributes`
-|`arconia.otel.resource.attributes`
-|===
-
-=== Logs Configuration
-
-.Logs Configuration
-|===
-|Actuator Property |Arconia Property
-
-|`management.otlp.logging.export.enabled`
-|`arconia.otel.logs.enabled`
-
-|`management.otlp.logging.compression`
-|`arconia.otel.logs.exporter.otlp.compression`
-
-|`management.otlp.logging.endpoint`
-|`arconia.otel.logs.exporter.otlp.endpoint`
-
-|`management.otlp.logging.headers`
-|`arconia.otel.logs.exporter.otlp.headers`
-
-|`management.otlp.logging.timeout`
-|`arconia.otel.logs.exporter.otlp.timeout`
-
-|`management.otlp.logging.transport`
-|`arconia.otel.logs.exporter.otlp.protocol`
-|===
-
-NOTE: The property `management.otlp.logging.connect-timeout` is not supported.
-
-=== Metrics Configuration
-
-.Metrics Configuration
-|===
-|Actuator Property |Arconia Property
-
-|`management.otlp.metrics.export.enabled`
-|`arconia.otel.metrics.enabled`
-
-|`management.otlp.metrics.export.aggregation-temporality`
-|`arconia.otel.metrics.exporter.aggregation-temporality`
-
-| `management.otlp.metrics.export.base-time-unit`
-| `arconia.otel.instrumentation.micrometer.base-time-unit`
-
-|`management.otlp.metrics.export.headers`
-|`arconia.otel.metrics.exporter.otlp.headers`
-
-|`management.otlp.metrics.export.histogram-flavor`
-|`arconia.otel.metrics.exporter.histogram-aggregation`
-
-|`management.otlp.metrics.export.read-timeout`
-|`arconia.otel.metrics.exporter.otlp.timeout`
-
-|`management.otlp.metrics.export.step`
-|`arconia.otel.metrics.export.interval`
-
-|`management.otlp.metrics.export.url`
-|`arconia.otel.metrics.exporter.otlp.endpoint`
-|===
-
-NOTE: The properties `management.otlp.metrics.export.connect-timeout`, `management.otlp.metrics.export.batch-size`, `management.otlp.metrics.export.max-bucket-count`, and `management.otlp.metrics.export.max-scale` are not supported.
-
-=== Traces Configuration
-
-.Traces Configuration
-|===
-|Actuator Property |Arconia Property
-
-|`management.otlp.tracing.export.enabled`
-|`arconia.otel.traces.enabled`
-
-|`management.otlp.tracing.compression`
-|`arconia.otel.traces.exporter.otlp.compression`
-
-|`management.otlp.tracing.endpoint`
-|`arconia.otel.traces.exporter.otlp.endpoint`
-
-|`management.otlp.tracing.headers`
-|`arconia.otel.traces.exporter.otlp.headers`
-
-|`management.otlp.tracing.timeout`
-|`arconia.otel.traces.exporter.otlp.timeout`
-
-|`management.otlp.tracing.transport`
-|`arconia.otel.traces.exporter.otlp.protocol`
-|===
-
-NOTE: The property `management.otlp.tracing.connect-timeout` is not supported.
-
-=== Property Value Conversions
-
-Some properties have specific value mappings:
-
-.Protocol Values
-|===
-|Actuator Value |Arconia Value
-
-|`grpc`
-|`Protocol.GRPC`
-
-|`http`
-|`Protocol.HTTP_PROTOBUF`
-|===
-
-.Compression Values
-|===
-|Actuator Value |Arconia Value
-
-|`gzip`
-|`Compression.GZIP`
-
-|`none`
-|`Compression.NONE`
-|===
-
-.Histogram Aggregation Values
-|===
-|Actuator Value |Arconia Value
-
-|`BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
-|`HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
-
-|`EXPLICIT_BUCKET_HISTOGRAM`
-|`HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM`
-|===
-
-.Aggregation Temporality Values
-|===
-|Actuator Value |Arconia Value
-
-|`CUMULATIVE`
-|`AggregationTemporalityStrategy.CUMULATIVE`
-
-|`DELTA`
-|`AggregationTemporalityStrategy.DELTA`
-|===

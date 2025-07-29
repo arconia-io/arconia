@@ -1,11 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.resource.contributor;
 
-import io.arconia.core.support.Internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import org.springframework.boot.info.ProcessInfo;
 import org.springframework.util.StringUtils;
+
+import io.arconia.core.support.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes attributes about the Java process,
@@ -20,8 +21,8 @@ import org.springframework.util.StringUtils;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process">Resource Process Semantic Conventions</a>
  */
-@Internal
-public class ProcessResourceContributor implements ResourceContributor {
+@Incubating(since = "0.5.0")
+public final class ProcessResourceContributor implements ResourceContributor {
 
     public static final AttributeKey<String> PROCESS_OWNER = AttributeKey.stringKey("process.owner");
     public static final AttributeKey<Long> PROCESS_PARENT_PID = AttributeKey.longKey("process.parent_pid");

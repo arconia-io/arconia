@@ -15,4 +15,4 @@ import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExpo
 @ConditionalOnOpenTelemetryLogging
 @Import({ ConsoleLoggingExporterConfiguration.class, OtlpLoggingExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryLoggingExporterProperties.class)
-public class OpenTelemetryLoggingExporterAutoConfiguration {}
+public final class OpenTelemetryLoggingExporterAutoConfiguration {}

@@ -5,25 +5,25 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link LogbackAppenderProperties}.
+ * Unit tests for {@link LogbackOpenTelemetryBridgeProperties}.
  */
-class LogbackAppenderPropertiesTests {
+class LogbackOpenTelemetryBridgePropertiesTests {
 
     @Test
     void shouldHaveCorrectConfigPrefix() {
-        assertThat(LogbackAppenderProperties.CONFIG_PREFIX)
+        assertThat(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX)
                 .isEqualTo("arconia.otel.logs.logback-bridge");
     }
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
-        LogbackAppenderProperties properties = new LogbackAppenderProperties();
+        LogbackOpenTelemetryBridgeProperties properties = new LogbackOpenTelemetryBridgeProperties();
         assertThat(properties.isEnabled()).isTrue();
     }
 
     @Test
     void shouldUpdateEnabled() {
-        LogbackAppenderProperties properties = new LogbackAppenderProperties();
+        LogbackOpenTelemetryBridgeProperties properties = new LogbackOpenTelemetryBridgeProperties();
         properties.setEnabled(false);
         assertThat(properties.isEnabled()).isFalse();
     }

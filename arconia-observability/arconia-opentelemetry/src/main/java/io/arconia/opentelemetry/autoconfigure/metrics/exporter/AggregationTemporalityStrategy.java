@@ -25,6 +25,6 @@ public enum AggregationTemporalityStrategy {
      * async counter and up-down counters (sync and async) will be cumulative.
      * @see AggregationTemporalitySelector#lowMemory()
      */
-    LOW_MEMORY;
+    LOW_MEMORY
 
 }

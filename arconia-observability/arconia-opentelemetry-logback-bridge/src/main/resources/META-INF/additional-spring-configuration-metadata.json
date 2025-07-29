@@ -1,12 +1,6 @@
 {
   "properties": [
     {
-      "name": "arconia.otel.logs.logback-bridge.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Whether the Logback Appender OpenTelemetry Bridge is enabled.",
-      "defaultValue": true
-    },
-    {
       "name": "arconia.otel.logs.logback-bridge.capture-arguments",
       "type": "java.lang.Boolean",
       "description": "Enable the capture of Logback logger arguments.",

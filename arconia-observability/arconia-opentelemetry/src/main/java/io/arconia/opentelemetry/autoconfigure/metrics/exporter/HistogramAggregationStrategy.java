@@ -19,6 +19,6 @@ public enum HistogramAggregationStrategy {
      * Uses a pre-defined, fixed bucketing strategy to establish histogram bucket boundaries.
      * @see ExplicitBucketHistogramAggregation#getDefault()
      */
-    EXPLICIT_BUCKET_HISTOGRAM;
+    EXPLICIT_BUCKET_HISTOGRAM
 
 }

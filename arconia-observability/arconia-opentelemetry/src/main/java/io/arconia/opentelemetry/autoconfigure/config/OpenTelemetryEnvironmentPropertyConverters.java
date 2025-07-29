@@ -22,11 +22,11 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.HistogramAggregat
 import io.arconia.opentelemetry.autoconfigure.traces.OpenTelemetryTracingProperties.SamplingStrategy;
 
 /**
- * Utility class for converting OpenTelemetry SDK configuration types to Arconia configuration types.
+ * Utility class for converting OpenTelemetry Environment Variable Specification configuration types to Arconia configuration types.
  */
-class OpenTelemetrySdkPropertyConverters {
+class OpenTelemetryEnvironmentPropertyConverters {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenTelemetrySdkPropertyConverters.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryEnvironmentPropertyConverters.class);
 
     static Function<String,@Nullable ExporterType> exporterType(String externalKey) {
         Assert.hasText(externalKey, "externalKey cannot be null or empty");

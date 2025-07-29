@@ -63,15 +63,9 @@
     },
 
     {
-      "name": "arconia.otel.compatibility.actuator",
+      "name": "arconia.otel.compatibility.environment-variable-specification",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable compatibility for Spring Boot Actuator OpenTelemetry/OTLP properties.",
-      "defaultValue": false
-    },
-    {
-      "name": "arconia.otel.compatibility.opentelemetry",
-      "type": "java.lang.Boolean",
-      "description": "Whether to enable compatibility for OpenTelemetry SDK Autoconfigure properties.",
+      "description": "Whether to enable compatibility for OpenTelemetry Environment Variable Specification properties.",
       "defaultValue": true
     }
   ]

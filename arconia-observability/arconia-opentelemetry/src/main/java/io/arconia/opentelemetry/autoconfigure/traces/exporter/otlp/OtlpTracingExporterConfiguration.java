@@ -30,7 +30,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTraci
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OtlpHttpSpanExporter.class)
 @ConditionalOnOpenTelemetryTracingExporter("otlp")
-public class OtlpTracingExporterConfiguration {
+public final class OtlpTracingExporterConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OtlpTracingExporterConfiguration.class);
 

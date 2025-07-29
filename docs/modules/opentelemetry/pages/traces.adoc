@@ -1,8 +1,7 @@
 = OpenTelemetry Traces
 :description: Configure OpenTelemetry Traces.
 
-Traces track requests as they flow through all the services and components of an application.
-This page describes how to configure the tracing support in OpenTelemetry.
+Traces track requests as they flow through all the services and components of an application. This page describes how to configure the tracing support in OpenTelemetry.
 
 TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/traces[traces] and https://opentelemetry.io/docs/concepts/signals/baggage[baggage] in the OpenTelemetry documentation.
 
@@ -39,8 +38,7 @@ How to sample traces.
 
 === Propagation
 
-Arconia OpenTelemetry relies on Spring Boot Actuator for configuring propagation, based on Micrometer Tracing.
-For convenience, the configuration properties from Spring Boot Actuator are included here.
+Arconia OpenTelemetry relies on Spring Boot Actuator for configuring propagation, based on Micrometer Tracing. For convenience, the configuration properties from Spring Boot Actuator are included here.
 
 NOTE: For more information, refer to the https://docs.micrometer.io/tracing/reference/index.html[Micrometer Tracing] and https://docs.spring.io/spring-boot/reference/actuator/tracing.html[Spring Boot Actuator] documentation.
 
@@ -154,17 +152,7 @@ Configuration for the batch span processor.
 
 === OpenTelemetry Environment Variables
 
-Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure the support for OpenTelemetry Traces using environment variables as well.
-
-This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Traces across different languages and frameworks.
-
-=== OpenTelemetry Java System Properties
-
-Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure the support for OpenTelemetry Traces using system properties as well.
-
-This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
-
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+include::partial$opentelemetry-environment-variables.adoc[]
 
 == Programmatic Configuration
 
@@ -262,19 +250,4 @@ NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, r
 
 Spring libraries and other libraries from the Java ecosystem are instrumented using Micrometer Tracing (via the Micrometer `Observation` API) and rely on Micrometer for context propagation and baggage management. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer traces into OpenTelemetry Traces and export them via OTLP.
 
-=== Enabling/Disabling the Bridge
-
-The bridge logic is provided by the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing] project, and it's bundled with the Arconia OpenTelemetry Spring Boot Starter.
-
-If you want to disable the bridge, you'll need to exclude the dependency from the starter.
-
-[source,groovy]
-----
-dependencies {
-  implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-    exclude group: 'io.micrometer', module: 'micrometer-tracing-bridge-otel'
-  }
-}
-----
-
-Notice, though, that without the bridge the support for OpenTelemetry Traces will be limited.
+The bridge logic is provided by the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing] project, and it's bundled with the Arconia OpenTelemetry Spring Boot Starter. Disabling the bridge is not a supported configuration option, since Micrometer Tracing is a core part of the OpenTelemetry support in Spring Boot.

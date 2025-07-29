@@ -74,7 +74,7 @@ Maven::
 
 === Dev Services
 
-Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
+xref:dev-services:index.adoc[Arconia Dev Services] provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
 
 When working with OpenTelemetry, you can use the Grafana LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
 
@@ -227,7 +227,7 @@ Gradle::
 ----
 dependencies {
     implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    runtimeOnly "io.grpc:grpc-netty-shaded:1.72.0"
+    runtimeOnly "io.grpc:grpc-netty-shaded:1.74.0"
 }
 ----
 
@@ -242,7 +242,7 @@ Maven::
 <dependency>
     <groupId>io.grpc</groupId>
     <artifactId>grpc-netty-shaded</artifactId>
-    <version>1.72.0</version>
+    <version>1.74.0</version>
 </dependency>
 ----
 ======
@@ -276,3 +276,7 @@ Maven::
 ======
 
 WARNING: This exporter option is not recommended for production.
+
+== OpenTelemetry Environment Variables
+
+include::partial$opentelemetry-environment-variables.adoc[]

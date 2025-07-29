@@ -1,8 +1,7 @@
 # Environment Post Processors
 org.springframework.boot.env.EnvironmentPostProcessor=\
-io.arconia.opentelemetry.autoconfigure.config.ActuatorEnvironmentPostProcessor,\
-io.arconia.opentelemetry.autoconfigure.config.SpringBootEnvironmentPostProcessor,\
-io.arconia.opentelemetry.autoconfigure.config.OpenTelemetrySdkEnvironmentPostProcessor
+io.arconia.opentelemetry.autoconfigure.config.OpenTelemetryEnvironmentPostProcessor,\
+io.arconia.opentelemetry.autoconfigure.config.SpringBootEnvironmentPostProcessor
 
 # Connection Details Factories
 org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\

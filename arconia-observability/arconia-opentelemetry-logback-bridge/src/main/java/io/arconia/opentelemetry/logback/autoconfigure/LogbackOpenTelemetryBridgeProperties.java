@@ -2,13 +2,13 @@ package io.arconia.opentelemetry.logback.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = LogbackAppenderProperties.CONFIG_PREFIX)
-public class LogbackAppenderProperties {
+@ConfigurationProperties(prefix = LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX)
+public class LogbackOpenTelemetryBridgeProperties {
 
     public static final String CONFIG_PREFIX = "arconia.otel.logs.logback-bridge";
 
     /**
-     * Whether to enable the Logback Appender OpenTelemetry bridge.
+     * Whether to enable the Logback OpenTelemetry Bridge.
      */
     private boolean enabled = true;
 

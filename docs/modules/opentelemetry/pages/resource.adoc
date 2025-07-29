@@ -72,24 +72,7 @@ arconia:
 
 === OpenTelemetry Environment Variables
 
-Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure Resource attributes using environment variables as well.
-
-* **`OTEL_SERVICE_NAME`**: The name of the application.
-* **`OTEL_RESOURCE_ATTRIBUTES`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
-
-This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry across different languages and frameworks.
-
-=== OpenTelemetry Java System Properties
-
-Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure Resource attributes using system properties as well.
-
-* **`otel.service.name`**: The name of the application.
-* **`otel.resource.attributes`**: A comma-separated list of key-value pairs to add to the `Resource` instance.
-* **`otel.resource.disabled.keys`**: A comma-separated list of keys to disable in the `Resource` instance.
-
-This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
-
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+include::partial$opentelemetry-environment-variables.adoc[]
 
 == Resource Contributors
 

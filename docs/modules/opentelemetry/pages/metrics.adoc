@@ -1,8 +1,7 @@
 = OpenTelemetry Metrics
 :description: Configure OpenTelemetry Metrics.
 
-Metrics are quantitative measurements of an application, captured and aggregated at runtime in regular time intervals.
-This page describes how to configure the metrics support in OpenTelemetry.
+Metrics are quantitative measurements of an application, captured and aggregated at runtime in regular time intervals. This page describes how to configure the metrics support in OpenTelemetry.
 
 TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/metrics[metrics] in the OpenTelemetry documentation.
 
@@ -40,17 +39,7 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 
 === OpenTelemetry Environment Variables
 
-Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure the support for OpenTelemetry Metrics using environment variables as well.
-
-This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Metrics across different languages and frameworks.
-
-=== OpenTelemetry Java System Properties
-
-Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure the support for OpenTelemetry Metrics using system properties as well.
-
-This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
-
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+include::partial$opentelemetry-environment-variables.adoc[]
 
 == Programmatic Configuration
 
@@ -98,7 +87,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 |	`otlp`
 |	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
 
-|	`arconia.otel.metrics.export.interval`
+|	`arconia.otel.metrics.exporter.interval`
 |	`60s`
 |	The interval between two consecutive exports of metrics.
 
@@ -159,7 +148,7 @@ NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, r
 
 == Micrometer Metrics Bridge
 
-Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports two different bridges to export Micrometer Metrics to OpenTelemetry.
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports bridges to export Micrometer Metrics to OpenTelemetry.
 
 === Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
@@ -167,7 +156,7 @@ The Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer
 
 WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
 
-NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't support reading metrics, but only bridging them to OpenTelemetry. For that reason, an additional `SimpleMeterRegistry` bean is registered for reading Micrometer metrics, which is typically done by the Spring Boot Actuator library.
+NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't support reading metrics, but only bridging them to OpenTelemetry. For that reason, an additional `SimpleMeterRegistry` bean is registered for reading Micrometer metrics, an operation typically performed by the Spring Boot Actuator library.
 
 ==== Enabling/Disabling the Bridge
 
@@ -175,7 +164,7 @@ The Micrometer Metrics OpenTelemetry Bridge can be disabled via configuration pr
 
 [source,yaml]
 ----
-arconia.otel.metrics.micrometer-bridge.opentelemetry-api.enabled: false
+arconia.otel.metrics.micrometer-bridge.enabled: false
 ----
 
 Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency from your project, which will disable the bridge entirely.
@@ -217,11 +206,11 @@ The Micrometer Metrics OpenTelemetry Bridge can be configured via configuration 
 .Micrometer Metrics OpenTelemetry Bridge Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.metrics.micrometer-bridge.opentelemetry-api.base-time-unit`
+|	`arconia.otel.metrics.micrometer-bridge.base-time-unit`
 |	`seconds`
 |	The base time unit for Micrometer metrics.
 
-|	`arconia.otel.metrics.micrometer-bridge.opentelemetry-api.histogram-gauges`
+|	`arconia.otel.metrics.micrometer-bridge.histogram-gauges`
 |	`true`
 |	Whether to generate gauge-based Micrometer histograms.
 |===

@@ -6,7 +6,7 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import org.springframework.boot.info.OsInfo;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Internal;
+import io.arconia.core.support.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes attributes about the operating system,
@@ -22,8 +22,8 @@ import io.arconia.core.support.Internal;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/os">Resource OS Semantic Conventions</a>
  */
-@Internal
-public class OsResourceContributor implements ResourceContributor {
+@Incubating(since = "0.5.0")
+public final class OsResourceContributor implements ResourceContributor {
 
     // These semantic conventions are experimental, so we define them explicitly to be able to ensure backward
     // compatibility rather than using the constants from OpenTelemetry SemConv project that may change in the future

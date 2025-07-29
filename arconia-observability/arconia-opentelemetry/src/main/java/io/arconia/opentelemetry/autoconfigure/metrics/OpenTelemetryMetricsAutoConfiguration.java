@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(SdkMeterProvider.class)
 @ConditionalOnOpenTelemetryMetrics
 @EnableConfigurationProperties(OpenTelemetryMetricsProperties.class)
-public class OpenTelemetryMetricsAutoConfiguration {
+public final class OpenTelemetryMetricsAutoConfiguration {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
 

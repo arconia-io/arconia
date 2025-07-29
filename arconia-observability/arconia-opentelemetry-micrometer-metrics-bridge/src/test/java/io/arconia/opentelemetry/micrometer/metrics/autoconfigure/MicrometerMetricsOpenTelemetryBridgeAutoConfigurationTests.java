@@ -22,12 +22,12 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link MicrometerMetricsOpenTelemetryAutoConfiguration}.
+ * Unit tests for {@link MicrometerMetricsOpenTelemetryBridgeAutoConfiguration}.
  */
-class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
+class MicrometerMetricsOpenTelemetryBridgeAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
+            .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
             .withBean(Clock.class, () -> Clock.SYSTEM)
             .withBean(OpenTelemetry.class, OpenTelemetry::noop)
             .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
@@ -65,7 +65,7 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
     @Test
     void autoConfigurationNotActivatedWhenBridgeDisabled() {
         contextRunner
-                .withPropertyValues("arconia.otel.metrics.micrometer-bridge.opentelemetry-api.enabled=false")
+                .withPropertyValues("arconia.otel.metrics.micrometer-bridge.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(MeterRegistry.class));
     }
 
@@ -93,8 +93,8 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
     void meterRegistryConfiguredWithCustomProperties() {
         contextRunner
                 .withPropertyValues(
-                        "arconia.otel.metrics.micrometer-bridge.opentelemetry-api.base-time-unit=milliseconds",
-                        "arconia.otel.metrics.micrometer-bridge.opentelemetry-api.histogram-gauges=false"
+                        "arconia.otel.metrics.micrometer-bridge.base-time-unit=milliseconds",
+                        "arconia.otel.metrics.micrometer-bridge.histogram-gauges=false"
                 )
                 .run(context -> {
                     MeterRegistry registry = context.getBean(SimpleMeterRegistry.class);
@@ -152,7 +152,7 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
     @Test
     void meterRegistryNotAvailableWhenClockMissing() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
                 .withBean(OpenTelemetry.class, OpenTelemetry::noop)
                 .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
                     OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
@@ -165,7 +165,7 @@ class MicrometerMetricsOpenTelemetryAutoConfigurationTests {
     @Test
     void meterRegistryNotAvailableWhenOpenTelemetryMissing() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
                 .withBean(Clock.class, () -> Clock.SYSTEM)
                 .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
                     OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();

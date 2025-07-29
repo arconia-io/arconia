@@ -15,7 +15,7 @@ import io.arconia.opentelemetry.autoconfigure.logs.exporter.ConditionalOnOpenTel
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ SystemOutLogRecordExporter.class })
 @ConditionalOnOpenTelemetryLoggingExporter("console")
-public class ConsoleLoggingExporterConfiguration {
+public final class ConsoleLoggingExporterConfiguration {
 
     @Bean
     @ConditionalOnMissingBean

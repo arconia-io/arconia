@@ -16,11 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link OpenTelemetrySdkEnvironmentPostProcessor}.
+ * Unit tests for {@link OpenTelemetryEnvironmentPostProcessor}.
  */
-class OpenTelemetrySdkEnvironmentPostProcessorTests {
+class OpenTelemetryEnvironmentPostProcessorTests {
 
-    private final OpenTelemetrySdkEnvironmentPostProcessor processor = new OpenTelemetrySdkEnvironmentPostProcessor();
+    private final OpenTelemetryEnvironmentPostProcessor processor = new OpenTelemetryEnvironmentPostProcessor();
 
     @Test
     void postProcessEnvironmentShouldThrowExceptionWhenEnvironmentIsNull() {
@@ -35,13 +35,13 @@ class OpenTelemetrySdkEnvironmentPostProcessorTests {
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         assertThat(environment.getPropertySources().stream().findFirst())
-            .hasValueSatisfying(propertySource -> assertThat(propertySource.getName()).isEqualTo("arconia-opentelemetry-sdk"));
+            .hasValueSatisfying(propertySource -> assertThat(propertySource.getName()).isEqualTo("opentelemetry-environment-variable-specification"));
     }
 
     @Test
     void postProcessEnvironmentShouldMapAllPropertiesWhenCompatibilityIsEnabled() {
         var environment = new MockEnvironment()
-            .withProperty("arconia.otel.compatibility.opentelemetry", "true")
+            .withProperty("arconia.otel.compatibility.environment-variable-specification", "true")
             .withProperty("otel.sdk.disabled", "true")
             .withProperty("otel.service.name", "test-service")
             .withProperty("otel.logs.exporter", "otlp")
@@ -78,7 +78,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorTests {
     @Test
     void postProcessEnvironmentShouldNotMapPropertiesWhenCompatibilityIsDisabled() {
         var environment = new MockEnvironment()
-            .withProperty("arconia.otel.compatibility.opentelemetry", "false")
+            .withProperty("arconia.otel.compatibility.environment-variable-specification", "false")
             .withProperty("otel.sdk.disabled", "true")
             .withProperty("otel.service.name", "test-service")
             .withProperty("otel.logs.exporter", "otlp")

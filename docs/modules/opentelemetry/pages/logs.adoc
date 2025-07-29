@@ -1,8 +1,7 @@
 = OpenTelemetry Logs
 :description: Configure OpenTelemetry Logs.
 
-Logs record something that happened at a specific point in time within an application.
-This page describes how to configure the logging support in OpenTelemetry.
+Logs record something that happened at a specific point in time within an application. This page describes how to configure the logging support in OpenTelemetry.
 
 TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/logs[logs] in the OpenTelemetry documentation.
 
@@ -68,17 +67,7 @@ Configuration for the batch log record processor.
 
 === OpenTelemetry Environment Variables
 
-Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification], so you can configure the support for OpenTelemetry Logs using environment variables as well.
-
-This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Logs across different languages and frameworks.
-
-=== OpenTelemetry Java System Properties
-
-Arconia supports the https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties[OpenTelemetry Java System Properties] in alignment with the OpenTelemetry Java SDK Autoconfigure module. So you can configure the support for OpenTelemetry Logs using system properties as well.
-
-This support is especially useful if you're migrating from the OpenTelemetry-own Spring Boot Starter to Arconia OpenTelemetry, and you want to minimize the changes in your configuration. Check our xref:migration/migration-opentelemetry.adoc[migration guide] for more information.
-
-When possible, we recommend using the Arconia-specific properties instead of the OpenTelemetry Java system properties since they offer a more consistent configuration experience familiar to Spring Boot users.
+include::partial$opentelemetry-environment-variables.adoc[]
 
 == Programmatic Configuration
 
@@ -174,13 +163,13 @@ NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, r
 
 == SLF4J Bridge
 
-Java applications typically configure logging via SLF4J and use one of the popular implementations such as Logback or Log4J2. Arconia supports different bridges to export SLF4J logs to OpenTelemetry.
+Java applications typically configure logging via SLF4J and use one of the popular implementations such as Logback or Log4J2. Arconia supports bridges to export SLF4J logs to OpenTelemetry.
 
 === Logback OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
 The Arconia OpenTelemetry Spring Boot Starter comes built-in with the Logback OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library[OpenTelemetry Java Instrumentation for Logback Appender], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
 
-WARNING: The Logback OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project and is still experimental.
+WARNING: The Logback OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
 
 ==== Enabling/Disabling the Bridge
 

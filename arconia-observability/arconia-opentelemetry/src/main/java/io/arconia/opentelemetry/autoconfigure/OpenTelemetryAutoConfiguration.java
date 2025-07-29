@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration.class)
 @ConditionalOnClass({ OpenTelemetry.class, OpenTelemetrySdk.class })
 @EnableConfigurationProperties(OpenTelemetryProperties.class)
-public class OpenTelemetryAutoConfiguration {
+public final class OpenTelemetryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(OpenTelemetry.class)

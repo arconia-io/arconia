@@ -16,26 +16,17 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == OpenTelemetry
 
 * A new `arconia.otel.exporter.type` configuration property has been introduced to configure an exporter type for all observability signals at once. This property can be set to `otlp`, `console`, or `none`. Each observability signal can still be configured individually using the existing `arconia.otel.logs.exporter.type`, `arconia.otel.metrics.exporter.type`, and `arconia.otel.traces.exporter.type` properties.
-* The `arconia-opentelemetry-sdk-spring-boot-autoconfigure` module has been renamed to `arconia-opentelemetry`.
+* Support for the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables[OpenTelemetry Environment Variable Specification] has been improved. If both the OpenTelemetry Environment Variables and the Arconia configuration properties are set, the OpenTelemetry Environment Variables will take precedence. You can disable this support by setting the `arconia.otel.compatibility.environment-variable-specification` configuration property to `false`.
+* If you'd like to migrate from the partial OpenTelemetry support in Spring Boot to the full OpenTelemetry support in Arconia, you can streamline the process by running our automated migration via OpenRewrite. See the xref:opentelemetry:migration/migration-spring-boot.adoc[dedicated migration guide] for more details.
 
 === Resource
 
 * The `os.arch` and `host.arch` Resource attributes contained the same value, which is now consolidated in the `host.arch` attribute. The `os.arch` attribute has been removed.
-* The experimental `container.id` and `host.id` Resource attributes have been removed from the auto-configured OpenTelemetry Resource. You can re-add them by including the `io.opentelemetry.instrumentation:opentelemetry-resources` dependency in your project and defining custom `ResourceContributor` beans populating these attributes from the `ContainerResource` and `HostIdResource` classes (in the `io.opentelemetry.instrumentation.resources` package).
-
-=== Logs
-
-* The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.
-* The Logback OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `logback-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.logs.logback-bridge` group to the `arconia.otel.logs.logback-bridge` group. If you were using the Arconia OpenTelemetry Spring Boot Starter, the new module will be automatically included in your project.
 
 === Metrics
 
 * You can now enable/disable support for Exemplars via the `arconia.otel.metrics.exemplars.enabled` configuration property. This is enabled by default.
-* The `arconia.otel.metrics.exemplar-filter` configuration property group has been renamed to `arconia.otel.metrics.exemplars.filter`.
-* The `arconia.otel.metrics.interval` configuration property group has been renamed to `arconia.otel.metrics.export.interval`.
-* The Micrometer Metrics OpenTelemetry Bridge has been moved from the `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module to the `micrometer-metrics-opentelemetry-bridge` module. The configuration properties for the bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge.opentelemetry-api` group. If you were using the Arconia OpenTelemetry Spring Boot Starter, the new module will be automatically included in your project.
 
 === Traces
 
 * Introduced new `arconia.otel.traces.processor.export-unsampled-spans` configuration property to enable exporting of unsampled spans. This is disabled by default.
-* The `arconia.otel.traces.span-limits` configuration property group has been renamed to `arconia.otel.traces.limits`.

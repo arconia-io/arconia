@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(SdkTracerProvider.class)
 @ConditionalOnOpenTelemetryTracing
 @EnableConfigurationProperties(OpenTelemetryTracingProperties.class)
-public class OpenTelemetryTracingAutoConfiguration {
+public final class OpenTelemetryTracingAutoConfiguration {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
 

@@ -15,4 +15,4 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingEx
 @ConditionalOnOpenTelemetryTracing
 @Import({ ConsoleTracingExporterConfiguration.class, OtlpTracingExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryTracingExporterProperties.class)
-public class OpenTelemetryTracingExporterAutoConfiguration {}
+public final class OpenTelemetryTracingExporterAutoConfiguration {}

@@ -7,19 +7,19 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link MicrometerMetricsOpenTelemetryProperties}.
+ * Unit tests for {@link MicrometerMetricsOpenTelemetryBridgeProperties}.
  */
-class MicrometerMetricsOpenTelemetryPropertiesTests {
+class MicrometerMetricsOpenTelemetryBridgePropertiesTests {
 
     @Test
     void shouldHaveCorrectConfigPrefix() {
-        assertThat(MicrometerMetricsOpenTelemetryProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.otel.metrics.micrometer-bridge.opentelemetry-api");
+        assertThat(MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX)
+                .isEqualTo("arconia.otel.metrics.micrometer-bridge");
     }
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
-        MicrometerMetricsOpenTelemetryProperties properties = new MicrometerMetricsOpenTelemetryProperties();
+        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getBaseTimeUnit()).isEqualTo(TimeUnit.SECONDS);
@@ -28,7 +28,7 @@ class MicrometerMetricsOpenTelemetryPropertiesTests {
 
     @Test
     void shouldUpdateEnabled() {
-        MicrometerMetricsOpenTelemetryProperties properties = new MicrometerMetricsOpenTelemetryProperties();
+        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
 
         properties.setEnabled(false);
 
@@ -37,7 +37,7 @@ class MicrometerMetricsOpenTelemetryPropertiesTests {
 
     @Test
     void shouldUpdateBaseTimeUnit() {
-        MicrometerMetricsOpenTelemetryProperties properties = new MicrometerMetricsOpenTelemetryProperties();
+        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
 
         properties.setBaseTimeUnit(TimeUnit.MILLISECONDS);
 
@@ -46,7 +46,7 @@ class MicrometerMetricsOpenTelemetryPropertiesTests {
 
     @Test
     void shouldUpdateHistogramGauges() {
-        MicrometerMetricsOpenTelemetryProperties properties = new MicrometerMetricsOpenTelemetryProperties();
+        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
 
         properties.setHistogramGauges(false);
 

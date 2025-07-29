@@ -1,1 +1,1 @@
-io.arconia.opentelemetry.micrometer.metrics.autoconfigure.MicrometerMetricsOpenTelemetryAutoConfiguration
+io.arconia.opentelemetry.micrometer.metrics.autoconfigure.MicrometerMetricsOpenTelemetryBridgeAutoConfiguration

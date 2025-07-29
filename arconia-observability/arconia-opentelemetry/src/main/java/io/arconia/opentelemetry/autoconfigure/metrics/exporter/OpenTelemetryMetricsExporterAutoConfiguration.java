@@ -28,7 +28,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsE
 @ConditionalOnOpenTelemetryMetrics
 @Import({ ConsoleMetricsExporterConfiguration.class, OtlpMetricsExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryMetricsExporterProperties.class)
-public class OpenTelemetryMetricsExporterAutoConfiguration {
+public final class OpenTelemetryMetricsExporterAutoConfiguration {
 
     private static final String THREAD_NAME_PREFIX = "otel-metrics";
 

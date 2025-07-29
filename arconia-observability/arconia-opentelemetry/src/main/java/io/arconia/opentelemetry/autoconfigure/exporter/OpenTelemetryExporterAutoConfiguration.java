@@ -11,6 +11,6 @@ import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 @AutoConfiguration
 @ConditionalOnOpenTelemetry
 @EnableConfigurationProperties(OpenTelemetryExporterProperties.class)
-public class OpenTelemetryExporterAutoConfiguration {
+public final class OpenTelemetryExporterAutoConfiguration {
 
 }

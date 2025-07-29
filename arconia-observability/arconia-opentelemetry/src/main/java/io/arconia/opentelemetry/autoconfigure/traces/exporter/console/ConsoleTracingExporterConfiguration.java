@@ -15,7 +15,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenT
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ LoggingSpanExporter.class })
 @ConditionalOnOpenTelemetryTracingExporter("console")
-public class ConsoleTracingExporterConfiguration {
+public final class ConsoleTracingExporterConfiguration {
 
     @Bean
     @ConditionalOnMissingBean

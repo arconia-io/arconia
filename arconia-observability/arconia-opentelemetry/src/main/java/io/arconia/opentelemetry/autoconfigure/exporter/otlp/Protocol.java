@@ -7,6 +7,6 @@ public enum Protocol {
 
     GRPC,
 
-	HTTP_PROTOBUF;
+	HTTP_PROTOBUF
 
 }

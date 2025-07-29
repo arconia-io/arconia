@@ -13,8 +13,8 @@ import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties.
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.traces.OpenTelemetryTracingProperties.SamplingStrategy;
 
@@ -22,9 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link OpenTelemetrySdkPropertyConverters}.
+ * Unit tests for {@link OpenTelemetryEnvironmentPropertyConverters}.
  */
-class OpenTelemetrySdkPropertyConvertersTests {
+class OpenTelemetryEnvironmentPropertyConvertersTests {
 
     @ParameterizedTest
     @CsvSource({
@@ -38,20 +38,20 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\tconsole\n', CONSOLE"
     })
     void exporterTypeShouldConvertValidValues(String input, ExporterType expected) {
-        Function<String, ExporterType> converter = OpenTelemetrySdkPropertyConverters.exporterType("test.key");
+        Function<String, ExporterType> converter = OpenTelemetryEnvironmentPropertyConverters.exporterType("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void exporterTypeShouldReturnNullForInvalidValue() {
-        Function<String, ExporterType> converter = OpenTelemetrySdkPropertyConverters.exporterType("test.key");
+        Function<String, ExporterType> converter = OpenTelemetryEnvironmentPropertyConverters.exporterType("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void exporterTypeShouldThrowExceptionForInvalidKey(String key) {
-        assertThatThrownBy(() -> OpenTelemetrySdkPropertyConverters.exporterType(key))
+        assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyConverters.exporterType(key))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("externalKey cannot be null or empty");
     }
@@ -66,13 +66,13 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\thttp/protobuf\n', HTTP_PROTOBUF"
     })
     void protocolShouldConvertValidValues(String input, Protocol expected) {
-        Function<String, Protocol> converter = OpenTelemetrySdkPropertyConverters.protocol("test.key");
+        Function<String, Protocol> converter = OpenTelemetryEnvironmentPropertyConverters.protocol("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void protocolShouldReturnNullForInvalidValue() {
-        Function<String, Protocol> converter = OpenTelemetrySdkPropertyConverters.protocol("test.key");
+        Function<String, Protocol> converter = OpenTelemetryEnvironmentPropertyConverters.protocol("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
@@ -86,13 +86,13 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\tnone\n', NONE"
     })
     void compressionShouldConvertValidValues(String input, Compression expected) {
-        Function<String, Compression> converter = OpenTelemetrySdkPropertyConverters.compression("test.key");
+        Function<String, Compression> converter = OpenTelemetryEnvironmentPropertyConverters.compression("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void compressionShouldReturnNullForInvalidValue() {
-        Function<String, Compression> converter = OpenTelemetrySdkPropertyConverters.compression("test.key");
+        Function<String, Compression> converter = OpenTelemetryEnvironmentPropertyConverters.compression("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
@@ -106,13 +106,13 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\tEXPLICIT_BUCKET_HISTOGRAM\n', EXPLICIT_BUCKET_HISTOGRAM"
     })
     void histogramAggregationShouldConvertValidValues(String input, HistogramAggregationStrategy expected) {
-        Function<String, HistogramAggregationStrategy> converter = OpenTelemetrySdkPropertyConverters.histogramAggregation("test.key");
+        Function<String, HistogramAggregationStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.histogramAggregation("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void histogramAggregationShouldReturnNullForInvalidValue() {
-        Function<String, HistogramAggregationStrategy> converter = OpenTelemetrySdkPropertyConverters.histogramAggregation("test.key");
+        Function<String, HistogramAggregationStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.histogramAggregation("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
@@ -128,13 +128,13 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\tDELTA\n', DELTA"
     })
     void aggregationTemporalityShouldConvertValidValues(String input, AggregationTemporalityStrategy expected) {
-        Function<String, AggregationTemporalityStrategy> converter = OpenTelemetrySdkPropertyConverters.aggregationTemporality("test.key");
+        Function<String, AggregationTemporalityStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.aggregationTemporality("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void aggregationTemporalityShouldReturnNullForInvalidValue() {
-        Function<String, AggregationTemporalityStrategy> converter = OpenTelemetrySdkPropertyConverters.aggregationTemporality("test.key");
+        Function<String, AggregationTemporalityStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.aggregationTemporality("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
@@ -152,13 +152,13 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\ttraceidratio\n', TRACE_ID_RATIO"
     })
     void samplingStrategyShouldConvertValidValues(String input, SamplingStrategy expected) {
-        Function<String, SamplingStrategy> converter = OpenTelemetrySdkPropertyConverters.samplingStrategy("test.key");
+        Function<String, SamplingStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.samplingStrategy("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void samplingStrategyShouldReturnNullForInvalidValue() {
-        Function<String, SamplingStrategy> converter = OpenTelemetrySdkPropertyConverters.samplingStrategy("test.key");
+        Function<String, SamplingStrategy> converter = OpenTelemetryEnvironmentPropertyConverters.samplingStrategy("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
@@ -175,7 +175,7 @@ class OpenTelemetrySdkPropertyConvertersTests {
             " b3 , b3multi "
     })
     void propagationTypeShouldConvertValidValues(String input) {
-        Function<String, List<PropagationType>> converter = OpenTelemetrySdkPropertyConverters.propagationType("test.key");
+        Function<String, List<PropagationType>> converter = OpenTelemetryEnvironmentPropertyConverters.propagationType("test.key");
         List<PropagationType> result = converter.apply(input);
         assertThat(result).isNotEmpty();
         assertThat(result).allMatch(type -> type == PropagationType.W3C || type == PropagationType.B3 || type == PropagationType.B3_MULTI);
@@ -183,14 +183,14 @@ class OpenTelemetrySdkPropertyConvertersTests {
 
     @Test
     void propagationTypeShouldHandleInvalidValue() {
-        Function<String, List<PropagationType>> converter = OpenTelemetrySdkPropertyConverters.propagationType("test.key");
+        Function<String, List<PropagationType>> converter = OpenTelemetryEnvironmentPropertyConverters.propagationType("test.key");
         List<PropagationType> result = converter.apply("invalid");
         assertThat(result).isNull();
     }
 
     @Test
     void propagationTypeShouldFilterInvalidValues() {
-        Function<String, List<PropagationType>> converter = OpenTelemetrySdkPropertyConverters.propagationType("test.key");
+        Function<String, List<PropagationType>> converter = OpenTelemetryEnvironmentPropertyConverters.propagationType("test.key");
         List<PropagationType> result = converter.apply("baggage,invalid,b3");
         assertThat(result).containsExactlyInAnyOrder(PropagationType.W3C, PropagationType.B3);
     }
@@ -207,20 +207,20 @@ class OpenTelemetrySdkPropertyConvertersTests {
             "'\ttrace_based\n', TRACE_BASED"
     })
     void exemplarFilterShouldConvertValidValues(String input, ExemplarFilter expected) {
-        Function<String, ExemplarFilter> converter = OpenTelemetrySdkPropertyConverters.exemplarFilter("test.key");
+        Function<String, ExemplarFilter> converter = OpenTelemetryEnvironmentPropertyConverters.exemplarFilter("test.key");
         assertThat(converter.apply(input)).isEqualTo(expected);
     }
 
     @Test
     void exemplarFilterShouldReturnNullForInvalidValue() {
-        Function<String, ExemplarFilter> converter = OpenTelemetrySdkPropertyConverters.exemplarFilter("test.key");
+        Function<String, ExemplarFilter> converter = OpenTelemetryEnvironmentPropertyConverters.exemplarFilter("test.key");
         assertThat(converter.apply("invalid")).isNull();
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void exemplarFilterShouldThrowExceptionForInvalidKey(String key) {
-        assertThatThrownBy(() -> OpenTelemetrySdkPropertyConverters.exemplarFilter(key))
+        assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyConverters.exemplarFilter(key))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("externalKey cannot be null or empty");
     }

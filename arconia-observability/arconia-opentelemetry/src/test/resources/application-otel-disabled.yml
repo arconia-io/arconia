@@ -1,7 +1,7 @@
 arconia:
   otel:
     compatibility:
-      opentelemetry: false
+      environment-variable-specification: false
 
 otel:
   sdk:

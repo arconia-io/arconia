@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(SdkLoggerProvider.class)
 @ConditionalOnOpenTelemetryLogging
 @EnableConfigurationProperties(OpenTelemetryLoggingProperties.class)
-public class OpenTelemetryLoggingAutoConfiguration {
+public final class OpenTelemetryLoggingAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean

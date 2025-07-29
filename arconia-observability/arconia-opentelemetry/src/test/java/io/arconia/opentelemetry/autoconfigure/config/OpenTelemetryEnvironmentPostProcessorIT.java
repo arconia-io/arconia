@@ -24,9 +24,9 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTraci
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link OpenTelemetrySdkEnvironmentPostProcessor}.
+ * Integration tests for {@link OpenTelemetryEnvironmentPostProcessor}.
  */
-class OpenTelemetrySdkEnvironmentPostProcessorIT {
+class OpenTelemetryEnvironmentPostProcessorIT {
 
     private SpringApplication application;
 
@@ -41,7 +41,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
 
     @AfterEach
     void cleanup() {
-        System.clearProperty("arconia.otel.compatibility.opentelemetry");
+        System.clearProperty("arconia.otel.compatibility.environment-variable-specification");
         System.clearProperty("otel.sdk.disabled");
         System.clearProperty("otel.service.name");
         System.clearProperty("otel.logs.exporter");
@@ -51,7 +51,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
 
     @Test
     void runWhenCompatibilityIsDisabledInSystemPropertiesShouldNotConvertProperties() {
-        System.setProperty("arconia.otel.compatibility.opentelemetry", "false");
+        System.setProperty("arconia.otel.compatibility.environment-variable-specification", "false");
         System.setProperty("otel.sdk.disabled", "true");
         System.setProperty("otel.service.name", "test-service");
         System.setProperty("otel.logs.exporter", "otlp");
@@ -76,7 +76,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
     void runWhenCompatibilityIsDisabledInEnvironmentVariablesShouldNotConvertProperties() {
         ConfigurableEnvironment environment = new StandardEnvironment();
         Map<String, Object> envVars = new HashMap<>();
-        envVars.put("ARCONIA_OTEL_COMPATIBILITY_OPENTELEMETRY", "false");
+        envVars.put("ARCONIA_OTEL_COMPATIBILITY_ENVIRONMENT_VARIABLE_SPECIFICATION", "false");
         envVars.put("OTEL_SDK_DISABLED", "true");
         envVars.put("OTEL_SERVICE_NAME", "test-service");
         envVars.put("OTEL_LOGS_EXPORTER", "otlp");
@@ -102,7 +102,7 @@ class OpenTelemetrySdkEnvironmentPostProcessorIT {
     @Test
     void runWhenCompatibilityIsDisabledInCommandLineArgumentsShouldNotConvertProperties() {
         ConfigurableApplicationContext context = this.application.run(
-            "--arconia.otel.compatibility.opentelemetry=false",
+            "--arconia.otel.compatibility.environment-variable-specification=false",
             "--otel.sdk.disabled=true",
             "--otel.service.name=test-service",
             "--otel.logs.exporter=otlp",

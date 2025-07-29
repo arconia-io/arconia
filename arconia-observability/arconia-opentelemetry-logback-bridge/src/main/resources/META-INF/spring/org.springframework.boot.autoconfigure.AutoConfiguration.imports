@@ -1,1 +1,1 @@
-io.arconia.opentelemetry.logback.autoconfigure.LogbackAppenderInstrumentationAutoConfiguration
+io.arconia.opentelemetry.logback.autoconfigure.LogbackOpenTelemetryBridgeAutoConfiguration

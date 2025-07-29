@@ -31,7 +31,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContr
 @ConditionalOnOpenTelemetry
 @ConditionalOnClass(Resource.class)
 @EnableConfigurationProperties(OpenTelemetryResourceProperties.class)
-public class OpenTelemetryResourceAutoConfiguration {
+public final class OpenTelemetryResourceAutoConfiguration {
 
     public static final int DEFAULT_ORDER = Ordered.HIGHEST_PRECEDENCE + 10;
 

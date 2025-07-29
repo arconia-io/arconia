@@ -19,14 +19,14 @@ import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.ConditionalOnOpenTelemetryLoggingExporter;
 
 /**
- * Auto-configuration for OpenTelemetry Logback appender.
+ * Auto-configuration for Logback OpenTelemetry Bridge.
  */
 @AutoConfiguration(after = OpenTelemetryAutoConfiguration.class)
 @ConditionalOnClass(Appender.class)
-@ConditionalOnProperty(prefix = LogbackAppenderProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnOpenTelemetryLoggingExporter("otlp")
-@EnableConfigurationProperties(LogbackAppenderProperties.class)
-public class LogbackAppenderInstrumentationAutoConfiguration {
+@EnableConfigurationProperties(LogbackOpenTelemetryBridgeProperties.class)
+public final class LogbackOpenTelemetryBridgeAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(OpenTelemetry.class)

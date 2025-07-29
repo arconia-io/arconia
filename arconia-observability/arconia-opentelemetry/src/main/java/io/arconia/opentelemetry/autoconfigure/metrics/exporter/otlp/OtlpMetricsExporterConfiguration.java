@@ -37,7 +37,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OtlpHttpMetricExporter.class)
 @ConditionalOnOpenTelemetryMetricsExporter("otlp")
-public class OtlpMetricsExporterConfiguration {
+public final class OtlpMetricsExporterConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OtlpMetricsExporterConfiguration.class);
 
