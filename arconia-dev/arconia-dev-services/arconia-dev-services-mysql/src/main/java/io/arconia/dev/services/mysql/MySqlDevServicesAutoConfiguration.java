@@ -29,8 +29,6 @@ public final class MySqlDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "mysql";
 
-    private MySqlDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {

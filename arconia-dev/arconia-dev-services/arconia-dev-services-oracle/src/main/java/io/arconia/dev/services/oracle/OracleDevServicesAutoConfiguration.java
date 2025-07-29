@@ -29,8 +29,6 @@ public final class OracleDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-free";
 
-    private OracleDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {

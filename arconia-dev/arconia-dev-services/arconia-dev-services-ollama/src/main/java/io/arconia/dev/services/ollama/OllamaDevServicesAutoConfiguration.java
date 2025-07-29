@@ -29,8 +29,6 @@ public final class OllamaDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
 
-    private OllamaDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {

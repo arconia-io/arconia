@@ -29,8 +29,6 @@ public final class PostgresqlDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "postgres";
 
-    private PostgresqlDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {

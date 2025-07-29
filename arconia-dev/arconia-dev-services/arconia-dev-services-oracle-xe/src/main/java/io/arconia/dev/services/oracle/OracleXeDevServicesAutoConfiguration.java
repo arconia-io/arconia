@@ -29,8 +29,6 @@ public final class OracleXeDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-xe";
 
-    private OracleXeDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {

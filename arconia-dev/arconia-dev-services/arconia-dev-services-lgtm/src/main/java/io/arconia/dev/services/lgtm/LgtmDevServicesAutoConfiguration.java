@@ -31,8 +31,6 @@ public final class LgtmDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
 
-    private LgtmDevServicesAutoConfiguration() {}
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {
