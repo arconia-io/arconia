@@ -212,7 +212,7 @@ Maven::
 ----
 ======
 
-=== Configuration Properties
+==== Configuration Properties
 
 The Logback OpenTelemetry Bridge can be configured via configuration properties.
 
