@@ -126,3 +126,7 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 
 * Support for the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables[OpenTelemetry Environment Variable Specification] has been improved. As part of this process, support of the special/experimental properties used by the OpenTelemetry Spring Boot Starter on top of the standard environment variables has been removed.
 * Support for the Spring Boot OTLP/Actuator configuration properties (which could previously be enabled by setting the `arconia.otel.compatibility.actuator` property) has been removed. In its place, an automated migration recipe is available to help you migrate to the Arconia OpenTelemetry configuration properties. See the xref:opentelemetry:migration/migration-spring-boot.adoc[dedicated migration guide] for more details.
+
+=== Spring Boot
+
+* The `arconia-spring-boot-autoconfigure` module has been removed and its content moved to the `arconia-spring-boot` module.

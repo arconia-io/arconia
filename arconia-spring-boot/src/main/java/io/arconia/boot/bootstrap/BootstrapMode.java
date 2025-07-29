@@ -1,16 +1,15 @@
 package io.arconia.boot.bootstrap;
 
-import io.arconia.core.support.Internal;
-
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
 import io.arconia.core.support.Incubating;
+import io.arconia.core.support.Internal;
 
 /**
  * The mode used to bootstrap the application.
  */
-@Incubating
+@Incubating(since = "0.13.0")
 public enum BootstrapMode {
 
     DEV,

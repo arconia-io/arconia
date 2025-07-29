@@ -8,5 +8,4 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(BootstrapTestProperties.class)
-public class BootstrapTestConfiguration {
-}
+public final class BootstrapTestConfiguration {}

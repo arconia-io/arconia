@@ -12,9 +12,8 @@ import io.arconia.boot.autoconfigure.bootstrap.test.BootstrapTestConfiguration;
  */
 @AutoConfiguration
 @Import({
-    BootstrapDevConfiguration.class, 
+    BootstrapDevConfiguration.class,
     BootstrapTestConfiguration.class
 })
 @EnableConfigurationProperties(BootstrapProperties.class)
-public class BootstrapAutoConfiguration {
-}
+public final class BootstrapAutoConfiguration {}

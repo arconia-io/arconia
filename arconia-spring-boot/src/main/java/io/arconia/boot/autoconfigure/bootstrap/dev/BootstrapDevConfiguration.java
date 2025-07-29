@@ -8,5 +8,4 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(BootstrapDevProperties.class)
-public class BootstrapDevConfiguration {
-}
+public final class BootstrapDevConfiguration {}
