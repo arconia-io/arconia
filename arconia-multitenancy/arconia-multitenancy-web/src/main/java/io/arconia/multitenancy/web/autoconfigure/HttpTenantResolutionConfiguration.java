@@ -27,8 +27,6 @@ import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
         matchIfMissing = true)
 public final class HttpTenantResolutionConfiguration {
 
-    private HttpTenantResolutionConfiguration() {}
-
     @Bean
     @ConditionalOnBean(FixedTenantResolver.class)
     @ConditionalOnProperty(prefix = FixedTenantResolutionProperties.CONFIG_PREFIX, value = "enabled",

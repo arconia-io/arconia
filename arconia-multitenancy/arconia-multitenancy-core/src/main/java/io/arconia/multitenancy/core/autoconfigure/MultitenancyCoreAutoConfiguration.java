@@ -26,8 +26,6 @@ import io.arconia.multitenancy.core.events.TenantEventPublisher;
 @Import(TenantDetailsConfiguration.class)
 public final class MultitenancyCoreAutoConfiguration {
 
-    private MultitenancyCoreAutoConfiguration() {}
-
     @Bean
     @ConditionalOnMissingBean(TenantKeyGenerator.class)
     DefaultTenantKeyGenerator tenantKeyGenerator() {

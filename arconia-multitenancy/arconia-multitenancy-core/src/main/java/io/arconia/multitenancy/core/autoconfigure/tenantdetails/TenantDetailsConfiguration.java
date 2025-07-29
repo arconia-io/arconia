@@ -14,8 +14,6 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 @EnableConfigurationProperties(TenantDetailsProperties.class)
 public final class TenantDetailsConfiguration {
 
-    private TenantDetailsConfiguration() {}
-
     @Bean
     @ConditionalOnMissingBean(TenantDetailsService.class)
     @ConditionalOnProperty(prefix = TenantDetailsProperties.CONFIG_PREFIX, name = "source", havingValue = "properties")

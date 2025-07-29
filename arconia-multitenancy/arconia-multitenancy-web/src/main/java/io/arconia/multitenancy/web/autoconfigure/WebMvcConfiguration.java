@@ -14,8 +14,6 @@ import io.arconia.multitenancy.web.context.annotations.TenantIdentifierArgumentR
 @Configuration(proxyBeanMethods = false)
 public final class WebMvcConfiguration implements WebMvcConfigurer {
 
-    private WebMvcConfiguration() {}
-
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new TenantIdentifierArgumentResolver());
