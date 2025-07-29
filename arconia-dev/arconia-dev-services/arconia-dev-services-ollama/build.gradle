@@ -24,7 +24,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 
     constraints {
-        implementation("com.google.protobuf:protobuf-java:3.25.8") {
+        implementation("com.google.protobuf:protobuf-java:4.31.1") {
             because "Override transitive dependency from Spring AI to fix CVE-2024-7254"
         }
     }
