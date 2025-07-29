@@ -37,8 +37,11 @@ final class BootstrapModeDetector {
     }
 
     private static BootstrapMode doDetect(StackTraceElement @Nullable ... stackTraceElements) {
-        // 1. Check for JVM system property set by the Arconia CLI.
-        String modeProperty = System.getProperty(BootstrapMode.PROPERTY_KEY);
+        // 1. Check for environment variable or JVM system property set by the Arconia CLI.
+        String modeProperty = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase().replace(".", "_"));
+        if (!StringUtils.hasText(modeProperty)) {
+            modeProperty = System.getProperty(BootstrapMode.PROPERTY_KEY);
+        }
         if (StringUtils.hasText(modeProperty)) {
             if (BootstrapMode.isValid(modeProperty.toUpperCase())) {
                 return BootstrapMode.valueOf(modeProperty.toUpperCase());
