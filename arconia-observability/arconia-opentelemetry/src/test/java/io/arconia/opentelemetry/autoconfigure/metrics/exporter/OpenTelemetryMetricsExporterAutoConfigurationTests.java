@@ -51,7 +51,7 @@ class OpenTelemetryMetricsExporterAutoConfigurationTests {
     void platformThreadsMetricBuilderCustomizerConfigurationApplied() {
         contextRunner
                 .withPropertyValues(
-                        "arconia.otel.metrics.interval=10s",
+                        "arconia.otel.metrics.exporter.interval=10s",
                         "spring.threads.virtual.enabled=false"
                 )
                 .run(context -> {
@@ -66,7 +66,7 @@ class OpenTelemetryMetricsExporterAutoConfigurationTests {
     void virtualThreadsMetricBuilderCustomizerConfigurationApplied() {
         contextRunner
                 .withPropertyValues(
-                        "arconia.otel.metrics.interval=10s",
+                        "arconia.otel.metrics.exporter.interval=10s",
                         "spring.threads.virtual.enabled=true"
                 )
                 .run(context -> {

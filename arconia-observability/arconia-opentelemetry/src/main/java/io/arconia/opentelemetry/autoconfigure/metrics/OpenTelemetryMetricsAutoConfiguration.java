@@ -58,7 +58,7 @@ public final class OpenTelemetryMetricsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     ExemplarFilter exemplarFilter(OpenTelemetryMetricsProperties properties) {
-        return switch(properties.getExemplars().getFilter()) {
+        return switch (properties.getExemplars().getFilter()) {
             case ALWAYS_ON -> ExemplarFilter.alwaysOn();
             case ALWAYS_OFF -> ExemplarFilter.alwaysOff();
             case TRACE_BASED -> ExemplarFilter.traceBased();
