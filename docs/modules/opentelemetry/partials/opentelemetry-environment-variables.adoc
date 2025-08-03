@@ -1,5 +1,5 @@
 Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry Environment Variable Specification] for configuring the OpenTelemetry integration. If both the OpenTelemetry Environment Variables and the Arconia configuration properties are set, the OpenTelemetry Environment Variables will take precedence.
 
-This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry Logs across different languages and frameworks.
+This support is especially useful during deployment, where you can use the same set of standard environment variables to configure OpenTelemetry across different languages and frameworks.
 
 You can disable this support by setting the `arconia.otel.compatibility.environment-variable-specification` configuration property to `false`.
