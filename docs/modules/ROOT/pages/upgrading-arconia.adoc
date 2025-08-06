@@ -85,48 +85,4 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 
 == Manual Upgrade
 
-=== Dev Services
-
-* The `arconia-dev-services-connections` module has been removed and its content moved to the `arconia-opentelemetry` module. As part of this change, the classes contained in the `io.arconia.dev.services.connections` package have been moved to the `io.arconia.opentelemetry.testcontainers` package.
-* The `MariaDBDevServicesAutoConfiguration` class has been renamed to `MariaDbDevServicesAutoConfiguration` to match the Arconia naming conventions.
-* The `RabbitMQDevServicesAutoConfiguration` class has been renamed to `RabbitMqDevServicesAutoConfiguration` to match the Arconia naming conventions.
-
-=== Multitenancy
-
-* The `arconia-multitenancy-spring-boot-autoconfigure` module has been removed and its content moved to the `arconia-multitenancy-core` and `arconia-multitenancy-web` modules. As part of this change, the classes contained in the `io.arconia.multitenancy.autoconfigure.core` package have been moved to the `io.arconia.multitenancy.core.autoconfigure` package whereas the classes contained in the `io.arconia.multitenancy.autoconfigure.web` package have been moved to the `io.arconia.multitenancy.web.autoconfigure` package.
-
-=== OpenTelemetry
-
-* The `arconia-opentelemetry-sdk-spring-boot-autoconfigure` module has been removed and its content moved to the `arconia-opentelemetry` module. As part of this change, the classes contained in the `io.arconia.opentelemetry.autoconfigure.sdk` package have been moved to the `io.arconia.opentelemetry.autoconfigure` package.
-
-==== Resource
-
-* The `arconia-opentelemetry-sdk-spring-boot-autoconfigure` module (now removed) provided additional `ResourceContributor` beans that contributed the experimental `container.id` and `host.id` attributes to the OpenTelemetry Resource. The experimental attributes have been removed as well as the related auto-configuration classes and configuration properties (`arconia.otel.instrumentation.resource.*`). You can restore the previous behaviour by including the `io.opentelemetry.instrumentation:opentelemetry-resources` dependency in your project and defining custom `ResourceContributor` beans populating these attributes from the `ContainerResource` and `HostIdResource` classes (in the `io.opentelemetry.instrumentation.resources` package).
-
-==== Bridges
-
-* The `arconia-opentelemetry-instrumentation-spring-boot-autoconfigure` module has been removed. The Logback OpenTelemetry Bridge instrumentation is now included in the `arconia-opentelemetry-logback-bridge` module whereas the Micrometer Metrics OpenTelemetry Bridge instrumentation is now included in the `arconia-opentelemetry-micrometer-metrics-bridge` modules. As part of this change, the logic contained in the `io.arconia.opentelemetry.autoconfigure.instrumentation.logback` package has been moved to the `io.arconia.opentelemetry.logback.autoconfigure` package whereas the logic contained in the `io.arconia.opentelemetry.autoconfigure.instrumentation.micrometer` package has been moved to the `io.arconia.opentelemetry.micrometer.metrics.autoconfigure` package.
-* The configuration properties for the Logback OpenTelemetry Bridge have been moved from the `arconia.otel.instrumentation.logback-appender` group to the `arconia.otel.logs.logback-bridge` group.
-* The configuration properties for the Micrometer Metrics OpenTelemetry Bridge have been moved from the `arconia.otel.instrumentation.micrometer` group to the `arconia.otel.metrics.micrometer-bridge` group.
-
-==== Logs
-
-* The `arconia.otel.logs.logs-limits` configuration property group has been renamed to `arconia.otel.logs.limits`.
-
-==== Metrics
-
-* The `arconia.otel.metrics.exemplar-filter` configuration property has been renamed to `arconia.otel.metrics.exemplars.filter`.
-* The `arconia.otel.metrics.interval` configuration property has been renamed to `arconia.otel.metrics.exporter.interval`.
-
-==== Traces
-
-* The `arconia.otel.traces.span-limits` configuration property has been renamed to `arconia.otel.traces.limits`.
-
-==== Compatibility
-
-* Support for the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables[OpenTelemetry Environment Variable Specification] has been improved. As part of this process, support of the special/experimental properties used by the OpenTelemetry Spring Boot Starter on top of the standard environment variables has been removed.
-* Support for the Spring Boot OTLP/Actuator configuration properties (which could previously be enabled by setting the `arconia.otel.compatibility.actuator` property) has been removed. In its place, an automated migration recipe is available to help you migrate to the Arconia OpenTelemetry configuration properties. See the xref:opentelemetry:migration/migration-spring-boot.adoc[dedicated migration guide] for more details.
-
-=== Spring Boot
-
-* The `arconia-spring-boot-autoconfigure` module has been removed and its content moved to the `arconia-spring-boot` module.
+If you prefer to upgrade manually, you can bump the version of the `arconia-bom` in your project to {page-component-version}.

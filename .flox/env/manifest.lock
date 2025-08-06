@@ -15,7 +15,9 @@
       "FLOX_DISABLE_METRICS": "true"
     },
     "hook": {},
-    "profile": {},
+    "profile": {
+      "common": "  export JAVA_HOME=$FLOX_ENV\n"
+    },
     "options": {
       "systems": [
         "aarch64-darwin",

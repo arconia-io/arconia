@@ -11,6 +11,9 @@ FLOX_DISABLE_METRICS="true"
 [hook]
 
 [profile]
+common = '''
+  export JAVA_HOME=$FLOX_ENV
+'''
 
 [services]
 

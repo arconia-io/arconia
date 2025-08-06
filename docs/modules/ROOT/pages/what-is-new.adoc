@@ -5,28 +5,10 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Core
+== Docling
 
-* The `HostInfo.getArch()` method has been replaced by Spring Boot's `OsInfo.getArch()`.
+* A new module has been introduced to support Docling, a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. You can use the `DoclingClient` to interact with a Docling Server for converting various document formats including PDFs, Word documents, and web pages. Give it a try by adding the `arconia-docling-spring-boot-starter` dependency to your project.
 
 == Dev Services
 
-* Each Dev Service now supports a `arconia.dev.services.<name>.startup-timeout` configuration property to configure the startup timeout for the service. The default value is `120s`.
-
-== OpenTelemetry
-
-* A new `arconia.otel.exporter.type` configuration property has been introduced to configure an exporter type for all observability signals at once. This property can be set to `otlp`, `console`, or `none`. Each observability signal can still be configured individually using the existing `arconia.otel.logs.exporter.type`, `arconia.otel.metrics.exporter.type`, and `arconia.otel.traces.exporter.type` properties.
-* Support for the https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables[OpenTelemetry Environment Variable Specification] has been improved. If both the OpenTelemetry Environment Variables and the Arconia configuration properties are set, the OpenTelemetry Environment Variables will take precedence. You can disable this support by setting the `arconia.otel.compatibility.environment-variable-specification` configuration property to `false`.
-* If you'd like to migrate from the partial OpenTelemetry support in Spring Boot to the full OpenTelemetry support in Arconia, you can streamline the process by running our automated migration via OpenRewrite. See the xref:opentelemetry:migration/migration-spring-boot.adoc[dedicated migration guide] for more details.
-
-=== Resource
-
-* The `os.arch` and `host.arch` Resource attributes contained the same value, which is now consolidated in the `host.arch` attribute. The `os.arch` attribute has been removed.
-
-=== Metrics
-
-* You can now enable/disable support for Exemplars via the `arconia.otel.metrics.exemplars.enabled` configuration property. This is enabled by default.
-
-=== Traces
-
-* Introduced new `arconia.otel.traces.processor.export-unsampled-spans` configuration property to enable exporting of unsampled spans. This is disabled by default.
+* A new Docling Dev Service has been introduced, which allows you to run Docling conveniently during development and testing and works great in combination with the new Arconia Docling module. Give it a try by adding the `arconia-dev-services-docling` dependency to your project.

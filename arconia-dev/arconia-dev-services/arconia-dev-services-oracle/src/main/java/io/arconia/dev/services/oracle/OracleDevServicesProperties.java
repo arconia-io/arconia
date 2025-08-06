@@ -24,7 +24,7 @@ public class OracleDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "gvenzl/oracle-free:23.8-slim-faststart";
+    private String imageName = "gvenzl/oracle-free:23.9-slim-faststart";
 
     /**
      * Environment variables to set in the service.

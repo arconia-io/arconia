@@ -16,6 +16,7 @@ dependencies {
         api project(":arconia-core")
 
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-docling")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-lgtm")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mariadb")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mysql")
@@ -25,6 +26,8 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-postgresql")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
+
+        api project(":arconia-integrations:arconia-docling")
 
         api project(":arconia-kubernetes:arconia-kubernetes-service-binding")
 
@@ -37,6 +40,7 @@ dependencies {
 
         api project(":arconia-spring-boot")
 
+        api project(":spring-boot-starters:arconia-docling-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-web-spring-boot-starter")
         api project(":spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
         api project(":spring-boot-starters:arconia-spring-boot-starter")

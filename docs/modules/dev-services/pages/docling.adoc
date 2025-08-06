@@ -1,0 +1,49 @@
+= Docling Dev Service
+:service-name: docling
+
+A service providing a https://docling-project.github.io/docling[Docling] server for development and testing purposes.
+
+It works with Spring Boot libraries that support Docling, including:
+
+* xref:integrations:docling.adoc[Arconia Docling].
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.docling.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.docling.enable-ui`
+| `true`
+| Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`.
+
+| `arconia.dev.services.docling.image-name`
+| `quay.io/docling-project/docling-serve`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.docling.environment`
+| `{}`
+| Environment variables to set in the service. Example: `DOCLING_SERVE_ENABLE_REMOTE_SERVICES: "true"`.
+
+| `arconia.dev.services.docling.shared`
+| `dev-mode`
+| When the dev service is shared across applications.
+
+|===
+
+include::partial$disabling-dev-service.adoc[]
