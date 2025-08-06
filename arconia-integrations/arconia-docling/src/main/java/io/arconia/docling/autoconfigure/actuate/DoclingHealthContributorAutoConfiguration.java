@@ -9,27 +9,34 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.docling.actuate.DoclingHealthIndicator;
+import io.arconia.docling.autoconfigure.actuate.DoclingHealthContributorAutoConfiguration.DoclingHealthContributorConfiguration;
 import io.arconia.docling.autoconfigure.client.DoclingClientAutoConfiguration;
 import io.arconia.docling.client.DoclingClient;
 
 @AutoConfiguration(after = DoclingClientAutoConfiguration.class)
-@ConditionalOnClass({HealthContributor.class, CompositeHealthContributorConfiguration.class})
+@ConditionalOnClass({HealthContributor.class, CompositeHealthContributorConfiguration.class, ConditionalOnEnabledHealthIndicator.class})
 @ConditionalOnBean(DoclingClient.class)
-@ConditionalOnEnabledHealthIndicator("docling")
+@Import(DoclingHealthContributorConfiguration.class)
 @Incubating(since = "0.15.0")
-public final class DoclingHealthContributorAutoConfiguration extends CompositeHealthContributorConfiguration<DoclingHealthIndicator, DoclingClient> {
+public final class DoclingHealthContributorAutoConfiguration {
 
-    DoclingHealthContributorAutoConfiguration() {
-        super(DoclingHealthIndicator::new);
-    }
+    @ConditionalOnEnabledHealthIndicator("docling")
+    static final class DoclingHealthContributorConfiguration extends CompositeHealthContributorConfiguration<DoclingHealthIndicator, DoclingClient> {
 
-    @Bean
-    @ConditionalOnMissingBean(name = { "doclingHealthIndicator", "doclingHealthContributor" })
-    HealthContributor doclingHealthContributor(ConfigurableListableBeanFactory beanFactory) {
-        return createContributor(beanFactory, DoclingClient.class);
+        DoclingHealthContributorConfiguration() {
+            super(DoclingHealthIndicator::new);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(name = { "doclingHealthIndicator", "doclingHealthContributor" })
+        HealthContributor doclingHealthContributor(ConfigurableListableBeanFactory beanFactory) {
+            return createContributor(beanFactory, DoclingClient.class);
+        }
+
     }
 
 }

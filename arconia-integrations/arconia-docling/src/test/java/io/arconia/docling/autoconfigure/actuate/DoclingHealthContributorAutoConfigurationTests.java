@@ -2,6 +2,7 @@ package io.arconia.docling.autoconfigure.actuate;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.health.HealthContributorAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -45,6 +46,11 @@ class DoclingHealthContributorAutoConfigurationTests {
                             .doesNotHaveBean("doclingHealthContributor");
                 });
         contextRunner.withClassLoader(new FilteredClassLoader(CompositeHealthContributorConfiguration.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(DoclingHealthIndicator.class)
+                            .doesNotHaveBean("doclingHealthContributor");
+                });
+        contextRunner.withClassLoader(new FilteredClassLoader(ConditionalOnEnabledHealthIndicator.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(DoclingHealthIndicator.class)
                             .doesNotHaveBean("doclingHealthContributor");
