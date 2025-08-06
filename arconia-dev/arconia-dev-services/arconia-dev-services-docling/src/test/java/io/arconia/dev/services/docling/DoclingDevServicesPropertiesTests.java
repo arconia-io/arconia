@@ -29,6 +29,7 @@ class DoclingDevServicesPropertiesTests {
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+        assertThat(properties.isEnableUi()).isTrue();
     }
 
     @Test
@@ -40,12 +41,14 @@ class DoclingDevServicesPropertiesTests {
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
+        properties.setEnableUi(false);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("quay.io/docling-project/docling-serve:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+        assertThat(properties.isEnableUi()).isFalse();
     }
 
 }

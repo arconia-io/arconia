@@ -41,6 +41,11 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
      */
     private Duration startupTimeout = Duration.ofMinutes(2);
 
+    /**
+     * Whether to enable the Docling UI.
+     */
+    private boolean enableUi = true;
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -84,6 +89,14 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
 
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    public boolean isEnableUi() {
+        return enableUi;
+    }
+
+    public void setEnableUi(boolean enableUi) {
+        this.enableUi = enableUi;
     }
 
 }

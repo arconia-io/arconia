@@ -75,4 +75,36 @@ class DoclingDevServicesAutoConfigurationTests {
             });
     }
 
+    @Test
+    void containerHasDoclingUiEnabledByDefault() {
+        contextRunner
+            .run(context -> {
+                assertThat(context).hasSingleBean(GenericContainer.class);
+                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
+                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=1");
+            });
+    }
+
+    @Test
+    void containerCanDisableDoclingUi() {
+        contextRunner
+            .withPropertyValues("arconia.dev.services.docling.enable-ui=false")
+            .run(context -> {
+                assertThat(context).hasSingleBean(GenericContainer.class);
+                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
+                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=0");
+            });
+    }
+
+    @Test
+    void containerCanExplicitlyEnableDoclingUi() {
+        contextRunner
+            .withPropertyValues("arconia.dev.services.docling.enable-ui=true")
+            .run(context -> {
+                assertThat(context).hasSingleBean(GenericContainer.class);
+                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
+                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=1");
+            });
+    }
+
 }

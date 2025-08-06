@@ -1,5 +1,8 @@
 package io.arconia.dev.services.docling;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -40,7 +43,7 @@ public final class DoclingDevServicesAutoConfiguration {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withExposedPorts(DEFAULT_PORT)
-                    .withEnv(properties.getEnvironment())
+                    .withEnv(computeEnvironment(properties))
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
@@ -57,11 +60,17 @@ public final class DoclingDevServicesAutoConfiguration {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withExposedPorts(DEFAULT_PORT)
-                    .withEnv(properties.getEnvironment())
+                    .withEnv(computeEnvironment(properties))
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
         }
 
+    }
+
+    private static Map<String, String> computeEnvironment(DoclingDevServicesProperties properties) {
+        Map<String,String> environment = new HashMap<>(properties.getEnvironment());
+        environment.put("DOCLING_SERVE_ENABLE_UI", properties.isEnableUi() ? "1": "0");
+        return environment;
     }
 
 }
