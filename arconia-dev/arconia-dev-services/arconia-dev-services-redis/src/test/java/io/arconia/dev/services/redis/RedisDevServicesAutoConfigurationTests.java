@@ -27,7 +27,7 @@ class RedisDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void redisContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner
             .run(context -> {
                 assertThat(context).hasSingleBean(RedisContainer.class);
@@ -38,7 +38,7 @@ class RedisDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void redisContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.redis.image-name=docker.io/redis",

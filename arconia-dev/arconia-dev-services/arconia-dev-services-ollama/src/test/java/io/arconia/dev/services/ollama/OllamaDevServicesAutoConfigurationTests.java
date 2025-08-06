@@ -33,7 +33,7 @@ class OllamaDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void ollamaContainerActivatedWhenEnabled() {
+    void containerActivatedWhenEnabled() {
         contextRunner
             .withPropertyValues("arconia.dev.services.ollama.enabled=true")
             .run(context -> {
@@ -45,7 +45,7 @@ class OllamaDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void ollamaContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.ollama.enabled=true",

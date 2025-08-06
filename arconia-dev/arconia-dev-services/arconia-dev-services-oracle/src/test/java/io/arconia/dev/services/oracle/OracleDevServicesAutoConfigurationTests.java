@@ -26,7 +26,7 @@ class OracleDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void oracleContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OracleContainer.class);
             OracleContainer container = context.getBean(OracleContainer.class);
@@ -36,7 +36,7 @@ class OracleDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void oracleContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.oracle.image-name=docker.io/gvenzl/oracle-free",

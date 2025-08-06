@@ -26,7 +26,7 @@ class MariaDbDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void mariadbContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(MariaDBContainer.class);
             MariaDBContainer<?> container = context.getBean(MariaDBContainer.class);
@@ -36,7 +36,7 @@ class MariaDbDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void mariadbContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.mariadb.image-name=docker.io/mariadb",

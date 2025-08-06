@@ -26,7 +26,7 @@ class MySqlDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void mysqlContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(MySQLContainer.class);
             MySQLContainer<?> container = context.getBean(MySQLContainer.class);
@@ -36,7 +36,7 @@ class MySqlDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void mysqlContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.mysql.image-name=docker.io/mysql",

@@ -34,7 +34,7 @@ class RabbitMqDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerAvailableInDevelopmentMode() {
+    void containerAvailableInDevelopmentMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
@@ -46,7 +46,7 @@ class RabbitMqDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerAvailableInTestMode() {
+    void containerAvailableInTestMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=test")
                 .run(context -> {
@@ -58,7 +58,7 @@ class RabbitMqDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void rabbitmqContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.rabbitmq.image-name=docker.io/rabbitmq",

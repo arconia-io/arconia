@@ -26,7 +26,7 @@ class PostgresqlDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void postgresContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(PostgreSQLContainer.class);
             PostgreSQLContainer<?> container = context.getBean(PostgreSQLContainer.class);
@@ -36,7 +36,7 @@ class PostgresqlDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void postgresContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.postgresql.image-name=docker.io/postgres",

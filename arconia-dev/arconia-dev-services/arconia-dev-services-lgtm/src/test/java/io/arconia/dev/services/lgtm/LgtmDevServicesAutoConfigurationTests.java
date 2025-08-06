@@ -41,7 +41,7 @@ class LgtmDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerAvailableInDevelopmentMode() {
+    void containerAvailableInDevelopmentMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
@@ -53,7 +53,7 @@ class LgtmDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerAvailableInTestMode() {
+    void containerAvailableInTestMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=test")
                 .run(context -> {
@@ -65,7 +65,7 @@ class LgtmDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void lgtmContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.lgtm.image-name=docker.io/grafana/otel-lgtm",

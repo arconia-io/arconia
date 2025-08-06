@@ -145,7 +145,7 @@ When Spring Boot Actuator is present on the classpath, Arconia automatically con
 
 When enabled, the health status will be included in the actuator `/health` endpoint response, showing whether the Docling server is reachable and operational.
 
-== Using the DoclingClient
+== Using the Docling Client
 
 Once you have added the dependency and optionally configured the connection settings, you can autowire and use the auto-configured `DoclingClient` in your Spring components.
 

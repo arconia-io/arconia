@@ -28,7 +28,7 @@ class OracleXeDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void oracleXeContainerAvailableWithDefaultConfiguration() {
+    void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OracleContainer.class);
             OracleContainer container = context.getBean(OracleContainer.class);
@@ -38,7 +38,7 @@ class OracleXeDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void oracleXeContainerConfigurationApplied() {
+    void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.oracle-xe.image-name=docker.io/gvenzl/oracle-xe",
