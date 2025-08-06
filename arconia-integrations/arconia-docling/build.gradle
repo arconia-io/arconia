@@ -1,0 +1,38 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation project(":arconia-core")
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework:spring-web"
+
+    optional "org.springframework.boot:spring-boot-actuator"
+    optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
+
+    optional "org.springframework.boot:spring-boot-testcontainers"
+    optional "org.testcontainers:junit-jupiter"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Docling"
+                description = "Arconia Docling."
+            }
+        }
+    }
+}

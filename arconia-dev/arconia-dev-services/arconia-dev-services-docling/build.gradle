@@ -1,0 +1,37 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-integrations:arconia-docling")
+    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.testcontainers:junit-jupiter"
+
+    implementation project(":arconia-core")
+
+    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional "org.springframework.boot:spring-boot-devtools"
+
+    testImplementation project(":arconia-spring-boot")
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services Docling"
+                description = "Arconia Dev Services Docling."
+            }
+        }
+    }
+}

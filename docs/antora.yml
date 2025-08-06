@@ -9,4 +9,5 @@ nav:
   - modules/dev-services/nav.adoc
   - modules/kubernetes/nav.adoc
   - modules/opentelemetry/nav.adoc
+  - modules/integrations/nav.adoc
   - modules/ROOT/partials/nav-end.adoc

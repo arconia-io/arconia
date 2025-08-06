@@ -1,0 +1,7 @@
+# Runtime Hints Registrars
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+io.arconia.docling.aot.DoclingRuntimeHints
+
+# Connection Details Factories
+org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
+io.arconia.docling.testcontainers.DoclingContainerConnectionDetailsFactory

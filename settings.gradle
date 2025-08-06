@@ -12,6 +12,7 @@ include 'arconia-core'
 
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-docling'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-lgtm'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-mariadb'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-mysql'
@@ -21,6 +22,9 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
+
+// Integrations
+include 'arconia-integrations:arconia-docling'
 
 // Kubernetes
 include 'arconia-kubernetes:arconia-kubernetes-service-binding'
@@ -38,6 +42,7 @@ include 'arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge'
 include 'arconia-spring-boot'
 
 // Spring Boot Starters
+include 'spring-boot-starters:arconia-docling-spring-boot-starter'
 include 'spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
 include 'spring-boot-starters:arconia-spring-boot-starter'

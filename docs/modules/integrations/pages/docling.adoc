@@ -1,0 +1,258 @@
+= Arconia Docling
+
+Arconia provides seamless integration with https://docling-project.github.io/docling[Docling], a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. The integration provides an auto-configured `DoclingClient` that can be used in Spring Boot applications to interact with a Docling Server for converting various document formats including PDFs, Word documents, and web pages.
+
+== Quick Start
+
+Let's see how you can get started with Arconia Docling in your Spring Boot application.
+
+=== Dependencies
+
+To add Docling support to your Spring Boot application, include the Arconia Docling Spring Boot Starter dependency in your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-docling-spring-boot-starter'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-docling-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. While not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencyManagement {
+    imports {
+        mavenBom "io.arconia:arconia-bom:{page-component-version}"
+    }
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
+
+=== Dev Services
+
+xref:dev-services:index.adoc[Arconia Dev Services] provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
+
+When working with Docling, you can use the xref:dev-services:docling.adoc[Docling Dev Service] to automatically start a Docling server during development and testing, giving you the possibility to convert documents without manually setting up a Docling server.
+
+To enable the Docling Dev Service, add the following dependency to your project:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    testAndDevelopmentOnly "io.arconia:arconia-dev-services-docling"
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-docling</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+=== Running the Application
+
+When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
+
+include::ROOT:partial$app-run.adoc[]
+
+NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
+
+The application logs will show you the URL where you can access the Docling Server UI for interactive document conversion.
+
+== Configuration
+
+The Arconia Docling integration provides sensible defaults for connecting to a Docling server. You can customize the connection settings and timeouts via configuration properties.
+
+.Docling Client Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.docling.url`
+|`http://localhost:5001`
+|The base URL for the Docling server API.
+
+|`arconia.docling.connect-timeout`
+|`5s`
+|Timeout to establish a connection to the Docling server.
+
+|`arconia.docling.read-timeout`
+|`30s`
+|Timeout for receiving a response from the Docling server.
+|===
+
+== Health Monitoring
+
+When Spring Boot Actuator is present on the classpath, Arconia automatically configures a health indicator for the Docling integration. This health indicator checks the connectivity to the Docling server by calling its health endpoint. You can customize it via configuration properties.
+
+.Health Configuration Properties
+|===
+|Property |Default |Description
+
+|`management.health.docling.enabled`
+|`true`
+|Whether the Docling health indicator should be enabled.
+|===
+
+When enabled, the health status will be included in the actuator `/health` endpoint response, showing whether the Docling server is reachable and operational.
+
+== Using the DoclingClient
+
+Once you have added the dependency and optionally configured the connection settings, you can autowire and use the auto-configured `DoclingClient` in your Spring components.
+
+=== Basic Usage
+
+[source,java]
+----
+@Component
+public class DocumentService {
+
+    private final DoclingClient doclingClient;
+
+    public DocumentService(DoclingClient doclingClient) {
+        this.doclingClient = doclingClient;
+    }
+
+    public String convertWebPage(String url) {
+        ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+                .addHttpSources(URI.create(url))
+                .build();
+
+        ConvertDocumentResponse response = doclingClient.convertSource(request);
+        return response.document().markdownContent();
+    }
+}
+----
+
+=== Converting HTTP Sources
+
+You can convert web pages or documents accessible via HTTP/HTTPS URLs:
+
+[source,java]
+----
+ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+        .addHttpSources(URI.create("https://example.com/document.pdf"))
+        .build();
+
+ConvertDocumentResponse response = doclingClient.convertSource(request);
+String markdownContent = response.document().markdownContent();
+String filename = response.document().filename();
+----
+
+=== Converting File Sources
+
+You can also convert local files by encoding them as Base64:
+
+[source,java]
+----
+byte[] fileContent = new ClassPathResource("document.pdf").getContentAsByteArray();
+String base64Content = Base64.getEncoder().encodeToString(fileContent);
+
+ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+        .addFileSources("document.pdf", base64Content)
+        .build();
+
+ConvertDocumentResponse response = doclingClient.convertSource(request);
+String markdownContent = response.document().markdownContent();
+----
+
+=== Conversion Options
+
+You can customize the conversion process using `ConvertDocumentOptions`:
+
+[source,java]
+----
+ConvertDocumentOptions options = ConvertDocumentOptions.builder()
+        .includeImages(true)
+        .doOcr(true)
+        .build();
+
+ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+        .addHttpSources(URI.create("https://example.com/document.pdf"))
+        .options(options)
+        .build();
+
+ConvertDocumentResponse response = doclingClient.convertSource(request);
+----
+
+=== Error Handling
+
+The `DoclingClient` will throw appropriate runtime exceptions for different error conditions, as managed by the underlying `RestClient`.
+
+[source,java]
+----
+try {
+    ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+            .addHttpSources(URI.create("https://invalid-url.com/document.pdf"))
+            .build();
+    
+    ConvertDocumentResponse response = doclingClient.convertSource(request);
+} catch (HttpClientErrorException.NotFound e) {
+    log.warn("Document not found: {}", e.getMessage());
+} catch (HttpClientErrorException e) {
+    log.error("Client error during conversion: {}", e.getMessage());
+} catch (HttpServerErrorException e) {
+    log.error("Server error during conversion: {}", e.getMessage());
+}
+----
+
+=== Health Check
+
+You can also programmatically check the health of the Docling server:
+
+[source,java]
+----
+HealthCheckResponse health = doclingClient.health();
+if ("ok".equals(health.status())) {
+    // Docling server is healthy
+} else {
+    // Handle unhealthy server
+}
+----

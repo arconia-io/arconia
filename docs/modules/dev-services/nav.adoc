@@ -6,6 +6,7 @@
 ** xref:oracle-xe.adoc[Oracle XE]
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
+* xref:docling.adoc[Docling]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
 * xref:rabbitmq.adoc[RabbitMQ]
