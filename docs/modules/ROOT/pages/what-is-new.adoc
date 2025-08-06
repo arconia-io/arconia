@@ -7,8 +7,5 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Docling
 
-* A new module has been introduced to support Docling, a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. You can use the `DoclingClient` to interact with a Docling Server for converting various document formats including PDFs, Word documents, and web pages. Give it a try by adding the `arconia-docling-spring-boot-starter` dependency to your project.
-
-== Dev Services
-
-* A new Docling Dev Service has been introduced, which allows you to run Docling conveniently during development and testing and works great in combination with the new Arconia Docling module. Give it a try by adding the `arconia-dev-services-docling` dependency to your project.
+* A new module has been introduced to support Docling, a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. You can use the `DoclingClient` to interact with a Docling Server for converting various document formats including PDFs, Word documents, and web pages. Learn more about the integration in the xref:integrations:docling.adoc[Arconia Docling] documentation.
+* A new Docling Dev Service has been introduced, which allows you to run Docling conveniently during development and testing and works great in combination with the new Arconia Docling module. Learn more about the Dev Service in the xref:dev-services:docling.adoc[Docling Dev Service] documentation.

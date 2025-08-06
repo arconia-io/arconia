@@ -128,7 +128,9 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |Timeout for receiving a response from the Docling server.
 |===
 
-== Health Monitoring
+== Actuator
+
+=== Health Indicator
 
 When Spring Boot Actuator is present on the classpath, Arconia automatically configures a health indicator for the Docling integration. This health indicator checks the connectivity to the Docling server by calling its health endpoint. You can customize it via configuration properties.
 
@@ -162,7 +164,7 @@ public class DocumentService {
 
     public String convertWebPage(String url) {
         ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-                .addHttpSources(URI.create(url))
+                .addHttpSources(url)
                 .build();
 
         ConvertDocumentResponse response = doclingClient.convertSource(request);
@@ -178,7 +180,7 @@ You can convert web pages or documents accessible via HTTP/HTTPS URLs:
 [source,java]
 ----
 ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-        .addHttpSources(URI.create("https://example.com/document.pdf"))
+        .addHttpSources("https://example.com/document.pdf")
         .build();
 
 ConvertDocumentResponse response = doclingClient.convertSource(request);
@@ -215,7 +217,7 @@ ConvertDocumentOptions options = ConvertDocumentOptions.builder()
         .build();
 
 ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-        .addHttpSources(URI.create("https://example.com/document.pdf"))
+        .addHttpSources("https://example.com/document.pdf")
         .options(options)
         .build();
 
@@ -230,16 +232,15 @@ The `DoclingClient` will throw appropriate runtime exceptions for different erro
 ----
 try {
     ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-            .addHttpSources(URI.create("https://invalid-url.com/document.pdf"))
+            .addHttpSources("https://invalid-url.com/document.pdf")
             .build();
-    
     ConvertDocumentResponse response = doclingClient.convertSource(request);
-} catch (HttpClientErrorException.NotFound e) {
-    log.warn("Document not found: {}", e.getMessage());
-} catch (HttpClientErrorException e) {
-    log.error("Client error during conversion: {}", e.getMessage());
-} catch (HttpServerErrorException e) {
-    log.error("Server error during conversion: {}", e.getMessage());
+} catch (HttpClientErrorException.NotFound ex) {
+    log.warn("Document not found: {}", ex.getMessage());
+} catch (HttpClientErrorException ex) {
+    log.error("Client error during conversion: {}", ex.getMessage());
+} catch (HttpServerErrorException ex) {
+    log.error("Server error during conversion: {}", ex.getMessage());
 }
 ----
 
