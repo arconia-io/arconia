@@ -97,6 +97,13 @@ Maven::
 ----
 ======
 
+By default, the Dev Service is configured to expose the Docling UI on a specific port. The application logs will show you the URL where you can access that.
+
+[source,logs]
+----
+... Docling UI: http://localhost:<port>/ui
+----
+
 === Running the Application
 
 When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.

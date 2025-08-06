@@ -17,6 +17,13 @@ include::partial$running-application.adoc[]
 
 By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
 
+Furthermore, the Dev Service is configured to expose the Docling UI on a specific port. The application logs will show you the URL where you can access that.
+
+[source,logs]
+----
+... Docling UI: http://localhost:<port>/ui
+----
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.
