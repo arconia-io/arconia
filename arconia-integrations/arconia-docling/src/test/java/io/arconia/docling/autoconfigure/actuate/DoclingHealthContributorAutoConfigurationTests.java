@@ -1,9 +1,12 @@
 package io.arconia.docling.autoconfigure.actuate;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.HealthContributorAutoConfiguration;
+import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.arconia.docling.actuate.DoclingHealthIndicator;
@@ -32,6 +35,20 @@ class DoclingHealthContributorAutoConfigurationTests {
         contextRunner.withPropertyValues("management.health.docling.enabled:false").run(context -> {
             assertThat(context).doesNotHaveBean(DoclingHealthIndicator.class).doesNotHaveBean("doclingHealthContributor");
         });
+    }
+
+    @Test
+    void runWithoutActuatorShouldNotCreateIndicator() {
+        contextRunner.withClassLoader(new FilteredClassLoader(HealthContributor.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(DoclingHealthIndicator.class)
+                            .doesNotHaveBean("doclingHealthContributor");
+                });
+        contextRunner.withClassLoader(new FilteredClassLoader(CompositeHealthContributorConfiguration.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(DoclingHealthIndicator.class)
+                            .doesNotHaveBean("doclingHealthContributor");
+                });
     }
 
     @Test
