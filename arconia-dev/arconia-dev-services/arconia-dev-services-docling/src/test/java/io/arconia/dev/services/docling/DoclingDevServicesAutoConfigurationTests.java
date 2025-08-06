@@ -68,6 +68,7 @@ class DoclingDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(GenericContainer.class);
                 GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
+                assertThat(container.getExposedPorts()).contains(DoclingDevServicesAutoConfiguration.DEFAULT_PORT);
                 assertThat(container.getDockerImageName()).contains("quay.io/docling-project/docling-serve");
                 assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true");
                 assertThat(container.isShouldBeReused()).isFalse();

@@ -27,6 +27,7 @@ import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.Confi
 public final class DoclingDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "quay.io/docling-project/docling-serve";
+    public static final int DEFAULT_PORT = 5001;
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
@@ -38,6 +39,7 @@ public final class DoclingDevServicesAutoConfiguration {
         GenericContainer<?> doclingContainer(DoclingDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withExposedPorts(DEFAULT_PORT)
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
@@ -54,6 +56,7 @@ public final class DoclingDevServicesAutoConfiguration {
         GenericContainer<?> doclingContainer(DoclingDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withExposedPorts(DEFAULT_PORT)
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
