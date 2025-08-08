@@ -40,7 +40,7 @@ You can configure the Dev Service via configuration properties.
 | Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`.
 
 | `arconia.dev.services.docling.image-name`
-| `quay.io/docling-project/docling-serve`
+| `ghcr.io/docling-project/docling-serve`
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.docling.environment`

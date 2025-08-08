@@ -29,7 +29,7 @@ import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.Confi
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class DoclingDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "quay.io/docling-project/docling-serve";
+    public static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/docling-project/docling-serve";
     public static final int DEFAULT_PORT = 5001;
 
     @Configuration(proxyBeanMethods = false)

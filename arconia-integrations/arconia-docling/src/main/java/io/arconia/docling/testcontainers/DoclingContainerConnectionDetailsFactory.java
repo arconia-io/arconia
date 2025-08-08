@@ -19,7 +19,8 @@ class DoclingContainerConnectionDetailsFactory
 
     private static final Logger logger = LoggerFactory.getLogger(DoclingContainerConnectionDetailsFactory.class);
 
-    private static final List<String> DOCLING_CONNECTION_NAMES = List.of("docling", "quay.io/docling-project/docling-serve");
+    private static final List<String> DOCLING_CONNECTION_NAMES = List.of("docling", "ghcr.io/docling-project/docling-serve",
+            "quay.io/docling-project/docling-serve");
 
     DoclingContainerConnectionDetailsFactory() {
         super(DOCLING_CONNECTION_NAMES);

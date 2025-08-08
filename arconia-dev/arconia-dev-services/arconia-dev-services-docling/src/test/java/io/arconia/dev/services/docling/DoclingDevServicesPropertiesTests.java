@@ -25,7 +25,7 @@ class DoclingDevServicesPropertiesTests {
         DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("quay.io/docling-project/docling-serve");
+        assertThat(properties.getImageName()).contains("ghcr.io/docling-project/docling-serve");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -37,14 +37,14 @@ class DoclingDevServicesPropertiesTests {
         DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
 
         properties.setEnabled(false);
-        properties.setImageName("quay.io/docling-project/docling-serve:latest");
+        properties.setImageName("ghcr.io/docling-project/docling-serve:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
         properties.setEnableUi(false);
 
         assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("quay.io/docling-project/docling-serve:latest");
+        assertThat(properties.getImageName()).isEqualTo("ghcr.io/docling-project/docling-serve:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

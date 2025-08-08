@@ -7,5 +7,4 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Docling
 
-* A new module has been introduced to support Docling, a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. You can use the `DoclingClient` to interact with a Docling Server for converting various document formats including PDFs, Word documents, and web pages. Learn more about the integration in the xref:integrations:docling.adoc[Arconia Docling] documentation.
-* A new Docling Dev Service has been introduced, which allows you to run Docling conveniently during development and testing and works great in combination with the new Arconia Docling module. Learn more about the Dev Service in the xref:dev-services:docling.adoc[Docling Dev Service] documentation.
+* The Docling Dev Service has been updated to use Docling Serve 1.2.0, and support has been extended for images from both GitHub Container Registry (`ghcr.io/docling-project/docling-serve`) and Quay.io (`quay.io/docling-project/docling-serve`). By default, the Dev Service will use the GitHub Container Registry image.

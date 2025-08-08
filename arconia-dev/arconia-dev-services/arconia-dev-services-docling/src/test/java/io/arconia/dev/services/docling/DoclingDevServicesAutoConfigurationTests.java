@@ -40,7 +40,7 @@ class DoclingDevServicesAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(GenericContainer.class);
                     GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
-                    assertThat(container.getDockerImageName()).contains("quay.io/docling-project/docling-serve");
+                    assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
                     assertThat(container.isShouldBeReused()).isTrue();
                 });
     }
@@ -52,7 +52,7 @@ class DoclingDevServicesAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(GenericContainer.class);
                     GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
-                    assertThat(container.getDockerImageName()).contains("quay.io/docling-project/docling-serve");
+                    assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -61,7 +61,7 @@ class DoclingDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.docling.image-name=quay.io/docling-project/docling-serve:latest",
+                "arconia.dev.services.docling.image-name=ghcr.io/docling-project/docling-serve:latest",
                 "arconia.dev.services.docling.environment.DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true",
                 "arconia.dev.services.docling.shared=never"
             )
@@ -69,7 +69,7 @@ class DoclingDevServicesAutoConfigurationTests {
                 assertThat(context).hasSingleBean(GenericContainer.class);
                 GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
                 assertThat(container.getExposedPorts()).contains(DoclingDevServicesAutoConfiguration.DEFAULT_PORT);
-                assertThat(container.getDockerImageName()).contains("quay.io/docling-project/docling-serve");
+                assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
                 assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
