@@ -131,7 +131,7 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
     }
 
     private boolean shouldRegisterLogbackAppender() {
-        return isLogbackPresent() && isOpenTelemetryPresent() && isLogbackAppenderPresent();
+        return isLogbackPresent() && isOpenTelemetryPresent();
     }
 
     private boolean isLogbackPresent() {
@@ -140,10 +140,6 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
 
     private boolean isOpenTelemetryPresent() {
         return ClassUtils.isPresent("io.opentelemetry.api.OpenTelemetry", null);
-    }
-
-    private boolean isLogbackAppenderPresent() {
-        return ClassUtils.isPresent("io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender", null);
     }
 
     private boolean isLogbackAppenderBridgeEnabled(Binder binder) {
