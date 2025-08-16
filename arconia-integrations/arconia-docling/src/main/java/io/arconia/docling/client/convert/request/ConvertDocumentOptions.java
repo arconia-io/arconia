@@ -64,6 +64,10 @@ public record ConvertDocumentOptions(
         @Nullable
         TableFormerMode tableMode,
 
+        @JsonProperty("table_cell_matching")
+        @Nullable
+        Boolean tableCellMatching,
+
         @JsonProperty("pipeline")
         @Nullable
         ProcessingPipeline pipeline,
@@ -141,6 +145,7 @@ public record ConvertDocumentOptions(
                 builder.ocrLang,
                 builder.pdfBackend,
                 builder.tableMode,
+                builder.tableCellMatching,
                 builder.pipeline,
                 builder.pageRange,
                 builder.documentTimeout,
@@ -174,6 +179,7 @@ public record ConvertDocumentOptions(
         @Nullable private List<String> ocrLang;
         @Nullable private PdfBackend pdfBackend;
         @Nullable private TableFormerMode tableMode;
+        @Nullable private Boolean tableCellMatching;
         @Nullable private ProcessingPipeline pipeline;
         @Nullable private Integer @Nullable [] pageRange;
         @Nullable private Duration documentTimeout;
@@ -261,6 +267,15 @@ public record ConvertDocumentOptions(
          */
         public Builder tableMode(@Nullable TableFormerMode tableMode) {
             this.tableMode = tableMode;
+            return this;
+        }
+
+        /**
+         * If true, matches table cells predictions back to PDF cells. Can break table output if PDF cells are merged across table columns.
+         * If false, let table structure model define the text cells, ignore PDF cells.
+         */
+        public Builder tableCellMatching(@Nullable Boolean tableCellMatching) {
+            this.tableCellMatching = tableCellMatching;
             return this;
         }
 

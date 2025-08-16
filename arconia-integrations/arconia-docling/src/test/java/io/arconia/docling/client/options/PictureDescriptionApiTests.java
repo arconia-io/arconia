@@ -24,13 +24,15 @@ class PictureDescriptionApiTests {
         Map<String, Object> params = Map.of("model", "gpt-4-vision", "max_tokens", 100);
         Duration timeout = Duration.ofSeconds(30);
         String prompt = "Describe this image in detail";
+        Integer concurrency = 2;
 
         PictureDescriptionApi api = new PictureDescriptionApi(
                 url,
                 headers,
                 params,
                 timeout,
-                prompt
+                prompt,
+                concurrency
         );
 
         assertThat(api.url()).isEqualTo(url);
@@ -38,6 +40,7 @@ class PictureDescriptionApiTests {
         assertThat(api.params()).isEqualTo(params);
         assertThat(api.timeout()).isEqualTo(timeout);
         assertThat(api.prompt()).isEqualTo(prompt);
+        assertThat(api.concurrency()).isEqualTo(concurrency);
     }
 
     @Test
@@ -46,6 +49,7 @@ class PictureDescriptionApiTests {
 
         PictureDescriptionApi api = new PictureDescriptionApi(
                 url,
+                null,
                 null,
                 null,
                 null,
@@ -62,6 +66,7 @@ class PictureDescriptionApiTests {
     @Test
     void createApiWithNullUrlThrowsException() {
         assertThatThrownBy(() -> new PictureDescriptionApi(
+                null,
                 null,
                 null,
                 null,
@@ -83,7 +88,8 @@ class PictureDescriptionApiTests {
                 headers,
                 params,
                 Duration.ofSeconds(10),
-                "Original prompt"
+                "Original prompt",
+                3
         );
 
         assertThat(api.headers()).isEqualTo(headers);

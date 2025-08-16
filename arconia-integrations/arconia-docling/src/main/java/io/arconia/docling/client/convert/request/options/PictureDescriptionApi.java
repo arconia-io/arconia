@@ -34,7 +34,11 @@ public record PictureDescriptionApi(
 
         @JsonProperty("prompt")
         @Nullable
-        String prompt
+        String prompt,
+
+        @JsonProperty("concurrency")
+        @Nullable
+        Integer concurrency
 
 ) {
 
@@ -59,6 +63,7 @@ public record PictureDescriptionApi(
         @Nullable private Map<String,Object> params;
         @Nullable private Duration timeout;
         @Nullable private String prompt;
+        @Nullable private Integer concurrency;
 
         private Builder() {}
 
@@ -103,8 +108,16 @@ public record PictureDescriptionApi(
             return this;
         }
 
+        /**
+         * Maximum number of concurrent requests to the API.
+         */
+        public Builder concurrency(Integer concurrency) {
+            this.concurrency = concurrency;
+            return this;
+        }
+
         public PictureDescriptionApi build() {
-            return new PictureDescriptionApi(url, headers, params, timeout, prompt);
+            return new PictureDescriptionApi(url, headers, params, timeout, prompt, concurrency);
         }
 
     }
