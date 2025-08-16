@@ -20,6 +20,12 @@ dependencies {
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
     implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+
+    constraints {
+        implementation("org.apache.commons:commons-lang3:3.18.0") {
+            because "Override transitive dependency from Spring Boot and CycloneDX to fix CVE-2025-48924"
+        }
+    }
 }
 
 gradlePlugin {
