@@ -5,7 +5,7 @@ package io.arconia.opentelemetry.testcontainers;
  */
 public final class Images {
 
-    public static final String LGTM = "grafana/otel-lgtm:0.11.7";
+    public static final String LGTM = "grafana/otel-lgtm:0.11.8";
 
     private Images() {
     }
