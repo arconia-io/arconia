@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-core")
     api project(":arconia-spring-boot")
 
     implementation "org.springframework.boot:spring-boot-starter"

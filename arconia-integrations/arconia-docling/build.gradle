@@ -24,6 +24,7 @@ dependencies {
     optional "org.testcontainers:testcontainers"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
 }
 
 publishing {

@@ -9,16 +9,14 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-    implementation "org.springframework.boot:spring-boot-starter"
-
+    api project(":arconia-core")
     api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 
-    optional project(":arconia-observability:arconia-opentelemetry")
+    implementation "org.springframework.boot:spring-boot-starter"
 
+    optional project(":arconia-observability:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

@@ -9,17 +9,18 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    api project(":arconia-core")
+    api "io.micrometer:micrometer-observation"
+    api "io.opentelemetry:opentelemetry-sdk"
+    api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+
     implementation "org.springframework.boot:spring-boot-starter"
 
     // OpenTelemetry
-    optional "io.opentelemetry:opentelemetry-sdk"
     optional("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
     optional "io.opentelemetry:opentelemetry-exporter-logging"
-    optional "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
     // Spring/Micrometer
     optional "io.micrometer:micrometer-registry-otlp"
@@ -34,7 +35,7 @@ dependencies {
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
     testImplementation "org.testcontainers:junit-jupiter"
-    testRuntimeOnly "io.grpc:grpc-netty-shaded:1.74.0"
+    testRuntimeOnly "io.grpc:grpc-netty-shaded:1.75.0"
 }
 
 dependencyManagement {

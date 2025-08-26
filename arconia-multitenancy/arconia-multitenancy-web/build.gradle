@@ -9,16 +9,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
-    implementation project(":arconia-multitenancy:arconia-multitenancy-core")
+    api project(":arconia-multitenancy:arconia-multitenancy-core")
+
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "jakarta.servlet:jakarta.servlet-api"
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
-
-    optional "com.fasterxml.jackson.core:jackson-databind"
-    optional "jakarta.servlet:jakarta.servlet-api"
-
-    optional "org.springframework:spring-context"
-    optional "org.springframework:spring-webmvc"
+    implementation "org.springframework:spring-context"
+    implementation "org.springframework:spring-webmvc"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }

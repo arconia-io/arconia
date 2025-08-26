@@ -11,18 +11,16 @@ dependencies {
     api project(":arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge")
     api project(":arconia-observability:arconia-opentelemetry")
 
+    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     api "org.springframework.boot:spring-boot-starter-actuator"
 
-    api "io.opentelemetry:opentelemetry-sdk"
-    api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
-    api("io.opentelemetry:opentelemetry-exporter-otlp") {
+    runtimeOnly("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
-    api "io.opentelemetry:opentelemetry-exporter-sender-jdk"
-    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
+    runtimeOnly "io.opentelemetry:opentelemetry-exporter-sender-jdk"
 
-    api "io.micrometer:micrometer-java21"
-    api("io.micrometer:micrometer-tracing-bridge-otel") {
+    runtimeOnly "io.micrometer:micrometer-java21"
+    runtimeOnly("io.micrometer:micrometer-tracing-bridge-otel") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
 
