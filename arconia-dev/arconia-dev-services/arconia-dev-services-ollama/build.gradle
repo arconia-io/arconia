@@ -20,11 +20,14 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:junit-jupiter"
+}
 
-    constraints {
-        implementation("com.google.protobuf:protobuf-java:3.25.8") {
-            because "Override transitive dependency from Spring AI to fix CVE-2024-7254"
-        }
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        // Override transitive dependency from Spring AI to fix CVE-2024-7254.
+        // Fixed in https://github.com/spring-projects/spring-ai/pull/3996.
+        // Remove after the new version of Spring AI is released.
+        substitute module('com.google.protobuf:protobuf-java') using module('com.google.protobuf:protobuf-java:3.25.8')
     }
 }
 

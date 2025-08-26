@@ -21,14 +21,12 @@ dependencyManagement {
     }
 }
 
-dependencies {
-    constraints {
-        implementation("org.apache.commons:commons-compress:1.28.0") {
-            because "Override transitive dependency from Testcontainers to fix CVE-2024-26308 and CVE-2024-25710"
-        }
-        implementation("org.apache.commons:commons-lang3:3.18.0") {
-            because "Override transitive dependency from Commons Compress to fix CVE-2025-48924"
-        }
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        // Override transitive dependency from Testcontainers to fix CVE-2024-26308 and CVE-2024-25710
+        substitute module('org.apache.commons:commons-compress') using module('org.apache.commons:commons-compress:1.28.0')
+        // Override transitive dependency from Commons Compress to fix CVE-2025-48924
+        substitute module('org.apache.commons:commons-lang3') using module('org.apache.commons:commons-lang3:3.18.0')
     }
 }
 
