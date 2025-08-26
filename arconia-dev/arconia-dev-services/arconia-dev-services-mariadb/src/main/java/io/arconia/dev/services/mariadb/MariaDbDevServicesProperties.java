@@ -22,7 +22,7 @@ public class MariaDbDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mariadb:11.8";
+    private String imageName = "mariadb:12.0";
 
     /**
      * Environment variables to set in the service.
