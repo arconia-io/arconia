@@ -2,7 +2,6 @@ version = 1
 
 [install]
 graalvm-ce.pkg-path = "graalvm-ce"
-graalvm-ce.version = "24.0.1"
 httpie.pkg-path = "httpie"
 
 [vars]

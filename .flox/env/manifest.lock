@@ -4,8 +4,7 @@
     "version": 1,
     "install": {
       "graalvm-ce": {
-        "pkg-path": "graalvm-ce",
-        "version": "24.0.1"
+        "pkg-path": "graalvm-ce"
       },
       "httpie": {
         "pkg-path": "httpie"
@@ -31,27 +30,27 @@
     {
       "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/z1kjaq7l30hsjhxxjiw5jvbycpfkyrlk-graalvm-ce-24.0.1.drv",
+      "derivation": "/nix/store/l1c27rsr9zw3v49vbr8vii460jbdjbck-graalvm-ce-24.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "name": "graalvm-ce-24.0.1",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
+      "name": "graalvm-ce-24.0.2",
       "pname": "graalvm-ce",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T00:28:05.707243Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T15:38:53.961384Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "24.0.1",
+      "version": "24.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/pr586lnkp2zyqky3cj5ps75vrsdkaxia-graalvm-ce-24.0.1"
+        "out": "/nix/store/s4ydaw37z5zz5n7z27ixvixhk64hzvvg-graalvm-ce-24.0.2"
       },
       "system": "aarch64-darwin",
       "group": "toplevel",
@@ -60,27 +59,27 @@
     {
       "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/3i8cbk0z0jh6zp9kivrvprsvqp81zfbh-graalvm-ce-24.0.1.drv",
+      "derivation": "/nix/store/phbwhc2gicyssq83z9bgbacfnv2540gc-graalvm-ce-24.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "name": "graalvm-ce-24.0.1",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
+      "name": "graalvm-ce-24.0.2",
       "pname": "graalvm-ce",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T00:47:42.085417Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:05:26.821793Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "24.0.1",
+      "version": "24.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/5cf1fd3wli40ri5b8vf37v59vr7cxy6p-graalvm-ce-24.0.1"
+        "out": "/nix/store/qcgckm2fq602y23aab6naq8m03k9bqnl-graalvm-ce-24.0.2"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
@@ -89,27 +88,27 @@
     {
       "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/ibgz3ni5l75077vssf5lcvpply58dpwc-graalvm-ce-24.0.1.drv",
+      "derivation": "/nix/store/1za7nh7rk3raf4pphjwqrlf83m9klxwi-graalvm-ce-24.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "name": "graalvm-ce-24.0.1",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
+      "name": "graalvm-ce-24.0.2",
       "pname": "graalvm-ce",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T01:07:26.057825Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:29:26.187198Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "24.0.1",
+      "version": "24.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/3k7qp556hzc0kx8mbsxgx60qrby66ddn-graalvm-ce-24.0.1"
+        "out": "/nix/store/0p3kgraf7arj2p0a1kkdly8b72hpmnbr-graalvm-ce-24.0.2"
       },
       "system": "x86_64-darwin",
       "group": "toplevel",
@@ -118,27 +117,27 @@
     {
       "attr_path": "graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/d8za9gz83cc2hfyk011j2p4slx74fs25-graalvm-ce-24.0.1.drv",
+      "derivation": "/nix/store/z4pjw43j406b102p7qxsya973d6hs2jd-graalvm-ce-24.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0-with-classpath-exception, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "name": "graalvm-ce-24.0.1",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
+      "name": "graalvm-ce-24.0.2",
       "pname": "graalvm-ce",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T01:31:22.138149Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:57:28.157567Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "24.0.1",
+      "version": "24.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/l0adwdzzgiznpqwcqblrx4jgknfag9li-graalvm-ce-24.0.1"
+        "out": "/nix/store/dfzrxrlxzgffwqahnvd4r3h287ikxi1i-graalvm-ce-24.0.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -147,17 +146,17 @@
     {
       "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/xzxqlivns39j4rkm1pw6868cj1vwdpgg-python3.13-httpie-3.2.4.drv",
+      "derivation": "/nix/store/j7ph58mzx1xqc82p417iwf7c95rmijmd-python3.13-httpie-3.2.4.drv",
       "description": "Command line HTTP client whose goal is to make CLI human-friendly",
       "install_id": "httpie",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
       "name": "httpie-3.2.4",
       "pname": "httpie",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T00:28:05.886222Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T15:38:54.184968Z",
       "stabilities": [
         "unstable"
       ],
@@ -177,17 +176,17 @@
     {
       "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/nzzj68682j49pyrqlilkjbddab8hi7l2-python3.13-httpie-3.2.4.drv",
+      "derivation": "/nix/store/94d9bjx61wffvygxcxy11ds4jgvry0xz-python3.13-httpie-3.2.4.drv",
       "description": "Command line HTTP client whose goal is to make CLI human-friendly",
       "install_id": "httpie",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
       "name": "httpie-3.2.4",
       "pname": "httpie",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T00:47:42.828073Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:05:27.753081Z",
       "stabilities": [
         "unstable"
       ],
@@ -207,17 +206,17 @@
     {
       "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/p8k3qvq70hwivf0r9kgh35wgbib2mpcl-python3.13-httpie-3.2.4.drv",
+      "derivation": "/nix/store/l682nsc638a138g9ry40fx2fphkxmxic-python3.13-httpie-3.2.4.drv",
       "description": "Command line HTTP client whose goal is to make CLI human-friendly",
       "install_id": "httpie",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
       "name": "httpie-3.2.4",
       "pname": "httpie",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T01:07:26.242407Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:29:26.425770Z",
       "stabilities": [
         "unstable"
       ],
@@ -237,17 +236,17 @@
     {
       "attr_path": "httpie",
       "broken": false,
-      "derivation": "/nix/store/3izil76fys06m8sxp14s5gia4raa72gh-python3.13-httpie-3.2.4.drv",
+      "derivation": "/nix/store/543a9hcg4vly8an48ymiqxwgfhykmgkx-python3.13-httpie-3.2.4.drv",
       "description": "Command line HTTP client whose goal is to make CLI human-friendly",
       "install_id": "httpie",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=dc9637876d0dcc8c9e5e22986b857632effeb727",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=20075955deac2583bb12f07151c2df830ef346b4",
       "name": "httpie-3.2.4",
       "pname": "httpie",
-      "rev": "dc9637876d0dcc8c9e5e22986b857632effeb727",
-      "rev_count": 836203,
-      "rev_date": "2025-07-28T09:26:29Z",
-      "scrape_date": "2025-07-30T01:31:22.915048Z",
+      "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+      "rev_count": 846535,
+      "rev_date": "2025-08-19T15:00:17Z",
+      "scrape_date": "2025-08-24T16:57:29.175931Z",
       "stabilities": [
         "unstable"
       ],
