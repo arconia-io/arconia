@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the PostgreSQL Dev Services.
  */
-@ConfigurationProperties(prefix = PostgresqlDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.postgresql")
 public class PostgresqlDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.postgresql";
 
     /**
      * Whether the dev service is enabled.

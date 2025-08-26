@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RedisDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(RedisDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.redis");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         RedisDevServicesProperties properties = new RedisDevServicesProperties();
 

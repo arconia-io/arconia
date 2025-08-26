@@ -13,12 +13,12 @@ dependencies {
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:oracle-xe"
 
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
     optional "org.springframework.boot:spring-boot-devtools"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
 }
 
 publishing {

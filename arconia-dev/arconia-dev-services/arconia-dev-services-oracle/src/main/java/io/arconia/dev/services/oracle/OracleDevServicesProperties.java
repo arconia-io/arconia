@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the Oracle Dev Services.
  */
-@ConfigurationProperties(prefix = OracleDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.oracle")
 public class OracleDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.oracle";
 
     /**
      * Whether the dev service is enabled.

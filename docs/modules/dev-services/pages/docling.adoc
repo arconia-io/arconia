@@ -37,7 +37,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.docling.enable-ui`
 | `true`
-| Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`.
+| Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`. This is only considered when running the application in dev mode.
 
 | `arconia.dev.services.docling.image-name`
 | `ghcr.io/docling-project/docling-serve`

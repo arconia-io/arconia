@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the MariaDB Dev Services.
  */
-@ConfigurationProperties(prefix = MariaDbDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.mariadb")
 public class MariaDbDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.mariadb";
 
     /**
      * Whether the dev service is enabled.

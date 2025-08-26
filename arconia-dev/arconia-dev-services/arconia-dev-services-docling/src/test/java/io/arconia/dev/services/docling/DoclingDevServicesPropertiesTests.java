@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DoclingDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(DoclingDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.docling");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
 

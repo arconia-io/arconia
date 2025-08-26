@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PostgresqlDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(PostgresqlDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.postgresql");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         PostgresqlDevServicesProperties properties = new PostgresqlDevServicesProperties();
 

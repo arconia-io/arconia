@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MySqlDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(MySqlDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.mysql");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         MySqlDevServicesProperties properties = new MySqlDevServicesProperties();
 

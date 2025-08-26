@@ -22,7 +22,7 @@ import io.arconia.dev.services.oracle.OracleXeDevServicesAutoConfiguration.Confi
  * Auto-configuration for Oracle XE Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = OracleXeDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.oracle-xe", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(OracleXeDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class OracleXeDevServicesAutoConfiguration {

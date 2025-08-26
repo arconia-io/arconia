@@ -7,6 +7,7 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.grafana.LgtmStackContainer;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link LgtmDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class LgtmDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -34,7 +36,7 @@ class LgtmDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenOpenTelemetryMissing() {
+    void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         contextRunner
             .withPropertyValues("arconia.otel.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
@@ -48,6 +50,7 @@ class LgtmDevServicesAutoConfigurationTests {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
+                    assertThat(container.getEnv()).isEmpty();
                     assertThat(container.isShouldBeReused()).isTrue();
                 });
     }
@@ -60,6 +63,7 @@ class LgtmDevServicesAutoConfigurationTests {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
+                    assertThat(container.getEnv()).isEmpty();
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -70,7 +74,8 @@ class LgtmDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.lgtm.image-name=docker.io/grafana/otel-lgtm",
                 "arconia.dev.services.lgtm.environment.ENABLE_LOGS_ALL=true",
-                "arconia.dev.services.lgtm.shared=never"
+                "arconia.dev.services.lgtm.shared=never",
+                "arconia.dev.services.lgtm.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(LgtmStackContainer.class);

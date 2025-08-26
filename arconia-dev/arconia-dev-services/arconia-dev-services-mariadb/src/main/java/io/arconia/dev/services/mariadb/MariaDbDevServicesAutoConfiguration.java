@@ -22,7 +22,7 @@ import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.Confi
  * Auto-configuration for MariaDB Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = MariaDbDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.mariadb", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MariaDbDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class MariaDbDevServicesAutoConfiguration {

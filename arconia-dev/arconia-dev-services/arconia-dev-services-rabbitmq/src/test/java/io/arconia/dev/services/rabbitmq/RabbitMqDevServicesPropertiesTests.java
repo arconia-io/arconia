@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RabbitMqDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(RabbitMqDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.rabbitmq");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         RabbitMqDevServicesProperties properties = new RabbitMqDevServicesProperties();
 

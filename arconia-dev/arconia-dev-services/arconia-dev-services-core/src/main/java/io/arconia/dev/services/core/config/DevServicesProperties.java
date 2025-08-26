@@ -18,7 +18,7 @@ public interface DevServicesProperties {
     }
 
     /**
-     * Full name of the container image used in the dev service. Example: "grafana/otel-lgtm:0.8.6".
+     * Full name of the container image used in the dev service.
      */
     String getImageName();
 

@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the Ollama Dev Services.
  */
-@ConfigurationProperties(prefix = OllamaDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.ollama")
 public class OllamaDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.ollama";
 
     /**
      * Whether the dev service is enabled.

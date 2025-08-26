@@ -22,7 +22,7 @@ import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.Configura
  * Auto-configuration for MySQL Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = MySqlDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.mysql", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MySqlDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class MySqlDevServicesAutoConfiguration {

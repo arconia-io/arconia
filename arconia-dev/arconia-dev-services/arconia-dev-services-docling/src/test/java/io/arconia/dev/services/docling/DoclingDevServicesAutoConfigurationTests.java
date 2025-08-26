@@ -7,6 +7,7 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link DoclingDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class DoclingDevServicesAutoConfigurationTests {
 
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -41,6 +43,7 @@ class DoclingDevServicesAutoConfigurationTests {
                     assertThat(context).hasSingleBean(GenericContainer.class);
                     GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
                     assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
+                    assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=1");
                     assertThat(container.isShouldBeReused()).isTrue();
                 });
     }
@@ -53,6 +56,7 @@ class DoclingDevServicesAutoConfigurationTests {
                     assertThat(context).hasSingleBean(GenericContainer.class);
                     GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
                     assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
+                    assertThat(container.getEnv()).doesNotContain("DOCLING_SERVE_ENABLE_UI");
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -60,50 +64,21 @@ class DoclingDevServicesAutoConfigurationTests {
     @Test
     void containerConfigurationApplied() {
         contextRunner
+            .withSystemProperties("arconia.bootstrap.mode=dev")
             .withPropertyValues(
                 "arconia.dev.services.docling.image-name=ghcr.io/docling-project/docling-serve:latest",
                 "arconia.dev.services.docling.environment.DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true",
-                "arconia.dev.services.docling.shared=never"
+                "arconia.dev.services.docling.shared=never",
+                "arconia.dev.services.docling.startup-timeout=90s",
+                "arconia.dev.services.docling.enable-ui=false"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(GenericContainer.class);
                 GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
                 assertThat(container.getExposedPorts()).contains(DoclingDevServicesAutoConfiguration.DEFAULT_PORT);
                 assertThat(container.getDockerImageName()).contains("ghcr.io/docling-project/docling-serve");
-                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true");
+                assertThat(container.getEnv()).containsExactlyInAnyOrder("DOCLING_SERVE_ENABLE_UI=0", "DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true");
                 assertThat(container.isShouldBeReused()).isFalse();
-            });
-    }
-
-    @Test
-    void containerHasDoclingUiEnabledByDefault() {
-        contextRunner
-            .run(context -> {
-                assertThat(context).hasSingleBean(GenericContainer.class);
-                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
-                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=1");
-            });
-    }
-
-    @Test
-    void containerCanDisableDoclingUi() {
-        contextRunner
-            .withPropertyValues("arconia.dev.services.docling.enable-ui=false")
-            .run(context -> {
-                assertThat(context).hasSingleBean(GenericContainer.class);
-                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
-                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=0");
-            });
-    }
-
-    @Test
-    void containerCanExplicitlyEnableDoclingUi() {
-        contextRunner
-            .withPropertyValues("arconia.dev.services.docling.enable-ui=true")
-            .run(context -> {
-                assertThat(context).hasSingleBean(GenericContainer.class);
-                GenericContainer<?> container = context.getBean("doclingContainer", GenericContainer.class);
-                assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=1");
             });
     }
 

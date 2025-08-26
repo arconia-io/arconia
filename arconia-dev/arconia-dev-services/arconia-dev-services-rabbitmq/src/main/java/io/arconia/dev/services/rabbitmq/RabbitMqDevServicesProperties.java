@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the RabbitMQ Dev Services.
  */
-@ConfigurationProperties(prefix = RabbitMqDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.rabbitmq")
 public class RabbitMqDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.rabbitmq";
 
     /**
      * Whether the dev service is enabled.

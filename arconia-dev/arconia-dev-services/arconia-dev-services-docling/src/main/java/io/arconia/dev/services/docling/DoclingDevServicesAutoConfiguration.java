@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.ConfigurationWithRestart;
 import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.ConfigurationWithoutRestart;
 
@@ -24,7 +25,7 @@ import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.Confi
  * Auto-configuration for Docling Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = DoclingDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.docling", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(DoclingDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class DoclingDevServicesAutoConfiguration {
@@ -69,7 +70,9 @@ public final class DoclingDevServicesAutoConfiguration {
 
     private static Map<String, String> computeEnvironment(DoclingDevServicesProperties properties) {
         Map<String,String> environment = new HashMap<>(properties.getEnvironment());
-        environment.put("DOCLING_SERVE_ENABLE_UI", properties.isEnableUi() ? "1": "0");
+        if (BootstrapMode.DEV == BootstrapMode.detect()) {
+            environment.put("DOCLING_SERVE_ENABLE_UI", properties.isEnableUi() ? "1": "0");
+        }
         return environment;
     }
 

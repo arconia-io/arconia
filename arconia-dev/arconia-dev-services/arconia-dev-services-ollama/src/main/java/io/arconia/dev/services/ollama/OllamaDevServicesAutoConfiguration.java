@@ -22,7 +22,7 @@ import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.Configu
  * Auto-configuration for Ollama Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = OllamaDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "arconia.dev.services.ollama", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(OllamaDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class OllamaDevServicesAutoConfiguration {

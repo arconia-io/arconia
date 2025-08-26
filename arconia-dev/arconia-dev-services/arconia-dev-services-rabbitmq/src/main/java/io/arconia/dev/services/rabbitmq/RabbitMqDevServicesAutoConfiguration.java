@@ -22,7 +22,7 @@ import io.arconia.dev.services.rabbitmq.RabbitMqDevServicesAutoConfiguration.Con
  * Auto-configuration for RabbitMQ Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = RabbitMqDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.rabbitmq", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RabbitMqDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class RabbitMqDevServicesAutoConfiguration {

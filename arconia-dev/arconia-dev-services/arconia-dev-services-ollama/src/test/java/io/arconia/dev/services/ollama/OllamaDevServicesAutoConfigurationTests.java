@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ollama.OllamaContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link OllamaDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class OllamaDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -21,7 +23,6 @@ class OllamaDevServicesAutoConfigurationTests {
     @Test
     void autoConfigurationNotActivatedWhenDefault() {
         contextRunner
-                .withPropertyValues("arconia.dev.services.ollama.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(OllamaContainer.class));
     }
 
@@ -40,6 +41,7 @@ class OllamaDevServicesAutoConfigurationTests {
                 assertThat(context).hasSingleBean(OllamaContainer.class);
                 OllamaContainer container = context.getBean(OllamaContainer.class);
                 assertThat(container.getDockerImageName()).contains("ollama/ollama");
+                assertThat(container.getEnv()).isEmpty();
                 assertThat(container.isShouldBeReused()).isTrue();
             });
     }
@@ -51,7 +53,8 @@ class OllamaDevServicesAutoConfigurationTests {
                 "arconia.dev.services.ollama.enabled=true",
                 "arconia.dev.services.ollama.image-name=docker.io/ollama/ollama",
                 "arconia.dev.services.ollama.environment.OLLAMA_NUM_PARALLEL=4",
-                "arconia.dev.services.ollama.shared=never"
+                "arconia.dev.services.ollama.shared=never",
+                "arconia.dev.services.ollama.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(OllamaContainer.class);

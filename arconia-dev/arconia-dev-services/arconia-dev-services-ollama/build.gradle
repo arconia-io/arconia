@@ -14,14 +14,12 @@ dependencies {
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:ollama"
 
-    implementation project(":arconia-core")
-
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
 
     optional "org.springframework.boot:spring-boot-devtools"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
 
     constraints {
         implementation("com.google.protobuf:protobuf-java:3.25.8") {

@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the Redis Dev Services.
  */
-@ConfigurationProperties(prefix = RedisDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.redis")
 public class RedisDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.redis";
 
     /**
      * Whether the dev service is enabled.

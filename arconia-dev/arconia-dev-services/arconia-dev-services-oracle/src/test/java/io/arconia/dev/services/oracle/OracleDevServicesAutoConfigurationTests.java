@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.oracle.OracleContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link OracleDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class OracleDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -31,6 +33,7 @@ class OracleDevServicesAutoConfigurationTests {
             assertThat(context).hasSingleBean(OracleContainer.class);
             OracleContainer container = context.getBean(OracleContainer.class);
             assertThat(container.getDockerImageName()).contains("gvenzl/oracle-free");
+            assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
     }
@@ -41,7 +44,8 @@ class OracleDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.oracle.image-name=docker.io/gvenzl/oracle-free",
                 "arconia.dev.services.oracle.environment.ORACLE_PASSWORD=secret",
-                "arconia.dev.services.oracle.shared=never"
+                "arconia.dev.services.oracle.shared=never",
+                "arconia.dev.services.oracle.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(OracleContainer.class);

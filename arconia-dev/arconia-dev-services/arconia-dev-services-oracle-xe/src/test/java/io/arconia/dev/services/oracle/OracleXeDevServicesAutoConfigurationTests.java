@@ -7,6 +7,7 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.OracleContainer;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Unit tests for {@link OracleXeDevServicesAutoConfiguration}.
  */
 @Disabled("Too slow and heavy for the deployment pipeline")
+@EnabledIfDockerAvailable
 class OracleXeDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -33,6 +35,7 @@ class OracleXeDevServicesAutoConfigurationTests {
             assertThat(context).hasSingleBean(OracleContainer.class);
             OracleContainer container = context.getBean(OracleContainer.class);
             assertThat(container.getDockerImageName()).contains("gvenzl/oracle-xe");
+            assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
     }
@@ -43,7 +46,8 @@ class OracleXeDevServicesAutoConfigurationTests {
             .withPropertyValues(
                 "arconia.dev.services.oracle-xe.image-name=docker.io/gvenzl/oracle-xe",
                 "arconia.dev.services.oracle-xe.environment.ORACLE_PASSWORD=secret",
-                "arconia.dev.services.oracle-xe.shared=never"
+                "arconia.dev.services.oracle-xe.shared=never",
+                "arconia.dev.services.oracle-xe.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(OracleContainer.class);

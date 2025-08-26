@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the MySQL Dev Services.
  */
-@ConfigurationProperties(prefix = MySqlDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.mysql")
 public class MySqlDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.mysql";
 
     /**
      * Whether the dev service is enabled.

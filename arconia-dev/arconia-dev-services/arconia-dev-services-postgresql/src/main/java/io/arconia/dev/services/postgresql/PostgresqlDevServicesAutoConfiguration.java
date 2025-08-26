@@ -22,7 +22,7 @@ import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration
  * Auto-configuration for PostgreSQL Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = PostgresqlDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.postgresql", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(PostgresqlDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class PostgresqlDevServicesAutoConfiguration {

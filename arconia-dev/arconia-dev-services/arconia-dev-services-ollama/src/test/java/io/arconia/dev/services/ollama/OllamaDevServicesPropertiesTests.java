@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OllamaDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(OllamaDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.ollama");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
 

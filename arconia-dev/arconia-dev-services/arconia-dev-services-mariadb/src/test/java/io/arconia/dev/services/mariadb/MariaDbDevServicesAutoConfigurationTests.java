@@ -6,12 +6,14 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link MariaDbDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class MariaDbDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -31,6 +33,7 @@ class MariaDbDevServicesAutoConfigurationTests {
             assertThat(context).hasSingleBean(MariaDBContainer.class);
             MariaDBContainer<?> container = context.getBean(MariaDBContainer.class);
             assertThat(container.getDockerImageName()).contains("mariadb");
+            assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
     }
@@ -39,14 +42,15 @@ class MariaDbDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mariadb.image-name=docker.io/mariadb",
+                "arconia.dev.services.mariadb.image-name=docker.io/library/mariadb",
                 "arconia.dev.services.mariadb.environment.MARIADB_USER=test",
-                "arconia.dev.services.mariadb.shared=never"
+                "arconia.dev.services.mariadb.shared=never",
+                "arconia.dev.services.mariadb.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MariaDBContainer.class);
                 MariaDBContainer<?> container = context.getBean(MariaDBContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/mariadb");
+                assertThat(container.getDockerImageName()).contains("docker.io/library/mariadb");
                 assertThat(container.getEnv()).contains("MARIADB_USER=test");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

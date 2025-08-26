@@ -6,12 +6,14 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link MySqlDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class MySqlDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -31,6 +33,7 @@ class MySqlDevServicesAutoConfigurationTests {
             assertThat(context).hasSingleBean(MySQLContainer.class);
             MySQLContainer<?> container = context.getBean(MySQLContainer.class);
             assertThat(container.getDockerImageName()).contains("mysql");
+            assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
     }
@@ -39,14 +42,15 @@ class MySqlDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mysql.image-name=docker.io/mysql",
+                "arconia.dev.services.mysql.image-name=docker.io/library/mysql",
                 "arconia.dev.services.mysql.environment.MYSQL_USER=test",
-                "arconia.dev.services.mysql.shared=never"
+                "arconia.dev.services.mysql.shared=never",
+                "arconia.dev.services.mysql.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MySQLContainer.class);
                 MySQLContainer<?> container = context.getBean(MySQLContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/mysql");
+                assertThat(container.getDockerImageName()).contains("docker.io/library/mysql");
                 assertThat(container.getEnv()).contains("MYSQL_USER=test");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

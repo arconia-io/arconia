@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the Docling Dev Services.
  */
-@ConfigurationProperties(prefix = DoclingDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.docling")
 public class DoclingDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.docling";
 
     /**
      * Whether the dev service is enabled.
@@ -42,7 +40,7 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
     private Duration startupTimeout = Duration.ofMinutes(2);
 
     /**
-     * Whether to enable the Docling UI.
+     * Whether to enable the Docling UI when in dev mode.
      */
     private boolean enableUi = true;
 

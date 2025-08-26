@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OracleDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(OracleDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.oracle");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         OracleDevServicesProperties properties = new OracleDevServicesProperties();
 

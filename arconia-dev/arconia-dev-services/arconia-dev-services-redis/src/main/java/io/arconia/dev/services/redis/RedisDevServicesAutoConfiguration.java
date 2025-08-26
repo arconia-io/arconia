@@ -23,7 +23,7 @@ import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.Configura
  * Auto-configuration for Redis Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = RedisDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 @EnableConfigurationProperties(RedisDevServicesProperties.class)
 public final class RedisDevServicesAutoConfiguration {

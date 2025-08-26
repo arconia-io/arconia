@@ -22,7 +22,7 @@ import io.arconia.dev.services.oracle.OracleDevServicesAutoConfiguration.Configu
  * Auto-configuration for Oracle Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = OracleDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.oracle", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(OracleDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class OracleDevServicesAutoConfiguration {

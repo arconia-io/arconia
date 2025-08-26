@@ -7,4 +7,5 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Docling
 
-* The Docling Dev Service has been updated to use Docling Serve 1.2.0, and support has been extended for images from both GitHub Container Registry (`ghcr.io/docling-project/docling-serve`) and Quay.io (`quay.io/docling-project/docling-serve`). By default, the Dev Service will use the GitHub Container Registry image.
+* The Docling Dev Service has been updated to use Docling Serve 1.3, and support has been extended for images from both GitHub Container Registry (`ghcr.io/docling-project/docling-serve`) and Quay.io (`quay.io/docling-project/docling-serve`). By default, the Dev Service will use the GitHub Container Registry image.
+* The Docling Dev Service supports a configuration property, `arconia.dev.services.docling.enable-ui`, which allows you to enable or disable the Docling UI. Unlike previous versions, this property is now only considered when running the application in dev mode.

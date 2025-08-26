@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MariaDbDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(MariaDbDevServicesProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.dev.services.mariadb");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         MariaDbDevServicesProperties properties = new MariaDbDevServicesProperties();
 

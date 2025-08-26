@@ -24,7 +24,7 @@ import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
-@ConditionalOnProperty(prefix = LgtmDevServicesProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "arconia.dev.services.lgtm", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class LgtmDevServicesAutoConfiguration {

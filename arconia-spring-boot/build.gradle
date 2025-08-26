@@ -9,8 +9,8 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation project(":arconia-core")
-    implementation "org.jspecify:jspecify:${jSpecifyVersion}"
+    api project(":arconia-core")
+
     implementation "org.springframework.boot:spring-boot-starter"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

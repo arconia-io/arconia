@@ -11,10 +11,8 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 /**
  * Properties for the Grafana LGTM Dev Services.
  */
-@ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
+@ConfigurationProperties(prefix = "arconia.dev.services.lgtm")
 public class LgtmDevServicesProperties implements DevServicesProperties {
-
-    public static final String CONFIG_PREFIX = "arconia.dev.services.lgtm";
 
     /**
      * Whether the dev service is enabled.

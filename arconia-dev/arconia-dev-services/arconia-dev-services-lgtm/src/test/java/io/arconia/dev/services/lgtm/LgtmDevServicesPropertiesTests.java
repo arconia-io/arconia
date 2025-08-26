@@ -15,11 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LgtmDevServicesPropertiesTests {
 
     @Test
-    void shouldHaveCorrectConfigPrefix() {
-        assertThat(LgtmDevServicesProperties.CONFIG_PREFIX).isEqualTo("arconia.dev.services.lgtm");
-    }
-
-    @Test
     void shouldCreateInstanceWithDefaultValues() {
         LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
 
