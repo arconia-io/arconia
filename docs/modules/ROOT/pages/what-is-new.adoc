@@ -5,6 +5,10 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
+== Dev Services
+
+* The documentation about the Arconia Dev Services has been improved and extended, including special instructions for using them in a Maven project.
+
 == Docling
 
 * The Docling Dev Service has been updated to use Docling Serve 1.3, and support has been extended for images from both GitHub Container Registry (`ghcr.io/docling-project/docling-serve`) and Quay.io (`quay.io/docling-project/docling-serve`). By default, the Dev Service will use the GitHub Container Registry image.

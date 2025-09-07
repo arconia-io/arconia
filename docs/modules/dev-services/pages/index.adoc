@@ -1,14 +1,90 @@
 = Arconia Dev Services
 
-Arconia Dev Services provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
+Arconia Dev Services streamline your development workflow by automatically provisioning external services your application depends on during development and testing. No manual setup is required.
 
-For example, if your application needs a database, you can use PostgreSQL Dev Service to automatically start a PostgreSQL database when you run your application or integration tests. This eliminates the need to manually start and manage the database during development and testing.
+Need a database, message broker, or other infrastructure components for your application? Simply add the corresponding Dev Service dependency to your project. When you run your application or tests, the required services start automatically as OCI containers and are seamlessly wired into your application. Zero additional code or configuration needed.
 
-Dev Services are only supposed to be used during development and testing. They are not included in production builds.
+Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot's Testcontainers support], the Arconia Dev Services are designed to provide a superior developer experience by eliminating the friction of setting up and managing those services manually in your development environment.
 
-== How They Work
+[NOTE]
+====
+Dev Services are designed exclusively for development and testing workflows. They are excluded from production builds and have zero impact on your production deployments.
+====
 
-For each supported service, Arconia provides a dedicated module that you can include in your project. When you add the module to your project, the service is automatically started when you run your application in development mode or integration tests.
+[WARNING]
+====
+Due to limited support in the Spring Boot Maven Plugin for managing dependencies only used for development and testing, using Arconia Dev Services in a Maven project requires additional configuration.
+====
+
+== Using Dev Services
+
+Dev Services are available as separate modules for each supported service. You can find the list of supported services in the xref:_services[Services] section below.
+
+When you include a Dev Service module in your project, it automatically starts the corresponding service when you run your application in dev mode or execute your integration tests. The service runs as an OCI container managed by Testcontainers and is automatically integrated into your application, so you don't need to write any additional code or configuration.
+
+[NOTE]
+====
+Dev Services are provisioned as OCI containers. Ensure you have a container runtime like Podman or Docker installed and running in your environment.
+====
+
+Your application is automatically configured to connect to the Dev Services, which take precedence over any manually configured properties. For example, if you include the `arconia-dev-services-postgresql` module in your project, a PostgreSQL instance will start automatically when you run your application or tests. The connection details (JDBC URL, username, password) provided by the Dev Service will be used by the application transparently, overriding any manually set properties like `spring.datasource.url`, `spring.datasource.username`, or `spring.datasource.password`.
+
+Spring Boot manages the lifecycle of the Dev Services as beans in the application context. They start when the application context is initialized and stop when the context is closed. This means that the services are available throughout the entire lifecycle of your application or tests. Furthermore, if your application relies on the live-restart features provided by https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], the Dev Services won't be recreated when the application is restarted, ensuring a smooth development experience without unnecessary wait times or state loss.
+
+=== Dev Services in Gradle
+
+Dev Services are designed exclusively for development and testing workflows. In a Gradle project, you can include Dev Service modules as `testAndDevelopmentOnly` dependencies. This ensures that the Dev Service is only available during development and test, and is not included in the production build.
+
+=== Dev Services in Maven
+
+Dev Services are designed exclusively for development and testing workflows. Unlike Gradle, Maven does not offer a way to define dependencies that are only available during development and testing. Nor Spring Boot supports this use case.
+
+[NOTE]
+====
+We have raised this issue with the Spring Boot project to suggest addressing this limitation. You can help us raise awareness in https://github.com/spring-projects/spring-boot/issues/46817[gh-46817] and the other issues linked there.
+====
+
+To work around this limitation, you must explicitly configure the Dev Service dependencies to be considered only when running in dev and test mode. One option is adding them behind a `development` profile. Another option is having them as standard dependencies, and excluding them when building the production artifact via a `production` profile. You can check how this second option can be implemented by inspecting this https://github.com/arconia-io/arconia-examples/blob/main/arconia-docling/pom.xml[pom.xml] example.
+
+[NOTE]
+====
+We would like to make all this extra configuration go away and offer the same no-config experience we offer for Gradle projects also for Maven projects. If you'd like to help us reach that goal, please let us know. We'd appreciate any contribution!
+====
+
+=== Sharing Dev Services
+
+Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default and when. There are three options:
+
+* `never`: The service is never shared across applications.
+* `dev-mode`: The service is shared across applications only if the application is running in dev mode.
+* `always`: The service is always shared across applications when enabled (dev and test mode).
+
+This capability relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. You can enable it in the `~/.testcontainers.properties` file in your home directory. If the file does not exist, you can create it. It should contain the following line:
+
+[source,properties]
+----
+testcontainers.reuse.enable=true
+----
+
+=== Startup Sequence
+
+The `spring.testcontainers.beans.startup` property controls the startup sequence of the Dev Services. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
+
+== Supported Services
+
+* Data Stores
+** xref:mariadb.adoc[MariaDB]
+** xref:mysql.adoc[MySQL]
+** xref:oracle.adoc[Oracle]
+** xref:oracle-xe.adoc[Oracle XE]
+** xref:postgresql.adoc[PostgreSQL]
+** xref:redis.adoc[Redis]
+* xref:docling.adoc[Docling]
+* xref:lgtm.adoc[Grafana LGTM]
+* xref:ollama.adoc[Ollama]
+* xref:rabbitmq.adoc[RabbitMQ]
+
+== Arconia Dev Services vs. Spring Boot Testcontainers Support
 
 You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
 
@@ -39,36 +115,3 @@ Maven::
 ======
 
 Your integration tests will also automatically use the Arconia Dev Services without any additional configuration.
-
-=== Sharing Dev Services
-
-Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default and when. There are three options:
-
-* `never`: The service is never shared across applications.
-* `dev-mode`: The service is shared across applications only if the application is running in development mode.
-* `always`: The service is always shared across applications when enabled (development and test mode).
-
-This capability relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. You can enable it in the `~/.testcontainers.properties` file in your home directory. If the file does not exist, you can create it. It should contain the following line:
-
-[source,properties]
-----
-testcontainers.reuse.enable=true
-----
-
-=== Startup Sequence
-
-The `spring.testcontainers.beans.startup` property controls the startup sequence of the Dev Services. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
-
-== Services
-
-* Data Stores
-** xref:mariadb.adoc[MariaDB]
-** xref:mysql.adoc[MySQL]
-** xref:oracle.adoc[Oracle]
-** xref:oracle-xe.adoc[Oracle XE]
-** xref:postgresql.adoc[PostgreSQL]
-** xref:redis.adoc[Redis]
-* xref:docling.adoc[Docling]
-* xref:lgtm.adoc[Grafana LGTM]
-* xref:ollama.adoc[Ollama]
-* xref:rabbitmq.adoc[RabbitMQ]

@@ -104,6 +104,11 @@ Maven::
 ----
 ======
 
+[WARNING]
+====
+If you're using Maven, ensure you check how to configure the xref:arconia:dev-services:index.adoc#_dev_services_in_maven[Arconia Dev Services with Maven].
+====
+
 === Running the Application
 
 When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
