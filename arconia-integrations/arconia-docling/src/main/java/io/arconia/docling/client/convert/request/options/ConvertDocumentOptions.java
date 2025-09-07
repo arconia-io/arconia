@@ -1,4 +1,4 @@
-package io.arconia.docling.client.convert.request;
+package io.arconia.docling.client.convert.request.options;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -10,21 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
-import io.arconia.docling.client.convert.request.options.ImageRefMode;
-import io.arconia.docling.client.convert.request.options.InputFormat;
-import io.arconia.docling.client.convert.request.options.OcrEngine;
-import io.arconia.docling.client.convert.request.options.OutputFormat;
-import io.arconia.docling.client.convert.request.options.PdfBackend;
-import io.arconia.docling.client.convert.request.options.PictureDescriptionApi;
-import io.arconia.docling.client.convert.request.options.PictureDescriptionLocal;
-import io.arconia.docling.client.convert.request.options.ProcessingPipeline;
-import io.arconia.docling.client.convert.request.options.TableFormerMode;
-
 /**
  * Options for configuring the document conversion process with Docling.
  */
-@Incubating(since = "0.15.0")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ConvertDocumentOptions(
 
@@ -126,7 +114,19 @@ public record ConvertDocumentOptions(
 
         @JsonProperty("picture_description_api")
         @Nullable
-        PictureDescriptionApi pictureDescriptionApi
+        PictureDescriptionApi pictureDescriptionApi,
+
+        @JsonProperty("vlm_pipeline_model")
+        @Nullable
+        VlmModelType vlmPipelineModel,
+
+        @JsonProperty("vlm_pipeline_model_local")
+        @Nullable
+        String vlmPipelineModelLocal,
+
+        @JsonProperty("vlm_pipeline_model_api")
+        @Nullable
+        String vlmPipelineModelApi
 
 ) {
 
@@ -160,7 +160,10 @@ public record ConvertDocumentOptions(
                 builder.doPictureDescription,
                 builder.pictureDescriptionAreaThreshold,
                 builder.pictureDescriptionLocal,
-                builder.pictureDescriptionApi
+                builder.pictureDescriptionApi,
+                builder.vlmPipelineModel,
+                builder.vlmPipelineModelLocal,
+                builder.vlmPipelineModelApi
         );
     }
 
@@ -195,6 +198,9 @@ public record ConvertDocumentOptions(
         @Nullable private Double pictureDescriptionAreaThreshold;
         @Nullable private PictureDescriptionLocal pictureDescriptionLocal;
         @Nullable private PictureDescriptionApi pictureDescriptionApi;
+        @Nullable private VlmModelType vlmPipelineModel;
+        @Nullable private String vlmPipelineModelLocal;
+        @Nullable private String vlmPipelineModelApi;
 
         private Builder() {}
 
@@ -403,6 +409,33 @@ public record ConvertDocumentOptions(
          */
         public Builder pictureDescriptionApi(@Nullable PictureDescriptionApi pictureDescriptionApi) {
             this.pictureDescriptionApi = pictureDescriptionApi;
+            return this;
+        }
+
+        /**
+         * Preset of local and API models for the vlm pipeline.
+         * This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model_api. Use the other options for more parameters.
+         */
+        public Builder vlmPipelineModel(@Nullable VlmModelType vlmPipelineModel) {
+            this.vlmPipelineModel = vlmPipelineModel;
+            return this;
+        }
+
+        /**
+         * Options for running a local vision-language model for the vlm pipeline. The parameters refer to a model hosted on Hugging Face.
+         * This parameter is mutually exclusive with vlm_pipeline_model_api and vlm_pipeline_model.
+         */
+        public Builder vlmPipelineModelLocal(@Nullable String vlmPipelineModelLocal) {
+            this.vlmPipelineModelLocal = vlmPipelineModelLocal;
+            return this;
+        }
+
+        /**
+         * API details for using a vision-language model for the vlm pipeline.
+         * This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model.
+         */
+        public Builder vlmPipelineModelApi(@Nullable String vlmPipelineModelApi) {
+            this.vlmPipelineModelApi = vlmPipelineModelApi;
             return this;
         }
 

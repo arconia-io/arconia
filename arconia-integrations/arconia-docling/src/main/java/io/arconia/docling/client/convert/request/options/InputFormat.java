@@ -1,13 +1,12 @@
 package io.arconia.docling.client.convert.request.options;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.arconia.core.support.Incubating;
 
 /**
  * A document format supported by document backend parsers.
  */
-@Incubating(since = "0.15.0")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public enum InputFormat {
 
     @JsonProperty("asciidoc")
@@ -26,6 +25,8 @@ public enum InputFormat {
     JSON_DOCLING,
     @JsonProperty("md")
     MARKDOWN,
+    @JsonProperty("mets_gbs")
+    METS_GBS,
     @JsonProperty("pdf")
     PDF,
     @JsonProperty("pptx")

@@ -8,8 +8,8 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 
 import io.arconia.docling.client.DoclingClient;
-import io.arconia.docling.client.convert.request.ConvertDocumentOptions;
 import io.arconia.docling.client.convert.request.ConvertDocumentRequest;
+import io.arconia.docling.client.convert.request.options.ConvertDocumentOptions;
 import io.arconia.docling.client.convert.request.options.InputFormat;
 import io.arconia.docling.client.convert.response.ConvertDocumentResponse;
 
@@ -33,8 +33,9 @@ class DoclingRuntimeHintsTests {
         assertThat(registeredTypes.contains(TypeReference.of(ConvertDocumentResponse.class))).isTrue();
         assertThat(registeredTypes.contains(TypeReference.of(ConvertDocumentOptions.class))).isTrue();
 
+        assertThat(registeredTypes.contains(TypeReference.of(InputFormat.class))).isTrue();
+
         assertThat(registeredTypes.contains(TypeReference.of(DoclingClient.class))).isFalse();
-        assertThat(registeredTypes.contains(TypeReference.of(InputFormat.class))).isFalse();
     }
 
 }

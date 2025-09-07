@@ -2,6 +2,9 @@ package io.arconia.docling.client.convert.request;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.docling.client.convert.request.target.InBodyTarget;
+import io.arconia.docling.client.convert.request.target.Target;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -11,7 +14,7 @@ class InBodyTargetTests {
 
     @Test
     void whenValidParametersThenCreateInBodyTarget() {
-        InBodyTarget inBodyTarget = new InBodyTarget(Target.Kind.INBODY);
+        InBodyTarget inBodyTarget = InBodyTarget.create();
 
         assertThat(inBodyTarget.kind()).isEqualTo(Target.Kind.INBODY);
     }
@@ -19,13 +22,6 @@ class InBodyTargetTests {
     @Test
     void kindIsAlwaysSetToInBody() {
         InBodyTarget inBodyTarget = new InBodyTarget(Target.Kind.PUT);
-
-        assertThat(inBodyTarget.kind()).isEqualTo(Target.Kind.INBODY);
-    }
-
-    @Test
-    void createStaticMethodCreatesInBodyTarget() {
-        InBodyTarget inBodyTarget = InBodyTarget.create();
 
         assertThat(inBodyTarget.kind()).isEqualTo(Target.Kind.INBODY);
     }

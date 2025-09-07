@@ -1,4 +1,4 @@
-package io.arconia.docling.client.convert.request;
+package io.arconia.docling.client.convert.request.source;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,12 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
-
 /**
  * Represents a file source for a document to convert.
  */
-@Incubating(since = "0.15.0")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FileSource(
 
@@ -20,7 +17,7 @@ public record FileSource(
 
         @JsonProperty("base64_string")
         String base64String,
-        
+
         @JsonProperty("filename")
         String filename
 

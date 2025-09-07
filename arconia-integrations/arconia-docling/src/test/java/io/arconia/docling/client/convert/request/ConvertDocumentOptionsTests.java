@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.docling.client.convert.request.options.ConvertDocumentOptions;
 import io.arconia.docling.client.convert.request.options.InputFormat;
 import io.arconia.docling.client.convert.request.options.OutputFormat;
 

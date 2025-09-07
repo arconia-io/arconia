@@ -1,4 +1,4 @@
-package io.arconia.docling.client.convert.request;
+package io.arconia.docling.client.convert.request.source;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -10,12 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
-
 /**
  * Represents an HTTP source for a document to convert.
  */
-@Incubating(since = "0.15.0")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record HttpSource(
 
@@ -24,7 +21,7 @@ public record HttpSource(
 
         @JsonProperty("url")
         URI url,
-        
+
         @JsonProperty("headers")
         @Nullable
         Map<String, Object> headers

@@ -2,6 +2,9 @@ package io.arconia.docling.client.convert.request;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.docling.client.convert.request.source.FileSource;
+import io.arconia.docling.client.convert.request.source.Source;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

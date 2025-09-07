@@ -1,15 +1,14 @@
-package io.arconia.docling.client.convert.request;
+package io.arconia.docling.client.convert.request.source;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.arconia.core.support.Incubating;
 
 /**
  * Source of the document.
  */
-@Incubating(since = "0.15.0")
 public sealed interface Source permits FileSource, HttpSource {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     enum Kind {
 
         @JsonProperty("http")

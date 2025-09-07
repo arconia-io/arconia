@@ -31,30 +31,25 @@ class PictureDescriptionApiTests {
                 headers,
                 params,
                 timeout,
-                prompt,
-                concurrency
+                concurrency,
+                prompt
         );
 
         assertThat(api.url()).isEqualTo(url);
         assertThat(api.headers()).isEqualTo(headers);
         assertThat(api.params()).isEqualTo(params);
         assertThat(api.timeout()).isEqualTo(timeout);
-        assertThat(api.prompt()).isEqualTo(prompt);
         assertThat(api.concurrency()).isEqualTo(concurrency);
+        assertThat(api.prompt()).isEqualTo(prompt);
     }
 
     @Test
     void createApiWithOnlyRequiredFields() {
         URI url = URI.create("https://api.example.com/vision");
 
-        PictureDescriptionApi api = new PictureDescriptionApi(
-                url,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        PictureDescriptionApi api = PictureDescriptionApi.builder()
+                .url(url)
+                .build();
 
         assertThat(api.url()).isEqualTo(url);
         assertThat(api.headers()).isNull();
@@ -83,14 +78,14 @@ class PictureDescriptionApiTests {
         Map<String, Object> headers = new HashMap<>(Map.of("Authorization", "Bearer original"));
         Map<String, Object> params = new HashMap<>(Map.of("model", "original-model"));
 
-        PictureDescriptionApi api = new PictureDescriptionApi(
-                url,
-                headers,
-                params,
-                Duration.ofSeconds(10),
-                "Original prompt",
-                3
-        );
+        PictureDescriptionApi api = PictureDescriptionApi.builder()
+                .url(url)
+                .headers(headers)
+                .params(params)
+                .timeout(Duration.ofSeconds(10))
+                .concurrency(3)
+                .prompt("Original prompt")
+                .build();
 
         assertThat(api.headers()).isEqualTo(headers);
         assertThat(api.params()).isEqualTo(params);

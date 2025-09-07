@@ -1,15 +1,14 @@
-package io.arconia.docling.client.convert.request;
+package io.arconia.docling.client.convert.request.target;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.arconia.core.support.Incubating;
 
 /**
  * Target of the document conversion.
  */
-@Incubating(since = "0.15.0")
 public sealed interface Target permits InBodyTarget, PutTarget, ZipTarget {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     enum Kind {
 
         @JsonProperty("inbody")

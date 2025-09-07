@@ -4,6 +4,9 @@ import java.net.URI;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.docling.client.convert.request.target.PutTarget;
+import io.arconia.docling.client.convert.request.target.Target;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,19 +17,19 @@ class PutTargetTests {
 
     @Test
     void whenUriIsNullThenThrow() {
-        assertThatThrownBy(() -> new PutTarget(Target.Kind.PUT, null))
+        assertThatThrownBy(() -> PutTarget.create(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("URI cannot be null");
+                .hasMessageContaining("url cannot be null");
     }
 
     @Test
     void whenValidParametersThenCreatePutTarget() {
         URI uri = URI.create("https://example.com/upload");
 
-        PutTarget putTarget = new PutTarget(Target.Kind.PUT, uri);
+        PutTarget putTarget = PutTarget.create(uri);
 
         assertThat(putTarget.kind()).isEqualTo(Target.Kind.PUT);
-        assertThat(putTarget.uri()).isEqualTo(uri);
+        assertThat(putTarget.url()).isEqualTo(uri);
     }
 
     @Test

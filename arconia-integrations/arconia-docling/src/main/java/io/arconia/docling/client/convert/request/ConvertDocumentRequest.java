@@ -10,9 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.docling.client.convert.request.options.ConvertDocumentOptions;
+import io.arconia.docling.client.convert.request.source.FileSource;
+import io.arconia.docling.client.convert.request.source.HttpSource;
+import io.arconia.docling.client.convert.request.source.Source;
+import io.arconia.docling.client.convert.request.target.Target;
 
-@Incubating(since = "0.15.0")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ConvertDocumentRequest(
 
@@ -21,7 +24,7 @@ public record ConvertDocumentRequest(
 
         @JsonProperty("options")
         ConvertDocumentOptions options,
-        
+
         @JsonProperty("target")
         @Nullable
         Target target

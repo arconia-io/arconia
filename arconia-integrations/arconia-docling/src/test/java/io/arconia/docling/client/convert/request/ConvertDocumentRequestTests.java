@@ -6,6 +6,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.docling.client.convert.request.options.ConvertDocumentOptions;
+import io.arconia.docling.client.convert.request.source.FileSource;
+import io.arconia.docling.client.convert.request.source.HttpSource;
+import io.arconia.docling.client.convert.request.target.InBodyTarget;
+import io.arconia.docling.client.convert.request.target.ZipTarget;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
