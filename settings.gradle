@@ -35,7 +35,7 @@ include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
 
 // Observability
-include 'arconia-observability:arconia-openinference-observation-conventions'
+include 'arconia-observability:arconia-openinference-semantic-conventions'
 include 'arconia-observability:arconia-opentelemetry'
 include 'arconia-observability:arconia-opentelemetry-logback-bridge'
 include 'arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge'

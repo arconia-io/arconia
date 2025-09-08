@@ -24,7 +24,7 @@ Gradle::
 [source,groovy]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-openinference-observation-conventions'
+  implementation 'io.arconia:arconia-openinference-semantic-conventions'
 }
 ----
 
@@ -34,7 +34,7 @@ Maven::
 ----
 <dependency>
     <groupId>io.arconia</groupId>
-    <artifactId>arconia-openinference-observation-conventions</artifactId>
+    <artifactId>arconia-openinference-semantic-conventions</artifactId>
 </dependency>
 ----
 ======

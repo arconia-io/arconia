@@ -17,4 +17,4 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == OpenInference
 
-* The OpenInference project provides semantic conventions for tracing AI-infused application. The new `arconia-openinference-observation-conventions` module provides support for those conventions, allowing you to export telemetry data in compliance with the OpenInference specification when using Sprin AI. Learn more in the xref:observability:generative-ai.adoc[Observability for Generative AI] documentation.
+* The OpenInference project provides semantic conventions for tracing AI-infused application. The new `arconia-openinference-semantic-conventions` module provides support for those conventions, allowing you to export telemetry data in compliance with the OpenInference specification when using Sprin AI. Learn more in the xref:observability:generative-ai.adoc[Observability for Generative AI] documentation.
