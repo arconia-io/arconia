@@ -1,4 +1,5 @@
 .xref:index.adoc[Dev Services]
+* xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
 ** xref:mariadb.adoc[MariaDB]
 ** xref:mysql.adoc[MySQL]

@@ -1,0 +1,7 @@
+# Environment Post Processors
+org.springframework.boot.env.EnvironmentPostProcessor=\
+io.arconia.openinference.observation.autoconfigure.OpenInferenceEnvironmentPostProcessor
+
+# Connection Details Factories
+org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
+io.arconia.openinference.observation.testcontainers.OpenInferenceOtlpTracingContainerConnectionDetailsFactory

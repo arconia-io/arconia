@@ -5,6 +5,7 @@
 * xref:traces.adoc[Traces]
 * xref:instrumentation.adoc[Instrumentation]
 * Dev Services
+** xref:dev-services:phoenix.adoc[Arize Phoenix]
 ** xref:dev-services:lgtm.adoc[Grafana LGTM]
 * xref:migration.adoc[Migration Guides]
 ** xref:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]

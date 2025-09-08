@@ -1,0 +1,46 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-spring-boot")
+    api("com.arize:openinference-semantic-conventions:${openInferenceVersion}") {
+        transitive = false
+    }
+    api "io.micrometer:micrometer-core"
+    api "io.micrometer:micrometer-observation"
+
+    implementation project(":arconia-observability:arconia-opentelemetry")
+    implementation "org.springframework.ai:spring-ai-client-chat"
+    implementation "org.springframework.ai:spring-ai-model"
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional "org.springframework.boot:spring-boot-testcontainers"
+    optional "org.testcontainers:testcontainers"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Observability OpenInference Conventions"
+                description = "Arconia Observability OpenInference Conventions."
+            }
+        }
+    }
+}

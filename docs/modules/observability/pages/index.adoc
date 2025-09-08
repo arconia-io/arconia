@@ -1,0 +1,5 @@
+= Arconia Observability
+
+Arconia Observability is a collection of projects to help you instrument and observe your Spring Boot applications for different purposes, including:
+
+* xref:generative-ai.adoc[Generative AI]

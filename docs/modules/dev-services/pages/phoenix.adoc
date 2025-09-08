@@ -1,0 +1,61 @@
+= Arize Phoenix
+:service-name: phoenix
+
+A service providing https://arize.com/docs/phoenix[Arize Phoenix], an AI Observability and Evaluation platform based on OpenTelemetry and OpenInference, for development and testing purposes.
+
+It works with Spring Boot libraries that support OpenTelemetry and OpenInference tracing, including:
+
+* xref:observability:generative-ai.adoc[Arconia OpenInference Semantic Conventions].
+* xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+[NOTE]
+====
+The Dev Service for Arize Phoenix is mutually exclusive with the Dev Service for xref:lgtm.adoc[Grafana LGTM], as both services integrate with OpenTelemetry. If both Dev Services are included in the project dependencies, ensure you disable one of them via configuration properties (`arconia.dev.services.lgtm.enabled` or `arconia.dev.services.phoenix.enabled`).
+====
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+
+== Accessing Phoenix
+
+The application logs will show you the URL where you can access the Arize Phoenix UI.
+
+[source,logs]
+----
+...OpenInference UI: http://localhost:<port>
+----
+
+By default, traces are exported via OTLP using the HTTP/Protobuf format.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+|`arconia.dev.services.phoenix.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+|`arconia.dev.services.phoenix.image-name`
+| `arizephoenix/phoenix`
+| Full name of the container image used in the dev service.
+
+|`arconia.dev.services.phoenix.environment`
+| `{}`
+| Environment variables to set in the container. Example: `PHOENIX_WORKING_DIR: "/fawkes"`.
+
+|`arconia.dev.services.phoenix.shared`
+| `dev-mode`
+| When the container used in the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]

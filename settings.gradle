@@ -19,6 +19,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-mysql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-phoenix'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
@@ -33,7 +34,8 @@ include 'arconia-kubernetes:arconia-kubernetes-service-binding'
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
 
-// OpenTelemetry
+// Observability
+include 'arconia-observability:arconia-openinference-observation-conventions'
 include 'arconia-observability:arconia-opentelemetry'
 include 'arconia-observability:arconia-opentelemetry-logback-bridge'
 include 'arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge'

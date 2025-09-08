@@ -23,6 +23,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-ollama")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-phoenix")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-postgresql")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
@@ -34,6 +35,7 @@ dependencies {
         api project(":arconia-multitenancy:arconia-multitenancy-core")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
 
+        api project(":arconia-observability:arconia-openinference-observation-conventions")
         api project(":arconia-observability:arconia-opentelemetry")
         api project(":arconia-observability:arconia-opentelemetry-logback-bridge")
         api project(":arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge")

@@ -7,9 +7,14 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
+* A new Dev Service for xref:arconia:dev-services:phoenix.adoc[Arize Phoenix] has been added, allowing you to run a local instance of the AI Observability and Evaluation platform based on OpenTelemetry and OpenInference. This service is designed to work with the xref:observability:generative-ai.adoc[OpenInference Semantic Conventions] that are now supported in Arconia for Spring AI applications.
 * The documentation about the Arconia Dev Services has been improved and extended, including special instructions for using them in a Maven project.
 
 == Docling
 
 * The Docling Dev Service has been updated to use Docling Serve 1.3, and support has been extended for images from both GitHub Container Registry (`ghcr.io/docling-project/docling-serve`) and Quay.io (`quay.io/docling-project/docling-serve`). By default, the Dev Service will use the GitHub Container Registry image.
 * The Docling Dev Service supports a configuration property, `arconia.dev.services.docling.enable-ui`, which allows you to enable or disable the Docling UI. Unlike previous versions, this property is now only considered when running the application in dev mode.
+
+== OpenInference
+
+* The OpenInference project provides semantic conventions for tracing AI-infused application. The new `arconia-openinference-observation-conventions` module provides support for those conventions, allowing you to export telemetry data in compliance with the OpenInference specification when using Sprin AI. Learn more in the xref:observability:generative-ai.adoc[Observability for Generative AI] documentation.

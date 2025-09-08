@@ -11,7 +11,13 @@ A service providing a Grafana LGTM observability platform based on OpenTelemetry
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
 
+* xref:opentelemetry:index.adoc[Arconia Observability OpenInference Conventions].
 * xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+[NOTE]
+====
+The Dev Service for Grafana LGTM is mutually exclusive with the Dev Service for xref:phoenix.adoc[Arize Phoenix], as both services integrate with OpenTelemetry. If both Dev Services are included in the project dependencies, ensure you disable one of them via configuration properties (`arconia.dev.services.lgtm.enabled` or `arconia.dev.services.phoenix.enabled`).
+====
 
 == Dependencies
 

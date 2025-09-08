@@ -1,0 +1,104 @@
+= Generative AI
+:page-aliases:ai
+
+Spring AI provides a consistent programming model and API for building AI-infused applications. It comes with built-in instrumentation for models, vector stores, and workflows based on the Micrometer Observation APIs. Given that instrumentation, you can decide to export the telemetry data adopting specific semantic conventions.
+
+Arconia provides support for the following semantic conventions that you can adopt instead of the built-in Micrometer conventions:
+
+* xref:_openinference_semantic_conventions[OpenInference Semantic Conventions].
+
+== OpenInference Semantic Conventions
+
+Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions].
+
+Many systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:arconia:dev-services:phoenix.adoc[Arize Phoenix] documentation for more details.
+
+=== Dependencies
+
+First, you need to add the Arconia OpenInference Observation Conventions dependency to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-openinference-observation-conventions'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-openinference-observation-conventions</artifactId>
+</dependency>
+----
+======
+
+=== Configuration Properties
+
+You can configure the OpenInference Semantic Conventions via configuration properties.
+
+.OpenInference Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.observability.openinference.enabled`
+|	`true`
+|	Whether to enable the OpenInference instrumentation.
+
+|	`arconia.observability.openinference.include-only-ai-observations`
+|	`true`
+|	Whether to exclude any non-AI observations from the exported telemetry for the application.
+
+|	`arconia.observability.openinference.traces.base64-image-max-length`
+|	`32 000`
+|	Maximum length of a base64-encoded image.
+
+|	`arconia.observability.openinference.traces.hide-embedding-vectors`
+|	`false`
+|	Whether to hide all embedding vectors.
+
+|	`arconia.observability.openinference.traces.hide-llm-invocation-parameters`
+|	`false`
+|	Whether to hide the LLM invocation parameters.
+
+|	`arconia.observability.openinference.traces.hide-inputs`
+|	`false`
+|	Whether to hide all inputs.
+
+|	`arconia.observability.openinference.traces.hide-input-images`
+|	`false`
+|	Whether to hide all images from the input messages.
+
+|	`arconia.observability.openinference.traces.hide-input-messages`
+|	`false`
+|	Whether to hide all inputs messages.
+
+|	`arconia.observability.openinference.traces.hide-input-text`
+|	`false`
+|	Whether to hide all texts from the input messages.
+
+|	`arconia.observability.openinference.traces.hide-outputs`
+|	`false`
+|	Whether to hide all output messages.
+
+|	`arconia.observability.openinference.traces.hide-output-text`
+|	`false`
+|	Whether to hide all texts from the output messages.
+
+|	`arconia.observability.openinference.traces.hide-output-messages`
+|	`false`
+|	Whether to hide all output messages.
+
+|	`arconia.observability.openinference.traces.hide-prompts`
+|	`false`
+|	Whether to hide all LLM prompts.
+|===
+
+=== Environment Variables
+
+Arconia supports the https://arize-ai.github.io/openinference/spec/configuration.html[OpenInference Environment Variable Specification] for configuring the OpenInference semantic conventions. If both the OpenInference Environment Variables and the Arconia configuration properties are set, the OpenInference Environment Variables will take precedence.
