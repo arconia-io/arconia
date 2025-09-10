@@ -1,0 +1,33 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.testcontainers:mongodb"
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional "org.springframework.boot:spring-boot-devtools"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services MongoDB"
+                description = "Arconia Dev Services MongoDB."
+            }
+        }
+    }
+}

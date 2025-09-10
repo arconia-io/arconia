@@ -23,6 +23,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-phoenix'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-mongodb'
 
 // Integrations
 include 'arconia-integrations:arconia-docling'

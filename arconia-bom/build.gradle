@@ -27,6 +27,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-postgresql")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mongodb")
 
         api project(":arconia-integrations:arconia-docling")
 
