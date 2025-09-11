@@ -1,0 +1,44 @@
+= MongoDB Dev Service
+:service-name: mongodb
+
+A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes.
+
+It works with Spring Boot libraries that support MongoDB via JDBC, including:
+
+* https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
+* https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
+* https://spring.io/projects/spring-data-jpa[Spring Data JPA]
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.mongodb.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.mongodb.image-name`
+| `mongo`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.mongodb.environment`
+| `{}`
+| Environment variables to set in the service. Example: `MONGODB_USER: "mongodb"`.
+
+| `arconia.dev.services.mongodb.shared`
+| `never`
+| When the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]

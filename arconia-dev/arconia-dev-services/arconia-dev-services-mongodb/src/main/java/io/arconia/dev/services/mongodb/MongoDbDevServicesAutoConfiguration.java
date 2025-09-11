@@ -27,7 +27,7 @@ import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.Confi
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class MongoDbDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "mongodb";
+    public static final String COMPATIBLE_IMAGE_NAME = "mongo";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
@@ -37,8 +37,8 @@ public final class MongoDbDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        MongoDBContainer<?> mongoDBContainer(MongoDbDevServicesProperties properties) {
-            return new MongoDBContainer<>(DockerImageName.parse(properties.getImageName())
+        MongoDBContainer mongoDBContainer(MongoDbDevServicesProperties properties) {
+            return new MongoDBContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
@@ -54,8 +54,8 @@ public final class MongoDbDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        MongoDBContainer<?> mongoDBContainerNoRestartScope(MongoDbDevServicesProperties properties) {
-            return new MongoDBContainer<>(DockerImageName.parse(properties.getImageName())
+        MongoDBContainer mongoDBContainerNoRestartScope(MongoDbDevServicesProperties properties) {
+            return new MongoDBContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())

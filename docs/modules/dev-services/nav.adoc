@@ -11,3 +11,4 @@
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
 * xref:rabbitmq.adoc[RabbitMQ]
+* xref:mongodb.adoc[MongoDB]

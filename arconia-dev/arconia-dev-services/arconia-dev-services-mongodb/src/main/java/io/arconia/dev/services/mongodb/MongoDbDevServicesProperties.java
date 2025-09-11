@@ -22,7 +22,7 @@ public class MongoDbDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mongo:7.0.6-jammy";
+    private String imageName = "mongo:7.0-jammy";
 
     /**
      * Environment variables to set in the service.

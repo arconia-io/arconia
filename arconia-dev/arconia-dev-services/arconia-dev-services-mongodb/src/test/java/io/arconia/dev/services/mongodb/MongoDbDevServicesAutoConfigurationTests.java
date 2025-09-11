@@ -31,8 +31,8 @@ class MongoDbDevServicesAutoConfigurationTests {
     void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(MongoDBContainer.class);
-            MongoDBContainer<?> container = context.getBean(MongoDBContainer.class);
-            assertThat(container.getDockerImageName()).contains("mongodb");
+            MongoDBContainer container = context.getBean(MongoDBContainer.class);
+            assertThat(container.getDockerImageName()).contains("mongo");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
@@ -42,15 +42,15 @@ class MongoDbDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mongodb.image-name=docker.io/mongodb",
+                "arconia.dev.services.mongodb.image-name=docker.io/mongo",
                 "arconia.dev.services.mongodb.environment.MONGODB_USER=mongodb",
                 "arconia.dev.services.mongodb.shared=never",
                 "arconia.dev.services.mongodb.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MongoDBContainer.class);
-                MongoDBContainer<?> container = context.getBean(MongoDBContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/mongodb");
+                MongoDBContainer container = context.getBean(MongoDBContainer.class);
+                assertThat(container.getDockerImageName()).contains("docker.io/mongo");
                 assertThat(container.getEnv()).contains("MONGODB_USER=mongodb");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
