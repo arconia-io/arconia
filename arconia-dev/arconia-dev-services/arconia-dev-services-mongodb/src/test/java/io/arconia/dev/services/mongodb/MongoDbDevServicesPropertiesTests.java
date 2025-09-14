@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link MongoDbDevServicesProperties}.
  */
-class MongoDBDevServicesPropertiesTests {
+class MongoDbDevServicesPropertiesTests {
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
