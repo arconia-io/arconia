@@ -51,7 +51,7 @@ class OpenInferenceOtlpTracingContainerConnectionDetailsFactory
                         "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_GRPC_PORT));
             };
             if (logged.compareAndSet(false, true)) {
-                logger.info("OpenInference UI: {}", "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(HTTP_PORT)));
+                logger.info("Phoenix UI: {}", "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(HTTP_PORT)));
             }
             return url;
         }

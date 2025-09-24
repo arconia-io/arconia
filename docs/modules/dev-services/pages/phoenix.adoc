@@ -29,7 +29,7 @@ The application logs will show you the URL where you can access the Arize Phoeni
 
 [source,logs]
 ----
-...OpenInference UI: http://localhost:<port>
+...Phoenix UI: http://localhost:<port>
 ----
 
 By default, traces are exported via OTLP using the HTTP/Protobuf format.
