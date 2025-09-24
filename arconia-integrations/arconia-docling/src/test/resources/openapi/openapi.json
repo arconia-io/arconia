@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Docling Serve",
-    "version": "1.4.0"
+    "version": "1.5.1"
   },
   "paths": {
     "/openapi-3.0.json": {
@@ -23,6 +23,9 @@
     },
     "/health": {
       "get": {
+        "tags": [
+          "health"
+        ],
         "summary": "Health",
         "operationId": "health_health_get",
         "responses": {
@@ -41,6 +44,9 @@
     },
     "/v1/convert/source": {
       "post": {
+        "tags": [
+          "convert"
+        ],
         "summary": "Process Url",
         "operationId": "process_url_v1_convert_source_post",
         "requestBody": {
@@ -93,6 +99,9 @@
     },
     "/v1/convert/file": {
       "post": {
+        "tags": [
+          "convert"
+        ],
         "summary": "Process File",
         "operationId": "process_file_v1_convert_file_post",
         "requestBody": {
@@ -145,6 +154,9 @@
     },
     "/v1/convert/source/async": {
       "post": {
+        "tags": [
+          "convert"
+        ],
         "summary": "Process Url Async",
         "operationId": "process_url_async_v1_convert_source_async_post",
         "requestBody": {
@@ -188,6 +200,9 @@
     },
     "/v1/convert/file/async": {
       "post": {
+        "tags": [
+          "convert"
+        ],
         "summary": "Process File Async",
         "operationId": "process_file_async_v1_convert_file_async_post",
         "requestBody": {
@@ -229,8 +244,383 @@
         ]
       }
     },
+    "/v1/chunk/hybrid/source/async": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Sources With Hybridchunker As Async Task",
+        "operationId": "Chunk_sources_with_HybridChunker_as_async_task_v1_chunk_hybrid_source_async_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HybridChunkerOptionsDocumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hybrid/file/async": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Files With Hybridchunker As Async Task",
+        "operationId": "Chunk_files_with_HybridChunker_as_async_task_v1_chunk_hybrid_file_async_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Chunk_files_with_HybridChunker_as_async_task_v1_chunk_hybrid_file_async_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hybrid/source": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Sources With Hybridchunker",
+        "operationId": "Chunk_sources_with_HybridChunker_v1_chunk_hybrid_source_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HybridChunkerOptionsDocumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkDocumentResponse"
+                }
+              },
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hybrid/file": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Files With Hybridchunker",
+        "operationId": "Chunk_files_with_HybridChunker_v1_chunk_hybrid_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Chunk_files_with_HybridChunker_v1_chunk_hybrid_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkDocumentResponse"
+                }
+              },
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hierarchical/source/async": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Sources With Hierarchicalchunker As Async Task",
+        "operationId": "Chunk_sources_with_HierarchicalChunker_as_async_task_v1_chunk_hierarchical_source_async_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HierarchicalChunkerOptionsDocumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hierarchical/file/async": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Files With Hierarchicalchunker As Async Task",
+        "operationId": "Chunk_files_with_HierarchicalChunker_as_async_task_v1_chunk_hierarchical_file_async_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Chunk_files_with_HierarchicalChunker_as_async_task_v1_chunk_hierarchical_file_async_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hierarchical/source": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Sources With Hierarchicalchunker",
+        "operationId": "Chunk_sources_with_HierarchicalChunker_v1_chunk_hierarchical_source_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HierarchicalChunkerOptionsDocumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkDocumentResponse"
+                }
+              },
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/chunk/hierarchical/file": {
+      "post": {
+        "tags": [
+          "chunk"
+        ],
+        "summary": "Chunk Files With Hierarchicalchunker",
+        "operationId": "Chunk_files_with_HierarchicalChunker_v1_chunk_hierarchical_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Chunk_files_with_HierarchicalChunker_v1_chunk_hierarchical_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkDocumentResponse"
+                }
+              },
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyAuth": []
+          }
+        ]
+      }
+    },
     "/v1/status/poll/{task_id}": {
       "get": {
+        "tags": [
+          "tasks"
+        ],
         "summary": "Task Status Poll",
         "operationId": "task_status_poll_v1_status_poll__task_id__get",
         "security": [
@@ -287,6 +677,9 @@
     },
     "/v1/result/{task_id}": {
       "get": {
+        "tags": [
+          "tasks"
+        ],
         "summary": "Task Result",
         "operationId": "task_result_v1_result__task_id__get",
         "security": [
@@ -317,6 +710,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/PresignedUrlConvertDocumentResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ChunkDocumentResponse"
                     }
                   ],
                   "title": "Response Task Result V1 Result  Task Id  Get"
@@ -338,51 +734,11 @@
         }
       }
     },
-    "/v1/callback/task/progress": {
-      "post": {
-        "summary": "Callback Task Progress",
-        "operationId": "callback_task_progress_v1_callback_task_progress_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ProgressCallbackRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProgressCallbackResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "APIKeyAuth": []
-          }
-        ]
-      }
-    },
     "/v1/clear/converters": {
       "get": {
+        "tags": [
+          "clear"
+        ],
         "summary": "Clear Converters",
         "operationId": "clear_converters_v1_clear_converters_get",
         "responses": {
@@ -406,6 +762,9 @@
     },
     "/v1/clear/results": {
       "get": {
+        "tags": [
+          "clear"
+        ],
         "summary": "Clear Results",
         "operationId": "clear_results_v1_clear_results_get",
         "security": [
@@ -452,6 +811,1462 @@
   },
   "components": {
     "schemas": {
+      "Body_Chunk_files_with_HierarchicalChunker_as_async_task_v1_chunk_hierarchical_file_async_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/TargetName",
+            "description": "Specification for the type of output target.",
+            "default": "inbody"
+          },
+          "convert_from_formats": {
+            "items": {
+              "$ref": "#/components/schemas/InputFormat"
+            },
+            "type": "array",
+            "title": "Convert From Formats",
+            "description": "Input format(s) to convert from. String or list of strings. Allowed values: docx, pptx, html, image, pdf, asciidoc, md, csv, xlsx, xml_uspto, xml_jats, mets_gbs, json_docling, audio. Optional, defaults to all formats.",
+            "default": [
+              "docx",
+              "pptx",
+              "html",
+              "image",
+              "pdf",
+              "asciidoc",
+              "md",
+              "csv",
+              "xlsx",
+              "xml_uspto",
+              "xml_jats",
+              "mets_gbs",
+              "json_docling",
+              "audio"
+            ],
+            "examples": [
+              [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ]
+            ]
+          },
+          "convert_image_export_mode": {
+            "$ref": "#/components/schemas/ImageRefMode",
+            "description": "Image export mode for the document (in case of JSON, Markdown or HTML). Allowed values: placeholder, embedded, referenced. Optional, defaults to Embedded.",
+            "default": "embedded",
+            "examples": [
+              "embedded"
+            ]
+          },
+          "convert_do_ocr": {
+            "type": "boolean",
+            "title": "Convert Do Ocr",
+            "description": "If enabled, the bitmap content will be processed using OCR. Boolean. Optional, defaults to true",
+            "default": true
+          },
+          "convert_force_ocr": {
+            "type": "boolean",
+            "title": "Convert Force Ocr",
+            "description": "If enabled, replace existing text with OCR-generated text over content. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_ocr_engine": {
+            "$ref": "#/components/schemas/ocr_engines_enum",
+            "description": "The OCR engine to use. String. Allowed values: easyocr, ocrmac, rapidocr, tesserocr, tesseract. Optional, defaults to easyocr.",
+            "default": "easyocr",
+            "examples": [
+              "easyocr"
+            ]
+          },
+          "convert_ocr_lang": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Convert Ocr Lang",
+            "description": "List of languages used by the OCR engine. Note that each OCR engine has different values for the language names. String or list of strings. Optional, defaults to empty.",
+            "examples": [
+              [
+                "fr",
+                "de",
+                "es",
+                "en"
+              ]
+            ]
+          },
+          "convert_pdf_backend": {
+            "$ref": "#/components/schemas/PdfBackend",
+            "description": "The PDF backend to use. String. Allowed values: pypdfium2, dlparse_v1, dlparse_v2, dlparse_v4. Optional, defaults to dlparse_v4.",
+            "default": "dlparse_v4",
+            "examples": [
+              "dlparse_v4"
+            ]
+          },
+          "convert_table_mode": {
+            "$ref": "#/components/schemas/TableFormerMode",
+            "description": "Mode to use for table structure, String. Allowed values: fast, accurate. Optional, defaults to fast.",
+            "default": "accurate",
+            "examples": [
+              "accurate"
+            ]
+          },
+          "convert_table_cell_matching": {
+            "type": "boolean",
+            "title": "Convert Table Cell Matching",
+            "description": "If true, matches table cells predictions back to PDF cells. Can break table output if PDF cells are merged across table columns. If false, let table structure model define the text cells, ignore PDF cells.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_pipeline": {
+            "$ref": "#/components/schemas/ProcessingPipeline",
+            "description": "Choose the pipeline to process PDF or image files.",
+            "default": "standard"
+          },
+          "convert_page_range": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Convert Page Range",
+            "description": "Only convert a range of pages. The page number starts at 1.",
+            "default": [
+              1,
+              9223372036854775807
+            ],
+            "examples": [
+              [
+                1,
+                9223372036854775807
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          },
+          "convert_document_timeout": {
+            "type": "number",
+            "title": "Convert Document Timeout",
+            "description": "The timeout for processing each document, in seconds.",
+            "default": 604800.0
+          },
+          "convert_abort_on_error": {
+            "type": "boolean",
+            "title": "Convert Abort On Error",
+            "description": "Abort on error if enabled. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_do_table_structure": {
+            "type": "boolean",
+            "title": "Convert Do Table Structure",
+            "description": "If enabled, the table structure will be extracted. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_include_images": {
+            "type": "boolean",
+            "title": "Convert Include Images",
+            "description": "If enabled, images will be extracted from the document. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_images_scale": {
+            "type": "number",
+            "title": "Convert Images Scale",
+            "description": "Scale factor for images. Float. Optional, defaults to 2.0.",
+            "default": 2.0,
+            "examples": [
+              2.0
+            ]
+          },
+          "convert_md_page_break_placeholder": {
+            "type": "string",
+            "title": "Convert Md Page Break Placeholder",
+            "description": "Add this placeholder betweek pages in the markdown output.",
+            "default": "",
+            "examples": [
+              "<!-- page-break -->",
+              ""
+            ]
+          },
+          "convert_do_code_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Code Enrichment",
+            "description": "If enabled, perform OCR code enrichment. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_formula_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Formula Enrichment",
+            "description": "If enabled, perform formula OCR, return LaTeX code. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_classification": {
+            "type": "boolean",
+            "title": "Convert Do Picture Classification",
+            "description": "If enabled, classify pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_description": {
+            "type": "boolean",
+            "title": "Convert Do Picture Description",
+            "description": "If enabled, describe pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_picture_description_area_threshold": {
+            "type": "number",
+            "title": "Convert Picture Description Area Threshold",
+            "description": "Minimum percentage of the area for a picture to be processed with the models.",
+            "default": 0.05,
+            "examples": [
+              0.05
+            ]
+          },
+          "convert_picture_description_local": {
+            "type": "string",
+            "title": "Convert Picture Description Local",
+            "description": "Options for running a local vision-language model in the picture description. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with picture_description_api.",
+            "examples": [
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}",
+              "{\"repo_id\": \"HuggingFaceTB/SmolVLM-256M-Instruct\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}"
+            ]
+          },
+          "convert_picture_description_api": {
+            "type": "string",
+            "title": "Convert Picture Description Api",
+            "description": "API details for using a vision-language model in the picture description. This parameter is mutually exclusive with picture_description_local.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}",
+              "{\"url\": \"http://localhost:11434/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}"
+            ]
+          },
+          "convert_vlm_pipeline_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VlmModelType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preset of local and API models for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model_api. Use the other options for more parameters.",
+            "examples": [
+              "smoldocling"
+            ]
+          },
+          "convert_vlm_pipeline_model_local": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Local",
+            "description": "Options for running a local vision-language model for the vlm pipeline. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with vlm_pipeline_model_api and vlm_pipeline_model.",
+            "examples": [
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-imagetexttotext\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"mlx\", \"transformers_model_type\": \"automodel\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Convert this page to markdown. Do not miss any text and only output the bare markdown!\", \"scale\": 2.0, \"response_format\": \"markdown\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-vision2seq\", \"extra_generation_config\": {}}"
+            ]
+          },
+          "convert_vlm_pipeline_model_api": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Api",
+            "description": "API details for using a vision-language model for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\"}, \"timeout\": 60.0, \"concurrency\": 1, \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\"}"
+            ]
+          },
+          "chunking_use_markdown_tables": {
+            "type": "boolean",
+            "title": "Chunking Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "chunking_include_raw_text": {
+            "type": "boolean",
+            "title": "Chunking Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          },
+          "chunking_max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunking Max Tokens",
+            "description": "Maximum number of tokens per chunk. When left to none, the value is automatically extracted from the tokenizer."
+          },
+          "chunking_tokenizer": {
+            "type": "string",
+            "title": "Chunking Tokenizer",
+            "description": "HuggingFace model name for custom tokenization. If not specified, uses 'sentence-transformers/all-MiniLM-L6-v2' as default.",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "examples": [
+              "Qwen/Qwen3-Embedding-0.6B",
+              "sentence-transformers/all-MiniLM-L6-v2"
+            ]
+          },
+          "chunking_merge_peers": {
+            "type": "boolean",
+            "title": "Chunking Merge Peers",
+            "description": "Merge undersized successive chunks with same headings.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_Chunk_files_with_HierarchicalChunker_as_async_task_v1_chunk_hierarchical_file_async_post"
+      },
+      "Body_Chunk_files_with_HierarchicalChunker_v1_chunk_hierarchical_file_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/TargetName",
+            "description": "Specification for the type of output target.",
+            "default": "inbody"
+          },
+          "convert_from_formats": {
+            "items": {
+              "$ref": "#/components/schemas/InputFormat"
+            },
+            "type": "array",
+            "title": "Convert From Formats",
+            "description": "Input format(s) to convert from. String or list of strings. Allowed values: docx, pptx, html, image, pdf, asciidoc, md, csv, xlsx, xml_uspto, xml_jats, mets_gbs, json_docling, audio. Optional, defaults to all formats.",
+            "default": [
+              "docx",
+              "pptx",
+              "html",
+              "image",
+              "pdf",
+              "asciidoc",
+              "md",
+              "csv",
+              "xlsx",
+              "xml_uspto",
+              "xml_jats",
+              "mets_gbs",
+              "json_docling",
+              "audio"
+            ],
+            "examples": [
+              [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ]
+            ]
+          },
+          "convert_image_export_mode": {
+            "$ref": "#/components/schemas/ImageRefMode",
+            "description": "Image export mode for the document (in case of JSON, Markdown or HTML). Allowed values: placeholder, embedded, referenced. Optional, defaults to Embedded.",
+            "default": "embedded",
+            "examples": [
+              "embedded"
+            ]
+          },
+          "convert_do_ocr": {
+            "type": "boolean",
+            "title": "Convert Do Ocr",
+            "description": "If enabled, the bitmap content will be processed using OCR. Boolean. Optional, defaults to true",
+            "default": true
+          },
+          "convert_force_ocr": {
+            "type": "boolean",
+            "title": "Convert Force Ocr",
+            "description": "If enabled, replace existing text with OCR-generated text over content. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_ocr_engine": {
+            "$ref": "#/components/schemas/ocr_engines_enum",
+            "description": "The OCR engine to use. String. Allowed values: easyocr, ocrmac, rapidocr, tesserocr, tesseract. Optional, defaults to easyocr.",
+            "default": "easyocr",
+            "examples": [
+              "easyocr"
+            ]
+          },
+          "convert_ocr_lang": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Convert Ocr Lang",
+            "description": "List of languages used by the OCR engine. Note that each OCR engine has different values for the language names. String or list of strings. Optional, defaults to empty.",
+            "examples": [
+              [
+                "fr",
+                "de",
+                "es",
+                "en"
+              ]
+            ]
+          },
+          "convert_pdf_backend": {
+            "$ref": "#/components/schemas/PdfBackend",
+            "description": "The PDF backend to use. String. Allowed values: pypdfium2, dlparse_v1, dlparse_v2, dlparse_v4. Optional, defaults to dlparse_v4.",
+            "default": "dlparse_v4",
+            "examples": [
+              "dlparse_v4"
+            ]
+          },
+          "convert_table_mode": {
+            "$ref": "#/components/schemas/TableFormerMode",
+            "description": "Mode to use for table structure, String. Allowed values: fast, accurate. Optional, defaults to fast.",
+            "default": "accurate",
+            "examples": [
+              "accurate"
+            ]
+          },
+          "convert_table_cell_matching": {
+            "type": "boolean",
+            "title": "Convert Table Cell Matching",
+            "description": "If true, matches table cells predictions back to PDF cells. Can break table output if PDF cells are merged across table columns. If false, let table structure model define the text cells, ignore PDF cells.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_pipeline": {
+            "$ref": "#/components/schemas/ProcessingPipeline",
+            "description": "Choose the pipeline to process PDF or image files.",
+            "default": "standard"
+          },
+          "convert_page_range": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Convert Page Range",
+            "description": "Only convert a range of pages. The page number starts at 1.",
+            "default": [
+              1,
+              9223372036854775807
+            ],
+            "examples": [
+              [
+                1,
+                9223372036854775807
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          },
+          "convert_document_timeout": {
+            "type": "number",
+            "title": "Convert Document Timeout",
+            "description": "The timeout for processing each document, in seconds.",
+            "default": 604800.0
+          },
+          "convert_abort_on_error": {
+            "type": "boolean",
+            "title": "Convert Abort On Error",
+            "description": "Abort on error if enabled. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_do_table_structure": {
+            "type": "boolean",
+            "title": "Convert Do Table Structure",
+            "description": "If enabled, the table structure will be extracted. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_include_images": {
+            "type": "boolean",
+            "title": "Convert Include Images",
+            "description": "If enabled, images will be extracted from the document. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_images_scale": {
+            "type": "number",
+            "title": "Convert Images Scale",
+            "description": "Scale factor for images. Float. Optional, defaults to 2.0.",
+            "default": 2.0,
+            "examples": [
+              2.0
+            ]
+          },
+          "convert_md_page_break_placeholder": {
+            "type": "string",
+            "title": "Convert Md Page Break Placeholder",
+            "description": "Add this placeholder betweek pages in the markdown output.",
+            "default": "",
+            "examples": [
+              "<!-- page-break -->",
+              ""
+            ]
+          },
+          "convert_do_code_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Code Enrichment",
+            "description": "If enabled, perform OCR code enrichment. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_formula_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Formula Enrichment",
+            "description": "If enabled, perform formula OCR, return LaTeX code. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_classification": {
+            "type": "boolean",
+            "title": "Convert Do Picture Classification",
+            "description": "If enabled, classify pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_description": {
+            "type": "boolean",
+            "title": "Convert Do Picture Description",
+            "description": "If enabled, describe pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_picture_description_area_threshold": {
+            "type": "number",
+            "title": "Convert Picture Description Area Threshold",
+            "description": "Minimum percentage of the area for a picture to be processed with the models.",
+            "default": 0.05,
+            "examples": [
+              0.05
+            ]
+          },
+          "convert_picture_description_local": {
+            "type": "string",
+            "title": "Convert Picture Description Local",
+            "description": "Options for running a local vision-language model in the picture description. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with picture_description_api.",
+            "examples": [
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}",
+              "{\"repo_id\": \"HuggingFaceTB/SmolVLM-256M-Instruct\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}"
+            ]
+          },
+          "convert_picture_description_api": {
+            "type": "string",
+            "title": "Convert Picture Description Api",
+            "description": "API details for using a vision-language model in the picture description. This parameter is mutually exclusive with picture_description_local.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}",
+              "{\"url\": \"http://localhost:11434/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}"
+            ]
+          },
+          "convert_vlm_pipeline_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VlmModelType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preset of local and API models for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model_api. Use the other options for more parameters.",
+            "examples": [
+              "smoldocling"
+            ]
+          },
+          "convert_vlm_pipeline_model_local": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Local",
+            "description": "Options for running a local vision-language model for the vlm pipeline. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with vlm_pipeline_model_api and vlm_pipeline_model.",
+            "examples": [
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-imagetexttotext\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"mlx\", \"transformers_model_type\": \"automodel\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Convert this page to markdown. Do not miss any text and only output the bare markdown!\", \"scale\": 2.0, \"response_format\": \"markdown\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-vision2seq\", \"extra_generation_config\": {}}"
+            ]
+          },
+          "convert_vlm_pipeline_model_api": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Api",
+            "description": "API details for using a vision-language model for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\"}, \"timeout\": 60.0, \"concurrency\": 1, \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\"}"
+            ]
+          },
+          "chunking_use_markdown_tables": {
+            "type": "boolean",
+            "title": "Chunking Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "chunking_include_raw_text": {
+            "type": "boolean",
+            "title": "Chunking Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          },
+          "chunking_max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunking Max Tokens",
+            "description": "Maximum number of tokens per chunk. When left to none, the value is automatically extracted from the tokenizer."
+          },
+          "chunking_tokenizer": {
+            "type": "string",
+            "title": "Chunking Tokenizer",
+            "description": "HuggingFace model name for custom tokenization. If not specified, uses 'sentence-transformers/all-MiniLM-L6-v2' as default.",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "examples": [
+              "Qwen/Qwen3-Embedding-0.6B",
+              "sentence-transformers/all-MiniLM-L6-v2"
+            ]
+          },
+          "chunking_merge_peers": {
+            "type": "boolean",
+            "title": "Chunking Merge Peers",
+            "description": "Merge undersized successive chunks with same headings.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_Chunk_files_with_HierarchicalChunker_v1_chunk_hierarchical_file_post"
+      },
+      "Body_Chunk_files_with_HybridChunker_as_async_task_v1_chunk_hybrid_file_async_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/TargetName",
+            "description": "Specification for the type of output target.",
+            "default": "inbody"
+          },
+          "convert_from_formats": {
+            "items": {
+              "$ref": "#/components/schemas/InputFormat"
+            },
+            "type": "array",
+            "title": "Convert From Formats",
+            "description": "Input format(s) to convert from. String or list of strings. Allowed values: docx, pptx, html, image, pdf, asciidoc, md, csv, xlsx, xml_uspto, xml_jats, mets_gbs, json_docling, audio. Optional, defaults to all formats.",
+            "default": [
+              "docx",
+              "pptx",
+              "html",
+              "image",
+              "pdf",
+              "asciidoc",
+              "md",
+              "csv",
+              "xlsx",
+              "xml_uspto",
+              "xml_jats",
+              "mets_gbs",
+              "json_docling",
+              "audio"
+            ],
+            "examples": [
+              [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ]
+            ]
+          },
+          "convert_image_export_mode": {
+            "$ref": "#/components/schemas/ImageRefMode",
+            "description": "Image export mode for the document (in case of JSON, Markdown or HTML). Allowed values: placeholder, embedded, referenced. Optional, defaults to Embedded.",
+            "default": "embedded",
+            "examples": [
+              "embedded"
+            ]
+          },
+          "convert_do_ocr": {
+            "type": "boolean",
+            "title": "Convert Do Ocr",
+            "description": "If enabled, the bitmap content will be processed using OCR. Boolean. Optional, defaults to true",
+            "default": true
+          },
+          "convert_force_ocr": {
+            "type": "boolean",
+            "title": "Convert Force Ocr",
+            "description": "If enabled, replace existing text with OCR-generated text over content. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_ocr_engine": {
+            "$ref": "#/components/schemas/ocr_engines_enum",
+            "description": "The OCR engine to use. String. Allowed values: easyocr, ocrmac, rapidocr, tesserocr, tesseract. Optional, defaults to easyocr.",
+            "default": "easyocr",
+            "examples": [
+              "easyocr"
+            ]
+          },
+          "convert_ocr_lang": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Convert Ocr Lang",
+            "description": "List of languages used by the OCR engine. Note that each OCR engine has different values for the language names. String or list of strings. Optional, defaults to empty.",
+            "examples": [
+              [
+                "fr",
+                "de",
+                "es",
+                "en"
+              ]
+            ]
+          },
+          "convert_pdf_backend": {
+            "$ref": "#/components/schemas/PdfBackend",
+            "description": "The PDF backend to use. String. Allowed values: pypdfium2, dlparse_v1, dlparse_v2, dlparse_v4. Optional, defaults to dlparse_v4.",
+            "default": "dlparse_v4",
+            "examples": [
+              "dlparse_v4"
+            ]
+          },
+          "convert_table_mode": {
+            "$ref": "#/components/schemas/TableFormerMode",
+            "description": "Mode to use for table structure, String. Allowed values: fast, accurate. Optional, defaults to fast.",
+            "default": "accurate",
+            "examples": [
+              "accurate"
+            ]
+          },
+          "convert_table_cell_matching": {
+            "type": "boolean",
+            "title": "Convert Table Cell Matching",
+            "description": "If true, matches table cells predictions back to PDF cells. Can break table output if PDF cells are merged across table columns. If false, let table structure model define the text cells, ignore PDF cells.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_pipeline": {
+            "$ref": "#/components/schemas/ProcessingPipeline",
+            "description": "Choose the pipeline to process PDF or image files.",
+            "default": "standard"
+          },
+          "convert_page_range": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Convert Page Range",
+            "description": "Only convert a range of pages. The page number starts at 1.",
+            "default": [
+              1,
+              9223372036854775807
+            ],
+            "examples": [
+              [
+                1,
+                9223372036854775807
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          },
+          "convert_document_timeout": {
+            "type": "number",
+            "title": "Convert Document Timeout",
+            "description": "The timeout for processing each document, in seconds.",
+            "default": 604800.0
+          },
+          "convert_abort_on_error": {
+            "type": "boolean",
+            "title": "Convert Abort On Error",
+            "description": "Abort on error if enabled. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_do_table_structure": {
+            "type": "boolean",
+            "title": "Convert Do Table Structure",
+            "description": "If enabled, the table structure will be extracted. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_include_images": {
+            "type": "boolean",
+            "title": "Convert Include Images",
+            "description": "If enabled, images will be extracted from the document. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_images_scale": {
+            "type": "number",
+            "title": "Convert Images Scale",
+            "description": "Scale factor for images. Float. Optional, defaults to 2.0.",
+            "default": 2.0,
+            "examples": [
+              2.0
+            ]
+          },
+          "convert_md_page_break_placeholder": {
+            "type": "string",
+            "title": "Convert Md Page Break Placeholder",
+            "description": "Add this placeholder betweek pages in the markdown output.",
+            "default": "",
+            "examples": [
+              "<!-- page-break -->",
+              ""
+            ]
+          },
+          "convert_do_code_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Code Enrichment",
+            "description": "If enabled, perform OCR code enrichment. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_formula_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Formula Enrichment",
+            "description": "If enabled, perform formula OCR, return LaTeX code. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_classification": {
+            "type": "boolean",
+            "title": "Convert Do Picture Classification",
+            "description": "If enabled, classify pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_description": {
+            "type": "boolean",
+            "title": "Convert Do Picture Description",
+            "description": "If enabled, describe pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_picture_description_area_threshold": {
+            "type": "number",
+            "title": "Convert Picture Description Area Threshold",
+            "description": "Minimum percentage of the area for a picture to be processed with the models.",
+            "default": 0.05,
+            "examples": [
+              0.05
+            ]
+          },
+          "convert_picture_description_local": {
+            "type": "string",
+            "title": "Convert Picture Description Local",
+            "description": "Options for running a local vision-language model in the picture description. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with picture_description_api.",
+            "examples": [
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}",
+              "{\"repo_id\": \"HuggingFaceTB/SmolVLM-256M-Instruct\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}"
+            ]
+          },
+          "convert_picture_description_api": {
+            "type": "string",
+            "title": "Convert Picture Description Api",
+            "description": "API details for using a vision-language model in the picture description. This parameter is mutually exclusive with picture_description_local.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}",
+              "{\"url\": \"http://localhost:11434/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}"
+            ]
+          },
+          "convert_vlm_pipeline_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VlmModelType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preset of local and API models for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model_api. Use the other options for more parameters.",
+            "examples": [
+              "smoldocling"
+            ]
+          },
+          "convert_vlm_pipeline_model_local": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Local",
+            "description": "Options for running a local vision-language model for the vlm pipeline. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with vlm_pipeline_model_api and vlm_pipeline_model.",
+            "examples": [
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-imagetexttotext\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"mlx\", \"transformers_model_type\": \"automodel\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Convert this page to markdown. Do not miss any text and only output the bare markdown!\", \"scale\": 2.0, \"response_format\": \"markdown\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-vision2seq\", \"extra_generation_config\": {}}"
+            ]
+          },
+          "convert_vlm_pipeline_model_api": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Api",
+            "description": "API details for using a vision-language model for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\"}, \"timeout\": 60.0, \"concurrency\": 1, \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\"}"
+            ]
+          },
+          "chunking_use_markdown_tables": {
+            "type": "boolean",
+            "title": "Chunking Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "chunking_include_raw_text": {
+            "type": "boolean",
+            "title": "Chunking Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          },
+          "chunking_max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunking Max Tokens",
+            "description": "Maximum number of tokens per chunk. When left to none, the value is automatically extracted from the tokenizer."
+          },
+          "chunking_tokenizer": {
+            "type": "string",
+            "title": "Chunking Tokenizer",
+            "description": "HuggingFace model name for custom tokenization. If not specified, uses 'sentence-transformers/all-MiniLM-L6-v2' as default.",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "examples": [
+              "Qwen/Qwen3-Embedding-0.6B",
+              "sentence-transformers/all-MiniLM-L6-v2"
+            ]
+          },
+          "chunking_merge_peers": {
+            "type": "boolean",
+            "title": "Chunking Merge Peers",
+            "description": "Merge undersized successive chunks with same headings.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_Chunk_files_with_HybridChunker_as_async_task_v1_chunk_hybrid_file_async_post"
+      },
+      "Body_Chunk_files_with_HybridChunker_v1_chunk_hybrid_file_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/TargetName",
+            "description": "Specification for the type of output target.",
+            "default": "inbody"
+          },
+          "convert_from_formats": {
+            "items": {
+              "$ref": "#/components/schemas/InputFormat"
+            },
+            "type": "array",
+            "title": "Convert From Formats",
+            "description": "Input format(s) to convert from. String or list of strings. Allowed values: docx, pptx, html, image, pdf, asciidoc, md, csv, xlsx, xml_uspto, xml_jats, mets_gbs, json_docling, audio. Optional, defaults to all formats.",
+            "default": [
+              "docx",
+              "pptx",
+              "html",
+              "image",
+              "pdf",
+              "asciidoc",
+              "md",
+              "csv",
+              "xlsx",
+              "xml_uspto",
+              "xml_jats",
+              "mets_gbs",
+              "json_docling",
+              "audio"
+            ],
+            "examples": [
+              [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ]
+            ]
+          },
+          "convert_image_export_mode": {
+            "$ref": "#/components/schemas/ImageRefMode",
+            "description": "Image export mode for the document (in case of JSON, Markdown or HTML). Allowed values: placeholder, embedded, referenced. Optional, defaults to Embedded.",
+            "default": "embedded",
+            "examples": [
+              "embedded"
+            ]
+          },
+          "convert_do_ocr": {
+            "type": "boolean",
+            "title": "Convert Do Ocr",
+            "description": "If enabled, the bitmap content will be processed using OCR. Boolean. Optional, defaults to true",
+            "default": true
+          },
+          "convert_force_ocr": {
+            "type": "boolean",
+            "title": "Convert Force Ocr",
+            "description": "If enabled, replace existing text with OCR-generated text over content. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_ocr_engine": {
+            "$ref": "#/components/schemas/ocr_engines_enum",
+            "description": "The OCR engine to use. String. Allowed values: easyocr, ocrmac, rapidocr, tesserocr, tesseract. Optional, defaults to easyocr.",
+            "default": "easyocr",
+            "examples": [
+              "easyocr"
+            ]
+          },
+          "convert_ocr_lang": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Convert Ocr Lang",
+            "description": "List of languages used by the OCR engine. Note that each OCR engine has different values for the language names. String or list of strings. Optional, defaults to empty.",
+            "examples": [
+              [
+                "fr",
+                "de",
+                "es",
+                "en"
+              ]
+            ]
+          },
+          "convert_pdf_backend": {
+            "$ref": "#/components/schemas/PdfBackend",
+            "description": "The PDF backend to use. String. Allowed values: pypdfium2, dlparse_v1, dlparse_v2, dlparse_v4. Optional, defaults to dlparse_v4.",
+            "default": "dlparse_v4",
+            "examples": [
+              "dlparse_v4"
+            ]
+          },
+          "convert_table_mode": {
+            "$ref": "#/components/schemas/TableFormerMode",
+            "description": "Mode to use for table structure, String. Allowed values: fast, accurate. Optional, defaults to fast.",
+            "default": "accurate",
+            "examples": [
+              "accurate"
+            ]
+          },
+          "convert_table_cell_matching": {
+            "type": "boolean",
+            "title": "Convert Table Cell Matching",
+            "description": "If true, matches table cells predictions back to PDF cells. Can break table output if PDF cells are merged across table columns. If false, let table structure model define the text cells, ignore PDF cells.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_pipeline": {
+            "$ref": "#/components/schemas/ProcessingPipeline",
+            "description": "Choose the pipeline to process PDF or image files.",
+            "default": "standard"
+          },
+          "convert_page_range": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Convert Page Range",
+            "description": "Only convert a range of pages. The page number starts at 1.",
+            "default": [
+              1,
+              9223372036854775807
+            ],
+            "examples": [
+              [
+                1,
+                9223372036854775807
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          },
+          "convert_document_timeout": {
+            "type": "number",
+            "title": "Convert Document Timeout",
+            "description": "The timeout for processing each document, in seconds.",
+            "default": 604800.0
+          },
+          "convert_abort_on_error": {
+            "type": "boolean",
+            "title": "Convert Abort On Error",
+            "description": "Abort on error if enabled. Boolean. Optional, defaults to false.",
+            "default": false
+          },
+          "convert_do_table_structure": {
+            "type": "boolean",
+            "title": "Convert Do Table Structure",
+            "description": "If enabled, the table structure will be extracted. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_include_images": {
+            "type": "boolean",
+            "title": "Convert Include Images",
+            "description": "If enabled, images will be extracted from the document. Boolean. Optional, defaults to true.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          },
+          "convert_images_scale": {
+            "type": "number",
+            "title": "Convert Images Scale",
+            "description": "Scale factor for images. Float. Optional, defaults to 2.0.",
+            "default": 2.0,
+            "examples": [
+              2.0
+            ]
+          },
+          "convert_md_page_break_placeholder": {
+            "type": "string",
+            "title": "Convert Md Page Break Placeholder",
+            "description": "Add this placeholder betweek pages in the markdown output.",
+            "default": "",
+            "examples": [
+              "<!-- page-break -->",
+              ""
+            ]
+          },
+          "convert_do_code_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Code Enrichment",
+            "description": "If enabled, perform OCR code enrichment. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_formula_enrichment": {
+            "type": "boolean",
+            "title": "Convert Do Formula Enrichment",
+            "description": "If enabled, perform formula OCR, return LaTeX code. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_classification": {
+            "type": "boolean",
+            "title": "Convert Do Picture Classification",
+            "description": "If enabled, classify pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_do_picture_description": {
+            "type": "boolean",
+            "title": "Convert Do Picture Description",
+            "description": "If enabled, describe pictures in documents. Boolean. Optional, defaults to false.",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "convert_picture_description_area_threshold": {
+            "type": "number",
+            "title": "Convert Picture Description Area Threshold",
+            "description": "Minimum percentage of the area for a picture to be processed with the models.",
+            "default": 0.05,
+            "examples": [
+              0.05
+            ]
+          },
+          "convert_picture_description_local": {
+            "type": "string",
+            "title": "Convert Picture Description Local",
+            "description": "Options for running a local vision-language model in the picture description. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with picture_description_api.",
+            "examples": [
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}",
+              "{\"repo_id\": \"HuggingFaceTB/SmolVLM-256M-Instruct\", \"prompt\": \"Describe this image in a few sentences.\", \"generation_config\": {\"max_new_tokens\": 200, \"do_sample\": false}}"
+            ]
+          },
+          "convert_picture_description_api": {
+            "type": "string",
+            "title": "Convert Picture Description Api",
+            "description": "API details for using a vision-language model in the picture description. This parameter is mutually exclusive with picture_description_local.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}",
+              "{\"url\": \"http://localhost:11434/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"granite3.2-vision:2b\"}, \"timeout\": 20.0, \"concurrency\": 1, \"prompt\": \"Describe this image in a few sentences.\"}"
+            ]
+          },
+          "convert_vlm_pipeline_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VlmModelType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preset of local and API models for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model_api. Use the other options for more parameters.",
+            "examples": [
+              "smoldocling"
+            ]
+          },
+          "convert_vlm_pipeline_model_local": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Local",
+            "description": "Options for running a local vision-language model for the vlm pipeline. The parameters refer to a model hosted on Hugging Face. This parameter is mutually exclusive with vlm_pipeline_model_api and vlm_pipeline_model.",
+            "examples": [
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-imagetexttotext\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\", \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\", \"inference_framework\": \"mlx\", \"transformers_model_type\": \"automodel\", \"extra_generation_config\": {}}",
+              "{\"repo_id\": \"ibm-granite/granite-vision-3.2-2b\", \"prompt\": \"Convert this page to markdown. Do not miss any text and only output the bare markdown!\", \"scale\": 2.0, \"response_format\": \"markdown\", \"inference_framework\": \"transformers\", \"transformers_model_type\": \"automodel-vision2seq\", \"extra_generation_config\": {}}"
+            ]
+          },
+          "convert_vlm_pipeline_model_api": {
+            "type": "string",
+            "title": "Convert Vlm Pipeline Model Api",
+            "description": "API details for using a vision-language model for the vlm pipeline. This parameter is mutually exclusive with vlm_pipeline_model_local and vlm_pipeline_model.",
+            "examples": [
+              "{\"url\": \"http://localhost:1234/v1/chat/completions\", \"headers\": {}, \"params\": {\"model\": \"ds4sd/SmolDocling-256M-preview-mlx-bf16\"}, \"timeout\": 60.0, \"concurrency\": 1, \"prompt\": \"Convert this page to docling.\", \"scale\": 2.0, \"response_format\": \"doctags\"}"
+            ]
+          },
+          "chunking_use_markdown_tables": {
+            "type": "boolean",
+            "title": "Chunking Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "chunking_include_raw_text": {
+            "type": "boolean",
+            "title": "Chunking Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          },
+          "chunking_max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunking Max Tokens",
+            "description": "Maximum number of tokens per chunk. When left to none, the value is automatically extracted from the tokenizer."
+          },
+          "chunking_tokenizer": {
+            "type": "string",
+            "title": "Chunking Tokenizer",
+            "description": "HuggingFace model name for custom tokenization. If not specified, uses 'sentence-transformers/all-MiniLM-L6-v2' as default.",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "examples": [
+              "Qwen/Qwen3-Embedding-0.6B",
+              "sentence-transformers/all-MiniLM-L6-v2"
+            ]
+          },
+          "chunking_merge_peers": {
+            "type": "boolean",
+            "title": "Chunking Merge Peers",
+            "description": "Merge undersized successive chunks with same headings.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_Chunk_files_with_HybridChunker_v1_chunk_hybrid_file_post"
+      },
       "Body_process_file_async_v1_convert_file_async_post": {
         "properties": {
           "files": {
@@ -1304,6 +3119,151 @@
         "title": "ChartStackedBar",
         "description": "Represents a stacked bar in a stacked bar chart.\n\nAttributes:\n    label (List[str]): The labels for the stacked bars. Multiple values are stored\n        in cases where the chart is \"double stacked,\" meaning bars are stacked both\n        horizontally and vertically.\n    values (List[Tuple[str, int]]): A list of values representing different segments\n        of the stacked bar along with their label."
       },
+      "ChunkDocumentResponse": {
+        "properties": {
+          "chunks": {
+            "items": {
+              "$ref": "#/components/schemas/ChunkedDocumentResultItem"
+            },
+            "type": "array",
+            "title": "Chunks"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/ExportResult"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "processing_time": {
+            "type": "number",
+            "title": "Processing Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunks",
+          "documents",
+          "processing_time"
+        ],
+        "title": "ChunkDocumentResponse"
+      },
+      "ChunkedDocumentResultItem": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "chunk_index": {
+            "type": "integer",
+            "title": "Chunk Index"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The chunk text with structural context (headers, formatting)"
+          },
+          "raw_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Text",
+            "description": "Raw chunk text without additional formatting or context"
+          },
+          "num_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Tokens",
+            "description": "Number of tokens in the text, if the chunker is aware of tokens"
+          },
+          "headings": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headings",
+            "description": "List of headings for this chunk"
+          },
+          "captions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Captions",
+            "description": "List of captions for this chunk (e.g. for pictures and tables)"
+          },
+          "doc_items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Doc Items",
+            "description": "List of doc items references"
+          },
+          "page_numbers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Numbers",
+            "description": "Page numbers where this chunk content appears"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Additional metadata associated with this chunk"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "chunk_index",
+          "text",
+          "doc_items"
+        ],
+        "title": "ChunkedDocumentResultItem",
+        "description": "A single chunk of a document with its metadata and content."
+      },
       "ClearResponse": {
         "properties": {
           "status": {
@@ -2118,8 +4078,7 @@
         "type": "object",
         "required": [
           "text",
-          "provenance",
-          "kind"
+          "provenance"
         ],
         "title": "DescriptionAnnotation",
         "description": "DescriptionAnnotation."
@@ -2146,7 +4105,7 @@
             "type": "string",
             "pattern": "^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
             "title": "Version",
-            "default": "1.6.0"
+            "default": "1.7.0"
           },
           "name": {
             "type": "string",
@@ -2404,23 +4363,44 @@
         ],
         "title": "ExportDocumentResponse"
       },
-      "FailedDocsItem": {
+      "ExportResult": {
         "properties": {
-          "source": {
+          "kind": {
             "type": "string",
-            "title": "Source"
+            "const": "ExportResult",
+            "title": "Kind",
+            "default": "ExportResult"
           },
-          "error": {
-            "type": "string",
-            "title": "Error"
+          "content": {
+            "$ref": "#/components/schemas/ExportDocumentResponse"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConversionStatus"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          },
+          "timings": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ProfilingItem"
+            },
+            "type": "object",
+            "title": "Timings",
+            "default": {}
           }
         },
         "type": "object",
         "required": [
-          "source",
-          "error"
+          "content",
+          "status"
         ],
-        "title": "FailedDocsItem"
+        "title": "ExportResult",
+        "description": "Container of all exported content."
       },
       "FileSourceRequest": {
         "properties": {
@@ -2447,8 +4427,7 @@
         "type": "object",
         "required": [
           "base64_string",
-          "filename",
-          "kind"
+          "filename"
         ],
         "title": "FileSourceRequest"
       },
@@ -2867,6 +4846,154 @@
         "type": "object",
         "title": "HealthCheckResponse"
       },
+      "HierarchicalChunkerOptions": {
+        "properties": {
+          "chunker": {
+            "type": "string",
+            "const": "hierarchical",
+            "title": "Chunker",
+            "default": "hierarchical"
+          },
+          "use_markdown_tables": {
+            "type": "boolean",
+            "title": "Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "include_raw_text": {
+            "type": "boolean",
+            "title": "Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "HierarchicalChunkerOptions",
+        "description": "Configuration options for the HierarchicalChunker."
+      },
+      "HierarchicalChunkerOptionsDocumentsRequest": {
+        "properties": {
+          "convert_options": {
+            "$ref": "#/components/schemas/ConvertDocumentsRequestOptions",
+            "description": "Conversion options.",
+            "default": {
+              "from_formats": [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ],
+              "to_formats": [
+                "md"
+              ],
+              "image_export_mode": "embedded",
+              "do_ocr": true,
+              "force_ocr": false,
+              "ocr_engine": "easyocr",
+              "pdf_backend": "dlparse_v4",
+              "table_mode": "accurate",
+              "table_cell_matching": true,
+              "pipeline": "standard",
+              "page_range": [
+                1,
+                9223372036854775807
+              ],
+              "document_timeout": 604800.0,
+              "abort_on_error": false,
+              "do_table_structure": true,
+              "include_images": true,
+              "images_scale": 2.0,
+              "md_page_break_placeholder": "",
+              "do_code_enrichment": false,
+              "do_formula_enrichment": false,
+              "do_picture_classification": false,
+              "do_picture_description": false,
+              "picture_description_area_threshold": 0.05
+            }
+          },
+          "sources": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/FileSourceRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/HttpSourceRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/S3SourceRequest"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "file": "#/components/schemas/FileSourceRequest",
+                  "http": "#/components/schemas/HttpSourceRequest",
+                  "s3": "#/components/schemas/S3SourceRequest"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "List of input document sources to process."
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InBodyTarget"
+              },
+              {
+                "$ref": "#/components/schemas/ZipTarget"
+              },
+              {
+                "$ref": "#/components/schemas/S3Target"
+              },
+              {
+                "$ref": "#/components/schemas/PutTarget"
+              }
+            ],
+            "title": "Target",
+            "description": "Specification for the type of output target.",
+            "default": {
+              "kind": "inbody"
+            },
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "inbody": "#/components/schemas/InBodyTarget",
+                "put": "#/components/schemas/PutTarget",
+                "s3": "#/components/schemas/S3Target",
+                "zip": "#/components/schemas/ZipTarget"
+              }
+            }
+          },
+          "chunking_options": {
+            "$ref": "#/components/schemas/HierarchicalChunkerOptions",
+            "description": "Options specific to the chunker."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "title": "HierarchicalChunkerOptionsDocumentsRequest"
+      },
       "HttpSourceRequest": {
         "properties": {
           "url": {
@@ -2880,6 +5007,7 @@
             ]
           },
           "headers": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Headers",
             "description": "Additional headers used to fetch the urls, e.g. authorization, agent, etc",
@@ -2894,10 +5022,185 @@
         },
         "type": "object",
         "required": [
-          "url",
-          "kind"
+          "url"
         ],
         "title": "HttpSourceRequest"
+      },
+      "HybridChunkerOptions": {
+        "properties": {
+          "chunker": {
+            "type": "string",
+            "const": "hybrid",
+            "title": "Chunker",
+            "default": "hybrid"
+          },
+          "use_markdown_tables": {
+            "type": "boolean",
+            "title": "Use Markdown Tables",
+            "description": "Use markdown table format instead of triplets for table serialization.",
+            "default": false
+          },
+          "include_raw_text": {
+            "type": "boolean",
+            "title": "Include Raw Text",
+            "description": "Include both raw_text and text (contextualized) in response. If False, only text is included.",
+            "default": false
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "description": "Maximum number of tokens per chunk. When left to none, the value is automatically extracted from the tokenizer."
+          },
+          "tokenizer": {
+            "type": "string",
+            "title": "Tokenizer",
+            "description": "HuggingFace model name for custom tokenization. If not specified, uses 'sentence-transformers/all-MiniLM-L6-v2' as default.",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "examples": [
+              "Qwen/Qwen3-Embedding-0.6B",
+              "sentence-transformers/all-MiniLM-L6-v2"
+            ]
+          },
+          "merge_peers": {
+            "type": "boolean",
+            "title": "Merge Peers",
+            "description": "Merge undersized successive chunks with same headings.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "HybridChunkerOptions",
+        "description": "Configuration options for the HybridChunker."
+      },
+      "HybridChunkerOptionsDocumentsRequest": {
+        "properties": {
+          "convert_options": {
+            "$ref": "#/components/schemas/ConvertDocumentsRequestOptions",
+            "description": "Conversion options.",
+            "default": {
+              "from_formats": [
+                "docx",
+                "pptx",
+                "html",
+                "image",
+                "pdf",
+                "asciidoc",
+                "md",
+                "csv",
+                "xlsx",
+                "xml_uspto",
+                "xml_jats",
+                "mets_gbs",
+                "json_docling",
+                "audio"
+              ],
+              "to_formats": [
+                "md"
+              ],
+              "image_export_mode": "embedded",
+              "do_ocr": true,
+              "force_ocr": false,
+              "ocr_engine": "easyocr",
+              "pdf_backend": "dlparse_v4",
+              "table_mode": "accurate",
+              "table_cell_matching": true,
+              "pipeline": "standard",
+              "page_range": [
+                1,
+                9223372036854775807
+              ],
+              "document_timeout": 604800.0,
+              "abort_on_error": false,
+              "do_table_structure": true,
+              "include_images": true,
+              "images_scale": 2.0,
+              "md_page_break_placeholder": "",
+              "do_code_enrichment": false,
+              "do_formula_enrichment": false,
+              "do_picture_classification": false,
+              "do_picture_description": false,
+              "picture_description_area_threshold": 0.05
+            }
+          },
+          "sources": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/FileSourceRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/HttpSourceRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/S3SourceRequest"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "file": "#/components/schemas/FileSourceRequest",
+                  "http": "#/components/schemas/HttpSourceRequest",
+                  "s3": "#/components/schemas/S3SourceRequest"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "List of input document sources to process."
+          },
+          "include_converted_doc": {
+            "type": "boolean",
+            "title": "Include Converted Doc",
+            "description": "If true, the output will include both the chunks and the converted document.",
+            "default": false
+          },
+          "target": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InBodyTarget"
+              },
+              {
+                "$ref": "#/components/schemas/ZipTarget"
+              },
+              {
+                "$ref": "#/components/schemas/S3Target"
+              },
+              {
+                "$ref": "#/components/schemas/PutTarget"
+              }
+            ],
+            "title": "Target",
+            "description": "Specification for the type of output target.",
+            "default": {
+              "kind": "inbody"
+            },
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "inbody": "#/components/schemas/InBodyTarget",
+                "put": "#/components/schemas/PutTarget",
+                "s3": "#/components/schemas/S3Target",
+                "zip": "#/components/schemas/ZipTarget"
+              }
+            }
+          },
+          "chunking_options": {
+            "$ref": "#/components/schemas/HybridChunkerOptions",
+            "description": "Options specific to the chunker."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "title": "HybridChunkerOptionsDocumentsRequest"
       },
       "ImageRef": {
         "properties": {
@@ -2957,10 +5260,7 @@
           }
         },
         "type": "object",
-        "title": "InBodyTarget",
-        "required": [
-          "kind"
-        ]
+        "title": "InBodyTarget"
       },
       "InferenceFramework": {
         "type": "string",
@@ -3288,14 +5588,14 @@
             "default": "misc"
           },
           "content": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Content"
           }
         },
         "type": "object",
         "required": [
-          "content",
-          "kind"
+          "content"
         ],
         "title": "MiscAnnotation",
         "description": "MiscAnnotation."
@@ -3384,8 +5684,7 @@
           "title",
           "x_axis_label",
           "y_axis_label",
-          "bars",
-          "kind"
+          "bars"
         ],
         "title": "PictureBarChartData",
         "description": "Represents data of a bar chart.\n\nAttributes:\n    kind (Literal[\"bar_chart_data\"]): The type of the chart.\n    x_axis_label (str): The label for the x-axis.\n    y_axis_label (str): The label for the y-axis.\n    bars (List[ChartBar]): A list of bars in the chart."
@@ -3432,8 +5731,7 @@
         "type": "object",
         "required": [
           "provenance",
-          "predicted_classes",
-          "kind"
+          "predicted_classes"
         ],
         "title": "PictureClassificationData",
         "description": "PictureClassificationData."
@@ -3462,6 +5760,7 @@
             "default": {}
           },
           "params": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Params",
             "description": "Model parameters.",
@@ -3535,6 +5834,7 @@
             ]
           },
           "generation_config": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Generation Config",
             "description": "Config from https://huggingface.co/docs/transformers/en/main_classes/text_generation#transformers.GenerationConfig",
@@ -3732,8 +6032,7 @@
           "title",
           "x_axis_label",
           "y_axis_label",
-          "lines",
-          "kind"
+          "lines"
         ],
         "title": "PictureLineChartData",
         "description": "Represents data of a line chart.\n\nAttributes:\n    kind (Literal[\"line_chart_data\"]): The type of the chart.\n    x_axis_label (str): The label for the x-axis.\n    y_axis_label (str): The label for the y-axis.\n    lines (List[ChartLine]): A list of lines in the chart."
@@ -3786,8 +6085,7 @@
           "confidence",
           "class_name",
           "segmentation",
-          "provenance",
-          "kind"
+          "provenance"
         ],
         "title": "PictureMoleculeData",
         "description": "PictureMoleculeData."
@@ -3815,8 +6113,7 @@
         "type": "object",
         "required": [
           "title",
-          "slices",
-          "kind"
+          "slices"
         ],
         "title": "PicturePieChartData",
         "description": "Represents data of a pie chart.\n\nAttributes:\n    kind (Literal[\"pie_chart_data\"]): The type of the chart.\n    slices (List[ChartSlice]): A list of slices in the pie chart."
@@ -3854,8 +6151,7 @@
           "title",
           "x_axis_label",
           "y_axis_label",
-          "points",
-          "kind"
+          "points"
         ],
         "title": "PictureScatterChartData",
         "description": "Represents data of a scatter chart.\n\nAttributes:\n    kind (Literal[\"scatter_chart_data\"]): The type of the chart.\n    x_axis_label (str): The label for the x-axis.\n    y_axis_label (str): The label for the y-axis.\n    points (List[ChartPoint]): A list of points in the scatter chart."
@@ -3893,8 +6189,7 @@
           "title",
           "x_axis_label",
           "y_axis_label",
-          "stacked_bars",
-          "kind"
+          "stacked_bars"
         ],
         "title": "PictureStackedBarChartData",
         "description": "Represents data of a stacked bar chart.\n\nAttributes:\n    kind (Literal[\"stacked_bar_chart_data\"]): The type of the chart.\n    x_axis_label (str): The label for the x-axis.\n    y_axis_label (str): The label for the y-axis.\n    stacked_bars (List[ChartStackedBar]): A list of stacked bars in the chart."
@@ -3918,8 +6213,7 @@
         "type": "object",
         "required": [
           "title",
-          "chart_data",
-          "kind"
+          "chart_data"
         ],
         "title": "PictureTabularChartData",
         "description": "Base class for picture chart data.\n\nAttributes:\n    title (str): The title of the chart.\n    chart_data (TableData): Chart data in the table format."
@@ -4003,116 +6297,6 @@
         ],
         "title": "ProfilingScope"
       },
-      "ProgressCallbackRequest": {
-        "properties": {
-          "task_id": {
-            "type": "string",
-            "title": "Task Id"
-          },
-          "progress": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ProgressSetNumDocs"
-              },
-              {
-                "$ref": "#/components/schemas/ProgressUpdateProcessed"
-              }
-            ],
-            "title": "Progress",
-            "discriminator": {
-              "propertyName": "kind",
-              "mapping": {
-                "set_num_docs": "#/components/schemas/ProgressSetNumDocs",
-                "update_processed": "#/components/schemas/ProgressUpdateProcessed"
-              }
-            }
-          }
-        },
-        "type": "object",
-        "required": [
-          "task_id",
-          "progress"
-        ],
-        "title": "ProgressCallbackRequest"
-      },
-      "ProgressCallbackResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "const": "ack",
-            "title": "Status",
-            "default": "ack"
-          }
-        },
-        "type": "object",
-        "title": "ProgressCallbackResponse"
-      },
-      "ProgressSetNumDocs": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "const": "set_num_docs",
-            "title": "Kind",
-            "default": "set_num_docs"
-          },
-          "num_docs": {
-            "type": "integer",
-            "title": "Num Docs"
-          }
-        },
-        "type": "object",
-        "required": [
-          "num_docs",
-          "kind"
-        ],
-        "title": "ProgressSetNumDocs"
-      },
-      "ProgressUpdateProcessed": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "const": "update_processed",
-            "title": "Kind",
-            "default": "update_processed"
-          },
-          "num_processed": {
-            "type": "integer",
-            "title": "Num Processed"
-          },
-          "num_succeeded": {
-            "type": "integer",
-            "title": "Num Succeeded"
-          },
-          "num_failed": {
-            "type": "integer",
-            "title": "Num Failed"
-          },
-          "docs_succeeded": {
-            "items": {
-              "$ref": "#/components/schemas/SucceededDocsItem"
-            },
-            "type": "array",
-            "title": "Docs Succeeded"
-          },
-          "docs_failed": {
-            "items": {
-              "$ref": "#/components/schemas/FailedDocsItem"
-            },
-            "type": "array",
-            "title": "Docs Failed"
-          }
-        },
-        "type": "object",
-        "required": [
-          "num_processed",
-          "num_succeeded",
-          "num_failed",
-          "docs_succeeded",
-          "docs_failed",
-          "kind"
-        ],
-        "title": "ProgressUpdateProcessed"
-      },
       "ProvenanceItem": {
         "properties": {
           "page_no": {
@@ -4163,8 +6347,7 @@
         },
         "type": "object",
         "required": [
-          "url",
-          "kind"
+          "url"
         ],
         "title": "PutTarget"
       },
@@ -4251,6 +6434,11 @@
             "title": "Row Section",
             "default": false
           },
+          "fillable": {
+            "type": "boolean",
+            "title": "Fillable",
+            "default": false
+          },
           "ref": {
             "$ref": "#/components/schemas/RefItem"
           }
@@ -4321,8 +6509,7 @@
           "endpoint",
           "access_key",
           "secret_key",
-          "bucket",
-          "kind"
+          "bucket"
         ],
         "title": "S3SourceRequest"
       },
@@ -4380,8 +6567,7 @@
           "endpoint",
           "access_key",
           "secret_key",
-          "bucket",
-          "kind"
+          "bucket"
         ],
         "title": "S3Target"
       },
@@ -4506,19 +6692,6 @@
         "title": "Size",
         "description": "Size."
       },
-      "SucceededDocsItem": {
-        "properties": {
-          "source": {
-            "type": "string",
-            "title": "Source"
-          }
-        },
-        "type": "object",
-        "required": [
-          "source"
-        ],
-        "title": "SucceededDocsItem"
-      },
       "TableCell": {
         "properties": {
           "bbox": {
@@ -4574,6 +6747,11 @@
           "row_section": {
             "type": "boolean",
             "title": "Row Section",
+            "default": false
+          },
+          "fillable": {
+            "type": "boolean",
+            "title": "Fillable",
             "default": false
           }
         },
@@ -4801,6 +6979,9 @@
             "type": "string",
             "title": "Task Id"
           },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          },
           "task_status": {
             "type": "string",
             "title": "Task Status"
@@ -4830,9 +7011,18 @@
         "type": "object",
         "required": [
           "task_id",
+          "task_type",
           "task_status"
         ],
         "title": "TaskStatusResponse"
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "convert",
+          "chunk"
+        ],
+        "title": "TaskType"
       },
       "TextItem": {
         "properties": {
@@ -5089,6 +7279,7 @@
             "default": {}
           },
           "params": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Params",
             "description": "Model parameters.",
@@ -5185,6 +7376,7 @@
             "default": "automodel"
           },
           "extra_generation_config": {
+            "additionalProperties": true,
             "type": "object",
             "title": "Extra Generation Config",
             "description": "Config from https://huggingface.co/docs/transformers/en/main_classes/text_generation#transformers.GenerationConfig",
@@ -5230,10 +7422,7 @@
           }
         },
         "type": "object",
-        "title": "ZipTarget",
-        "required": [
-          "kind"
-        ]
+        "title": "ZipTarget"
       },
       "ocr_engines_enum": {
         "type": "string",
