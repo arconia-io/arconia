@@ -31,7 +31,6 @@ public final class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({Clock.class, Resource.class})
     SdkMeterProvider meterProvider(Clock clock,
                                    ExemplarFilter exemplarFilter,
                                    OpenTelemetryMetricsProperties properties,
