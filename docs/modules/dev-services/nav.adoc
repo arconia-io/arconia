@@ -2,6 +2,7 @@
 * xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
 ** xref:mariadb.adoc[MariaDB]
+** xref:mongodb.adoc[MongoDB]
 ** xref:mysql.adoc[MySQL]
 ** xref:oracle.adoc[Oracle]
 ** xref:oracle-xe.adoc[Oracle XE]
@@ -11,3 +12,4 @@
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
 * xref:rabbitmq.adoc[RabbitMQ]
+
