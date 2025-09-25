@@ -3,11 +3,11 @@
 
 A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes.
 
-It works with Spring Boot libraries that support MongoDB via JDBC, JPA including:
+It works with Spring Boot libraries that support MongoDB including:
 
 * https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
-* https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
-* https://spring.io/projects/spring-data-jpa[Spring Data JPA]
+* https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
+* https://spring.io/projects/spring-session[Spring Session]
 
 == Dependencies
 
@@ -34,7 +34,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.mongodb.environment`
 | `{}`
-| Environment variables to set in the service. Example: `MONGODB_USER: "mongodb"`.
+| Environment variables to set in the service. Example: `MONGO_INITDB_ROOT_USERNAME: "mongodb"`.
 
 | `arconia.dev.services.mongodb.shared`
 | `never`
