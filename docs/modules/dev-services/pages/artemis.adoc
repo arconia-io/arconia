@@ -1,0 +1,53 @@
+= Artemis Dev Service
+:service-name: artemis
+
+A service providing an https://activemq.apache.org/components/artemis/[ApacheMQ Artemis] event broker for development and testing purposes.
+
+It works with Spring Boot libraries that support JMS and ApacheMQ Artemis, including:
+
+* https://docs.spring.io/spring-framework/reference/integration/jms.html[Spring JMS]
+* https://docs.spring.io/spring-boot/reference/messaging/jms.html#messaging.jms.artemis[Spring Boot Artemis]
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.artemis.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.artemis.image-name`
+| `artemis`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.artemis.environment`
+| `{}`
+| Environment variables to set in the service. Example: `ANONYMOUS_LOGIN: "true"`.
+
+| `arconia.dev.services.artemis.shared`
+| `dev-mode`
+| When the dev service is shared across applications.
+
+| `arconia.dev.services.artemis.username`
+| `artemis`
+| Username for the Artemis administrator user.
+
+| `arconia.dev.services.artemis.password`
+| `artemis`
+| Password for the Artemis administrator user.
+|===
+
+include::partial$disabling-dev-service.adoc[]

@@ -72,6 +72,7 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 
 == Supported Services
 
+* xref:artemis.adoc[ApacheMQ Artemis]
 * xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
 ** xref:mariadb.adoc[MariaDB]
