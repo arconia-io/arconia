@@ -35,6 +35,10 @@ class MariaDbDevServicesAutoConfigurationTests {
             assertThat(container.getDockerImageName()).contains("mariadb");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
+            container.start();
+            assertThat(container.getUsername()).isEqualTo("test");
+            assertThat(container.getPassword()).isEqualTo("test");
+            assertThat(container.getDatabaseName()).isEqualTo("test");
         });
     }
 
@@ -43,16 +47,27 @@ class MariaDbDevServicesAutoConfigurationTests {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.mariadb.image-name=docker.io/library/mariadb",
-                "arconia.dev.services.mariadb.environment.MARIADB_USER=test",
+                "arconia.dev.services.mariadb.environment.KEY=value",
                 "arconia.dev.services.mariadb.shared=never",
-                "arconia.dev.services.mariadb.startup-timeout=90s"
+                "arconia.dev.services.mariadb.startup-timeout=90s",
+                "arconia.dev.services.mariadb.username=mytest",
+                "arconia.dev.services.mariadb.password=mytest",
+                "arconia.dev.services.mariadb.db-name=mytest",
+                "arconia.dev.services.mariadb.init-script-paths=sql/init.sql"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MariaDBContainer.class);
                 MariaDBContainer<?> container = context.getBean(MariaDBContainer.class);
                 assertThat(container.getDockerImageName()).contains("docker.io/library/mariadb");
-                assertThat(container.getEnv()).contains("MARIADB_USER=test");
+                assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getUsername()).isEqualTo("mytest");
+                assertThat(container.getPassword()).isEqualTo("mytest");
+                assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "-e",
+                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'mytest'").getStdout())
+                        .contains("TABLE_NAME", "BOOK");
             });
     }
 

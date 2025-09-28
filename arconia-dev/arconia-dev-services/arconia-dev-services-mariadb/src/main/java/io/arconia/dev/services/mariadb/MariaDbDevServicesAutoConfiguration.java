@@ -42,7 +42,11 @@ public final class MariaDbDevServicesAutoConfiguration {
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean());
+                    .withReuse(properties.getShared().asBoolean())
+                    .withUsername(properties.getUsername())
+                    .withPassword(properties.getPassword())
+                    .withDatabaseName(properties.getDbName())
+                    .withInitScripts(properties.getInitScriptPaths());
         }
 
     }
@@ -59,7 +63,11 @@ public final class MariaDbDevServicesAutoConfiguration {
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean());
+                    .withReuse(properties.getShared().asBoolean())
+                    .withUsername(properties.getUsername())
+                    .withPassword(properties.getPassword())
+                    .withDatabaseName(properties.getDbName())
+                    .withInitScripts(properties.getInitScriptPaths());
         }
 
     }
