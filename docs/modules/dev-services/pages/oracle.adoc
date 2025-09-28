@@ -33,7 +33,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.oracle.environment`
 | `{}`
-| Environment variables to set in the container. Example: `ORACLE_PASSWORD: "secret"`.
+| Environment variables to set in the container.
 
 | `arconia.dev.services.oracle.shared`
 | `never`

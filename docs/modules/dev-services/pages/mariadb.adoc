@@ -33,7 +33,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.mariadb.environment`
 | `{}`
-| Environment variables to set in the container. Example: `MARIADB_USER: "test"`.
+| Environment variables to set in the container.
 
 | `arconia.dev.services.mariadb.shared`
 | `never`

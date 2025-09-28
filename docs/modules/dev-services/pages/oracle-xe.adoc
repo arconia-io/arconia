@@ -33,7 +33,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.oracle-xe.environment`
 | `{}`
-| Environment variables to set in the service. Example: `ORACLE_PASSWORD: "secret"`.
+| Environment variables to set in the service.
 
 | `arconia.dev.services.oracle-xe.shared`
 | `never`

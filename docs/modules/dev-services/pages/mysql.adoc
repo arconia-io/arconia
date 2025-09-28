@@ -33,7 +33,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.mysql.environment`
 | `{}`
-| Environment variables to set in the container. Example: `KEY: "value"`.
+| Environment variables to set in the container.
 
 | `arconia.dev.services.mysql.shared`
 | `never`

@@ -34,7 +34,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.postgresql.environment`
 | `{}`
-| Environment variables to set in the service. Example: `POSTGRES_USER: "postgres"`.
+| Environment variables to set in the service.
 
 | `arconia.dev.services.postgresql.shared`
 | `never`
