@@ -37,6 +37,10 @@ class OracleDevServicesAutoConfigurationTests {
             assertThat(container.getDockerImageName()).contains("gvenzl/oracle-free");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
+            container.start();
+            assertThat(container.getUsername()).isEqualTo("test");
+            assertThat(container.getPassword()).isEqualTo("test");
+            assertThat(container.getDatabaseName()).isEqualTo("test");
         });
     }
 
@@ -44,17 +48,23 @@ class OracleDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.oracle.image-name=docker.io/gvenzl/oracle-free",
-                "arconia.dev.services.oracle.environment.ORACLE_PASSWORD=secret",
+                "arconia.dev.services.oracle.environment.KEY=value",
                 "arconia.dev.services.oracle.shared=never",
-                "arconia.dev.services.oracle.startup-timeout=90s"
+                "arconia.dev.services.oracle.startup-timeout=90s",
+                "arconia.dev.services.oracle.username=mytest",
+                "arconia.dev.services.oracle.password=mytest",
+                "arconia.dev.services.oracle.db-name=mytest",
+                "arconia.dev.services.oracle.init-script-paths=sql/init.sql"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(OracleContainer.class);
                 OracleContainer container = context.getBean(OracleContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/gvenzl/oracle-free");
-                assertThat(container.getEnv()).contains("ORACLE_PASSWORD=secret");
+                assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getUsername()).isEqualTo("mytest");
+                assertThat(container.getPassword()).isEqualTo("mytest");
+                assertThat(container.getDatabaseName()).isEqualTo("mytest");
             });
     }
 

@@ -42,6 +42,23 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.oracle.startup-timeout`
 | `120s`
 | Maximum waiting time for the service to start.
+
+| `arconia.dev.services.oracle.username`
+| `test`
+| Username to be used for connecting to the database.
+
+| `arconia.dev.services.oracle.password`
+| `test`
+| Password to be used for connecting to the database.
+
+| `arconia.dev.services.oracle.db-name`
+| `test`
+| Name of the database to be created.
+
+| `arconia.dev.services.oracle.init-script-paths`
+| `[]`
+| List of paths to SQL scripts to be loaded from the classpath and applied to the database for initialization.
+
 |===
 
 include::partial$disabling-dev-service.adoc[]
