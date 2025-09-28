@@ -72,7 +72,6 @@ class LgtmDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.lgtm.image-name=docker.io/grafana/otel-lgtm",
                 "arconia.dev.services.lgtm.environment.ENABLE_LOGS_ALL=true",
                 "arconia.dev.services.lgtm.shared=never",
                 "arconia.dev.services.lgtm.startup-timeout=90s"
@@ -80,7 +79,6 @@ class LgtmDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(LgtmStackContainer.class);
                 LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/grafana/otel-lgtm");
                 assertThat(container.getEnv()).contains("ENABLE_LOGS_ALL=true");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

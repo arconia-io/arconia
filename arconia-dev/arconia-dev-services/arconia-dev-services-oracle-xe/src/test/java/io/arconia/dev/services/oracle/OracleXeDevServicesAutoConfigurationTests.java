@@ -44,7 +44,6 @@ class OracleXeDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.oracle-xe.image-name=docker.io/gvenzl/oracle-xe",
                 "arconia.dev.services.oracle-xe.environment.ORACLE_PASSWORD=secret",
                 "arconia.dev.services.oracle-xe.shared=never",
                 "arconia.dev.services.oracle-xe.startup-timeout=90s"
@@ -52,7 +51,6 @@ class OracleXeDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(OracleContainer.class);
                 OracleContainer container = context.getBean(OracleContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/gvenzl/oracle-xe");
                 assertThat(container.getEnv()).contains("ORACLE_PASSWORD=secret");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

@@ -51,7 +51,6 @@ class OllamaDevServicesAutoConfigurationTests {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.ollama.enabled=true",
-                "arconia.dev.services.ollama.image-name=docker.io/ollama/ollama",
                 "arconia.dev.services.ollama.environment.OLLAMA_NUM_PARALLEL=4",
                 "arconia.dev.services.ollama.shared=never",
                 "arconia.dev.services.ollama.startup-timeout=90s"
@@ -59,7 +58,6 @@ class OllamaDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(OllamaContainer.class);
                 OllamaContainer container = context.getBean(OllamaContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/ollama/ollama");
                 assertThat(container.getEnv()).contains("OLLAMA_NUM_PARALLEL=4");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

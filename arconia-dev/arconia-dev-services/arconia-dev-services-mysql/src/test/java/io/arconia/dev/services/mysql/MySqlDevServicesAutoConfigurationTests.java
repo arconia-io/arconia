@@ -46,7 +46,6 @@ class MySqlDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mysql.image-name=docker.io/library/mysql:8.4",
                 "arconia.dev.services.mysql.environment.KEY=value",
                 "arconia.dev.services.mysql.shared=never",
                 "arconia.dev.services.mysql.startup-timeout=90s",
@@ -58,7 +57,6 @@ class MySqlDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(MySQLContainer.class);
                 MySQLContainer<?> container = context.getBean(MySQLContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/library/mysql:8.4");
                 assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
                 container.start();

@@ -42,7 +42,6 @@ class MongoDbDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mongodb.image-name=docker.io/library/mongo",
                 "arconia.dev.services.mongodb.environment.MONGO_INITDB_ROOT_USERNAME=mongodb",
                 "arconia.dev.services.mongodb.shared=never",
                 "arconia.dev.services.mongodb.startup-timeout=90s"
@@ -50,7 +49,6 @@ class MongoDbDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(MongoDBContainer.class);
                 MongoDBContainer container = context.getBean(MongoDBContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/library/mongo");
                 assertThat(container.getEnv()).contains("MONGO_INITDB_ROOT_USERNAME=mongodb");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

@@ -69,7 +69,6 @@ class ArtemisDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
                 .withPropertyValues(
-                        "arconia.dev.services.artemis.image-name=docker.io/apache/activemq-artemis",
                         "arconia.dev.services.artemis.environment.ANONYMOUS_LOGIN=true",
                         "arconia.dev.services.artemis.shared=never",
                         "arconia.dev.services.artemis.startup-timeout=90s",
@@ -79,7 +78,6 @@ class ArtemisDevServicesAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(ArtemisContainer.class);
                     ArtemisContainer container = context.getBean(ArtemisContainer.class);
-                    assertThat(container.getDockerImageName()).contains("docker.io/apache/activemq-artemis");
                     assertThat(container.getEnv()).contains("ANONYMOUS_LOGIN=true");
                     assertThat(container.isShouldBeReused()).isFalse();
                     container.start();

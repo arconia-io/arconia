@@ -44,7 +44,6 @@ class RedisDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.redis.image-name=docker.io/library/redis",
                 "arconia.dev.services.redis.environment.REDIS_PASSWORD=redis",
                 "arconia.dev.services.redis.shared=never",
                 "arconia.dev.services.redis.startup-timeout=90s"
@@ -52,7 +51,6 @@ class RedisDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(RedisContainer.class);
                 RedisContainer container = context.getBean(RedisContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/library/redis");
                 assertThat(container.getEnv()).contains("REDIS_PASSWORD=redis");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

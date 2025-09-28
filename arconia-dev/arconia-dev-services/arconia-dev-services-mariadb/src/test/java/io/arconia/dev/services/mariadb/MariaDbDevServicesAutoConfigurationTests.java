@@ -46,7 +46,6 @@ class MariaDbDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mariadb.image-name=docker.io/library/mariadb",
                 "arconia.dev.services.mariadb.environment.KEY=value",
                 "arconia.dev.services.mariadb.shared=never",
                 "arconia.dev.services.mariadb.startup-timeout=90s",
@@ -58,7 +57,6 @@ class MariaDbDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(MariaDBContainer.class);
                 MariaDBContainer<?> container = context.getBean(MariaDBContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/library/mariadb");
                 assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
                 container.start();

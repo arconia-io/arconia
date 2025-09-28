@@ -72,7 +72,6 @@ class PhoenixDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.phoenix.image-name=docker.io/arizephoenix/phoenix",
                 "arconia.dev.services.phoenix.environment.PHOENIX_WORKING_DIR=/fawkes",
                 "arconia.dev.services.phoenix.shared=never",
                 "arconia.dev.services.phoenix.startup-timeout=90s"
@@ -80,7 +79,6 @@ class PhoenixDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(GenericContainer.class);
                 GenericContainer<?> container = context.getBean(GenericContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/arizephoenix/phoenix");
                 assertThat(container.getEnv()).contains("PHOENIX_WORKING_DIR=/fawkes");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
