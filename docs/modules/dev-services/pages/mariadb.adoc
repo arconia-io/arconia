@@ -40,7 +40,7 @@ You can configure the Dev Service via configuration properties.
 | When the dev service is shared across applications.
 
 | `arconia.dev.services.mariadb.startup-timeout`
-| `2m`
+| `120s`
 | Maximum waiting time for the service to start.
 
 | `arconia.dev.services.mariadb.username`
