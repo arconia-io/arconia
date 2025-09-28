@@ -66,8 +66,9 @@ class PostgresqlDevServicesAutoConfigurationTests {
                 assertThat(container.getPassword()).isEqualTo("mytest");
                 assertThat(container.getDatabaseName()).isEqualTo("mytest");
                 assertThat(container.execInContainer("psql", "-U", "mytest", "-d", "mytest", "-t", "-A", "-c",
-                                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text;")
-                        .getStdout()).contains("true");
+                        "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text")
+                        .getStdout())
+                        .contains("true");
             });
     }
 
