@@ -37,6 +37,10 @@ class OracleXeDevServicesAutoConfigurationTests {
             assertThat(container.getDockerImageName()).contains("gvenzl/oracle-xe");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
+            container.start();
+            assertThat(container.getUsername()).isEqualTo("test");
+            assertThat(container.getPassword()).isEqualTo("test");
+            assertThat(container.getDatabaseName()).isEqualTo("test");
         });
     }
 
@@ -44,15 +48,23 @@ class OracleXeDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.oracle-xe.environment.ORACLE_PASSWORD=secret",
+                "arconia.dev.services.oracle-xe.environment.KEY=value",
                 "arconia.dev.services.oracle-xe.shared=never",
-                "arconia.dev.services.oracle-xe.startup-timeout=90s"
+                "arconia.dev.services.oracle-xe.startup-timeout=90s",
+                "arconia.dev.services.oracle-xe.username=mytest",
+                "arconia.dev.services.oracle-xe.password=mytest",
+                "arconia.dev.services.oracle-xe.db-name=mytest",
+                "arconia.dev.services.oracle-xe.init-script-paths=sql/init.sql"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(OracleContainer.class);
                 OracleContainer container = context.getBean(OracleContainer.class);
-                assertThat(container.getEnv()).contains("ORACLE_PASSWORD=secret");
+                assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getUsername()).isEqualTo("mytest");
+                assertThat(container.getPassword()).isEqualTo("mytest");
+                assertThat(container.getDatabaseName()).isEqualTo("mytest");
             });
     }
 
