@@ -33,11 +33,32 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.mysql.environment`
 | `{}`
-| Environment variables to set in the container. Example: `MYSQL_USER: "test"`.
+| Environment variables to set in the container. Example: `KEY: "value"`.
 
 | `arconia.dev.services.mysql.shared`
 | `never`
 | When the dev service is shared across applications.
+
+| `arconia.dev.services.mysql.startup-timeout`
+| `2m`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.mysql.username`
+| `test`
+| Username to be used for connecting to the database.
+
+| `arconia.dev.services.mysql.password`
+| `test`
+| Password to be used for connecting to the database.
+
+| `arconia.dev.services.mysql.db-name`
+| `test`
+| Name of the database to be created.
+
+| `arconia.dev.services.mysql.init-script-paths`
+| `[]`
+| List of paths to SQL scripts to be loaded from the classpath and applied to the database for initialization.
+
 |===
 
 include::partial$disabling-dev-service.adoc[]

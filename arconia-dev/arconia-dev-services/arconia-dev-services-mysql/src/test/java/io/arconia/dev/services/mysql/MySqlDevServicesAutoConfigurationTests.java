@@ -35,6 +35,10 @@ class MySqlDevServicesAutoConfigurationTests {
             assertThat(container.getDockerImageName()).contains("mysql");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
+            container.start();
+            assertThat(container.getUsername()).isEqualTo("test");
+            assertThat(container.getPassword()).isEqualTo("test");
+            assertThat(container.getDatabaseName()).isEqualTo("test");
         });
     }
 
@@ -42,17 +46,29 @@ class MySqlDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mysql.image-name=docker.io/library/mysql",
-                "arconia.dev.services.mysql.environment.MYSQL_USER=test",
+                "arconia.dev.services.mysql.image-name=docker.io/library/mysql:8.4",
+                "arconia.dev.services.mysql.environment.KEY=value",
                 "arconia.dev.services.mysql.shared=never",
-                "arconia.dev.services.mysql.startup-timeout=90s"
+                "arconia.dev.services.mysql.startup-timeout=90s",
+                "arconia.dev.services.mysql.username=mytest",
+                "arconia.dev.services.mysql.password=mytest",
+                "arconia.dev.services.mysql.db-name=mytest",
+                "arconia.dev.services.mysql.init-script-paths=sql/init.sql"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MySQLContainer.class);
                 MySQLContainer<?> container = context.getBean(MySQLContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/library/mysql");
-                assertThat(container.getEnv()).contains("MYSQL_USER=test");
+                assertThat(container.getDockerImageName()).contains("docker.io/library/mysql:8.4");
+                assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getUsername()).isEqualTo("mytest");
+                assertThat(container.getPassword()).isEqualTo("mytest");
+                assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                assertThat(container.execInContainer("mysql", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
+                        "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
+                        .getStdout())
+                        .contains("true");
             });
     }
 
