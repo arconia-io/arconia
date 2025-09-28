@@ -39,6 +39,27 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.postgresql.shared`
 | `never`
 | When the dev service is shared across applications.
+
+| `arconia.dev.services.postgresql.startup-timeout`
+| `2m`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.postgresql.username`
+| `test`
+| Username to be used for connecting to the database.
+
+| `arconia.dev.services.postgresql.password`
+| `test`
+| Password to be used for connecting to the database.
+
+| `arconia.dev.services.postgresql.db-name`
+| `test`
+| Name of the database to be created.
+
+| `arconia.dev.services.postgresql.init-script-paths`
+| `[]`
+| List of paths to SQL scripts to be loaded from the classpath and applied to the database for initialization.
+
 |===
 
 include::partial$disabling-dev-service.adoc[]

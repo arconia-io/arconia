@@ -35,6 +35,10 @@ class PostgresqlDevServicesAutoConfigurationTests {
             assertThat(container.getDockerImageName()).contains("postgres");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
+            container.start();
+            assertThat(container.getUsername()).isEqualTo("test");
+            assertThat(container.getPassword()).isEqualTo("test");
+            assertThat(container.getDatabaseName()).isEqualTo("test");
         });
     }
 
@@ -45,7 +49,10 @@ class PostgresqlDevServicesAutoConfigurationTests {
                 "arconia.dev.services.postgresql.image-name=docker.io/library/postgres",
                 "arconia.dev.services.postgresql.environment.POSTGRES_USER=postgres",
                 "arconia.dev.services.postgresql.shared=never",
-                "arconia.dev.services.postgresql.startup-timeout=90s"
+                "arconia.dev.services.postgresql.startup-timeout=90s",
+                "arconia.dev.services.postgresql.username=mytest",
+                "arconia.dev.services.postgresql.password=mytest",
+                "arconia.dev.services.postgresql.db-name=mytest"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(PostgreSQLContainer.class);
@@ -53,6 +60,10 @@ class PostgresqlDevServicesAutoConfigurationTests {
                 assertThat(container.getDockerImageName()).contains("docker.io/library/postgres");
                 assertThat(container.getEnv()).contains("POSTGRES_USER=postgres");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getUsername()).isEqualTo("mytest");
+                assertThat(container.getPassword()).isEqualTo("mytest");
+                assertThat(container.getDatabaseName()).isEqualTo("mytest");
             });
     }
 
