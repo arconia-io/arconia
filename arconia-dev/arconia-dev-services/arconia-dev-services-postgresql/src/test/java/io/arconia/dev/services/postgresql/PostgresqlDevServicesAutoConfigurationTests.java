@@ -42,7 +42,7 @@ class PostgresqlDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.postgresql.image-name=docker.io/postgres",
+                "arconia.dev.services.postgresql.image-name=docker.io/library/postgres",
                 "arconia.dev.services.postgresql.environment.POSTGRES_USER=postgres",
                 "arconia.dev.services.postgresql.shared=never",
                 "arconia.dev.services.postgresql.startup-timeout=90s"
@@ -50,7 +50,7 @@ class PostgresqlDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(PostgreSQLContainer.class);
                 PostgreSQLContainer<?> container = context.getBean(PostgreSQLContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/postgres");
+                assertThat(container.getDockerImageName()).contains("docker.io/library/postgres");
                 assertThat(container.getEnv()).contains("POSTGRES_USER=postgres");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

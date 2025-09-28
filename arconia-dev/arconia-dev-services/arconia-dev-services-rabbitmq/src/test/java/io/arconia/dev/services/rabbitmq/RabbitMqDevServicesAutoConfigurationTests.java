@@ -65,7 +65,7 @@ class RabbitMqDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.rabbitmq.image-name=docker.io/rabbitmq",
+                "arconia.dev.services.rabbitmq.image-name=docker.io/library/rabbitmq",
                 "arconia.dev.services.rabbitmq.environment.RABBITMQ_DEFAULT_USER=user",
                 "arconia.dev.services.rabbitmq.shared=never",
                 "arconia.dev.services.rabbitmq.startup-timeout=90s"
@@ -73,7 +73,7 @@ class RabbitMqDevServicesAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(RabbitMQContainer.class);
                 RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
-                assertThat(container.getDockerImageName()).contains("docker.io/rabbitmq");
+                assertThat(container.getDockerImageName()).contains("docker.io/library/rabbitmq");
                 assertThat(container.getEnv()).contains("RABBITMQ_DEFAULT_USER=user");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
