@@ -52,7 +52,8 @@ class PostgresqlDevServicesAutoConfigurationTests {
                 "arconia.dev.services.postgresql.startup-timeout=90s",
                 "arconia.dev.services.postgresql.username=mytest",
                 "arconia.dev.services.postgresql.password=mytest",
-                "arconia.dev.services.postgresql.db-name=mytest"
+                "arconia.dev.services.postgresql.db-name=mytest",
+                "arconia.dev.services.postgresql.init-script-paths=sql/init.sql"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(PostgreSQLContainer.class);
@@ -64,6 +65,9 @@ class PostgresqlDevServicesAutoConfigurationTests {
                 assertThat(container.getUsername()).isEqualTo("mytest");
                 assertThat(container.getPassword()).isEqualTo("mytest");
                 assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                assertThat(container.execInContainer("psql", "-U", "mytest", "-d", "mytest", "-t", "-A", "-c",
+                                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text;")
+                        .getStdout()).contains("true");
             });
     }
 
