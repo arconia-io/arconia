@@ -65,9 +65,10 @@ class MariaDbDevServicesAutoConfigurationTests {
                 assertThat(container.getUsername()).isEqualTo("mytest");
                 assertThat(container.getPassword()).isEqualTo("mytest");
                 assertThat(container.getDatabaseName()).isEqualTo("mytest");
-                assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "-e",
-                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'mytest'").getStdout())
-                        .contains("TABLE_NAME", "BOOK");
+                assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
+                        "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
+                        .getStdout())
+                        .contains("true");
             });
     }
 
