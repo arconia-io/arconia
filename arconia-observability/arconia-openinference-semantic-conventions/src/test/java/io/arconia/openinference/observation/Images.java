@@ -5,7 +5,7 @@ package io.arconia.openinference.observation;
  */
 public class Images {
 
-    public static final String PHOENIX = "arizephoenix/phoenix:version-11.32.1-nonroot";
+    public static final String PHOENIX = "arizephoenix/phoenix:version-11.38.0-nonroot";
 
     private Images() {
     }
