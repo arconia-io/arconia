@@ -22,7 +22,7 @@ public class MongoDbAtlasDevServicesProperties implements DevServicesProperties 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mongodb/mongodb-atlas-local";
+    private String imageName = "mongodb/mongodb-atlas-local:8.2";
 
     /**
      * Environment variables to set in the service.

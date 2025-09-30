@@ -11,6 +11,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * A new Dev Service for xref:arconia:dev-services:artemis.adoc[ApacheMQ Artemis] has been added, allowing you to run a local instance of the Artemis event broker to use with Spring JMS. See xref:arconia:dev-services:artemis.adoc[Artemis Dev Service] for more information.
 * A new Dev Service for xref:arconia:dev-services:mongodb.adoc[MongoDB] has been added, allowing you to run a local instance of the Mongo database to use with Spring Data MongoDB. See xref:arconia:dev-services:mongodb.adoc[MongoDB Dev Service] for more information.
+* A new Dev Service for xref:arconia:dev-services:mongodb-atlas.adoc[MongoDB Atlas] has been added, allowing you to run a local instance of the MongoDB Atlas database to use with Spring AI. See xref:arconia:dev-services:mongodb-atlas.adoc[MongoDB Atlas Dev Service] for more information.
 
 === Improvements to Existing Dev Services
 

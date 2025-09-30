@@ -42,14 +42,14 @@ class MongoDbAtlasDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.mongodb-atlas.environment.MONGO_INITDB_ROOT_USERNAME=mongodb",
+                "arconia.dev.services.mongodb-atlas.environment.KEY=value",
                 "arconia.dev.services.mongodb.shared=never",
                 "arconia.dev.services.mongodb.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
                 MongoDBAtlasLocalContainer atlasLocalContainer = context.getBean(MongoDBAtlasLocalContainer.class);
-                assertThat(atlasLocalContainer.getEnv()).contains("MONGO_INITDB_ROOT_USERNAME=mongodb");
+                assertThat(atlasLocalContainer.getEnv()).contains("KEY=value");
                 assertThat(atlasLocalContainer.isShouldBeReused()).isFalse();
             });
     }

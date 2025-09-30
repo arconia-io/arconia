@@ -1,12 +1,11 @@
 = MongoDB Atlas Dev Service
 :service-name: mongodb-atlas
 
-A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes.
+A service providing a https://www.mongodb.com/products/platform[MongoDB Atlas] database for development and testing purposes.
 
 It works with Spring Boot libraries that support MongoDB Atlas including:
 
-* https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
-* https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html[Spring AI] (Vector Store & Search)
+* https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html[Spring AI] (Vector Store)
 * https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
 * https://spring.io/projects/spring-session[Spring Session]
 
@@ -35,7 +34,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.mongodb-atlas.environment`
 | `{}`
-| Environment variables to set in the service. Example: `MONGO_INITDB_ROOT_USERNAME: "mongodb"`.
+| Environment variables to set in the service. Example: `MONGODB_INITDB_ROOT_USERNAME: "mongodb"`.
 
 | `arconia.dev.services.mongodb-atlas.shared`
 | `never`
