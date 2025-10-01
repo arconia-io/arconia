@@ -6,7 +6,7 @@ A service providing a https://www.mongodb.com[MongoDB] database for development 
 It works with Spring Boot libraries that support MongoDB including:
 
 * https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
-* https://spring.io/projects/spring-session[Spring Session]
+* https://spring.io/projects/spring-session[Spring Session for MongoDB]
 
 == Dependencies
 

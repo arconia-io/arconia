@@ -21,6 +21,18 @@ Maven::
     <scope>runtime</scope>
     <optional>true</optional>
 </dependency>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <includeOptional>false</includeOptional>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 ----
 ======
 
@@ -53,9 +65,4 @@ Maven::
 [NOTE]
 ====
 When you use the Spring Boot DevTools in your project, Arconia will keep the Dev Services running while you make changes to your code instead of restarting them with the application. This allows you to see the changes in real-time without having to restart the Dev Services.
-====
-
-[WARNING]
-====
-If you're using Maven, ensure you check how to configure the xref:arconia:dev-services:index.adoc#_dev_services_in_maven[Arconia Dev Services with Maven].
 ====

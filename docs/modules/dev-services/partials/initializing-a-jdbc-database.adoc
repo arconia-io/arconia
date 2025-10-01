@@ -1,0 +1,20 @@
+You can initialize the database by providing one or more SQL scripts to be executed when the database is started. This can be useful for creating test data or applying other customizations that are only needed during development and testing.
+
+[NOTE]
+====
+If you need to create the database schema or apply other changes that are required also in production, you should use a database migration tool such as https://docs.spring.io/spring-boot/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway[Flyway] or https://docs.spring.io/spring-boot/how-to/data-initialization.html#howto.data-initialization.migration-tool.liquibase[Liquibase] instead. They will also work automatically with Arconia Dev Services.
+====
+
+The scripts must be available in the application classpath, and you can specify their location using the `arconia.dev.services.{service-name}.init-script-paths` property, which accepts a list of classpath locations.
+
+For example, if you have a script named `init.sql` located in the `src/main/resources/data` directory of your project, you can configure the Dev Service to execute it when the database is started by adding the following property to your `application.yml` or `application.properties` file:
+
+[source,properties,subs="attributes"]
+----
+arconia.dev.services.{service-name}.init-script-paths=classpath:data/init.sql
+----
+
+[TIP]
+====
+If you need to execute SQL scripts only when running tests, you can place them in the `src/test/resources` directory instead of `src/main/resources`.
+====

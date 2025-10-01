@@ -11,7 +11,6 @@ A service providing a Grafana LGTM observability platform based on OpenTelemetry
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
 
-* xref:opentelemetry:index.adoc[Arconia Observability OpenInference Conventions].
 * xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
 
 [NOTE]

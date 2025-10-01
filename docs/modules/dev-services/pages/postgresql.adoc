@@ -63,3 +63,7 @@ You can configure the Dev Service via configuration properties.
 |===
 
 include::partial$disabling-dev-service.adoc[]
+
+== Initializing the Database
+
+include::partial$initializing-a-jdbc-database.adoc[]

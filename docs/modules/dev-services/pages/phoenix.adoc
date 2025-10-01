@@ -3,9 +3,8 @@
 
 A service providing https://arize.com/docs/phoenix[Arize Phoenix], an AI Observability and Evaluation platform based on OpenTelemetry and OpenInference, for development and testing purposes.
 
-It works with Spring Boot libraries that support OpenTelemetry and OpenInference tracing, including:
+It works with Spring Boot libraries that support OpenTelemetry, including:
 
-* xref:observability:generative-ai.adoc[Arconia OpenInference Semantic Conventions].
 * xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
 
 [NOTE]

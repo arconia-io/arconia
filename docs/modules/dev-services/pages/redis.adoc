@@ -7,7 +7,7 @@ It works with Spring Boot libraries that support REPL or Redis, including:
 
 * https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
 * https://spring.io/projects/spring-data-redis[Spring Data Redis]
-* https://spring.io/projects/spring-session[Spring Session]
+* https://spring.io/projects/spring-session[Spring Session for Redis]
 
 == Dependencies
 
