@@ -105,8 +105,6 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 
 == Supported Services
 
-* xref:kafka.adoc[Apache Kafka]
-* xref:artemis.adoc[ApacheMQ Artemis]
 * xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
 ** xref:mariadb.adoc[MariaDB]
@@ -118,9 +116,12 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
 * xref:docling.adoc[Docling]
+* Event Brokers
+** xref:kafka.adoc[Apache Kafka]
+** xref:artemis.adoc[ApacheMQ Artemis]
+** xref:rabbitmq.adoc[RabbitMQ]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
-* xref:rabbitmq.adoc[RabbitMQ]
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
