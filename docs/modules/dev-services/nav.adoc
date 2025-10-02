@@ -1,4 +1,5 @@
 .xref:index.adoc[Dev Services]
+* xref:kafka.adoc[Apache Kafka]
 * xref:artemis.adoc[ApacheMQ Artemis]
 * xref:phoenix.adoc[Arize Phoenix]
 * Data Stores

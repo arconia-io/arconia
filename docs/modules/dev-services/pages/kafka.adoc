@@ -1,0 +1,46 @@
+= Kafka Dev Service
+:service-name: kafka
+
+A service providing an https://kafka.apache.org[Apache Kafka] event broker for development and testing purposes.
+
+It works with Spring Boot libraries that support Kafka, including:
+
+* https://spring.io/projects/spring-kafka[Spring for Apache Kafka]
+* https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
+* https://spring.io/projects/spring-kafka[Spring Modulith]
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.kafka.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.kafka.image-name`
+| `apache/kafka-native`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.kafka.environment`
+| `{}`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.kafka.shared`
+| `dev-mode`
+| When the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]

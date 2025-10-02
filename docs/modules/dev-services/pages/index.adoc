@@ -105,6 +105,7 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 
 == Supported Services
 
+* xref:kafka.adoc[Apache Kafka]
 * xref:artemis.adoc[ApacheMQ Artemis]
 * xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
