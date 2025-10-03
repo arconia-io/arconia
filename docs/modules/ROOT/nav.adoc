@@ -3,4 +3,5 @@
 * xref:system-requirements.adoc[System Requirements]
 * xref:upgrading-arconia.adoc[Upgrading Arconia]
 * xref:core-features/index.adoc[Core Features]
+** xref:core-features/bootstrap-mode.adoc[Bootstrap Mode]
 ** xref:core-features/profiles.adoc[Profiles]

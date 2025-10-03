@@ -5,7 +5,13 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
+== Core
+
+* The documentation for xref:core-features/index.adoc[Core Features] has been improved, providing more detailed information on how Arconia sets a bootstrap mode based on the context in which the Spring Boot application is running (dev, test, or prod) and related profiles. See xref:core-features/bootstrap-mode.adoc[Bootstrap Mode] for more information.
+
 == Dev Services
+
+* The documentation for xref:dev-services:index.adoc[Dev Services] has been improved, providing more detailed information on how to use Dev Services in your Spring Boot applications, including both Gradle and Maven scenarios.
 
 === New Dev Services
 

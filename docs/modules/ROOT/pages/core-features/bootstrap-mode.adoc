@@ -1,0 +1,26 @@
+= Bootstrap Mode
+
+Arconia provides different bootstrap modes that are activated based on the context in which the Spring Boot application is running:
+
+* The `dev` mode supports the development workflows by enabling features that facilitate rapid development and debugging.
+* The `test` mode supports the testing workflows by enabling features that facilitate automated integration testing.
+* The `prod` mode is the default mode for running the application in production, focusing on performance and security.
+
+These modes help tailor the application's behavior to suit development, testing, or production environments.
+
+When in dev or test mode, Arconia automatically activates specific Spring profiles to provide sensible defaults for those environments. This automatic profile activation helps streamline the development and testing processes by ensuring that the appropriate configurations are applied without requiring manual intervention. You can read more about profiles in the xref:core-features/profiles.adoc[Profiles] section.
+
+== Setting the Bootstrap Mode
+
+Arconia relies on a series of heuristics to determine the current bootstrap mode. However, you can explicitly set the bootstrap mode using the `ARCONIA_BOOTSTRAP_MODE` environment variable or the `arconia.bootstrap.mode` JVM system property. If you use the https://arconia.io/docs/arconia-cli/latest/index.html[Arconia CLI] to work with your Spring Boot application, the CLI automatically sets the bootstrap mode for you when running (`arconia dev`) or testing (`arconia test`) your application.
+
+== Checking the Active Bootstrap Mode
+
+If you need to check programmatically which bootstrap mode is currently active, you can use the `BootstrapMode.detect()` method. This method inspects the current environment and determines the active bootstrap mode.
+
+When in dev or test mode, a log message is printed at startup indicating the active mode. For example, when running in dev mode, you might see a log message like this:
+
+[source,log]
+----
+The application is running in dev mode
+----
