@@ -1,5 +1,4 @@
 .xref:index.adoc[Dev Services]
-* xref:phoenix.adoc[Arize Phoenix]
 * Data Stores
 ** xref:mariadb.adoc[MariaDB]
 ** xref:mongodb.adoc[MongoDB]
@@ -14,5 +13,6 @@
 ** xref:kafka.adoc[Apache Kafka]
 ** xref:artemis.adoc[ApacheMQ Artemis]
 ** xref:rabbitmq.adoc[RabbitMQ]
+* xref:phoenix.adoc[Arize Phoenix]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
