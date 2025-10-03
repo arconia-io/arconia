@@ -8,11 +8,11 @@
 ** xref:oracle-xe.adoc[Oracle XE]
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
-* xref:docling.adoc[Docling]
 * Event Brokers
 ** xref:kafka.adoc[Apache Kafka]
 ** xref:artemis.adoc[ApacheMQ Artemis]
 ** xref:rabbitmq.adoc[RabbitMQ]
 * xref:phoenix.adoc[Arize Phoenix]
+* xref:docling.adoc[Docling]
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
