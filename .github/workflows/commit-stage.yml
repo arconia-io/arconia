@@ -102,5 +102,5 @@ jobs:
         uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4.0.0
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: arconia-io/arconia-io.github.io
+          repository: arconia-io/arconia-docs
           event-type: docs-update
