@@ -72,7 +72,7 @@ jobs:
 
       - name: Release
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: jreleaser/release-action@80ffb38fa759704eed4db5c7fcaae3ac1079473e # v2
+        uses: jreleaser/release-action@c4c93fd7f7ae96bfd98f5deb621c42b781455b77 # v2.4.3
         with:
           arguments: full-release
         env:
