@@ -1,0 +1,10 @@
+{
+  "prConcurrentLimit": 5,
+  "extends": [
+    "config:best-practices",
+    ":gitSignOff"
+  ],
+  "assigneesFromCodeOwners": true,
+  "commitBodyTable": true,
+  "configMigration": true
+}
