@@ -94,13 +94,20 @@ Maven::
     <scope>runtime</scope>
     <optional>true</optional>
 </dependency>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <includeOptional>false</includeOptional>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 ----
 ======
-
-[WARNING]
-====
-If you're using Maven, ensure you check how to configure the xref:arconia:dev-services:index.adoc#_dev_services_in_maven[Arconia Dev Services with Maven].
-====
 
 By default, the Dev Service is configured to expose the Docling UI on a specific port. The application logs will show you the URL where you can access that.
 

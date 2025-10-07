@@ -11,7 +11,7 @@ Arconia provides support for the following semantic conventions that you can ado
 
 Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions].
 
-Many systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:arconia:dev-services:phoenix.adoc[Arize Phoenix] documentation for more details.
+Many systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:dev-services:phoenix.adoc[Arize Phoenix] documentation for more details.
 
 === Dependencies
 
