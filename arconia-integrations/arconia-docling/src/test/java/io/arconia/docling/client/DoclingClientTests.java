@@ -64,7 +64,7 @@ class DoclingClientTests {
     @Test
     void shouldConvertHttpSourceSuccessfully() {
         ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-                .addHttpSources(URI.create("https://arconia.io/docs/arconia-cli/latest/development/dev/"))
+                .addHttpSources(URI.create("https://docs.arconia.io/arconia-cli/latest/development/dev/"))
                 .build();
 
         ConvertDocumentResponse response = doclingClient.convertSource(request);
@@ -112,7 +112,7 @@ class DoclingClientTests {
                 .build();
 
         ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-                .addHttpSources(URI.create("https://arconia.io/docs/arconia-cli/latest/development/dev/"))
+                .addHttpSources(URI.create("https://docs.arconia.io/arconia-cli/latest/development/dev/"))
                 .options(options)
                 .build();
 
