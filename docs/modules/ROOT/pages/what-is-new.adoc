@@ -1,7 +1,7 @@
 [what-is-new]
 = What's New in Arconia {page-component-version}
 
-Arconia {page-component-version} provides a number of new features and enhancements. This page includes the highlights of the release, but you can also check out the full release notes for more details about each new feature and bug fix.
+Arconia {page-component-version} provides a number of new features and enhancements. This page includes the highlights of the release, but you can also check out the full https://github.com/arconia-io/arconia/releases[release notes] for more details about each new feature and bug fix.
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
@@ -15,15 +15,16 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 === New Dev Services
 
-* A new Dev Service for xref:dev-services:artemis.adoc[ApacheMQ Artemis] has been added, allowing you to run a local instance of the Artemis event broker to use with Spring JMS. See xref:dev-services:artemis.adoc[Artemis Dev Service] for more information.
-* A new Dev Service for xref:dev-services:kafka.adoc[Apache Kafka] has been added, allowing you to run a local instance of the Kafka event broker to use with Spring for Apache Kafka. See xref:dev-services:kafka.adoc[Kafka Dev Service] for more information.
-* A new Dev Service for xref:dev-services:mongodb.adoc[MongoDB] has been added, allowing you to run a local instance of the Mongo database to use with Spring Data MongoDB. See xref:dev-services:mongodb.adoc[MongoDB Dev Service] for more information.
-* A new Dev Service for xref:dev-services:mongodb-atlas.adoc[MongoDB Atlas] has been added, allowing you to run a local instance of the MongoDB Atlas database to use with Spring AI. See xref:dev-services:mongodb-atlas.adoc[MongoDB Atlas Dev Service] for more information.
+* A new Dev Service for xref:dev-services:artemis.adoc[ApacheMQ Artemis] has been added, allowing you to run a local instance of the Artemis event broker to use with Spring JMS.
+* A new Dev Service for xref:dev-services:kafka.adoc[Apache Kafka] has been added, allowing you to run a local instance of the Kafka event broker to use with Spring for Apache Kafka.
+* A new Dev Service for xref:dev-services:mongodb.adoc[MongoDB] has been added, allowing you to run a local instance of the Mongo database to use with Spring Data MongoDB.
+* A new Dev Service for xref:dev-services:mongodb-atlas.adoc[MongoDB Atlas] has been added, allowing you to run a local instance of the MongoDB Atlas database to use with Spring AI.
 
 === Improvements to Existing Dev Services
 
-* The xref:dev-services:mariadb.adoc[MariaDB Dev Service] now supports configuration of the database name, username, and password via configuration properties. It also allows you to specify SQL scripts to be executed on startup to initialize the database schema and data.
-* The xref:dev-services:mysql.adoc[MySQL Dev Service] now supports configuration of the database name, username, and password via configuration properties. It also allows you to specify SQL scripts to be executed on startup to initialize the database schema and data.
-* The xref:dev-services:oracle.adoc[Oracle Dev Service] now supports configuration of the database name, username, and password via configuration properties. It also allows you to specify SQL scripts to be executed on startup to initialize the database schema and data.
-* The xref:dev-services:oracle-xe.adoc[Oracle XE Dev Service] now supports configuration of the database name, username, and password via configuration properties. It also allows you to specify SQL scripts to be executed on startup to initialize the database schema and data.
-* The xref:dev-services:postgresql.adoc[PostgreSQL Dev Service] now supports configuration of the database name, username, and password via configuration properties. It also allows you to specify SQL scripts to be executed on startup to initialize the database schema and data.
+* The following Dev Services now support configuration of the database name, username, and password via configuration properties. They also allow you to specify SQL scripts to be executed on startup to initialize the database schema and data:
+** xref:dev-services:mariadb.adoc[MariaDB Dev Service]
+** xref:dev-services:mysql.adoc[MySQL Dev Service]
+** xref:dev-services:oracle.adoc[Oracle Dev Service]
+** xref:dev-services:oracle-xe.adoc[Oracle XE Dev Service]
+** xref:dev-services:postgresql.adoc[PostgreSQL Dev Service].
