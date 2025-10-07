@@ -4,8 +4,7 @@
 [![Follow Arconia on Bluesky](https://img.shields.io/static/v1?label=Bluesky&message=Follow&logo=bluesky&logoColor=F5F5F5&color=1185FE&style=for-the-badge)](https://bsky.app/profile/arconia.io)
 [![Apache 2.0 License](https://img.shields.io/github/license/arconia-io/arconia?style=for-the-badge&logo=apache&color=brightgreen)](https://www.apache.org/licenses/LICENSE-2.0)
 
-Arconia is a framework designed to build modern enterprise applications using Java and Spring Boot,
-emphasizing developer experience and cloud native architectures.
+Arconia is a framework that acts as an add-on for Spring Boot, designed to enhance modern enterprise applications built with Java. You can add Arconia to an existing Spring Boot application to boost developer experience, reduce boilerplate, and seamlessly adopt cloud native patterns.
 
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
