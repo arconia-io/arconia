@@ -1,6 +1,5 @@
 name: arconia
 title: Arconia Framework
-prerelease: true
 nav:
   - modules/ROOT/nav.adoc
   - modules/dev-services/nav.adoc
