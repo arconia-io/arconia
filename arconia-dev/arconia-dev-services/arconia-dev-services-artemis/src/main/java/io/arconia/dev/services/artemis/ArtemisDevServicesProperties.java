@@ -45,12 +45,12 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     /**
      * Username for the Artemis administrator user.
      */
-    private String username = "artemis";
+    private String username = DEFAULT_USERNAME;
 
     /**
      * Password for the Artemis administrator user.
      */
-    private String password = "artemis";
+    private String password = DEFAULT_PASSWORD;
 
     @Override
     public boolean isEnabled() {
