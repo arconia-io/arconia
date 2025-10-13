@@ -2,8 +2,9 @@
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/arconia-io/arconia/commit-stage.yml?branch=main&logo=GitHub&label=Build)
 ![GitHub License](https://img.shields.io/github/license/arconia-io/arconia?&logo=apache&label=License)
-![Follow Arconia on Bluesky](https://img.shields.io/badge/Follow-blue?&logo=bluesky&logoColor=%23F5F5F5&label=Bluesky&color=%231185FE&link=https%3A%2F%2Fbsky.app%2Fprofile%2Farconia.io)
 ![Maven Central Version](https://img.shields.io/maven-central/v/io.arconia/arconia-bom?logo=apache%20maven&label=Maven%20Central&color=purple)
+![Follow Arconia on Bluesky](https://img.shields.io/badge/Follow-blue?&logo=bluesky&logoColor=%23F5F5F5&label=Bluesky&color=%231185FE&link=https%3A%2F%2Fbsky.app%2Fprofile%2Farconia.io)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/arconia-io/arconia/badge)](https://scorecard.dev/viewer/?uri=github.com/arconia-io/arconia)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11241/badge)](https://www.bestpractices.dev/projects/11241)
 
 Arconia is a framework that acts as an add-on for Spring Boot, designed to enhance modern enterprise applications built with Java. You can add Arconia to an existing Spring Boot application to boost developer experience, reduce boilerplate, and seamlessly adopt cloud native patterns.
