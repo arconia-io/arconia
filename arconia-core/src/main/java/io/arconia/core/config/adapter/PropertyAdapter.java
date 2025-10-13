@@ -80,28 +80,31 @@ public class PropertyAdapter {
             return mapProperty(externalKey, arconiaKey, Boolean::valueOf);
         }
 
+        @Nullable
         public Builder mapInteger(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
                     return Integer.parseInt(value);
                 } catch (NumberFormatException e) {
-                    logger.warn("Unsupported value for {}: {}", externalKey, value);
+                    logUnsupportedValue(externalKey, value);
                     return null;
                 }
             });
         }
 
+        @Nullable
         public Builder mapDouble(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
                     return Double.parseDouble(value);
                 } catch (NumberFormatException e) {
-                    logger.warn("Unsupported value for {}: {}", externalKey, value);
+                    logUnsupportedValue(externalKey, value);
                     return null;
                 }
             });
         }
 
+        @Nullable
         public Builder mapDuration(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
@@ -120,12 +123,13 @@ public class PropertyAdapter {
                     // Try parsing as milliseconds
                     return Duration.ofMillis(Long.parseLong(value.strip()));
                 } catch (Exception e) {
-                    logger.warn("Unsupported value for {}: {}", externalKey, value);
+                    logUnsupportedValue(externalKey, value);
                     return null;
                 }
             });
         }
 
+        @Nullable
         public Builder mapList(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 List<String> propertyList = List.of(value.split(","));
@@ -133,10 +137,12 @@ public class PropertyAdapter {
             });
         }
 
+        @Nullable
         public Builder mapMap(String externalKey, String arconiaKey) {
             return mapMap(externalKey, arconiaKey, null);
         }
 
+        @Nullable
         public Builder mapMap(String externalKey, String arconiaKey, @Nullable Function<Map<String,String>,Map<String,String>> postProcessor) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 Map<String, String> propertyMap = new HashMap<>();
@@ -164,6 +170,10 @@ public class PropertyAdapter {
             return adapter;
         }
 
+    }
+
+    private static void logUnsupportedValue(String externalKey, String value) {
+        logger.warn("Unsupported value for {}: {}", externalKey, value);
     }
 
 }

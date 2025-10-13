@@ -38,7 +38,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (exporterType == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return exporterType;
@@ -54,7 +54,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (protocol == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return protocol;
@@ -70,7 +70,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (compression == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return compression;
@@ -86,7 +86,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (histogramAggregation == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return histogramAggregation;
@@ -103,7 +103,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (aggregationTemporality == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return aggregationTemporality;
@@ -123,7 +123,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (protocol == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return protocol;
@@ -144,7 +144,7 @@ class OpenTelemetryEnvironmentPropertyConverters {
                     default -> null;
                 };
                 if (propagator == null) {
-                    logger.warn("Unsupported value for {}: {}", externalKey, value);
+                    logUnsupportedValue(externalKey, value);
                 } else {
                     propagators.add(propagator);
                 }
@@ -164,11 +164,15 @@ class OpenTelemetryEnvironmentPropertyConverters {
                 default -> null;
             };
             if (exemplarFilter == null) {
-                logger.warn("Unsupported value for {}: {}", externalKey, value);
+                logUnsupportedValue(externalKey, value);
                 return null;
             }
             return exemplarFilter;
         };
+    }
+
+    private static void logUnsupportedValue(String externalKey, String value) {
+        logger.warn("Unsupported value for {}: {}", externalKey, value);
     }
 
 }
