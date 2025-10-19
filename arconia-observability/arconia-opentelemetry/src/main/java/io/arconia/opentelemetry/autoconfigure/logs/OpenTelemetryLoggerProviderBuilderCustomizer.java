@@ -4,8 +4,7 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 
 /**
- * Callback for customizing the {@link SdkLoggerProviderBuilder}
- * used to build the auto-configured {@link SdkLoggerProvider}.
+ * Customizes the {@link SdkLoggerProviderBuilder} used to build the autoconfigured {@link SdkLoggerProvider}.
  */
 @FunctionalInterface
 public interface OpenTelemetryLoggerProviderBuilderCustomizer {

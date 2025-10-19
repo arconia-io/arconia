@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.resources.Resource;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,12 +41,6 @@ class OpenTelemetryLoggingAutoConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.logs.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(SdkLoggerProvider.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenLoggerProviderClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(SdkLoggerProvider.class))
-                .run(context -> assertThat(context).doesNotHaveBean(SdkLoggerProvider.class));
     }
 
     @Test

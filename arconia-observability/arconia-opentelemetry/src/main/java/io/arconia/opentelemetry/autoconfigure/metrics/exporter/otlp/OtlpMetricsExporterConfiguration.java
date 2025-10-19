@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.RetryConfig;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -60,6 +61,7 @@ public final class OtlpMetricsExporterConfiguration {
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
                 .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
                 .setMemoryMode(commonProperties.getMemoryMode());
+        builder.setRetryPolicy(properties.getOtlp().getRetry() != null ? RetryConfig.buildRetryPolicy(properties.getOtlp().getRetry()) : RetryConfig.buildRetryPolicy(commonProperties.getOtlp().getRetry()));
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
@@ -83,6 +85,7 @@ public final class OtlpMetricsExporterConfiguration {
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
                 .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
                 .setMemoryMode(commonProperties.getMemoryMode());
+        builder.setRetryPolicy(properties.getOtlp().getRetry() != null ? RetryConfig.buildRetryPolicy(properties.getOtlp().getRetry()) : RetryConfig.buildRetryPolicy(commonProperties.getOtlp().getRetry()));
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())

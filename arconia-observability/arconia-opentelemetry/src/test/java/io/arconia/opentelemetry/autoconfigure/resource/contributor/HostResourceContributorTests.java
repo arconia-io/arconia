@@ -10,8 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.info.OsInfo;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import io.arconia.core.info.HostInfo;
-
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,10 +20,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class HostResourceContributorTests {
 
-    private final HostResourceContributor contributor = new HostResourceContributor();
-
-    @Mock
-    private HostInfo hostInfo;
+    private final HostResourceContributor contributor = new HostResourceContributor(() -> "test-host");
 
     @Mock
     private OsInfo osInfo;
@@ -35,7 +30,6 @@ class HostResourceContributorTests {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(contributor, "hostInfo", hostInfo);
         ReflectionTestUtils.setField(contributor, "osInfo", osInfo);
     }
 
@@ -50,8 +44,6 @@ class HostResourceContributorTests {
 
     @Test
     void shouldContributeHostNameWhenAvailable() {
-        when(hostInfo.getName()).thenReturn("test-host");
-
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(HostResourceContributor.HOST_NAME, "test-host");
@@ -77,18 +69,18 @@ class HostResourceContributorTests {
 
     @Test
     void shouldSkipHostNameWhenEmpty() {
-        when(hostInfo.getName()).thenReturn("");
+        var customContributor = new HostResourceContributor(() -> "");
 
-        contributor.contribute(resourceBuilder);
+        customContributor.contribute(resourceBuilder);
 
         verify(resourceBuilder, never()).put(HostResourceContributor.HOST_NAME, "");
     }
 
     @Test
     void shouldSkipHostNameWhenNull() {
-        when(hostInfo.getName()).thenReturn(null);
+        var customContributor = new HostResourceContributor(() -> null);
 
-        contributor.contribute(resourceBuilder);
+        customContributor.contribute(resourceBuilder);
 
         verify(resourceBuilder, never()).put(HostResourceContributor.HOST_NAME, null);
     }
@@ -96,7 +88,6 @@ class HostResourceContributorTests {
     @Test
     void shouldContributeAllAttributesWhenAvailable() {
         when(osInfo.getArch()).thenReturn("aarch64");
-        when(hostInfo.getName()).thenReturn("test-host");
 
         contributor.contribute(resourceBuilder);
 

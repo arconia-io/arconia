@@ -4,14 +4,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import io.opentelemetry.sdk.resources.Resource;
-
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Configuration properties for OpenTelemetry {@link Resource},
- * a set of attributes defining the telemetry source.
+ * Configuration properties for OpenTelemetry Resource.
  */
 @ConfigurationProperties(prefix = OpenTelemetryResourceProperties.CONFIG_PREFIX)
 public class OpenTelemetryResourceProperties {

@@ -22,7 +22,7 @@ class OnOpenTelemetryLoggingCondition extends SpringBootCondition {
         }
 
         return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnOpenTelemetryLogging.class)
-                .because("OpenTelemetry Logs are enabled by default"));
+                .because("OpenTelemetry logging is enabled by default"));
     }
 
 }

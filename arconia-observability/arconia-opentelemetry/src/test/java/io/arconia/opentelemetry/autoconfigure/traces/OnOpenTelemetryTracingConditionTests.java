@@ -24,73 +24,31 @@ class OnOpenTelemetryTracingConditionTests {
     private final AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
 
     @Test
-    void shouldMatchWhenBothPropertiesAreEnabled() {
+    void shouldMatchWhenPropertyIsEnabled() {
         environment.setProperty("arconia.otel.traces.enabled", "true");
-        environment.setProperty("management.tracing.enabled", "true");
         when(context.getEnvironment()).thenReturn(environment);
 
         ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
 
         assertThat(outcome.isMatch()).isTrue();
         assertThat(outcome.getMessage())
-                .contains("arconia.otel.traces.enabled is true")
-                .contains("management.tracing.enabled is true");
+                .contains("arconia.otel.traces.enabled is true");
     }
 
     @Test
-    void shouldNotMatchWhenArconiaTracingIsDisabled() {
+    void shouldNotMatchWhenPropertyIsDisabled() {
         environment.setProperty("arconia.otel.traces.enabled", "false");
-        environment.setProperty("management.tracing.enabled", "true");
         when(context.getEnvironment()).thenReturn(environment);
 
         ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("arconia.otel.traces.enabled is false")
-                .contains("management.tracing.enabled is true");
-    }
-
-    @Test
-    void shouldNotMatchWhenManagementTracingIsDisabled() {
-        environment.setProperty("arconia.otel.traces.enabled", "true");
-        environment.setProperty("management.tracing.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.otel.traces.enabled is true")
-                .contains("management.tracing.enabled is false");
+                .contains("arconia.otel.traces.enabled is false");
     }
 
     @Test
     void shouldMatchByDefaultWhenNoPropertiesAreSet() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("OpenTelemetry tracing is enabled by default");
-    }
-
-    @Test
-    void shouldMatchByDefaultWhenOnlyArconiaTracingIsSet() {
-        environment.setProperty("arconia.otel.traces.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("OpenTelemetry tracing is enabled by default");
-    }
-
-    @Test
-    void shouldMatchByDefaultWhenOnlyManagementTracingIsSet() {
-        environment.setProperty("management.tracing.enabled", "true");
         when(context.getEnvironment()).thenReturn(environment);
 
         ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);

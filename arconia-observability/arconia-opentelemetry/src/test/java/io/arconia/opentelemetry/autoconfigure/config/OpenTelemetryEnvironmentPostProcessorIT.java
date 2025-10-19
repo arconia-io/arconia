@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.config;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ class OpenTelemetryEnvironmentPostProcessorIT {
     private SpringApplication application;
 
     @TempDir
-    java.io.File temp;
+    File temp;
 
     @BeforeEach
     void setup() {

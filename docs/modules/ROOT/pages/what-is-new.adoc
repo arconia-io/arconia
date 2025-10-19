@@ -7,24 +7,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Core
 
-* The documentation for xref:core-features/index.adoc[Core Features] has been improved, providing more detailed information on how Arconia sets a bootstrap mode based on the context in which the Spring Boot application is running (dev, test, or prod) and related profiles. See xref:core-features/bootstrap-mode.adoc[Bootstrap Mode] for more information.
+* The experimental `HostInfo` class has been removed. Use the `OsInfo` class from Spring Boot to obtain operating system information or Java's `InetAddress.getLocalHost().getHostName()` to get the hostname.
 
-== Dev Services
+== OpenTelemetry
 
-* The documentation for xref:dev-services:index.adoc[Dev Services] has been improved, providing more detailed information on how to use Dev Services in your Spring Boot applications, including both Gradle and Maven scenarios.
-
-=== New Dev Services
-
-* A new Dev Service for xref:dev-services:artemis.adoc[ApacheMQ Artemis] has been added, allowing you to run a local instance of the Artemis event broker to use with Spring JMS.
-* A new Dev Service for xref:dev-services:kafka.adoc[Apache Kafka] has been added, allowing you to run a local instance of the Kafka event broker to use with Spring for Apache Kafka.
-* A new Dev Service for xref:dev-services:mongodb.adoc[MongoDB] has been added, allowing you to run a local instance of the Mongo database to use with Spring Data MongoDB.
-* A new Dev Service for xref:dev-services:mongodb-atlas.adoc[MongoDB Atlas] has been added, allowing you to run a local instance of the MongoDB Atlas database to use with Spring AI.
-
-=== Improvements to Existing Dev Services
-
-* The following Dev Services now support configuration of the database name, username, and password via configuration properties. They also allow you to specify SQL scripts to be executed on startup to initialize the database schema and data:
-** xref:dev-services:mariadb.adoc[MariaDB Dev Service]
-** xref:dev-services:mysql.adoc[MySQL Dev Service]
-** xref:dev-services:oracle.adoc[Oracle Dev Service]
-** xref:dev-services:oracle-xe.adoc[Oracle XE Dev Service]
-** xref:dev-services:postgresql.adoc[PostgreSQL Dev Service].
+* OTLP exporters for logs, metrics, and traces now support setting a retry policy via configuration properties. This allows you to configure the number of retry attempts, the initial backoff duration, the maximum backoff duration, and the backoff multiplier for retrying failed export attempts. You can specify these settings globally (`arconia.otel.exporter.otlp.retry`) or for each observability signal individually (`arconia.otel.<signal>.exporter.otlp.retry`).

@@ -1,12 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.logs.exporter;
 
-import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.console.ConsoleLoggingExporterConfiguration;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.console.ConsoleLoggingExporterConfiguration;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

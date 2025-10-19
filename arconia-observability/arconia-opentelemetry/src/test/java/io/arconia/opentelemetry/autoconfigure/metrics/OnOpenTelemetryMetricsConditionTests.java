@@ -55,7 +55,7 @@ class OnOpenTelemetryMetricsConditionTests {
 
         assertThat(outcome.isMatch()).isTrue();
         assertThat(outcome.getMessage())
-                .contains("OpenTelemetry Metrics are enabled by default");
+                .contains("OpenTelemetry metrics are enabled by default");
     }
 
 }

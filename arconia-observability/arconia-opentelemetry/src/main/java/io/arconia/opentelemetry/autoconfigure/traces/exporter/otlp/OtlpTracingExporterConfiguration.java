@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.RetryConfig;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTracingExporterProperties;
 
@@ -40,7 +41,7 @@ public final class OtlpTracingExporterConfiguration {
         return new PropertiesOtlpTracingConnectionDetails(commonProperties, properties);
     }
 
-    // TODO: Add certificates/TLS, retry, and proxy.
+    // TODO: Add certificates/TLS and proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpTracingConnectionDetails.class)
@@ -52,6 +53,7 @@ public final class OtlpTracingExporterConfiguration {
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
                 .setMemoryMode(commonProperties.getMemoryMode());
+        builder.setRetryPolicy(properties.getOtlp().getRetry() != null ? RetryConfig.buildRetryPolicy(properties.getOtlp().getRetry()) : RetryConfig.buildRetryPolicy(commonProperties.getOtlp().getRetry()));
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
@@ -62,7 +64,7 @@ public final class OtlpTracingExporterConfiguration {
         return builder.build();
     }
 
-    // TODO: Add certificates/TLS, retry, and proxy.
+    // TODO: Add certificates/TLS and proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpTracingConnectionDetails.class)
@@ -74,6 +76,7 @@ public final class OtlpTracingExporterConfiguration {
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
                 .setMemoryMode(commonProperties.getMemoryMode());
+        builder.setRetryPolicy(properties.getOtlp().getRetry() != null ? RetryConfig.buildRetryPolicy(properties.getOtlp().getRetry()) : RetryConfig.buildRetryPolicy(commonProperties.getOtlp().getRetry()));
         commonProperties.getOtlp().getHeaders().forEach(builder::addHeader);
         properties.getOtlp().getHeaders().forEach(builder::addHeader);
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())

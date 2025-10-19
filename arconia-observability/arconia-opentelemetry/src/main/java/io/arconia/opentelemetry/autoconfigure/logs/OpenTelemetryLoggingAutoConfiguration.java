@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,6 @@ import org.springframework.context.annotation.Bean;
  * Auto-configuration for OpenTelemetry logging.
  */
 @AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration.class)
-@ConditionalOnClass(SdkLoggerProvider.class)
 @ConditionalOnOpenTelemetryLogging
 @EnableConfigurationProperties(OpenTelemetryLoggingProperties.class)
 public final class OpenTelemetryLoggingAutoConfiguration {

@@ -1,13 +1,13 @@
 package io.arconia.opentelemetry.autoconfigure.resource;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.mock.env.MockEnvironment;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -95,7 +95,7 @@ class OnOpenTelemetryResourceContributorConditionTests {
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("resource contributor is disabled by default");
+                .contains("no resource contributor name provided");
     }
 
     @Test
@@ -128,7 +128,7 @@ class OnOpenTelemetryResourceContributorConditionTests {
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("resource contributor is disabled by default");
+                .contains("no resource contributor name provided");
     }
 
     @Test
@@ -146,7 +146,7 @@ class OnOpenTelemetryResourceContributorConditionTests {
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("resource contributor is disabled by default");
+                .contains("no resource contributor name provided");
     }
 
     @Test

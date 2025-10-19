@@ -22,7 +22,7 @@ class OnOpenTelemetryMetricsCondition extends SpringBootCondition {
         }
 
         return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnOpenTelemetryMetrics.class)
-                .because("OpenTelemetry Metrics are enabled by default"));
+                .because("OpenTelemetry metrics are enabled by default"));
     }
 
 }

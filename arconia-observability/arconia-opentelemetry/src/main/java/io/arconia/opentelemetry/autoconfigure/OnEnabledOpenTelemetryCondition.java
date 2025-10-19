@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Determines if OpenTelemetry SDK support should be enabled.
+ * Determines if OpenTelemetry support should be enabled.
  */
 class OnEnabledOpenTelemetryCondition extends SpringBootCondition {
 
@@ -19,23 +19,13 @@ class OnEnabledOpenTelemetryCondition extends SpringBootCondition {
         boolean checkForEnabled = attributes != null && (boolean) attributes.get("enabled");
 
         String openTelemetryEnabledKey = OpenTelemetryProperties.CONFIG_PREFIX + ".enabled";
-        Boolean openTelemetryEnabled = context.getEnvironment().getProperty(openTelemetryEnabledKey, Boolean.class);
+        boolean openTelemetryEnabled = context.getEnvironment().getProperty(openTelemetryEnabledKey, boolean.class, true);
 
-        if (openTelemetryEnabled != null) {
-            boolean enabled = checkForEnabled == openTelemetryEnabled;
-            return new ConditionOutcome(enabled,
-                    ConditionMessage.forCondition(ConditionalOnOpenTelemetry.class)
-                            .because(openTelemetryEnabledKey + " is " + openTelemetryEnabled
-                                    + " and annotation requested enabled to be " + checkForEnabled));
-        }
-
-        if (checkForEnabled) {
-            return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnOpenTelemetry.class)
-                    .because("OpenTelemetry is enabled by default"));
-        } else {
-            return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnOpenTelemetry.class)
-                    .because("OpenTelemetry is disabled because annotation requested enabled to be false"));
-        }
+        boolean enabled = checkForEnabled == openTelemetryEnabled;
+        return new ConditionOutcome(enabled,
+                ConditionMessage.forCondition(ConditionalOnOpenTelemetry.class)
+                        .because(openTelemetryEnabledKey + " is " + openTelemetryEnabled
+                                + " and annotation requested enabled to be " + checkForEnabled));
     }
 
 }

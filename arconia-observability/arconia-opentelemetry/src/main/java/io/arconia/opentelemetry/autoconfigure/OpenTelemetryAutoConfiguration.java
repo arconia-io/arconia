@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +19,6 @@ import org.springframework.context.annotation.Bean;
  * Auto-configuration for {@link OpenTelemetry}.
  */
 @AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration.class)
-@ConditionalOnClass({ OpenTelemetry.class, OpenTelemetrySdk.class })
 @EnableConfigurationProperties(OpenTelemetryProperties.class)
 public final class OpenTelemetryAutoConfiguration {
 

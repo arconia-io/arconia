@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.logs.exporter.console;
 
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;

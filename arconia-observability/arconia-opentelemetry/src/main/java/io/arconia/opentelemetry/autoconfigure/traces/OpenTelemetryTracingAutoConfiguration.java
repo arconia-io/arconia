@@ -34,7 +34,6 @@ import org.springframework.context.annotation.Bean;
  * Auto-configuration for OpenTelemetry tracing.
  */
 @AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class)
-@ConditionalOnClass(SdkTracerProvider.class)
 @ConditionalOnOpenTelemetryTracing
 @EnableConfigurationProperties(OpenTelemetryTracingProperties.class)
 public final class OpenTelemetryTracingAutoConfiguration {

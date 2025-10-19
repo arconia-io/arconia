@@ -9,9 +9,11 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.RetryConfig;
 
 /**
  * Configuration properties for OpenTelemetry exporters.
@@ -88,6 +90,12 @@ public class OpenTelemetryExporterProperties {
         private Compression compression = Compression.GZIP;
 
         /**
+         * Configuration for retrying failed requests.
+         */
+        @NestedConfigurationProperty
+        private final RetryConfig retry = new RetryConfig();
+
+        /**
          * Additional headers to include in each request to the endpoint.
          */
         private Map<String, String> headers = new HashMap<>();
@@ -136,6 +144,10 @@ public class OpenTelemetryExporterProperties {
 
         public void setCompression(Compression compression) {
             this.compression = compression;
+        }
+
+        public RetryConfig getRetry() {
+            return retry;
         }
 
         public Map<String, String> getHeaders() {

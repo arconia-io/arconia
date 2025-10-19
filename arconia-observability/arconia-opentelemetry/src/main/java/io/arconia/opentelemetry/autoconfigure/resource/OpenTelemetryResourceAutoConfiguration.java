@@ -2,11 +2,11 @@ package io.arconia.opentelemetry.autoconfigure.resource;
 
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.SchemaUrls;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
@@ -27,9 +27,11 @@ import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContr
 /**
  * Auto-configuration for OpenTelemetry {@link Resource}.
  */
-@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration.class)
+@AutoConfiguration(
+        after = org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration.class,
+        before = org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration.class
+)
 @ConditionalOnOpenTelemetry
-@ConditionalOnClass(Resource.class)
 @EnableConfigurationProperties(OpenTelemetryResourceProperties.class)
 public final class OpenTelemetryResourceAutoConfiguration {
 
@@ -40,7 +42,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
     Resource resource(ObjectProvider<ResourceContributor> resourceContributors,
                       ObjectProvider<OpenTelemetryResourceBuilderCustomizer> customizers
     ) {
-        ResourceBuilder builder = Resource.getDefault().toBuilder();
+        ResourceBuilder builder = Resource.getDefault().toBuilder().setSchemaUrl(SchemaUrls.V1_37_0);
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
         customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
         return builder.build();

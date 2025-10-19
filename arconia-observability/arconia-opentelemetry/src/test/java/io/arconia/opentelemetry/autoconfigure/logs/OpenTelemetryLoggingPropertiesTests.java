@@ -22,34 +22,12 @@ class OpenTelemetryLoggingPropertiesTests {
 
         assertThat(properties.getLimits()).isNotNull();
         assertThat(properties.getProcessor()).isNotNull();
-    }
 
-    @Test
-    void shouldHaveDefaultLogLimitsValues() {
-        OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
         OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLimits();
-
         assertThat(logLimits.getMaxAttributeValueLength()).isEqualTo(Integer.MAX_VALUE);
         assertThat(logLimits.getMaxNumberOfAttributes()).isEqualTo(128);
-    }
 
-    @Test
-    void shouldUpdateLogLimitsValues() {
-        OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
-        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLimits();
-
-        logLimits.setMaxAttributeValueLength(1000);
-        logLimits.setMaxNumberOfAttributes(256);
-
-        assertThat(logLimits.getMaxAttributeValueLength()).isEqualTo(1000);
-        assertThat(logLimits.getMaxNumberOfAttributes()).isEqualTo(256);
-    }
-
-    @Test
-    void shouldHaveDefaultProcessorValues() {
-        OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
         OpenTelemetryLoggingProperties.LogRecordProcessorConfig processor = properties.getProcessor();
-
         assertThat(processor.getScheduleDelay()).isEqualTo(Duration.ofSeconds(1));
         assertThat(processor.getExportTimeout()).isEqualTo(Duration.ofSeconds(30));
         assertThat(processor.getMaxQueueSize()).isEqualTo(2048);
@@ -58,10 +36,17 @@ class OpenTelemetryLoggingPropertiesTests {
     }
 
     @Test
-    void shouldUpdateProcessorValues() {
+    void shouldUpdateValues() {
         OpenTelemetryLoggingProperties properties = new OpenTelemetryLoggingProperties();
-        OpenTelemetryLoggingProperties.LogRecordProcessorConfig processor = properties.getProcessor();
 
+        OpenTelemetryLoggingProperties.LogLimits logLimits = properties.getLimits();
+        logLimits.setMaxAttributeValueLength(1000);
+        logLimits.setMaxNumberOfAttributes(256);
+
+        assertThat(logLimits.getMaxAttributeValueLength()).isEqualTo(1000);
+        assertThat(logLimits.getMaxNumberOfAttributes()).isEqualTo(256);
+
+        OpenTelemetryLoggingProperties.LogRecordProcessorConfig processor = properties.getProcessor();
         processor.setScheduleDelay(Duration.ofSeconds(2));
         processor.setExportTimeout(Duration.ofSeconds(60));
         processor.setMaxQueueSize(4096);
