@@ -35,9 +35,9 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
 
         @Bean
         @RestartScope
-        @ServiceConnection
+        @ServiceConnection(name = "mongodb")
         @ConditionalOnMissingBean
-        MongoDBAtlasLocalContainer mongoDBContainer(MongoDbAtlasDevServicesProperties properties) {
+        MongoDBAtlasLocalContainer mongoDbAtlasLocalContainer(MongoDbAtlasDevServicesProperties properties) {
             return new MongoDBAtlasLocalContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
@@ -52,9 +52,9 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
     public static final class ConfigurationWithoutRestart {
 
         @Bean
-        @ServiceConnection
+        @ServiceConnection(name = "mongodb")
         @ConditionalOnMissingBean
-        MongoDBAtlasLocalContainer mongoDBContainerNoRestartScope(MongoDbAtlasDevServicesProperties properties) {
+        MongoDBAtlasLocalContainer mongoDbAtlasLocalContainerNoRestartScope(MongoDbAtlasDevServicesProperties properties) {
             return new MongoDBAtlasLocalContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())

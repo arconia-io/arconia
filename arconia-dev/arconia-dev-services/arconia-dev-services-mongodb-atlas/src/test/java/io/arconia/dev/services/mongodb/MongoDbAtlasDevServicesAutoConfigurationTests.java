@@ -43,8 +43,8 @@ class MongoDbAtlasDevServicesAutoConfigurationTests {
         contextRunner
             .withPropertyValues(
                 "arconia.dev.services.mongodb-atlas.environment.KEY=value",
-                "arconia.dev.services.mongodb.shared=never",
-                "arconia.dev.services.mongodb.startup-timeout=90s"
+                "arconia.dev.services.mongodb-atlas.shared=never",
+                "arconia.dev.services.mongodb-atlas.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);

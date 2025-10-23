@@ -10,6 +10,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:mongodb"
 
@@ -20,6 +21,12 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 publishing {
