@@ -86,3 +86,7 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 == Manual Upgrade
 
 If you prefer to upgrade manually, you can bump the version of the `arconia-bom` in your project to {page-component-version}.
+
+Then, follow these additional steps:
+
+* If you're using the OpenTelemetry Logback Bridge, rename the `arconia.otel.logs.logback-bridge.capture-logstash-attributes` configuration property to `arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`.
