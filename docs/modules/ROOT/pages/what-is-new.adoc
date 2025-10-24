@@ -9,6 +9,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The experimental `HostInfo` class has been removed. Use the `OsInfo` class from Spring Boot to obtain operating system information or Java's `InetAddress.getLocalHost().getHostName()` to get the hostname.
 
+== Dev Services
+
+* The MongoDB Atlas Dev Service was supported only with Spring AI. It is now also supported with Spring Data MongoDB and Spring Session MongoDB.
+* The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`.
+
 == OpenTelemetry
 
 * OTLP exporters for logs, metrics, and traces now support setting a retry policy via configuration properties. This allows you to configure the number of retry attempts, the initial backoff duration, the maximum backoff duration, and the backoff multiplier for retrying failed export attempts. You can specify these settings globally (`arconia.otel.exporter.otlp.retry`) or for each observability signal individually (`arconia.otel.<signal>.exporter.otlp.retry`).

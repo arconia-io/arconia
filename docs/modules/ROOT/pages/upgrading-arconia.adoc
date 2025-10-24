@@ -87,6 +87,12 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 
 If you prefer to upgrade manually, you can bump the version of the `arconia-bom` in your project to {page-component-version}.
 
-Then, follow these additional steps:
+Then, check these additional changes that you might need to apply to your project.
 
-* If you're using the OpenTelemetry Logback Bridge, rename the `arconia.otel.logs.logback-bridge.capture-logstash-attributes` configuration property to `arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`.
+=== Dev Services
+
+* The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`. That impacts the `MongoDbAtlasDevServicesAutoConfiguration` and `MongoDbAtlasDevServicesProperties` classes.
+
+=== OpenTelemetry
+
+* In the OpenTelemetry Logback Bridge module, the `arconia.otel.logs.logback-bridge.capture-logstash-attributes` configuration property has been renamed to `arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`.
