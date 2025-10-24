@@ -1,4 +1,4 @@
-package io.arconia.dev.services.mongodb;
+package io.arconia.dev.services.mongodb.atlas;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;

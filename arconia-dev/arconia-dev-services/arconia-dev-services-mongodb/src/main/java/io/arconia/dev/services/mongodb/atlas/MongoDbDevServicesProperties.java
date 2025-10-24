@@ -1,4 +1,4 @@
-package io.arconia.dev.services.mongodb;
+package io.arconia.dev.services.mongodb.atlas;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -9,10 +9,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import io.arconia.dev.services.core.config.DevServicesProperties;
 
 /**
- * Properties for the MongoDB Atlas Dev Services.
+ * Properties for the MongoDB Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.mongodb-atlas")
-public class MongoDbAtlasDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = "arconia.dev.services.mongodb")
+public class MongoDbDevServicesProperties implements DevServicesProperties {
 
     /**
      * Whether the dev service is enabled.
@@ -22,7 +22,7 @@ public class MongoDbAtlasDevServicesProperties implements DevServicesProperties 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mongodb/mongodb-atlas-local:8.2";
+    private String imageName = "mongo:8.0-noble";
 
     /**
      * Environment variables to set in the service.

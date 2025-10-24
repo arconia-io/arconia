@@ -1,4 +1,4 @@
-package io.arconia.dev.services.mongodb;
+package io.arconia.dev.services.mongodb.atlas;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.mongodb.atlas.MongoDbDevServicesAutoConfiguration.ConfigurationWithRestart;
+import io.arconia.dev.services.mongodb.atlas.MongoDbDevServicesAutoConfiguration.ConfigurationWithoutRestart;
 
 /**
  * Autoconfiguration for MongoDB Dev Services.

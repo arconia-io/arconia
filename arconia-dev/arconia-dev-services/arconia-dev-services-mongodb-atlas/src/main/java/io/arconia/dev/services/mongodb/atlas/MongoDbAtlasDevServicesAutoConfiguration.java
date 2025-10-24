@@ -1,4 +1,4 @@
-package io.arconia.dev.services.mongodb;
+package io.arconia.dev.services.mongodb.atlas;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.mongodb.MongoDbAtlasDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.mongodb.MongoDbAtlasDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.mongodb.atlas.MongoDbAtlasDevServicesAutoConfiguration.ConfigurationWithRestart;
+import io.arconia.dev.services.mongodb.atlas.MongoDbAtlasDevServicesAutoConfiguration.ConfigurationWithoutRestart;
 
 /**
  * Autoconfiguration for MongoDB Atlas Dev Services.
@@ -35,7 +35,7 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
 
         @Bean
         @RestartScope
-        @ServiceConnection(name = "mongodb")
+        @ServiceConnection("mongodb")
         @ConditionalOnMissingBean
         MongoDBAtlasLocalContainer mongoDbAtlasLocalContainer(MongoDbAtlasDevServicesProperties properties) {
             return new MongoDBAtlasLocalContainer(DockerImageName.parse(properties.getImageName())
@@ -52,7 +52,7 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
     public static final class ConfigurationWithoutRestart {
 
         @Bean
-        @ServiceConnection(name = "mongodb")
+        @ServiceConnection("mongodb")
         @ConditionalOnMissingBean
         MongoDBAtlasLocalContainer mongoDbAtlasLocalContainerNoRestartScope(MongoDbAtlasDevServicesProperties properties) {
             return new MongoDBAtlasLocalContainer(DockerImageName.parse(properties.getImageName())

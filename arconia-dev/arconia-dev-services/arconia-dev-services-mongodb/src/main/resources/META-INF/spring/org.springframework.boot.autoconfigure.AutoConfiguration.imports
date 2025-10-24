@@ -1,1 +1,1 @@
-io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration
+io.arconia.dev.services.mongodb.atlas.MongoDbDevServicesAutoConfiguration
