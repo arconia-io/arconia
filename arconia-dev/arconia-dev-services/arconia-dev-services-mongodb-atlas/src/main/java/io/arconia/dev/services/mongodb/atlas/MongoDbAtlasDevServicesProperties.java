@@ -1,4 +1,4 @@
-package io.arconia.dev.services.mongodb;
+package io.arconia.dev.services.mongodb.atlas;
 
 import java.time.Duration;
 import java.util.HashMap;
