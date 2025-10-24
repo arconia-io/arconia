@@ -1,9 +1,9 @@
 package io.arconia.opentelemetry.autoconfigure.traces.exporter;
 
-import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpExporterConfig;
 import org.junit.jupiter.api.Test;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpExporterConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,25 +22,15 @@ class OpenTelemetryTracingExporterPropertiesTests {
         OpenTelemetryTracingExporterProperties properties = new OpenTelemetryTracingExporterProperties();
 
         assertThat(properties.getType()).isNull();
-        assertThat(properties.getOtlp()).isNotNull();
+        assertThat(properties.getOtlp()).isNotNull().isInstanceOf(OtlpExporterConfig.class);
     }
 
     @Test
-    void shouldUpdateType() {
+    void shouldUpdateValues() {
         OpenTelemetryTracingExporterProperties properties = new OpenTelemetryTracingExporterProperties();
-
         properties.setType(ExporterType.NONE);
 
         assertThat(properties.getType()).isEqualTo(ExporterType.NONE);
-    }
-
-    @Test
-    void shouldProvideAccessToOtlpConfig() {
-        OpenTelemetryTracingExporterProperties properties = new OpenTelemetryTracingExporterProperties();
-
-        assertThat(properties.getOtlp())
-            .isNotNull()
-            .isInstanceOf(OtlpExporterConfig.class);
     }
 
 }

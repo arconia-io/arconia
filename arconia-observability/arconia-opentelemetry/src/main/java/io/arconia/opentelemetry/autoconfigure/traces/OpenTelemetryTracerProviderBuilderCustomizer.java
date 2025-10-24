@@ -4,8 +4,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 
 /**
- * Callback for customizing the {@link SdkTracerProviderBuilder}
- * used to build the auto-configured {@link SdkTracerProvider}.
+ * Customizes the {@link SdkTracerProviderBuilder} used to build the autoconfigured {@link SdkTracerProvider}.
  */
 @FunctionalInterface
 public interface OpenTelemetryTracerProviderBuilderCustomizer {

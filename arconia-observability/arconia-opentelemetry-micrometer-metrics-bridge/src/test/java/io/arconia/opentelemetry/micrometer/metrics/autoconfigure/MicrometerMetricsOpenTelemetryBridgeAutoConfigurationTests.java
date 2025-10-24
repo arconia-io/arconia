@@ -13,7 +13,6 @@ import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegist
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.util.ReflectionUtils;
 
@@ -35,18 +34,6 @@ class MicrometerMetricsOpenTelemetryBridgeAutoConfigurationTests {
                 properties.setInterval(Duration.ofSeconds(5));
                 return properties;
             });
-
-    @Test
-    void autoConfigurationNotActivatedWhenMeterRegistryClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(MeterRegistry.class))
-                .run(context -> assertThat(context).doesNotHaveBean(MeterRegistry.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenOpenTelemetryMeterRegistryClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(OpenTelemetryMeterRegistry.class))
-                .run(context -> assertThat(context).doesNotHaveBean(MeterRegistry.class));
-    }
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {

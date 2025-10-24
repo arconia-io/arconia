@@ -24,17 +24,13 @@ class OpenTelemetryMetricsPropertiesTests {
     }
 
     @Test
-    void shouldUpdateCardinalityLimit() {
+    void shouldUpdateValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
         properties.setCardinalityLimit(3000);
-        assertThat(properties.getCardinalityLimit()).isEqualTo(3000);
-    }
-
-    @Test
-    void shouldUpdateExemplars() {
-        OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
         properties.getExemplars().setEnabled(false);
         properties.getExemplars().setFilter(ExemplarFilter.ALWAYS_ON);
+
+        assertThat(properties.getCardinalityLimit()).isEqualTo(3000);
         assertThat(properties.getExemplars().isEnabled()).isFalse();
         assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.ALWAYS_ON);
     }

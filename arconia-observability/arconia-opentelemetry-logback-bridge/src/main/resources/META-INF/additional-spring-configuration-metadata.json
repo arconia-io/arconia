@@ -34,6 +34,16 @@
       "name": "arconia.otel.logs.logback-bridge.capture-logstash-attributes",
       "type": "java.lang.Boolean",
       "description": "Enable the capture of Logstash attributes, added to logs via 'Markers.append()', 'Markers.appendEntries()', 'Markers.appendArray()' and 'Markers.appendRaw()' methods.",
+      "defaultValue": false,
+      "deprecation": {
+        "level": "error",
+        "replacement": "arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes"
+      }
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes",
+      "type": "java.lang.Boolean",
+      "description": "Enable the capture of Logstash marker attributes, added to logs via 'Markers.append()', 'Markers.appendEntries()', 'Markers.appendArray()' and 'Markers.appendRaw()' methods.",
       "defaultValue": false
     },
     {

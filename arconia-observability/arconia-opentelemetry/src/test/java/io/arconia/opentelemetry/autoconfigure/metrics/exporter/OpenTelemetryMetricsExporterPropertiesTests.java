@@ -1,9 +1,9 @@
 package io.arconia.opentelemetry.autoconfigure.metrics.exporter;
 
-import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpExporterConfig;
 import org.junit.jupiter.api.Test;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpExporterConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,43 +24,20 @@ class OpenTelemetryMetricsExporterPropertiesTests {
         assertThat(properties.getType()).isNull();
         assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.CUMULATIVE);
         assertThat(properties.getHistogramAggregation()).isEqualTo(HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM);
-        assertThat(properties.getOtlp()).isNotNull();
+        assertThat(properties.getOtlp()).isNotNull().isInstanceOf(OtlpExporterConfig.class);
     }
 
     @Test
-    void shouldUpdateType() {
+    void shouldUpdateValuese() {
         OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
 
         properties.setType(ExporterType.NONE);
-
-        assertThat(properties.getType()).isEqualTo(ExporterType.NONE);
-    }
-
-    @Test
-    void shouldUpdateAggregationTemporality() {
-        OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
-
         properties.setAggregationTemporality(AggregationTemporalityStrategy.DELTA);
-
-        assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.DELTA);
-    }
-
-    @Test
-    void shouldUpdateHistogramAggregation() {
-        OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
-
         properties.setHistogramAggregation(HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
 
+        assertThat(properties.getType()).isEqualTo(ExporterType.NONE);
+        assertThat(properties.getAggregationTemporality()).isEqualTo(AggregationTemporalityStrategy.DELTA);
         assertThat(properties.getHistogramAggregation()).isEqualTo(HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
-    }
-
-    @Test
-    void shouldProvideAccessToOtlpConfig() {
-        OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
-
-        assertThat(properties.getOtlp())
-            .isNotNull()
-            .isInstanceOf(OtlpExporterConfig.class);
     }
 
 }

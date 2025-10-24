@@ -55,7 +55,7 @@ class OnOpenTelemetryLoggingConditionTests {
 
         assertThat(outcome.isMatch()).isTrue();
         assertThat(outcome.getMessage())
-                .contains("OpenTelemetry Logs are enabled by default");
+                .contains("OpenTelemetry logging is enabled by default");
     }
 
 }

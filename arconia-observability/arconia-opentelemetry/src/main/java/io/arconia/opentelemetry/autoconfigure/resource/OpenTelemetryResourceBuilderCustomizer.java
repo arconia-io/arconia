@@ -4,8 +4,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 /**
- * Callback for customizing the {@link ResourceBuilder}
- * used to build the auto-configured {@link Resource}.
+ * Customizes the {@link ResourceBuilder} used to build the autoconfigured {@link Resource}.
  */
 @FunctionalInterface
 public interface OpenTelemetryResourceBuilderCustomizer {

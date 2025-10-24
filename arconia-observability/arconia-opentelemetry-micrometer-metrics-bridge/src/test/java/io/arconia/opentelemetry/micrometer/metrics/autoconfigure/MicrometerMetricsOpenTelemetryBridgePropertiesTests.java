@@ -27,29 +27,15 @@ class MicrometerMetricsOpenTelemetryBridgePropertiesTests {
     }
 
     @Test
-    void shouldUpdateEnabled() {
+    void shouldUpdateValue() {
         MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
 
         properties.setEnabled(false);
-
-        assertThat(properties.isEnabled()).isFalse();
-    }
-
-    @Test
-    void shouldUpdateBaseTimeUnit() {
-        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
-
         properties.setBaseTimeUnit(TimeUnit.MILLISECONDS);
-
-        assertThat(properties.getBaseTimeUnit()).isEqualTo(TimeUnit.MILLISECONDS);
-    }
-
-    @Test
-    void shouldUpdateHistogramGauges() {
-        MicrometerMetricsOpenTelemetryBridgeProperties properties = new MicrometerMetricsOpenTelemetryBridgeProperties();
-
         properties.setHistogramGauges(false);
 
+        assertThat(properties.isEnabled()).isFalse();
+        assertThat(properties.getBaseTimeUnit()).isEqualTo(TimeUnit.MILLISECONDS);
         assertThat(properties.isHistogramGauges()).isFalse();
     }
 

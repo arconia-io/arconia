@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,14 +44,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
     void autoConfigurationNotActivatedWhenArconiaTracingDisabled() {
         contextRunner
             .withPropertyValues("arconia.otel.traces.enabled=false")
-            .withPropertyValues("management.tracing.enabled=true")
             .run(context -> assertThat(context).doesNotHaveBean(SdkTracerProvider.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenTracerProviderClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(SdkTracerProvider.class))
-                .run(context -> assertThat(context).doesNotHaveBean(SdkTracerProvider.class));
     }
 
     @Test

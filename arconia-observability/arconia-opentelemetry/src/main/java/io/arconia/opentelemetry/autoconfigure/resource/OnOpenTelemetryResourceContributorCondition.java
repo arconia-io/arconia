@@ -42,7 +42,7 @@ class OnOpenTelemetryResourceContributorCondition extends SpringBootCondition {
         }
 
         return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnOpenTelemetryResourceContributor.class)
-                .because("resource contributor is disabled by default"));
+                .because("no resource contributor name provided"));
     }
 
 }

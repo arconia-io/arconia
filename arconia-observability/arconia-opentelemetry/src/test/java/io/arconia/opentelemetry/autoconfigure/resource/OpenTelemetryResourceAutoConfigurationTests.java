@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,19 +36,6 @@ class OpenTelemetryResourceAutoConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenSdkNotPresent() {
-        contextRunner
-                .withClassLoader(new FilteredClassLoader(Resource.class))
-                .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenResourceClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(Resource.class))
-                .run(context -> assertThat(context).doesNotHaveBean(Resource.class));
     }
 
     @Test
@@ -209,6 +195,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
             builder.put("host.name", "test-host");
             builder.put("host.id", "test-id");
             builder.put("process.pid", "123");
+            builder.put("process.user", "johnny");
             builder.put("service.name", "test-service");
 
             customizer.customize(builder);
@@ -219,6 +206,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
             assertThat(resource.getAttribute(AttributeKey.stringKey("host.id"))).isNull();
             assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNull();
             // Other attributes should remain
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.user"))).isEqualTo("johnny");
             assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isEqualTo("test-service");
         });
     }

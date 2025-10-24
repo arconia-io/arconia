@@ -4,8 +4,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 
 /**
- * Callback that can be used to customize the {@link SdkMeterProviderBuilder}
- * used to build the auto-configured {@link SdkMeterProvider}.
+ * Customizes the {@link SdkMeterProviderBuilder} used to build the autoconfigured {@link SdkMeterProvider}.
  */
 @FunctionalInterface
 public interface OpenTelemetryMeterProviderBuilderCustomizer {

@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,9 +26,11 @@ class OpenTelemetryAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(OpenTelemetryAutoConfiguration.class));
 
     @Test
-    void autoConfigurationNotActivatedWhenApiMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(OpenTelemetrySdk.class))
-                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetrySdk.class));
+    void openTelemetryWhenDefault() {
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(OpenTelemetry.class);
+            assertThat(context.getBean(OpenTelemetry.class)).isInstanceOf(OpenTelemetrySdk.class);
+        });
     }
 
     @Test
@@ -48,14 +49,6 @@ class OpenTelemetryAutoConfigurationTests {
                     assertThat(context).hasSingleBean(OpenTelemetry.class);
                     assertThat(context.getBean(OpenTelemetry.class)).isSameAs(OpenTelemetry.noop());
                 });
-    }
-
-    @Test
-    void openTelemetryWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(OpenTelemetry.class);
-            assertThat(context.getBean(OpenTelemetry.class)).isInstanceOf(OpenTelemetrySdk.class);
-        });
     }
 
     @Test

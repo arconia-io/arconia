@@ -52,14 +52,14 @@ class OnEnabledOpenTelemetryConditionTests {
     void matchWhenPropertyNotSetAndAnnotationTrue() {
         ConditionOutcome outcome = getMatchOutcome(null, true);
         assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage()).contains("OpenTelemetry is enabled by default");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is true and annotation requested enabled to be true");
     }
 
     @Test
     void noMatchWhenPropertyNotSetAndAnnotationFalse() {
         ConditionOutcome outcome = getMatchOutcome(null, false);
         assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage()).contains("OpenTelemetry is disabled because annotation requested enabled to be false");
+        assertThat(outcome.getMessage()).contains("arconia.otel.enabled is true and annotation requested enabled to be false");
     }
 
     private ConditionOutcome getMatchOutcome(@Nullable Boolean propertyValue, boolean annotationValue) {

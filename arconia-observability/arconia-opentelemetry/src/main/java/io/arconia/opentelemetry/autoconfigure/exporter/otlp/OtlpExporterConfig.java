@@ -43,6 +43,12 @@ public class OtlpExporterConfig {
     private Compression compression;
 
     /**
+     * Configuration for retrying failed requests.
+     */
+    @Nullable
+    private RetryConfig retry;
+
+    /**
      * Additional headers to include in each request to the endpoint.
      */
     private Map<String, String> headers = new HashMap<>();
@@ -96,6 +102,15 @@ public class OtlpExporterConfig {
 
     public void setCompression(Compression compression) {
         this.compression = compression;
+    }
+
+    @Nullable
+    public RetryConfig getRetry() {
+        return retry;
+    }
+
+    public void setRetry(RetryConfig retry) {
+        this.retry = retry;
     }
 
     public Map<String, String> getHeaders() {

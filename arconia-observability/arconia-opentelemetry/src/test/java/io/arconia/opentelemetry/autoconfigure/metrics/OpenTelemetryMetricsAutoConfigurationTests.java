@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.resources.Resource;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,17 +41,6 @@ class OpenTelemetryMetricsAutoConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(SdkMeterProvider.class));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenMeterProviderClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(SdkMeterProvider.class))
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(SdkMeterProvider.class);
-                    assertThat(context).doesNotHaveBean(CardinalityLimitSelector.class);
-                    assertThat(context).doesNotHaveBean(ExemplarFilter.class);
-                    assertThat(context).doesNotHaveBean(Meter.class);
-                });
     }
 
     @Test

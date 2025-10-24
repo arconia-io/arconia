@@ -21,7 +21,7 @@ import io.arconia.core.support.Incubating;
  *
  * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes">Resource Process Runtime Semantic Conventions</a>
  */
-@Incubating(since = "0.5.0")
+@Incubating
 public final class JavaResourceContributor implements ResourceContributor {
 
     // These semantic conventions are experimental, so we define them explicitly to be able to ensure backward
