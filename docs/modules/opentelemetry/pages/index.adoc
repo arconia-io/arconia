@@ -336,13 +336,13 @@ The main reason why Arconia OpenTelemetry exists is that no other option provide
 | Unified Configuration | ✅ | ✅ | ❌ | ❌
 |===
 
-== Arconia OpenTelemetry vs OpenTelemetry Spring Boot Starter
+=== Arconia OpenTelemetry vs OpenTelemetry Spring Boot Starter
 
 The https://opentelemetry.io/docs/zero-code/java/spring-boot-starter[OpenTelemetry Spring Boot Starter] is built on top of the OpenTelemetry Java SDK and Instrumentation libraries. It provides support for OpenTelemetry APIs and SDKs, including logging, metrics, and tracing.
 
 A key difference between Arconia OpenTelemetry and the OpenTelemetry Spring Boot Starter is that the latter doesn't re-use most of the existing, stable Micrometer instrumentation available across the Spring and Java ecosystem. Each Spring library comes with built-in instrumentation based on the Micrometer Observation API. By not re-using the existing Micrometer instrumentation, the OpenTelemetry Spring Boot Starter misses out on a significant amount of telemetry data which needs to be implemented and maintained separately by the OpenTelemetry community. Additionally, the OpenTelemetry Java Instrumentation follows the OpenTelemetry Semantic Conventions, most of which are not stable and may change over time, leading to potential breaking changes in the instrumentation.
 
-== Arconia OpenTelemetry vs Spring Boot OpenTelemetry
+=== Arconia OpenTelemetry vs Spring Boot OpenTelemetry
 
 The https://docs.spring.io/spring-boot/reference/actuator/observability.html#actuator.observability.opentelemetry[Spring Boot] project provides observability based on Micrometer with partial support for exporting telemetry for OpenTelemetry. For logs, it supports the OpenTelemetry Logging API but no bridges are provided to re-use existing logging instrumentation. For traces, it supports the OpenTelemetry Tracing API via a bridge from Micrometer Tracing. For metrics, Spring Boot doesn't provide support for OpenTelemetry Metrics API. Instead, it offers an option to export Micrometer metrics via OTLP using the Micrometer Metrics Registry OTLP module.
 
