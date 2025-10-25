@@ -156,7 +156,10 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                 .withBean(Resource.class, () -> Resource.create(
                         Attributes.of(
                                 AttributeKey.stringKey("service.name"), "test-service",
-                                AttributeKey.stringKey("service.version"), "1.0.0"
+                                AttributeKey.stringKey("service.version"), "1.0.0",
+                                AttributeKey.stringKey("telemetry.sdk.language"), "custom",
+                                AttributeKey.stringKey("telemetry.sdk.name"), "custom",
+                                AttributeKey.stringKey("telemetry.sdk.version"), "2.1.0"
                         )
                 ))
                 .run(context -> {
@@ -165,6 +168,9 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                     MicrometerOtlpConfig config = context.getBean(MicrometerOtlpConfig.class);
                     assertThat(config.resourceAttributes()).containsEntry("service.name", "test-service");
                     assertThat(config.resourceAttributes()).containsEntry("service.version", "1.0.0");
+                    assertThat(config.resourceAttributes()).doesNotContainKey("telemetry.sdk.language");
+                    assertThat(config.resourceAttributes()).doesNotContainKey("telemetry.sdk.name");
+                    assertThat(config.resourceAttributes()).doesNotContainKey("telemetry.sdk.version");
                 });
     }
 

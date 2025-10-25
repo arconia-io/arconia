@@ -1,6 +1,9 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.registry.otlp.AggregationTemporality;
@@ -48,6 +51,13 @@ import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAuto
 @EnableConfigurationProperties(MicrometerRegistryOtlpProperties.class)
 public final class MicrometerRegistryOtlpAutoConfiguration {
 
+    /**
+     * The {@link OtlpMeterRegistry} logs warnings if any of these attributes are provided.
+     * So, we ensure to remove them when configuring the registry.
+     */
+    private static final Set<String> RESERVED_RESOURCE_ATTRIBUTES = new HashSet<>(
+            Arrays.asList("telemetry.sdk.language", "telemetry.sdk.name", "telemetry.sdk.version"));
+
     @Bean
     @ConditionalOnMissingBean
     MicrometerOtlpConfig otlpConfig(OtlpMetricsConnectionDetails connectionDetails,
@@ -71,6 +81,7 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
                 .addHeaders(commonProperties.getOtlp().getHeaders())
                 .addHeaders(metricsProperties.getOtlp().getHeaders())
                 .addResourceAttributes(resource.getAttributes().asMap().entrySet().stream()
+                        .filter(entry -> !RESERVED_RESOURCE_ATTRIBUTES.contains(entry.getKey().getKey()))
                         .collect(HashMap::new, (m, e) -> m.put(e.getKey().getKey(), e.getValue().toString()), HashMap::putAll))
                 .maxScale(registryProperties.getMaxScale())
                 .maxBucketCount(registryProperties.getMaxBucketCount())
