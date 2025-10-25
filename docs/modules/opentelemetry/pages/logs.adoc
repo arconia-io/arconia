@@ -1,5 +1,4 @@
 = OpenTelemetry Logs
-:description: Configure OpenTelemetry Logs.
 
 Logs record something that happened at a specific point in time within an application. This page describes how to configure the logging support in OpenTelemetry.
 
@@ -161,9 +160,9 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc[OTLP gRPC].
 
-== SLF4J Bridge
+== SLF4J Support
 
-Java applications typically configure logging via SLF4J and use one of the popular implementations such as Logback or Log4J2. Arconia supports bridges to export SLF4J logs to OpenTelemetry.
+Java applications typically configure logging via SLF4J and use one of the popular implementations such as Logback or Log4J2. Arconia supports bridges to export Logback logs to OpenTelemetry. Support for Log4J2 is planned for a future release.
 
 === Logback OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
@@ -239,7 +238,7 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 |	`false`
 |	Enable the capture of Logback logger context properties as attributes.
 
-|	`arconia.otel.logs.logback-bridge.capture-logstash-attributes`
+|	`arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`
 |	`false`
 |	Enable the capture of Logstash attributes, added to logs via `Markers.append()`, `Markers.appendEntries()`, `Markers.appendArray()` and `Markers.appendRaw()` methods.
 

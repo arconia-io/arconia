@@ -54,7 +54,7 @@ Next, you can remove the dependencies you previously used to bring OpenTelemetry
 |===
 | Dependency | Why Remove
 | `org.springframework.boot:spring-boot-starter-actuator` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.micrometer:micrometer-registry-otlp` | Replaced by the OpenTelemetry SDK-based exporter in Arconia OpenTelemetry Spring Boot Starter.
+| `io.micrometer:micrometer-registry-otlp` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 | `io.micrometer:micrometer-tracing-bridge-otel` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 | `io.opentelemetry:opentelemetry-api` | Managed by Arconia OpenTelemetry Spring Boot Starter.
 | `io.opentelemetry:opentelemetry-exporter-otlp` | Managed by Arconia OpenTelemetry Spring Boot Starter.
@@ -68,7 +68,7 @@ Spring Boot provides partial support for the OpenTelemetry SDK, including basic 
 
 To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration (properties and beans) to the Arconia OpenTelemetry configuration properties.
 
-WARNING: If you customized the Micrometer OTLP exporter via code, that same code will not work with Arconia OpenTelemetry because the Micrometer OTLP project is not based on the OpenTelemetry API. You can apply equivalent changes directly against the OpenTelemetry API.
+WARNING: The OpenRewrite recipe is still experimental and might not cover all possible configurations. Always review the changes made by the recipe to ensure they meet your requirements. Please report any issues you find to help us improve the recipe.
 
 There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
 
@@ -165,6 +165,18 @@ Maven::
     <scope>runtime</scope>
     <optional>true</optional>
 </dependency>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <includeOptional>false</includeOptional>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 ----
 ======
 

@@ -1,5 +1,4 @@
 = OpenTelemetry Resource
-:description: Configure an OpenTelemetry Resource to capture information about the entity that produced a telemetry event.
 
 A `Resource` captures information about the entity that produced a telemetry event. This information is added as attributes to the telemetry event to provide context about the event's source, such as the entity name, version, deployment environment, and more.
 

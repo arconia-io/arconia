@@ -1,0 +1,33 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-core")
+    api "io.micrometer:micrometer-registry-otlp"
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional project(":arconia-observability:arconia-opentelemetry")
+    optional "org.springframework.boot:spring-boot-starter-actuator"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry Micrometer Registry OTLP"
+                description = "Arconia OpenTelemetry Micrometer Registry OTLP."
+            }
+        }
+    }
+}

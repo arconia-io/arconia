@@ -8,7 +8,7 @@ plugins {
 dependencies {
     api project(":arconia-spring-boot")
     api project(":arconia-observability:arconia-opentelemetry-logback-bridge")
-    api project(":arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge")
+    api project(":arconia-observability:arconia-opentelemetry-micrometer-registry-otlp")
     api project(":arconia-observability:arconia-opentelemetry")
 
     api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"

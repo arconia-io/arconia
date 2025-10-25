@@ -1,9 +1,10 @@
 = Arconia OpenTelemetry
-:description: Learn how to get started with Arconia OpenTelemetry for Spring Boot applications.
 
-Arconia provides unified observability for Spring Boot applications, combining full support for https://opentelemetry.io/docs/what-is-opentelemetry/[OpenTelemetry] API, SDK, and Instrumentation with full support for https://micrometer.io[Micrometer] API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
+Arconia OpenTelemetry simplifies observability for Spring Boot applications by combining the standardization of https://opentelemetry.io/docs/what-is-opentelemetry/[OpenTelemetry] with the robustness of https://micrometer.io[Micrometer] to deliver a unified solution that covers all your telemetry needs.
 
-image::arconia-otel.png[Arconia provides full support for OpenTelemetry and Micrometer, width=500]
+Need to collect, process, and export logs, metrics, and traces from your Spring Boot applications? Add the Arconia OpenTelemetry Spring Boot Starter to your project and get everything you need in one dependency.
+
+Observability is not just for production. If you're looking to enhance your development and testing experience, xref:dev-services:index.adoc[Arconia Dev Services] offers a zero-code and zero-config integration with xref:dev-services:lgtm.adoc[Grafana LGTM], providing a complete OpenTelemetry observability platform right in your development environment.
 
 TIP: If you're currently using OpenTelemetry Spring Boot Starter or Spring Boot OpenTelemetry/OTLP, check out our xref:migration.adoc[Migration Guides] for a seamless migration to Arconia OpenTelemetry.
 
@@ -39,7 +40,7 @@ Maven::
 ----
 ======
 
-Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia OpenTelemetry libraries. Whether not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
 
 [tabs]
 ======
@@ -74,11 +75,11 @@ Maven::
 
 === Dev Services
 
-xref:dev-services:index.adoc[Arconia Dev Services] provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
+xref:dev-services:index.adoc[Arconia Dev Services] streamline your development workflow by automatically provisioning external services your application depends on during development and testing. No manual setup is required.
 
-When working with OpenTelemetry, you can use the Grafana LGTM Dev Service to automatically start a full Grafana observability platform based on OpenTelemetry, giving you the possibility to visualize and explore your application's telemetry data during development and testing.
+With Arconia OpenTelemetry, you can leverage the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service] to automatically start a complete Grafana observability platform based on OpenTelemetry, allowing you to visualize and explore your application's telemetry data during development and testing.
 
-To enable the Grafana LGTM Dev Service, add the following dependency to your project.
+To enable the Grafana LGTM Dev Service, add the following dependency to your project:
 
 [tabs]
 ======
@@ -118,22 +119,24 @@ Maven::
 
 === Running the Application
 
-When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
+You can run your Spring Boot application using your preferred method.
 
 include::ROOT:partial$app-run.adoc[]
 
-NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
+If you have enabled the Grafana LGTM Dev Service, Arconia will automatically start a Grafana instance pre-configured to accept OpenTelemetry logs, metrics, and traces from your application when running in development or test mode.
 
-The application logs will show you the URL where you can access the Grafana observability platform.
+NOTE: By default, when running the application in development mode, the Grafana LGTM Dev Service will be shared across multiple applications so that you can have a single observability platform for all your applications running in your development environment.
+
+The application logs will show you the URL where you can access the Grafana observability platform and start exploring your application's telemetry data.
 
 [source,logs]
 ----
-...o.t.grafana.LgtmStackContainer: Access to the Grafana dashboard: http://localhost:38125
+...o.t.grafana.LgtmStackContainer: Access to the Grafana dashboard: http://localhost:<port>
 ----
 
-NOTE: Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service] in the dedicated section.
+NOTE: Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service] in the dedicated documentation.
 
-== Configuring Observability
+== Enabling/Disabling Telemetry
 
 The Arconia OpenTelemetry Spring Boot Starter provides sensible defaults for configuring observability signals. By default, logs, metrics, and traces are enabled and exported via OTLP to an OpenTelemetry-compatible backend.
 
@@ -167,9 +170,9 @@ By default, all observability signals are exported via OTLP. If you set the expo
 .Exporter Type Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+|`arconia.otel.exporter.type`
+|`otlp`
+|The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
 |===
 
 You can change the type of the exporter in use for each observability signal using the `arconia.otel.<signal>.exporter.type` property, where `<signal>` is one of `logs`, `metrics`, or `traces`.
@@ -177,15 +180,15 @@ You can change the type of the exporter in use for each observability signal usi
 .Specific Exporter Type Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.logs.exporter.type`
-|	``
-|	The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
-|	`arconia.otel.metrics.exporter.type`
-|	``
-|	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
-|	`arconia.otel.traces.exporter.type`
-|	``
-|	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
+|`arconia.otel.logs.exporter.type`
+|_(inherited from arconia.otel.exporter.type)_
+|The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
+|`arconia.otel.metrics.exporter.type`
+|_(inherited from arconia.otel.exporter.type)_
+|The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
+|`arconia.otel.traces.exporter.type`
+|_(inherited from arconia.otel.exporter.type)_
+|The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
 |===
 
 === OTLP
@@ -195,30 +198,37 @@ Global properties are available to configure the OTLP exporters for logs, metric
 .OTLP Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.exporter.otlp.compression`
-|	`gzip`
-|	Compression type to use for OTLP requests. Options: `none`, `gzip`.
-|	`arconia.otel.exporter.otlp.connect-timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to establish a connection to the endpoint.
-|	`arconia.otel.exporter.otlp.endpoint`
-|	`http://localhost:4317` (gPRC) or `http://localhost:4318` (HTTP)
-|	The endpoint to which telemetry data will be sent.
-|	`arconia.otel.exporter.otlp.headers`
-|	-
-|	Additional headers to include in each request to the endpoint.
-|	`arconia.otel.exporter.otlp.metrics`
-|	`false`
-|	Whether to generate metrics for the exporter itself.
-|	`arconia.otel.exporter.otlp.protocol`
-|	`http-protobuf`
-|	Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
-|	`arconia.otel.exporter.otlp.timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to send each telemetry batch.
-|	`arconia.otel.exporter.memory-mode`
-|	`reusable-data`
-|	Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
+|`arconia.otel.exporter.otlp.compression`
+|`gzip`
+|Compression type to use for OTLP requests. Options: `none`, `gzip`.
+
+|`arconia.otel.exporter.otlp.connect-timeout`
+|`10s`
+|The maximum waiting time for the exporter to establish a connection to the endpoint.
+
+|`arconia.otel.exporter.otlp.endpoint`
+|`http://localhost:4317` (gPRC) or `http://localhost:4318` (HTTP)
+|The endpoint to which telemetry data will be sent.
+
+|`arconia.otel.exporter.otlp.headers`
+|-
+|Additional headers to include in each request to the endpoint.
+
+|`arconia.otel.exporter.otlp.metrics`
+|`false`
+|Whether to generate metrics for the exporter itself.
+
+|`arconia.otel.exporter.otlp.protocol`
+|`http-protobuf`
+|Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+
+|`arconia.otel.exporter.otlp.timeout`
+|`10s`
+|The maximum waiting time for the exporter to send each telemetry batch.
+
+|`arconia.otel.exporter.memory-mode`
+|`reusable-data`
+|Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
 |===
 
 You can override any of these properties for each observability signal using the `arconia.otel.<signal>.exporter.*` prefix, where `<signal>` is one of `logs`, `metrics`, or `traces`. For more details, refer to the dedicated documentation for xref:logs.adoc[Logs], xref:metrics.adoc[Metrics], and xref:traces.adoc[Traces].
@@ -239,7 +249,7 @@ Gradle::
 ----
 dependencies {
     implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    runtimeOnly "io.grpc:grpc-netty-shaded:1.74.0"
+    runtimeOnly "io.grpc:grpc-netty-shaded"
 }
 ----
 
@@ -254,7 +264,6 @@ Maven::
 <dependency>
     <groupId>io.grpc</groupId>
     <artifactId>grpc-netty-shaded</artifactId>
-    <version>1.74.0</version>
 </dependency>
 ----
 ======
@@ -289,6 +298,50 @@ Maven::
 
 WARNING: This exporter option is not recommended for production.
 
+NOTE: The console exporter doesn't support exporting metrics defined using the Micrometer APIs when using the Micrometer Metrics Registry OTLP module instead of the OpenTelemetry Micrometer Metrics Bridge.
+
 == OpenTelemetry Environment Variables
 
 include::partial$opentelemetry-environment-variables.adoc[]
+
+== Comparisons
+
+Arconia provides unified observability for Spring Boot applications, combining full support for https://opentelemetry.io/docs/what-is-opentelemetry/[OpenTelemetry] API, SDK, and Instrumentation with full support for https://micrometer.io[Micrometer] API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
+
+image::arconia-otel.png[Arconia provides full support for OpenTelemetry and Micrometer, width=500]
+
+The main reason why Arconia OpenTelemetry exists is that no other option provides this level of integration and support for both OpenTelemetry and Micrometer in a single, unified solution. This section compares Arconia OpenTelemetry with other solutions available in the Spring Boot ecosystem (see the comparison table below).
+
+.Differences between Arconia OpenTelemetry and other solutions
+[cols="2,1,1,1,1", options="header"]
+|===
+| Aspect | Arconia OpenTelemetry | OpenTelemetry Spring Boot Starter | Spring Boot 3 | Spring Boot 4
+| OpenTelemetry Logging API | ✅ | ✅ | ✅ | ✅
+| OpenTelemetry Metrics API | ✅ | ✅ | ❌ | ❌
+| OpenTelemetry Tracing API | ✅ | ✅ | ✅ | ✅
+| Logback Logging Bridge for OpenTelemetry API | ✅ | ✅ | ❌ | ❌
+| Log4J2 Logging Bridge for OpenTelemetry API | 🚧 | ✅ | ❌ | ❌
+| Micrometer Metrics Bridge for OpenTelemetry API | ✅ | ✅ | ❌ | ❌
+| Micrometer Tracing Bridge for OpenTelemetry API | ✅ | ❌ | ✅ | ✅
+| OpenTelemetry OTLP Logs Exporter | ✅ | ✅ | ❌ | ✅
+| OpenTelemetry OTLP Metrics Exporter | ✅ | ✅ | ❌ | ❌
+| OpenTelemetry OTLP Traces Exporter | ✅ | ✅ | ✅ | ✅
+| OpenTelemetry Environment Variables | ✅ | ✅ | ❌ | ⚠️
+| Micrometer Metrics OTLP Exporter | ✅ | ❌ | ✅ | ✅
+| OpenTelemetry Java Instrumentation | ✅ | ✅ | ❌ | ❌
+| Micrometer Instrumentation | ✅ | ❌ | ✅ | ✅
+| Single Dependency | ✅ | ✅ | ❌ | ✅
+| Unified Configuration | ✅ | ✅ | ❌ | ❌
+|===
+
+== Arconia OpenTelemetry vs OpenTelemetry Spring Boot Starter
+
+The https://opentelemetry.io/docs/zero-code/java/spring-boot-starter[OpenTelemetry Spring Boot Starter] is built on top of the OpenTelemetry Java SDK and Instrumentation libraries. It provides support for OpenTelemetry APIs and SDKs, including logging, metrics, and tracing.
+
+A key difference between Arconia OpenTelemetry and the OpenTelemetry Spring Boot Starter is that the latter doesn't re-use most of the existing, stable Micrometer instrumentation available across the Spring and Java ecosystem. Each Spring library comes with built-in instrumentation based on the Micrometer Observation API. By not re-using the existing Micrometer instrumentation, the OpenTelemetry Spring Boot Starter misses out on a significant amount of telemetry data which needs to be implemented and maintained separately by the OpenTelemetry community. Additionally, the OpenTelemetry Java Instrumentation follows the OpenTelemetry Semantic Conventions, most of which are not stable and may change over time, leading to potential breaking changes in the instrumentation.
+
+== Arconia OpenTelemetry vs Spring Boot OpenTelemetry
+
+The https://docs.spring.io/spring-boot/reference/actuator/observability.html#actuator.observability.opentelemetry[Spring Boot] project provides observability based on Micrometer with partial support for exporting telemetry for OpenTelemetry. For logs, it supports the OpenTelemetry Logging API but no bridges are provided to re-use existing logging instrumentation. For traces, it supports the OpenTelemetry Tracing API via a bridge from Micrometer Tracing. For metrics, Spring Boot doesn't provide support for OpenTelemetry Metrics API. Instead, it offers an option to export Micrometer metrics via OTLP using the Micrometer Metrics Registry OTLP module.
+
+A key difference between Arconia OpenTelemetry and Spring Boot is that the latter doesn't provide full support for OpenTelemetry APIs, SDKs, and Environment Variables. In particular, by not supporting the OpenTelemetry Metrics API, Spring Boot misses out on the ability to collect metrics using the standard OpenTelemetry APIs and instrumentation which is used by some Java libraries. Additionally, configuration for each observability signal is segregated rather than unified under a single OpenTelemetry configuration model to benefit from consistency and common defaults across all signals.

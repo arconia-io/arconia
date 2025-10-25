@@ -1,5 +1,4 @@
 = OpenTelemetry Metrics
-:description: Configure OpenTelemetry Metrics.
 
 Metrics are quantitative measurements of an application, captured and aggregated at runtime in regular time intervals. This page describes how to configure the metrics support in OpenTelemetry.
 
@@ -146,28 +145,41 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
 
-== Micrometer Metrics Bridge
+== Micrometer Metrics Support
 
-Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports bridges to export Micrometer Metrics to OpenTelemetry.
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports two ways to export Micrometer metrics to OpenTelemetry:
 
-=== Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
+* via the https://docs.micrometer.io/micrometer/reference/implementations/otlp.html[Micrometer Metrics Registry OTLP] from the Micrometer project, which exports Micrometer metrics directly to an OTLP endpoint without going through the OpenTelemetry API;
+* via the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[Micrometer Metrics OpenTelemetry Bridge] from the OpenTelemetry Java Instrumentation project.
 
-The Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer Metrics OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
+The following table summarizes the differences between the two approaches:
 
-WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
+.Differences between Micrometer Metrics Registry OTLP and Micrometer Metrics OpenTelemetry Bridge
+[cols="2,1,1", options="header"]
+|===
+| Aspect | Micrometer Metrics Registry OTLP | Micrometer Metrics OpenTelemetry Bridge
+| Stable | ✅ | ❌ (experimental)
+| OpenTelemetry Metrics API | ❌ | ✅
+| Exemplars | ❌ | ✅
+| Reading Metrics | ✅ | ❌
+|===
 
-NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't support reading metrics, but only bridging them to OpenTelemetry. For that reason, an additional `SimpleMeterRegistry` bean is registered for reading Micrometer metrics, an operation typically performed by the Spring Boot Actuator library.
+=== Micrometer Metrics Registry OTLP (from Micrometer)
 
-==== Enabling/Disabling the Bridge
+The Arconia OpenTelemetry Spring Boot Starter comes built-in with the https://docs.micrometer.io/micrometer/reference/implementations/otlp.html[Micrometer Metrics Registry OTLP] provided by the https://micrometer.io[Micrometer] project, which exports Micrometer metrics directly to an OTLP endpoint without going through the OpenTelemetry API.
 
-The Micrometer Metrics OpenTelemetry Bridge can be disabled via configuration properties.
+NOTE: Since the Micrometer Metrics Registry OTLP exports metrics directly to an OTLP endpoint, the metrics won't be available via the OpenTelemetry API. One of the consequences is that they won't be available when configuring OpenTelemetry with different exporters, such as the console exporter.
+
+==== Enabling/Disabling
+
+The Micrometer Metrics Registry OTLP can be disabled via configuration properties.
 
 [source,yaml]
 ----
-arconia.otel.metrics.micrometer-bridge.enabled: false
+arconia.otel.metrics.micrometer-otlp.enabled: false
 ----
 
-Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency from your project, which will disable the bridge entirely.
+Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project, which will disable the registry entirely.
 
 [tabs]
 ======
@@ -177,7 +189,7 @@ Gradle::
 ----
 dependencies {
     implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-        exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-bridge"
+        exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
     }
 }
 ----
@@ -192,12 +204,90 @@ Maven::
     <exclusions>
         <exclusion>
             <groupId>io.arconia</groupId>
-            <artifactId>arconia-opentelemetry-micrometer-metrics-bridge</artifactId>
+            <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
         </exclusion>
     </exclusions>
 </dependency>
 ----
 ======
+
+==== Configuration Properties
+
+The Micrometer Metrics Registry OTLP can be configured via configuration properties.
+
+.Micrometer Metrics Registry OTLP Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.metrics.micrometer-otlp.base-time-unit`
+|	`seconds`
+|	Base time unit for Micrometer metrics.
+
+|	`arconia.otel.metrics.micrometer-otlp.max-bucket-count`
+|	`160`
+|	Default maximum number of buckets to be used for exponential histograms, if configured. This has no effect on explicit bucket histograms.
+
+|	`arconia.otel.metrics.micrometer-otlp.max-scale`
+|	`20`
+|	Max scale to use for exponential histograms, if configured.
+|===
+
+All the configuration properties described earlier for OpenTelemetry Metrics and OTLP exporter also apply to the Micrometer Metrics Registry OTLP.
+
+=== Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
+
+Arconia also supports exporting Micrometer metrics via the Micrometer Metrics OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
+
+WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
+
+NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't support reading metrics, but only bridging them to OpenTelemetry. For that reason, an additional `SimpleMeterRegistry` bean is registered for reading Micrometer metrics, an operation typically performed by the Spring Boot Actuator library.
+
+==== Enabling/Disabling the Bridge
+
+By default, the Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer Metrics Registry OTLP. You can choose to remove it and use the Micrometer Metrics OpenTelemetry Bridge instead. To achieve that, exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project and include the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency instead.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
+    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
+  }
+  implementation("io.arconia:arconia-opentelemetry-micrometer-metrics-bridge")
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+  <groupId>io.arconia</groupId>
+  <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+  <exclusions>
+    <exclusion>
+      <groupId>io.arconia</groupId>
+      <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+<dependency>
+  <groupId>io.arconia</groupId>
+  <artifactId>arconia-opentelemetry-micrometer-metrics-bridge</artifactId>
+</dependency>
+----
+======
+
+If the Micrometer Metrics OpenTelemetry Bridge is included in the project, it will be auto-configured by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia.otel.metrics.micrometer-bridge.enabled: false
+----
+
+NOTE: The Micrometer Metrics OpenTelemetry Bridge is mutually exclusive with the Micrometer Metrics Registry OTLP. Having both of them in the classpath is not supported and will lead to undefined behavior.
 
 ==== Configuration Properties
 

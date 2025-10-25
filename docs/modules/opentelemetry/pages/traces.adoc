@@ -1,5 +1,4 @@
 = OpenTelemetry Traces
-:description: Configure OpenTelemetry Traces.
 
 Traces track requests as they flow through all the services and components of an application. This page describes how to configure the tracing support in OpenTelemetry.
 
@@ -246,8 +245,12 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
 
-== Micrometer Tracing Bridge
+== Micrometer Tracing Support
 
-Spring libraries and other libraries from the Java ecosystem are instrumented using Micrometer Tracing (via the Micrometer `Observation` API) and rely on Micrometer for context propagation and baggage management. The Arconia OpenTelemetry Spring Boot Starter provides a bridge that allows you to convert Micrometer traces into OpenTelemetry Traces and export them via OTLP.
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Tracing (via the Micrometer `Observation` API) and rely on Micrometer for context propagation and baggage management. Arconia supports the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing OpenTelemetry Bridge] from the Micrometer Tracing project to export such traces via OpenTelemetry.
 
-The bridge logic is provided by the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing] project, and it's bundled with the Arconia OpenTelemetry Spring Boot Starter. Disabling the bridge is not a supported configuration option, since Micrometer Tracing is a core part of the OpenTelemetry support in Spring Boot.
+=== Micrometer Tracing Bridge (from Micrometer)
+
+The Arconia OpenTelemetry Spring Boot Starter comes built-in with the https://docs.micrometer.io/tracing/reference/tracers.html[Micrometer Tracing OpenTelemetry Bridge] provided by the https://docs.micrometer.io/tracing/reference/[Micrometer Tracing] project, which transparently converts Micrometer traces into OpenTelemetry Traces going through the OpenTelemetry API.
+
+Disabling the bridge is not a supported configuration option, since Micrometer Tracing is a core part of the OpenTelemetry tracing support in Spring Boot.
