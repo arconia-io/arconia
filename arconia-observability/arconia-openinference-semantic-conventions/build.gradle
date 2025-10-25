@@ -16,10 +16,11 @@ dependencies {
     api "io.micrometer:micrometer-core"
     api "io.micrometer:micrometer-observation"
 
-    implementation project(":arconia-observability:arconia-opentelemetry")
     implementation "org.springframework.ai:spring-ai-client-chat"
     implementation "org.springframework.ai:spring-ai-model"
     implementation "org.springframework.boot:spring-boot-starter"
+
+    optional project(":arconia-observability:arconia-opentelemetry")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -35,8 +36,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Observability OpenInference Conventions"
-                description = "Arconia Observability OpenInference Conventions."
+                name = "Arconia OpenInference Semantic Conventions"
+                description = "Arconia OpenInference Semantic Conventions."
             }
         }
     }

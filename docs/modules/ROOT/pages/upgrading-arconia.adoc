@@ -93,6 +93,16 @@ Then, check these additional changes that you might need to apply to your projec
 
 * The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`. That impacts the `MongoDbAtlasDevServicesAutoConfiguration` and `MongoDbAtlasDevServicesProperties` classes.
 
+=== Observations
+
+==== Generative AI
+
+* The configuration properties under the `arconia.observability.openinference` namespace have been moved to the `arconia.observations.generative-ai.openinference` namespace.
+* The `arconia.observability.openinference.include-only-ai-observations` configuration property has been renamed to `arconia.observations.generative-ai.openinference.exclusive`.
+* The classes under the `io.arconia.openinference.observation.autoconfigure` package have been moved to the `io.arconia.openinference.observation.autoconfigure.ai` package.
+* The classes under the `io.arconia.openinference.observation.instrumentation` package have been moved to the `io.arconia.openinference.observation.instrumentation.ai` package.
+* The `OpenInferenceSpringAiOnlyObservationPredicate` class has been renamed to `OpenInferenceGenerativeAiOnlyObservationPredicate`.
+
 === OpenTelemetry
 
 * In the OpenTelemetry Logback Bridge module, the `arconia.otel.logs.logback-bridge.capture-logstash-attributes` configuration property has been renamed to `arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`.

@@ -14,6 +14,13 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The MongoDB Atlas Dev Service was supported only with Spring AI. It is now also supported with Spring Data MongoDB and Spring Session MongoDB.
 * The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`.
 
+== Observations
+
+=== Generative AI
+
+* The OpenInference Semantic Conventions configuration properties have been moved from the `arconia.observability.openinference` namespace to the `arconia.observations.generative-ai.openinference` namespace.
+* The `arconia.observability.openinference.include-only-ai-observations` configuration property has been renamed to `arconia.observations.generative-ai.openinference.exclusive`.
+
 == OpenTelemetry
 
 * OTLP exporters for logs, metrics, and traces now support setting a retry policy via configuration properties. This allows you to configure the number of retry attempts, the initial backoff duration, the maximum backoff duration, and the backoff multiplier for retrying failed export attempts. You can specify these settings globally (`arconia.otel.exporter.otlp.retry`) or for each observability signal individually (`arconia.otel.<signal>.exporter.otlp.retry`).
