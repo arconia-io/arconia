@@ -21,11 +21,7 @@ dependencies {
     implementation "org.springframework.ai:spring-ai-model"
     implementation "org.springframework.boot:spring-boot-starter"
 
-    optional "org.springframework.boot:spring-boot-testcontainers"
-    optional "org.testcontainers:testcontainers"
-
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.testcontainers:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

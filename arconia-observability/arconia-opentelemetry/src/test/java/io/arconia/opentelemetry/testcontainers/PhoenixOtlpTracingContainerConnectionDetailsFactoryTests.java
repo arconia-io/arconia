@@ -1,9 +1,10 @@
-package io.arconia.openinference.observation.testcontainers;
+package io.arconia.opentelemetry.testcontainers;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
@@ -13,10 +14,11 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingEx
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link OpenInferenceOtlpTracingContainerConnectionDetailsFactory}.
+ * Integration tests for {@link PhoenixOtlpTracingContainerConnectionDetailsFactory}.
  */
 @SpringJUnitConfig
-class OpenInferenceOtlpTracingContainerConnectionDetailsFactoryTests extends PhoenixTestcontainers {
+@TestPropertySource(properties = "arconia.otel.traces.exporter.type=none")
+class PhoenixOtlpTracingContainerConnectionDetailsFactoryTests extends PhoenixTestcontainers {
 
     @Autowired
     OtlpTracingConnectionDetails connectionDetails;

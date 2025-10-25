@@ -1,4 +1,4 @@
-package io.arconia.openinference.observation.testcontainers;
+package io.arconia.opentelemetry.testcontainers;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,16 +16,16 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingEx
 /**
  * Factory for creating {@link OtlpTracingConnectionDetails} for LGTM containers.
  */
-class OpenInferenceOtlpTracingContainerConnectionDetailsFactory
+class PhoenixOtlpTracingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<GenericContainer<?>, OtlpTracingConnectionDetails> {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenInferenceOtlpTracingContainerConnectionDetailsFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhoenixOtlpTracingContainerConnectionDetailsFactory.class);
 
     private static final List<String> CONNECTION_NAMES = List.of("phoenix", "arizephoenix/phoenix");
 
     private static final int HTTP_PORT = 6006;
 
-    OpenInferenceOtlpTracingContainerConnectionDetailsFactory() {
+    PhoenixOtlpTracingContainerConnectionDetailsFactory() {
         super(CONNECTION_NAMES, OtlpTracingExporterConfiguration.class.getName());
     }
 

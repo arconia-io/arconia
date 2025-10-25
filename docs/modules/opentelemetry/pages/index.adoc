@@ -117,6 +117,8 @@ Maven::
 ----
 ======
 
+NOTE: Arconia also provides the xref:dev-services:phoenix.adoc[Arize Phoenix Dev Service] if you're looking for an AI Observability and Evaluation platform based on OpenTelemetry.
+
 === Running the Application
 
 You can run your Spring Boot application using your preferred method.
