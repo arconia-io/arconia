@@ -24,7 +24,7 @@ public class PostgresqlDevServicesProperties implements JdbcDevServicesPropertie
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "postgres:17.6-alpine";
+    private String imageName = "postgres:18.0-alpine";
 
     /**
      * Environment variables to set in the service.
