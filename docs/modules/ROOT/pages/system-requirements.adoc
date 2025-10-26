@@ -8,13 +8,17 @@ This page describes the compatibility requirements for Arconia.
 |===
 |Arconia |Java
 |0.5+ |21+
+|1.0 (under development) |25+
 |===
 
 == Spring Boot
+
+Arconia follows the Spring Boot release cadence and relies on Spring Boot's https://docs.spring.io/spring-boot/appendix/dependency-versions/coordinates.html[managed dependency versions].
 
 [options="header"]
 |===
 |Arconia |Spring Boot
 |0.5-0.12 |3.4
-|0.13+ |3.5+
+|0.13+ |3.5
+|1.0 (under development) |4.0+
 |===
