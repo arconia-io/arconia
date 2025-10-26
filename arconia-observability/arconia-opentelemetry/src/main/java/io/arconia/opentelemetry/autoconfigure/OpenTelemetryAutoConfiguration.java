@@ -7,6 +7,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -49,6 +50,17 @@ public final class OpenTelemetryAutoConfiguration {
     @ConditionalOnMissingBean
     Clock clock() {
         return Clock.getDefault();
+    }
+
+    /**
+     * This is needed because Spring Boot doesn't support disabling OpenTelemetry
+     * and always expects a {@link Resource} bean to be defined.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnOpenTelemetry(enabled = false)
+    Resource resource() {
+        return Resource.empty();
     }
 
 }
