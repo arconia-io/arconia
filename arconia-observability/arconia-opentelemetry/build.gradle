@@ -11,6 +11,7 @@ dependencies {
 
     api project(":arconia-core")
     api "io.micrometer:micrometer-observation"
+    api "io.micrometer:micrometer-tracing-bridge-otel"
     api "io.opentelemetry:opentelemetry-sdk"
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
 
@@ -23,8 +24,6 @@ dependencies {
     optional "io.opentelemetry:opentelemetry-exporter-logging"
 
     // Spring/Micrometer
-    optional "io.micrometer:micrometer-registry-otlp"
-    optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "org.springframework.boot:spring-boot-starter-actuator"
 
     // Testcontainers
@@ -41,7 +40,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
     }
 }
 

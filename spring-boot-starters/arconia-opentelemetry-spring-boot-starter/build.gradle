@@ -14,15 +14,11 @@ dependencies {
     api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     api "org.springframework.boot:spring-boot-starter-actuator"
 
+    runtimeOnly "io.micrometer:micrometer-java21"
     runtimeOnly("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
     runtimeOnly "io.opentelemetry:opentelemetry-exporter-sender-jdk"
-
-    runtimeOnly "io.micrometer:micrometer-java21"
-    runtimeOnly("io.micrometer:micrometer-tracing-bridge-otel") {
-        exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
-    }
 
     implementation "org.springframework.boot:spring-boot-starter"
 

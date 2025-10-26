@@ -10,17 +10,23 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api project(":arconia-observability:arconia-opentelemetry")
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:grafana"
 
     implementation "org.springframework.boot:spring-boot-starter"
 
+    optional project(":arconia-observability:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-devtools"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
 }
 
 publishing {
