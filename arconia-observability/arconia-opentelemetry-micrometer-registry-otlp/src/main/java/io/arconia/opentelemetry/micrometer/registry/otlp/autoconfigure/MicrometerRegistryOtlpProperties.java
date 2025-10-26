@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = MicrometerRegistryOtlpProperties.CONFIG_PREFIX)
 public class MicrometerRegistryOtlpProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.otel.metrics.micrometer-otlp";
+    public static final String CONFIG_PREFIX = "arconia.otel.exporter.otlp.micrometer";
 
     /**
      * Whether to enable the Micrometer Metrics Registry OTLP.

@@ -35,6 +35,8 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
     before = { CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class }
 )
 @ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
+// Mutually exclusive with the Micrometer Metrics Registry OTLP.
+@ConditionalOnProperty(prefix = "arconia.otel.exporter.otlp.micrometer", name = "enabled", havingValue = "false", matchIfMissing = true)
 @ConditionalOnOpenTelemetryMetrics
 @Conditional(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.MetricsExportEnabled.class)
 @EnableConfigurationProperties(MicrometerMetricsOpenTelemetryBridgeProperties.class)

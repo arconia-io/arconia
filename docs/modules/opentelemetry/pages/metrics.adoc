@@ -145,6 +145,75 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
 
+==== Micrometer OTLP
+
+Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. The Arconia OpenTelemetry Spring Boot Starter comes built-in with the https://docs.micrometer.io/micrometer/reference/implementations/otlp.html[Micrometer Metrics Registry OTLP] provided by the https://micrometer.io[Micrometer] project, which exports Micrometer metrics directly to an OTLP endpoint without going through the OpenTelemetry API.
+
+That means there will be two different exporters sending metrics to the same OTLP endpoint: the OpenTelemetry Metrics OTLP exporter (for metrics instrumented via OpenTelemetry API) and the Micrometer Metrics Registry OTLP (for metrics instrumented via Micrometer API).
+
+NOTE: If you'd rather export Micrometer metrics via the OpenTelemetry API instead of using a separate Micrometer-specific exporter, refer to the xref:_micrometer_metrics_support[Micrometer Metrics Support] section.
+
+===== Enabling/Disabling
+
+The Micrometer Metrics Registry OTLP can be disabled via configuration properties.
+
+[source,yaml]
+----
+arconia.otel.exporter.otlp.micrometer.enabled: false
+----
+
+Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project, which will disable the registry entirely.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
+    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
+  }
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+  <groupId>io.arconia</groupId>
+  <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+  <exclusions>
+    <exclusion>
+      <groupId>io.arconia</groupId>
+      <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+----
+======
+
+===== Configuration Properties
+
+On top of the general metrics and OTLP configuration described previously, the Micrometer Metrics Registry OTLP provides additional configuration properties.
+
+.Micrometer Metrics Registry OTLP Configuration Properties
+|===
+|Property |Default |Description
+|	`arconia.otel.exporter.otlp.micrometer.base-time-unit`
+|	`seconds`
+|	Base time unit for Micrometer metrics.
+
+|	`arconia.otel.exporter.otlp.micrometer.max-bucket-count`
+|	`160`
+|	Default maximum number of buckets to be used for exponential histograms, if configured. This has no effect on explicit bucket histograms.
+
+|	`arconia.otel.exporter.otlp.micrometer.max-scale`
+|	`20`
+|	Max scale to use for exponential histograms, if configured.
+|===
+
 == Micrometer Metrics Support
 
 Spring libraries and many other libraries from the Java ecosystem are instrumented using Micrometer Metrics. Arconia supports two ways to export Micrometer metrics to OpenTelemetry:
@@ -159,83 +228,17 @@ The following table summarizes the differences between the two approaches:
 |===
 | Aspect | Micrometer Metrics Registry OTLP | Micrometer Metrics OpenTelemetry Bridge
 | Stable | ✅ | ❌
-| OpenTelemetry Metrics API | ❌ | ✅
-| Exemplars | ❌ | ✅
-| Reading Metrics | ✅ | ❌
+| OpenTelemetry API | ❌ | ✅
+| Support non-OTLP exporters | ❌ | ✅
+| Support exemplars | ❌ | ✅
+| Support reading metrics | ✅ | ❌
 |===
 
-=== Micrometer Metrics Registry OTLP (from Micrometer)
-
-The Arconia OpenTelemetry Spring Boot Starter comes built-in with the https://docs.micrometer.io/micrometer/reference/implementations/otlp.html[Micrometer Metrics Registry OTLP] provided by the https://micrometer.io[Micrometer] project, which exports Micrometer metrics directly to an OTLP endpoint without going through the OpenTelemetry API.
-
-NOTE: Since the Micrometer Metrics Registry OTLP exports metrics directly to an OTLP endpoint, the metrics won't be available via the OpenTelemetry API. One of the consequences is that they won't be available when configuring OpenTelemetry with different exporters, such as the console exporter.
-
-==== Enabling/Disabling
-
-The Micrometer Metrics Registry OTLP can be disabled via configuration properties.
-
-[source,yaml]
-----
-arconia.otel.metrics.micrometer-otlp.enabled: false
-----
-
-Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project, which will disable the registry entirely.
-
-[tabs]
-======
-Gradle::
-+
-[source,groovy]
-----
-dependencies {
-    implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-        exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
-    }
-}
-----
-
-Maven::
-+
-[source,xml]
-----
-<dependency>
-    <groupId>io.arconia</groupId>
-    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
-    <exclusions>
-        <exclusion>
-            <groupId>io.arconia</groupId>
-            <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-----
-======
-
-==== Configuration Properties
-
-The Micrometer Metrics Registry OTLP can be configured via configuration properties.
-
-.Micrometer Metrics Registry OTLP Configuration Properties
-|===
-|Property |Default |Description
-|	`arconia.otel.metrics.micrometer-otlp.base-time-unit`
-|	`seconds`
-|	Base time unit for Micrometer metrics.
-
-|	`arconia.otel.metrics.micrometer-otlp.max-bucket-count`
-|	`160`
-|	Default maximum number of buckets to be used for exponential histograms, if configured. This has no effect on explicit bucket histograms.
-
-|	`arconia.otel.metrics.micrometer-otlp.max-scale`
-|	`20`
-|	Max scale to use for exponential histograms, if configured.
-|===
-
-All the configuration properties described earlier for OpenTelemetry Metrics and OTLP exporter also apply to the Micrometer Metrics Registry OTLP.
+By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, use a different exporter than OTLP, or need exemplar support, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation_[Micrometer Metrics OpenTelemetry Bridge] section for more details.
 
 === Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
-Arconia also supports exporting Micrometer metrics via the Micrometer Metrics OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
+Arconia optionally supports exporting Micrometer metrics via the Micrometer Metrics OpenTelemetry Bridge provided by the https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/micrometer/micrometer-1.5/library[OpenTelemetry Java Instrumentation for Micrometer], which is based on the OpenTelemetry API and integrates fully with the OpenTelemetry SDK.
 
 WARNING: The Micrometer Metrics OpenTelemetry Bridge from the OpenTelemetry Java Instrumentation project is still experimental.
 
@@ -287,7 +290,7 @@ If the Micrometer Metrics OpenTelemetry Bridge is included in the project, it wi
 arconia.otel.metrics.micrometer-bridge.enabled: false
 ----
 
-NOTE: The Micrometer Metrics OpenTelemetry Bridge is mutually exclusive with the Micrometer Metrics Registry OTLP. Having both of them in the classpath is not supported and will lead to undefined behavior.
+WARNING: The Micrometer Metrics OpenTelemetry Bridge is mutually exclusive with the Micrometer Metrics Registry OTLP. If you have both dependencies in your project, it will be up to you to explicitly disable one of the two options via configuration properties or else neither will be auto-configured.
 
 ==== Configuration Properties
 

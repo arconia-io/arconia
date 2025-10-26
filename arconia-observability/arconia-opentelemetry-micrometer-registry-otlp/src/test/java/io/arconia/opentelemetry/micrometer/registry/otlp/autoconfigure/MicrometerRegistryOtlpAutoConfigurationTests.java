@@ -39,7 +39,7 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
     @Test
     void autoConfigurationNotActivatedWhenRegistryDisabled() {
         contextRunner
-                .withPropertyValues("arconia.otel.metrics.micrometer-otlp.enabled=false")
+                .withPropertyValues("arconia.otel.exporter.otlp.micrometer.enabled=false")
                 .withBean(Resource.class, Resource::getDefault)
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(MicrometerOtlpConfig.class);
@@ -112,9 +112,9 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
     void otlpConfigConfiguredWithCustomProperties() {
         contextRunner
                 .withPropertyValues(
-                        "arconia.otel.metrics.micrometer-otlp.base-time-unit=milliseconds",
-                        "arconia.otel.metrics.micrometer-otlp.max-scale=10",
-                        "arconia.otel.metrics.micrometer-otlp.max-bucket-count=100",
+                        "arconia.otel.exporter.otlp.micrometer.base-time-unit=milliseconds",
+                        "arconia.otel.exporter.otlp.micrometer.max-scale=10",
+                        "arconia.otel.exporter.otlp.micrometer.max-bucket-count=100",
                         "arconia.otel.metrics.exporter.interval=PT10S",
                         "arconia.otel.metrics.exporter.aggregation-temporality=delta",
                         "arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram"

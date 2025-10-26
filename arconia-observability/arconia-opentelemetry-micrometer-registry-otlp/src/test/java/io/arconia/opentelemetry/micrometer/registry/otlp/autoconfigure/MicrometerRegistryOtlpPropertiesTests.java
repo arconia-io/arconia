@@ -14,7 +14,7 @@ class MicrometerRegistryOtlpPropertiesTests {
     @Test
     void shouldHaveCorrectConfigPrefix() {
         assertThat(MicrometerRegistryOtlpProperties.CONFIG_PREFIX)
-                .isEqualTo("arconia.otel.metrics.micrometer-otlp");
+                .isEqualTo("arconia.otel.exporter.otlp.micrometer");
     }
 
     @Test

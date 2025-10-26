@@ -15,7 +15,7 @@ Micrometer-based instrumentation is recommended by the Spring Boot project, and 
 
 There are three types of instrumentation you can find in the libraries from the Spring ecosystem:
 
-* Metrics instrumentation using the `MeterRegistry` API. In Arconia, such metrics are automatically bridged and exported to OpenTelemetry (either via the xref:opentelemetry:metrics.adoc#_micrometer_metrics_registry_otlp_from_micrometer[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge]).
+* Metrics instrumentation using the `MeterRegistry` API. In Arconia, such metrics are automatically bridged and exported to OpenTelemetry (either via the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge]).
 * Traces instrumentation using the `Tracer` API. In Arconia, such traces are automatically bridged and exported to OpenTelemetry (via the xref:opentelemetry:traces.adoc#_micrometer_tracing_bridge_from_micrometer[Micrometer Tracing OpenTelemetry Bridge]).
 * Unified instrumentation using the `Observation` API, which results in both metrics and traced being generated. In Arconia, both of them are automatically bridged and exported to OpenTelemetry.
 
