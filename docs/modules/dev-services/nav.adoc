@@ -16,3 +16,4 @@
 * xref:lgtm.adoc[Grafana LGTM]
 * xref:ollama.adoc[Ollama]
 * xref:phoenix.adoc[Phoenix]
+* xref:lldap.adoc[LLDAP]

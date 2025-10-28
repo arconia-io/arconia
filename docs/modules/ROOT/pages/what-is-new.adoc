@@ -13,6 +13,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The MongoDB Atlas Dev Service was supported only with Spring AI. It is now also supported with Spring Data MongoDB and Spring Session MongoDB.
 * The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`.
+* Introduced the LLDAP Dev Service module to facilitate seamless interaction with directory servers via an LDAP-compatible interface.
 
 == Observations
 

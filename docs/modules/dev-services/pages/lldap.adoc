@@ -1,0 +1,38 @@
+= Light LDAP (LLDAP) Dev Service
+:service-name: lldap
+
+A service that provides an https://ldap.com[LLDAP] based interface for simulating and interacting with directory servers in development and testing environments.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.lldap.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.lldap.image-name`
+| `lldap`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.lldap.environment`
+| `{}`
+| Environment variables to set in the service. Example: `LLDAP_ROOT_USERNAME: "admin"`.
+
+| `arconia.dev.services.lldap.shared`
+| `never`
+| When the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]
