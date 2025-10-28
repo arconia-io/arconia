@@ -1,0 +1,34 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.testcontainers:ldap"
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional "org.springframework.boot:spring-boot-devtools"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services LLDAP"
+                description = "Arconia Dev Services LLDAP."
+            }
+        }
+    }
+}
