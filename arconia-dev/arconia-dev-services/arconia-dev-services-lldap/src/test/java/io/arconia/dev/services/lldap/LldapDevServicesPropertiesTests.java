@@ -19,7 +19,7 @@ class LldapDevServicesPropertiesTests {
         LldapDevServicesProperties properties = new LldapDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("lldap");
+        assertThat(properties.getImageName()).contains("lldap/lldap");
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -30,13 +30,13 @@ class LldapDevServicesPropertiesTests {
         LldapDevServicesProperties properties = new LldapDevServicesProperties();
 
         properties.setEnabled(false);
-        properties.setImageName("lldap:latest");
+        properties.setImageName("lldap/lldap:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("lldap:latest");
+        assertThat(properties.getImageName()).isEqualTo("lldap/lldap:latest");
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

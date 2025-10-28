@@ -32,7 +32,7 @@ class LldapDevServicesAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(LLdapContainer.class);
             LLdapContainer container = context.getBean(LLdapContainer.class);
-            assertThat(container.getDockerImageName()).contains("lldap");
+            assertThat(container.getDockerImageName()).contains("lldap/lldap");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
         });
@@ -42,14 +42,14 @@ class LldapDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.lldap.environment.LLDAP_ROOT_USERNAME=admin",
+                "arconia.dev.services.lldap.environment.LLDAP_LDAP_BASE_DN=dc=example,dc=com",
                 "arconia.dev.services.lldap.shared=never",
                 "arconia.dev.services.lldap.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(LLdapContainer.class);
                 LLdapContainer container = context.getBean(LLdapContainer.class);
-                assertThat(container.getEnv()).contains("LLDAP_ROOT_USERNAME=admin");
+                assertThat(container.getEnv()).contains("LLDAP_LDAP_BASE_DN=dc=example,dc=com");
                 assertThat(container.isShouldBeReused()).isFalse();
             });
     }

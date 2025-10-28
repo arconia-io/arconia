@@ -22,7 +22,7 @@ public class LldapDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "lldap/lldap:v0.6.1-alpine";
+    private String imageName = "lldap/lldap:v0.6-alpine";
 
     /**
      * Environment variables to set in the service.

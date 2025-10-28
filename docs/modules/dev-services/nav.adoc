@@ -14,6 +14,6 @@
 ** xref:rabbitmq.adoc[RabbitMQ]
 * xref:docling.adoc[Docling]
 * xref:lgtm.adoc[Grafana LGTM]
+* xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
 * xref:phoenix.adoc[Phoenix]
-* xref:lldap.adoc[LLDAP]

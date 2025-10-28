@@ -1,7 +1,11 @@
 = Light LDAP (LLDAP) Dev Service
 :service-name: lldap
 
-A service that provides an https://ldap.com[LLDAP] based interface for simulating and interacting with directory servers in development and testing environments.
+A service providing an https://ldap.com[LDAP] instance for development and testing purposes. It's based on https://github.com/lldap/lldap[LLDAP], which is "a lightweight authentication server that provides an opinionated, simplified LDAP interface for authentication".
+
+It works with Spring Boot libraries that support LDAP, including:
+
+* https://spring.io/projects/spring-data-ldap[Spring Data LDAP]
 
 == Dependencies
 
@@ -23,12 +27,12 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.lldap.image-name`
-| `lldap`
+| `lldap/lldap`
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.lldap.environment`
 | `{}`
-| Environment variables to set in the service. Example: `LLDAP_ROOT_USERNAME: "admin"`.
+| Environment variables to set in the service. Example: `LLDAP_LDAP_BASE_DN: "dc=example,dc=com"`.
 
 | `arconia.dev.services.lldap.shared`
 | `never`

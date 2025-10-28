@@ -28,7 +28,7 @@ import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.Configura
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class LldapDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "lldap";
+    public static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
