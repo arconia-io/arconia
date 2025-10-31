@@ -4,6 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.openinference.observation.instrumentation.ai.OpenInferenceTracingOptions;
 
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
 /**
  * Configuration properties for the OpenInference instrumentation.
  */
@@ -25,6 +27,7 @@ public class OpenInferenceProperties {
     /**
      * Options for customizing the OpenInference instrumentation.
      */
+    @NestedConfigurationProperty
     private final OpenInferenceTracingOptions traces = new OpenInferenceTracingOptions();
 
     public boolean isEnabled() {
