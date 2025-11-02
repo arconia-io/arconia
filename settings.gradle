@@ -12,7 +12,6 @@ include 'arconia-core'
 
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-apache-pulsar'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-artemis'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-docling'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-kafka'
@@ -27,6 +26,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-phoenix'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-pulsar'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
 

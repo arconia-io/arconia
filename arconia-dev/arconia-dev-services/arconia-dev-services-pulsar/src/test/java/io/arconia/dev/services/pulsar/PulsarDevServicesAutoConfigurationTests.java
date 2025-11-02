@@ -1,4 +1,4 @@
-package io.arconia.dev.services.apachepulsar;
+package io.arconia.dev.services.pulsar;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,14 +14,14 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link ApachePulsarDevServicesAutoConfiguration}.
+ * Unit tests for {@link PulsarDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class ApachePulsarDevServicesAutoConfigurationTests {
+class PulsarDevServicesAutoConfigurationTests {
 
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(ApachePulsarDevServicesAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(PulsarDevServicesAutoConfiguration.class));
 
     @BeforeEach
     void setUp() {
@@ -31,7 +31,7 @@ class ApachePulsarDevServicesAutoConfigurationTests {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.apachepulsar.enabled=false")
+            .withPropertyValues("arconia.dev.services.pulsar.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(PulsarContainer.class));
     }
 
@@ -63,9 +63,9 @@ class ApachePulsarDevServicesAutoConfigurationTests {
     void containerConfigurationApplied() {
         contextRunner
             .withPropertyValues(
-                "arconia.dev.services.apachepulsar.environment.KEY=value",
-                "arconia.dev.services.apachepulsar.shared=never",
-                "arconia.dev.services.apachepulsar.startup-timeout=90s"
+                "arconia.dev.services.pulsar.environment.KEY=value",
+                "arconia.dev.services.pulsar.shared=never",
+                "arconia.dev.services.pulsar.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(PulsarContainer.class);

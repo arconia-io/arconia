@@ -16,7 +16,6 @@ dependencies {
         api project(":arconia-core")
 
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-apache-pulsar")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-artemis")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-docling")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-kafka")
@@ -31,6 +30,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-phoenix")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-postgresql")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-pulsar")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
 

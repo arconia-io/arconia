@@ -1,4 +1,4 @@
-package io.arconia.dev.services.apachepulsar;
+package io.arconia.dev.services.pulsar;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -9,10 +9,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import io.arconia.dev.services.core.config.DevServicesProperties;
 
 /**
- * Properties for the Apache Pulsar Dev Services.
+ * Properties for the Pulsar Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.apachepulsar")
-public class ApachePulsarDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = "arconia.dev.services.pulsar")
+public class PulsarDevServicesProperties implements DevServicesProperties {
 
     /**
      * Whether the dev service is enabled.

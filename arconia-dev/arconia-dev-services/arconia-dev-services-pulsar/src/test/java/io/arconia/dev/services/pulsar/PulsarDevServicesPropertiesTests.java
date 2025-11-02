@@ -1,4 +1,4 @@
-package io.arconia.dev.services.apachepulsar;
+package io.arconia.dev.services.pulsar;
 
 import java.time.Duration;
 import java.util.Map;
@@ -10,13 +10,13 @@ import io.arconia.dev.services.core.config.DevServicesProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link ApachePulsarDevServicesProperties}.
+ * Unit tests for {@link PulsarDevServicesProperties}.
  */
-class ApachePulsarDevServicesPropertiesTests {
+class PulsarDevServicesPropertiesTests {
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
-        ApachePulsarDevServicesProperties properties = new ApachePulsarDevServicesProperties();
+        PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("apachepulsar/pulsar");
@@ -27,7 +27,7 @@ class ApachePulsarDevServicesPropertiesTests {
 
     @Test
     void shouldUpdateValues() {
-        ApachePulsarDevServicesProperties properties = new ApachePulsarDevServicesProperties();
+        PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
 
         properties.setEnabled(false);
         properties.setImageName("apachepulsar/pulsar:latest");

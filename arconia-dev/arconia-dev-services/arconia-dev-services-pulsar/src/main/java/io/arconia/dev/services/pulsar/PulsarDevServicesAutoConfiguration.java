@@ -1,4 +1,4 @@
-package io.arconia.dev.services.apachepulsar;
+package io.arconia.dev.services.pulsar;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -15,17 +15,17 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.apachepulsar.ApachePulsarDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.apachepulsar.ApachePulsarDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.pulsar.PulsarDevServicesAutoConfiguration.ConfigurationWithRestart;
+import io.arconia.dev.services.pulsar.PulsarDevServicesAutoConfiguration.ConfigurationWithoutRestart;
 
 /**
- * Autoconfiguration for Apache Pulsar Dev Services.
+ * Autoconfiguration for Pulsar Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = "arconia.dev.services.apachepulsar", name = "enabled", havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties(ApachePulsarDevServicesProperties.class)
+@ConditionalOnProperty(prefix = "arconia.dev.services.pulsar", name = "enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(PulsarDevServicesProperties.class)
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
-public final class ApachePulsarDevServicesAutoConfiguration {
+public final class PulsarDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
 
@@ -37,7 +37,7 @@ public final class ApachePulsarDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        PulsarContainer pulsarContainer(ApachePulsarDevServicesProperties properties) {
+        PulsarContainer pulsarContainer(PulsarDevServicesProperties properties) {
             return new PulsarContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
@@ -54,7 +54,7 @@ public final class ApachePulsarDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        PulsarContainer pulsarContainerNoRestartScope(ApachePulsarDevServicesProperties properties) {
+        PulsarContainer pulsarContainerNoRestartScope(PulsarDevServicesProperties properties) {
             return new PulsarContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())

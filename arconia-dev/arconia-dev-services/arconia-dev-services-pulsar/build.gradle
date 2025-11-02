@@ -26,8 +26,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Services Apache Pulsar"
-                description = "Arconia Dev Services Apache Pulsar."
+                name = "Arconia Dev Services Pulsar"
+                description = "Arconia Dev Services Pulsar."
             }
         }
     }
