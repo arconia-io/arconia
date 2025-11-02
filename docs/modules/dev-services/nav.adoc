@@ -9,6 +9,7 @@
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
 * Event Brokers
+** xref:apache-pulsar.adoc[Apache Pulsar]
 ** xref:artemis.adoc[Artemis]
 ** xref:kafka.adoc[Kafka]
 ** xref:rabbitmq.adoc[RabbitMQ]
