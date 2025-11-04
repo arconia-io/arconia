@@ -81,6 +81,7 @@ jobs:
           arguments: full-release
         env:
           JRELEASER_BLUESKY_HANDLE: ${{ secrets.JRELEASER_BLUESKY_HANDLE }}
+          JRELEASER_BLUESKY_HOST: ${{ secrets.JRELEASER_BLUESKY_HOST }}
           JRELEASER_BLUESKY_PASSWORD: ${{ secrets.JRELEASER_BLUESKY_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
