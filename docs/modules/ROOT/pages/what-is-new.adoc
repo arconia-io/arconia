@@ -11,7 +11,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
-* A new Dev Service for xref:dev-services:pulsar.adoc[Pulsar] has been added, allowing you to run an event streaming and messaging broker for use with Spring for Apache Pulsar.
+* A new Dev Service for xref:dev-services:pulsar.adoc[Apache Pulsar] has been added, allowing you to run a messaging and streaming platform for use with Spring for Apache Pulsar.
 * A new Dev Service for xref:dev-services:lldap.adoc[LLDAP] has been added, allowing you to run a local instance of an LDAP server to use with Spring Data LDAP.
 * The MongoDB Atlas Dev Service was supported only with Spring AI. It is now also supported with Spring Data MongoDB and Spring Session MongoDB.
 * The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`.

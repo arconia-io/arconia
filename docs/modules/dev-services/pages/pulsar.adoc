@@ -1,13 +1,12 @@
 = Pulsar Dev Service
 :service-name: pulsar
 
-A service providing an https://pulsar.apache.org[Apache Pulsar] event streaming and messaging broker for development and testing purposes.
+A service providing an https://pulsar.apache.org[Apache Pulsar] messaging and streaming platform for development and testing purposes.
 
 It works with Spring Boot libraries that support Apache Pulsar, including:
 
 * https://spring.io/projects/spring-pulsar[Spring for Apache Pulsar]
-* https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
-* https://spring.io/projects/spring-kafka[Spring Modulith]
+* https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream].
 
 == Dependencies
 

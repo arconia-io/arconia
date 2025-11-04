@@ -117,6 +117,7 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 * Event Brokers
 ** xref:artemis.adoc[Artemis]
 ** xref:kafka.adoc[Kafka]
+** xref:pulsar.adoc[Pulsar]
 ** xref:rabbitmq.adoc[RabbitMQ]
 * xref:docling.adoc[Docling]
 * xref:lgtm.adoc[Grafana LGTM]
