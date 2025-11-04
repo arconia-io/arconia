@@ -25,7 +25,7 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "apache/activemq-artemis:2.43.0-alpine";
+    private String imageName = "apache/activemq-artemis:2.44.0-alpine";
 
     /**
      * Environment variables to set in the service.
