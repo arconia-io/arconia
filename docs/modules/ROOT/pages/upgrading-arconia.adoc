@@ -89,7 +89,7 @@ If you prefer to upgrade manually, you can bump the version of the `arconia-bom`
 
 Then, check these additional changes that you might need to apply to your project.
 
-== Core
+=== Core
 
 * The experimental `HostInfo` class has been removed. Use the `OsInfo` class from Spring Boot to obtain operating system information or Java's `InetAddress.getLocalHost().getHostName()` to get the hostname.
 
