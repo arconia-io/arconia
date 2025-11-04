@@ -23,17 +23,17 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 .Metrics Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.metrics.cardinality-limit`
-|	`2000`
-|	Maximum number of distinct points per metric.
+|`arconia.otel.metrics.cardinality-limit`
+|`2000`
+|Maximum number of distinct points per metric.
 
-|	`arconia.otel.metrics.exemplars.enabled`
-|	`true`
-|	Whether exemplars should be enabled.
+|`arconia.otel.metrics.exemplars.enabled`
+|`true`
+|Whether exemplars should be enabled.
 
-|	`arconia.otel.metrics.exemplars.filter`
-|	`trace-based`
-|	Determines which measurements are eligible to become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
+|`arconia.otel.metrics.exemplars.filter`
+|`trace-based`
+|Determines which measurements are eligible to become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
 |===
 
 === OpenTelemetry Environment Variables
@@ -82,25 +82,25 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 .General Metrics Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+|`arconia.otel.exporter.type`
+|`otlp`
+|The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
 
-|	`arconia.otel.metrics.exporter.interval`
-|	`60s`
-|	The interval between two consecutive exports of metrics.
+|`arconia.otel.metrics.exporter.interval`
+|`60s`
+|The interval between two consecutive exports of metrics.
 
-|	`arconia.otel.metrics.exporter.type`
-|	``
-|	The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
+|`arconia.otel.metrics.exporter.type`
+|``
+|The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
 
-|	`arconia.otel.metrics.exporter.aggregation-temporality`
-|	`cumulative`
-|	The aggregation temporality to use for exporting metrics. Options: `cumulative`, `delta`, `low-memory`.
+|`arconia.otel.metrics.exporter.aggregation-temporality`
+|`cumulative`
+|The aggregation temporality to use for exporting metrics. Options: `cumulative`, `delta`, `low-memory`.
 
-|	`arconia.otel.metrics.exporter.histogram-aggregation`
-|	`explicit-bucket-histogram`
-|	The aggregation strategy to use for exporting histograms. Options: `base2-exponential-bucket-histogram`, `explicit-bucket-histogram`.
+|`arconia.otel.metrics.exporter.histogram-aggregation`
+|`explicit-bucket-histogram`
+|The aggregation strategy to use for exporting histograms. Options: `base2-exponential-bucket-histogram`, `explicit-bucket-histogram`.
 |===
 
 NOTE: For more information on exporting metrics to the console, refer to xref:index.adoc#_console[Console Exporter].
@@ -114,33 +114,49 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 .OTLP Metrics Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.metrics.exporter.otlp.compression`
-|	`gzip`
-|	Compression type to use for OTLP requests. Options: `none`, `gzip`.
+|`arconia.otel.metrics.exporter.otlp.compression`
+|`gzip`
+|Compression type to use for OTLP requests. Options: `none`, `gzip`.
 
-|	`arconia.otel.metrics.exporter.otlp.connect-timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to establish a connection to the endpoint.
+|`arconia.otel.metrics.exporter.otlp.connect-timeout`
+|`10s`
+|The maximum waiting time for the exporter to establish a connection to the endpoint.
 
-|	`arconia.otel.metrics.exporter.otlp.endpoint`
-|	`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/metrics` (HTTP)
-|	The endpoint to which telemetry data will be sent.
+|`arconia.otel.metrics.exporter.otlp.endpoint`
+|`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/metrics` (HTTP)
+|The endpoint to which telemetry data will be sent.
 
-|	`arconia.otel.metrics.exporter.otlp.headers`
-|	-
-|	Additional headers to include in each request to the endpoint.
+|`arconia.otel.metrics.exporter.otlp.headers`
+|-
+|Additional headers to include in each request to the endpoint.
 
-|	`arconia.otel.metrics.exporter.otlp.metrics`
-|	`false`
-|	Whether to generate metrics for the exporter itself.
+|`arconia.otel.metrics.exporter.otlp.metrics`
+|`false`
+|Whether to generate metrics for the exporter itself.
 
-|	`arconia.otel.metrics.exporter.otlp.protocol`
-|	`http-protobuf`
-|	Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+|`arconia.otel.metrics.exporter.otlp.protocol`
+|`http-protobuf`
+|Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
-|	`arconia.otel.metrics.exporter.otlp.timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to send each telemetry batch.
+|`arconia.otel.metrics.exporter.otlp.timeout`
+|`10s`
+|The maximum waiting time for the exporter to send each telemetry batch.
+
+|`arconia.otel.metrics.exporter.otlp.retry.max-attempts`
+|`5`
+|Maximum number of retries.
+
+|`arconia.otel.metrics.exporter.otlp.retry.backoff-config.first-backoff`
+|`1s`
+|Initial backoff time.
+
+|`arconia.otel.metrics.exporter.otlp.retry.backoff-config.max-backoff`
+|`5s`
+|Maximum backoff time.
+
+|`arconia.otel.metrics.exporter.otlp.retry.backoff-config.multiplier`
+|`1.5`
+|Backoff multiplier.
 |===
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
@@ -201,17 +217,17 @@ On top of the general metrics and OTLP configuration described previously, the M
 .Micrometer Metrics Registry OTLP Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.exporter.otlp.micrometer.base-time-unit`
-|	`seconds`
-|	Base time unit for Micrometer metrics.
+|`arconia.otel.exporter.otlp.micrometer.base-time-unit`
+|`seconds`
+|Base time unit for Micrometer metrics.
 
-|	`arconia.otel.exporter.otlp.micrometer.max-bucket-count`
-|	`160`
-|	Default maximum number of buckets to be used for exponential histograms, if configured. This has no effect on explicit bucket histograms.
+|`arconia.otel.exporter.otlp.micrometer.max-bucket-count`
+|`160`
+|Default maximum number of buckets to be used for exponential histograms, if configured. This has no effect on explicit bucket histograms.
 
-|	`arconia.otel.exporter.otlp.micrometer.max-scale`
-|	`20`
-|	Max scale to use for exponential histograms, if configured.
+|`arconia.otel.exporter.otlp.micrometer.max-scale`
+|`20`
+|Max scale to use for exponential histograms, if configured.
 |===
 
 == Micrometer Metrics Support
@@ -299,11 +315,11 @@ The Micrometer Metrics OpenTelemetry Bridge can be configured via configuration 
 .Micrometer Metrics OpenTelemetry Bridge Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.metrics.micrometer-bridge.base-time-unit`
-|	`seconds`
-|	The base time unit for Micrometer metrics.
+|`arconia.otel.metrics.micrometer-bridge.base-time-unit`
+|`seconds`
+|The base time unit for Micrometer metrics.
 
-|	`arconia.otel.metrics.micrometer-bridge.histogram-gauges`
-|	`true`
-|	Whether to generate gauge-based Micrometer histograms.
+|`arconia.otel.metrics.micrometer-bridge.histogram-gauges`
+|`true`
+|Whether to generate gauge-based Micrometer histograms.
 |===

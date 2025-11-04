@@ -26,13 +26,13 @@ How to sample traces.
 
 .Sampling Configuration Properties
 |===
-|	`arconia.otel.traces.sampling.strategy`
-|	`128`
-|	How to sample traces. Options: `always-on`, `always-off`, `trace-id-ratio`, `parent-based-always-on`, `parent-based-always-off`, `parent-based-trace-id-ratio`.
+|`arconia.otel.traces.sampling.strategy`
+|`128`
+|How to sample traces. Options: `always-on`, `always-off`, `trace-id-ratio`, `parent-based-always-on`, `parent-based-always-off`, `parent-based-trace-id-ratio`.
 
-|	`management.tracing.sampling.probability`
-|	`0.1`
-|	The probability ratio for sampling a span. Used when the sampling strategy is `trace-id-ratio` or `parent-based-trace-id-ratio`.
+|`management.tracing.sampling.probability`
+|`0.1`
+|The probability ratio for sampling a span. Used when the sampling strategy is `trace-id-ratio` or `parent-based-trace-id-ratio`.
 |===
 
 === Propagation
@@ -43,17 +43,17 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 
 .Propagation Configuration Properties
 |===
-|	`management.tracing.propagation.type`
-|	``
-|	Tracing context propagation types produced and consumed by the application. Setting this property overrides the more fine-grained propagation type properties.
+|`management.tracing.propagation.type`
+|``
+|Tracing context propagation types produced and consumed by the application. Setting this property overrides the more fine-grained propagation type properties.
 
-|	`management.tracing.propagation.produce`
-|	`w3c`
-|	Tracing context propagation types produced by the application.
+|`management.tracing.propagation.produce`
+|`w3c`
+|Tracing context propagation types produced by the application.
 
-|	`management.tracing.propagation.consume`
-|	`w3c`, `b3`, `b3-multi`
-|	Tracing context propagation types consumed by the application.
+|`management.tracing.propagation.consume`
+|`w3c`, `b3`, `b3-multi`
+|Tracing context propagation types consumed by the application.
 |===
 
 === Baggage
@@ -64,25 +64,25 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 
 .Baggage Configuration Properties
 |===
-|	`management.tracing.baggage.enabled`
-|	`true`
-|	Whether to enable Micrometer Tracing baggage propagation.
+|`management.tracing.baggage.enabled`
+|`true`
+|Whether to enable Micrometer Tracing baggage propagation.
 
-|	`management.tracing.baggage.correlation.enabled`
-|	`true`
-|	Whether to enable correlation of the baggage context with logging contexts.
+|`management.tracing.baggage.correlation.enabled`
+|`true`
+|Whether to enable correlation of the baggage context with logging contexts.
 
-|	`management.tracing.baggage.correlation.fields`
-|	`w3c`, `b3`, `b3-multi`
-|	List of fields that should be correlated with the logging context. That means that these fields would end up as key-value pairs in e.g. MDC.
+|`management.tracing.baggage.correlation.fields`
+|`w3c`, `b3`, `b3-multi`
+|List of fields that should be correlated with the logging context. That means that these fields would end up as key-value pairs in e.g. MDC.
 
-|	`management.tracing.baggage.remote-fields`
-|	``
-|	List of fields that are referenced the same in-process as it is on the wire. For example, the field "x-vcap-request-id" would be set as-is including the prefix.
+|`management.tracing.baggage.remote-fields`
+|``
+|List of fields that are referenced the same in-process as it is on the wire. For example, the field "x-vcap-request-id" would be set as-is including the prefix.
 
-|	`management.tracing.baggage.tag-fields`
-|	``
-| List of fields that should automatically become tags.
+|`management.tracing.baggage.tag-fields`
+|``
+|List of fields that should automatically become tags.
 |===
 
 === Span Limits
@@ -92,29 +92,29 @@ Constraints for the data captured by spans.
 .Span Limits Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.traces.limits.max-attribute-value-length`
-|	-
-|	Maximum length of each attribute value.
+|`arconia.otel.traces.limits.max-attribute-value-length`
+|-
+|Maximum length of each attribute value.
 
-|	`arconia.otel.traces.limits.max-number-of-attributes`
-|	`128`
-|	Maximum number of attributes per span.
+|`arconia.otel.traces.limits.max-number-of-attributes`
+|`128`
+|Maximum number of attributes per span.
 
-|	`arconia.otel.traces.limits.max-number-of-attributes-per-event`
-|	`128`
-|	Maximum number of attributes per event.
+|`arconia.otel.traces.limits.max-number-of-attributes-per-event`
+|`128`
+|Maximum number of attributes per event.
 
-|	`arconia.otel.traces.limits.max-number-of-attributes-per-link`
-|	`128`
-|	Maximum number of attributes per link.
+|`arconia.otel.traces.limits.max-number-of-attributes-per-link`
+|`128`
+|Maximum number of attributes per link.
 
-|	`arconia.otel.traces.limits.max-number-of-events`
-|	`128`
-|	Maximum number of events per span.
+|`arconia.otel.traces.limits.max-number-of-events`
+|`128`
+|Maximum number of events per span.
 
-|	`arconia.otel.traces.limits.max-number-of-links`
-|	`128`
-|	Maximum number of links per span.
+|`arconia.otel.traces.limits.max-number-of-links`
+|`128`
+|Maximum number of links per span.
 |===
 
 === Span Processor
@@ -124,29 +124,29 @@ Configuration for the batch span processor.
 .Span Processor Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.traces.processor.export-unsampled-spans`
-|	`false`
-|	Whether to export unsampled spans.
+|`arconia.otel.traces.processor.export-unsampled-spans`
+|`false`
+|Whether to export unsampled spans.
 
-|	`arconia.otel.traces.processor.export-timeout`
-|	`30s`
-|	The maximum allowed time to export spans.
+|`arconia.otel.traces.processor.export-timeout`
+|`30s`
+|The maximum allowed time to export spans.
 
-|	`arconia.otel.traces.processor.max-export-batch-size`
-|	`512`
-|	The maximum number of spans to export in a single batch.
+|`arconia.otel.traces.processor.max-export-batch-size`
+|`512`
+|The maximum number of spans to export in a single batch.
 
-|	`arconia.otel.traces.processor.max-queue-size`
-|	`2048`
-|	The maximum number of spans that can be queued before batching.
+|`arconia.otel.traces.processor.max-queue-size`
+|`2048`
+|The maximum number of spans that can be queued before batching.
 
-|	`arconia.otel.traces.processor.metrics`
-|	`false`
-|	Whether to generate metrics for the span processor.
+|`arconia.otel.traces.processor.metrics`
+|`false`
+|Whether to generate metrics for the span processor.
 
-|	`arconia.otel.traces.processor.schedule-delay`
-|	`5s`
-|	The interval between two consecutive exports.
+|`arconia.otel.traces.processor.schedule-delay`
+|`5s`
+|The interval between two consecutive exports.
 |===
 
 === OpenTelemetry Environment Variables
@@ -195,12 +195,13 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 .General Traces Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.exporter.type`
-|	`otlp`
-|	The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
-|	`arconia.otel.traces.exporter.type`
-|	``
-|	The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
+|`arconia.otel.exporter.type`
+|`otlp`
+|The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+
+|`arconia.otel.traces.exporter.type`
+|``
+|The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
 |===
 
 NOTE: For more information on exporting traces to the console, refer to xref:index.adoc#_console[Console Exporter].
@@ -214,33 +215,49 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 .OTLP Traces Exporter Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.otel.traces.exporter.otlp.compression`
-|	`gzip`
-|	Compression type to use for OTLP requests. Options: `none`, `gzip`.
+|`arconia.otel.traces.exporter.otlp.compression`
+|`gzip`
+|Compression type to use for OTLP requests. Options: `none`, `gzip`.
 
-|	`arconia.otel.traces.exporter.otlp.connect-timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to establish a connection to the endpoint.
+|`arconia.otel.traces.exporter.otlp.connect-timeout`
+|`10s`
+|The maximum waiting time for the exporter to establish a connection to the endpoint.
 
-|	`arconia.otel.traces.exporter.otlp.endpoint`
-|	`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/traces` (HTTP)
-|	The endpoint to which telemetry data will be sent.
+|`arconia.otel.traces.exporter.otlp.endpoint`
+|`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/traces` (HTTP)
+|The endpoint to which telemetry data will be sent.
 
-|	`arconia.otel.traces.exporter.otlp.headers`
-|	-
-|	Additional headers to include in each request to the endpoint.
+|`arconia.otel.traces.exporter.otlp.headers`
+|-
+|Additional headers to include in each request to the endpoint.
 
-|	`arconia.otel.traces.exporter.otlp.metrics`
-|	`false`
-|	Whether to generate metrics for the exporter itself.
+|`arconia.otel.traces.exporter.otlp.metrics`
+|`false`
+|Whether to generate metrics for the exporter itself.
 
-|	`arconia.otel.traces.exporter.otlp.protocol`
-|	`http-protobuf`
-|	Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+|`arconia.otel.traces.exporter.otlp.protocol`
+|`http-protobuf`
+|Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
-|	`arconia.otel.traces.exporter.otlp.timeout`
-|	`10s`
-|	The maximum waiting time for the exporter to send each telemetry batch.
+|`arconia.otel.traces.exporter.otlp.timeout`
+|`10s`
+|The maximum waiting time for the exporter to send each telemetry batch.
+
+|`arconia.otel.traces.exporter.otlp.retry.max-attempts`
+|`5`
+|Maximum number of retries.
+
+|`arconia.otel.traces.exporter.otlp.retry.backoff-config.first-backoff`
+|`1s`
+|Initial backoff time.
+
+|`arconia.otel.traces.exporter.otlp.retry.backoff-config.max-backoff`
+|`5s`
+|Maximum backoff time.
+
+|`arconia.otel.traces.exporter.otlp.retry.backoff-config.multiplier`
+|`1.5`
+|Backoff multiplier.
 |===
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].

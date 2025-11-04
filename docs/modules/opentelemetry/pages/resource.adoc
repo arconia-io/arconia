@@ -11,24 +11,29 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 .Default Resource Attributes
 |===
 |Property |Example |Description
-|	`service.name`
-|	`inventory-service`
-|	The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-|	`service.namespace`
-|	`ecommerce`
-|	The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
-|	`service.version`
-|	`4.2.0`
-|	The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
-|	`service.instance.id`
-|	`123e4567-e89b-12d3-a456-42683e5064da`
-|	A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
-|	`webengine.name`
-|	`Spring Boot`
-|	The name of the web engine. It's always `Spring Boot`.
-|	`webengine.version`
-|	`3.5.3`
-|	The version of the web engine (Spring Boot) in use.
+|`service.name`
+|`inventory-service`
+|The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+
+|`service.namespace`
+|`ecommerce`
+|The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+
+|`service.version`
+|`4.2.0`
+|The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
+
+|`service.instance.id`
+|`123e4567-e89b-12d3-a456-42683e5064da`
+|A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+
+|`webengine.name`
+|`Spring Boot`
+|The name of the web engine. It's always `Spring Boot`.
+
+|`webengine.version`
+|`3.5.7`
+|The version of the web engine (Spring Boot) in use.
 |===
 
 == Configuration Properties

@@ -231,6 +231,23 @@ Global properties are available to configure the OTLP exporters for logs, metric
 |`arconia.otel.exporter.memory-mode`
 |`reusable-data`
 |Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
+
+|`arconia.otel.exporter.otlp.retry.max-attempts`
+|`5`
+|Maximum number of retries.
+
+|`arconia.otel.exporter.otlp.retry.backoff-config.first-backoff`
+|`1s`
+|Initial backoff time.
+
+|`arconia.otel.exporter.otlp.retry.backoff-config.max-backoff`
+|`5s`
+|Maximum backoff time.
+
+|`arconia.otel.exporter.otlp.retry.backoff-config.multiplier`
+|`1.5`
+|Backoff multiplier.
+
 |===
 
 You can override any of these properties for each observability signal using the `arconia.otel.<signal>.exporter.*` prefix, where `<signal>` is one of `logs`, `metrics`, or `traces`. For more details, refer to the dedicated documentation for xref:logs.adoc[Logs], xref:metrics.adoc[Metrics], and xref:traces.adoc[Traces].
