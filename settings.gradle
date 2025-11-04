@@ -26,6 +26,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-phoenix'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-pulsar'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
 
