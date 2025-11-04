@@ -76,3 +76,7 @@ release:
           - 'dependabot'
       replacers:
         - search: 'deps: '
+
+announce:
+  bluesky:
+    active: RELEASE
