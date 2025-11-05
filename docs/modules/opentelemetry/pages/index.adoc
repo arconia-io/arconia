@@ -339,19 +339,25 @@ The main reason why Arconia OpenTelemetry exists is that no other option provide
 | OpenTelemetry Metrics API | ✅ | ✅ | ❌ | ❌
 | OpenTelemetry Tracing API | ✅ | ✅ | ✅ | ✅
 | Logback Logging Bridge for OpenTelemetry API | ✅ | ✅ | ❌ | ❌
-| Log4J2 Logging Bridge for OpenTelemetry API | 🚧 | ✅ | ❌ | ❌
+| Log4J2 Logging Bridge for OpenTelemetry API | 🚧* | ✅ | ❌ | ❌
 | Micrometer Metrics Bridge for OpenTelemetry API | ✅ | ✅ | ❌ | ❌
 | Micrometer Tracing Bridge for OpenTelemetry API | ✅ | ❌ | ✅ | ✅
 | OpenTelemetry OTLP Logs Exporter | ✅ | ✅ | ❌ | ✅
 | OpenTelemetry OTLP Metrics Exporter | ✅ | ✅ | ❌ | ❌
 | OpenTelemetry OTLP Traces Exporter | ✅ | ✅ | ✅ | ✅
-| OpenTelemetry Environment Variables | ✅ | ✅ | ❌ | ⚠️
+| OpenTelemetry Environment Variables | ✅ | ✅ | ❌ | ⚠️**
 | Micrometer Metrics OTLP Exporter | ✅ | ❌ | ✅ | ✅
 | OpenTelemetry Java Instrumentation | ✅ | ✅ | ❌ | ❌
 | Micrometer Instrumentation | ✅ | ❌ | ✅ | ✅
-| Single Dependency | ✅ | ✅ | ❌ | ✅
+| Single Dependency | ✅ | ✅ | ❌ | ⚠️***
 | Unified Configuration | ✅ | ✅ | ❌ | ❌
 |===
+
+_* Support under development and coming soon._
+
+_** Only a small subset is supported._
+
+_*** Single dependency, but still with partial support for OpenTelemetry._
 
 === Arconia OpenTelemetry vs OpenTelemetry Spring Boot Starter
 
