@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,7 +45,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAuto
  */
 @AutoConfiguration(
     after = {MetricsAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class, OpenTelemetryResourceAutoConfiguration.class},
-    before = {CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class}
+    before = {OtlpMetricsExportAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class}
 )
 // Mutually exclusive with the Micrometer Metrics OpenTelemetry Bridge.
 @ConditionalOnProperty(prefix = "arconia.otel.metrics.micrometer-bridge", name = "enabled", havingValue = "false", matchIfMissing = true)
