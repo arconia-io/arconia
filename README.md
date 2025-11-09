@@ -1,7 +1,7 @@
 # Arconia Framework
 
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/arconia-io/arconia/commit-stage.yml?branch=main&logo=GitHub&label=Build)](https://github.com/arconia-io/arconia/actions/workflows/commit-stage.yml?query=branch%3Amain)
-[![Maven Central Version](https://img.shields.io/maven-central/v/io.arconia/arconia-bom?logo=apache%20maven&label=Maven%20Central&color=purple)](https://central.sonatype.com/namespace/io.arconia)
+[![Maven Central Version](https://img.shields.io/maven-central/v/io.arconia/arconia-bom?logo=apache%20maven&label=Maven%20Central&color=blue)](https://central.sonatype.com/namespace/io.arconia)
 [![Follow Arconia on Bluesky](https://img.shields.io/badge/Follow-blue?&logo=bluesky&logoColor=%23F5F5F5&label=Bluesky&color=%231185FE&link=https%3A%2F%2Fbsky.app%2Fprofile%2Farconia.io)](https://bsky.app/profile/arconia.io)
 [![GitHub License](https://img.shields.io/github/license/arconia-io/arconia?&logo=apache&label=License)](https://github.com/arconia-io/arconia/blob/main/LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/arconia-io/arconia/badge)](https://scorecard.dev/viewer/?uri=github.com/arconia-io/arconia)
@@ -12,7 +12,7 @@ Arconia is a framework that acts as an add-on for Spring Boot, designed to enhan
 <img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
 
 > [!NOTE]
-> The Arconia Framework is currently in active development. We're working hard to improve it and appreciate your patience as we refine the tool. Feel free to try it out and share your feedback!
+> The Arconia Framework is currently under active development. We're working hard to improve it and appreciate your patience as we refine the tool. Feel free to try it out and share your feedback!
 
 ## ⚙️&nbsp; Requirements
 
