@@ -350,23 +350,36 @@ The main reason why Arconia OpenTelemetry exists is that no other option provide
 | OpenTelemetry Java Instrumentation | ✅ | ✅ | ❌ | ❌
 | Micrometer Instrumentation | ✅ | ❌ | ✅ | ✅
 | Single Dependency | ✅ | ✅ | ❌ | ⚠️***
-| Unified Configuration | ✅ | ✅ | ❌ | ❌
+| Spring Boot Conventional Patterns | ✅ | ⚠️** | ✅ | ✅
 |===
 
 _* Support under development and coming soon._
 
-_** Only a small subset is supported._
+_** Only a subset is supported._
 
 _*** Single dependency, but still with partial support for OpenTelemetry._
+
+=== Arconia OpenTelemetry vs Spring Boot OpenTelemetry
+
+The https://docs.spring.io/spring-boot/reference/actuator/observability.html#actuator.observability.opentelemetry[Spring Boot] project provides observability based on Micrometer with partial support for exporting telemetry for OpenTelemetry.
+
+For logs, it supports the OpenTelemetry Logging API, but no bridges are provided to reuse existing logging instrumentation. For traces, it supports the OpenTelemetry Tracing API via a bridge from Micrometer Tracing.
+
+For metrics, Spring Boot doesn’t provide support for the OpenTelemetry Metrics API. Instead, it offers an option to export Micrometer metrics via OTLP using the Micrometer Metrics Registry OTLP module.
+
+A key difference between Arconia OpenTelemetry and Spring Boot is that the latter doesn’t provide full support for OpenTelemetry APIs, SDKs, and Environment Variables.
+
+In particular, by not supporting the OpenTelemetry Metrics API, Spring Boot misses out on the ability to collect metrics using the standard OpenTelemetry APIs and instrumentation, which some Java libraries use.
+Additionally, configuration for each observability signal is segregated rather than unified under a single OpenTelemetry configuration model to benefit from consistency and common defaults across all signals.
 
 === Arconia OpenTelemetry vs OpenTelemetry Spring Boot Starter
 
 The https://opentelemetry.io/docs/zero-code/java/spring-boot-starter[OpenTelemetry Spring Boot Starter] is built on top of the OpenTelemetry Java SDK and Instrumentation libraries. It provides support for OpenTelemetry APIs and SDKs, including logging, metrics, and tracing.
 
-A key difference between Arconia OpenTelemetry and the OpenTelemetry Spring Boot Starter is that the latter doesn't re-use most of the existing, stable Micrometer instrumentation available across the Spring and Java ecosystem. Each Spring library comes with built-in instrumentation based on the Micrometer Observation API. By not re-using the existing Micrometer instrumentation, the OpenTelemetry Spring Boot Starter misses out on a significant amount of telemetry data which needs to be implemented and maintained separately by the OpenTelemetry community. Additionally, the OpenTelemetry Java Instrumentation follows the OpenTelemetry Semantic Conventions, most of which are not stable and may change over time, leading to potential breaking changes in the instrumentation.
+A key difference between Arconia OpenTelemetry and the OpenTelemetry Spring Boot Starter is that the latter doesn’t reuse most of the existing, stable Micrometer instrumentation available across the Spring and Java ecosystem. Each Spring library comes with built-in instrumentation based on the Micrometer Observation API, implemented and maintained by the same authors.
 
-=== Arconia OpenTelemetry vs Spring Boot OpenTelemetry
+By not reusing the existing Micrometer instrumentation, the OpenTelemetry Spring Boot Starter misses out on a significant amount of telemetry data, which needs to be implemented and maintained separately by the OpenTelemetry community. That may also lead to compatibility issues whenever new Spring Boot versions are released.
 
-The https://docs.spring.io/spring-boot/reference/actuator/observability.html#actuator.observability.opentelemetry[Spring Boot] project provides observability based on Micrometer with partial support for exporting telemetry for OpenTelemetry. For logs, it supports the OpenTelemetry Logging API but no bridges are provided to re-use existing logging instrumentation. For traces, it supports the OpenTelemetry Tracing API via a bridge from Micrometer Tracing. For metrics, Spring Boot doesn't provide support for OpenTelemetry Metrics API. Instead, it offers an option to export Micrometer metrics via OTLP using the Micrometer Metrics Registry OTLP module.
+Additionally, the configuration model is not as streamlined as you'd expect from a Spring Boot library, primarily due to the use of an auto-configuration design specific to the OpenTelemetry Java SDK, which doesn't always follow the usual Spring Boot conventions.
 
-A key difference between Arconia OpenTelemetry and Spring Boot is that the latter doesn't provide full support for OpenTelemetry APIs, SDKs, and Environment Variables. In particular, by not supporting the OpenTelemetry Metrics API, Spring Boot misses out on the ability to collect metrics using the standard OpenTelemetry APIs and instrumentation which is used by some Java libraries. Additionally, configuration for each observability signal is segregated rather than unified under a single OpenTelemetry configuration model to benefit from consistency and common defaults across all signals.
+Finally, it doesn't offer support for https://docs.spring.io/spring-boot/reference/features/dev-services.html[Spring Boot development-time services] (e.g., Testcontainers or Docker Container), which makes the local development and testing experience less convenient.
