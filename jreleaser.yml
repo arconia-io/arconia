@@ -48,7 +48,6 @@ release:
     releaseName: '{{tagName}}'
     overwrite: true
     sign: true
-    discussionCategoryName: Announcements
     issues:
       enabled: true
     changelog:
