@@ -2,8 +2,8 @@
   "lockfile_version": "1",
   "packages": {
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-11-03T07:53:02Z",
-      "resolved": "github:NixOS/nixpkgs/7241bcbb4f099a66aafca120d37c65e8dda32717?lastModified=1762156382"
+      "last_modified": "2025-11-07T02:32:13Z",
+      "resolved": "github:NixOS/nixpkgs/e1ebeec86b771e9d387dd02d82ffdc77ac753abc?lastModified=1762482733"
     },
     "graalvmPackages.graalvm-ce@25": {
       "last_modified": "2025-10-22T20:59:19Z",
