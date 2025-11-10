@@ -2,11 +2,11 @@
 
 Arconia provides unified observability for Spring Boot applications, combining full support for OpenTelemetry API, SDK, and Instrumentation while also providing a seamless integration with Micrometer API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
 
-If you're currently relying on the partial OpenTelemetry/OTLP support available in Spring Boot, you can easily migrate to Arconia OpenTelemetry and benefit from the full OpenTelemetry API, SDK, and Instrumentation support while also maintaining full support for Micrometer API and Instrumentation.
+If you're currently relying on the OpenTelemetry/OTLP support available in Spring Boot 3, you can easily migrate to Arconia OpenTelemetry. This page guides you through the migration process, highlighting the necessary changes to your dependencies, configuration, and code.
 
-== Dependencies
+== Arconia BOM
 
-For starters, include the Arconia OpenTelemetry Spring Boot Starter dependency to your project.
+For starters, include the Arconia BOM to your project.
 
 [tabs]
 ======
@@ -14,10 +14,6 @@ Gradle::
 +
 [source,groovy,subs="attributes"]
 ----
-dependencies {
-    implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
-}
-
 dependencyManagement {
 	imports {
 		mavenBom "io.arconia:arconia-bom:{page-component-version}"
@@ -29,11 +25,6 @@ Maven::
 +
 [source,xml,subs="attributes,verbatim"]
 ----
-<dependency>
-    <groupId>io.arconia</groupId>
-    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
-</dependency>
-
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -48,25 +39,9 @@ Maven::
 ----
 ======
 
-Next, you can remove the dependencies you previously used to bring OpenTelemetry support to your Spring Boot application, including the following.
+== Main Migration
 
-[cols="2,2",options="header"]
-|===
-| Dependency | Why Remove
-| `org.springframework.boot:spring-boot-starter-actuator` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.micrometer:micrometer-registry-otlp` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.micrometer:micrometer-tracing-bridge-otel` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.opentelemetry:opentelemetry-api` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.opentelemetry:opentelemetry-exporter-otlp` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.opentelemetry.instrumentation:opentelemetry-logback-appender` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-| `io.opentelemetry.instrumentation:opentelemetry-micrometer` | Managed by Arconia OpenTelemetry Spring Boot Starter.
-|===
-
-== Configuration
-
-Spring Boot provides partial support for the OpenTelemetry SDK, including basic autoconfiguration for logs and traces. It also includes an OTLP-compatible exporter for metrics provided by Micrometer.
-
-To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration (properties and beans) to the Arconia OpenTelemetry configuration properties.
+To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration (properties and beans) to the Arconia OpenTelemetry configuration properties. The migration will also add the Arconia OpenTelemetry Spring Boot Starter dependency to your project if not already present, and remove the explicit Micrometer/OpenTelemetry dependencies that are now managed by Arconia and no longer needed.
 
 WARNING: The OpenRewrite recipe is still experimental and might not cover all possible configurations. Always review the changes made by the recipe to ensure they meet your requirements. Please report any issues you find to help us improve the recipe.
 
