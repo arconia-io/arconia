@@ -248,6 +248,7 @@ The following table summarizes the differences between the two approaches:
 | Support non-OTLP exporters | ❌ | ✅
 | Support exemplars | ❌ | ✅
 | Support reading metrics | ✅ | ❌
+| Maintained by the Micrometer team | ✅ | ❌
 |===
 
 By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, use a different exporter than OTLP, or need exemplar support, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation_[Micrometer Metrics OpenTelemetry Bridge] section for more details.
