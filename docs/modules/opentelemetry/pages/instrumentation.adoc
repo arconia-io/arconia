@@ -23,6 +23,32 @@ The `Observation` API is the recommended way to instrument your applications, as
 
 NOTE: Micrometer-based instrumentation follows its own semantic conventions, which have been stable for a long time and are safe to use in production. It doesn't completely follow the https://opentelemetry.io/docs/specs/semconv/[OpenTelemetry Semantic Conventions], though it's possible to switch to them in some cases. Arconia will provide configuration options in the future to let you choose which semantic conventions to use for Micrometer-based instrumentation.
 
+=== JDBC Instrumentation
+
+The JDBC instrumentation for Micrometer is provided by the https://github.com/jdbc-observations/datasource-micrometer/[`net.ttddyy.observation:datasource-micrometer-spring-boot`] dependency, which you need to add to your project in order to enable it. Once added, it will automatically instrument all `DataSource` beans in your Spring Boot application, generating metrics and traces for database queries executed via JDBC. Arconia manages the version of the dependency for you, so you don't need to specify it explicitly.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>net.ttddyy.observation</groupId>
+    <artifactId>datasource-micrometer-spring-boot</artifactId>
+</dependency>
+----
+======
+
 == OpenTelemetry Instrumentation
 
 The OpenTelemetry Java Instrumentation project provides a set of libraries that automatically instrument your Java applications to generate telemetry data. Arconia OpenTelemetry doesn't use any of them by default, but it provides the necessary setup to let you easily add them to your project and use them. Check out the https://opentelemetry.io/docs/languages/java/instrumentation/#library-instrumentation[OpenTelemetry documentation] for more information.

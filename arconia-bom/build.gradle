@@ -56,6 +56,7 @@ dependencies {
 
         api "org.jspecify:jspecify:${jSpecifyVersion}"
         api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+        api "net.ttddyy.observation:datasource-micrometer-spring-boot:${datasourceMicrometerSpringBootVersion}"
     }
 
     api platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha")
