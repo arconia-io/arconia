@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
-import org.springframework.ai.embedding.EmbeddingOptionsBuilder;
 import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.EmbeddingResponseMetadata;
@@ -38,7 +37,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
     @Test
     void contextualNameWhenModelIsDefined() {
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder().withModel("mistral").build();
+        EmbeddingOptions options = EmbeddingOptions.builder().model("mistral").build();
         EmbeddingRequest request = new EmbeddingRequest(List.of(), options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
                 .embeddingRequest(request)
@@ -50,7 +49,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
     @Test
     void contextualNameWhenModelIsNotDefined() {
-        EmbeddingRequest request = new EmbeddingRequest(List.of(), EmbeddingOptionsBuilder.builder().build());
+        EmbeddingRequest request = new EmbeddingRequest(List.of(), EmbeddingOptions.builder().build());
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
                 .embeddingRequest(request)
                 .provider(AiProvider.SPRING_AI.value())
@@ -61,7 +60,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
     @Test
     void shouldHaveLowCardinalityKeyValues() {
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder().withModel("mistral").build();
+        EmbeddingOptions options = EmbeddingOptions.builder().model("mistral").build();
         EmbeddingRequest request = new EmbeddingRequest(List.of(), options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
                 .embeddingRequest(request)
@@ -78,7 +77,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
     @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder().withModel("mistral").build();
+        EmbeddingOptions options = EmbeddingOptions.builder().model("mistral").build();
         EmbeddingRequest request = new EmbeddingRequest(List.of(), options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
                 .embeddingRequest(request)
@@ -99,9 +98,9 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveHighCardinalityKeyValuesWithRequestOnly() {
         List<String> instructions = List.of("Embed this text", "Embed this other text");
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder()
-                .withModel("mistral")
-                .withDimensions(128)
+        EmbeddingOptions options = EmbeddingOptions.builder()
+                .model("mistral")
+                .dimensions(128)
                 .build();
         EmbeddingRequest request = new EmbeddingRequest(instructions, options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
@@ -120,9 +119,9 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveHighCardinalityKeyValuesWithResponse() {
         List<String> instructions = List.of("Embed this text", "And this one too");
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder()
-                .withModel("mistral")
-                .withDimensions(3)
+        EmbeddingOptions options = EmbeddingOptions.builder()
+                .model("mistral")
+                .dimensions(3)
                 .build();
         EmbeddingRequest request = new EmbeddingRequest(instructions, options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
@@ -153,9 +152,9 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     @Test
     void shouldRedactHighCardinalityKeyValuesWhenConfigured() {
         List<String> instructions = List.of("Embed this text");
-        EmbeddingOptions options = EmbeddingOptionsBuilder.builder()
-                .withModel("mistral")
-                .withDimensions(3)
+        EmbeddingOptions options = EmbeddingOptions.builder()
+                .model("mistral")
+                .dimensions(3)
                 .build();
         EmbeddingRequest request = new EmbeddingRequest(instructions, options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()

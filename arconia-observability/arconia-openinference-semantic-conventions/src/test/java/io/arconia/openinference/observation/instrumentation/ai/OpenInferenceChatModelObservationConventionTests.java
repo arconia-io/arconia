@@ -209,8 +209,10 @@ class OpenInferenceChatModelObservationConventionTests {
                 .provider(AiProvider.SPRING_AI.value())
                 .build();
 
-        AssistantMessage assistantMessage = new AssistantMessage("I'll check the weather for you", Map.of(),
-                List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"New York\"}")));
+        AssistantMessage assistantMessage = AssistantMessage.builder()
+                .content("I'll check the weather for you")
+                .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"New York\"}")))
+                .build();
 
         ChatResponse response = ChatResponse.builder()
                 .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
@@ -240,11 +242,11 @@ class OpenInferenceChatModelObservationConventionTests {
     void shouldHaveHighCardinalityKeyValuesWithToolResponseMessage() {
         List<Message> messages = List.of(
                 new UserMessage("What's the weather in Rome?"),
-                new ToolResponseMessage(List.of(new ToolResponseMessage.ToolResponse(
+                ToolResponseMessage.builder().responses(List.of(new ToolResponseMessage.ToolResponse(
                         "call_123",
                         "weather_tool",
                         "sto a fa a colla"
-                )))
+                ))).build()
         );
         ChatOptions options = ChatOptions.builder().model("mistral").build();
         ChatModelObservationContext context = ChatModelObservationContext.builder()
@@ -334,8 +336,10 @@ class OpenInferenceChatModelObservationConventionTests {
                 .provider(AiProvider.SPRING_AI.value())
                 .build();
 
-        AssistantMessage assistantMessage = new AssistantMessage("I'll check the weather for you", Map.of(),
-                List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"New York\"}")));
+        AssistantMessage assistantMessage = AssistantMessage.builder()
+                .content("I'll check the weather for you")
+                .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"New York\"}")))
+                .build();
 
         ChatResponse response = ChatResponse.builder()
                 .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
