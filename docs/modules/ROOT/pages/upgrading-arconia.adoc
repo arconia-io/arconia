@@ -25,7 +25,7 @@ Optionally, you can provide the `--to-version` flag to specify the version you w
 
 [source,shell]
 ----
-arconia update framework --to-version 0.18
+arconia update framework --to-version 0.19
 ----
 
 === Gradle OpenRewrite Plugin
@@ -67,7 +67,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_18
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_19
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -80,34 +80,9 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_18
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_19
 ----
 
 == Manual Upgrade
 
 If you prefer to upgrade manually, you can bump the version of the `arconia-bom` in your project to {page-component-version}.
-
-Then, check these additional changes that you might need to apply to your project.
-
-=== Core
-
-* The experimental `HostInfo` class has been removed. Use the `OsInfo` class from Spring Boot to obtain operating system information or Java's `InetAddress.getLocalHost().getHostName()` to get the hostname.
-
-=== Dev Services
-
-* The package for the MongoDB Atlas Dev Service module changed from `io.arconia.dev.services.mongodb` to `io.arconia.dev.services.mongodb.atlas`. That impacts the `MongoDbAtlasDevServicesAutoConfiguration` and `MongoDbAtlasDevServicesProperties` classes.
-
-=== Observations
-
-==== Generative AI
-
-* The configuration properties under the `arconia.observability.openinference` namespace have been moved to the `arconia.observations.generative-ai.openinference` namespace.
-* The `arconia.observability.openinference.include-only-ai-observations` configuration property has been renamed to `arconia.observations.generative-ai.openinference.exclusive`.
-* The classes under the `io.arconia.openinference.observation.autoconfigure` package have been moved to the `io.arconia.openinference.observation.autoconfigure.ai` package.
-* The classes under the `io.arconia.openinference.observation.instrumentation` package have been moved to the `io.arconia.openinference.observation.instrumentation.ai` package.
-* The `OpenInferenceSpringAiOnlyObservationPredicate` class has been renamed to `OpenInferenceGenerativeAiOnlyObservationPredicate`.
-
-=== OpenTelemetry
-
-* In the OpenTelemetry Logback Bridge module, the `arconia.otel.logs.logback-bridge.capture-logstash-attributes` configuration property has been renamed to `arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`.
-* The Micrometer Registry OTLP is now the default option for exporting metrics via OTLP when using the Arconia OpenTelemetry Spring Boot Starter. If you want to switch back to the OpenTelemetry Micrometer Metrics Bridge, you can do so by excluding the `arconia-opentelemetry-micrometer-registry-otlp` dependency and adding the `arconia-opentelemetry-micrometer-metrics-bridge` dependency. Refer to the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] and xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge] sections for more information.

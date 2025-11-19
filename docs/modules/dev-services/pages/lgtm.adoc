@@ -15,7 +15,7 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 [NOTE]
 ====
-The Dev Service for Grafana LGTM is mutually exclusive with the Dev Service for xref:phoenix.adoc[Arize Phoenix], as both services integrate with OpenTelemetry. If both Dev Services are included in the project dependencies, ensure you disable one of them via configuration properties (`arconia.dev.services.lgtm.enabled` or `arconia.dev.services.phoenix.enabled`).
+The Dev Service for Grafana LGTM is mutually exclusive with the Dev Service for xref:otel-collector.adoc[OpenTelemetry Collector] and xref:phoenix.adoc[Arize Phoenix], as they all integrate with OpenTelemetry. If more than one of those Dev Services is included in the project dependencies, ensure you only enable one of them via configuration properties (`arconia.dev.services.<name>.enabled`).
 ====
 
 == Dependencies
@@ -64,6 +64,10 @@ You can configure the Dev Service via configuration properties.
 |`arconia.dev.services.lgtm.shared`
 | `dev-mode`
 | When the container used in the dev service is shared across applications.
+
+| `arconia.dev.services.lgtm.startup-timeout`
+| `120s`
+| Maximum waiting time for the service to start.
 |===
 
 include::partial$disabling-dev-service.adoc[]

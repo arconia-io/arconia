@@ -7,6 +7,7 @@
 * Dev Services
 ** xref:dev-services:phoenix.adoc[Arize Phoenix]
 ** xref:dev-services:lgtm.adoc[Grafana LGTM]
+** xref:dev-services:otel-collector.adoc[OpenTelemetry Collector]
 * xref:migration.adoc[Migration Guides]
 ** xref:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]
 ** xref:migration/migration-spring-boot.adoc[Spring Boot OpenTelemetry/OTLP]

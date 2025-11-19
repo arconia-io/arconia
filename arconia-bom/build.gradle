@@ -28,6 +28,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-ollama")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-otel-collector")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-phoenix")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-postgresql")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-pulsar")

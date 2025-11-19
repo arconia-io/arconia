@@ -119,11 +119,13 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 ** xref:kafka.adoc[Kafka]
 ** xref:pulsar.adoc[Pulsar]
 ** xref:rabbitmq.adoc[RabbitMQ]
+* OpenTelemetry
+** xref:lgtm.adoc[Grafana LGTM]
+** xref:otel-collector.adoc[OpenTelemetry Collector]
+** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]
-* xref:lgtm.adoc[Grafana LGTM]
 * xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
-* xref:phoenix.adoc[Phoenix]
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 

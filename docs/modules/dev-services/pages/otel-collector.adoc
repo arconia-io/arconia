@@ -1,0 +1,66 @@
+= OpenTelemetry Collector
+:service-name: otel-collector
+
+A service providing an https://opentelemetry.io/docs/collector[OpenTelemetry Collector] for development and testing purposes.
+
+It works with Spring Boot libraries that support OpenTelemetry, including:
+
+* xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+[NOTE]
+====
+The Dev Service for OpenTelemetry Collector is mutually exclusive with the Dev Service for xref:lgtm.adoc[Grafana LGTM] and xref:phoenix.adoc[Arize Phoenix], as they all integrate with OpenTelemetry. If more than one of those Dev Services is included in the project dependencies, ensure you only enable one of them via configuration properties (`arconia.dev.services.<name>.enabled`).
+====
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+
+== Exploring the Telemetry
+
+The application logs will show you the URLs where the OpenTelemetry Collector is accepting logs, metrics, and traces.
+
+[source,logs]
+----
+...s.l.e.o.OtlpLoggingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: http://localhost:39117/v1/logs
+...s.m.e.o.OtlpMetricsExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: http://localhost:39117/v1/metrics
+...s.t.e.o.OtlpTracingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: http://localhost:39117/v1/traces
+----
+
+By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+|`arconia.dev.services.otel-collector.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+|`arconia.dev.services.otel-collector.image-name`
+| `otel/opentelemetry-collector-contrib`
+| Full name of the container image used in the dev service.
+
+|`arconia.dev.services.otel-collector.environment`
+| `{}`
+| Environment variables to set in the container.
+
+|`arconia.dev.services.otel-collector.shared`
+| `dev-mode`
+| When the container used in the dev service is shared across applications.
+
+| `arconia.dev.services.otel-collector.startup-timeout`
+| `120s`
+| Maximum waiting time for the service to start.
+|===
+
+include::partial$disabling-dev-service.adoc[]
