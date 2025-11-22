@@ -31,7 +31,7 @@ class OpenTelemetryTracingAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(OpenTelemetryTracingAutoConfiguration.class))
             .withBean(Clock.class, Clock::getDefault)
             .withBean(Resource.class, Resource::empty)
-            .withBean(OpenTelemetry.class, () -> mock(OpenTelemetry.class));
+            .withBean(OpenTelemetry.class, OpenTelemetry::noop);
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
