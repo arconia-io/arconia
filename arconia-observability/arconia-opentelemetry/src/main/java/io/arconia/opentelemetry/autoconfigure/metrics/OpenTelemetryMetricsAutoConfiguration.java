@@ -3,11 +3,10 @@ package io.arconia.opentelemetry.autoconfigure.metrics;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -39,8 +38,7 @@ public final class OpenTelemetryMetricsAutoConfiguration {
                 .setClock(clock)
                 .setResource(resource);
         if (properties.getExemplars().isEnabled()) {
-            // SDK implementation is still experimental, so we need to use the internal utility method.
-            SdkMeterProviderUtil.setExemplarFilter(builder, exemplarFilter);
+            builder.setExemplarFilter(exemplarFilter);
         }
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
         return builder.build();
