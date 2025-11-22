@@ -3,7 +3,6 @@ package io.arconia.dev.services.phoenix;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -42,8 +41,7 @@ public final class PhoenixDevServicesAutoConfiguration {
         @Bean
         @RestartScope
         @ServiceConnection("phoenix")
-        @ConditionalOnMissingBean
-        GenericContainer<?> lgtmContainer(PhoenixDevServicesProperties properties) {
+        GenericContainer<?> phoenixContainer(PhoenixDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withExposedPorts(GRPC_PORT, HTTP_PORT)
@@ -61,8 +59,7 @@ public final class PhoenixDevServicesAutoConfiguration {
 
         @Bean
         @ServiceConnection("phoenix")
-        @ConditionalOnMissingBean
-        GenericContainer<?> lgtmContainerNoRestartScope(PhoenixDevServicesProperties properties) {
+        GenericContainer<?> phoenixContainerNoRestartScope(PhoenixDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withExposedPorts(GRPC_PORT, HTTP_PORT)

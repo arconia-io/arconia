@@ -3,7 +3,6 @@ package io.arconia.dev.services.opentelemetry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -39,8 +38,7 @@ public final class OpenTelemetryDevServicesAutoConfiguration {
         @Bean
         @RestartScope
         @ServiceConnection("otel/opentelemetry-collector")
-        @ConditionalOnMissingBean
-        GenericContainer<?> lgtmContainer(OpenTelemetryDevServicesProperties properties) {
+        GenericContainer<?> otelCollectorContainer(OpenTelemetryDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName()))
                     .withExposedPorts(GRPC_PORT, HTTP_PORT)
                     .withEnv(properties.getEnvironment())
@@ -56,8 +54,7 @@ public final class OpenTelemetryDevServicesAutoConfiguration {
 
         @Bean
         @ServiceConnection("otel/opentelemetry-collector")
-        @ConditionalOnMissingBean
-        GenericContainer<?> lgtmContainerNoRestartScope(OpenTelemetryDevServicesProperties properties) {
+        GenericContainer<?> otelCollectorContainerNoRestartScope(OpenTelemetryDevServicesProperties properties) {
             return new GenericContainer<>(DockerImageName.parse(properties.getImageName()))
                     .withExposedPorts(GRPC_PORT, HTTP_PORT)
                     .withEnv(properties.getEnvironment())
