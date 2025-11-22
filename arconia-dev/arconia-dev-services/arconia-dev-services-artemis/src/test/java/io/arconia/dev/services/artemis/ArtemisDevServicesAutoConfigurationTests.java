@@ -10,11 +10,14 @@ import org.testcontainers.activemq.ArtemisContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link ArtemisDevServicesAutoConfiguration}.
  */
+@EnabledIfDockerAvailable
 class ArtemisDevServicesAutoConfigurationTests {
 
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
