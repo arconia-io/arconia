@@ -6,8 +6,6 @@ We're moving fast, and the APIs may change frequently, but we're committed to ke
 
 We maintain an https://docs.openrewrite.org[OpenRewrite] recipe to help you upgrade your projects to the latest version of Arconia automatically. You can run it with the Arconia CLI, Gradle, or Maven as documented in the xref:_automated_upgrade[Automated Upgrade] section below.
 
-If you'd rather upgrade manually, you can follow the instructions in the xref:_manual_upgrade[Manual Upgrade] section.
-
 Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia] page for the latest features and enhancements and the https://github.com/arconia-io/arconia/releases[release notes].
 
 == Automated Upgrade
@@ -82,7 +80,3 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
   -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_19
 ----
-
-== Manual Upgrade
-
-If you prefer to upgrade manually, you can bump the version of the `arconia-bom` in your project to {page-component-version}.
