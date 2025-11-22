@@ -1,10 +1,8 @@
 package io.arconia.dev.services.docling;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,8 +12,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
+
+import ai.docling.testcontainers.serve.DoclingServeContainer;
+import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.ConfigurationWithRestart;
@@ -30,22 +29,21 @@ import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.Confi
 @Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class DoclingDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/docling-project/docling-serve";
-    public static final int DEFAULT_PORT = 5001;
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
     public static final class ConfigurationWithRestart {
 
         @Bean
         @RestartScope
-        @ServiceConnection("docling")
-        GenericContainer<?> doclingContainer(DoclingDevServicesProperties properties) {
-            return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withExposedPorts(DEFAULT_PORT)
-                    .withEnv(computeEnvironment(properties))
-                    .withStartupTimeout(properties.getStartupTimeout())
+        @ServiceConnection
+        @ConditionalOnMissingBean
+        DoclingServeContainer doclingServeContainer(DoclingDevServicesProperties properties) {
+            return new DoclingServeContainer(DoclingServeContainerConfig.builder()
+                        .image(properties.getImageName())
+                        .enableUi(shouldEnableUi(properties))
+                        .containerEnv(properties.getEnvironment())
+                        .startupTimeout(properties.getStartupTimeout())
+                        .build())
                     .withReuse(properties.getShared().asBoolean());
         }
 
@@ -56,24 +54,25 @@ public final class DoclingDevServicesAutoConfiguration {
     public static final class ConfigurationWithoutRestart {
 
         @Bean
-        @ServiceConnection("docling")
-        GenericContainer<?> doclingContainer(DoclingDevServicesProperties properties) {
-            return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withExposedPorts(DEFAULT_PORT)
-                    .withEnv(computeEnvironment(properties))
-                    .withStartupTimeout(properties.getStartupTimeout())
+        @ServiceConnection
+        @ConditionalOnMissingBean
+        DoclingServeContainer doclingServeContainerWithoutRestartScope(DoclingDevServicesProperties properties) {
+            return new DoclingServeContainer(DoclingServeContainerConfig.builder()
+                    .image(properties.getImageName())
+                    .enableUi(shouldEnableUi(properties))
+                    .containerEnv(properties.getEnvironment())
+                    .startupTimeout(properties.getStartupTimeout())
+                    .build())
                     .withReuse(properties.getShared().asBoolean());
         }
 
     }
 
-    private static Map<String, String> computeEnvironment(DoclingDevServicesProperties properties) {
-        Map<String,String> environment = new HashMap<>(properties.getEnvironment());
+    private static boolean shouldEnableUi(DoclingDevServicesProperties properties) {
         if (BootstrapMode.DEV == BootstrapMode.detect()) {
-            environment.put("DOCLING_SERVE_ENABLE_UI", properties.isEnableUi() ? "1": "0");
+            return properties.isEnableUi();
         }
-        return environment;
+        return false;
     }
 
 }

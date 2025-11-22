@@ -4,4 +4,4 @@ io.arconia.docling.aot.DoclingRuntimeHints
 
 # Connection Details Factories
 org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
-io.arconia.docling.testcontainers.DoclingContainerConnectionDetailsFactory
+io.arconia.docling.testcontainers.DoclingServeContainerConnectionDetailsFactory

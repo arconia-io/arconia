@@ -1,2 +1,2 @@
-io.arconia.docling.autoconfigure.actuate.DoclingHealthContributorAutoConfiguration
-io.arconia.docling.autoconfigure.client.DoclingClientAutoConfiguration
+io.arconia.docling.autoconfigure.actuate.DoclingServeHealthContributorAutoConfiguration
+io.arconia.docling.autoconfigure.DoclingAutoConfiguration

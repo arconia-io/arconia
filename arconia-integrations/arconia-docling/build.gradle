@@ -10,6 +10,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-core")
+    api "ai.docling:docling-serve-api:${doclingVersion}"
 
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.core:jackson-databind"
@@ -20,8 +21,8 @@ dependencies {
     optional "org.springframework.boot:spring-boot-actuator"
     optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
 
+    optional "ai.docling:docling-testcontainers:${doclingVersion}"
     optional "org.springframework.boot:spring-boot-testcontainers"
-    optional "org.testcontainers:testcontainers"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:junit-jupiter"
