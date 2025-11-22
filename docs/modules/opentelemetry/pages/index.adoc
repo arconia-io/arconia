@@ -258,7 +258,7 @@ By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In 
 
 ==== gRPC
 
-You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` property to `grpc`. Additionally, you need to add the following dependencies:
+You can switch to gRPC by changing the `arconia.otel.exporter.otlp.protocol` property to `grpc`. Additionally, you need to add the following dependency:
 
 [tabs]
 ======
@@ -268,7 +268,6 @@ Gradle::
 ----
 dependencies {
     implementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    runtimeOnly "io.grpc:grpc-netty-shaded"
 }
 ----
 
@@ -280,14 +279,33 @@ Maven::
     <groupId>io.opentelemetry</groupId>
     <artifactId>opentelemetry-exporter-sender-grpc-managed-channel</artifactId>
 </dependency>
-<dependency>
-    <groupId>io.grpc</groupId>
-    <artifactId>grpc-netty-shaded</artifactId>
-</dependency>
 ----
 ======
 
-NOTE: The https://opentelemetry.io/docs/languages/java/sdk/#senders[`opentelemetry-exporter-sender-grpc-managed-channel`] requires a transport implementation. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs.
+The https://opentelemetry.io/docs/languages/java/sdk/#senders[`opentelemetry-exporter-sender-grpc-managed-channel`] requires a transport implementation among the ones provided by the https://github.com/grpc/grpc-java[grpc-java] project. The `grpc-netty-shaded` dependency is one choice, but you can use any other gRPC transport implementation that fits your needs. Arconia doesn't manage this dependency for you, so make sure to include it in your project and specify a version. The OpenTelemetry project doesn't provide any guidance on which version of https://github.com/grpc/grpc-java[grpc-java] to use. Our recommendation is to use the latest 1.x version.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    runtimeOnly "io.grpc:grpc-netty-shaded:{version}"
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-netty-shaded</artifactId>
+    <version>{version}</version>
+</dependency>
+----
+======
 
 === Console
 
