@@ -22,7 +22,7 @@ public class KafkaDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "apache/kafka-native:4.1.0";
+    private String imageName = "apache/kafka-native:4.1.1";
 
     /**
      * Environment variables to set in the service.
