@@ -24,7 +24,7 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mariadb:12.0";
+    private String imageName = "mariadb:12.1";
 
     /**
      * Environment variables to set in the service.
