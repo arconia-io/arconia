@@ -1,10 +1,7 @@
 package io.arconia.dev.services.redis;
 
-import com.redis.testcontainers.RedisContainer;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,6 +11,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.ConfigurationWithRestart;
@@ -29,6 +27,7 @@ import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.Configura
 public final class RedisDevServicesAutoConfiguration {
 
     public static final String COMPATIBLE_IMAGE_NAME = "redis";
+    public static final int REDIS_PORT = 6379;
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestartScope.class)
@@ -36,11 +35,11 @@ public final class RedisDevServicesAutoConfiguration {
 
         @Bean
         @RestartScope
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        RedisContainer redisContainer(RedisDevServicesProperties properties) {
-            return new RedisContainer(DockerImageName.parse(properties.getImageName())
+        @ServiceConnection("redis")
+        GenericContainer<?> redisContainer(RedisDevServicesProperties properties) {
+            return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withExposedPorts(REDIS_PORT)
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());
@@ -53,11 +52,11 @@ public final class RedisDevServicesAutoConfiguration {
     public static final class ConfigurationWithoutRestart {
 
         @Bean
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        RedisContainer redisContainerNoRestartScope(RedisDevServicesProperties properties) {
-            return new RedisContainer(DockerImageName.parse(properties.getImageName())
+        @ServiceConnection("redis")
+        GenericContainer<?> redisContainerNoRestartScope(RedisDevServicesProperties properties) {
+            return new GenericContainer<>(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                    .withExposedPorts(REDIS_PORT)
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
                     .withReuse(properties.getShared().asBoolean());

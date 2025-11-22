@@ -1,12 +1,11 @@
 package io.arconia.dev.services.redis;
 
-import com.redis.testcontainers.RedisContainer;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,15 +24,15 @@ class RedisDevServicesAutoConfigurationTests {
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
             .withPropertyValues("arconia.dev.services.redis.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(RedisContainer.class));
+            .run(context -> assertThat(context).doesNotHaveBean(GenericContainer.class));
     }
 
     @Test
     void containerAvailableWithDefaultConfiguration() {
         contextRunner
             .run(context -> {
-                assertThat(context).hasSingleBean(RedisContainer.class);
-                RedisContainer container = context.getBean(RedisContainer.class);
+                assertThat(context).hasSingleBean(GenericContainer.class);
+                GenericContainer<?> container = context.getBean(GenericContainer.class);
                 assertThat(container.getDockerImageName()).contains("redis");
                 assertThat(container.getEnv()).isEmpty();
                 assertThat(container.isShouldBeReused()).isFalse();
@@ -49,8 +48,8 @@ class RedisDevServicesAutoConfigurationTests {
                 "arconia.dev.services.redis.startup-timeout=90s"
             )
             .run(context -> {
-                assertThat(context).hasSingleBean(RedisContainer.class);
-                RedisContainer container = context.getBean(RedisContainer.class);
+                assertThat(context).hasSingleBean(GenericContainer.class);
+                GenericContainer<?> container = context.getBean(GenericContainer.class);
                 assertThat(container.getEnv()).contains("REDIS_PASSWORD=redis");
                 assertThat(container.isShouldBeReused()).isFalse();
             });

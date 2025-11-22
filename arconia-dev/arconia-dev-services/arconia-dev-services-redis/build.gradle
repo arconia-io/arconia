@@ -11,7 +11,7 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.boot:spring-boot-testcontainers"
-    api "com.redis:testcontainers-redis:${redisTestcontainersVersion}"
+    api "org.testcontainers:junit-jupiter"
 
     implementation "org.springframework.boot:spring-boot-starter"
 

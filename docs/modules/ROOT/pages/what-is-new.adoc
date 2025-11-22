@@ -8,6 +8,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == Dev Services
 
 * A new Dev Service for xref:dev-services:otel-collector.adoc[OpenTelemetry Collector] has been added, ready to work with xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+* The implementation of the xref:dev-services:redis.adoc[Redis Dev Service] has been changed from the Testcontainers Redis module (currently unmaintained) to the core Testcontainers library. This will not change the behavior of the Dev Service, and it's transparent to users.
 
 == OpenTelemetry
 
