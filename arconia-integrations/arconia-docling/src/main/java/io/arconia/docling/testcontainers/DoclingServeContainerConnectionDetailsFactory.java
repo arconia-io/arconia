@@ -1,7 +1,6 @@
 package io.arconia.docling.testcontainers;
 
 import java.net.URI;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -11,6 +10,7 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
 
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 
+import io.arconia.docling.autoconfigure.DoclingAutoConfiguration;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
 /**
@@ -20,11 +20,8 @@ class DoclingServeContainerConnectionDetailsFactory extends ContainerConnectionD
 
     private static final Logger logger = LoggerFactory.getLogger(DoclingServeContainerConnectionDetailsFactory.class);
 
-    private static final List<String> DOCLING_CONNECTION_NAMES = List.of("docling", "ghcr.io/docling-project/docling-serve",
-            "quay.io/docling-project/docling-serve");
-
     DoclingServeContainerConnectionDetailsFactory() {
-        super(DOCLING_CONNECTION_NAMES);
+        super(ANY_CONNECTION_NAME, DoclingAutoConfiguration.class.getName());
     }
 
     @Override
