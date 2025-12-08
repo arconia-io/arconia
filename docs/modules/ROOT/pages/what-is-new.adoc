@@ -7,5 +7,5 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Docling
 
-* The Docling Java SDK used by the xref:integrations:docling.adoc[Arconia Docling] integration has moved all classes from the `ai.docling.api.serve` to the `ai.docling.serve.api` package. If you follow the instructions described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation, this refactoring will be applied automatically.
+* The Docling Java SDK used by the xref:integrations:docling.adoc[Arconia Docling] integration has moved all classes from the `ai.docling.api.core` to the `ai.docling.core` package, and from the `ai.docling.api.serve` to the `ai.docling.serve.api` package. If you follow the instructions described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation, this refactoring will be applied automatically.
 * The `DoclingServeApi` now includes two additional APIs to perform document chunking as part of a conversion process. There are two chunking strategies available: hierarchical chunking (`chunkSourceWithHierarchicalChunker()`) and hybrid chunking (`chunkSourceWithHybridChunker()`). You can read more about Docling chunking in the https://docling-project.github.io/docling/concepts/chunking[official documentation].
