@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
-import ai.docling.api.serve.DoclingServeApi;
+import ai.docling.serve.api.DoclingServeApi;
 
 import io.arconia.docling.actuate.DoclingServeHealthIndicator;
 import io.arconia.docling.autoconfigure.DoclingAutoConfiguration;

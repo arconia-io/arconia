@@ -23,7 +23,7 @@ Optionally, you can provide the `--to-version` flag to specify the version you w
 
 [source,shell]
 ----
-arconia update framework --to-version 0.19
+arconia update framework --to-version 0.20
 ----
 
 === Gradle OpenRewrite Plugin
@@ -65,7 +65,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_19
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_20
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -78,5 +78,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_19
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_20
 ----

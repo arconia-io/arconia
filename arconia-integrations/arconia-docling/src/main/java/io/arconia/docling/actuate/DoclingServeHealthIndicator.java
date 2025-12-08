@@ -4,8 +4,8 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.util.Assert;
 
-import ai.docling.api.serve.DoclingServeApi;
-import ai.docling.api.serve.health.HealthCheckResponse;
+import ai.docling.serve.api.DoclingServeApi;
+import ai.docling.serve.api.health.HealthCheckResponse;
 
 /**
  * Health indicator for Docling Serve.

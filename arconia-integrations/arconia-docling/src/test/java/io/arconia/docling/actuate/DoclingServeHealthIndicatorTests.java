@@ -7,8 +7,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 
-import ai.docling.api.serve.DoclingServeApi;
-import ai.docling.api.serve.health.HealthCheckResponse;
+import ai.docling.serve.api.DoclingServeApi;
+import ai.docling.serve.api.health.HealthCheckResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

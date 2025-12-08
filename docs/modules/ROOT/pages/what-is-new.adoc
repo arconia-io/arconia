@@ -5,18 +5,7 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Dev Services
-
-* A new Dev Service for xref:dev-services:otel-collector.adoc[OpenTelemetry Collector] has been added, ready to work with xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
-* The implementation of the xref:dev-services:docling.adoc[Docling Dev Service] has been changed from a custom implementation to the new [Docling Java Testcontainers](https://docling-project.github.io/docling-java/dev/testcontainers/) module. This will not change the behavior of the Dev Service, and it's transparent to users.
-* The implementation of the xref:dev-services:redis.adoc[Redis Dev Service] has been changed from the Testcontainers Redis module (currently unmaintained) to the core Testcontainers library. This will not change the behavior of the Dev Service, and it's transparent to users.
-
 == Docling
 
-* The xref:integrations:docling.adoc[Arconia Docling] integration has been refactored to use the new https://docling-project.github.io/docling-java[Docling Java] project to which Arconia contributed by upstreaming the core functionality that was previously implemented in the framework. This change improves the portability of the Docling integration by adopting a common API used across the Java ecosystem.
-* The `DoclingClient` API has been replaced by the `DoclingServeApi`, which is the new common API provided by the Docling Java project. The new API offers the same functionality as the previous one. You can read more about it in the https://docling-project.github.io/docling-java/dev/docling-serve/serve-api/[Docling Serve API documentation].
-* The `ConvertDocumentRequest`, `ConvertDocumentResponse`, `ConvertDocumentOptions`, `HealthCheckResponse` and related classes have been replaced by equivalent classes in the new Docling Java project, moving from the `io.arconia.docling.client` to the `ai.docling.api.serve` package. They offer the same functionality as the previous ones, including builder methods for easier instantiation that almost fully match the previous API. However, they use getters and setters instead of record-style accessors.
-
-== OpenTelemetry
-
-* Exemplars for OpenTelemetry metrics are now stable. Support is enabled by default and can be customized via the `arconia.otel.metrics.exemplars.*` configuration properties. See xref:opentelemetry:metrics.adoc[Arconia OpenTelemetry Metrics] for more information.
+* The Docling Java SDK used by the xref:integrations:docling.adoc[Arconia Docling] integration has moved all classes from the `ai.docling.api.serve` to the `ai.docling.serve.api` package. If you follow the instructions described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation, this refactoring will be applied automatically.
+* The `DoclingServeApi` now includes two additional APIs to perform document chunking as part of a conversion process. There are two chunking strategies available: hierarchical chunking (`chunkSourceWithHierarchicalChunker()`) and hybrid chunking (`chunkSourceWithHybridChunker()`). You can read more about Docling chunking in the https://docling-project.github.io/docling/concepts/chunking[official documentation].

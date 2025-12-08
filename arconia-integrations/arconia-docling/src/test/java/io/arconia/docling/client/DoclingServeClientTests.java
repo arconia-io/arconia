@@ -18,14 +18,17 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import ai.docling.api.serve.DoclingServeApi;
-import ai.docling.api.serve.convert.request.ConvertDocumentRequest;
-import ai.docling.api.serve.convert.request.options.ConvertDocumentOptions;
-import ai.docling.api.serve.convert.request.options.TableFormerMode;
-import ai.docling.api.serve.convert.request.source.FileSource;
-import ai.docling.api.serve.convert.request.source.HttpSource;
-import ai.docling.api.serve.convert.response.ConvertDocumentResponse;
-import ai.docling.api.serve.health.HealthCheckResponse;
+import ai.docling.serve.api.DoclingServeApi;
+import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
+import ai.docling.serve.api.chunk.request.HybridChunkDocumentRequest;
+import ai.docling.serve.api.chunk.response.ChunkDocumentResponse;
+import ai.docling.serve.api.convert.request.ConvertDocumentRequest;
+import ai.docling.serve.api.convert.request.options.ConvertDocumentOptions;
+import ai.docling.serve.api.convert.request.options.TableFormerMode;
+import ai.docling.serve.api.convert.request.source.FileSource;
+import ai.docling.serve.api.convert.request.source.HttpSource;
+import ai.docling.serve.api.convert.response.ConvertDocumentResponse;
+import ai.docling.serve.api.health.HealthCheckResponse;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
@@ -149,6 +152,46 @@ class DoclingServeClientTests {
         assertThatThrownBy(() -> doclingServeApi.convertSource(request))
                 .isInstanceOf(HttpClientErrorException.NotFound.class)
                 .hasMessageContaining("404 Not Found");
+    }
+
+    @Test
+    void shouldChunkHttpSourceWithHierarchicalChunkerSuccessfully() {
+        HierarchicalChunkDocumentRequest request = HierarchicalChunkDocumentRequest.builder()
+                .source(HttpSource.builder()
+                        .url(URI.create("https://docs.arconia.io/arconia-cli/latest/development/dev/"))
+                        .build())
+                .build();
+
+        ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHierarchicalChunker(request);
+
+        assertThat(response).isNotNull();
+
+        assertThat(response.getChunks()).isNotEmpty();
+        assertThat(response.getDocuments()).isNotNull();
+
+        if (response.getProcessingTime() != null) {
+            assertThat(response.getProcessingTime()).isPositive();
+        }
+    }
+
+    @Test
+    void shouldChunkHttpSourceWithHybridChunkerSuccessfully() {
+        HybridChunkDocumentRequest request = HybridChunkDocumentRequest.builder()
+                .source(HttpSource.builder()
+                        .url(URI.create("https://docs.arconia.io/arconia-cli/latest/development/dev/"))
+                        .build())
+                .build();
+
+        ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHybridChunker(request);
+
+        assertThat(response).isNotNull();
+
+        assertThat(response.getChunks()).isNotEmpty();
+        assertThat(response.getDocuments()).isNotNull();
+
+        if (response.getProcessingTime() != null) {
+            assertThat(response.getProcessingTime()).isPositive();
+        }
     }
 
     private static DoclingServeApi createDoclingServeApi() {
