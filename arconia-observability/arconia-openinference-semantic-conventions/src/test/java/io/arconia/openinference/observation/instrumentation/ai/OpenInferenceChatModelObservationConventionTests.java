@@ -99,7 +99,7 @@ class OpenInferenceChatModelObservationConventionTests {
 
         ChatResponse response = ChatResponse.builder()
                 .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
-                .generations(List.of(new Generation(new AssistantMessage("Hello"))))
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hello").build())))
                 .build();
         context.setResponse(response);
 
@@ -163,7 +163,7 @@ class OpenInferenceChatModelObservationConventionTests {
 
         ChatResponse response = ChatResponse.builder()
                 .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
-                .generations(List.of(new Generation(new AssistantMessage("Spring AI is a framework..."))))
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Spring AI is a framework...").build())))
                 .build();
         context.setResponse(response);
 
@@ -281,7 +281,7 @@ class OpenInferenceChatModelObservationConventionTests {
 
         ChatResponse response = ChatResponse.builder()
                 .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
-                .generations(List.of(new Generation(new AssistantMessage("Spring AI is a framework..."))))
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Spring AI is a framework...").build())))
                 .build();
         context.setResponse(response);
 
