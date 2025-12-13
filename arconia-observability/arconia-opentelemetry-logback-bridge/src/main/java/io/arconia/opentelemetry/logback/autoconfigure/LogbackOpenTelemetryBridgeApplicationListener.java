@@ -65,56 +65,52 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
 
     private void configureOpenTelemetryAppender(OpenTelemetryAppender openTelemetryAppender, Binder binder) {
         boolean captureArguments = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-arguments",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-arguments", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureArguments(captureArguments);
 
+        boolean captureTemplate = binder
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-template", Boolean.class)
+                .orElse(false);
+        openTelemetryAppender.setCaptureTemplate(captureTemplate);
+
         boolean captureCodeAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-code-attributes",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-code-attributes", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureCodeAttributes(captureCodeAttributes);
 
         boolean captureExperimentalAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-experimental-attributes",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-experimental-attributes", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureExperimentalAttributes(captureExperimentalAttributes);
 
         boolean captureKeyValuePairAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-key-value-pair-attributes",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-key-value-pair-attributes", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureKeyValuePairAttributes(captureKeyValuePairAttributes);
 
         boolean captureLoggerContext = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logger-context",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logger-context", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureLoggerContext(captureLoggerContext);
 
         boolean captureLogstashAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logstash-marker-attributes",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logstash-marker-attributes", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureLogstashMarkerAttributes(captureLogstashAttributes);
 
         boolean captureMarkerAttribute = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-marker-attribute",
-                        Boolean.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-marker-attribute", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureMarkerAttribute(captureMarkerAttribute);
 
         String captureMdcAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-mdc-attributes",
-                        String.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-mdc-attributes", String.class)
                 .orElse(null);
         openTelemetryAppender.setCaptureMdcAttributes(captureMdcAttributes);
 
         Integer numLogsCapturedBeforeOtelInstall = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".num-logs-captured-before-otel-install",
-                        Integer.class)
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".num-logs-captured-before-otel-install", Integer.class)
                 .orElse(1000);
         openTelemetryAppender.setNumLogsCapturedBeforeOtelInstall(numLogsCapturedBeforeOtelInstall);
     }

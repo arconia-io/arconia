@@ -237,7 +237,11 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 |Property |Default |Description
 |`arconia.otel.logs.logback-bridge.capture-arguments`
 |`false`
-|Enable the capture of Logback logger arguments.
+|Enable the capture of Logback log event arguments.
+
+|`arconia.otel.logs.logback-bridge.capture-template`
+|`false`
+|Enable the capture of the Logback log event message template (if arguments are provided).
 
 |`arconia.otel.logs.logback-bridge.capture-code-attributes`
 |`false`

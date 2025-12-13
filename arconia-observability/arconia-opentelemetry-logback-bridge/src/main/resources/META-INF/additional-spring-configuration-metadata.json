@@ -3,7 +3,13 @@
     {
       "name": "arconia.otel.logs.logback-bridge.capture-arguments",
       "type": "java.lang.Boolean",
-      "description": "Enable the capture of Logback logger arguments.",
+      "description": "Enable the capture of Logback log event arguments.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.capture-template",
+      "type": "java.lang.Boolean",
+      "description": "Enable the capture of the Logback log event message template (if arguments are provided).",
       "defaultValue": false
     },
     {
