@@ -8,13 +8,15 @@ Welcome to Arconia Framework! This documentation will help you get started with 
 
 Arconia is a framework that acts as an add-on for Spring Boot, designed to enhance modern enterprise applications built with Java. You can add Arconia to an existing Spring Boot application to boost developer experience, reduce boilerplate, and seamlessly adopt cloud native patterns.
 
-NOTE: The Arconia Framework is currently in active development. We're working hard to improve it and appreciate your patience as we continue to refine the tool. Feel free to try it out and share your feedback!
+NOTE: The project is currently under active development and is working towards its first stable release, planned for early 2026. Many of the core features are already available. We're working hard to improve it and appreciate your patience as we continue to refine the tool. Feel free to try it out and share your feedback!
 
 == Key Features
 
-* *Developer Experience*. Support for transparent, zero-code integrations for services your application depends on, both at development and test time.
-* *Multitenancy*. Support for multiple tenants across the application, including web, data, security, and configuration.
-* *Observability*. Support for OpenTelemetry, bridging the gap between Spring Boot and the rest of the observability ecosystem.
+* *Developer Experience*. Introducing first-class support for development and testing modes in Spring Boot applications for making local development and testing easier, more productive, and more fun. This includes Dev Services, which automatically provisions external services using containers.
+* *Generative AI*. Extending integration capabilities for Spring Boot applications to include AI observability and evaluation platforms, AI inference services, and AI document processors.
+* *Kubernetes*. Simplifying the configuration and deployment of Spring Boot applications to Kubernetes, including the build of multi-architecture container images, support for the Service Binding specification, and automatic generation of Kubernetes manifests.
+* *Multitenancy*. Offering built-in support for multitenant applications, including web, data, security, and configuration aspects.
+* *Observability*. Providing unified observability for Spring Boot applications, combining full support for OpenTelemetry and Micrometer, as well as extended instrumentation.
 
 == Authors
 

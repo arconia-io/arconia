@@ -1,6 +1,6 @@
 = Docling Document Reader
 
-Spring AI provides a https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html#_documentreader[`DocumentReader`] API to build an https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[ingestion pipeline] for loading, parsing, chunking, and storing documents to be used as context for scenarios such as Retrieval Augmented Generation (RAG) flows.
+https://docs.spring.io/spring-ai/reference[Spring AI] provides a https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html#_documentreader[`DocumentReader`] API to build an https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[ingestion pipeline] for loading, parsing, chunking, and storing documents to be used as context for scenarios such as Retrieval Augmented Generation (RAG) flows.
 
 Arconia offers an implementation of the `DocumentReader` API (`DoclingDocumentReader`) that uses Docling as the engine for processing documents and making them ready to be stored in a vector database. It's built on top of xref:integrations:docling.adoc[Arconia Docling], which provides seamless integration with https://www.docling.ai[Docling], a powerful AI-powered document conversion service that transforms documents into structured formats.
 
@@ -152,5 +152,3 @@ NOTE: For more information on how to build a data ingestion pipeline in Spring A
 When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
 
 include::ROOT:partial$app-run.adoc[]
-
-NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.

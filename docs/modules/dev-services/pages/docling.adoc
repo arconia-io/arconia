@@ -5,7 +5,8 @@ A service providing a https://docling-project.github.io/docling[Docling] server 
 
 It works with Spring Boot libraries that support Docling, including:
 
-* xref:integrations:docling.adoc[Arconia Docling].
+* xref:integrations:docling.adoc[Arconia Docling]
+* xref:generative-ai:docling-document-reader.adoc[Docling Document Reader].
 
 == Dependencies
 
