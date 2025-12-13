@@ -39,7 +39,7 @@ class DoclingAutoConfigurationTests {
             assertThat(context).hasSingleBean(DoclingProperties.class);
 
             DoclingProperties properties = context.getBean(DoclingProperties.class);
-            assertThat(properties.getUrl()).isEqualTo(URI.create("http://localhost:5001"));
+            assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
             assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(5));
             assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(30));
         });
@@ -48,7 +48,7 @@ class DoclingAutoConfigurationTests {
     @Test
     void doclingClientWithCustomProperties() {
         contextRunner.withPropertyValues(
-                "arconia.docling.url=http://custom-host:8080",
+                "arconia.docling.base-url=http://custom-host:8080",
                 "arconia.docling.connect-timeout=10s",
                 "arconia.docling.read-timeout=60s"
         ).run(context -> {
@@ -56,7 +56,7 @@ class DoclingAutoConfigurationTests {
             assertThat(context).hasSingleBean(DoclingProperties.class);
 
             DoclingProperties properties = context.getBean(DoclingProperties.class);
-            assertThat(properties.getUrl()).isEqualTo(URI.create("http://custom-host:8080"));
+            assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://custom-host:8080"));
             assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(10));
             assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(60));
         });
@@ -88,18 +88,18 @@ class DoclingAutoConfigurationTests {
             assertThat(context).hasSingleBean(DoclingAutoConfiguration.PropertiesDoclingServeConnectionDetails.class);
 
             DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
-            assertThat(connectionDetails.getUrl()).isEqualTo(URI.create("http://localhost:5001"));
+            assertThat(connectionDetails.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         });
     }
 
     @Test
     void doclingConnectionDetailsWithCustomProperties() {
-        contextRunner.withPropertyValues("arconia.docling.url=http://custom-docling:9999")
+        contextRunner.withPropertyValues("arconia.docling.base-url=http://custom-docling:9999")
                 .run(context -> {
                     assertThat(context).hasSingleBean(DoclingServeConnectionDetails.class);
 
                     DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
-                    assertThat(connectionDetails.getUrl()).isEqualTo(URI.create("http://custom-docling:9999"));
+                    assertThat(connectionDetails.getBaseUrl()).isEqualTo(URI.create("http://custom-docling:9999"));
                 });
     }
 
@@ -120,7 +120,7 @@ class DoclingAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(DoclingServeApi.class);
                     DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
-                    assertThat(connectionDetails.getUrl()).isEqualTo(URI.create("http://custom-connection:7777"));
+                    assertThat(connectionDetails.getBaseUrl()).isEqualTo(URI.create("http://custom-connection:7777"));
                 });
     }
 
@@ -152,7 +152,7 @@ class DoclingAutoConfigurationTests {
         private final DoclingServeConnectionDetails customConnectionDetails = mock(DoclingServeConnectionDetails.class);
 
         CustomDoclingConnectionDetailsConfiguration() {
-            when(customConnectionDetails.getUrl()).thenReturn(URI.create("http://custom-connection:7777"));
+            when(customConnectionDetails.getBaseUrl()).thenReturn(URI.create("http://custom-connection:7777"));
         }
 
         @Bean

@@ -16,7 +16,7 @@ class DoclingPropertiesTests {
     void shouldCreateInstanceWithDefaultValues() {
         DoclingProperties properties = new DoclingProperties();
 
-        assertThat(properties.getUrl()).isEqualTo(URI.create("http://localhost:5001"));
+        assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(5));
         assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(30));
     }
@@ -28,11 +28,11 @@ class DoclingPropertiesTests {
         Duration newConnectTimeout = Duration.ofSeconds(15);
         Duration newReadTimeout = Duration.ofSeconds(120);
 
-        properties.setUrl(newUrl);
+        properties.setBaseUrl(newUrl);
         properties.setConnectTimeout(newConnectTimeout);
         properties.setReadTimeout(newReadTimeout);
 
-        assertThat(properties.getUrl()).isEqualTo(newUrl);
+        assertThat(properties.getBaseUrl()).isEqualTo(newUrl);
         assertThat(properties.getConnectTimeout()).isEqualTo(newConnectTimeout);
         assertThat(properties.getReadTimeout()).isEqualTo(newReadTimeout);
     }

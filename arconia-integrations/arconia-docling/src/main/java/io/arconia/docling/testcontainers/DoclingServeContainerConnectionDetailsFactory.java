@@ -2,10 +2,10 @@ package io.arconia.docling.testcontainers;
 
 import java.net.URI;
 
+import ai.docling.testcontainers.serve.DoclingServeContainer;
+
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
-
-import ai.docling.testcontainers.serve.DoclingServeContainer;
 
 import io.arconia.docling.autoconfigure.DoclingAutoConfiguration;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
@@ -31,7 +31,7 @@ class DoclingServeContainerConnectionDetailsFactory extends ContainerConnectionD
         }
 
         @Override
-        public URI getUrl() {
+        public URI getBaseUrl() {
             return URI.create("http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_PORT)));
         }
     }

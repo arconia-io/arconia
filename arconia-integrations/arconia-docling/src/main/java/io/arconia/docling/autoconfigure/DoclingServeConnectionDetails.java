@@ -11,6 +11,6 @@ public interface DoclingServeConnectionDetails extends ConnectionDetails {
 
     int DEFAULT_PORT = 5001;
 
-    URI getUrl();
+    URI getBaseUrl();
 
 }

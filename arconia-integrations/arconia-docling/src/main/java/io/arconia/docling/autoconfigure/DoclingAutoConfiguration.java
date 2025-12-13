@@ -38,10 +38,10 @@ public final class DoclingAutoConfiguration {
     @ConditionalOnMissingBean(DoclingServeApi.class)
     DoclingServeClient doclingServeApi(ObjectProvider<RestClient.Builder> restClientBuilder, DoclingServeConnectionDetails connectionDetails, DoclingProperties properties) {
         RestClient restClient = restClientBuilder.getIfAvailable(RestClient::builder)
-                .baseUrl(connectionDetails.getUrl())
+                .baseUrl(connectionDetails.getBaseUrl())
                 .requestFactory(ClientHttpRequestFactoryBuilder.jdk()
                         .withHttpClientCustomizer(builder -> {
-                            if (connectionDetails.getUrl().getScheme().equals("http")) {
+                            if (connectionDetails.getBaseUrl().getScheme().equals("http")) {
                                 // Docling Serve uses Python FastAPI which causes errors when called from JDK HttpClient.
                                 // The HttpClient uses HTTP 2 by default and then falls back to HTTP 1.1 if not supported.
                                 // However, the way FastAPI works results in the fallback not happening, making the call fail.
@@ -71,8 +71,8 @@ public final class DoclingAutoConfiguration {
         }
 
         @Override
-        public URI getUrl() {
-            return properties.getUrl();
+        public URI getBaseUrl() {
+            return properties.getBaseUrl();
         }
 
     }

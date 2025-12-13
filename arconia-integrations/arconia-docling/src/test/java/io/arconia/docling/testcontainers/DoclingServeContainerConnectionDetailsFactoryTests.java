@@ -25,7 +25,7 @@ class DoclingServeContainerConnectionDetailsFactoryTests extends DoclingTestcont
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
-        URI url = connectionDetails.getUrl();
+        URI url = connectionDetails.getBaseUrl();
         assertThat(url.toString()).isEqualTo("http://localhost:" + doclingContainer.getPort());
     }
 

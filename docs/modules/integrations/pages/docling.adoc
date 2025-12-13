@@ -134,7 +134,7 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |===
 |Property |Default |Description
 
-|`arconia.docling.url`
+|`arconia.docling.base-url`
 |`http://localhost:5001`
 |Base URL for the Docling Serve API.
 
@@ -144,7 +144,7 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 
 |`arconia.docling.read-timeout`
 |`30s`
-|Timeout for receving a response from the Docling Serve API.
+|Timeout for receiving a response from the Docling Serve API.
 |===
 
 == Actuator
@@ -200,7 +200,7 @@ You can convert web pages or documents accessible via HTTP/HTTPS URLs:
 ----
 ConvertDocumentRequest request = ConvertDocumentRequest.builder()
         .source(HttpSource.builder()
-            .url(URI.create("https://example.com/document.pdf"))
+            .url(URI.create("https://docs.arconia.io/arconia/latest/integrations/docling/"))
             .build())
         .build();
 
@@ -242,7 +242,7 @@ ConvertDocumentOptions options = ConvertDocumentOptions.builder()
 
 ConvertDocumentRequest request = ConvertDocumentRequest.builder()
         .source(HttpSource.builder()
-            .url(URI.create("https://example.com/document.pdf[https://docs.arconia.io/arconia-cli/latest/development/dev/]"))
+            .url(URI.create("https://docs.arconia.io/arconia/latest/integrations/docling/"))
             .build())
         .options(options)
         .build();
@@ -259,7 +259,7 @@ The `DoclingServeApi` will throw appropriate runtime exceptions for different er
 try {
     ConvertDocumentRequest request = ConvertDocumentRequest.builder()
             .source(HttpSource.builder()
-                .url(URI.create("https://invalid-url.com/document.pdf[https://docs.arconia.io/arconia-cli/latest/development/dev/]"))
+                .url(URI.create("https://invalid-url.com/document.pdf"))
                 .build())
             .build();
     ConvertDocumentResponse response = doclingClient.convertSource(request);

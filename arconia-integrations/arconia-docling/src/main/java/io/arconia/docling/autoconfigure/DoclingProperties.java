@@ -14,7 +14,7 @@ public class DoclingProperties {
     /**
      * Base URL for the Docling Serve API.
      */
-    private URI url = URI.create("http://localhost:5001");
+    private URI baseUrl = URI.create("http://localhost:5001");
 
     /**
      * Timeout to establish a connection to the Docling Serve API.
@@ -22,16 +22,16 @@ public class DoclingProperties {
     private Duration connectTimeout = Duration.ofSeconds(5);
 
     /**
-     * Timeout for receving a response from the Docling Serve API.
+     * Timeout for receiving a response from the Docling Serve API.
      */
     private Duration readTimeout = Duration.ofSeconds(30);
 
-    public URI getUrl() {
-        return url;
+    public URI getBaseUrl() {
+        return baseUrl;
     }
 
-    public void setUrl(URI url) {
-        this.url = url;
+    public void setBaseUrl(URI baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     public Duration getConnectTimeout() {
