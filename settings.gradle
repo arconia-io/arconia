@@ -7,6 +7,9 @@ rootProject.name = 'arconia'
 // BOM
 include 'arconia-bom'
 
+// AI
+include 'arconia-ai:arconia-ai-docling-document-reader'
+
 // Core
 include 'arconia-core'
 

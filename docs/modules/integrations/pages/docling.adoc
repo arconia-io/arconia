@@ -1,6 +1,6 @@
 = Arconia Docling
 
-Arconia provides seamless integration with https://docling-project.github.io/docling[Docling], a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. The integration is based on the https://docling-project.github.io/docling-java[Docling Java] project and provides an auto-configured `https://docling-project.github.io/docling-java/dev/docling-serve/serve-api/#the-doclingserveapi-interface[DoclingServeApi]` that can be used in Spring Boot applications to interact with a Docling Serve API for converting various document formats including PDFs, Word documents, and web pages.
+Arconia provides seamless integration with https://www.docling.ai[Docling], a powerful AI-powered document conversion service that transforms documents into structured formats like Markdown. The integration is based on the https://docling-project.github.io/docling-java[Docling Java] project and provides an auto-configured `https://docling-project.github.io/docling-java/dev/docling-serve/serve-api/#the-doclingserveapi-interface[DoclingServeApi]` that can be used in Spring Boot applications to interact with a Docling Serve API for converting various document formats including PDFs, Word documents, and web pages.
 
 == Quick Start
 

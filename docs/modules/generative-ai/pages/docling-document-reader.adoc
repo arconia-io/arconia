@@ -1,0 +1,156 @@
+= Docling Document Reader
+
+Spring AI provides a https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html#_documentreader[`DocumentReader`] API to build an https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[ingestion pipeline] for loading, parsing, chunking, and storing documents to be used as context for scenarios such as Retrieval Augmented Generation (RAG) flows.
+
+Arconia offers an implementation of the `DocumentReader` API (`DoclingDocumentReader`) that uses Docling as the engine for processing documents and making them ready to be stored in a vector database. It's built on top of xref:integrations:docling.adoc[Arconia Docling], which provides seamless integration with https://www.docling.ai[Docling], a powerful AI-powered document conversion service that transforms documents into structured formats.
+
+== Quick Start
+
+Let's see how you can get started with the Docling Document Reader in your Spring AI application.
+
+=== Dependencies
+
+First, include the Docling Document Reader dependency in your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-ai-docling-document-reader'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-ai-docling-document-reader</artifactId>
+</dependency>
+----
+======
+
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. While not required, it is recommended to use the BOM to ensure that all dependencies are compatible.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencyManagement {
+    imports {
+        mavenBom "io.arconia:arconia-bom:{page-component-version}"
+    }
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
+
+=== Dev Services
+
+xref:dev-services:index.adoc[Arconia Dev Services] provide zero-code integrations for services your application depends on, both at development and test time, relying on the power of https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot].
+
+When working with Docling Document Reader, you can use the xref:dev-services:docling.adoc[Docling Dev Service] to automatically start a Docling Serve instance during development and testing, giving you the possibility to parse documents without manually setting up a Docling Serve instance.
+
+To enable the Docling Dev Service, add the following dependency to your project:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    testAndDevelopmentOnly "io.arconia:arconia-dev-services-docling"
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-docling</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <includeOptional>false</includeOptional>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+----
+======
+
+=== Ingesting Documents with Docling
+
+Given a `story.pdf` file, you can build a data ingestion pipeline as follows:
+
+[source,java]
+----
+@Component
+public class IngestionPipeline {
+
+    private final DoclingServeApi doclingServeApi;
+    private final VectorStore vectorStore;
+
+    public IngestionPipeline(DoclingServeApi doclingServeApi, VectorStore vectorStore) {
+        this.doclingServeApi = doclingServeApi;
+        this.vectorStore = vectorStore;
+    }
+
+    @PostConstruct
+    void run() {
+        Resource file = new ClassPathResource("story.pdf");
+
+        List<Document> documents = DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .files(file)
+                .build()
+                .get();
+
+        vectorStore.add(documents);
+    }
+}
+----
+
+The `DoclingDocumentReader` will use Docling to process the file, transform it into smaller chunks, and build a resulting collection of Spring AI's Documents. Finally, you can use Spring AI's `VectorStore` API to convert the documents into embeddings and store them into a vector database.
+
+NOTE: For more information on how to build a data ingestion pipeline in Spring AI, check out the https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[dedicated documentation].
+
+=== Running the Application
+
+When using the Arconia Dev Services, you can keep running your application as you normally would. The Dev Services will automatically start when you run your application.
+
+include::ROOT:partial$app-run.adoc[]
+
+NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.

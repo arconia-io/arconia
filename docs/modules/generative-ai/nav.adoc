@@ -1,0 +1,2 @@
+.Generative AI
+* xref:docling-document-reader.adoc[Docling Document Reader]

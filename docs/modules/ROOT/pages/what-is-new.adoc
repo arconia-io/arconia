@@ -10,3 +10,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The Docling Java SDK used by the xref:integrations:docling.adoc[Arconia Docling] integration has moved all classes from the `ai.docling.api.core` to the `ai.docling.core` package, and from the `ai.docling.api.serve` to the `ai.docling.serve.api` package. If you follow the instructions described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation, this refactoring will be applied automatically.
 * The `DoclingServeApi` now includes two additional APIs to perform document chunking as part of a conversion process. There are two chunking strategies available: hierarchical chunking (`chunkSourceWithHierarchicalChunker()`) and hybrid chunking (`chunkSourceWithHybridChunker()`). You can read more about Docling chunking in the https://docling-project.github.io/docling/concepts/chunking[official documentation].
 * The `arconia.docling.url` property has been renamed to `arconia.docling.base-url`.
+
+== Generative AI
+
+* A Docling-based implementation of Spring AI's `DocumentReader` API (`DoclingDocumentReader`) has been introduced to use Docling with Spring AI to read, convert, and chunk documents so that they can be stored in a vector store and queried in the context of Retrieval Augmented Generation (RAG) scenarios. Check out xref:generative-ai:docling-document-reader.adoc[Docling Document Reader] for more information.

@@ -6,5 +6,6 @@ nav:
   - modules/kubernetes/nav.adoc
   - modules/observability/nav.adoc
   - modules/opentelemetry/nav.adoc
+  - modules/generative-ai/nav.adoc
   - modules/integrations/nav.adoc
   - modules/ROOT/partials/nav-end.adoc

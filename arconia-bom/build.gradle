@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
     constraints {
+        api project(":arconia-ai:arconia-ai-docling-document-reader")
+
         api project(":arconia-core")
 
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
