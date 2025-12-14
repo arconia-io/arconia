@@ -36,15 +36,14 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - name: Reclaim disk space
-        working-directory: .github
-        shell: bash
-        run: scripts/reclaim-disk-space.sh
-
       - name: Check out source code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
+
+      - name: Reclaim disk space
+        shell: bash
+        run: .github/scripts/reclaim-disk-space.sh
 
       - name: Set up Java
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
