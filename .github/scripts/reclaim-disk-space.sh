@@ -27,7 +27,3 @@ sudo rm -rf /usr/lib/google-cloud-sdk
 sudo rm -rf /opt/az
 # Remove PowerShell
 sudo rm -rf /usr/local/share/powershell
-
-# Prune Docker
-docker system prune -af
-docker builder prune -af
