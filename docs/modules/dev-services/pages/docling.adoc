@@ -32,25 +32,29 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-| `arconia.dev.services.docling.enabled`
-| `true`
-| Whether the dev service is enabled.
+|`arconia.dev.services.docling.enabled`
+|`true`
+|Whether the dev service is enabled.
 
-| `arconia.dev.services.docling.enable-ui`
-| `true`
-| Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`. This is only considered when running the application in dev mode.
+|`arconia.dev.services.docling.enable-ui`
+|`true`
+|Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`. This is only considered when running the application in dev mode.
 
-| `arconia.dev.services.docling.image-name`
-| `ghcr.io/docling-project/docling-serve`
-| Full name of the container image used in the dev service.
+|`arconia.dev.services.docling.api-key`
+|``
+|API key to be used for authenticating requests to the Docling Serve API.
 
-| `arconia.dev.services.docling.environment`
-| `{}`
-| Environment variables to set in the service. Example: `DOCLING_SERVE_ENABLE_REMOTE_SERVICES: "true"`.
+|`arconia.dev.services.docling.image-name`
+|`ghcr.io/docling-project/docling-serve`
+|Full name of the container image used in the dev service.
 
-| `arconia.dev.services.docling.shared`
-| `dev-mode`
-| When the dev service is shared across applications.
+|`arconia.dev.services.docling.environment`
+|`{}`
+|Environment variables to set in the service. Example: `DOCLING_SERVE_ENABLE_REMOTE_SERVICES: "true"`.
+
+|`arconia.dev.services.docling.shared`
+|`dev-mode`
+|When the dev service is shared across applications.
 
 |===
 

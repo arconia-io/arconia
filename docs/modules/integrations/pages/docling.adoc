@@ -138,6 +138,10 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |`http://localhost:5001`
 |Base URL for the Docling Serve API.
 
+|`arconia.docling.api-key`
+|``
+|API key to be used for authenticating requests to the Docling Serve API.
+
 |`arconia.docling.connect-timeout`
 |`5s`
 |Timeout to establish a connection to the Docling Serve API.

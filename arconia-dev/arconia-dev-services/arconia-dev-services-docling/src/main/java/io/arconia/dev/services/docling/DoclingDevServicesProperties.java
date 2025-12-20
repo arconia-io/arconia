@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.core.config.DevServicesProperties;
@@ -43,6 +44,12 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
      * Whether to enable the Docling UI when in dev mode.
      */
     private boolean enableUi = true;
+
+    /**
+     * API key to be used for authenticating requests to the Docling Serve API.
+     */
+    @Nullable
+    private String apiKey;
 
     @Override
     public boolean isEnabled() {
@@ -95,6 +102,15 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
 
     public void setEnableUi(boolean enableUi) {
         this.enableUi = enableUi;
+    }
+
+    @Nullable
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(@Nullable String apiKey) {
+        this.apiKey = apiKey;
     }
 
 }

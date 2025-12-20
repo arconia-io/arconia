@@ -7,14 +7,5 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Docling
 
-* The Docling Java SDK used by the xref:integrations:docling.adoc[Arconia Docling] integration has moved all classes from the `ai.docling.api.core` to the `ai.docling.core` package, and from the `ai.docling.api.serve` to the `ai.docling.serve.api` package. If you follow the instructions described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation, this refactoring will be applied automatically.
-* The `DoclingServeApi` now includes two additional APIs to perform document chunking as part of a conversion process. There are two chunking strategies available: hierarchical chunking (`chunkSourceWithHierarchicalChunker()`) and hybrid chunking (`chunkSourceWithHybridChunker()`). You can read more about Docling chunking in the https://docling-project.github.io/docling/concepts/chunking[official documentation].
-* The `arconia.docling.url` property has been renamed to `arconia.docling.base-url`.
-
-== Generative AI
-
-* A Docling-based implementation of Spring AI's `DocumentReader` API (`DoclingDocumentReader`) has been introduced to use Docling with Spring AI to read, convert, and chunk documents so that they can be stored in a vector store and queried in the context of Retrieval Augmented Generation (RAG) scenarios. Check out xref:generative-ai:docling-document-reader.adoc[Docling Document Reader] for more information.
-
-== Logback OpenTelemetry Bridge
-
-* When a Logback log event contains arguments, the `arconia.otel.logs.logback-bridge.capture-arguments` configuration property can be used to enable capturing that information when exporting OpenTelemetry Logs. This is now paired with the new `arconia.otel.logs.logback-bridge.capture-template` configuration property that enabled capturing the unformatted log message template. By default, both properties are set to `false`.
+* If the Docling Serve instance is protected by an API Key, you can pass it via the new `arconia.docling.api-key` configuration property.
+* The Docling Dev Service also supports the configuration of an API Key via the `arconia.dev.services.docling.api-key` configuration property.
