@@ -2,12 +2,12 @@
   "lockfile_version": "1",
   "packages": {
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-11-20T06:07:48Z",
-      "resolved": "github:NixOS/nixpkgs/a8d610af3f1a5fb71e23e08434d8d61a466fc942?lastModified=1763618868"
+      "last_modified": "2025-12-19T06:18:24Z",
+      "resolved": "github:NixOS/nixpkgs/7d853e518814cca2a657b72eeba67ae20ebf7059?lastModified=1766125104"
     },
     "graalvmPackages.graalvm-ce@25": {
-      "last_modified": "2025-11-15T07:28:48Z",
-      "resolved": "github:NixOS/nixpkgs/1d4c88323ac36805d09657d13a5273aea1b34f0c#graalvmPackages.graalvm-ce",
+      "last_modified": "2025-11-23T21:50:36Z",
+      "resolved": "github:NixOS/nixpkgs/ee09932cedcef15aaf476f9343d1dea2cb77e261#graalvmPackages.graalvm-ce",
       "source": "devbox-search",
       "version": "25.0.0",
       "systems": {
@@ -15,47 +15,47 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/3zg20hix4ls495ga58l1b9dp4gf2y23p-graalvm-ce-25.0.0",
+              "path": "/nix/store/qvlgy9mj7rwinc47lwx0fg0ab7chik54-graalvm-ce-25.0.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/3zg20hix4ls495ga58l1b9dp4gf2y23p-graalvm-ce-25.0.0"
+          "store_path": "/nix/store/qvlgy9mj7rwinc47lwx0fg0ab7chik54-graalvm-ce-25.0.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/86c2jzbxjmny4lka6c9n1x5c6cy4gyhp-graalvm-ce-25.0.0",
+              "path": "/nix/store/16w1pzhh9cway2j25i44qxg8m61gml58-graalvm-ce-25.0.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/86c2jzbxjmny4lka6c9n1x5c6cy4gyhp-graalvm-ce-25.0.0"
+          "store_path": "/nix/store/16w1pzhh9cway2j25i44qxg8m61gml58-graalvm-ce-25.0.0"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/4g4riws467nf67771c0hf2vh0yjkw751-graalvm-ce-25.0.0",
+              "path": "/nix/store/wygxgz6ymzbclaj8finygib39q57mmp1-graalvm-ce-25.0.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/4g4riws467nf67771c0hf2vh0yjkw751-graalvm-ce-25.0.0"
+          "store_path": "/nix/store/wygxgz6ymzbclaj8finygib39q57mmp1-graalvm-ce-25.0.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/wn1gi2s6yyfxna9h1w841vndx9cfc4p3-graalvm-ce-25.0.0",
+              "path": "/nix/store/1ywfss0i4rpdiyzydvqd43ahsjvq2jk6-graalvm-ce-25.0.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/wn1gi2s6yyfxna9h1w841vndx9cfc4p3-graalvm-ce-25.0.0"
+          "store_path": "/nix/store/1ywfss0i4rpdiyzydvqd43ahsjvq2jk6-graalvm-ce-25.0.0"
         }
       }
     },
     "httpie@latest": {
-      "last_modified": "2025-11-15T07:28:48Z",
-      "resolved": "github:NixOS/nixpkgs/1d4c88323ac36805d09657d13a5273aea1b34f0c#httpie",
+      "last_modified": "2025-11-23T21:50:36Z",
+      "resolved": "github:NixOS/nixpkgs/ee09932cedcef15aaf476f9343d1dea2cb77e261#httpie",
       "source": "devbox-search",
       "version": "3.2.4",
       "systems": {
@@ -63,57 +63,57 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/1v3saydckc3b1sjw786kmq7airvblz4k-python3.13-httpie-3.2.4",
+              "path": "/nix/store/yxphgv1pdd0hf3yk8dvmrkmrgdm410rz-python3.13-httpie-3.2.4",
               "default": true
             },
             {
               "name": "dist",
-              "path": "/nix/store/p85fhbl2gjfbc5jc9yw9aflkzdm29qkb-python3.13-httpie-3.2.4-dist"
+              "path": "/nix/store/rhz8aj8rgpzyc93bv32yrf80rc3w3x7f-python3.13-httpie-3.2.4-dist"
             }
           ],
-          "store_path": "/nix/store/1v3saydckc3b1sjw786kmq7airvblz4k-python3.13-httpie-3.2.4"
+          "store_path": "/nix/store/yxphgv1pdd0hf3yk8dvmrkmrgdm410rz-python3.13-httpie-3.2.4"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/g1jffs67mc5xcdnkxarfrbg7pwjsjia8-python3.13-httpie-3.2.4",
+              "path": "/nix/store/lxidrird44mbkd4s5dqnw3902lfck0q0-python3.13-httpie-3.2.4",
               "default": true
             },
             {
               "name": "dist",
-              "path": "/nix/store/r2ffdg58m3qrp5m646rm93pp2pzqja0r-python3.13-httpie-3.2.4-dist"
+              "path": "/nix/store/fxplnx8z1qaaqwkl044q890gpzjj2b6p-python3.13-httpie-3.2.4-dist"
             }
           ],
-          "store_path": "/nix/store/g1jffs67mc5xcdnkxarfrbg7pwjsjia8-python3.13-httpie-3.2.4"
+          "store_path": "/nix/store/lxidrird44mbkd4s5dqnw3902lfck0q0-python3.13-httpie-3.2.4"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/p99vn6h4ng9k232233ibzpfzhrx0w02a-python3.13-httpie-3.2.4",
+              "path": "/nix/store/zdf240ng0cc24zzh9917ry3l65wgnrnw-python3.13-httpie-3.2.4",
               "default": true
             },
             {
               "name": "dist",
-              "path": "/nix/store/jadliny0zcxh7qid1d93v073kbzx6fb2-python3.13-httpie-3.2.4-dist"
+              "path": "/nix/store/jsikx8h33zsk9fda7rlpyjsb7h64yv1y-python3.13-httpie-3.2.4-dist"
             }
           ],
-          "store_path": "/nix/store/p99vn6h4ng9k232233ibzpfzhrx0w02a-python3.13-httpie-3.2.4"
+          "store_path": "/nix/store/zdf240ng0cc24zzh9917ry3l65wgnrnw-python3.13-httpie-3.2.4"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/s0zv920bxpy2xzj7ij8lhm73ikyyiw3i-python3.13-httpie-3.2.4",
+              "path": "/nix/store/530brvfqgn6zdxjn3qsynfa85jwbmsjf-python3.13-httpie-3.2.4",
               "default": true
             },
             {
               "name": "dist",
-              "path": "/nix/store/gk5xd2s9ivy3f6zc9wdvslsqga814knq-python3.13-httpie-3.2.4-dist"
+              "path": "/nix/store/gxh3slqyhf2i2v6lrqi5wk84pn7n8sgm-python3.13-httpie-3.2.4-dist"
             }
           ],
-          "store_path": "/nix/store/s0zv920bxpy2xzj7ij8lhm73ikyyiw3i-python3.13-httpie-3.2.4"
+          "store_path": "/nix/store/530brvfqgn6zdxjn3qsynfa85jwbmsjf-python3.13-httpie-3.2.4"
         }
       }
     }
