@@ -6,25 +6,24 @@ import org.testcontainers.grafana.LgtmStackContainer;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
 
 /**
- * Factory for creating {@link OtlpLoggingConnectionDetails} for LGTM containers.
+ * Factory for creating {@link OtlpLoggingConnectionDetails} for Grafana LGTM containers.
  */
 class LgtmOtlpLoggingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<LgtmStackContainer, OtlpLoggingConnectionDetails> {
 
     LgtmOtlpLoggingContainerConnectionDetailsFactory() {
-        super(ANY_CONNECTION_NAME, OtlpLoggingExporterConfiguration.class.getName());
+        super(ANY_CONNECTION_NAME);
     }
 
     @Override
     protected OtlpLoggingConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
-        return new LgtmOpenTelemetryLoggingContainerConnectionDetails(source);
+        return new LgtmOtlpLoggingContainerConnectionDetails(source);
     }
 
-    private static final class LgtmOpenTelemetryLoggingContainerConnectionDetails extends ContainerConnectionDetails<LgtmStackContainer> implements OtlpLoggingConnectionDetails {
-        private LgtmOpenTelemetryLoggingContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
+    private static final class LgtmOtlpLoggingContainerConnectionDetails extends ContainerConnectionDetails<LgtmStackContainer> implements OtlpLoggingConnectionDetails {
+        private LgtmOtlpLoggingContainerConnectionDetails(ContainerConnectionSource<LgtmStackContainer> source) {
             super(source);
         }
 

@@ -11,7 +11,6 @@ import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingExporterConfiguration;
 
 /**
  * Factory for creating {@link OtlpTracingConnectionDetails} for LGTM containers.
@@ -26,27 +25,27 @@ class PhoenixOtlpTracingContainerConnectionDetailsFactory
     private static final int HTTP_PORT = 6006;
 
     PhoenixOtlpTracingContainerConnectionDetailsFactory() {
-        super(CONNECTION_NAMES, OtlpTracingExporterConfiguration.class.getName());
+        super(CONNECTION_NAMES);
     }
 
     @Override
     protected OtlpTracingConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<GenericContainer<?>> source) {
-        return new OpenInferenceOtlpTracingContainerConnectionDetails(source);
+        return new PhoenixOtlpTracingContainerConnectionDetails(source);
     }
 
-    private static final class OpenInferenceOtlpTracingContainerConnectionDetails extends ContainerConnectionDetails<GenericContainer<?>> implements OtlpTracingConnectionDetails {
+    private static final class PhoenixOtlpTracingContainerConnectionDetails extends ContainerConnectionDetails<GenericContainer<?>> implements OtlpTracingConnectionDetails {
 
         private static final AtomicBoolean logged = new AtomicBoolean(false);
 
-        private OpenInferenceOtlpTracingContainerConnectionDetails(ContainerConnectionSource<GenericContainer<?>> source) {
+        private PhoenixOtlpTracingContainerConnectionDetails(ContainerConnectionSource<GenericContainer<?>> source) {
             super(source);
         }
 
         @Override
         public String getUrl(Protocol protocol) {
             String url = switch (protocol) {
-                case HTTP_PROTOBUF -> "http://%s:%d%s".formatted(getContainer().getHost(),
-                        getContainer().getMappedPort(HTTP_PORT), TRACES_PATH);
+                case HTTP_PROTOBUF ->
+                        "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getMappedPort(HTTP_PORT), TRACES_PATH);
                 case GRPC ->
                         "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_GRPC_PORT));
             };

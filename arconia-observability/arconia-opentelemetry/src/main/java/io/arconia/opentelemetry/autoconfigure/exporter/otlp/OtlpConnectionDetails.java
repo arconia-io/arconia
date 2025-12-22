@@ -7,6 +7,9 @@ import org.springframework.boot.autoconfigure.service.connection.ConnectionDetai
  */
 public interface OtlpConnectionDetails extends ConnectionDetails {
 
+    int DEFAULT_GRPC_PORT = 4317;
+    int DEFAULT_HTTP_PORT = 4318;
+
     String getUrl(Protocol protocol);
 
 }

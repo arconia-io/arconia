@@ -11,7 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class OtelCollectorTestcontainers {
 
     @Container
-    @ServiceConnection("otel/opentelemetry-collector")
+    @ServiceConnection("otel/opentelemetry-collector-contrib")
     public static GenericContainer<?> otelCollectorContainer = new GenericContainer<>(Images.OTEL_COLLECTOR)
             .withExposedPorts(4317, 4318)
             .withStartupTimeout(Duration.ofMinutes(2));

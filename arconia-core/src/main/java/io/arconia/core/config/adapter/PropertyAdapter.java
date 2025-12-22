@@ -1,5 +1,6 @@
 package io.arconia.core.config.adapter;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -146,11 +147,11 @@ public class PropertyAdapter {
         public Builder mapMap(String externalKey, String arconiaKey, @Nullable Function<Map<String,String>,Map<String,String>> postProcessor) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 Map<String, String> propertyMap = new HashMap<>();
-                String[] keyValuePairs = value.split("\\s*,\\s*");
+                String[] keyValuePairs = StringUtils.tokenizeToStringArray(value, ",");
                 for (String pair : keyValuePairs) {
                     String[] entry = pair.split("=");
                     if (entry.length == 2 && StringUtils.hasText(entry[0]) && StringUtils.hasText(entry[1])) {
-                        propertyMap.put(entry[0].strip(), entry[1].strip());
+                        propertyMap.put(entry[0].strip(), StringUtils.uriDecode(entry[1].strip(), StandardCharsets.UTF_8));
                     } else {
                         logger.warn("Invalid key-value pair in {}: {}", externalKey, pair);
                     }

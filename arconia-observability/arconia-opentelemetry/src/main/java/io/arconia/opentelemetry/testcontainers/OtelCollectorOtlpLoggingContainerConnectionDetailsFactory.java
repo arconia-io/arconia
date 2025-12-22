@@ -1,14 +1,11 @@
 package io.arconia.opentelemetry.testcontainers;
 
-import java.util.List;
-
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 import org.testcontainers.containers.Container;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExporterConfiguration;
 
 /**
  * Factory for creating {@link OtlpLoggingConnectionDetails} for OpenTelemetry Collector containers.
@@ -16,10 +13,10 @@ import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingExpo
 class OtelCollectorOtlpLoggingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<Container<?>, OtlpLoggingConnectionDetails> {
 
-    private static final List<String> CONNECTION_NAMES = List.of("otel/opentelemetry-collector", "otel/opentelemetry-collector-contrib");
+    private static final String CONNECTION_NAME = "otel/opentelemetry-collector-contrib";
 
     OtelCollectorOtlpLoggingContainerConnectionDetailsFactory() {
-        super(CONNECTION_NAMES, OtlpLoggingExporterConfiguration.class.getName());
+        super(CONNECTION_NAME);
     }
 
     @Override
@@ -28,7 +25,6 @@ class OtelCollectorOtlpLoggingContainerConnectionDetailsFactory
     }
 
     private static final class OtelCollectorOtlpLoggingContainerConnectionDetails extends ContainerConnectionDetails<Container<?>> implements OtlpLoggingConnectionDetails {
-
         private OtelCollectorOtlpLoggingContainerConnectionDetails(ContainerConnectionSource<Container<?>> source) {
             super(source);
         }
@@ -36,13 +32,12 @@ class OtelCollectorOtlpLoggingContainerConnectionDetailsFactory
         @Override
         public String getUrl(Protocol protocol) {
             return switch (protocol) {
-                case HTTP_PROTOBUF -> "http://%s:%d%s".formatted(getContainer().getHost(),
-                        getContainer().getMappedPort(DEFAULT_HTTP_PORT), LOGS_PATH);
+                case HTTP_PROTOBUF ->
+                        "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_HTTP_PORT), LOGS_PATH);
                 case GRPC ->
                         "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_GRPC_PORT));
             };
         }
-
     }
 
 }
