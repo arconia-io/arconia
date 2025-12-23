@@ -7,6 +7,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 WARNING: Arconia is now based on Spring Boot 4.0. When you upgrade to this version of Arconia, an upgrade of your application to Spring Boot 4.0 is required. The xref:upgrading-arconia.adoc[automated procedure] upgrades both.
 
-== General
+== Overview
 
 * Spring Boot 4.0 is the new baseline of Arconia.
+
+== Generative AI
+
+* Arconia Ollama Dev Services, Arconia MongoDB Atlas Dev Services, and Arconia Docling Document Reader are based on Spring AI 2.0.0-M1. They are considered a preview until the Spring AI project releases a GA version supporting Spring Boot 4.0.
