@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties.Propagation.PropagationType;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.opentelemetry.autoconfigure.OpenTelemetryProperties;

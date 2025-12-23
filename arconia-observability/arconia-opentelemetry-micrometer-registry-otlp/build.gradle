@@ -10,12 +10,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-core")
-    api "io.micrometer:micrometer-registry-otlp"
-
-    implementation "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-micrometer-metrics"
+    api "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-observability:arconia-opentelemetry")
-    optional "org.springframework.boot:spring-boot-starter-actuator"
+    optional("io.micrometer:micrometer-registry-otlp")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

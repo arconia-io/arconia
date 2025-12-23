@@ -1,17 +1,17 @@
 package io.arconia.docling.autoconfigure.actuate;
 
+import ai.docling.serve.api.DoclingServeApi;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
-import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
-import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.health.autoconfigure.contributor.CompositeHealthContributorConfiguration;
+import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.health.contributor.HealthContributor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-
-import ai.docling.serve.api.DoclingServeApi;
 
 import io.arconia.docling.actuate.DoclingServeHealthIndicator;
 import io.arconia.docling.autoconfigure.DoclingAutoConfiguration;

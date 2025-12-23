@@ -27,7 +27,7 @@ import org.junit.platform.launcher.TestIdentifier;
  * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.0.1/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryEventPublisherBeansTestExecutionListener.java">OpenTelemetryEventPublisherBeansTestExecutionListener.java</a>
  * authored by Phillip Webb in the Spring Boot project.
  */
-class MicrometerTracingOpenTelemetryContextStorageTextExecutionListener implements TestExecutionListener {
+public class MicrometerTracingOpenTelemetryContextStorageTextExecutionListener implements TestExecutionListener {
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {

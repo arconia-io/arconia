@@ -10,14 +10,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-core")
+    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
-
-    implementation "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-observability:arconia-opentelemetry")
-    //optional "org.springframework.boot:spring-boot-starter-actuator"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

@@ -27,10 +27,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContr
 /**
  * Auto-configuration for OpenTelemetry {@link Resource}.
  */
-@AutoConfiguration(
-        after = org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration.class,
-        before = org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration.class
-)
+@AutoConfiguration(after = org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
 @EnableConfigurationProperties(OpenTelemetryResourceProperties.class)
 public final class OpenTelemetryResourceAutoConfiguration {

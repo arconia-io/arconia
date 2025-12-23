@@ -2,9 +2,7 @@ plugins {
     id 'org.cyclonedx.bom'
 }
 
-cyclonedxBom {
+tasks.named("cyclonedxDirectBom") {
     includeConfigs = ["runtimeClasspath"]
     projectType = "library"
-    schemaVersion = "1.6"
 }
-

@@ -10,12 +10,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-core")
-    api "io.micrometer:micrometer-observation"
-    api "io.micrometer:micrometer-tracing-bridge-otel"
     api "io.opentelemetry:opentelemetry-sdk"
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+    api "org.springframework.boot:spring-boot-micrometer-metrics"
+    api "org.springframework.boot:spring-boot-micrometer-tracing"
 
-    implementation "org.springframework.boot:spring-boot-starter"
+    optional "io.micrometer:micrometer-tracing-bridge-otel"
+    optional "org.springframework.boot:spring-boot-autoconfigure"
 
     // OpenTelemetry
     optional("io.opentelemetry:opentelemetry-exporter-otlp") {
@@ -23,12 +24,9 @@ dependencies {
     }
     optional "io.opentelemetry:opentelemetry-exporter-logging"
 
-    // Spring/Micrometer
-    optional "org.springframework.boot:spring-boot-starter-actuator"
-
     // Testcontainers
     optional "org.springframework.boot:spring-boot-testcontainers"
-    optional "org.testcontainers:grafana"
+    optional "org.testcontainers:testcontainers-grafana"
 
     // JUnit
     optional("org.junit.platform:junit-platform-launcher")
@@ -36,7 +34,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
-    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "io.grpc:grpc-netty-shaded:1.77.0"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

@@ -12,20 +12,17 @@ dependencies {
     api project(":arconia-core")
     api "ai.docling:docling-serve-api:${doclingVersion}"
 
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework:spring-web"
+    api "org.springframework.boot:spring-boot-jackson"
+    api "org.springframework.boot:spring-boot-restclient"
 
-    optional "org.springframework.boot:spring-boot-actuator"
-    optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
+    optional "org.springframework.boot:spring-boot-autoconfigure"
+    optional "org.springframework.boot:spring-boot-health"
 
     optional "ai.docling:docling-testcontainers:${doclingVersion}"
     optional "org.springframework.boot:spring-boot-testcontainers"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

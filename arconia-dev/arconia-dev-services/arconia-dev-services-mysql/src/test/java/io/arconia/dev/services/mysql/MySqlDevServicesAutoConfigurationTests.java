@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
+import org.testcontainers.mysql.MySQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +31,7 @@ class MySqlDevServicesAutoConfigurationTests {
     void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(MySQLContainer.class);
-            MySQLContainer<?> container = context.getBean(MySQLContainer.class);
+            MySQLContainer container = context.getBean(MySQLContainer.class);
             assertThat(container.getDockerImageName()).contains("mysql");
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.isShouldBeReused()).isFalse();
@@ -56,7 +56,7 @@ class MySqlDevServicesAutoConfigurationTests {
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(MySQLContainer.class);
-                MySQLContainer<?> container = context.getBean(MySQLContainer.class);
+                MySQLContainer container = context.getBean(MySQLContainer.class);
                 assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
                 container.start();

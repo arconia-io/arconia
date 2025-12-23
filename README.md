@@ -17,7 +17,7 @@ Arconia is a framework that acts as an add-on for Spring Boot, designed to enhan
 ## ⚙️&nbsp; Requirements
 
 * Java 21+
-* Spring Boot 3.5+
+* Spring Boot 4.0+
 
 ## 📙&nbsp; Documentation
 

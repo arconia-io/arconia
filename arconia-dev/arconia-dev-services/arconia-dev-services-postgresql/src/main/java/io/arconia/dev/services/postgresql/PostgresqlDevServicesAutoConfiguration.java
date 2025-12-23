@@ -12,7 +12,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration.ConfigurationWithRestart;
@@ -37,8 +37,8 @@ public final class PostgresqlDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        PostgreSQLContainer<?> postgresqlContainer(PostgresqlDevServicesProperties properties) {
-            return new PostgreSQLContainer<>(DockerImageName.parse(properties.getImageName())
+        PostgreSQLContainer postgresqlContainer(PostgresqlDevServicesProperties properties) {
+            return new PostgreSQLContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
@@ -58,8 +58,8 @@ public final class PostgresqlDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        PostgreSQLContainer<?> postgresqlContainerNoRestartScope(PostgresqlDevServicesProperties properties) {
-            return new PostgreSQLContainer<>(DockerImageName.parse(properties.getImageName())
+        PostgreSQLContainer postgresqlContainerNoRestartScope(PostgresqlDevServicesProperties properties) {
+            return new PostgreSQLContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())

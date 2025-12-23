@@ -5,10 +5,10 @@ import com.arize.semconv.trace.SemanticConventions;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.util.ParsingUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

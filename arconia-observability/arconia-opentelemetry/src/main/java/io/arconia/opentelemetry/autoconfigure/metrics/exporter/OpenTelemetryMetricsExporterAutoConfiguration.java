@@ -10,8 +10,8 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnThreading;
-import org.springframework.boot.autoconfigure.thread.Threading;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.thread.Threading;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
@@ -24,7 +24,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsE
 /**
  * Auto-configuration for exporting OpenTelemetry metrics.
  */
-@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration.class)
+@AutoConfiguration(before = org.springframework.boot.micrometer.metrics.autoconfigure.export.otlp.OtlpMetricsExportAutoConfiguration.class)
 @ConditionalOnOpenTelemetryMetrics
 @Import({ ConsoleMetricsExporterConfiguration.class, OtlpMetricsExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryMetricsExporterProperties.class)

@@ -34,7 +34,7 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties;
 
 /**
  * {@link TextMapPropagator} which supports multiple tracing formats. It is able to

@@ -1,10 +1,9 @@
 package io.arconia.openinference.observation.autoconfigure.ai;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.openinference.observation.instrumentation.ai.OpenInferenceTracingOptions;
-
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * Configuration properties for the OpenInference instrumentation.

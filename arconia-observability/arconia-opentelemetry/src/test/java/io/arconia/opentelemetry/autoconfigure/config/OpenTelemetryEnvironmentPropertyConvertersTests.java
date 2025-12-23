@@ -8,7 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties.Propagation.PropagationType;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;

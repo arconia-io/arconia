@@ -12,7 +12,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.ConfigurationWithRestart;
@@ -37,8 +37,8 @@ public final class MySqlDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        MySQLContainer<?> mysqlContainer(MySqlDevServicesProperties properties) {
-            return new MySQLContainer<>(DockerImageName.parse(properties.getImageName())
+        MySQLContainer mysqlContainer(MySqlDevServicesProperties properties) {
+            return new MySQLContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
@@ -58,8 +58,8 @@ public final class MySqlDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        MySQLContainer<?> mysqlContainerNoRestartScope(MySqlDevServicesProperties properties) {
-            return new MySQLContainer<>(DockerImageName.parse(properties.getImageName())
+        MySQLContainer mysqlContainerNoRestartScope(MySqlDevServicesProperties properties) {
+            return new MySQLContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())

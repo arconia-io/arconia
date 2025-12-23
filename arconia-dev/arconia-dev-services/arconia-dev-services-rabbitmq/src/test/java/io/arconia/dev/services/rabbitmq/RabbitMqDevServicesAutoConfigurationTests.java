@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 

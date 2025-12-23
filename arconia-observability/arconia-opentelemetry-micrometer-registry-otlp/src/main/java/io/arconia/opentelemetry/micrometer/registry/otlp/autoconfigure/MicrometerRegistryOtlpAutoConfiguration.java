@@ -14,16 +14,16 @@ import io.micrometer.registry.otlp.OtlpMetricsSender;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsExportAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnThreading;
-import org.springframework.boot.autoconfigure.thread.Threading;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.otlp.OtlpMetricsExportAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.simple.SimpleMetricsExportAutoConfiguration;
+import org.springframework.boot.thread.Threading;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 
@@ -62,7 +62,7 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
             Arrays.asList("telemetry.sdk.language", "telemetry.sdk.name", "telemetry.sdk.version"));
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(OtlpConfig.class)
     MicrometerOtlpConfig otlpConfig(OtlpMetricsConnectionDetails connectionDetails,
                                     OpenTelemetryExporterProperties commonProperties,
                                     OpenTelemetryMetricsExporterProperties metricsProperties,

@@ -5,11 +5,11 @@ import com.arize.semconv.trace.SemanticConventions;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.observation.conventions.SpringAiKind;
-import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 

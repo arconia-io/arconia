@@ -7,11 +7,8 @@ plugins {
 
 dependencies {
     api project(":arconia-spring-boot")
-
-    api project(":arconia-multitenancy:arconia-multitenancy-core")
     api project(":arconia-multitenancy:arconia-multitenancy-web")
-
-    implementation "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-starter"
 }
 
 publishing {

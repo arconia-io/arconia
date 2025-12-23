@@ -8,8 +8,7 @@ import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties.Propagation.PropagationType;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -137,10 +136,10 @@ class OpenTelemetryEnvironmentPropertyConverters {
             String[] items = value.trim().toLowerCase().split("\\s*,\\s*");
             for (String item : items) {
                 var propagator = switch (item.trim()) {
-                    case "baggage" -> TracingProperties.Propagation.PropagationType.W3C;
-                    case "tracecontext" -> TracingProperties.Propagation.PropagationType.W3C;
-                    case "b3" -> TracingProperties.Propagation.PropagationType.B3;
-                    case "b3multi" -> TracingProperties.Propagation.PropagationType.B3_MULTI;
+                    case "baggage" -> PropagationType.W3C;
+                    case "tracecontext" -> PropagationType.W3C;
+                    case "b3" -> PropagationType.B3;
+                    case "b3multi" -> PropagationType.B3_MULTI;
                     default -> null;
                 };
                 if (propagator == null) {

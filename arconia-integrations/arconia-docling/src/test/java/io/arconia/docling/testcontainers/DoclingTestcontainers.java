@@ -1,11 +1,11 @@
 package io.arconia.docling.testcontainers;
 
+import ai.docling.testcontainers.serve.DoclingServeContainer;
+import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
+
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import ai.docling.testcontainers.serve.DoclingServeContainer;
-import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
 import io.arconia.docling.Images;
 

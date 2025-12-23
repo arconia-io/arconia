@@ -10,20 +10,15 @@ Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia
 
 == Automated Upgrade
 
+Since Arconia is now based on Spring Boot 4.0, the automated upgrade for Arconia also includes an upgrade to Spring Boot 4.0.
+
 === Arconia CLI
 
 Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgrade your project to the latest version of Arconia:
 
 [source,shell]
 ----
-arconia update framework
-----
-
-Optionally, you can provide the `--to-version` flag to specify the version you want to upgrade to:
-
-[source,shell]
-----
-arconia update framework --to-version 0.20
+arconia update framework --to-version 0.21
 ----
 
 === Gradle OpenRewrite Plugin
@@ -65,7 +60,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_20
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_21
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -78,5 +73,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_20
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_21
 ----

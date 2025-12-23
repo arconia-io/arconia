@@ -22,12 +22,12 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
-import org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.tracing.NoopTracerAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.micrometer.tracing.autoconfigure.MicrometerTracingAutoConfiguration;
+import org.springframework.boot.micrometer.tracing.autoconfigure.NoopTracerAutoConfiguration;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
@@ -37,10 +37,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.propagation.OpenTelemetryPr
 /**
  * Auto-configuration for OpenTelemetry tracing.
  */
-@AutoConfiguration(before = {
-        org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class,
-        MicrometerTracingAutoConfiguration.class,
-        NoopTracerAutoConfiguration.class})
+@AutoConfiguration(before = { MicrometerTracingAutoConfiguration.class, NoopTracerAutoConfiguration.class })
 @ConditionalOnOpenTelemetryTracing
 @EnableConfigurationProperties({OpenTelemetryTracingProperties.class, TracingProperties.class})
 @Import({

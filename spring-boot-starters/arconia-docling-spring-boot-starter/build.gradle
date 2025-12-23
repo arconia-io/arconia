@@ -8,13 +8,7 @@ plugins {
 dependencies {
     api project(":arconia-spring-boot")
     api project(":arconia-integrations:arconia-docling")
-
-    api "org.springframework:spring-web"
-    api "org.springframework.boot:spring-boot-starter-json"
-
-    implementation "org.springframework.boot:spring-boot-starter"
-
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    api "org.springframework.boot:spring-boot-starter"
 }
 
 publishing {

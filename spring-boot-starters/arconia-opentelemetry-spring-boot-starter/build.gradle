@@ -10,24 +10,23 @@ dependencies {
     api project(":arconia-observability:arconia-opentelemetry")
     api project(":arconia-observability:arconia-opentelemetry-logback-bridge")
     api project(":arconia-observability:arconia-opentelemetry-micrometer-registry-otlp")
-
-    api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
-    api "org.springframework.boot:spring-boot-starter-actuator"
+    api "org.springframework.boot:spring-boot-starter"
 
     runtimeOnly "io.micrometer:micrometer-java21"
+    runtimeOnly "io.micrometer:micrometer-registry-otlp"
+    runtimeOnly("io.micrometer:micrometer-tracing-bridge-otel") {
+        exclude(group: "aopalliance", module: "aopalliance")
+    }
+
     runtimeOnly("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
     runtimeOnly "io.opentelemetry:opentelemetry-exporter-sender-jdk"
-
-    implementation "org.springframework.boot:spring-boot-starter"
-
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 dependencyManagement {
     imports {
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
     }
 }
 

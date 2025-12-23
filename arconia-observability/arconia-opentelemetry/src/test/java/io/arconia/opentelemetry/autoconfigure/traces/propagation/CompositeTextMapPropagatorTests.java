@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

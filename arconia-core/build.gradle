@@ -6,10 +6,8 @@ plugins {
 }
 
 dependencies {
-    api "org.jspecify:jspecify:${jSpecifyVersion}"
-
-    implementation "org.slf4j:slf4j-api"
-    implementation "org.springframework:spring-context"
+    api "org.slf4j:slf4j-api"
+    api "org.springframework.boot:spring-boot"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

@@ -12,7 +12,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.mariadb.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.ConfigurationWithRestart;
@@ -37,8 +37,8 @@ public final class MariaDbDevServicesAutoConfiguration {
         @RestartScope
         @ServiceConnection
         @ConditionalOnMissingBean
-        MariaDBContainer<?> mariadbContainer(MariaDbDevServicesProperties properties) {
-            return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
+        MariaDBContainer mariadbContainer(MariaDbDevServicesProperties properties) {
+            return new MariaDBContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())
@@ -58,8 +58,8 @@ public final class MariaDbDevServicesAutoConfiguration {
         @Bean
         @ServiceConnection
         @ConditionalOnMissingBean
-        MariaDBContainer<?> mariadbContainerNoRestartScope(MariaDbDevServicesProperties properties) {
-            return new MariaDBContainer<>(DockerImageName.parse(properties.getImageName())
+        MariaDBContainer mariadbContainerNoRestartScope(MariaDbDevServicesProperties properties) {
+            return new MariaDBContainer(DockerImageName.parse(properties.getImageName())
                     .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                     .withEnv(properties.getEnvironment())
                     .withStartupTimeout(properties.getStartupTimeout())

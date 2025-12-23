@@ -7,8 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -16,6 +14,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.filter.ServerHttpObservationFilter;
+
+import tools.jackson.databind.json.JsonMapper;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
@@ -38,7 +38,7 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     private final TenantEventPublisher tenantEventPublisher;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
             TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, TenantEventPublisher tenantEventPublisher) {
@@ -98,7 +98,7 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exceptionMessage);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
+        response.getWriter().write(jsonMapper.writeValueAsString(problemDetail));
     }
 
 }

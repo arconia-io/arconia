@@ -9,9 +9,9 @@ repositories {
 }
 
 ext {
-    set("cycloneDxVersion", '2.4.1')
+    set("cycloneDxVersion", '3.1.0')
     set("graalvmToolsVersion", '0.11.3')
-    set("springBootVersion", '3.5.9')
+    set("springBootVersion", '4.0.1')
     set("dependencyManagementVersion", '1.1.7')
 }
 
@@ -20,15 +20,6 @@ dependencies {
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
     implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-}
-
-configurations.configureEach {
-    resolutionStrategy.dependencySubstitution {
-        // Override transitive dependency from CycloneDX to fix CVE-2024-26308 and CVE-2024-25710
-        substitute module('org.apache.commons:commons-compress') using module('org.apache.commons:commons-compress:1.28.0')
-        // Override managed dependency in Spring Boot to fix CVE-2025-48924
-        substitute module('org.apache.commons:commons-lang3') using module('org.apache.commons:commons-lang3:3.18.0')
-    }
 }
 
 gradlePlugin {

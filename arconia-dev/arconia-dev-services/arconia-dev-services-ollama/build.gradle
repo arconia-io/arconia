@@ -11,15 +11,14 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-starter"
     api "org.springframework.boot:spring-boot-testcontainers"
-    api "org.testcontainers:ollama"
-
-    implementation "org.springframework.boot:spring-boot-starter"
+    api "org.testcontainers:testcontainers-ollama"
 
     optional "org.springframework.boot:spring-boot-devtools"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
