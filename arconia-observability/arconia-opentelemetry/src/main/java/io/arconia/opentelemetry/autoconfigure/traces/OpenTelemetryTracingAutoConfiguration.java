@@ -4,7 +4,6 @@ import io.micrometer.tracing.exporter.SpanExportingPredicate;
 import io.micrometer.tracing.exporter.SpanFilter;
 import io.micrometer.tracing.exporter.SpanReporter;
 import io.micrometer.tracing.otel.bridge.CompositeSpanExporter;
-import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -23,19 +22,33 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
+import org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.tracing.NoopTracerAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.tracing.TracingProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+import io.arconia.opentelemetry.autoconfigure.traces.bridge.MicrometerTracingOpenTelemetryBridgeConfiguration;
+import io.arconia.opentelemetry.autoconfigure.traces.propagation.OpenTelemetryPropagationConfiguration;
 
 /**
  * Auto-configuration for OpenTelemetry tracing.
  */
-@AutoConfiguration(before = org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class)
+@AutoConfiguration(before = {
+        org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration.class,
+        MicrometerTracingAutoConfiguration.class,
+        NoopTracerAutoConfiguration.class})
 @ConditionalOnOpenTelemetryTracing
-@EnableConfigurationProperties(OpenTelemetryTracingProperties.class)
+@EnableConfigurationProperties({OpenTelemetryTracingProperties.class, TracingProperties.class})
+@Import({
+        MicrometerTracingOpenTelemetryBridgeConfiguration.class,
+        OpenTelemetryPropagationConfiguration.PropagationWithoutBaggage.class,
+        OpenTelemetryPropagationConfiguration.PropagationWithBaggage.class,
+        OpenTelemetryPropagationConfiguration.NoPropagation.class
+})
 public final class OpenTelemetryTracingAutoConfiguration {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
@@ -87,7 +100,6 @@ public final class OpenTelemetryTracingAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnClass(OtelTracer.class)
     BatchSpanProcessor micrometerBatchSpanProcessor(OpenTelemetryTracingProperties properties,
                                                ObjectProvider<SpanExporter> spanExporters,
                                                ObjectProvider<SpanExportingPredicate> spanExportingPredicates,

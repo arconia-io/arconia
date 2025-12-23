@@ -12,3 +12,7 @@ io.arconia.opentelemetry.testcontainers.OtelCollectorOtlpLoggingContainerConnect
 io.arconia.opentelemetry.testcontainers.OtelCollectorOtlpMetricsContainerConnectionDetailsFactory,\
 io.arconia.opentelemetry.testcontainers.OtelCollectorOtlpTracingContainerConnectionDetailsFactory,\
 io.arconia.opentelemetry.testcontainers.PhoenixOtlpTracingContainerConnectionDetailsFactory
+
+# Application Listeners
+#org.springframework.context.ApplicationListener=\
+#io.arconia.opentelemetry.autoconfigure.traces.bridge.MicrometerTracingOpenTelemetryContextStorageApplicationListener
