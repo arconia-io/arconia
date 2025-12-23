@@ -26,7 +26,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
     }
 }
 

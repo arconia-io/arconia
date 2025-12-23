@@ -15,12 +15,12 @@ dependencies {
     }
     api "io.micrometer:micrometer-core"
     api "io.micrometer:micrometer-observation"
-    api "org.springframework.ai:spring-ai-client-chat"
     api "org.springframework.ai:spring-ai-model"
 
     implementation "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-observability:arconia-opentelemetry")
+    optional "org.springframework.ai:spring-ai-client-chat"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
