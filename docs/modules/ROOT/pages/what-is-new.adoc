@@ -5,11 +5,11 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-WARNING: Arconia is now based on Spring Boot 4.0. When you upgrade to this version of Arconia, an upgrade of your application to Spring Boot 4.0 is required. The xref:upgrading-arconia.adoc[automated procedure] upgrades both.
+WARNING: Arconia is now based on Spring Boot 4.0. Before upgrading to this version of Arconia, an upgrade of your application to Spring Boot 4.0 is required. If you use the xref:upgrading-arconia.adoc[automated procedure], it will take care of both upgrades for you.
 
 == Overview
 
-* Spring Boot 4.0 is the new baseline of Arconia.
+* Spring Boot 4.0 is the new baseline for Arconia.
 
 == Generative AI
 

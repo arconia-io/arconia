@@ -102,18 +102,6 @@ Maven::
     <scope>runtime</scope>
     <optional>true</optional>
 </dependency>
-
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-                <includeOptional>false</includeOptional>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
 ----
 ======
 
