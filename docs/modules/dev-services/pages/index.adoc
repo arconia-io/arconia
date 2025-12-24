@@ -41,12 +41,7 @@ dependencies {
 
 === Dev Services in Maven
 
-[NOTE]
-====
-Arconia Dev Services are fully supported in Maven projects starting from Spring Boot 3.5.7. If you are using an earlier version of Spring Boot, please refer to the warning at the end of this section for guidance on how to configure Dev Services appropriately.
-====
-
-Dev Services are designed exclusively for development and testing workflows. In a Maven project, you can include Dev Service modules as `optional` dependencies and configure the Spring Boot Maven plugin to exclude them from the production build. This ensures that the Dev Service is only available during development and test, and is never included in the production build.
+Dev Services are designed exclusively for development and testing workflows. In a Maven project, you can include Dev Service modules as `optional` dependencies which the Spring Boot Maven plugin will exclude from the production build by default. This ensures that the Dev Service is only available during development and test, and is never included in the production build.
 
 For example:
 
@@ -60,29 +55,7 @@ For example:
         <optional>true</optional>
     </dependency>
 </dependencies>
-
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-                <includeOptional>false</includeOptional>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
 ----
-
-[NOTE]
-====
-In the upcoming Spring Boot 4.x releases, the Spring Boot Maven plugin will automatically exclude optional dependencies from the production build, making the above configuration unnecessary.
-====
-
-[WARNING]
-====
-If you're using an earlier version of Spring Boot than 3.5.7, you must explicitly configure the Dev Service dependencies to be considered only when running in dev and test mode. One option is adding them behind a `development` profile. Another option is having them as standard dependencies, and excluding them when building the production artifact via a `production` profile.
-====
 
 === Sharing Dev Services
 

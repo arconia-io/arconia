@@ -10,7 +10,7 @@ Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia
 
 == Automated Upgrade
 
-Since Arconia is now based on Spring Boot 4.0, the automated upgrade for Arconia also includes an upgrade to Spring Boot 4.0.
+Since Arconia is now based on Spring Boot 4.0, the automated recipe to upgrade Arconia also includes an upgrade to Spring Boot 4.0. For more information about the Spring Boot 4.0 upgrade, check out the https://github.com/arconia-io/arconia-migrations/blob/main/docs/spring-boot.md[relevant documentation].
 
 === Arconia CLI
 
