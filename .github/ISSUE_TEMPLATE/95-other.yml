@@ -1,0 +1,13 @@
+name: "Other"
+description: "Create a generic issue."
+title: "[Other]: "
+labels: [triage]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please provide details about your issue.
+      placeholder: Describe your issue here...
+    validations:
+      required: true
