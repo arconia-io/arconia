@@ -1,0 +1,25 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api "org.jspecify:jspecify"
+    api "org.testcontainers:testcontainers-junit-jupiter"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Testcontainers Valkey"
+                description = "Testcontainers Valkey."
+            }
+        }
+    }
+}

@@ -36,6 +36,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-pulsar")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-valkey")
 
         api project(":arconia-integrations:arconia-docling")
 
@@ -59,6 +60,7 @@ dependencies {
 
         api project(":arconia-testcontainers:arconia-testcontainers-phoenix")
         api project(":arconia-testcontainers:arconia-testcontainers-redis")
+        api project(":arconia-testcontainers:arconia-testcontainers-valkey")
 
         api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
         api "net.ttddyy.observation:datasource-micrometer-spring-boot:${datasourceMicrometerSpringBootVersion}"

@@ -1,0 +1,44 @@
+= Valkey Dev Service
+:service-name: valkey
+
+A service providing a https://valkey.io[Valkey] data store for development and testing purposes.
+
+It works with Spring Boot libraries that support REPL or Redis, including:
+
+* https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
+* https://spring.io/projects/spring-data-redis[Spring Data Redis]
+* https://spring.io/projects/spring-session[Spring Session for Redis]
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.valkey.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.valkey.image-name`
+| `redis`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.valkey.environment`
+| `{}`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.valkey.shared`
+| `never`
+| When the dev service is shared across applications.
+|===
+
+include::partial$disabling-dev-service.adoc[]

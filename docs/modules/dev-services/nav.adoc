@@ -8,6 +8,7 @@
 ** xref:oracle-xe.adoc[Oracle XE]
 ** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
+** xref:valkey.adoc[Valkey]
 * Event Brokers
 ** xref:artemis.adoc[Artemis]
 ** xref:kafka.adoc[Kafka]
