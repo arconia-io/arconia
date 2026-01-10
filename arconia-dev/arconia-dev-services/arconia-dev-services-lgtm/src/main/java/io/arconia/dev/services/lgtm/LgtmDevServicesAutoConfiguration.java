@@ -1,22 +1,17 @@
 package io.arconia.dev.services.lgtm;
 
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 
 /**
@@ -24,46 +19,26 @@ import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
-@ConditionalOnProperty(prefix = "arconia.dev.services.lgtm", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.lgtm", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)
-@Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class LgtmDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
+    private static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(RestartScope.class)
-    public static final class ConfigurationWithRestart {
-
-        @Bean
-        @RestartScope
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
-            return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean());
-        }
-
+    @Bean
+    @ServiceConnection
+    @ConditionalOnMissingBean
+    LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
+        return new ArconiaLgtmStackContainer(DockerImageName.parse(properties.getImageName())
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .withEnv(properties.getEnvironment())
+                .withStartupTimeout(properties.getStartupTimeout())
+                .withReuse(properties.getShared().asBoolean());
     }
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static final class ConfigurationWithoutRestart {
-
-        @Bean
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        LgtmStackContainer lgtmContainerNoRestartScope(LgtmDevServicesProperties properties) {
-            return new LgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean());
-        }
-
+    @Bean
+    static BeanFactoryPostProcessor lgtmContainerPostProcessor() {
+        return DevServicesBeanRegistrations.beanFactoryPostProcessor(LgtmStackContainer.class);
     }
 
 }

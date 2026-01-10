@@ -1,58 +1,41 @@
 package io.arconia.opentelemetry.testcontainers;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
-import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
+import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 /**
  * Factory for creating {@link OtlpTracingConnectionDetails} for LGTM containers.
  */
 class PhoenixOtlpTracingContainerConnectionDetailsFactory
-        extends ContainerConnectionDetailsFactory<GenericContainer<?>, OtlpTracingConnectionDetails> {
-
-    private static final Logger logger = LoggerFactory.getLogger(PhoenixOtlpTracingContainerConnectionDetailsFactory.class);
-
-    private static final List<String> CONNECTION_NAMES = List.of("phoenix", "arizephoenix/phoenix");
-
-    private static final int HTTP_PORT = 6006;
+        extends ContainerConnectionDetailsFactory<PhoenixContainer, OtlpTracingConnectionDetails> {
 
     PhoenixOtlpTracingContainerConnectionDetailsFactory() {
-        super(CONNECTION_NAMES);
+        super(ANY_CONNECTION_NAME);
     }
 
     @Override
-    protected OtlpTracingConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<GenericContainer<?>> source) {
+    protected OtlpTracingConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<PhoenixContainer> source) {
         return new PhoenixOtlpTracingContainerConnectionDetails(source);
     }
 
-    private static final class PhoenixOtlpTracingContainerConnectionDetails extends ContainerConnectionDetails<GenericContainer<?>> implements OtlpTracingConnectionDetails {
+    private static final class PhoenixOtlpTracingContainerConnectionDetails extends ContainerConnectionDetails<PhoenixContainer> implements OtlpTracingConnectionDetails {
 
-        private static final AtomicBoolean logged = new AtomicBoolean(false);
-
-        private PhoenixOtlpTracingContainerConnectionDetails(ContainerConnectionSource<GenericContainer<?>> source) {
+        private PhoenixOtlpTracingContainerConnectionDetails(ContainerConnectionSource<PhoenixContainer> source) {
             super(source);
         }
 
         @Override
         public String getUrl(Protocol protocol) {
-            String url = switch (protocol) {
+            return switch (protocol) {
                 case HTTP_PROTOBUF ->
-                        "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getMappedPort(HTTP_PORT), TRACES_PATH);
+                        "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getHttpPort(), TRACES_PATH);
                 case GRPC ->
-                        "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(DEFAULT_GRPC_PORT));
+                        "http://%s:%d".formatted(getContainer().getHost(), getContainer().getGrpcPort());
             };
-            if (logged.compareAndSet(false, true)) {
-                logger.info("Phoenix UI: {}", "http://%s:%d".formatted(getContainer().getHost(), getContainer().getMappedPort(HTTP_PORT)));
-            }
-            return url;
         }
 
     }

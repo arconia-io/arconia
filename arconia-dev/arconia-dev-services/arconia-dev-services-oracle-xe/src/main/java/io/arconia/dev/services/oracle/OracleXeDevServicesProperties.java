@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import io.arconia.dev.services.core.config.JdbcDevServicesProperties;
 
 /**
- * Properties for the OracleXe Dev Services.
+ * Properties for the Oracle XE Dev Services.
  */
 @ConfigurationProperties(prefix = "arconia.dev.services.oracle-xe")
 public class OracleXeDevServicesProperties implements JdbcDevServicesProperties {

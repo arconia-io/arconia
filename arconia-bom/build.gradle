@@ -57,6 +57,9 @@ dependencies {
         api project(":spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
         api project(":spring-boot-starters:arconia-spring-boot-starter")
 
+        api project(":arconia-testcontainers:arconia-testcontainers-phoenix")
+        api project(":arconia-testcontainers:arconia-testcontainers-redis")
+
         api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
         api "net.ttddyy.observation:datasource-micrometer-spring-boot:${datasourceMicrometerSpringBootVersion}"
     }

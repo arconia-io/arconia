@@ -1,74 +1,46 @@
 package io.arconia.dev.services.oracle;
 
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.oracle.OracleXeDevServicesAutoConfiguration.ConfigurationWithRestart;
-import io.arconia.dev.services.oracle.OracleXeDevServicesAutoConfiguration.ConfigurationWithoutRestart;
+import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
 
 /**
  * Auto-configuration for Oracle XE Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnProperty(prefix = "arconia.dev.services.oracle-xe", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.oracle-xe", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(OracleXeDevServicesProperties.class)
-@Import({ConfigurationWithRestart.class, ConfigurationWithoutRestart.class})
 public final class OracleXeDevServicesAutoConfiguration {
 
-    public static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-xe";
+    private static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-xe";
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(RestartScope.class)
-    public static final class ConfigurationWithRestart {
-
-        @Bean
-        @RestartScope
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        OracleContainer oracleXeContainer(OracleXeDevServicesProperties properties) {
-            return new OracleContainer(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean())
-                    .withUsername(properties.getUsername())
-                    .withPassword(properties.getPassword())
-                    .withDatabaseName(properties.getDbName())
-                    .withInitScripts(properties.getInitScriptPaths());
-        }
-
+    @Bean
+    @ServiceConnection
+    @ConditionalOnMissingBean
+    OracleContainer oracleXeContainer(OracleXeDevServicesProperties properties) {
+        return new ArconiaOracleXeContainer(DockerImageName.parse(properties.getImageName())
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .withEnv(properties.getEnvironment())
+                .withStartupTimeout(properties.getStartupTimeout())
+                .withReuse(properties.getShared().asBoolean())
+                .withUsername(properties.getUsername())
+                .withPassword(properties.getPassword())
+                .withDatabaseName(properties.getDbName())
+                .withInitScripts(properties.getInitScriptPaths());
     }
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnMissingClass("org.springframework.boot.devtools.restart.RestartScope")
-    public static final class ConfigurationWithoutRestart {
-
-        @Bean
-        @ServiceConnection
-        @ConditionalOnMissingBean
-        OracleContainer oracleXeContainerNoRestartScope(OracleXeDevServicesProperties properties) {
-            return new OracleContainer(DockerImageName.parse(properties.getImageName())
-                    .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
-                    .withEnv(properties.getEnvironment())
-                    .withStartupTimeout(properties.getStartupTimeout())
-                    .withReuse(properties.getShared().asBoolean())
-                    .withUsername(properties.getUsername())
-                    .withPassword(properties.getPassword())
-                    .withDatabaseName(properties.getDbName())
-                    .withInitScripts(properties.getInitScriptPaths());
-        }
-
+    @Bean
+    static BeanFactoryPostProcessor oracleXeContainerPostProcessor() {
+        return DevServicesBeanRegistrations.beanFactoryPostProcessor(OracleContainer.class);
     }
+
 }

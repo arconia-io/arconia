@@ -60,3 +60,6 @@ include 'spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
 include 'spring-boot-starters:arconia-spring-boot-starter'
 
+// Testcontainers
+include 'arconia-testcontainers:arconia-testcontainers-phoenix'
+include 'arconia-testcontainers:arconia-testcontainers-redis'

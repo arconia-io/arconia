@@ -10,9 +10,9 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-testcontainers:arconia-testcontainers-phoenix")
     api "org.springframework.boot:spring-boot-starter"
     api "org.springframework.boot:spring-boot-testcontainers"
-    api "org.testcontainers:testcontainers"
 
     optional project(":arconia-observability:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-devtools"

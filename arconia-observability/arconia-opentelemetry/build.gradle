@@ -25,6 +25,7 @@ dependencies {
     optional "io.opentelemetry:opentelemetry-exporter-logging"
 
     // Testcontainers
+    optional project(":arconia-testcontainers:arconia-testcontainers-phoenix")
     optional "org.springframework.boot:spring-boot-testcontainers"
     optional "org.testcontainers:testcontainers-grafana"
 
