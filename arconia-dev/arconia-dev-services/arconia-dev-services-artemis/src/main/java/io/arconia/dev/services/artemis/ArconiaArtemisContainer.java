@@ -10,7 +10,7 @@ public final class ArconiaArtemisContainer extends ArtemisContainer {
 
     private final ArtemisDevServicesProperties properties;
 
-    private static final int WEB_CONSOLE_PORT = 8161;
+    protected static final int WEB_CONSOLE_PORT = 8161;
 
     public ArconiaArtemisContainer(DockerImageName dockerImageName, ArtemisDevServicesProperties properties) {
         super(dockerImageName);

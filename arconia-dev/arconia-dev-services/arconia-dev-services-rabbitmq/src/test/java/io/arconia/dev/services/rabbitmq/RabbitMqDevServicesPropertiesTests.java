@@ -20,6 +20,7 @@ class RabbitMqDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("rabbitmq");
+        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -31,12 +32,14 @@ class RabbitMqDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("rabbitmq:latest");
+        properties.setPort(5672);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("rabbitmq:latest");
+        assertThat(properties.getPort()).isEqualTo(5672);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

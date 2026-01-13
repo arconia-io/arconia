@@ -20,6 +20,7 @@ class PhoenixDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("arizephoenix/phoenix");
+        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -31,12 +32,14 @@ class PhoenixDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("arizephoenix/phoenix:latest");
+        properties.setPort(16010);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("arizephoenix/phoenix:latest");
+        assertThat(properties.getPort()).isEqualTo(16010);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
