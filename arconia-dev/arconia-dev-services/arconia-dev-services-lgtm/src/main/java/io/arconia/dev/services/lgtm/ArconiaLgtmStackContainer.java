@@ -13,26 +13,34 @@ public final class ArconiaLgtmStackContainer extends LgtmStackContainer {
     /**
      * Grafana web UI port.
      */
-    private static final int GRAFANA_PORT = 3000;
+    protected static final int GRAFANA_PORT = 3000;
 
     /**
      * Loki HTTP API port.
      */
-    private static final int LOKI_PORT = 3100;
+    protected static final int LOKI_PORT = 3100;
 
     /**
      * OTLP receiver port (gRPC).
      */
-    private static final int OTLP_GRPC_PORT = 4317;
+    protected static final int OTLP_GRPC_PORT = 4317;
 
     /**
      * OTLP receiver port (HTTP).
      */
-    private static final int OTLP_HTTP_PORT = 4318;
+    protected static final int OTLP_HTTP_PORT = 4318;
 
     public ArconiaLgtmStackContainer(DockerImageName image, LgtmDevServicesProperties properties) {
         super(image);
         this.properties = properties;
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), GRAFANA_PORT);
+        }
     }
 
 }

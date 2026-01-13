@@ -32,14 +32,14 @@ class LgtmDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("grafana/otel-lgtm:latest");
-        properties.setPort(3000);
+        properties.setPort(ArconiaLgtmStackContainer.GRAFANA_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("grafana/otel-lgtm:latest");
-        assertThat(properties.getPort()).isEqualTo(3000);
+        assertThat(properties.getPort()).isEqualTo(ArconiaLgtmStackContainer.GRAFANA_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
