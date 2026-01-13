@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaMySqlContainer extends MySQLContainer {
 
-    public ArconiaMySqlContainer(DockerImageName dockerImageName) {
+    private final MySqlDevServicesProperties properties;
+
+    /**
+     * MySQL SQL protocol port.
+     */
+    private static final int MYSQL_PORT = 3306;
+
+    public ArconiaMySqlContainer(DockerImageName dockerImageName, MySqlDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), MYSQL_PORT);
+        }
+    }
 }

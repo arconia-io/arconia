@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaOracleXeContainer extends OracleContainer {
 
-    public ArconiaOracleXeContainer(DockerImageName dockerImageName) {
+    private final OracleXeDevServicesProperties properties;
+
+    /**
+     * Oracle Net Listener port (JDBC/SQL*Net).
+     */
+    private static final int ORACLE_XE_PORT = 1521;
+
+    public ArconiaOracleXeContainer(DockerImageName dockerImageName, OracleXeDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), ORACLE_XE_PORT);
+        }
+    }
 }

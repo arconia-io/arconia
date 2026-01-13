@@ -25,6 +25,11 @@ public class ValkeyDevServicesProperties implements DevServicesProperties {
     private String imageName = "ghcr.io/valkey-io/valkey:9.0-alpine";
 
     /**
+     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     */
+    private int port = 0;
+
+    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
@@ -57,6 +62,14 @@ public class ValkeyDevServicesProperties implements DevServicesProperties {
         this.imageName = imageName;
     }
 
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
     @Override
     public Map<String, String> getEnvironment() {
         return environment;

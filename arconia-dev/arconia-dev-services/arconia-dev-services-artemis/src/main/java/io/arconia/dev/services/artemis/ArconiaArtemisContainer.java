@@ -8,8 +8,20 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaArtemisContainer extends ArtemisContainer {
 
-    public ArconiaArtemisContainer(DockerImageName dockerImageName) {
+    private final ArtemisDevServicesProperties properties;
+
+    private static final int WEB_CONSOLE_PORT = 8161;
+
+    public ArconiaArtemisContainer(DockerImageName dockerImageName, ArtemisDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), WEB_CONSOLE_PORT);
+        }
+    }
 }

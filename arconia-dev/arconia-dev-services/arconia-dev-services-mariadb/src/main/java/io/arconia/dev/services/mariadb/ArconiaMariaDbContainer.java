@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaMariaDbContainer extends MariaDBContainer {
 
-    public ArconiaMariaDbContainer(DockerImageName dockerImageName) {
+    private final MariaDbDevServicesProperties properties;
+
+    /**
+     * MariaDB/MySQL SQL protocol port.
+     */
+    private static final int MARIADB_PORT = 3306;
+
+    public ArconiaMariaDbContainer(DockerImageName dockerImageName, MariaDbDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), MARIADB_PORT);
+        }
+    }
 }

@@ -8,8 +8,16 @@ import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
  */
 public final class ArconiaDoclingServeContainer extends DoclingServeContainer {
 
-    public ArconiaDoclingServeContainer(DoclingServeContainerConfig config) {
+    private final DoclingDevServicesProperties properties;
+
+    /**
+     * HTTP REST API port.
+     */
+    private static final int DOCLING_PORT = 5001;
+
+    public ArconiaDoclingServeContainer(DoclingServeContainerConfig config, DoclingDevServicesProperties properties) {
         super(config);
+        this.properties = properties;
     }
 
 }

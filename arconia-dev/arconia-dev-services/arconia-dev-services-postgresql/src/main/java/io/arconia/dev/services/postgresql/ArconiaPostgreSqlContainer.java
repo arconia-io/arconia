@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
 
-    public ArconiaPostgreSqlContainer(DockerImageName dockerImageName) {
+    private final PostgresqlDevServicesProperties properties;
+
+    /**
+     * PostgreSQL SQL protocol port.
+     */
+    private static final int POSTGRESQL_PORT = 5432;
+
+    public ArconiaPostgreSqlContainer(DockerImageName dockerImageName, PostgresqlDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), POSTGRESQL_PORT);
+        }
+    }
 }

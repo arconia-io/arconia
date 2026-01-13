@@ -8,8 +8,28 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaPulsarContainer extends PulsarContainer {
 
-    public ArconiaPulsarContainer(DockerImageName dockerImageName) {
+    private final PulsarDevServicesProperties properties;
+
+    /**
+     * Pulsar admin REST API port.
+     */
+    private static final int PULSAR_ADMIN_PORT = 8080;
+
+    /**
+     * Pulsar binary protocol port.
+     */
+    private static final int PULSAR_PORT = 6650;
+
+    public ArconiaPulsarContainer(DockerImageName dockerImageName, PulsarDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), PULSAR_PORT);
+        }
+    }
 }

@@ -28,7 +28,7 @@ public final class PostgresqlDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     PostgreSQLContainer postgresqlContainer(PostgresqlDevServicesProperties properties) {
         return new ArconiaPostgreSqlContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean())

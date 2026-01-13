@@ -9,8 +9,28 @@ import io.arconia.testcontainers.phoenix.PhoenixContainer;
  */
 public final class ArconiaPhoenixContainer extends PhoenixContainer {
 
-    public ArconiaPhoenixContainer(DockerImageName dockerImageName) {
+    private final PhoenixDevServicesProperties properties;
+
+    /**
+     * HBase Master web UI port.
+     */
+    private static final int HBASE_MASTER_WEB_PORT = 16010;
+
+    /**
+     * ZooKeeper client connections port.
+     */
+    private static final int ZOOKEEPER_PORT = 2181;
+
+    public ArconiaPhoenixContainer(DockerImageName dockerImageName, PhoenixDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), ZOOKEEPER_PORT);
+        }
+    }
 }

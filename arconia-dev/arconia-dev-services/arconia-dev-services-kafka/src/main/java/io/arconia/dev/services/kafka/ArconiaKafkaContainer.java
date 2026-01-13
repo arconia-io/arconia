@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaKafkaContainer extends KafkaContainer {
 
-    public ArconiaKafkaContainer(DockerImageName dockerImageName) {
+    private final KafkaDevServicesProperties properties;
+
+    /**
+     * Kafka broker client connections port.
+     */
+    private static final int KAFKA_PORT = 9092;
+
+    public ArconiaKafkaContainer(DockerImageName dockerImageName, KafkaDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), KAFKA_PORT);
+        }
+    }
 }

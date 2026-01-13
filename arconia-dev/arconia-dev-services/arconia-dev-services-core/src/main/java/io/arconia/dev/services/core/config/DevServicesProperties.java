@@ -23,6 +23,13 @@ public interface DevServicesProperties {
     String getImageName();
 
     /**
+     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     */
+    default int getPort() {
+        return 0;
+    }
+
+    /**
      * Environment variables to set in the service.
      */
     default Map<String,String> getEnvironment() {
