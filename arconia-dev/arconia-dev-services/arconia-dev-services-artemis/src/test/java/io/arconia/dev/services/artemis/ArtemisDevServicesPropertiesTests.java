@@ -44,7 +44,6 @@ class ArtemisDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("apache/activemq-artemis:latest");
         assertThat(properties.getPort()).isEqualTo(ArconiaArtemisContainer.WEB_CONSOLE_PORT);
-
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
