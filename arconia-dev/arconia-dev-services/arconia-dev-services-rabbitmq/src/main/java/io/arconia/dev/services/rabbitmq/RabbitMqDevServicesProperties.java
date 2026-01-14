@@ -25,7 +25,7 @@ public class RabbitMqDevServicesProperties implements DevServicesProperties {
     private String imageName = "rabbitmq:4.2-management-alpine";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the RabbitMQ Web UI. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

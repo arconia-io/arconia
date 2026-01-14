@@ -32,14 +32,14 @@ class RabbitMqDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("rabbitmq:latest");
-        properties.setPort(5672);
+        properties.setPort(ArconiaRabbitMqContainer.RABBITMQ_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("rabbitmq:latest");
-        assertThat(properties.getPort()).isEqualTo(5672);
+        assertThat(properties.getPort()).isEqualTo(ArconiaRabbitMqContainer.RABBITMQ_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

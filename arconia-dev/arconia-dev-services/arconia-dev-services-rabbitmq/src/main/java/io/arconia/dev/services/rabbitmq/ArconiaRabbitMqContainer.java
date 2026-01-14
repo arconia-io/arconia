@@ -19,12 +19,12 @@ public final class ArconiaRabbitMqContainer extends RabbitMQContainer {
     /**
      * Management web UI port.
      */
-    private static final int RABBITMQ_MANAGEMENT_PORT = 15672;
+    protected static final int RABBITMQ_WEB_UI_PORT = 15672;
 
     /**
      * AMQP messaging protocol port.
      */
-    private static final int RABBITMQ_PORT = 5672;
+    protected static final int RABBITMQ_PORT = 5672;
 
     public ArconiaRabbitMqContainer(DockerImageName dockerImageName, RabbitMqDevServicesProperties properties) {
         super(dockerImageName);
@@ -35,7 +35,7 @@ public final class ArconiaRabbitMqContainer extends RabbitMQContainer {
     protected void configure() {
         super.configure();
         if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), RABBITMQ_PORT);
+            addFixedExposedPort(properties.getPort(), RABBITMQ_WEB_UI_PORT);
         }
     }
 
