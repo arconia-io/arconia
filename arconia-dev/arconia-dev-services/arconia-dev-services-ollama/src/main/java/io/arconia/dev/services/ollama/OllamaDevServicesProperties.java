@@ -25,7 +25,7 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     private String imageName = "ollama/ollama:0.13.3";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Ollama HTTP API. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

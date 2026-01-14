@@ -49,18 +49,23 @@ class OllamaDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.ollama.enabled=true",
-                "arconia.dev.services.ollama.environment.KEY=value",
-                "arconia.dev.services.ollama.shared=never",
-                "arconia.dev.services.ollama.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(OllamaContainer.class);
-                OllamaContainer container = context.getBean(OllamaContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.ollama.enabled=true",
+                        "arconia.dev.services.ollama.port=1234",
+                        "arconia.dev.services.ollama.environment.KEY=value",
+                        "arconia.dev.services.ollama.shared=never",
+                        "arconia.dev.services.ollama.startup-timeout=90s"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OllamaContainer.class);
+                    OllamaContainer container = context.getBean(OllamaContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaOllamaContainer.OLLAMA_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

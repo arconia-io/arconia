@@ -13,7 +13,7 @@ public final class ArconiaOllamaContainer extends OllamaContainer {
     /**
      * Ollama HTTP API port.
      */
-    private static final int OLLAMA_PORT = 11434;
+    protected static final int OLLAMA_PORT = 11434;
 
     public ArconiaOllamaContainer(DockerImageName dockerImageName, OllamaDevServicesProperties properties) {
         super(dockerImageName);
