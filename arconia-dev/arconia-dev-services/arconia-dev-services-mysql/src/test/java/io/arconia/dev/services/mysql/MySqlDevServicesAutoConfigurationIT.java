@@ -23,8 +23,8 @@ class MySqlDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.mysql.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(MySQLContainer.class));
+                .withPropertyValues("arconia.dev.services.mysql.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MySQLContainer.class));
     }
 
     @Test
@@ -45,29 +45,33 @@ class MySqlDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.mysql.environment.KEY=value",
-                "arconia.dev.services.mysql.shared=never",
-                "arconia.dev.services.mysql.startup-timeout=90s",
-                "arconia.dev.services.mysql.username=mytest",
-                "arconia.dev.services.mysql.password=mytest",
-                "arconia.dev.services.mysql.db-name=mytest",
-                "arconia.dev.services.mysql.init-script-paths=sql/init.sql"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(MySQLContainer.class);
-                MySQLContainer container = context.getBean(MySQLContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-                container.start();
-                assertThat(container.getUsername()).isEqualTo("mytest");
-                assertThat(container.getPassword()).isEqualTo("mytest");
-                assertThat(container.getDatabaseName()).isEqualTo("mytest");
-                assertThat(container.execInContainer("mysql", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
-                        "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
-                        .getStdout())
-                        .contains("true");
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.mysql.port=1234",
+                        "arconia.dev.services.mysql.environment.KEY=value",
+                        "arconia.dev.services.mysql.shared=never",
+                        "arconia.dev.services.mysql.startup-timeout=90s",
+                        "arconia.dev.services.mysql.username=mytest",
+                        "arconia.dev.services.mysql.password=mytest",
+                        "arconia.dev.services.mysql.db-name=mytest",
+                        "arconia.dev.services.mysql.init-script-paths=sql/init.sql")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(MySQLContainer.class);
+                    MySQLContainer container = context.getBean(MySQLContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaMySqlContainer.MYSQL_PORT)).isEqualTo(1234);
+                    assertThat(container.getUsername()).isEqualTo("mytest");
+                    assertThat(container.getPassword()).isEqualTo("mytest");
+                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                    assertThat(container.execInContainer("mysql", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
+                            "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
+                            .getStdout())
+                            .contains("true");
+
+                });
     }
 
     @Test

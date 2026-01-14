@@ -13,7 +13,7 @@ public final class ArconiaMySqlContainer extends MySQLContainer {
     /**
      * MySQL SQL protocol port.
      */
-    private static final int MYSQL_PORT = 3306;
+    protected static final int MYSQL_PORT = 3306;
 
     public ArconiaMySqlContainer(DockerImageName dockerImageName, MySqlDevServicesProperties properties) {
         super(dockerImageName);

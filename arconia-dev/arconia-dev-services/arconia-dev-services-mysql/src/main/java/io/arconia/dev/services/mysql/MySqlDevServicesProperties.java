@@ -27,7 +27,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
     private String imageName = "mysql:8.4";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the MySQL protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 
