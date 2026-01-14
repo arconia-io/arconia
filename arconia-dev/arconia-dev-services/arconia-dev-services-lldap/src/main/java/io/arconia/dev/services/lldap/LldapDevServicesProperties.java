@@ -25,10 +25,13 @@ public class LldapDevServicesProperties implements DevServicesProperties {
     private String imageName = "lldap/lldap:v0.6-alpine";
 
     /**
-     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the LLDAP web ui. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 
+    /**
+     * Web UI port.
+     */
     /**
      * Environment variables to set in the service.
      */

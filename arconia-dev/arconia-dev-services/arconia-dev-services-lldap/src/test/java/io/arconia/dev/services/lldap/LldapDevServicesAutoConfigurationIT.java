@@ -23,8 +23,8 @@ class LldapDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.lldap.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(LLdapContainer.class));
+                .withPropertyValues("arconia.dev.services.lldap.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(LLdapContainer.class));
     }
 
     @Test
@@ -41,17 +41,21 @@ class LldapDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.lldap.environment.KEY=value",
-                "arconia.dev.services.lldap.shared=never",
-                "arconia.dev.services.lldap.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(LLdapContainer.class);
-                LLdapContainer container = context.getBean(LLdapContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.lldap.port=1234",
+                        "arconia.dev.services.lldap.environment.KEY=value",
+                        "arconia.dev.services.lldap.shared=never",
+                        "arconia.dev.services.lldap.startup-timeout=90s")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LLdapContainer.class);
+                    LLdapContainer container = context.getBean(LLdapContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaLldapContainer.LLDAP_WEB_CONSOLE_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test
