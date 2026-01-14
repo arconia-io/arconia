@@ -25,7 +25,7 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
     private String imageName = "arizephoenix/phoenix:version-12.9-nonroot";
 
     /**
-     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

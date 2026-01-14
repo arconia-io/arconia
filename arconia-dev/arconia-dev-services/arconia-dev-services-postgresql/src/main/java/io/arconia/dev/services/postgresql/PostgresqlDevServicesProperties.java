@@ -27,7 +27,7 @@ public class PostgresqlDevServicesProperties implements JdbcDevServicesPropertie
     private String imageName = "postgres:18.1-alpine";
 
     /**
-     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 
