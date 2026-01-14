@@ -32,14 +32,14 @@ class MongoDbAtlasDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("mongodb/mongodb-atlas-local");
-        properties.setPort(27017);
+        properties.setPort(ArconiaMongoDbAtlasLocalContainer.MONGODB_ATLAS_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("mongodb/mongodb-atlas-local");
-        assertThat(properties.getPort()).isEqualTo(27017);
+        assertThat(properties.getPort()).isEqualTo(ArconiaMongoDbAtlasLocalContainer.MONGODB_ATLAS_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

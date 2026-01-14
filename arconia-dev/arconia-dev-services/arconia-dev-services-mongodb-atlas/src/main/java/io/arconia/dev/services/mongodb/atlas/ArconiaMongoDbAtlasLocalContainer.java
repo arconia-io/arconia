@@ -13,7 +13,7 @@ public final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalCo
     /**
      * Atlas-compatible MongoDB protocol port.
      */
-    private static final int MONGODB_ATLAS_PORT = 27017;
+    protected static final int MONGODB_ATLAS_PORT = 27017;
 
     public ArconiaMongoDbAtlasLocalContainer(DockerImageName dockerImageName, MongoDbAtlasDevServicesProperties properties) {
         super(dockerImageName);

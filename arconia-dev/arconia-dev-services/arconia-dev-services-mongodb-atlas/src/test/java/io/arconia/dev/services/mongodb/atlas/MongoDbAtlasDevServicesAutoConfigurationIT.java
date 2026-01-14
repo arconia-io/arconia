@@ -23,8 +23,8 @@ class MongoDbAtlasDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.mongodb-atlas.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(MongoDBAtlasLocalContainer.class));
+                .withPropertyValues("arconia.dev.services.mongodb-atlas.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MongoDBAtlasLocalContainer.class));
     }
 
     @Test
@@ -41,17 +41,21 @@ class MongoDbAtlasDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.mongodb-atlas.environment.KEY=value",
-                "arconia.dev.services.mongodb-atlas.shared=never",
-                "arconia.dev.services.mongodb-atlas.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
-                MongoDBAtlasLocalContainer atlasLocalContainer = context.getBean(MongoDBAtlasLocalContainer.class);
-                assertThat(atlasLocalContainer.getEnv()).contains("KEY=value");
-                assertThat(atlasLocalContainer.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.mongodb-atlas.port=1234",
+                        "arconia.dev.services.mongodb-atlas.environment.KEY=value",
+                        "arconia.dev.services.mongodb-atlas.shared=never",
+                        "arconia.dev.services.mongodb-atlas.startup-timeout=90s")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
+                    MongoDBAtlasLocalContainer container = context.getBean(MongoDBAtlasLocalContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaMongoDbAtlasLocalContainer.MONGODB_ATLAS_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

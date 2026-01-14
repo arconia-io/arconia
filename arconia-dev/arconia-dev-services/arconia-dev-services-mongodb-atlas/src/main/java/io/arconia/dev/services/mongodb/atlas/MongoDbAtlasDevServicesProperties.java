@@ -25,7 +25,7 @@ public class MongoDbAtlasDevServicesProperties implements DevServicesProperties 
     private String imageName = "mongodb/mongodb-atlas-local:8.2";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the MongoDB Atlas protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 
