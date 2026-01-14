@@ -25,7 +25,7 @@ public class MongoDbDevServicesProperties implements DevServicesProperties {
     private String imageName = "mongo:8.2-noble";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the MongoDB protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

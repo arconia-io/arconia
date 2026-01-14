@@ -13,7 +13,7 @@ public final class ArconiaMongoDbContainer extends MongoDBContainer {
     /**
      * MongoDB wire protocol port.
      */
-    private static final int MONGODB_PORT = 27017;
+    protected static final int MONGODB_PORT = 27017;
 
     public ArconiaMongoDbContainer(DockerImageName dockerImageName, MongoDbDevServicesProperties properties) {
         super(dockerImageName);

@@ -23,8 +23,8 @@ class MongoDbDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.mongodb.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(MongoDBContainer.class));
+                .withPropertyValues("arconia.dev.services.mongodb.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MongoDBContainer.class));
     }
 
     @Test
@@ -41,17 +41,21 @@ class MongoDbDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.mongodb.environment.KEY=value",
-                "arconia.dev.services.mongodb.shared=never",
-                "arconia.dev.services.mongodb.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(MongoDBContainer.class);
-                MongoDBContainer container = context.getBean(MongoDBContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.mongodb.port=1234",
+                        "arconia.dev.services.mongodb.environment.KEY=value",
+                        "arconia.dev.services.mongodb.shared=never",
+                        "arconia.dev.services.mongodb.startup-timeout=90s")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(MongoDBContainer.class);
+                    MongoDBContainer container = context.getBean(MongoDBContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaMongoDbContainer.MONGODB_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

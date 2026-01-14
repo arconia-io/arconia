@@ -32,14 +32,14 @@ class MongoDbDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("mongo:latest");
-        properties.setPort(27017);
+        properties.setPort(ArconiaMongoDbContainer.MONGODB_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("mongo:latest");
-        assertThat(properties.getPort()).isEqualTo(27017);
+        assertThat(properties.getPort()).isEqualTo(ArconiaMongoDbContainer.MONGODB_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
