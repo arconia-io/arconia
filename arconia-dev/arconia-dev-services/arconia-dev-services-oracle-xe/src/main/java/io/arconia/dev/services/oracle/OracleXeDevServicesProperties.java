@@ -27,7 +27,7 @@ public class OracleXeDevServicesProperties implements JdbcDevServicesProperties 
     private String imageName = "gvenzl/oracle-xe:21-slim-faststart";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Oracle XE Net Listener (JDBC/SQL*Net). When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

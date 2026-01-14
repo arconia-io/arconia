@@ -13,7 +13,7 @@ public final class ArconiaOracleXeContainer extends OracleContainer {
     /**
      * Oracle Net Listener port (JDBC/SQL*Net).
      */
-    private static final int ORACLE_XE_PORT = 1521;
+    protected static final int ORACLE_XE_PORT = 1521;
 
     public ArconiaOracleXeContainer(DockerImageName dockerImageName, OracleXeDevServicesProperties properties) {
         super(dockerImageName);

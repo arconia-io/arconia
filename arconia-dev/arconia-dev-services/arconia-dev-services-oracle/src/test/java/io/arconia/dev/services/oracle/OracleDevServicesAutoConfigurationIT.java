@@ -65,11 +65,11 @@ class OracleDevServicesAutoConfigurationIT {
                     assertThat(container.isShouldBeReused()).isFalse();
 
                     container.start();
+                    assertThat(container.getMappedPort(ArconiaOracleContainer.ORACLE_PORT)).isEqualTo(1234);
                     assertThat(container.getUsername()).isEqualTo("mytest");
                     assertThat(container.getPassword()).isEqualTo("mytest");
                     assertThat(container.getDatabaseName()).isEqualTo("mytest");
 
-                    assertThat(container.getMappedPort(ArconiaOracleContainer.ORACLE_PORT)).isEqualTo(1234);
                 });
     }
 
