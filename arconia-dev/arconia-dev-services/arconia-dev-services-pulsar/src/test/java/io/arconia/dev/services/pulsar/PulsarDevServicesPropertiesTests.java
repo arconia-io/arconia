@@ -20,6 +20,7 @@ class PulsarDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("apachepulsar/pulsar");
+        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));

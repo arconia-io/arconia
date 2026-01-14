@@ -22,7 +22,6 @@ class MariaDbDevServicesPropertiesTests {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("mariadb");
         assertThat(properties.getPort()).isEqualTo(0);
-
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
