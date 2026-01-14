@@ -25,7 +25,7 @@ public class ValkeyDevServicesProperties implements DevServicesProperties {
     private String imageName = "ghcr.io/valkey-io/valkey:9.0-alpine";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Valkey (Redis-compatible RESP) protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

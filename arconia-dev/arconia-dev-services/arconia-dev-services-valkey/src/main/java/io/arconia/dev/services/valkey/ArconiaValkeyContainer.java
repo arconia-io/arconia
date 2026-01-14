@@ -14,7 +14,7 @@ public final class ArconiaValkeyContainer extends ValkeyContainer {
     /**
      * Redis-compatible RESP protocol port.
      */
-    private static final int VALKEY_PORT = 6379;
+    protected static final int VALKEY_PORT = 6379;
 
     public ArconiaValkeyContainer(DockerImageName dockerImageName, ValkeyDevServicesProperties properties) {
         super(dockerImageName);

@@ -32,14 +32,14 @@ class ValkeyDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("ghcr.io/valkey-io/valkey:latest");
-        properties.setPort(6379);
+        properties.setPort(ArconiaValkeyContainer.VALKEY_PORT);
         properties.setEnvironment(Map.of("VALKEY_PASSWORD", "password"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("ghcr.io/valkey-io/valkey:latest");
-        assertThat(properties.getPort()).isEqualTo(6379);
+        assertThat(properties.getPort()).isEqualTo(ArconiaValkeyContainer.VALKEY_PORT);
         assertThat(properties.getEnvironment()).containsEntry("VALKEY_PASSWORD", "password");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
