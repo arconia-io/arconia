@@ -28,7 +28,7 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     private String imageName = "apache/activemq-artemis:2.44.0-alpine";
 
     /**
-     * Port for the Artemis web console. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Artemis web ui. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

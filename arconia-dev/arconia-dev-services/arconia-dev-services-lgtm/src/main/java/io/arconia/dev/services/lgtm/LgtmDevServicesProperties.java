@@ -25,7 +25,7 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
     private String imageName = "grafana/otel-lgtm:0.13.0";
 
     /**
-     * Port for the Grafana web console. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Grafana web ui. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

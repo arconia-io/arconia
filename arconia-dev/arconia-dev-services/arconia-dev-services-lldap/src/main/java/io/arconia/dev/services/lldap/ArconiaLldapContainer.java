@@ -11,14 +11,20 @@ public final class ArconiaLldapContainer extends LLdapContainer {
     private final LldapDevServicesProperties properties;
 
     /**
-     * Web administration UI port.
+     * Web UI port.
      */
-    private static final int LLDAP_WEB_PORT = 17170;
+    protected static final int LLDAP_WEB_CONSOLE_PORT = 17170;
 
     /**
      * LDAP service port (unencrypted LDAP).
      */
-    private static final int LLDAP_PORT = 3890;
+    protected static final int LLDAP_PORT = 3890;
+
+    /**
+     * LDAP service port (encrypted LDAP).
+     */
+    protected static final int LDAPS_PORT = 6360;
+
 
     public ArconiaLldapContainer(DockerImageName image, LldapDevServicesProperties properties) {
         super(image);
@@ -29,7 +35,7 @@ public final class ArconiaLldapContainer extends LLdapContainer {
     protected void configure() {
         super.configure();
         if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), LLDAP_PORT);
+            addFixedExposedPort(properties.getPort(), LLDAP_WEB_CONSOLE_PORT);
         }
     }
 }
