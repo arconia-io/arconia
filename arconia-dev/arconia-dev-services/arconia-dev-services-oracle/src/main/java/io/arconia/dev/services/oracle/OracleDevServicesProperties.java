@@ -27,7 +27,7 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
     private String imageName = "gvenzl/oracle-free:23.9-slim-faststart";
 
     /**
-     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the Oracle Net Listener (JDBC/SQL*Net). When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

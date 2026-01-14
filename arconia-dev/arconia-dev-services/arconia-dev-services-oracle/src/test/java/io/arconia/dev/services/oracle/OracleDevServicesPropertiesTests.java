@@ -37,7 +37,7 @@ class OracleDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("gvenzl/oracle-free:latest");
-        properties.setPort(1521);
+        properties.setPort(ArconiaOracleContainer.ORACLE_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
@@ -48,7 +48,7 @@ class OracleDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("gvenzl/oracle-free:latest");
-        assertThat(properties.getPort()).isEqualTo(1521);
+        assertThat(properties.getPort()).isEqualTo(ArconiaOracleContainer.ORACLE_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

@@ -47,25 +47,30 @@ class OracleDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.oracle.environment.KEY=value",
-                "arconia.dev.services.oracle.shared=never",
-                "arconia.dev.services.oracle.startup-timeout=90s",
-                "arconia.dev.services.oracle.username=mytest",
-                "arconia.dev.services.oracle.password=mytest",
-                "arconia.dev.services.oracle.db-name=mytest",
-                "arconia.dev.services.oracle.init-script-paths=sql/init.sql"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(OracleContainer.class);
-                OracleContainer container = context.getBean(OracleContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-                container.start();
-                assertThat(container.getUsername()).isEqualTo("mytest");
-                assertThat(container.getPassword()).isEqualTo("mytest");
-                assertThat(container.getDatabaseName()).isEqualTo("mytest");
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.oracle.port=1234",
+                        "arconia.dev.services.oracle.environment.KEY=value",
+                        "arconia.dev.services.oracle.shared=never",
+                        "arconia.dev.services.oracle.startup-timeout=90s",
+                        "arconia.dev.services.oracle.username=mytest",
+                        "arconia.dev.services.oracle.password=mytest",
+                        "arconia.dev.services.oracle.db-name=mytest",
+                        "arconia.dev.services.oracle.init-script-paths=sql/init.sql"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OracleContainer.class);
+                    OracleContainer container = context.getBean(OracleContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getUsername()).isEqualTo("mytest");
+                    assertThat(container.getPassword()).isEqualTo("mytest");
+                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
+
+                    assertThat(container.getMappedPort(ArconiaOracleContainer.ORACLE_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test
