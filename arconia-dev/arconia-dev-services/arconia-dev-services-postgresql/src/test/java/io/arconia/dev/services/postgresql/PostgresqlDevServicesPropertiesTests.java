@@ -36,6 +36,7 @@ class PostgresqlDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("postgres:latest");
+        properties.setPort(ArconiaPostgreSqlContainer.POSTGRESQL_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
@@ -46,6 +47,7 @@ class PostgresqlDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("postgres:latest");
+        assertThat(properties.getPort()).isEqualTo(ArconiaPostgreSqlContainer.POSTGRESQL_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

@@ -13,7 +13,7 @@ public final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
     /**
      * PostgreSQL SQL protocol port.
      */
-    private static final int POSTGRESQL_PORT = 5432;
+    protected static final int POSTGRESQL_PORT = 5432;
 
     public ArconiaPostgreSqlContainer(DockerImageName dockerImageName, PostgresqlDevServicesProperties properties) {
         super(dockerImageName);
