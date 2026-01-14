@@ -11,14 +11,19 @@ public final class ArconiaPulsarContainer extends PulsarContainer {
     private final PulsarDevServicesProperties properties;
 
     /**
-     * Pulsar admin REST API port.
+     * Pulsar Web UI port.
      */
-    private static final int PULSAR_ADMIN_PORT = 8080;
+    private static final int PULSAR_WEB_UI_PORT = 8080;
 
     /**
      * Pulsar binary protocol port.
      */
-    private static final int PULSAR_PORT = 6650;
+    protected static final int PULSAR_PORT = 6650;
+
+        /**
+     * Pulsar binary protocol port.
+     */
+    protected static final int PULSAR_TLS_PORT = 6651;
 
     public ArconiaPulsarContainer(DockerImageName dockerImageName, PulsarDevServicesProperties properties) {
         super(dockerImageName);
@@ -29,7 +34,7 @@ public final class ArconiaPulsarContainer extends PulsarContainer {
     protected void configure() {
         super.configure();
         if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), PULSAR_PORT);
+            addFixedExposedPort(properties.getPort(), PULSAR_WEB_UI_PORT);
         }
     }
 }

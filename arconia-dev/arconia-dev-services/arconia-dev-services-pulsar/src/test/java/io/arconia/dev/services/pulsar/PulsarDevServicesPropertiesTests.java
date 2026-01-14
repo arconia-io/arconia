@@ -31,12 +31,14 @@ class PulsarDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("apachepulsar/pulsar:latest");
+        properties.setPort(ArconiaPulsarContainer.PULSAR_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("apachepulsar/pulsar:latest");
+        assertThat(properties.getPort()).isEqualTo(ArconiaPulsarContainer.PULSAR_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
