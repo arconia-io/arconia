@@ -12,14 +12,17 @@ public final class ArconiaPhoenixContainer extends PhoenixContainer {
     private final PhoenixDevServicesProperties properties;
 
     /**
-     * HBase Master web UI port.
+     * Phoenix Web UI port.
      */
-    private static final int HBASE_MASTER_WEB_PORT = 16010;
-
+    protected static final int PHOENIX_WEB_UI_PORT = 6006;
     /**
-     * ZooKeeper client connections port.
+     * Phoenix gRPC port.
      */
-    private static final int ZOOKEEPER_PORT = 2181;
+    protected static final int PHOENIX_GRPC_PORT = 4317;
+    /**
+     * Prometheus metrics port.
+     */
+    protected static final int PROMETHEUS_PORT = 9090;
 
     public ArconiaPhoenixContainer(DockerImageName dockerImageName, PhoenixDevServicesProperties properties) {
         super(dockerImageName);
@@ -30,7 +33,7 @@ public final class ArconiaPhoenixContainer extends PhoenixContainer {
     protected void configure() {
         super.configure();
         if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), ZOOKEEPER_PORT);
+            addFixedExposedPort(properties.getPort(), PHOENIX_WEB_UI_PORT);
         }
     }
 }

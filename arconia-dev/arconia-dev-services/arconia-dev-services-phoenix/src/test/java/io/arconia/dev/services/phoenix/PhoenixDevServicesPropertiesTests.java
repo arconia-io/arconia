@@ -32,14 +32,14 @@ class PhoenixDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("arizephoenix/phoenix:latest");
-        properties.setPort(16010);
+        properties.setPort(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("arizephoenix/phoenix:latest");
-        assertThat(properties.getPort()).isEqualTo(16010);
+        assertThat(properties.getPort()).isEqualTo(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
