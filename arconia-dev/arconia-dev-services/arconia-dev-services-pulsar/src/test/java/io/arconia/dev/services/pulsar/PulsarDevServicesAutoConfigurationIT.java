@@ -76,7 +76,7 @@ class PulsarDevServicesAutoConfigurationIT {
                     assertThat(container.isShouldBeReused()).isFalse();
 
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaPulsarContainer.PULSAR_PORT)).isEqualTo(1234);
+                    assertThat(container.getMappedPort(ArconiaPulsarContainer.PULSAR_WEB_UI_PORT)).isEqualTo(1234);
                 });
     }
 

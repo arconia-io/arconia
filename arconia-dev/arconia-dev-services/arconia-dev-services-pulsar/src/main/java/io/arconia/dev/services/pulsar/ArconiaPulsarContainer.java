@@ -13,7 +13,7 @@ public final class ArconiaPulsarContainer extends PulsarContainer {
     /**
      * Pulsar Web UI port.
      */
-    private static final int PULSAR_WEB_UI_PORT = 8080;
+    protected static final int PULSAR_WEB_UI_PORT = 8080;
 
     /**
      * Pulsar binary protocol port.
