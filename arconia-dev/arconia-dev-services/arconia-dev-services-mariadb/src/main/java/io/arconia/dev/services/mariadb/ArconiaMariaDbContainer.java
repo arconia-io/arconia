@@ -13,7 +13,7 @@ public final class ArconiaMariaDbContainer extends MariaDBContainer {
     /**
      * MariaDB/MySQL SQL protocol port.
      */
-    private static final int MARIADB_PORT = 3306;
+    protected static final int MARIADB_PORT = 3306;
 
     public ArconiaMariaDbContainer(DockerImageName dockerImageName, MariaDbDevServicesProperties properties) {
         super(dockerImageName);

@@ -27,7 +27,7 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
     private String imageName = "mariadb:12.1";
 
     /**
-     * Port the dev service is exposed on. When it's 0 (default value), a random port is assigned by Testcontainers.
+     * Port for the MariaDB/MySQL SQL protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
      */
     private int port = 0;
 

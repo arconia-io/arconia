@@ -23,8 +23,8 @@ class MariaDbDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.mariadb.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(MariaDBContainer.class));
+                .withPropertyValues("arconia.dev.services.mariadb.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MariaDBContainer.class));
     }
 
     @Test
@@ -45,29 +45,32 @@ class MariaDbDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.mariadb.environment.KEY=value",
-                "arconia.dev.services.mariadb.shared=never",
-                "arconia.dev.services.mariadb.startup-timeout=90s",
-                "arconia.dev.services.mariadb.username=mytest",
-                "arconia.dev.services.mariadb.password=mytest",
-                "arconia.dev.services.mariadb.db-name=mytest",
-                "arconia.dev.services.mariadb.init-script-paths=sql/init.sql"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(MariaDBContainer.class);
-                MariaDBContainer container = context.getBean(MariaDBContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-                container.start();
-                assertThat(container.getUsername()).isEqualTo("mytest");
-                assertThat(container.getPassword()).isEqualTo("mytest");
-                assertThat(container.getDatabaseName()).isEqualTo("mytest");
-                assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
-                        "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
-                        .getStdout())
-                        .contains("true");
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.mariadb.port=1234",
+                        "arconia.dev.services.mariadb.environment.KEY=value",
+                        "arconia.dev.services.mariadb.shared=never",
+                        "arconia.dev.services.mariadb.startup-timeout=90s",
+                        "arconia.dev.services.mariadb.username=mytest",
+                        "arconia.dev.services.mariadb.password=mytest",
+                        "arconia.dev.services.mariadb.db-name=mytest",
+                        "arconia.dev.services.mariadb.init-script-paths=sql/init.sql")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(MariaDBContainer.class);
+                    MariaDBContainer container = context.getBean(MariaDBContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+                    container.start();
+   container.start();
+                    assertThat(container.getMappedPort(ArconiaMariaDbContainer.MARIADB_PORT)).isEqualTo(1234);
+                    assertThat(container.getUsername()).isEqualTo("mytest");
+                    assertThat(container.getPassword()).isEqualTo("mytest");
+                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                    assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
+                            "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
+                            .getStdout())
+                            .contains("true");
+                });
     }
 
     @Test

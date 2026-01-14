@@ -21,6 +21,8 @@ class MariaDbDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("mariadb");
+        assertThat(properties.getPort()).isEqualTo(0);
+
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -36,6 +38,7 @@ class MariaDbDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("mariadb:latest");
+        properties.setPort(ArconiaMariaDbContainer.MARIADB_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
@@ -46,6 +49,7 @@ class MariaDbDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("mariadb:latest");
+        assertThat(properties.getPort()).isEqualTo(ArconiaMariaDbContainer.MARIADB_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
