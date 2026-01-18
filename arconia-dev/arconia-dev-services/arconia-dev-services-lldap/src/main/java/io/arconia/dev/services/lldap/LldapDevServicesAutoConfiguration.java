@@ -28,7 +28,7 @@ public final class LldapDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     LLdapContainer lldapContainer(LldapDevServicesProperties properties) {
         return new ArconiaLldapContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean());

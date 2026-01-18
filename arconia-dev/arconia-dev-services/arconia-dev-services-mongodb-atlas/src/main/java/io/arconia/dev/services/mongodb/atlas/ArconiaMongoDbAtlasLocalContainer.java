@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalContainer {
 
-    public ArconiaMongoDbAtlasLocalContainer(DockerImageName dockerImageName) {
+    private final MongoDbAtlasDevServicesProperties properties;
+
+    /**
+     * Atlas-compatible MongoDB protocol port.
+     */
+    protected static final int MONGODB_ATLAS_PORT = 27017;
+
+    public ArconiaMongoDbAtlasLocalContainer(DockerImageName dockerImageName, MongoDbAtlasDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), MONGODB_ATLAS_PORT);
+        }
+    }
 }

@@ -8,8 +8,23 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaMongoDbContainer extends MongoDBContainer {
 
-    public ArconiaMongoDbContainer(DockerImageName dockerImageName) {
+    private final MongoDbDevServicesProperties properties;
+
+    /**
+     * MongoDB wire protocol port.
+     */
+    protected static final int MONGODB_PORT = 27017;
+
+    public ArconiaMongoDbContainer(DockerImageName dockerImageName, MongoDbDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), MONGODB_PORT);
+        }
+    }
 }

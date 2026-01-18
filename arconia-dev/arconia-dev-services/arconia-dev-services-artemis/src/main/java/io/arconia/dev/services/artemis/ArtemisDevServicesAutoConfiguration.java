@@ -29,7 +29,7 @@ public final class ArtemisDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     ArtemisContainer artemisContainer(ArtemisDevServicesProperties properties) {
         return new ArconiaArtemisContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean())

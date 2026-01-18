@@ -31,15 +31,15 @@ class LgtmDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.lgtm.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
+                .withPropertyValues("arconia.dev.services.lgtm.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
     }
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         contextRunner
-            .withPropertyValues("arconia.otel.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
+                .withPropertyValues("arconia.otel.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
     }
 
     @Test
@@ -71,17 +71,20 @@ class LgtmDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.lgtm.environment.KEY=value",
-                "arconia.dev.services.lgtm.shared=never",
-                "arconia.dev.services.lgtm.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.lgtm.port=1234",
+                        "arconia.dev.services.lgtm.environment.KEY=value",
+                        "arconia.dev.services.lgtm.shared=never",
+                        "arconia.dev.services.lgtm.startup-timeout=90s")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
+                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaLgtmStackContainer.GRAFANA_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

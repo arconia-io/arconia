@@ -31,12 +31,15 @@ class OllamaDevServicesPropertiesTests {
 
         properties.setEnabled(true);
         properties.setImageName("ollama/ollama:0.6.3");
+        properties.setPort(ArconiaOllamaContainer.OLLAMA_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.NEVER);
         properties.setStartupTimeout(Duration.ofMinutes(5));
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).isEqualTo("ollama/ollama:0.6.3");
+        assertThat(properties.getPort()).isEqualTo(ArconiaOllamaContainer.OLLAMA_PORT);
+
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

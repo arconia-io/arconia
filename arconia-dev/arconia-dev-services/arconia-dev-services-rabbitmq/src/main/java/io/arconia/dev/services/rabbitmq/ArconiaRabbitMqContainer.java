@@ -12,10 +12,31 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class ArconiaRabbitMqContainer extends RabbitMQContainer {
 
+    private final RabbitMqDevServicesProperties properties;
+
     private static final Logger logger = LoggerFactory.getLogger(ArconiaRabbitMqContainer.class);
 
-    public ArconiaRabbitMqContainer(DockerImageName dockerImageName) {
+    /**
+     * Management web UI port.
+     */
+    protected static final int RABBITMQ_WEB_UI_PORT = 15672;
+
+    /**
+     * AMQP messaging protocol port.
+     */
+    protected static final int RABBITMQ_PORT = 5672;
+
+    public ArconiaRabbitMqContainer(DockerImageName dockerImageName, RabbitMqDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), RABBITMQ_WEB_UI_PORT);
+        }
     }
 
     @Override

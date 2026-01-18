@@ -31,8 +31,8 @@ class KafkaDevServicesAutoConfigurationIT {
     @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.kafka.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(KafkaContainer.class));
+                .withPropertyValues("arconia.dev.services.kafka.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(KafkaContainer.class));
     }
 
     @Test
@@ -62,17 +62,20 @@ class KafkaDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.kafka.environment.KEY=value",
-                "arconia.dev.services.kafka.shared=never",
-                "arconia.dev.services.kafka.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(KafkaContainer.class);
-                KafkaContainer container = context.getBean(KafkaContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.kafka.port=1234",
+                        "arconia.dev.services.kafka.environment.KEY=value",
+                        "arconia.dev.services.kafka.shared=never",
+                        "arconia.dev.services.kafka.startup-timeout=90s")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(KafkaContainer.class);
+                    KafkaContainer container = context.getBean(KafkaContainer.class);
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaKafkaContainer.KAFKA_PORT)).isEqualTo(1234);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+                });
     }
 
     @Test

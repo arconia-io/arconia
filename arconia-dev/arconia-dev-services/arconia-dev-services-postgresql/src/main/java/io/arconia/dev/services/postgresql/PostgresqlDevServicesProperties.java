@@ -27,6 +27,11 @@ public class PostgresqlDevServicesProperties implements JdbcDevServicesPropertie
     private String imageName = "postgres:18.1-alpine";
 
     /**
+     * Port for the PostgreSQL protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
+     */
+    private int port = 0;
+
+    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
@@ -80,6 +85,14 @@ public class PostgresqlDevServicesProperties implements JdbcDevServicesPropertie
         this.imageName = imageName;
     }
 
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
     @Override
     public Map<String, String> getEnvironment() {
         return environment;

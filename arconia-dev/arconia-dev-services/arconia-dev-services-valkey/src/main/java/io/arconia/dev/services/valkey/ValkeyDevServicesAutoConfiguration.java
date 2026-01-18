@@ -28,7 +28,7 @@ public final class ValkeyDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     ValkeyContainer valkeyContainer(ValkeyDevServicesProperties properties) {
         return new ArconiaValkeyContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean());

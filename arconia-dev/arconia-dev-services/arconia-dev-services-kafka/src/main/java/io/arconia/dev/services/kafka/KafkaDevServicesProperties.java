@@ -24,6 +24,12 @@ public class KafkaDevServicesProperties implements DevServicesProperties {
      */
     private String imageName = "apache/kafka-native:4.1.1";
 
+
+    /**
+     * Port for the Kafka broker. When it's 0 (default value), a random port is assigned by Testcontainers.
+     */
+    private int port = 0;
+
     /**
      * Environment variables to set in the service.
      */
@@ -57,6 +63,14 @@ public class KafkaDevServicesProperties implements DevServicesProperties {
         this.imageName = imageName;
     }
 
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
     @Override
     public Map<String, String> getEnvironment() {
         return environment;

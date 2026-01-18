@@ -64,16 +64,21 @@ class RabbitMqDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
+            .withSystemProperties("arconia.bootstrap.mode=dev")
             .withPropertyValues(
-                    "arconia.dev.services.rabbitmq.environment.KEY=value",
-                    "arconia.dev.services.rabbitmq.shared=never",
-                    "arconia.dev.services.rabbitmq.startup-timeout=90s"
+                "arconia.dev.services.rabbitmq.port=1234",
+                "arconia.dev.services.rabbitmq.environment.KEY=value",
+                "arconia.dev.services.rabbitmq.shared=never",
+                "arconia.dev.services.rabbitmq.startup-timeout=90s"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RabbitMQContainer.class);
                 RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
                 assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+
+                container.start();
+                assertThat(container.getMappedPort(ArconiaRabbitMqContainer.RABBITMQ_WEB_UI_PORT)).isEqualTo(1234);
             });
     }
 

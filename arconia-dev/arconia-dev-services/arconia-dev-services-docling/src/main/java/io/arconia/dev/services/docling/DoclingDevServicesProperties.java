@@ -26,6 +26,11 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
     private String imageName = "ghcr.io/docling-project/docling-serve:v1.9.0";
 
     /**
+     * Port for the XXX. When it's 0 (default value), a random port is assigned by Testcontainers.
+     */
+    private int port = 0;
+
+    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
@@ -67,6 +72,15 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     @Override

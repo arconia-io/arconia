@@ -21,6 +21,7 @@ class MySqlDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("mysql");
+        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.NEVER);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -37,6 +38,7 @@ class MySqlDevServicesPropertiesTests {
         properties.setEnabled(false);
         properties.setImageName("mysql:latest");
         properties.setEnvironment(Map.of("KEY", "value"));
+        properties.setPort(ArconiaMySqlContainer.MYSQL_PORT);
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
         properties.setUsername("mytest");
@@ -53,6 +55,7 @@ class MySqlDevServicesPropertiesTests {
         assertThat(properties.getPassword()).isEqualTo("mytest");
         assertThat(properties.getDbName()).isEqualTo("mytest");
         assertThat(properties.getInitScriptPaths()).containsExactly("init.sql");
+        assertThat(properties.getPort()).isEqualTo(ArconiaMySqlContainer.MYSQL_PORT);
     }
 
 }

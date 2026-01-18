@@ -45,7 +45,9 @@ class PostgresqlDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
+            .withSystemProperties("arconia.bootstrap.mode=dev")
             .withPropertyValues(
+                "arconia.dev.services.postgresql.port=1234",
                 "arconia.dev.services.postgresql.environment.POSTGRES_USER=postgres",
                 "arconia.dev.services.postgresql.shared=never",
                 "arconia.dev.services.postgresql.startup-timeout=90s",
@@ -60,13 +62,15 @@ class PostgresqlDevServicesAutoConfigurationIT {
                 assertThat(container.getEnv()).contains("POSTGRES_USER=postgres");
                 assertThat(container.isShouldBeReused()).isFalse();
                 container.start();
+                assertThat(container.getMappedPort(ArconiaPostgreSqlContainer.POSTGRESQL_PORT)).isEqualTo(1234);
                 assertThat(container.getUsername()).isEqualTo("mytest");
                 assertThat(container.getPassword()).isEqualTo("mytest");
                 assertThat(container.getDatabaseName()).isEqualTo("mytest");
                 assertThat(container.execInContainer("psql", "-U", "mytest", "-d", "mytest", "-t", "-A", "-c",
-                        "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text")
-                        .getStdout())
-                        .contains("true");
+                    "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text")
+                    .getStdout())
+                    .contains("true");
+
             });
     }
 

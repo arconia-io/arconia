@@ -11,8 +11,14 @@ public final class ArconiaOpenTelemetryCollectorContainer extends GenericContain
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("otel/opentelemetry-collector-contrib");
 
+    /**
+     * gRPC (OTLP/gRPC) port.
+     */
     private static final int DEFAULT_GRPC_PORT = 4317;
 
+    /**
+     * HTTP (OTLP/HTTP, metrics and health) port.
+     */
     private static final int DEFAULT_HTTP_PORT = 4318;
 
     public ArconiaOpenTelemetryCollectorContainer(DockerImageName dockerImageName) {

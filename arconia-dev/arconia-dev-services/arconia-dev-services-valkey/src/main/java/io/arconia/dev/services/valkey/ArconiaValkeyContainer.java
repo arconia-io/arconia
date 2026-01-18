@@ -9,8 +9,23 @@ import io.arconia.testcontainers.valkey.ValkeyContainer;
  */
 public final class ArconiaValkeyContainer extends ValkeyContainer {
 
-    public ArconiaValkeyContainer(DockerImageName dockerImageName) {
+    private final ValkeyDevServicesProperties properties;
+
+    /**
+     * Redis-compatible RESP protocol port.
+     */
+    protected static final int VALKEY_PORT = 6379;
+
+    public ArconiaValkeyContainer(DockerImageName dockerImageName, ValkeyDevServicesProperties properties) {
         super(dockerImageName);
+        this.properties = properties;
     }
 
+    @Override
+    protected void configure() {
+        super.configure();
+        if (properties.getPort() > 0) {
+            addFixedExposedPort(properties.getPort(), VALKEY_PORT);
+        }
+    }
 }

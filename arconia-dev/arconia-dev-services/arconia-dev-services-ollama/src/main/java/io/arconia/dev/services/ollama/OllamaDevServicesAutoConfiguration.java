@@ -28,7 +28,7 @@ public final class OllamaDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     OllamaContainer ollamaContainer(OllamaDevServicesProperties properties) {
         return new ArconiaOllamaContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean());

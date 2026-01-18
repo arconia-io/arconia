@@ -30,7 +30,7 @@ public final class PhoenixDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     PhoenixContainer phoenixContainer(PhoenixDevServicesProperties properties) {
         return new ArconiaPhoenixContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean());

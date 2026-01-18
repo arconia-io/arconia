@@ -20,6 +20,7 @@ class DoclingDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("ghcr.io/docling-project/docling-serve");
+        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
@@ -32,6 +33,8 @@ class DoclingDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("ghcr.io/docling-project/docling-serve:latest");
+        properties.setPort(ArconiaDoclingServeContainer.DOCLING_PORT);
+
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setShared(DevServicesProperties.Shared.ALWAYS);
         properties.setStartupTimeout(Duration.ofMinutes(5));
@@ -39,6 +42,8 @@ class DoclingDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("ghcr.io/docling-project/docling-serve:latest");
+        assertThat(properties.getPort()).isEqualTo(ArconiaDoclingServeContainer.DOCLING_PORT);
+
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));

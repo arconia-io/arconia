@@ -67,6 +67,7 @@ class DoclingDevServicesAutoConfigurationIT {
         contextRunner
             .withSystemProperties("arconia.bootstrap.mode=dev")
             .withPropertyValues(
+                                "arconia.dev.services.docling.port=1234",
                 "arconia.dev.services.docling.environment.KEY=value",
                 "arconia.dev.services.docling.shared=never",
                 "arconia.dev.services.docling.startup-timeout=90s",
@@ -77,6 +78,8 @@ class DoclingDevServicesAutoConfigurationIT {
                 DoclingServeContainer container = context.getBean(DoclingServeContainer.class);
                 assertThat(container.getEnv()).containsExactlyInAnyOrder("KEY=value");
                 assertThat(container.isShouldBeReused()).isFalse();
+                container.start();
+                assertThat(container.getMappedPort(ArconiaDoclingServeContainer.DOCLING_PORT)).isEqualTo(1234);
             });
     }
 

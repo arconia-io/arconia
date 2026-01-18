@@ -43,16 +43,20 @@ class ValkeyDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
+                        "arconia.dev.services.valkey.port=1234",
                         "arconia.dev.services.valkey.environment.KEY=value",
                         "arconia.dev.services.valkey.shared=never",
-                        "arconia.dev.services.valkey.startup-timeout=90s"
-                )
+                        "arconia.dev.services.valkey.startup-timeout=90s")
                 .run(context -> {
                     assertThat(context).hasSingleBean(ValkeyContainer.class);
                     ValkeyContainer container = context.getBean(ValkeyContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaValkeyContainer.VALKEY_PORT)).isEqualTo(1234);
                 });
     }
 

@@ -62,17 +62,22 @@ class PulsarDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.pulsar.environment.KEY=value",
-                "arconia.dev.services.pulsar.shared=never",
-                "arconia.dev.services.pulsar.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(PulsarContainer.class);
-                var container = context.getBean(PulsarContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.pulsar.port=1234",
+                        "arconia.dev.services.pulsar.environment.KEY=value",
+                        "arconia.dev.services.pulsar.shared=never",
+                        "arconia.dev.services.pulsar.startup-timeout=90s"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(PulsarContainer.class);
+                    var container = context.getBean(PulsarContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaPulsarContainer.PULSAR_WEB_UI_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

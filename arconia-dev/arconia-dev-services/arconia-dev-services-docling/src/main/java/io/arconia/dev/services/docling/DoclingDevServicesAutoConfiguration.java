@@ -32,7 +32,7 @@ public final class DoclingDevServicesAutoConfiguration {
                     .enableUi(shouldEnableUi(properties))
                     .containerEnv(properties.getEnvironment())
                     .startupTimeout(properties.getStartupTimeout())
-                    .build())
+                    .build(), properties)
                 .withReuse(properties.getShared().asBoolean());
     }
 

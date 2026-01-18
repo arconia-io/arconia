@@ -30,7 +30,7 @@ public final class LgtmDevServicesAutoConfiguration {
     @ConditionalOnMissingBean
     LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
         return new ArconiaLgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
+                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
                 .withEnv(properties.getEnvironment())
                 .withStartupTimeout(properties.getStartupTimeout())
                 .withReuse(properties.getShared().asBoolean());

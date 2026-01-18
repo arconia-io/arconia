@@ -71,17 +71,22 @@ class PhoenixDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withPropertyValues(
-                "arconia.dev.services.phoenix.environment.KEY=value",
-                "arconia.dev.services.phoenix.shared=never",
-                "arconia.dev.services.phoenix.startup-timeout=90s"
-            )
-            .run(context -> {
-                assertThat(context).hasSingleBean(PhoenixContainer.class);
-                PhoenixContainer container = context.getBean(PhoenixContainer.class);
-                assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-            });
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.phoenix.port=1234",
+                        "arconia.dev.services.phoenix.environment.KEY=value",
+                        "arconia.dev.services.phoenix.shared=never",
+                        "arconia.dev.services.phoenix.startup-timeout=90s"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(PhoenixContainer.class);
+                    PhoenixContainer container = context.getBean(PhoenixContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.isShouldBeReused()).isFalse();
+
+                    container.start();
+                    assertThat(container.getMappedPort(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT)).isEqualTo(1234);
+                });
     }
 
     @Test

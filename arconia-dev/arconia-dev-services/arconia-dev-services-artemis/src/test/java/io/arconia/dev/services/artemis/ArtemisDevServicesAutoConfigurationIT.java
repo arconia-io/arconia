@@ -1,5 +1,7 @@
 package io.arconia.dev.services.artemis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -10,8 +12,6 @@ import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link ArtemisDevServicesAutoConfiguration}.
@@ -70,19 +70,21 @@ class ArtemisDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
+                        "arconia.dev.services.artemis.port=1234",
                         "arconia.dev.services.artemis.environment.ANONYMOUS_LOGIN=true",
                         "arconia.dev.services.artemis.shared=never",
                         "arconia.dev.services.artemis.startup-timeout=90s",
                         "arconia.dev.services.artemis.username=myusername",
-                        "arconia.dev.services.artemis.password=mypassword"
-                )
+                        "arconia.dev.services.artemis.password=mypassword")
                 .run(context -> {
                     assertThat(context).hasSingleBean(ArtemisContainer.class);
                     ArtemisContainer container = context.getBean(ArtemisContainer.class);
                     assertThat(container.getEnv()).contains("ANONYMOUS_LOGIN=true");
                     assertThat(container.isShouldBeReused()).isFalse();
                     container.start();
+                    assertThat(container.getMappedPort(ArconiaArtemisContainer.WEB_CONSOLE_PORT)).isEqualTo(1234);
                     assertThat(container.getUser()).isEqualTo("myusername");
                     assertThat(container.getPassword()).isEqualTo("mypassword");
                 });
