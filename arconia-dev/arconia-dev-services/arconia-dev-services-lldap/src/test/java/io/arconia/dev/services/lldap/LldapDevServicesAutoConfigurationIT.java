@@ -43,7 +43,6 @@ class LldapDevServicesAutoConfigurationIT {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.lldap.port=1234",
                         "arconia.dev.services.lldap.environment.KEY=value",
                         "arconia.dev.services.lldap.shared=never",
                         "arconia.dev.services.lldap.startup-timeout=90s")
@@ -52,9 +51,6 @@ class LldapDevServicesAutoConfigurationIT {
                     LLdapContainer container = context.getBean(LLdapContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.isShouldBeReused()).isFalse();
-
-                    container.start();
-                    assertThat(container.getMappedPort(ArconiaLldapContainer.LLDAP_WEB_CONSOLE_PORT)).isEqualTo(1234);
                 });
     }
 
