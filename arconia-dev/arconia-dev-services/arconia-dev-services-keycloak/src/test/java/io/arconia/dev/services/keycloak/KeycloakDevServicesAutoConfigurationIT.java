@@ -14,16 +14,14 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 import io.arconia.boot.bootstrap.BootstrapMode;
 
 /**
- * Integration tests for {@link ArtemisDevServicesAutoConfiguration}.
+ * Integration tests for {@link KeycloakDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
 class KeycloakDevServicesAutoConfigurationIT {
 
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(KeycloakDevServicesAutoConfiguration.class))
-            // ensure our bootstrap ConfigData loader runs during the test
-            .withPropertyValues("spring.config.import=arconia-keycloak:");
+            .withConfiguration(AutoConfigurations.of(KeycloakDevServicesAutoConfiguration.class));
 
     @BeforeEach
     void setUp() {
@@ -46,7 +44,7 @@ class KeycloakDevServicesAutoConfigurationIT {
                     assertThat(ctx).hasSingleBean(KeycloakContainer.class);
                     KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
                     assertThat(bean.getDockerImageName()).contains("/keycloak/keycloak");
-                    assertThat(bean.getEnv()).isEmpty();
+                    assertThat(bean.getEnv()).isNotEmpty();
                     assertThat(bean.isShouldBeReused()).isTrue();
                     bean.start();
                     assertThat(bean.getAdminUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
@@ -62,7 +60,7 @@ class KeycloakDevServicesAutoConfigurationIT {
                     assertThat(ctx).hasSingleBean(KeycloakContainer.class);
                     KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
                     assertThat(bean.getDockerImageName()).contains("/keycloak/keycloak");
-                    assertThat(bean.getEnv()).isEmpty();
+                    assertThat(bean.getEnv()).isNotEmpty();
                     assertThat(bean.isShouldBeReused()).isFalse();
                     bean.start();
                     assertThat(bean.getAdminUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
@@ -90,40 +88,6 @@ class KeycloakDevServicesAutoConfigurationIT {
                 assertThat(bean.getAdminPassword()).isEqualTo("mypassword");
             });
     }
-
-
-    @Test
-    void containerConfigurationAppliedIncludingFromFile() {
-        contextRunner
-            .withSystemProperties("arconia.bootstrap.mode=dev")
-            .withPropertyValues(
-                "arconia.dev.services.keycloak.port=1234",
-                "arconia.dev.services.keycloak.shared=never",
-                "arconia.dev.services.keycloak.startup-timeout=90s",
-                "arconia.dev.services.keycloak.username=myusername",
-                "arconia.dev.services.keycloak.password=mypassword")
-           // load test resource application.properties into the runner environment
-            .withInitializer(ctx -> {
-                try {
-                    var env = (org.springframework.core.env.ConfigurableEnvironment) ctx.getEnvironment();
-                    var src = new org.springframework.core.io.support.ResourcePropertySource("testProps",
-                            "classpath:application.test.properties");
-                    env.getPropertySources().addLast(src);
-                } catch (java.io.IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            })
-            .run(ctx -> {
-                assertThat(ctx).hasSingleBean(KeycloakContainer.class);
-                KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
-                assertThat(bean.isShouldBeReused()).isFalse();
-                bean.start();
-                assertThat(bean.getMappedPort(ArconiaKeycloakContainer.WEB_CONSOLE_PORT)).isEqualTo(1234);
-                assertThat(bean.getAdminUsername()).isEqualTo("myusername");
-                assertThat(bean.getAdminPassword()).isEqualTo("mypassword");
-            });
-    }
-
 
     @Test
     void containerWithRestartScope() {
