@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValkeyContainerIT {
 
     private static final DockerImageName IMAGE = DockerImageName
-            .parse("ghcr.io/valkey-io/valkey:9-alpine");
+            .parse("ghcr.io/valkey-io/valkey:9.0-alpine");
 
     @Test
     void containerStartsAndStopsSuccessfully() {
