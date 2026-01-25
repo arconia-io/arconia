@@ -1,46 +1,49 @@
 package io.arconia.dev.services.oracle;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.oracle.OracleContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.oracle.OracleDevServicesAutoConfiguration.OracleDevServicesRegistrar;
 
 /**
  * Auto-configuration for Oracle Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.oracle", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("oracle")
 @EnableConfigurationProperties(OracleDevServicesProperties.class)
+@Import(OracleDevServicesRegistrar.class)
 public final class OracleDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-free";
+    static class OracleDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    OracleContainer oracleContainer(OracleDevServicesProperties properties) {
-        return new ArconiaOracleContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean())
-                .withUsername(properties.getUsername())
-                .withPassword(properties.getPassword())
-                .withDatabaseName(properties.getDbName())
-                .withInitScripts(properties.getInitScriptPaths());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(OracleDevServicesProperties.CONFIG_PREFIX, OracleDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor oracleContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(OracleContainer.class);
+            registry.registerDevService(service -> service
+                    .name("oracle")
+                    .description("Oracle Dev Service")
+                    .container(container -> container
+                            .type(ArconiaOracleContainer.class)
+                            .supplier(() -> new ArconiaOracleContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared())
+                                    .withUsername(properties.getUsername())
+                                    .withPassword(properties.getPassword())
+                                    .withDatabaseName(properties.getDbName())
+                                    .withInitScripts(properties.getInitScriptPaths()))
+                    ));
+        }
+
     }
 
 }

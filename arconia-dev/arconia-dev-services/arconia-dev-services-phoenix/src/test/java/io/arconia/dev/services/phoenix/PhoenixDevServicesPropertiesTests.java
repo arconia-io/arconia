@@ -1,11 +1,12 @@
 package io.arconia.dev.services.phoenix;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,10 +21,12 @@ class PhoenixDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("arizephoenix/phoenix");
-        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+        assertThat(properties.getNetworkAliases()).isEmpty();
+        assertThat(properties.getPort()).isEqualTo(0);
+        assertThat(properties.isShared()).isTrue();
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(properties.getOtlpGrpcPort()).isEqualTo(0);
     }
 
     @Test
@@ -32,17 +35,20 @@ class PhoenixDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("arizephoenix/phoenix:latest");
-        properties.setPort(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
+        properties.setNetworkAliases(List.of("network1", "network2"));
+        properties.setPort(PhoenixContainer.HTTP_PORT);
+        properties.setShared(false);
+        properties.setStartupTimeout(Duration.ofMinutes(1));
+        properties.setOtlpGrpcPort(PhoenixContainer.GRPC_PORT);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("arizephoenix/phoenix:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+        assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
+        assertThat(properties.getPort()).isEqualTo(PhoenixContainer.HTTP_PORT);
+        assertThat(properties.isShared()).isFalse();
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(1));
     }
 
 }

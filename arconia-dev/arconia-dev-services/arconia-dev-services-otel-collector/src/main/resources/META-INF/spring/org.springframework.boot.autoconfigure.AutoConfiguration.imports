@@ -1,1 +1,1 @@
-io.arconia.dev.services.opentelemetry.OpenTelemetryDevServicesAutoConfiguration
+io.arconia.dev.services.opentelemetry.collector.OtelCollectorDevServicesAutoConfiguration

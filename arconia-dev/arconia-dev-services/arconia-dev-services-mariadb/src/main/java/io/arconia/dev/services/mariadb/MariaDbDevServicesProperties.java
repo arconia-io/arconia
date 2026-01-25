@@ -8,13 +8,15 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.core.config.JdbcDevServicesProperties;
+import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 
 /**
  * Properties for the MariaDB Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.mariadb")
+@ConfigurationProperties(prefix = MariaDbDevServicesProperties.CONFIG_PREFIX)
 public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
+
+    public static final String CONFIG_PREFIX = "arconia.dev.services.mariadb";
 
     /**
      * Whether the dev service is enabled.
@@ -27,24 +29,31 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
     private String imageName = "mariadb:12.1";
 
     /**
-     * Port for the MariaDB/MySQL SQL protocol. When it's 0 (default value), a random port is assigned by Testcontainers.
-     */
-    private int port = 0;
-
-    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * When the dev service is shared across applications.
+     * Network aliases to assign to the dev service container.
      */
-    private Shared shared = Shared.NEVER;
+    private List<String> networkAliases = new ArrayList<>();
+
+    /**
+     * Fixed port for exposing the MariaDB database port to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int port = 0;
+
+    /**
+     * Whether the dev service is shared among applications.
+     * Only applicable in dev mode.
+     */
+    private boolean shared = false;
 
     /**
      * Maximum waiting time for the service to start.
      */
-    private Duration startupTimeout = Duration.ofMinutes(2);
+    private Duration startupTimeout = Duration.ofSeconds(30);
 
     /**
      * Username to be used for connecting to the database.
@@ -86,14 +95,6 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
     }
 
     @Override
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-    @Override
     public Map<String, String> getEnvironment() {
         return environment;
     }
@@ -103,11 +104,29 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
     }
 
     @Override
-    public Shared getShared() {
+    public List<String> getNetworkAliases() {
+        return networkAliases;
+    }
+
+    public void setNetworkAliases(List<String> networkAliases) {
+        this.networkAliases = networkAliases;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    @Override
+    public boolean isShared() {
         return shared;
     }
 
-    public void setShared(Shared shared) {
+    public void setShared(boolean shared) {
         this.shared = shared;
     }
 

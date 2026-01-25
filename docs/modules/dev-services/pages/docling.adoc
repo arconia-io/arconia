@@ -1,12 +1,12 @@
 = Docling Dev Service
 :service-name: docling
 
-A service providing a https://docling-project.github.io/docling[Docling] server for development and testing purposes.
+A service providing a https://github.com/docling-project/docling-serve[Docling Serve] instance for development and testing purposes.
 
 It works with Spring Boot libraries that support Docling, including:
 
 * xref:integrations:docling.adoc[Arconia Docling]
-* xref:generative-ai:docling-document-reader.adoc[Docling Document Reader].
+* xref:generative-ai:docling-document-reader.adoc[Arconia AI Docling Document Reader].
 
 == Dependencies
 
@@ -16,9 +16,9 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
-Furthermore, the Dev Service is configured to expose the Docling UI on a specific port. The application logs will show you the URL where you can access that.
+Furthermore, the Dev Service is configured to enable the Docling UI. The application logs will show you the URL where you can access that.
 
 [source,logs]
 ----
@@ -32,29 +32,41 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-|`arconia.dev.services.docling.enabled`
-|`true`
-|Whether the dev service is enabled.
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
+| Whether the dev service is enabled.
 
-|`arconia.dev.services.docling.enable-ui`
-|`true`
-|Whether to enable the Docling UI. When enabled, sets the `DOCLING_SERVE_ENABLE_UI` environment variable to `1`. This is only considered when running the application in dev mode.
+| `arconia.dev.services.{service-name}.image-name`
+| `ghcr.io/docling-project/docling-serve`
+| Full name of the container image used in the dev service.
 
-|`arconia.dev.services.docling.api-key`
-|``
-|API key to be used for authenticating requests to the Docling Serve API.
+| `arconia.dev.services.{service-name}.environment`
+| `{}`
+| Environment variables to set in the service.
 
-|`arconia.dev.services.docling.image-name`
-|`ghcr.io/docling-project/docling-serve`
-|Full name of the container image used in the dev service.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-|`arconia.dev.services.docling.environment`
-|`{}`
-|Environment variables to set in the service. Example: `DOCLING_SERVE_ENABLE_REMOTE_SERVICES: "true"`.
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Docling Serve HTTP port to the host. When it's 0 (default), a random available port is assigned dynamically.
 
-|`arconia.dev.services.docling.shared`
-|`dev-mode`
-|When the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `30s`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.enable-ui`
+| `true`
+| Whether to enable the Docling UI when in dev mode.
+
+| `arconia.dev.services.{service-name}.api-key`
+| ``
+| API key to be used for authenticating requests to the Docling Serve API.
 
 |===
 

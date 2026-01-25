@@ -6,10 +6,13 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.pulsar.PulsarContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,10 +32,17 @@ class PulsarDevServicesAutoConfigurationIT {
     }
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(PulsarContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.pulsar.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(PulsarContainer.class));
+                .withPropertyValues("arconia.dev.services.pulsar.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(PulsarContainer.class));
     }
 
     @Test
@@ -43,7 +53,14 @@ class PulsarDevServicesAutoConfigurationIT {
                     assertThat(context).hasSingleBean(PulsarContainer.class);
                     var container = context.getBean(PulsarContainer.class);
                     assertThat(container.getDockerImageName()).contains("apachepulsar/pulsar");
+                    assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
+
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(PulsarContainer.class);
+                    assertThat(beanNames).hasSize(1);
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                            .isEqualTo("singleton");
                 });
     }
 
@@ -54,7 +71,6 @@ class PulsarDevServicesAutoConfigurationIT {
                 .run(context -> {
                     assertThat(context).hasSingleBean(PulsarContainer.class);
                     var container = context.getBean(PulsarContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apachepulsar/pulsar");
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -62,21 +78,28 @@ class PulsarDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.pulsar.port=1234",
                         "arconia.dev.services.pulsar.environment.KEY=value",
-                        "arconia.dev.services.pulsar.shared=never",
-                        "arconia.dev.services.pulsar.startup-timeout=90s"
+                        "arconia.dev.services.pulsar.network-aliases=network1"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(PulsarContainer.class);
                     var container = context.getBean(PulsarContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                });
+    }
 
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(PulsarContainer.class);
+                    PulsarContainer container = context.getBean(PulsarContainer.class);
+                    container.withStartupTimeout(Duration.ofMinutes(2));
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaPulsarContainer.PULSAR_WEB_UI_PORT)).isEqualTo(1234);
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -84,6 +107,9 @@ class PulsarDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(PulsarContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(PulsarContainer.class);

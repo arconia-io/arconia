@@ -4,7 +4,7 @@ Arconia Dev Services streamline your development workflow by automatically provi
 
 Need a database, message broker, or other infrastructure components for your application? Add the corresponding Dev Service dependency to your project. When you run your application or tests, the required services start automatically as OCI containers and are seamlessly wired into your application. Zero additional code or configuration needed.
 
-Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot's Testcontainers support], the Arconia Dev Services are designed to provide a superior developer experience by eliminating the friction of setting up and managing those services manually in your development environment.
+Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot's Testcontainers support], the Arconia Dev Services are designed to provide a great developer experience by eliminating the friction of setting up and managing those services manually in your development environment.
 
 [NOTE]
 ====
@@ -59,11 +59,12 @@ For example:
 
 === Sharing Dev Services
 
-Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default and when. There are three options:
+Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default or not.
 
-* `never`: The service is never shared across applications.
-* `dev-mode`: The service is shared across applications only if the application is running in dev mode.
-* `always`: The service is always shared across applications when enabled (dev and test mode).
+[NOTE]
+====
+Sharing Dev Services is only supported when running the application in dev mode. When running automated tests, Dev Services are never shared.
+====
 
 This capability relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. You can enable it in the `~/.testcontainers.properties` file in your home directory. If the file does not exist, you can create it. It should contain the following line:
 
@@ -75,6 +76,10 @@ testcontainers.reuse.enable=true
 === Startup Sequence
 
 The `spring.testcontainers.beans.startup` property controls the startup sequence of the Dev Services. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
+
+=== Global Configuration
+
+You can globally disable all Dev Services by setting the `arconia.dev.services.enabled` configuration property.
 
 == Supported Services
 
@@ -102,11 +107,6 @@ The `spring.testcontainers.beans.startup` property controls the startup sequence
 * xref:ollama.adoc[Ollama]
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
-
-[NOTE]
-====
-We'd love to get this feature upstream into Spring Boot. If you are interested in helping us with this effort, please express your support by adding a reaction to https://github.com/spring-projects/spring-boot/issues/46367[this GitHub issue] where we suggest contributing Arconia Dev Services to Spring Boot.
-====
 
 You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers and development-time services. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
 
@@ -184,7 +184,7 @@ Maven: `optional` with automatic exclusion via Spring Boot Maven plugin.
 | Requires explicit `@RestartScope` annotation on each service bean definition
 
 | Service Sharing
-| Built-in sharing modes via configuration properties: `never`, `dev-mode`, `always`.
+| Built-in sharing modes via configuration properties.
 | Manual configuration when defining each service bean in a test configuration class.
 
 | Startup Control

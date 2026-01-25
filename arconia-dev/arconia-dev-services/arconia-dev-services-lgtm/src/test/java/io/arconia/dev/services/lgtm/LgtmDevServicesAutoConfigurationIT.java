@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
@@ -29,6 +30,13 @@ class LgtmDevServicesAutoConfigurationIT {
     }
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
                 .withPropertyValues("arconia.dev.services.lgtm.enabled=false")
@@ -43,7 +51,7 @@ class LgtmDevServicesAutoConfigurationIT {
     }
 
     @Test
-    void containerAvailableInDevelopmentMode() {
+    void containerAvailableInDevMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
@@ -51,7 +59,13 @@ class LgtmDevServicesAutoConfigurationIT {
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
                     assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
+
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(LgtmStackContainer.class);
+                    assertThat(beanNames).hasSize(1);
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                            .isEqualTo("singleton");
                 });
     }
 
@@ -62,8 +76,6 @@ class LgtmDevServicesAutoConfigurationIT {
                 .run(context -> {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                    assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
-                    assertThat(container.getEnv()).isEmpty();
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -73,17 +85,26 @@ class LgtmDevServicesAutoConfigurationIT {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.lgtm.port=1234",
                         "arconia.dev.services.lgtm.environment.KEY=value",
-                        "arconia.dev.services.lgtm.shared=never",
-                        "arconia.dev.services.lgtm.startup-timeout=90s")
+                        "arconia.dev.services.lgtm.network-aliases=network1"
+                )
                 .run(context -> {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                });
+    }
+
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
+                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaLgtmStackContainer.GRAFANA_PORT)).isEqualTo(1234);
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -91,6 +112,9 @@ class LgtmDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(LgtmStackContainer.class);

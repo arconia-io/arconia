@@ -2,38 +2,32 @@ package io.arconia.dev.services.phoenix;
 
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 /**
- * A {@link PhoenixContainer} specialized for Arconia Dev Services.
+ * A {@link PhoenixContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaPhoenixContainer extends PhoenixContainer {
+final class ArconiaPhoenixContainer extends PhoenixContainer {
+
+    private static final String COMPATIBLE_IMAGE_NAME = "arizephoenix/phoenix";
 
     private final PhoenixDevServicesProperties properties;
 
-    /**
-     * Phoenix Web UI port.
-     */
-    protected static final int PHOENIX_WEB_UI_PORT = 6006;
-    /**
-     * Phoenix gRPC port.
-     */
-    protected static final int PHOENIX_GRPC_PORT = 4317;
-    /**
-     * Prometheus metrics port.
-     */
-    protected static final int PROMETHEUS_PORT = 9090;
-
-    public ArconiaPhoenixContainer(DockerImageName dockerImageName, PhoenixDevServicesProperties properties) {
-        super(dockerImageName);
+    public ArconiaPhoenixContainer(PhoenixDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), PHOENIX_WEB_UI_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), HTTP_PORT);
+        }
+        if (ContainerUtils.isValidPort(properties.getOtlpGrpcPort())) {
+            addFixedExposedPort(properties.getOtlpGrpcPort(), GRPC_PORT);
         }
     }
+
 }

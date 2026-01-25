@@ -1,18 +1,22 @@
 package io.arconia.dev.services.phoenix;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 
 /**
  * Properties for the Arize Phoenix Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.phoenix")
-public class PhoenixDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = PhoenixDevServicesProperties.CONFIG_PREFIX)
+public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
+
+    public static final String CONFIG_PREFIX = "arconia.dev.services.phoenix";
 
     /**
      * Whether the dev service is enabled.
@@ -22,12 +26,7 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "arizephoenix/phoenix:version-12.9-nonroot";
-
-    /**
-     * Port for the Phoenix Web UI. When it's 0 (default value), a random port is assigned by Testcontainers.
-     */
-    private int port = 0;
+    private String imageName = "arizephoenix/phoenix:version-12.31-nonroot";
 
     /**
      * Environment variables to set in the service.
@@ -35,14 +34,32 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * When the dev service is shared across applications.
+     * Network aliases to assign to the dev service container.
      */
-    private Shared shared = Shared.DEV_MODE;
+    private List<String> networkAliases = new ArrayList<>();
+
+    /**
+     * Fixed port for exposing the Phoenix OTLP HTTP and UI port to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int port = 0;
+
+    /**
+     * Whether the dev service is shared among applications.
+     * Only applicable in dev mode.
+     */
+    private boolean shared = true;
 
     /**
      * Maximum waiting time for the service to start.
      */
-    private Duration startupTimeout = Duration.ofMinutes(2);
+    private Duration startupTimeout = Duration.ofSeconds(30);
+
+    /**
+     * Fixed port for exposing the Phoenix OTLP gRPC port to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int otlpGrpcPort = 0;
 
     @Override
     public boolean isEnabled() {
@@ -63,14 +80,6 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-    @Override
     public Map<String, String> getEnvironment() {
         return environment;
     }
@@ -80,11 +89,29 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public Shared getShared() {
+    public List<String> getNetworkAliases() {
+        return networkAliases;
+    }
+
+    public void setNetworkAliases(List<String> networkAliases) {
+        this.networkAliases = networkAliases;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    @Override
+    public boolean isShared() {
         return shared;
     }
 
-    public void setShared(Shared shared) {
+    public void setShared(boolean shared) {
         this.shared = shared;
     }
 
@@ -95,6 +122,14 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
 
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    public int getOtlpGrpcPort() {
+        return otlpGrpcPort;
+    }
+
+    public void setOtlpGrpcPort(int otlpGrpcPort) {
+        this.otlpGrpcPort = otlpGrpcPort;
     }
 
 }

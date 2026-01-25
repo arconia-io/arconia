@@ -7,7 +7,10 @@ It works with Spring Boot libraries that support Ollama, including:
 
 * https://spring.io/projects/spring-ai[Spring AI]
 
-NOTE: By default, the Ollama Dev Service is disabled since it might be resource-intensive, and running native Ollama might be more suitable for development. You can enable it globally or selectively for specific tests.
+[NOTE]
+====
+If a native Ollama connection is detected, for example, if you're already running the Ollama application on your laptop, the Ollama Dev Service will not be enabled.
+====
 
 == Dependencies
 
@@ -17,7 +20,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
 == Configuring the Dev Service
 
@@ -26,21 +29,33 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-| `arconia.dev.services.ollama.enabled`
-| `false`
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
 | Whether the dev service is enabled.
 
-| `arconia.dev.services.ollama.image-name`
+| `arconia.dev.services.{service-name}.image-name`
 | `ollama/ollama`
 | Full name of the container image used in the dev service.
 
-| `arconia.dev.services.ollama.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the service. Example: `OLLAMA_NUM_PARALLEL: "4"`.
+| Environment variables to set in the service.
 
-| `arconia.dev.services.ollama.shared`
-| `always`
-| When the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
+
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Ollama inference service port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `120s`
+| Maximum waiting time for the service to start.
 |===
 
 include::partial$disabling-dev-service.adoc[]

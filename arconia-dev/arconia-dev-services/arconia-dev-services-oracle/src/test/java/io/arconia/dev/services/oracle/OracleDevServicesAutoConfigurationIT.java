@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.oracle.OracleContainer;
 
@@ -15,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link OracleDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-@Disabled("Too slow and heavy for the deployment pipeline")
 class OracleDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -23,36 +23,49 @@ class OracleDevServicesAutoConfigurationIT {
             .withConfiguration(AutoConfigurations.of(OracleDevServicesAutoConfiguration.class));
 
     @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.oracle.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(OracleContainer.class));
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(OracleContainer.class));
     }
 
     @Test
+    void autoConfigurationNotActivatedWhenDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.oracle.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(OracleContainer.class));
+    }
+
+    @Test
+    @Disabled("Too slow and heavy for the deployment pipeline.")
     void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OracleContainer.class);
             OracleContainer container = context.getBean(OracleContainer.class);
             assertThat(container.getDockerImageName()).contains("gvenzl/oracle-free");
             assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
             container.start();
             assertThat(container.getUsername()).isEqualTo("test");
             assertThat(container.getPassword()).isEqualTo("test");
             assertThat(container.getDatabaseName()).isEqualTo("test");
+            container.stop();
+
+            String[] beanNames = context.getBeanFactory().getBeanNamesForType(OracleContainer.class);
+            assertThat(beanNames).hasSize(1);
+            assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                    .isEqualTo("singleton");
         });
     }
 
     @Test
+    @Disabled("Too slow and heavy for the deployment pipeline.")
     void containerConfigurationApplied() {
         contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.oracle.port=1234",
                         "arconia.dev.services.oracle.environment.KEY=value",
-                        "arconia.dev.services.oracle.shared=never",
-                        "arconia.dev.services.oracle.startup-timeout=90s",
+                        "arconia.dev.services.oracle.network-aliases=network1",
                         "arconia.dev.services.oracle.username=mytest",
                         "arconia.dev.services.oracle.password=mytest",
                         "arconia.dev.services.oracle.db-name=mytest",
@@ -62,14 +75,25 @@ class OracleDevServicesAutoConfigurationIT {
                     assertThat(context).hasSingleBean(OracleContainer.class);
                     OracleContainer container = context.getBean(OracleContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
-
+                    assertThat(container.getNetworkAliases()).contains("network1");
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaOracleContainer.ORACLE_PORT)).isEqualTo(1234);
                     assertThat(container.getUsername()).isEqualTo("mytest");
                     assertThat(container.getPassword()).isEqualTo("mytest");
                     assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                    container.stop();
+                });
+    }
 
+    @Test
+    @Disabled("Too slow and heavy for the deployment pipeline.")
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OracleContainer.class);
+                    OracleContainer container = context.getBean(OracleContainer.class);
+                    container.start();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -77,6 +101,9 @@ class OracleDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(OracleContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(OracleContainer.class);

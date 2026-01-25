@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.testcontainers.valkey.ValkeyContainer;
@@ -22,6 +23,13 @@ class ValkeyDevServicesAutoConfigurationIT {
             .withConfiguration(AutoConfigurations.of(ValkeyDevServicesAutoConfiguration.class));
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(ValkeyContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
                 .withPropertyValues("arconia.dev.services.valkey.enabled=false")
@@ -36,27 +44,40 @@ class ValkeyDevServicesAutoConfigurationIT {
                     ValkeyContainer container = context.getBean(ValkeyContainer.class);
                     assertThat(container.getDockerImageName()).contains("ghcr.io/valkey-io/valkey");
                     assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isFalse();
+
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(ValkeyContainer.class);
+                    assertThat(beanNames).hasSize(1);
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                            .isEqualTo("singleton");
                 });
     }
 
     @Test
     void containerConfigurationApplied() {
         contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.valkey.port=1234",
                         "arconia.dev.services.valkey.environment.KEY=value",
-                        "arconia.dev.services.valkey.shared=never",
-                        "arconia.dev.services.valkey.startup-timeout=90s")
+                        "arconia.dev.services.valkey.network-aliases=network1"
+                )
                 .run(context -> {
                     assertThat(context).hasSingleBean(ValkeyContainer.class);
                     ValkeyContainer container = context.getBean(ValkeyContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                });
+    }
 
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ValkeyContainer.class);
+                    ValkeyContainer container = context.getBean(ValkeyContainer.class);
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaValkeyContainer.VALKEY_PORT)).isEqualTo(1234);
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -64,6 +85,9 @@ class ValkeyDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(ValkeyContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(ValkeyContainer.class);

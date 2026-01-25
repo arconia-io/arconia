@@ -10,9 +10,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api("org.springframework.ai:spring-ai-spring-boot-testcontainers") {
-        exclude group: "org.springframework.boot", module : "spring-boot-starter-data-mongodb"
-    }
     api "org.springframework.boot:spring-boot-starter"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:testcontainers-mongodb"
@@ -22,12 +19,6 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-    }
 }
 
 publishing {

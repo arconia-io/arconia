@@ -94,10 +94,10 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
                 .orElse(false);
         openTelemetryAppender.setCaptureLoggerContext(captureLoggerContext);
 
-        boolean captureLogstashAttributes = binder
+        boolean captureLogstashMarkerAttributes = binder
                 .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logstash-marker-attributes", Boolean.class)
                 .orElse(false);
-        openTelemetryAppender.setCaptureLogstashMarkerAttributes(captureLogstashAttributes);
+        openTelemetryAppender.setCaptureLogstashMarkerAttributes(captureLogstashMarkerAttributes);
 
         boolean captureMarkerAttribute = binder
                 .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-marker-attribute", Boolean.class)

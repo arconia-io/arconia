@@ -1,42 +1,45 @@
 package io.arconia.dev.services.kafka;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.kafka.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.kafka.KafkaDevServicesAutoConfiguration.KafkaDevServicesRegistrar;
 
 /**
  * Auto-configuration for Kafka Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.kafka", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("kafka")
 @EnableConfigurationProperties(KafkaDevServicesProperties.class)
+@Import(KafkaDevServicesRegistrar.class)
 public final class KafkaDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "apache/kafka-native";
+    static class KafkaDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    KafkaContainer kafkaContainer(KafkaDevServicesProperties properties) {
-        return new ArconiaKafkaContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(KafkaDevServicesProperties.CONFIG_PREFIX, KafkaDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor kafkaContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(KafkaContainer.class);
+            registry.registerDevService(service -> service
+                    .name("kafka")
+                    .description("Kafka Dev Service")
+                    .container(container -> container
+                            .type(ArconiaKafkaContainer.class)
+                            .supplier(() -> new ArconiaKafkaContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared()))
+                    ));
+        }
+
     }
 
 }

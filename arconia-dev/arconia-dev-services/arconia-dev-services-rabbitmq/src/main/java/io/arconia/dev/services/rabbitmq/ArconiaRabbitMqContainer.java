@@ -7,35 +7,36 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * A {@link RabbitMQContainer} specialized for Arconia Dev Services.
- */
-public final class ArconiaRabbitMqContainer extends RabbitMQContainer {
+import io.arconia.dev.services.core.util.ContainerUtils;
 
-    private final RabbitMqDevServicesProperties properties;
+/**
+ * A {@link RabbitMQContainer} configured for use with Arconia Dev Services.
+ */
+final class ArconiaRabbitMqContainer extends RabbitMQContainer {
+
+    private static final String COMPATIBLE_IMAGE_NAME = "rabbitmq";
 
     private static final Logger logger = LoggerFactory.getLogger(ArconiaRabbitMqContainer.class);
 
-    /**
-     * Management web UI port.
-     */
-    protected static final int RABBITMQ_WEB_UI_PORT = 15672;
+    private final RabbitMqDevServicesProperties properties;
 
-    /**
-     * AMQP messaging protocol port.
-     */
-    protected static final int RABBITMQ_PORT = 5672;
+    static final int AMQP_PORT = 5672;
 
-    public ArconiaRabbitMqContainer(DockerImageName dockerImageName, RabbitMqDevServicesProperties properties) {
-        super(dockerImageName);
+    static final int HTTP_PORT = 15672;
+
+    public ArconiaRabbitMqContainer(RabbitMqDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), RABBITMQ_WEB_UI_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), AMQP_PORT);
+        }
+        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+            addFixedExposedPort(properties.getManagementConsolePort(), HTTP_PORT);
         }
     }
 
