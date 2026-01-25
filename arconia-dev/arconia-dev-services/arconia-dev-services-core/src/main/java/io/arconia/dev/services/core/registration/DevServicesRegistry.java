@@ -156,18 +156,17 @@ public class DevServicesRegistry {
      */
     private static ContainerInfo extractContainerInfoById(String containerId) {
         try {
-            // Get Docker client from Testcontainers
-            com.github.dockerjava.api.model.Container dockerContainer;
-            try (DockerClient dockerClient = DockerClientFactory.lazyClient()) {
-                // Query Docker for the container using its ID
-                dockerContainer = dockerClient.listContainersCmd()
-                        .withIdFilter(Collections.singleton(containerId))
-                        .withShowAll(true)
-                        .exec()
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Container not found with ID: " + containerId));
-            }
+            // Get Docker client from Testcontainers. We don't close the connection as it's handled
+            // globally by the DockerClientFactory.
+            DockerClient dockerClient = DockerClientFactory.lazyClient();
+            // Query Docker for the container using its ID
+            com.github.dockerjava.api.model.Container dockerContainer = dockerClient.listContainersCmd()
+                    .withIdFilter(Collections.singleton(containerId))
+                    .withShowAll(true)
+                    .exec()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Container not found with ID: " + containerId));
 
             List<String> names = List.of(dockerContainer.getNames());
             String imageName = dockerContainer.getImage();
