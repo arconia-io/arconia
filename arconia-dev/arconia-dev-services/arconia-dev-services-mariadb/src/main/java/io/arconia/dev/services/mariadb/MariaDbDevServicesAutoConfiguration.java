@@ -1,46 +1,49 @@
 package io.arconia.dev.services.mariadb;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.mariadb.MariaDBContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.MariaDbDevServicesRegistrar;
 
 /**
  * Auto-configuration for MariaDB Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.mariadb", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("mariadb")
 @EnableConfigurationProperties(MariaDbDevServicesProperties.class)
+@Import(MariaDbDevServicesRegistrar.class)
 public final class MariaDbDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mariadb";
+    static class MariaDbDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    MariaDBContainer mariaDbContainer(MariaDbDevServicesProperties properties) {
-        return new ArconiaMariaDbContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean())
-                .withUsername(properties.getUsername())
-                .withPassword(properties.getPassword())
-                .withDatabaseName(properties.getDbName())
-                .withInitScripts(properties.getInitScriptPaths());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(MariaDbDevServicesProperties.CONFIG_PREFIX, MariaDbDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor mariaDbContainerContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(MariaDBContainer.class);
+            registry.registerDevService(service -> service
+                    .name("mariadb")
+                    .description("MariaDB Dev Service")
+                    .container(container -> container
+                            .type(ArconiaMariaDbContainer.class)
+                            .supplier(() -> new ArconiaMariaDbContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared())
+                                    .withUsername(properties.getUsername())
+                                    .withPassword(properties.getPassword())
+                                    .withDatabaseName(properties.getDbName())
+                                    .withInitScripts(properties.getInitScriptPaths()))
+                    ));
+        }
+
     }
 
 }

@@ -3,28 +3,28 @@ package io.arconia.dev.services.postgresql;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * A {@link PostgreSQLContainer} specialized for Arconia Dev Services.
+ * A {@link PostgreSQLContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
+final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
+
+    private static final String COMPATIBLE_IMAGE_NAME = "postgres";
 
     private final PostgresqlDevServicesProperties properties;
 
-    /**
-     * PostgreSQL SQL protocol port.
-     */
-    protected static final int POSTGRESQL_PORT = 5432;
-
-    public ArconiaPostgreSqlContainer(DockerImageName dockerImageName, PostgresqlDevServicesProperties properties) {
-        super(dockerImageName);
+    public ArconiaPostgreSqlContainer(PostgresqlDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
+        if (ContainerUtils.isValidPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), POSTGRESQL_PORT);
         }
     }
+
 }

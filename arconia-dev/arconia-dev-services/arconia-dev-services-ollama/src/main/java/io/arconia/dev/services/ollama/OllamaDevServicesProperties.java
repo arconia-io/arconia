@@ -1,23 +1,27 @@
 package io.arconia.dev.services.ollama;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 
 /**
  * Properties for the Ollama Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.ollama")
-public class OllamaDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = OllamaDevServicesProperties.CONFIG_PREFIX)
+public class OllamaDevServicesProperties implements BaseDevServicesProperties {
+
+    public static final String CONFIG_PREFIX = "arconia.dev.services.ollama";
 
     /**
      * Whether the dev service is enabled.
      */
-    private boolean enabled = false;
+    private boolean enabled = true;
 
     /**
      * Full name of the container image used in the dev service.
@@ -25,19 +29,26 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     private String imageName = "ollama/ollama:0.13.3";
 
     /**
-     * Port for the Ollama HTTP API. When it's 0 (default value), a random port is assigned by Testcontainers.
-     */
-    private int port = 0;
-
-    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * When the dev service is shared across applications.
+     * Network aliases to assign to the dev service container.
      */
-    private Shared shared = Shared.ALWAYS;
+    private List<String> networkAliases = new ArrayList<>();
+
+    /**
+     * Fixed port for exposing the Ollama inference service port to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int port = 0;
+
+    /**
+     * Whether the dev service is shared among applications.
+     * Only applicable in dev mode.
+     */
+    private boolean shared = true;
 
     /**
      * Maximum waiting time for the service to start.
@@ -63,14 +74,6 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-    @Override
     public Map<String, String> getEnvironment() {
         return environment;
     }
@@ -80,11 +83,29 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public Shared getShared() {
+    public List<String> getNetworkAliases() {
+        return networkAliases;
+    }
+
+    public void setNetworkAliases(List<String> networkAliases) {
+        this.networkAliases = networkAliases;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    @Override
+    public boolean isShared() {
         return shared;
     }
 
-    public void setShared(Shared shared) {
+    public void setShared(boolean shared) {
         this.shared = shared;
     }
 

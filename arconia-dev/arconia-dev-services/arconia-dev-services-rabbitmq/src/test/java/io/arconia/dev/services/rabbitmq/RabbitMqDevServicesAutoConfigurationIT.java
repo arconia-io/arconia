@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
@@ -29,10 +30,17 @@ class RabbitMqDevServicesAutoConfigurationIT {
     }
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(RabbitMQContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
-            .withPropertyValues("arconia.dev.services.rabbitmq.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(RabbitMQContainer.class));
+                .withPropertyValues("arconia.dev.services.rabbitmq.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(RabbitMQContainer.class));
     }
 
     @Test
@@ -44,7 +52,13 @@ class RabbitMqDevServicesAutoConfigurationIT {
                     RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
                     assertThat(container.getDockerImageName()).contains("rabbitmq");
                     assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
+
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(RabbitMQContainer.class);
+                    assertThat(beanNames).hasSize(1);
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                            .isEqualTo("singleton");
                 });
     }
 
@@ -55,8 +69,6 @@ class RabbitMqDevServicesAutoConfigurationIT {
                 .run(context -> {
                     assertThat(context).hasSingleBean(RabbitMQContainer.class);
                     RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
-                    assertThat(container.getDockerImageName()).contains("rabbitmq");
-                    assertThat(container.getEnv()).isEmpty();
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -64,28 +76,37 @@ class RabbitMqDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-            .withSystemProperties("arconia.bootstrap.mode=dev")
             .withPropertyValues(
-                "arconia.dev.services.rabbitmq.port=1234",
-                "arconia.dev.services.rabbitmq.environment.KEY=value",
-                "arconia.dev.services.rabbitmq.shared=never",
-                "arconia.dev.services.rabbitmq.startup-timeout=90s"
+                    "arconia.dev.services.rabbitmq.environment.KEY=value",
+                    "arconia.dev.services.rabbitmq.network-aliases=network1"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RabbitMQContainer.class);
                 RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
                 assertThat(container.getEnv()).contains("KEY=value");
-                assertThat(container.isShouldBeReused()).isFalse();
-
-                container.start();
-                assertThat(container.getMappedPort(ArconiaRabbitMqContainer.RABBITMQ_WEB_UI_PORT)).isEqualTo(1234);
+                assertThat(container.getNetworkAliases()).contains("network1");
             });
+    }
+
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(RabbitMQContainer.class);
+                    RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
+                    container.start();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
+                });
     }
 
     @Test
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(RabbitMQContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(RabbitMQContainer.class);

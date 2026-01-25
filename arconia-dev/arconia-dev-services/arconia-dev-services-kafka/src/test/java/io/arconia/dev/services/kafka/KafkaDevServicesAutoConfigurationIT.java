@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.kafka.KafkaContainer;
 
@@ -29,6 +30,13 @@ class KafkaDevServicesAutoConfigurationIT {
     }
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(KafkaContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
                 .withPropertyValues("arconia.dev.services.kafka.enabled=false")
@@ -36,14 +44,21 @@ class KafkaDevServicesAutoConfigurationIT {
     }
 
     @Test
-    void containerAvailableInDevelopmentMode() {
+    void containerAvailableInDevMode() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
                     assertThat(context).hasSingleBean(KafkaContainer.class);
                     KafkaContainer container = context.getBean(KafkaContainer.class);
                     assertThat(container.getDockerImageName()).contains("apache/kafka-native");
+                    assertThat(container.getEnv()).isNotEmpty(); // Configured by Testcontainers.
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
+
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(KafkaContainer.class);
+                    assertThat(beanNames).hasSize(1);
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                            .isEqualTo("singleton");
                 });
     }
 
@@ -54,7 +69,6 @@ class KafkaDevServicesAutoConfigurationIT {
                 .run(context -> {
                     assertThat(context).hasSingleBean(KafkaContainer.class);
                     KafkaContainer container = context.getBean(KafkaContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apache/kafka-native");
                     assertThat(container.isShouldBeReused()).isFalse();
                 });
     }
@@ -62,19 +76,27 @@ class KafkaDevServicesAutoConfigurationIT {
     @Test
     void containerConfigurationApplied() {
         contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.kafka.port=1234",
                         "arconia.dev.services.kafka.environment.KEY=value",
-                        "arconia.dev.services.kafka.shared=never",
-                        "arconia.dev.services.kafka.startup-timeout=90s")
+                        "arconia.dev.services.kafka.network-aliases=network1"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(KafkaContainer.class);
+                    KafkaContainer container = context.getBean(KafkaContainer.class);
+                    assertThat(container.getEnv()).contains("KEY=value");
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                });
+    }
+
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
                 .run(context -> {
                     assertThat(context).hasSingleBean(KafkaContainer.class);
                     KafkaContainer container = context.getBean(KafkaContainer.class);
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaKafkaContainer.KAFKA_PORT)).isEqualTo(1234);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -82,6 +104,9 @@ class KafkaDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(KafkaContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(KafkaContainer.class);

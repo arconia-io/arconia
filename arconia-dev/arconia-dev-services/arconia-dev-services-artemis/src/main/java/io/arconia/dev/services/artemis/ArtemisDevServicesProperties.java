@@ -1,18 +1,22 @@
 package io.arconia.dev.services.artemis;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 
 /**
  * Properties for the ApacheMQ Artemis Dev Services.
  */
-@ConfigurationProperties(prefix = "arconia.dev.services.artemis")
-public class ArtemisDevServicesProperties implements DevServicesProperties {
+@ConfigurationProperties(prefix = ArtemisDevServicesProperties.CONFIG_PREFIX)
+public class ArtemisDevServicesProperties implements BaseDevServicesProperties {
+
+    public static final String CONFIG_PREFIX = "arconia.dev.services.artemis";
 
     static final String DEFAULT_USERNAME = "artemis";
     static final String DEFAULT_PASSWORD = "artemis";
@@ -28,24 +32,37 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     private String imageName = "apache/activemq-artemis:2.44.0-alpine";
 
     /**
-     * Port for the Artemis web ui. When it's 0 (default value), a random port is assigned by Testcontainers.
-     */
-    private int port = 0;
-
-    /**
      * Environment variables to set in the service.
      */
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * When the dev service is shared across applications.
+     * Network aliases to assign to the dev service container.
      */
-    private Shared shared = Shared.DEV_MODE;
+    private List<String> networkAliases = new ArrayList<>();
+
+    /**
+     * Fixed port for exposing the Artemis' TCP port to the host (CORE, MQTT, AMQP, HORNETQ, STOMP, OPENWIRE).
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int port = 0;
+
+    /**
+     * Whether the dev service is shared among applications.
+     * Only applicable in dev mode.
+     */
+    private boolean shared = true;
 
     /**
      * Maximum waiting time for the service to start.
      */
-    private Duration startupTimeout = Duration.ofMinutes(2);
+    private Duration startupTimeout = Duration.ofSeconds(30);
+
+    /**
+     * Fixed port for exposing the Artemis Management Console to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int managementConsolePort = 0;
 
     /**
      * Username for the Artemis administrator user.
@@ -76,14 +93,6 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-    @Override
     public Map<String, String> getEnvironment() {
         return environment;
     }
@@ -93,11 +102,29 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public Shared getShared() {
+    public List<String> getNetworkAliases() {
+        return networkAliases;
+    }
+
+    public void setNetworkAliases(List<String> networkAliases) {
+        this.networkAliases = networkAliases;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    @Override
+    public boolean isShared() {
         return shared;
     }
 
-    public void setShared(Shared shared) {
+    public void setShared(boolean shared) {
         this.shared = shared;
     }
 
@@ -108,6 +135,14 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
 
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    public int getManagementConsolePort() {
+        return managementConsolePort;
+    }
+
+    public void setManagementConsolePort(int managementConsolePort) {
+        this.managementConsolePort = managementConsolePort;
     }
 
     public String getUsername() {

@@ -3,28 +3,30 @@ package io.arconia.dev.services.mongodb.atlas;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * A {@link MongoDBAtlasLocalContainer} specialized for Arconia Dev Services.
+ * A {@link MongoDBAtlasLocalContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalContainer {
+final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalContainer {
+
+    private static final String COMPATIBLE_IMAGE_NAME = "mongodb/mongodb-atlas-local";
 
     private final MongoDbAtlasDevServicesProperties properties;
 
-    /**
-     * Atlas-compatible MongoDB protocol port.
-     */
-    protected static final int MONGODB_ATLAS_PORT = 27017;
+    static final int MONGODB_PORT = 27017;
 
-    public ArconiaMongoDbAtlasLocalContainer(DockerImageName dockerImageName, MongoDbAtlasDevServicesProperties properties) {
-        super(dockerImageName);
+    public ArconiaMongoDbAtlasLocalContainer(MongoDbAtlasDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), MONGODB_ATLAS_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), MONGODB_PORT);
         }
     }
+
 }

@@ -1,46 +1,49 @@
 package io.arconia.dev.services.mysql;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.mysql.MySQLContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.MySqlDevServicesRegistrar;
 
 /**
  * Auto-configuration for MySQL Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.mysql", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("mysql")
 @EnableConfigurationProperties(MySqlDevServicesProperties.class)
+@Import(MySqlDevServicesRegistrar.class)
 public final class MySqlDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mysql";
+    static class MySqlDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    MySQLContainer mysqlContainer(MySqlDevServicesProperties properties) {
-        return new ArconiaMySqlContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean())
-                .withUsername(properties.getUsername())
-                .withPassword(properties.getPassword())
-                .withDatabaseName(properties.getDbName())
-                .withInitScripts(properties.getInitScriptPaths());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(MySqlDevServicesProperties.CONFIG_PREFIX, MySqlDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor mysqlContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(MySQLContainer.class);
+            registry.registerDevService(service -> service
+                    .name("mysql")
+                    .description("MySQL Dev Service")
+                    .container(container -> container
+                            .type(ArconiaMySqlContainer.class)
+                            .supplier(() -> new ArconiaMySqlContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared())
+                                    .withUsername(properties.getUsername())
+                                    .withPassword(properties.getPassword())
+                                    .withDatabaseName(properties.getDbName())
+                                    .withInitScripts(properties.getInitScriptPaths()))
+                    ));
+        }
+
     }
 
 }

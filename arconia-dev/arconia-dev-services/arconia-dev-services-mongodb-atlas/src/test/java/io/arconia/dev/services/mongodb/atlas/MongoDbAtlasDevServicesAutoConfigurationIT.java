@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 
@@ -21,6 +22,13 @@ class MongoDbAtlasDevServicesAutoConfigurationIT {
             .withConfiguration(AutoConfigurations.of(MongoDbAtlasDevServicesAutoConfiguration.class));
 
     @Test
+    void autoConfigurationNotActivatedWhenGloballyDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MongoDBAtlasLocalContainer.class));
+    }
+
+    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         contextRunner
                 .withPropertyValues("arconia.dev.services.mongodb-atlas.enabled=false")
@@ -31,30 +39,43 @@ class MongoDbAtlasDevServicesAutoConfigurationIT {
     void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
-            MongoDBAtlasLocalContainer atlasLocalContainer = context.getBean(MongoDBAtlasLocalContainer.class);
-            assertThat(atlasLocalContainer.getDockerImageName()).contains("mongodb/mongodb-atlas-local");
-            assertThat(atlasLocalContainer.getEnv()).isEmpty();
-            assertThat(atlasLocalContainer.isShouldBeReused()).isFalse();
+            MongoDBAtlasLocalContainer container = context.getBean(MongoDBAtlasLocalContainer.class);
+            assertThat(container.getDockerImageName()).contains("mongodb/mongodb-atlas-local");
+            assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
+            assertThat(container.isShouldBeReused()).isFalse();
+
+            String[] beanNames = context.getBeanFactory().getBeanNamesForType(MongoDBAtlasLocalContainer.class);
+            assertThat(beanNames).hasSize(1);
+            assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
+                    .isEqualTo("singleton");
         });
     }
 
     @Test
     void containerConfigurationApplied() {
         contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
-                        "arconia.dev.services.mongodb-atlas.port=1234",
                         "arconia.dev.services.mongodb-atlas.environment.KEY=value",
-                        "arconia.dev.services.mongodb-atlas.shared=never",
-                        "arconia.dev.services.mongodb-atlas.startup-timeout=90s")
+                        "arconia.dev.services.mongodb-atlas.network-aliases=network1"
+                )
                 .run(context -> {
                     assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
                     MongoDBAtlasLocalContainer container = context.getBean(MongoDBAtlasLocalContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                });
+    }
 
+    @Test
+    void containerStartsAndStopsSuccessfully() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
+                    MongoDBAtlasLocalContainer container = context.getBean(MongoDBAtlasLocalContainer.class);
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaMongoDbAtlasLocalContainer.MONGODB_ATLAS_PORT)).isEqualTo(1234);
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    container.stop();
                 });
     }
 
@@ -62,6 +83,9 @@ class MongoDbAtlasDevServicesAutoConfigurationIT {
     void containerWithRestartScope() {
         contextRunner
                 .withClassLoader(this.getClass().getClassLoader())
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
+                })
                 .run(context -> {
                     assertThat(context).hasSingleBean(MongoDBAtlasLocalContainer.class);
                     String[] beanNames = context.getBeanFactory().getBeanNamesForType(MongoDBAtlasLocalContainer.class);

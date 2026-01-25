@@ -1,11 +1,11 @@
 package io.arconia.dev.services.pulsar;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import org.testcontainers.pulsar.PulsarContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,10 +20,12 @@ class PulsarDevServicesPropertiesTests {
 
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getImageName()).contains("apachepulsar/pulsar");
-        assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+        assertThat(properties.getNetworkAliases()).isEmpty();
+        assertThat(properties.getPort()).isEqualTo(0);
+        assertThat(properties.isShared()).isTrue();
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(properties.getManagementConsolePort()).isEqualTo(0);
     }
 
     @Test
@@ -32,17 +34,21 @@ class PulsarDevServicesPropertiesTests {
 
         properties.setEnabled(false);
         properties.setImageName("apachepulsar/pulsar:latest");
-        properties.setPort(ArconiaPulsarContainer.PULSAR_PORT);
         properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
+        properties.setNetworkAliases(List.of("network1", "network2"));
+        properties.setPort(PulsarContainer.BROKER_PORT);
+        properties.setShared(false);
+        properties.setStartupTimeout(Duration.ofMinutes(1));
+        properties.setManagementConsolePort(PulsarContainer.BROKER_HTTP_PORT);
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("apachepulsar/pulsar:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaPulsarContainer.PULSAR_PORT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+        assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
+        assertThat(properties.getPort()).isEqualTo(PulsarContainer.BROKER_PORT);
+        assertThat(properties.isShared()).isFalse();
+        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(1));
+        assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaPulsarContainer.BROKER_HTTP_PORT);
     }
 
 }

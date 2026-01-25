@@ -12,14 +12,12 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("redis");
 
-    private static final int DEFAULT_REDIS_PORT = 6379;
+    public static final int REDIS_PORT = 6379;
 
     public RedisContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        addExposedPorts(DEFAULT_REDIS_PORT);
-
+        addExposedPorts(REDIS_PORT);
         waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
     }
 
@@ -28,7 +26,7 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
     }
 
     public Integer getRedisPort() {
-        return getMappedPort(DEFAULT_REDIS_PORT);
+        return getMappedPort(REDIS_PORT);
     }
 
 }

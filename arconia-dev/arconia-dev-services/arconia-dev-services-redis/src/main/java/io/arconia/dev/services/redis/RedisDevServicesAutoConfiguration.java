@@ -1,42 +1,46 @@
 package io.arconia.dev.services.redis;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
-import io.arconia.testcontainers.redis.RedisContainer;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.RedisDevServicesRegistrar;
 
 /**
  * Auto-configuration for Redis Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.redis", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("redis")
 @EnableConfigurationProperties(RedisDevServicesProperties.class)
+@Import(RedisDevServicesRegistrar.class)
 public final class RedisDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "redis";
+    static class RedisDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection("redis")
-    @ConditionalOnMissingBean
-    RedisContainer redisContainer(RedisDevServicesProperties properties) {
-        return new ArconiaRedisContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(RedisDevServicesProperties.CONFIG_PREFIX, RedisDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor redisContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(RedisContainer.class);
+            registry.registerDevService(service -> service
+                    .name("redis")
+                    .description("Redis Dev Service")
+                    .container(container -> container
+                            .type(ArconiaRedisContainer.class)
+                            .serviceConnectionName("redis")
+                            .supplier(() -> new ArconiaRedisContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared()))
+                    ));
+        }
+
     }
 
 }

@@ -1,0 +1,27 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api "org.jspecify:jspecify"
+
+    implementation project(":arconia-core")
+    implementation "org.springframework:spring-core"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services API"
+                description = "Arconia Dev Services API."
+            }
+        }
+    }
+}

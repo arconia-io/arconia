@@ -1,42 +1,46 @@
 package io.arconia.dev.services.rabbitmq;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.rabbitmq.RabbitMQContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.rabbitmq.RabbitMqDevServicesAutoConfiguration.RabbitMqDevServicesRegistrar;
 
 /**
  * Auto-configuration for RabbitMQ Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.rabbitmq", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("rabbitmq")
 @EnableConfigurationProperties(RabbitMqDevServicesProperties.class)
+@Import(RabbitMqDevServicesRegistrar.class)
 public final class RabbitMqDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "rabbitmq";
+    static class RabbitMqDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    RabbitMQContainer rabbitmqContainer(RabbitMqDevServicesProperties properties) {
-        return new ArconiaRabbitMqContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(RabbitMqDevServicesProperties.CONFIG_PREFIX, RabbitMqDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor rabbitmqContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(RabbitMQContainer.class);
+            registry.registerDevService(service -> service
+                    .name("rabbitmq")
+                    .description("RabbitMQ Dev Service")
+                    .container(container -> container
+                            .type(ArconiaRabbitMqContainer.class)
+                            .supplier(() -> new ArconiaRabbitMqContainer(properties)
+                                    .withEnv(properties.getEnvironment())
+                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
+                                    .withStartupTimeout(properties.getStartupTimeout())
+                                    .withReuse(isDevMode() && properties.isShared()))
+                    )
+            );
+        }
+
     }
 
 }
