@@ -26,18 +26,15 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
 == Accessing Grafana
 
-The application logs will show you the URL where you can access the Grafana observability platform and information about logs, metrics, and traces being exported to the platform.
+The application logs will show you the URL where you can access the Grafana UI.
 
 [source,logs]
 ----
-...o.t.grafana.LgtmStackContainer           : Access to the Grafana dashboard: http://localhost:38125
-...s.l.e.o.OtlpLoggingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: http://localhost:39117/v1/logs
-...s.m.e.o.OtlpMetricsExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: http://localhost:39117/v1/metrics
-...s.t.e.o.OtlpTracingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: http://localhost:39117/v1/traces
+...o.t.grafana.LgtmStackContainer           : Access to the Grafana dashboard: http://localhost:<port>
 ----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
@@ -49,25 +46,41 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-|`arconia.dev.services.lgtm.enabled`
+| `arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-|`arconia.dev.services.lgtm.image-name`
+|`arconia.dev.services.{service-name}.image-name`
 | `grafana/otel-lgtm`
 | Full name of the container image used in the dev service.
 
-|`arconia.dev.services.lgtm.environment`
+|`arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the container. Example: `ENABLE_LOGS_ALL: "true"`.
+| Environment variables to set in the container.
 
-|`arconia.dev.services.lgtm.shared`
-| `dev-mode`
-| When the container used in the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-| `arconia.dev.services.lgtm.startup-timeout`
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Grafana port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
 | `120s`
 | Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.otlp-grpc-port`
+| `0`
+| Fixed port for exposing the OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.otlp-http-port`
+| `0`
+| Fixed port for exposing the OTLP HTTP port to the host. When it's 0 (default), a random available port is assigned dynamically.
 |===
 
 include::partial$disabling-dev-service.adoc[]

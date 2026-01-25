@@ -23,39 +23,47 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-| `arconia.dev.services.mariadb.enabled`
+| `arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-| `arconia.dev.services.mariadb.image-name`
+| `arconia.dev.services.{service-name}.image-name`
 | `mariadb`
 | Full name of the container image used in the dev service.
 
-| `arconia.dev.services.mariadb.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
 | Environment variables to set in the container.
 
-| `arconia.dev.services.mariadb.shared`
-| `never`
-| When the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-| `arconia.dev.services.mariadb.startup-timeout`
-| `120s`
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the MariaDB database port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.shared`
+| `false`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `30s`
 | Maximum waiting time for the service to start.
 
-| `arconia.dev.services.mariadb.username`
+| `arconia.dev.services.{service-name}.username`
 | `test`
 | Username to be used for connecting to the database.
 
-| `arconia.dev.services.mariadb.password`
+| `arconia.dev.services.{service-name}.password`
 | `test`
 | Password to be used for connecting to the database.
 
-| `arconia.dev.services.mariadb.db-name`
+| `arconia.dev.services.{service-name}.db-name`
 | `test`
 | Name of the database to be created.
 
-| `arconia.dev.services.mariadb.init-script-paths`
+| `arconia.dev.services.{service-name}.init-script-paths`
 | `[]`
 | List of paths to SQL scripts to be loaded from the classpath and applied to the database for initialization.
 

@@ -24,39 +24,47 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-| `arconia.dev.services.postgresql.enabled`
+| `arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-| `arconia.dev.services.postgresql.image-name`
-| `postgres`
-| Full name of the container image used in the dev service.
+| `arconia.dev.services.{service-name}.image-name`
+| ``
+| Full name of the container image used in the dev service. It defaults to a `postgres` or `pgvector/pgvector` image based on whether Spring AI PGVector is detected in the project.
 
-| `arconia.dev.services.postgresql.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
 | Environment variables to set in the service.
 
-| `arconia.dev.services.postgresql.shared`
-| `never`
-| When the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-| `arconia.dev.services.postgresql.startup-timeout`
-| `120s`
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the PostgreSQL database port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.shared`
+| `false`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `30s`
 | Maximum waiting time for the service to start.
 
-| `arconia.dev.services.postgresql.username`
+| `arconia.dev.services.{service-name}.username`
 | `test`
 | Username to be used for connecting to the database.
 
-| `arconia.dev.services.postgresql.password`
+| `arconia.dev.services.{service-name}.password`
 | `test`
 | Password to be used for connecting to the database.
 
-| `arconia.dev.services.postgresql.db-name`
+| `arconia.dev.services.{service-name}.db-name`
 | `test`
 | Name of the database to be created.
 
-| `arconia.dev.services.postgresql.init-script-paths`
+| `arconia.dev.services.{service-name}.init-script-paths`
 | `[]`
 | List of paths to SQL scripts to be loaded from the classpath and applied to the database for initialization.
 

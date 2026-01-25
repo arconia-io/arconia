@@ -9,6 +9,18 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
+=== General
+
+* Each Dev Service now support configuring network aliases for the provisioned container via the `arconia.dev.services.<name>.network-aliases` property.
+* Each Dev Service now supports configuring a fixed port to expose the main container service to the host via the `arconia.dev.services.<name>.port` property. In case the service exposes more than one port, additional properties let you define fixed values for them as well. Refer to the documentation of each Dev Service for more information.
+* The reusable feature of Dev Services has been simplified. The `arconia.dev.services.<name>.shared` property can be set to `true` or `false`. If `true`, the service will be shared among applications only if the current application is running in dev mode. Refer to the xref:dev-services:index.adoc#_sharing_dev_services[Sharing Dev Services] section for more information.
+
+=== Ollama
+
+* The Ollama Dev Service is now disabled by default if the application is running in dev mode and a connection to a native Ollama inference service is detected. That is to take advantage of the higher performance of the native Ollama application running in your development environment, in case it's available, rather than provisioning a container.
+
+=== Valkey
+
 * A new Dev Service for Valkey has been introduced, supporting Spring Boot projects integrating with REPL/Redis. Check more details about the xref:dev-services:valkey.adoc[Arconia Valkey Dev Service].
 
 == Testcontainers

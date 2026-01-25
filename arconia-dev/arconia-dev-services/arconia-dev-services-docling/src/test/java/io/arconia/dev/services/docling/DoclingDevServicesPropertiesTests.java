@@ -28,6 +28,7 @@ class DoclingDevServicesPropertiesTests {
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(30));
 
         assertThat(properties.isEnableUi()).isTrue();
+        assertThat(properties.getApiKey()).isNull();
     }
 
     @Test
@@ -43,6 +44,7 @@ class DoclingDevServicesPropertiesTests {
         properties.setStartupTimeout(Duration.ofMinutes(1));
 
         properties.setEnableUi(false);
+        properties.setApiKey("caput-draconis");
 
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getImageName()).isEqualTo("ghcr.io/docling-project/docling-serve:latest");
@@ -53,6 +55,7 @@ class DoclingDevServicesPropertiesTests {
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(1));
 
         assertThat(properties.isEnableUi()).isFalse();
+        assertThat(properties.getApiKey()).isEqualTo("caput-draconis");
     }
 
 }
