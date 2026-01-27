@@ -10,6 +10,8 @@ dependencies {
     api project(":arconia-spring-boot")
     api "org.springframework.boot:spring-boot-testcontainers"
 
+    optional "org.springframework.boot:spring-boot-actuator"
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
