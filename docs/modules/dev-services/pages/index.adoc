@@ -228,7 +228,7 @@ Response example:
     "description": "Docling Dev Service",
     "containerInfo": {
       "id": "dbbda8272b5dc8d2ccfa48d3723756d767eef727322d9c35e0fd4c44ba60e967",
-      "imageName": "ghcr.io/docling-project/docling-serve:v1.9.0",
+      "imageName": "ghcr.io/docling-project/docling-serve:latest",
       "exposedPorts": [
         {
           "ip": "0.0.0.0",
@@ -244,7 +244,7 @@ Response example:
     "description": "PostgreSQL Dev Service",
     "containerInfo": {
       "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
-      "imageName": "docker.io/pgvector/pgvector:pg18",
+      "imageName": "docker.io/pgvector/pgvector:latest",
       "exposedPorts": [
         {
           "ip": "0.0.0.0",
@@ -276,7 +276,7 @@ Response example:
   "description": "PostgreSQL Dev Service",
   "containerInfo": {
     "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
-    "imageName": "docker.io/pgvector/pgvector:pg18",
+    "imageName": "docker.io/pgvector/pgvector:latest",
     "names": [
       "/unwritten_mithrandir"
     ],
