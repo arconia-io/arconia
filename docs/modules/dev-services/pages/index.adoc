@@ -72,7 +72,7 @@ Dev Services are available as separate modules for each supported service. You c
 Dev Services are provisioned as OCI containers. Ensure you have a container runtime like https://podman-desktop.io[Podman] or https://www.docker.com[Docker] installed and running in your environment.
 ====
 
-=== Automatic Configuration
+=== Service Connections
 
 Your application is automatically configured to connect to Dev Services, which take precedence over manually configured properties. For example, when using the `arconia-dev-services-postgresql` module, the Dev Service transparently overrides properties like `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password`.
 
