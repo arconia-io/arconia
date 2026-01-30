@@ -168,7 +168,9 @@ public class DevServicesRegistry {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Container not found with ID: " + containerId));
 
-            List<String> names = List.of(dockerContainer.getNames());
+            List<String> names = Arrays.stream(dockerContainer.getNames())
+                    .map(name -> name.charAt(0) == '/' ? name.substring(1) : name)
+                    .toList();
             String imageName = dockerContainer.getImage();
             Map<String, String> labels = dockerContainer.getLabels();
             String status = dockerContainer.getStatus();
