@@ -4,82 +4,179 @@ Arconia Dev Services streamline your development workflow by automatically provi
 
 Need a database, message broker, or other infrastructure components for your application? Add the corresponding Dev Service dependency to your project. When you run your application or tests, the required services start automatically as OCI containers and are seamlessly wired into your application. Zero additional code or configuration needed.
 
-Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot's Testcontainers support], the Arconia Dev Services are designed to provide a great developer experience by eliminating the friction of setting up and managing those services manually in your development environment.
+Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.testcontainers[Spring Boot's Testcontainers support], Arconia Dev Services provide a great developer experience by eliminating the friction of manually setting up and managing services in your development environment.
 
 [NOTE]
 ====
 Dev Services are designed exclusively for development and testing workflows. They are excluded from production builds and have zero impact on your production deployments.
 ====
 
+== How It Works
+
+When Arconia Dev Services are detected during development or testing, the framework:
+
+1. **Starts the container**: Launches an OCI container for the required service using Testcontainers.
+2. **Configures the connection**: Sets up connection properties (URLs, credentials, ports).
+3. **Wires the service**: Integrates the service into your application context using Spring Boot's Service Connection mechanism.
+4. **Manages the lifecycle**: Handles container startup, shutdown, and cleanup.
+
+This happens transparently without requiring any code or configuration. Dev Services take precedence over manually configured properties, ensuring your application always connects to the containerized service during development and testing.
+
+== Quick Start
+
+Get started with Arconia Dev Services in three simple steps:
+
+1. Add the dependency for your required service (e.g., PostgreSQL):
++
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-postgresql</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+2. Run your application as usual:
++
+include::ROOT:partial$app-run.adoc[]
+
+3. That's it! The PostgreSQL container starts automatically and your application connects to it. No configuration files, no code changes needed.
+
+[TIP]
+====
+Want to verify which Dev Services are running? If Spring Boot Actuator is in your classpath, check the `/actuator/devservices` endpoint.
+====
+
 == Using Dev Services
 
-Dev Services are available as separate modules for each supported service. You can find the list of supported services in the xref:_services[Services] section below.
-
-When you include a Dev Service module in your project, it automatically starts the corresponding service when you run your application in dev mode or execute your integration tests. The service runs as an OCI container managed by Testcontainers and is automatically integrated into your application, so you don't need to write any additional code or configuration.
+Dev Services are available as separate modules for each supported service. You can find the complete list in the xref:_supported_services[Supported Services] section below.
 
 [NOTE]
 ====
 Dev Services are provisioned as OCI containers. Ensure you have a container runtime like https://podman-desktop.io[Podman] or https://www.docker.com[Docker] installed and running in your environment.
 ====
 
-Your application is automatically configured to connect to the Dev Services, which take precedence over any manually configured properties. For example, if you include the `arconia-dev-services-postgresql` dependency in your project, a PostgreSQL instance will start automatically when you run your application in dev mode or tests. The connection details (JDBC URL, username, password) provided by the Dev Service will be used by the application transparently, overriding any manually set properties like `spring.datasource.url`, `spring.datasource.username`, or `spring.datasource.password`.
+=== Automatic Configuration
 
-Spring Boot manages the lifecycle of the Dev Services as beans in the application context. They start when the application context is initialized and stop when the context is closed. This means that the services are available throughout the entire lifecycle of your application or tests. Furthermore, if your application relies on the live-restart features provided by https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], the Dev Services won't be recreated when the application is restarted. Instead, they are kept up and running, ensuring a smooth development experience without unnecessary wait times or state loss.
+Your application is automatically configured to connect to Dev Services, which take precedence over manually configured properties. For example, when using the `arconia-dev-services-postgresql` module, the Dev Service transparently overrides properties like `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password`.
 
-=== Dev Services in Gradle
+The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
-Dev Services are designed exclusively for development and testing workflows. In a Gradle project, you can include Dev Service modules as `testAndDevelopmentOnly` dependencies. This ensures that the Dev Service is only available during development and test, and is never included in the production build.
+=== Lifecycle Management
 
-For example:
+Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans in the application context:
 
-[source, groovy]
-----
-dependencies {
-	testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
-}
-----
+* **Startup**: Services start when the application context initializes.
+* **Shutdown**: Services stop when the context closes.
+* **Persistence**: Services remain available throughout the lifecycle of your application or tests.
 
-=== Dev Services in Maven
+When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], Dev Services are not recreated on restart. They remain running in the background, ensuring a smooth development experience without wait times or state loss.
 
-Dev Services are designed exclusively for development and testing workflows. In a Maven project, you can include Dev Service modules as `optional` dependencies which the Spring Boot Maven plugin will exclude from the production build by default. This ensures that the Dev Service is only available during development and test, and is never included in the production build.
+=== Configuration Options
 
-For example:
+Each Dev Service can be customized through Spring Boot configuration properties. All Dev Services support a common set of properties under the `arconia.dev.services.<service-name>` prefix.
 
-[source, xml]
-----
-<dependencies>
-    <dependency>
-        <groupId>io.arconia</groupId>
-        <artifactId>arconia-dev-services-postgresql</artifactId>
-        <scope>runtime</scope>
-        <optional>true</optional>
-    </dependency>
-</dependencies>
-----
+==== Common Properties
 
-=== Sharing Dev Services
-
-Dev Services can be shared across applications, allowing you to reuse the same service across multiple applications. For example, you can share the RabbitMQ Dev Service and use it for exchanging messages between applications during development. Refer to the documentation of each Dev Service to check if it is shared by default or not.
+The following properties are available for all Dev Services. 
 
 [NOTE]
 ====
-Sharing Dev Services is only supported when running the application in dev mode. When running automated tests, Dev Services are never shared.
+All Dev Services are enabled by default. Other properties have sensible defaults that may vary by service.
 ====
 
-This capability relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. You can enable it in the `~/.testcontainers.properties` file in your home directory. If the file does not exist, you can create it. It should contain the following line:
+|===
+|Property |Description
+
+| `arconia.dev.services.<service-name>.enabled`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.<service-name>.image-name`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.<service-name>.environment`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.<service-name>.network-aliases`
+| Network aliases to assign to the dev service container.
+
+| `arconia.dev.services.<service-name>.port`
+| Fixed port for exposing the primary service port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.<service-name>.shared`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.<service-name>.startup-timeout`
+| Maximum waiting time for the service to start.
+|===
+
+==== Service-Specific Properties
+
+Individual services provide additional configuration properties. Refer to each service's documentation for all available configuration options.
+
+=== Sharing Dev Services
+
+Dev Services can be shared across multiple applications during development, allowing you to reuse the same containerized service for multiple projects running simultaneously. This is particularly useful for:
+
+* **Distributed systems**: Share a message broker (e.g., RabbitMQ, Kafka) or observability platform (e.g. Grafana LGTM) across multiple services.
+* **Resource efficiency**: Avoid running duplicate containers for the same service, especially for resource-intensive services (e.g., Docling, Ollama).
+
+To enable/disable sharing for a specific Dev Service, you can set the `arconia.dev.services.<service-name>.shared` property. By default, sharing is enabled only for services where it makes sense, such as message brokers, observability platforms, and resource-intensive services.
+
+[NOTE]
+====
+Sharing Dev Services is only supported when running the application in dev mode. When running automated tests, Dev Services are never shared to ensure test isolation, consistency, and reliability.
+====
+
+==== Pre-Requisites for Container Sharing
+
+Container sharing relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. To enable it:
+
+1. Create or edit the file `~/.testcontainers.properties` in your home directory
+2. Add the following line:
 
 [source,properties]
 ----
 testcontainers.reuse.enable=true
 ----
 
-=== Startup Sequence
+Once enabled, shared Dev Services will persist across application restarts and can be reused by other applications.
 
-The `spring.testcontainers.beans.startup` property controls the startup sequence of the Dev Services. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
+[WARNING]
+====
+Reusable containers will not be automatically removed when no longer needed. You must stop and remove them manually using your container runtime (Docker/Podman) when they are no longer required.
+====
 
-=== Global Configuration
+=== Advanced Configuration
 
-You can globally disable all Dev Services by setting the `arconia.dev.services.enabled` configuration property.
+==== Global Configuration
+
+In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
+
+[NOTE]
+====
+Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
+====
+
+==== Startup Sequence
+
+Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
 
 == Supported Services
 
@@ -98,7 +195,7 @@ You can globally disable all Dev Services by setting the `arconia.dev.services.e
 ** xref:kafka.adoc[Kafka]
 ** xref:pulsar.adoc[Pulsar]
 ** xref:rabbitmq.adoc[RabbitMQ]
-* OpenTelemetry
+* Observability
 ** xref:lgtm.adoc[Grafana LGTM]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]
@@ -106,96 +203,276 @@ You can globally disable all Dev Services by setting the `arconia.dev.services.e
 * xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
 
+== Actuator
+
+When running the application in dev mode, a `devservices` actuator endpoint is auto-configured if https://docs.spring.io/spring-boot/reference/actuator/enabling.html[Spring Boot Actuator] is present in the classpath. This endpoint exposes information about the running Dev Services containers, helping you inspect and debug your development environment.
+
+=== Usage
+
+==== List All Dev Services
+
+Retrieve information about all running Dev Services:
+
+[source,bash]
+----
+http :8080/actuator/devservices
+----
+
+Response example:
+
+[source,json]
+----
+{
+  "docling": {
+    "name": "docling",
+    "description": "Docling Dev Service",
+    "containerInfo": {
+      "id": "dbbda8272b5dc8d2ccfa48d3723756d767eef727322d9c35e0fd4c44ba60e967",
+      "imageName": "ghcr.io/docling-project/docling-serve:v1.9.0",
+      "exposedPorts": [
+        {
+          "ip": "0.0.0.0",
+          "privatePort": 5001,
+          "publicPort": 45525,
+          "type": "tcp"
+        }
+      ]
+    }
+  },
+  "postgresql": {
+    "name": "postgresql",
+    "description": "PostgreSQL Dev Service",
+    "containerInfo": {
+      "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
+      "imageName": "docker.io/pgvector/pgvector:pg18",
+      "exposedPorts": [
+        {
+          "ip": "0.0.0.0",
+          "privatePort": 5432,
+          "publicPort": 36803,
+          "type": "tcp"
+        }
+      ]
+    }
+  }
+}
+----
+
+==== Get Details for a Specific Dev Service
+
+Retrieve detailed information about a specific Dev Service:
+
+[source,bash]
+----
+http :8080/actuator/devservices/postgresql
+----
+
+Response example:
+
+[source,json]
+----
+{
+  "name": "postgresql",
+  "description": "PostgreSQL Dev Service",
+  "containerInfo": {
+    "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
+    "imageName": "docker.io/pgvector/pgvector:pg18",
+    "names": [
+      "/unwritten_mithrandir"
+    ],
+    "exposedPorts": [
+      {
+        "ip": "0.0.0.0",
+        "privatePort": 5432,
+        "publicPort": 36803,
+        "type": "tcp"
+      }
+    ],
+    "labels": {
+      "org.testcontainers.lang": "java",
+      "org.testcontainers": "true"
+    },
+    "status": "Up About 67 minutes"
+  }
+}
+----
+
+The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging.
+
+== Networking
+
+Dev Service containers are connected to the default Docker/Podman network and are accessible from your application via the local host and dynamically assigned ports.
+
+=== Fixed Ports
+
+By default, Dev Services use random available ports to avoid conflicts. However, you can configure fixed exposed ports when needed. Each service supports the `arconia.dev.services.<service-name>.port` property to specify a fixed port for exposing the primary service provided by the container.
+
+Some Dev Services may expose multiple ports (e.g., management console ports). In such cases, the Dev Service will offer additional properties to configure fixed ports for those secondary services. For example, the RabbitMQ Dev Service provides the common `arconia.dev.services.rabbitmq.port` property for the main AMQP port and an additional `arconia.dev.services.rabbitmq.management-console-port` property for the management UI port.
+
+A common use case for fixed ports is when other tools or services in your development environment need to connect to the Dev Service container using a known port, or for exposing UI consoles through well-known ports. For example, to expose Grafana on port 3000.
+
+[WARNING]
+====
+Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary.
+====
+
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
-You can think of the Arconia Dev Services as a higher-level feature built on top of Spring Boot's support for Testcontainers and development-time services. The goal is to provide a seamless developer experience by automatically starting the services your application depends on without any additional code or configuration.
+Arconia Dev Services is a higher-level abstraction built on top of Spring Boot's Testcontainers support. While both approaches leverage Testcontainers for provisioning services, Arconia Dev Services provides a more streamlined, zero-configuration experience.
 
-If your project is already using Spring Boot's Testcontainers support, you can adopt Arconia Dev Services incrementally as they will work alongside your existing Testcontainers configuration. You can start by adding the Arconia Dev Service dependencies for the services you want to manage automatically, while keeping your existing Testcontainers setup for any other services or custom configurations. Over time, you can migrate more services to be managed by Arconia Dev Services as needed.
+=== Key Differences
 
-Arconia Dev Services are transparent to the developer, meaning that you don't need to change your development workflow to use them. Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers. Instead, it lets you run your application via the usual tasks provided by the Spring Boot plugins for Gradle or Maven, or using the https://arconia.io/docs/arconia-cli/latest/development/dev[Arconia CLI].
+The primary distinction is simplicity. Arconia Dev Services eliminates boilerplate code and configuration, allowing you to focus on development rather than infrastructure setup.
 
 [tabs]
 ======
-CLI::
+Arconia Dev Services::
 +
-[source,shell]
+[source,groovy]
 ----
-arconia dev
+dependencies {
+    testAndDevelopmentOnly 'io.arconia:arconia-dev-services-postgresql'
+}
 ----
-
-Gradle::
++
+Run your application normally:
 +
 [source,shell]
 ----
 ./gradlew bootRun
 ----
 
-Maven::
+Spring Boot Development-time Services::
 +
-[source, shell]
+[source,groovy]
 ----
-./mvnw spring-boot:run
+dependencies {
+    testAndDevelopmentOnly 'org.springframework.boot:spring-boot-testcontainers'
+    testAndDevelopmentOnly 'org.testcontainers:postgresql'
+}
+----
++
+Create a test configuration class:
++
+[source,java]
+----
+@TestConfiguration(proxyBeanMethods = false)
+public class TestContainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+    @RestartScope
+    PostgreSQLContainer<?> postgresContainer() {
+        return new PostgreSQLContainer<>("postgres:latest");
+    }
+}
+----
++
+Create a test main class:
++
+[source,java]
+----
+public class TestApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.from(Application::main)
+            .with(TestContainersConfiguration.class)
+            .run(args);
+    }
+}
+----
++
+Run from the test classpath:
++
+[source,shell]
+----
+./gradlew bootTestRun
+----
++
+Import the Testcontainers configuration in each test class needing the service:
++
+[source,java]
+----
+@SpringBootTest
+@Import(TestContainersConfiguration.class)
+class ApplicationTests {
+}
 ----
 ======
 
-Your integration tests will also automatically use the Arconia Dev Services without requiring importing additional configuration via the `@Import` annotation or similar mechanisms.
+=== Migration Path
 
-.Differences between Arconia Dev Services and Spring Boot Development-time Services
+If your project already uses Spring Boot's Testcontainers support, you can adopt Arconia Dev Services incrementally:
+
+1. Add Arconia dependencies for services you want to manage automatically.
+2. Keep existing Testcontainers configuration for custom or unsupported services.
+3. Gradually migrate more services to Arconia as needed.
+
+Both approaches work alongside each other, allowing smooth transitions without disrupting your workflow.
+
+=== Feature Comparison
+
 [cols="1,2,2", options="header"]
 |===
 | Aspect | Arconia Dev Services | Spring Boot Development-time Services
 
-| Module
-| Single dependency per service (e.g., `arconia-dev-services-postgresql`).
-| Multiple dependencies per services (e.g., `spring-boot-testcontainers` + `testcontainers-postgresql`).
+| *Dependencies*
+| Single dependency per service. +
+Example: `arconia-dev-services-postgresql`.
+| Multiple dependencies per service. +
+Example: `spring-boot-testcontainers` + `testcontainers-postgresql`.
 
-| Dependency Management
-| Gradle: `testAndDevelopmentOnly` +
-Maven: `optional` with explicit exclusion via Spring Boot Maven plugin.
-| Gradle: `testAndDevelopmentOnly` +
-Maven: `optional` with automatic exclusion via Spring Boot Maven plugin.
+| *Code Requirements*
+| Zero additional code required
+| Requires: +
+• `@TestConfiguration` class with `@Bean` methods; +
+• Test main class with `SpringApplication.from()`; +
+• `@ServiceConnection` and `@RestartScope` annotations.
 
-| Code Requirements
-| No additional code needed.
-| Requires `SpringApplication` main class in the test classpath importing the Testcontainers configuration.
+| *Configuration*
+| Declarative via `application.yml` properties. +
+Example: `arconia.dev.services.postgresql.startup-timeout=30s`.
+| Programmatic configuration in Java code when defining container beans.
 
-| Configuration Requirements
-| No additional configuration needed.
-| Requires explicit bean configuration for each service, using the `@Bean` and `@ServiceConnection` annotations.
+| *Application Startup*
+| Standard commands: +
+• `./gradlew bootRun` +
+• `./mvnw spring-boot:run` +
+• `arconia dev`
+| Special test classpath commands: +
+• `./gradlew bootTestRun` +
+• `./mvnw spring-boot:test-run` +
+• `arconia dev --test`
 
-| Application Startup
-| Run the application in a standard way: `./gradlew bootRun`, `./mvnw spring-boot:run`, or `arconia dev`
-| Requires special commands to run the application from the test classpath: `./gradlew bootTestRun`, `./mvnw spring-boot:test-run`, or `arconia dev --test`
+| *Integration Testing*
+| Automatic service discovery and wiring: no imports or annotations needed.
+| Requires explicit `@Import(TestContainersConfiguration.class)` or similar mechanism.
 
-| Integration Testing
-| Services are automatically run and wired into the application context during tests.
-| Requires explicit `@Import` annotations or configuration classes to run and wire services into the application context during tests.
+| *DevTools Live Restart*
+| Automatic persistence across restarts: containers survive application reloads.
+| Requires `@RestartScope` annotation on each container bean definition.
 
-| Service Lifecycle
-| Managed automatically as Spring beans.
-| Managed automatically as Spring beans.
+| *Service Sharing*
+| Declarative via properties: +
+`arconia.dev.services.<name>.shared=true`.
+| Manual configuration when defining container beans with `withReuse(true)`.
 
-| Service Connections
-| Configured automatically by Spring Boot.
-| Configured automatically by Spring Boot.
+| *Customization*
+| Configuration properties for common scenarios. +
+Example: `image-name`, `port`, `init-script-paths`.
+| Full programmatic control. Direct access to Testcontainers API in bean definitions.
 
-| Live Restart Support
-| Automatically supported when Spring Boot DevTools are used. No additional configuration needed.
-| Requires explicit `@RestartScope` annotation on each service bean definition
+| *Flexibility*
+| Opinionated with sensible defaults. Configuration properties are available for common use cases.
+| Maximum flexibility. Full control over container lifecycle and configuration.
 
-| Service Sharing
-| Built-in sharing modes via configuration properties.
-| Manual configuration when defining each service bean in a test configuration class.
+| *Learning Curve*
+| Minimal +
+Add dependency → Run application
+| Moderate +
+Requires understanding of Testcontainers API, Spring Boot integration patterns, and test classpath execution.
 
-| Startup Control
-| `spring.testcontainers.beans.startup` property (parallel/sequential)
-| `spring.testcontainers.beans.startup` property (parallel/sequential)
-
-| Flexibility
-| Opinionated approach with sensible defaults. Common use cases supported via configuration properties.
-| Full programmatic control over each service bean when defining them in a test configuration class.
-
-| Learning Curve
-| Minimal. Add the dependency and run your application or tests directly.
-| Requires knowledge of Testcontainers API and Spring integration patterns to set up and configure each service. Furthermore, it requires starting the application in a special way to run from the test classpath.
+| *Best For*
+| Rapid development, standard use cases, teams seeking simplicity.
+| Advanced scenarios requiring custom container configuration or specialized setups
 |===

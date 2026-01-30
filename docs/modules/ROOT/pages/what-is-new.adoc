@@ -11,13 +11,26 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 === General
 
-* Each Dev Service now support configuring network aliases for the provisioned container via the `arconia.dev.services.<name>.network-aliases` property.
+* A new `arconia.dev.services.enabled` configuration property has been introduced to provide a global option for disabling all Dev Services at once. By default, they are all enabled.
 * Each Dev Service now supports configuring a fixed port to expose the main container service to the host via the `arconia.dev.services.<name>.port` property. In case the service exposes more than one port, additional properties let you define fixed values for them as well. Refer to the documentation of each Dev Service for more information.
+* Each Dev Service now support configuring network aliases for the provisioned container via the `arconia.dev.services.<name>.network-aliases` property.
 * The reusable feature of Dev Services has been simplified. The `arconia.dev.services.<name>.shared` property can be set to `true` or `false`. If `true`, the service will be shared among applications only if the current application is running in dev mode. Refer to the xref:dev-services:index.adoc#_sharing_dev_services[Sharing Dev Services] section for more information.
+
+=== MongoDB Atlas
+
+* The MongoDB Atlas is now based on the native service connection support introduced in Spring Boot 4.0. Previously, it was based on the specific support provided by Spring AI, which has been removed in Spring AI 2.0 in favour of Spring Boot.
 
 === Ollama
 
 * The Ollama Dev Service is now disabled by default if the application is running in dev mode and a connection to a native Ollama inference service is detected. That is to take advantage of the higher performance of the native Ollama application running in your development environment, in case it's available, rather than provisioning a container.
+
+=== Phoenix
+
+* When the Phoenix Dev Service is enabled, the export of logs and metrics via OpenTelemetry is disabled as Phoenix only supports traces. If you configure the logs and metrics export explicitly, your own configuration will take precedence.
+
+=== PostgreSQL
+
+* When Spring AI PGVector is in the classpath, the PostgreSQL Dev Service will use a `docker.io/pgvector/pgvector` container image as the default. Otherwise, it will use the `postgres` container image.
 
 === Valkey
 

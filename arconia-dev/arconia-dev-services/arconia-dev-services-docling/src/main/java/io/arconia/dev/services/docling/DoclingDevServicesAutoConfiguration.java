@@ -31,7 +31,7 @@ public final class DoclingDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("docling")
-                    .description("A container supporting Docling")
+                    .description("Docling Dev Service")
                     .container(container -> container
                             .type(ArconiaDoclingServeContainer.class)
                             .supplier(() -> new ArconiaDoclingServeContainer(DoclingServeContainerConfig.builder()
