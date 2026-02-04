@@ -2,7 +2,6 @@ package io.arconia.docling.client;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.util.Base64;
 
 import ai.docling.serve.api.DoclingServeApi;
@@ -22,12 +21,8 @@ import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.health.contributor.Status;
-import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.support.RestClientAdapter;
-import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -195,17 +190,9 @@ class DoclingServeClientTests {
     }
 
     private static DoclingServeApi createDoclingServeApi() {
-        RestClient restClient = RestClient.builder()
+        return DoclingServeClient.builder()
                 .baseUrl("http://localhost:" + doclingContainer.getMappedPort(5001))
-                .requestFactory(ClientHttpRequestFactoryBuilder.jdk()
-                        .withHttpClientCustomizer(builder -> builder.version(HttpClient.Version.HTTP_1_1))
-                        .build())
                 .build();
-
-        RestClientAdapter adapter = RestClientAdapter.create(restClient);
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
-
-        return factory.createClient(DoclingServeClient.class);
     }
 
 }
