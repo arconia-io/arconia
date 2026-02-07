@@ -86,24 +86,18 @@ class LgtmDevServicesAutoConfigurationIT {
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .withPropertyValues(
                         "arconia.dev.services.lgtm.environment.KEY=value",
-                        "arconia.dev.services.lgtm.network-aliases=network1"
+                        "arconia.dev.services.lgtm.network-aliases=network1",
+                        "arconia.dev.services.lgtm.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.lgtm.resources[0].container-path=/tmp/test-resource.txt"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(LgtmStackContainer.class);
                     LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
                     container.start();
                     assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     container.stop();
                 });
     }

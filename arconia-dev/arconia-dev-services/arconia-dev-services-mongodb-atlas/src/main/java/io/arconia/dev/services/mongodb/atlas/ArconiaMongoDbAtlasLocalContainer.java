@@ -3,6 +3,7 @@ package io.arconia.dev.services.mongodb.atlas;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -19,6 +20,8 @@ final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalContainer
     public ArconiaMongoDbAtlasLocalContainer(MongoDbAtlasDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

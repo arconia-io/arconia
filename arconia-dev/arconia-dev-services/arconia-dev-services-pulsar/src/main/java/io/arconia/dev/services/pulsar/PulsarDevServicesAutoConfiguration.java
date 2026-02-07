@@ -32,11 +32,7 @@ public final class PulsarDevServicesAutoConfiguration {
                     .description("Pulsar Dev Service")
                     .container(container -> container
                             .type(ArconiaPulsarContainer.class)
-                            .supplier(() -> new ArconiaPulsarContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaPulsarContainer(properties))
                     )
             );
         }

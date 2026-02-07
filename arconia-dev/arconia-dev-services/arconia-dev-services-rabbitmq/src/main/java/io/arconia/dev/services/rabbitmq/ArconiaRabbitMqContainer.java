@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -27,6 +28,8 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer {
     public ArconiaRabbitMqContainer(RabbitMqDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

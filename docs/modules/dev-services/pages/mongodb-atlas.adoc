@@ -44,6 +44,10 @@ You can configure the Dev Service via configuration properties.
 | `0`
 | Fixed port for exposing the MongoDB database port to the host. When it's 0 (default), a random available port is assigned dynamically.
 
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
 | `arconia.dev.services.{service-name}.shared`
 | `false`
 | Whether the dev service is shared among applications. Only applicable in dev mode.

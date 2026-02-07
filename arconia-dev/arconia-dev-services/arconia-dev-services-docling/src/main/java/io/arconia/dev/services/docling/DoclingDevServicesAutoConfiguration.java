@@ -1,7 +1,5 @@
 package io.arconia.dev.services.docling;
 
-import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
@@ -34,15 +32,8 @@ public final class DoclingDevServicesAutoConfiguration {
                     .description("Docling Dev Service")
                     .container(container -> container
                             .type(ArconiaDoclingServeContainer.class)
-                            .supplier(() -> new ArconiaDoclingServeContainer(DoclingServeContainerConfig.builder()
-                                        .image(properties.getImageName())
-                                        .enableUi(isDevMode() && properties.isEnableUi())
-                                        .containerEnv(properties.getEnvironment())
-                                        .startupTimeout(properties.getStartupTimeout())
-                                        .build(), properties)
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withReuse(isDevMode() && properties.isShared())
-                    )));
+                            .supplier(() -> new ArconiaDoclingServeContainer(properties))
+                    ));
         }
 
     }

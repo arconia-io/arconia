@@ -6,11 +6,14 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Holds information about a container.
  * <p>
  * Used to map details from <a href="https://github.com/docker-java/docker-java/blob/main/docker-java-api/src/main/java/com/github/dockerjava/api/model/Container.java">docker-java</a>.
  */
+@Incubating
 public record ContainerInfo(
         String id,
         String imageName,
@@ -44,5 +47,53 @@ public record ContainerInfo(
             @Nullable Integer publicPort,
             @Nullable String type
     ) {}
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+
+        private String id;
+        private String imageName;
+        private List<String> names = List.of();
+        private List<ContainerPort> exposedPorts = List.of();
+        private Map<String, String> labels = Map.of();
+        private String status;
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder imageName(String imageName) {
+            this.imageName = imageName;
+            return this;
+        }
+
+        public Builder names(List<String> names) {
+            this.names = names;
+            return this;
+        }
+
+        public Builder exposedPorts(List<ContainerPort> exposedPorts) {
+            this.exposedPorts = exposedPorts;
+            return this;
+        }
+
+        public Builder labels(Map<String, String> labels) {
+            this.labels = labels;
+            return this;
+        }
+        public Builder status(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public ContainerInfo build() {
+            return new ContainerInfo(id, imageName, names, exposedPorts, labels, status);
+        }
+
+    }
 
 }

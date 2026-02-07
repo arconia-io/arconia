@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -23,6 +24,8 @@ final class ArconiaPulsarContainer extends PulsarContainer {
     public ArconiaPulsarContainer(PulsarDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

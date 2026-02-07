@@ -83,6 +83,8 @@ class ArtemisDevServicesAutoConfigurationIT {
                 .withPropertyValues(
                         "arconia.dev.services.artemis.environment.KEY=value",
                         "arconia.dev.services.artemis.network-aliases=network1",
+                        "arconia.dev.services.artemis.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.artemis.resources[0].container-path=/tmp/test-resource.txt",
                         "arconia.dev.services.artemis.username=myusername",
                         "arconia.dev.services.artemis.password=mypassword"
                 )
@@ -92,20 +94,10 @@ class ArtemisDevServicesAutoConfigurationIT {
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
                     container.start();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     assertThat(container.getUser()).isEqualTo("myusername");
                     assertThat(container.getPassword()).isEqualTo("mypassword");
-                    container.stop();
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(ArtemisContainer.class);
-                    ArtemisContainer container = context.getBean(ArtemisContainer.class);
-                    container.start();
-                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
                     container.stop();
                 });
     }

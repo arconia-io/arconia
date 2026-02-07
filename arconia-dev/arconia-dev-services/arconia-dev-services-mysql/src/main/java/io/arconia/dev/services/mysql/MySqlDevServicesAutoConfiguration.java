@@ -32,15 +32,7 @@ public final class MySqlDevServicesAutoConfiguration {
                     .description("MySQL Dev Service")
                     .container(container -> container
                             .type(ArconiaMySqlContainer.class)
-                            .supplier(() -> new ArconiaMySqlContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared())
-                                    .withUsername(properties.getUsername())
-                                    .withPassword(properties.getPassword())
-                                    .withDatabaseName(properties.getDbName())
-                                    .withInitScripts(properties.getInitScriptPaths()))
+                            .supplier(() -> new ArconiaMySqlContainer(properties))
                     ));
         }
 

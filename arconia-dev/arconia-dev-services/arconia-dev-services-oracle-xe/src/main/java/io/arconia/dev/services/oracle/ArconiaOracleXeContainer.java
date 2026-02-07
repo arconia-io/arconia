@@ -3,6 +3,7 @@ package io.arconia.dev.services.oracle;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -19,6 +20,9 @@ final class ArconiaOracleXeContainer extends OracleContainer {
     public ArconiaOracleXeContainer(OracleXeDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
+        ContainerConfigurer.jdbc(this, properties);
     }
 
     @Override

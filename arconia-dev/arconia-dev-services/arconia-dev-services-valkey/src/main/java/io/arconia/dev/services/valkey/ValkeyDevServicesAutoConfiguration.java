@@ -33,11 +33,7 @@ public final class ValkeyDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaValkeyContainer.class)
                             .serviceConnectionName("redis")
-                            .supplier(() -> new ArconiaValkeyContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaValkeyContainer(properties))
                     ));
         }
 

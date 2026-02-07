@@ -69,14 +69,14 @@ class DevServiceRegistrationTests {
     }
 
     private ContainerInfo createContainerInfo() {
-        return new ContainerInfo(
-                "container123",
-                "docling",
-                List.of("docling-container"),
-                List.of(new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp")),
-                Map.of("env", "dev"),
-                "running"
-        );
+        return ContainerInfo.builder()
+                .id("container123")
+                .imageName("docling")
+                .names(List.of("docling-container"))
+                .exposedPorts(List.of(new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp")))
+                .labels(Map.of("env", "dev"))
+                .status("running")
+                .build();
     }
 
 }

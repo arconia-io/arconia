@@ -7,6 +7,11 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import io.arconia.dev.services.api.config.ResourceMapping;
+
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -23,12 +28,13 @@ class PostgresqlDevServicesPropertiesTests {
         assertThat(properties.getEnvironment()).isEmpty();
         assertThat(properties.getNetworkAliases()).isEmpty();
         assertThat(properties.getPort()).isEqualTo(0);
+        assertThat(properties.getResources()).isEmpty();
         assertThat(properties.isShared()).isFalse();
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(30));
 
-        assertThat(properties.getUsername()).isEqualTo("test");
-        assertThat(properties.getPassword()).isEqualTo("test");
-        assertThat(properties.getDbName()).isEqualTo("test");
+        assertThat(properties.getUsername()).isEqualTo(DEFAULT_USERNAME);
+        assertThat(properties.getPassword()).isEqualTo(DEFAULT_PASSWORD);
+        assertThat(properties.getDbName()).isEqualTo(DEFAULT_DB_NAME);
         assertThat(properties.getInitScriptPaths()).isEmpty();
     }
 
@@ -41,6 +47,7 @@ class PostgresqlDevServicesPropertiesTests {
         properties.setEnvironment(Map.of("KEY", "value"));
         properties.setNetworkAliases(List.of("network1", "network2"));
         properties.setPort(PostgreSQLContainer.POSTGRESQL_PORT);
+        properties.setResources(List.of(new ResourceMapping("test-resource.txt", "/tmp/test-resource.txt")));
         properties.setShared(true);
         properties.setStartupTimeout(Duration.ofMinutes(1));
 
@@ -54,6 +61,9 @@ class PostgresqlDevServicesPropertiesTests {
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
         assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
         assertThat(properties.getPort()).isEqualTo(PostgreSQLContainer.POSTGRESQL_PORT);
+        assertThat(properties.getResources()).hasSize(1);
+        assertThat(properties.getResources().getFirst().getSourcePath()).isEqualTo("test-resource.txt");
+        assertThat(properties.getResources().getFirst().getContainerPath()).isEqualTo("/tmp/test-resource.txt");
         assertThat(properties.isShared()).isTrue();
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(1));
 

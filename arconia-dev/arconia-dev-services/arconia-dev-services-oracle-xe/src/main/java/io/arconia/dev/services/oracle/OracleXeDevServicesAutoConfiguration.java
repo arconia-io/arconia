@@ -32,15 +32,7 @@ public final class OracleXeDevServicesAutoConfiguration {
                     .description("Oracle XE Dev Service")
                     .container(container -> container
                             .type(ArconiaOracleXeContainer.class)
-                            .supplier(() -> new ArconiaOracleXeContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared())
-                                    .withUsername(properties.getUsername())
-                                    .withPassword(properties.getPassword())
-                                    .withDatabaseName(properties.getDbName())
-                                    .withInitScripts(properties.getInitScriptPaths()))
+                            .supplier(() -> new ArconiaOracleXeContainer(properties))
                     ));
         }
 

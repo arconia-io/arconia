@@ -3,6 +3,8 @@ package io.arconia.dev.services.docling;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
+import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -12,9 +14,18 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
 
     private final DoclingDevServicesProperties properties;
 
-    public ArconiaDoclingServeContainer(DoclingServeContainerConfig config, DoclingDevServicesProperties properties) {
-        super(config);
+    public ArconiaDoclingServeContainer(DoclingDevServicesProperties properties) {
+        super(DoclingServeContainerConfig.builder()
+                .image(properties.getImageName())
+                .enableUi(BootstrapMode.isDev() && properties.isEnableUi())
+                .containerEnv(properties.getEnvironment())
+                .startupTimeout(properties.getStartupTimeout())
+                .build());
         this.properties = properties;
+
+        this.setNetworkAliases(properties.getNetworkAliases());
+        this.withReuse(BootstrapMode.isDev() && properties.isShared());
+        ContainerConfigurer.resources(this, properties);
     }
 
     @Override

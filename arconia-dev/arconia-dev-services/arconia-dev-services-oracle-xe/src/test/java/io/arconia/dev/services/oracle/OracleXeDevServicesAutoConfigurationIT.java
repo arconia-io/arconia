@@ -66,6 +66,8 @@ class OracleXeDevServicesAutoConfigurationIT {
                 .withPropertyValues(
                         "arconia.dev.services.oracle-xe.environment.KEY=value",
                         "arconia.dev.services.oracle-xe.network-aliases=network1",
+                        "arconia.dev.services.oracle-xe.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.oracle-xe.resources[0].container-path=/tmp/test-resource.txt",
                         "arconia.dev.services.oracle-xe.username=mytest",
                         "arconia.dev.services.oracle-xe.password=mytest",
                         "arconia.dev.services.oracle-xe.db-name=mytest",
@@ -77,22 +79,11 @@ class OracleXeDevServicesAutoConfigurationIT {
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
                     container.start();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     assertThat(container.getUsername()).isEqualTo("mytest");
                     assertThat(container.getPassword()).isEqualTo("mytest");
                     assertThat(container.getDatabaseName()).isEqualTo("mytest");
-                    container.stop();
-                });
-    }
-
-    @Test
-    @Disabled("Too slow and heavy for the deployment pipeline. Also, it lacks ARM64 support.")
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OracleContainer.class);
-                    OracleContainer container = context.getBean(OracleContainer.class);
-                    container.start();
-                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
                     container.stop();
                 });
     }

@@ -1,2 +1,2 @@
-io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration
+io.arconia.dev.services.core.autoconfigure.DevServiceAutoConfiguration
 io.arconia.dev.services.core.autoconfigure.DevServicesEndpointAutoConfiguration

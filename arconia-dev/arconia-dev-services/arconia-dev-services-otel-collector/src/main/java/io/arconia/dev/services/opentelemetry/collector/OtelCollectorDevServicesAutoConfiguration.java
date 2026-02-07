@@ -35,11 +35,7 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaOtelCollectorContainer.class)
                             .serviceConnectionName("otel/opentelemetry-collector")
-                            .supplier(() -> new ArconiaOtelCollectorContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaOtelCollectorContainer(properties))
                     ));
         }
 

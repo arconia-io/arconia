@@ -4,9 +4,11 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -28,6 +30,11 @@ final class ArconiaArtemisContainer extends ArtemisContainer {
     public ArconiaArtemisContainer(ArtemisDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
+
+        this.withUser(StringUtils.hasText(properties.getUsername()) ? properties.getUsername() : ArtemisDevServicesProperties.DEFAULT_USERNAME);
+        this.withPassword(StringUtils.hasText(properties.getPassword()) ? properties.getPassword() : ArtemisDevServicesProperties.DEFAULT_PASSWORD);
     }
 
     @Override

@@ -119,6 +119,9 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | `arconia.dev.services.<service-name>.port`
 | Fixed port for exposing the primary service port to the host. When it's 0 (default), a random available port is assigned dynamically.
 
+| `arconia.dev.services.<service-name>.resources`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
 | `arconia.dev.services.<service-name>.shared`
 | Whether the dev service is shared among applications. Only applicable in dev mode.
 
@@ -163,7 +166,50 @@ Once enabled, shared Dev Services will persist across application restarts and c
 Reusable containers will not be automatically removed when no longer needed. You must stop and remove them manually using your container runtime (Docker/Podman) when they are no longer required.
 ====
 
-=== Advanced Configuration
+=== Resource Mappings
+
+Dev Services support copying files and directories from your classpath or host filesystem into the container at startup. This can be useful for various scenarios, including for loading configuration files, seeding initialization data, or making static resources available to containerized services.
+
+Resources are copied to the specified destination path inside the container at startup and are never changed on the host after being copied (read-only). This means that any modifications made by the container to these files will not persist or affect the source files on the host.
+
+This strategy is preferred over mounting host directories as volumes, as it avoids potential issues with file permission mismatches, path resolution, and cross-platform compatibility.
+
+==== Configuration
+
+Resource mappings are configured through the `arconia.dev.services.<service-name>.resources` property. Each mapping requires two values:
+
+* Source path: Location of the resource on the classpath or filesystem;
+* Container path: Destination path inside the container.
+
+For example, to copy a configuration file from the classpath into an OpenTelemetry Collector container:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      otel-collector:
+        resources:
+          - source-path: otel-collector-config.yml
+            container-path: /etc/otel-collector-config.yml
+----
+
+==== Source Path Resolution
+
+The source path supports multiple resolution strategies:
+
+* Automatic resolution: Without a prefix, Arconia first attempts to locate the resource on the classpath. If not found, it searches the filesystem. For example, `config/database.conf` will be resolved from the classpath if available, otherwise from the filesystem.
+
+* Explicit classpath: Use the `classpath:` prefix to load resources from the classpath. For example, `classpath:config/database.conf`.
+
+* Explicit filesystem: Use the `file:` prefix to load resources from the host filesystem. For example, `file:./config/database.conf`.
+
+[TIP]
+Using explicit prefixes (`classpath:` or `file:`) improves clarity and readability, making it clear where the resource is being loaded from. It also avoids ambiguity and potential resolution issues, especially in complex projects with multiple resource locations.
+
+==== Startup Sequence
+
+Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
 
 ==== Global Configuration
 
@@ -173,10 +219,6 @@ In case you want to disable all Dev Services at once, you can set the `arconia.d
 ====
 Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
 ====
-
-==== Startup Sequence
-
-Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
 
 == Supported Services
 

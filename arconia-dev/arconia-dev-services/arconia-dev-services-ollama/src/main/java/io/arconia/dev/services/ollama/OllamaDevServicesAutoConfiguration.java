@@ -36,11 +36,7 @@ public final class OllamaDevServicesAutoConfiguration {
                     .description("Ollama Dev Service")
                     .container(container -> container
                             .type(ArconiaOllamaContainer.class)
-                            .supplier(() -> new ArconiaOllamaContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaOllamaContainer(properties))
                     ));
         }
 

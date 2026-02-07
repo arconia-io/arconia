@@ -32,11 +32,7 @@ public final class RabbitMqDevServicesAutoConfiguration {
                     .description("RabbitMQ Dev Service")
                     .container(container -> container
                             .type(ArconiaRabbitMqContainer.class)
-                            .supplier(() -> new ArconiaRabbitMqContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaRabbitMqContainer(properties))
                     )
             );
         }

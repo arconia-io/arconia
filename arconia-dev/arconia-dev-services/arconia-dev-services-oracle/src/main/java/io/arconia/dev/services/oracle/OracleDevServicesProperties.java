@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
+import io.arconia.dev.services.api.config.ResourceMapping;
 
 /**
  * Properties for the Oracle Dev Services.
@@ -17,6 +18,10 @@ import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 public class OracleDevServicesProperties implements JdbcDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.oracle";
+
+    static final String DEFAULT_USERNAME = "arconia";
+    static final String DEFAULT_PASSWORD = "arconia";
+    static final String DEFAULT_DB_NAME = "arconia";
 
     /**
      * Whether the dev service is enabled.
@@ -45,6 +50,13 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
     private int port = 0;
 
     /**
+     * Resources from the classpath or host filesystem to copy into the container.
+     * They can be files or directories that will be copied to the specified
+     * destination path inside the container at startup and are immutable (read-only).
+     */
+    private List<ResourceMapping> resources = new ArrayList<>();
+
+    /**
      * Whether the dev service is shared among applications.
      * Only applicable in dev mode.
      */
@@ -58,17 +70,17 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
     /**
      * Username to be used for connecting to the database.
      */
-    private String username = "test";
+    private String username = DEFAULT_USERNAME;
 
     /**
      * Password to be used for connecting to the database.
      */
-    private String password = "test";
+    private String password = DEFAULT_PASSWORD;
 
     /**
      * Name of the database to be created.
      */
-    private String dbName = "test";
+    private String dbName = DEFAULT_DB_NAME;
 
     /**
      * List of paths to SQL scripts to be loaded from the classpath and
@@ -119,6 +131,15 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    @Override
+    public List<ResourceMapping> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<ResourceMapping> resources) {
+        this.resources = resources;
     }
 
     @Override

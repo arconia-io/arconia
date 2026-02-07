@@ -78,24 +78,18 @@ class KafkaDevServicesAutoConfigurationIT {
         contextRunner
                 .withPropertyValues(
                         "arconia.dev.services.kafka.environment.KEY=value",
-                        "arconia.dev.services.kafka.network-aliases=network1"
+                        "arconia.dev.services.kafka.network-aliases=network1",
+                        "arconia.dev.services.kafka.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.kafka.resources[0].container-path=/tmp/test-resource.txt"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(KafkaContainer.class);
                     KafkaContainer container = context.getBean(KafkaContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(KafkaContainer.class);
-                    KafkaContainer container = context.getBean(KafkaContainer.class);
                     container.start();
                     assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     container.stop();
                 });
     }

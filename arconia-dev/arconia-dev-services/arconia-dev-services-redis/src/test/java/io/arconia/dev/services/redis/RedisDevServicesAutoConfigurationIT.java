@@ -59,24 +59,18 @@ class RedisDevServicesAutoConfigurationIT {
         contextRunner
                 .withPropertyValues(
                         "arconia.dev.services.redis.environment.KEY=value",
-                        "arconia.dev.services.redis.network-aliases=network1"
+                        "arconia.dev.services.redis.network-aliases=network1",
+                        "arconia.dev.services.redis.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.redis.resources[0].container-path=/tmp/test-resource.txt"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(RedisContainer.class);
                     RedisContainer container = context.getBean(RedisContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(RedisContainer.class);
-                    RedisContainer container = context.getBean(RedisContainer.class);
                     container.start();
                     assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     container.stop();
                 });
     }

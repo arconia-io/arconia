@@ -2,6 +2,7 @@ package io.arconia.dev.services.redis;
 
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.redis.RedisContainer;
 
@@ -19,6 +20,8 @@ final class ArconiaRedisContainer extends RedisContainer {
     public ArconiaRedisContainer(RedisDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

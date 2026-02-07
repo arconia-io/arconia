@@ -47,10 +47,12 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Maximum waiting time for the service to start.
+     * Resources from the classpath or host filesystem to copy into the container.
+     * They can be files or directories that will be copied to the specified
+     * destination path inside the container at startup and are immutable (read-only).
      */
-    default Duration getStartupTimeout() {
-        return Duration.ofSeconds(30);
+    default List<ResourceMapping> getResources() {
+        return List.of();
     }
 
     /**
@@ -59,6 +61,13 @@ public interface BaseDevServicesProperties {
      */
     default boolean isShared() {
         return false;
+    }
+
+    /**
+     * Maximum waiting time for the service to start.
+     */
+    default Duration getStartupTimeout() {
+        return Duration.ofSeconds(30);
     }
 
 }

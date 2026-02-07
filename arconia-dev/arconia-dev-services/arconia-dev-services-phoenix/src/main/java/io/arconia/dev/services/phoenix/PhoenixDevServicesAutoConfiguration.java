@@ -37,11 +37,7 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaPhoenixContainer.class)
                             .serviceConnectionName("phoenix")
-                            .supplier(() -> new ArconiaPhoenixContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaPhoenixContainer(properties))
                     ));
 
             // Phoenix supports only OpenTelemetry Traces, so we disable the export of Logs and Metrics,

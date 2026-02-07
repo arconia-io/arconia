@@ -32,11 +32,7 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
                     .description("MongoDB Atlas Dev Service")
                     .container(container -> container
                             .type(ArconiaMongoDbAtlasLocalContainer.class)
-                            .supplier(() -> new ArconiaMongoDbAtlasLocalContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaMongoDbAtlasLocalContainer(properties))
                     ));
         }
 

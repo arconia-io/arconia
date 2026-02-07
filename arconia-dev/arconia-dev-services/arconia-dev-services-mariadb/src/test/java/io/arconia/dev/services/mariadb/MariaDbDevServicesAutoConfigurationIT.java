@@ -9,6 +9,9 @@ import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.mariadb.MariaDBContainer;
 
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -45,9 +48,9 @@ class MariaDbDevServicesAutoConfigurationIT {
             assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
             container.start();
-            assertThat(container.getUsername()).isEqualTo("test");
-            assertThat(container.getPassword()).isEqualTo("test");
-            assertThat(container.getDatabaseName()).isEqualTo("test");
+            assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
+            assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
+            assertThat(container.getDatabaseName()).isEqualTo(DEFAULT_DB_NAME);
             container.stop();
 
             String[] beanNames = context.getBeanFactory().getBeanNamesForType(MariaDBContainer.class);
@@ -63,6 +66,8 @@ class MariaDbDevServicesAutoConfigurationIT {
                 .withPropertyValues(
                         "arconia.dev.services.mariadb.environment.KEY=value",
                         "arconia.dev.services.mariadb.network-aliases=network1",
+                        "arconia.dev.services.mariadb.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.mariadb.resources[0].container-path=/tmp/test-resource.txt",
                         "arconia.dev.services.mariadb.username=mytest",
                         "arconia.dev.services.mariadb.password=mytest",
                         "arconia.dev.services.mariadb.db-name=mytest",
@@ -74,6 +79,8 @@ class MariaDbDevServicesAutoConfigurationIT {
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
                     container.start();
+                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     assertThat(container.getUsername()).isEqualTo("mytest");
                     assertThat(container.getPassword()).isEqualTo("mytest");
                     assertThat(container.getDatabaseName()).isEqualTo("mytest");
@@ -81,18 +88,6 @@ class MariaDbDevServicesAutoConfigurationIT {
                             "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
                             .getStdout())
                             .contains("true");
-                    container.stop();
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(MariaDBContainer.class);
-                    MariaDBContainer container = context.getBean(MariaDBContainer.class);
-                    container.start();
-                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
                     container.stop();
                 });
     }

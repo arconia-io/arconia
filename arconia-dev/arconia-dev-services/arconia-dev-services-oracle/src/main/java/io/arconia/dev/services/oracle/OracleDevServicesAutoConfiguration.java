@@ -32,15 +32,7 @@ public final class OracleDevServicesAutoConfiguration {
                     .description("Oracle Dev Service")
                     .container(container -> container
                             .type(ArconiaOracleContainer.class)
-                            .supplier(() -> new ArconiaOracleContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared())
-                                    .withUsername(properties.getUsername())
-                                    .withPassword(properties.getPassword())
-                                    .withDatabaseName(properties.getDbName())
-                                    .withInitScripts(properties.getInitScriptPaths()))
+                            .supplier(() -> new ArconiaOracleContainer(properties))
                     ));
         }
 

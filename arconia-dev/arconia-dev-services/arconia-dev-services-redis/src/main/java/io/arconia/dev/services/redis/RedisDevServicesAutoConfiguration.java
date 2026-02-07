@@ -33,11 +33,7 @@ public final class RedisDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaRedisContainer.class)
                             .serviceConnectionName("redis")
-                            .supplier(() -> new ArconiaRedisContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaRedisContainer(properties))
                     ));
         }
 

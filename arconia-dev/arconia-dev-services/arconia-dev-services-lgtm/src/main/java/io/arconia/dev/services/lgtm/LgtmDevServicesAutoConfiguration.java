@@ -34,11 +34,7 @@ public final class LgtmDevServicesAutoConfiguration {
                     .description("Grafana LGTM Dev Service")
                     .container(container -> container
                             .type(ArconiaLgtmStackContainer.class)
-                            .supplier(() -> new ArconiaLgtmStackContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaLgtmStackContainer(properties))
                     ));
         }
 

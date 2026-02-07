@@ -3,6 +3,7 @@ package io.arconia.dev.services.lgtm;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -23,6 +24,8 @@ final class ArconiaLgtmStackContainer extends LgtmStackContainer {
     public ArconiaLgtmStackContainer(LgtmDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

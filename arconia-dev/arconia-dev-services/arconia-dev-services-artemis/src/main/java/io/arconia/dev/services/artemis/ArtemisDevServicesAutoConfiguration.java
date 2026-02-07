@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
 import io.arconia.dev.services.artemis.ArtemisDevServicesAutoConfiguration.ArtemisDevServicesRegistrar;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
@@ -33,13 +32,7 @@ public final class ArtemisDevServicesAutoConfiguration {
                     .description("Artemis Dev Service")
                     .container(container -> container
                             .type(ArconiaArtemisContainer.class)
-                            .supplier(() -> new ArconiaArtemisContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared())
-                                    .withUser(StringUtils.hasText(properties.getUsername()) ? properties.getUsername() : ArtemisDevServicesProperties.DEFAULT_USERNAME)
-                                    .withPassword(StringUtils.hasText(properties.getPassword()) ? properties.getPassword() : ArtemisDevServicesProperties.DEFAULT_PASSWORD))
+                            .supplier(() -> new ArconiaArtemisContainer(properties))
                     ));
 
         }

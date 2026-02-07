@@ -3,6 +3,7 @@ package io.arconia.dev.services.lldap;
 import org.testcontainers.ldap.LLdapContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -21,6 +22,8 @@ final class ArconiaLldapContainer extends LLdapContainer {
     public ArconiaLldapContainer(LldapDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

@@ -32,11 +32,7 @@ public final class MongoDbDevServicesAutoConfiguration {
                     .description("MongoDB Dev Service")
                     .container(container -> container
                             .type(ArconiaMongoDbContainer.class)
-                            .supplier(() -> new ArconiaMongoDbContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaMongoDbContainer(properties))
                     ));
         }
 

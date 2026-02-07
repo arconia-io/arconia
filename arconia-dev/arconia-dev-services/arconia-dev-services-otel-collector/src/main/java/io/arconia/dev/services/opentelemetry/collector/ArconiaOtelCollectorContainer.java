@@ -4,6 +4,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -23,6 +24,8 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         addExposedPorts(OTLP_GRPC_PORT, OTLP_HTTP_PORT);
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override

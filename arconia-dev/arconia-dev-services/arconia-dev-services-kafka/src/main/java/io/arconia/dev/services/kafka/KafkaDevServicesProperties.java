@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.arconia.dev.services.api.config.ResourceMapping;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
@@ -43,6 +45,13 @@ public class KafkaDevServicesProperties implements BaseDevServicesProperties {
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int port = 0;
+
+    /**
+     * Resources from the classpath or host filesystem to copy into the container.
+     * They can be files or directories that will be copied to the specified
+     * destination path inside the container at startup and are immutable (read-only).
+     */
+    private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
      * Whether the dev service is shared among applications.
@@ -98,6 +107,15 @@ public class KafkaDevServicesProperties implements BaseDevServicesProperties {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    @Override
+    public List<ResourceMapping> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<ResourceMapping> resources) {
+        this.resources = resources;
     }
 
     @Override

@@ -12,8 +12,6 @@ import org.testcontainers.pulsar.PulsarContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 
-import java.time.Duration;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -80,25 +78,18 @@ class PulsarDevServicesAutoConfigurationIT {
         contextRunner
                 .withPropertyValues(
                         "arconia.dev.services.pulsar.environment.KEY=value",
-                        "arconia.dev.services.pulsar.network-aliases=network1"
+                        "arconia.dev.services.pulsar.network-aliases=network1",
+                        "arconia.dev.services.pulsar.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.pulsar.resources[0].container-path=/tmp/test-resource.txt"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(PulsarContainer.class);
                     var container = context.getBean(PulsarContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(PulsarContainer.class);
-                    PulsarContainer container = context.getBean(PulsarContainer.class);
-                    container.withStartupTimeout(Duration.ofMinutes(2));
                     container.start();
                     assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     container.stop();
                 });
     }

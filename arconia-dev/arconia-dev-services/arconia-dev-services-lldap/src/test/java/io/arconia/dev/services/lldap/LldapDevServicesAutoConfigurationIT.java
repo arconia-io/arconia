@@ -57,28 +57,20 @@ class LldapDevServicesAutoConfigurationIT {
         contextRunner
                 .withPropertyValues(
                         "arconia.dev.services.lldap.environment.KEY=value",
-                        "arconia.dev.services.lldap.network-aliases=network1"
+                        "arconia.dev.services.lldap.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman",
+                        "arconia.dev.services.lldap.environment.LLDAP_LDAP_USER_PASS=password",
+                        "arconia.dev.services.lldap.network-aliases=network1",
+                        "arconia.dev.services.lldap.resources[0].source-path=test-resource.txt",
+                        "arconia.dev.services.lldap.resources[0].container-path=/tmp/test-resource.txt"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(LLdapContainer.class);
                     LLdapContainer container = context.getBean(LLdapContainer.class);
                     assertThat(container.getEnv()).contains("KEY=value");
                     assertThat(container.getNetworkAliases()).contains("network1");
-                });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .withPropertyValues(
-                        "arconia.dev.services.lldap.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman",
-                        "arconia.dev.services.lldap.environment.LLDAP_LDAP_USER_PASS=password"
-                )
-                .run(context -> {
-                    assertThat(context).hasSingleBean(LLdapContainer.class);
-                    LLdapContainer container = context.getBean(LLdapContainer.class);
                     container.start();
                     assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
                     container.stop();
                 });
     }

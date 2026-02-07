@@ -78,26 +78,20 @@ class RabbitMqDevServicesAutoConfigurationIT {
         contextRunner
             .withPropertyValues(
                     "arconia.dev.services.rabbitmq.environment.KEY=value",
-                    "arconia.dev.services.rabbitmq.network-aliases=network1"
+                    "arconia.dev.services.rabbitmq.network-aliases=network1",
+                    "arconia.dev.services.rabbitmq.resources[0].source-path=test-resource.txt",
+                    "arconia.dev.services.rabbitmq.resources[0].container-path=/tmp/test-resource.txt"
             )
             .run(context -> {
                 assertThat(context).hasSingleBean(RabbitMQContainer.class);
                 RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
                 assertThat(container.getEnv()).contains("KEY=value");
                 assertThat(container.getNetworkAliases()).contains("network1");
+                container.start();
+                assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
+                assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
+                container.stop();
             });
-    }
-
-    @Test
-    void containerStartsAndStopsSuccessfully() {
-        contextRunner
-                .run(context -> {
-                    assertThat(context).hasSingleBean(RabbitMQContainer.class);
-                    RabbitMQContainer container = context.getBean(RabbitMQContainer.class);
-                    container.start();
-                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
-                    container.stop();
-                });
     }
 
     @Test

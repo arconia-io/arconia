@@ -32,11 +32,7 @@ public final class KafkaDevServicesAutoConfiguration {
                     .description("Kafka Dev Service")
                     .container(container -> container
                             .type(ArconiaKafkaContainer.class)
-                            .supplier(() -> new ArconiaKafkaContainer(properties)
-                                    .withEnv(properties.getEnvironment())
-                                    .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                                    .withStartupTimeout(properties.getStartupTimeout())
-                                    .withReuse(isDevMode() && properties.isShared()))
+                            .supplier(() -> new ArconiaKafkaContainer(properties))
                     ));
         }
 
