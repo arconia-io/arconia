@@ -60,6 +60,10 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `120s`
 | Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.ignore-native-service`
+| `false`
+| Whether to ignore an Ollama native service available on the host, but always use the container instead.
 |===
 
 include::partial$disabling-dev-service.adoc[]

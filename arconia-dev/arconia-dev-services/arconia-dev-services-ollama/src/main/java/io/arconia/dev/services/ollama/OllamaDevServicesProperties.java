@@ -63,6 +63,12 @@ public class OllamaDevServicesProperties implements BaseDevServicesProperties {
      */
     private Duration startupTimeout = Duration.ofMinutes(2);
 
+    /**
+     * Whether to ignore an Ollama native service available on the host,
+     * but always use the container instead.
+     */
+    private boolean ignoreNativeService = false;
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -133,6 +139,14 @@ public class OllamaDevServicesProperties implements BaseDevServicesProperties {
 
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    public boolean isIgnoreNativeService() {
+        return ignoreNativeService;
+    }
+
+    public void setIgnoreNativeService(boolean ignoreNativeService) {
+        this.ignoreNativeService = ignoreNativeService;
     }
 
 }

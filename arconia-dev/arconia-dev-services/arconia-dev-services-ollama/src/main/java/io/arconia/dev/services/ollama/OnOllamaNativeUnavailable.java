@@ -16,10 +16,8 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
-
 /**
- * Condition to check if Ollama native connection is available in development mode.
+ * Condition to check if Ollama native connection is available.
  */
 class OnOllamaNativeUnavailable extends SpringBootCondition {
 
@@ -34,6 +32,14 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
         Environment environment = context.getEnvironment();
 
         try {
+            OllamaDevServicesProperties devServicesProperties = Binder.get(environment)
+                    .bindOrCreate(OllamaDevServicesProperties.CONFIG_PREFIX, OllamaDevServicesProperties.class);
+
+            if (devServicesProperties.isIgnoreNativeService()) {
+                return ConditionOutcome.match("Usage of Ollama native service is ignored: %s=%s".formatted(
+                        OllamaDevServicesProperties.CONFIG_PREFIX + ".ignore-native-service", devServicesProperties.isIgnoreNativeService()));
+            }
+
             OllamaConnectionProperties ollamaProperties = Binder.get(environment)
                     .bindOrCreate(OllamaConnectionProperties.CONFIG_PREFIX, OllamaConnectionProperties.class);
 
@@ -41,24 +47,15 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
                     ? ollamaProperties.getBaseUrl()
                     : DEFAULT_BASE_URL;
 
-            boolean isDevMode = isDevMode();
-            if (!isDevMode) {
-                return ConditionOutcome.match("Dev mode is not enabled");
-            }
-
             boolean isNativeConnection = isOllamaNativeConnection(ollamaBaseUrl);
             if (!isNativeConnection) {
                 return ConditionOutcome.match("Ollama native connection is not available");
             }
 
-            return ConditionOutcome.noMatch(String.format("Dev mode is enabled and Ollama native connection detected at %s", ollamaBaseUrl));
+            return ConditionOutcome.noMatch(String.format("Ollama native connection detected at %s", ollamaBaseUrl));
         } catch (Exception e) {
             return ConditionOutcome.match("Failed to evaluate Ollama condition: " + e.getMessage());
         }
-    }
-
-    boolean isDevMode() {
-        return BootstrapMode.DEV.equals(BootstrapMode.detect());
     }
 
     /**

@@ -11,6 +11,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * Each Dev Service now supports configuring resource mappings for copying files and directories from your classpath or host filesystem into the container at startup. This can be useful for various scenarios, including for loading configuration files, seeding initialization data, or making static resources available to containerized services. Refer to the xref:dev-services:index.adoc#_resource_mappings[Resource Mappings] section for more information.
 
+=== Ollama
+
+* If a native Ollama connection is detected, for example, if you're already running the Ollama application on your laptop, the Ollama Dev Service will not be enabled. If you'd like to ignore the native service and always activate the Ollama Dev Service, you can set the `arconia.dev.services.ollama.ignore-native-service=true` property.
+
 == Docling
 
 * The Arconia Docling integration now supports all the functionality of the Java Docling Serve API, including asynchronous calls. Refer to the https://docling-project.github.io/docling-java/0.4.5/docling-serve/serve-api[project documentation] for more information.

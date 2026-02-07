@@ -20,7 +20,8 @@ class OllamaDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withClassLoader(new FilteredClassLoader(RestartScope.class, OllamaConnectionProperties.class))
-            .withConfiguration(AutoConfigurations.of(OllamaDevServicesAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(OllamaDevServicesAutoConfiguration.class))
+            .withPropertyValues("arconia.dev.services.ollama.ignore-native-service=true");
 
     @Test
     void autoConfigurationNotActivatedWhenGloballyDisabled() {

@@ -1,6 +1,6 @@
 package io.arconia.dev.services.ollama;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;
@@ -18,32 +18,23 @@ import static org.mockito.Mockito.when;
  */
 class OnOllamaNativeUnavailableTests {
 
-    private static final MockEnvironment environment = new MockEnvironment();
+    private MockEnvironment environment;
 
-    private static final ConditionContext context = mock(ConditionContext.class);
+    private ConditionContext context;
 
-    private static final AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+    private AnnotatedTypeMetadata metadata;
 
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
+        environment = new MockEnvironment();
+        context = mock(ConditionContext.class);
+        metadata = mock(AnnotatedTypeMetadata.class);
         when(context.getEnvironment()).thenReturn(environment);
     }
 
     @Test
-    void shouldMatchWhenNotInDevMode() {
+    void shouldMatchWhenOllamaNativeConnectionIsNotAvailable() {
         OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
-        when(spyCondition.isDevMode()).thenReturn(false);
-
-        ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage()).contains("Dev mode is not enabled");
-    }
-
-    @Test
-    void shouldMatchWhenInDevModeButOllamaNativeConnectionIsNotAvailable() {
-        OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
-        when(spyCondition.isDevMode()).thenReturn(true);
         when(spyCondition.isOllamaNativeConnection(anyString())).thenReturn(false);
 
         ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
@@ -53,38 +44,59 @@ class OnOllamaNativeUnavailableTests {
     }
 
     @Test
-    void shouldNotMatchWhenInDevModeAndOllamaNativeConnectionIsAvailable() {
+    void shouldNotMatchWhenOllamaNativeConnectionIsAvailable() {
         OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
-        when(spyCondition.isDevMode()).thenReturn(true);
         when(spyCondition.isOllamaNativeConnection(anyString())).thenReturn(true);
 
         ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("Dev mode is enabled and Ollama native connection detected at");
+                .contains("Ollama native connection detected at");
     }
 
     @Test
-    void shouldNotMatchWhenInDevModeAndOllamaNativeConnectionIsAvailableWithCustomBaseUrl() {
+    void shouldNotMatchWhenOllamaNativeConnectionIsAvailableWithCustomBaseUrl() {
         environment.setProperty("spring.ai.ollama.base-url", "http://custom-host:8080");
         OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
-        when(spyCondition.isDevMode()).thenReturn(true);
         when(spyCondition.isOllamaNativeConnection("http://custom-host:8080")).thenReturn(true);
 
         ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
 
         assertThat(outcome.isMatch()).isFalse();
         assertThat(outcome.getMessage())
-                .contains("Dev mode is enabled and Ollama native connection detected at http://custom-host:8080");
+                .contains("Ollama native connection detected at http://custom-host:8080");
     }
 
     @Test
-    void shouldMatchWhenInDevModeButOllamaNativeConnectionIsNotAvailableWithCustomBaseUrl() {
+    void shouldMatchWhenOllamaNativeConnectionIsNotAvailableWithCustomBaseUrl() {
         environment.setProperty("spring.ai.ollama.base-url", "http://custom-host:8080");
         OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
-        when(spyCondition.isDevMode()).thenReturn(true);
         when(spyCondition.isOllamaNativeConnection("http://custom-host:8080")).thenReturn(false);
+
+        ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
+
+        assertThat(outcome.isMatch()).isTrue();
+        assertThat(outcome.getMessage()).contains("Ollama native connection is not available");
+    }
+
+    @Test
+    void shouldMatchWhenIgnoreNativeServiceIsTrue() {
+        environment.setProperty("arconia.dev.services.ollama.ignore-native-service", "true");
+        OnOllamaNativeUnavailable condition = new OnOllamaNativeUnavailable();
+
+        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
+
+        assertThat(outcome.isMatch()).isTrue();
+        assertThat(outcome.getMessage()).contains("Usage of Ollama native service is ignored");
+        assertThat(outcome.getMessage()).contains("ignore-native-service");
+    }
+
+    @Test
+    void shouldCheckConnectionWhenIgnoreNativeServiceIsFalse() {
+        environment.setProperty("arconia.dev-services.ollama.ignore-native-service", "false");
+        OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
+        when(spyCondition.isOllamaNativeConnection(anyString())).thenReturn(false);
 
         ConditionOutcome outcome = spyCondition.getMatchOutcome(context, metadata);
 
