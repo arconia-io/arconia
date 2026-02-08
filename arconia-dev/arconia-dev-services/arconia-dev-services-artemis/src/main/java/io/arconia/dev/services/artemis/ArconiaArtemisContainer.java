@@ -16,11 +16,11 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaArtemisContainer extends ArtemisContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "apache/activemq-artemis";
-
     private static final Logger logger = LoggerFactory.getLogger(ArconiaArtemisContainer.class);
 
     private final ArtemisDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "apache/activemq-artemis";
 
     // CORE, MQTT, AMQP, HORNETQ, STOMP, OPENWIRE
     static final int TCP_PORT = 61616;

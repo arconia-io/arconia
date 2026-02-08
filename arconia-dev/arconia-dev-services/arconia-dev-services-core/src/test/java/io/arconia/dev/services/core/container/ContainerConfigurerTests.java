@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import io.arconia.core.support.Incubating;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 import org.testcontainers.containers.GenericContainer;
@@ -14,9 +12,11 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.VolumeMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -234,6 +234,57 @@ class ContainerConfigurerTests {
     }
 
     @Test
+    void volumesConfigurationShouldBindSingleVolume() {
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+                .withVolumes(List.of(
+                        new VolumeMapping("/host/path", "/container/path")
+                ));
+
+        ContainerConfigurer.volumes(container, properties);
+
+        assertThat(container.getBinds()).hasSize(1);
+        assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path");
+        assertThat(container.getBinds().getFirst().getVolume().getPath()).isEqualTo("/container/path");
+        assertThat(container.getBinds().getFirst().getAccessMode().toString()).isEqualTo("rw");
+    }
+
+    @Test
+    void volumesConfigurationShouldBindMultipleVolumes() {
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+                .withVolumes(List.of(
+                        new VolumeMapping("/host/path1", "/container/path1"),
+                        new VolumeMapping("/host/path2", "/container/path2"),
+                        new VolumeMapping("/host/path3", "/container/path3")
+                ));
+
+        ContainerConfigurer.volumes(container, properties);
+
+        assertThat(container.getBinds()).hasSize(3);
+        assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path1");
+        assertThat(container.getBinds().getFirst().getVolume().getPath()).isEqualTo("/container/path1");
+        assertThat(container.getBinds().getFirst().getAccessMode().toString()).isEqualTo("rw");
+        assertThat(container.getBinds().get(1).getPath()).isEqualTo("/host/path2");
+        assertThat(container.getBinds().get(1).getVolume().getPath()).isEqualTo("/container/path2");
+        assertThat(container.getBinds().get(1).getAccessMode().toString()).isEqualTo("rw");
+        assertThat(container.getBinds().get(2).getPath()).isEqualTo("/host/path3");
+        assertThat(container.getBinds().get(2).getVolume().getPath()).isEqualTo("/container/path3");
+        assertThat(container.getBinds().get(2).getAccessMode().toString()).isEqualTo("rw");
+    }
+
+    @Test
+    void volumesConfigurationShouldHandleEmptyVolumesList() {
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+                .withVolumes(List.of());
+
+        ContainerConfigurer.volumes(container, properties);
+
+        assertThat(container.getBinds()).isEmpty();
+    }
+
+    @Test
     void jdbcConfigurationShouldApplyUsername() {
         JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
@@ -308,11 +359,17 @@ class ContainerConfigurerTests {
         private List<String> networkAliases = List.of();
         private Duration startupTimeout = Duration.ofSeconds(30);
         private List<ResourceMapping> resources = List.of();
+        private List<VolumeMapping> volumes = List.of();
         private boolean shared = false;
 
         @Override
         public String getImageName() {
             return "test-image:latest";
+        }
+
+        @Override
+        public void setImageName(String imageName) {
+
         }
 
         @Override
@@ -356,6 +413,16 @@ class ContainerConfigurerTests {
         }
 
         @Override
+        public List<VolumeMapping> getVolumes() {
+            return volumes;
+        }
+
+        public TestBaseDevServicesProperties withVolumes(List<VolumeMapping> volumes) {
+            this.volumes = volumes;
+            return this;
+        }
+
+        @Override
         public boolean isShared() {
             return shared;
         }
@@ -376,6 +443,9 @@ class ContainerConfigurerTests {
         public String getImageName() {
             return "test-db:latest";
         }
+
+        @Override
+        public void setImageName(String imageName) {}
 
         @Override
         public String getUsername() {

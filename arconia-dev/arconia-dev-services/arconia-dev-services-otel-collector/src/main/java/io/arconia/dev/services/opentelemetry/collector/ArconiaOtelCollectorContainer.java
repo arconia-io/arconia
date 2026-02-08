@@ -12,9 +12,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCollectorContainer> {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "otel/opentelemetry-collector-contrib";
-
     private final OtelCollectorDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "otel/opentelemetry-collector-contrib";
 
     static final int OTLP_GRPC_PORT = 4317;
 

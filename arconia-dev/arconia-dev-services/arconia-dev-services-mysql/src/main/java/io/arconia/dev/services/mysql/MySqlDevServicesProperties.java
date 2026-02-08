@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the MySQL Dev Services.
@@ -18,10 +19,6 @@ import io.arconia.dev.services.api.config.ResourceMapping;
 public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.mysql";
-
-    static final String DEFAULT_USERNAME = "arconia";
-    static final String DEFAULT_PASSWORD = "arconia";
-    static final String DEFAULT_DB_NAME = "arconia";
 
     /**
      * Whether the dev service is enabled.
@@ -68,6 +65,14 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
     private Duration startupTimeout = Duration.ofSeconds(30);
 
     /**
+     * Files or directories to mount from the host filesystem into the container.
+     * They are mounted at the specified destination path inside the container
+     * at startup and are mutable (read-write). Changes in either the host
+     * or the container will be immediately reflected in the other.
+     */
+    private List<VolumeMapping> volumes = new ArrayList<>();
+
+    /**
      * Username to be used for connecting to the database.
      */
     private String username = DEFAULT_USERNAME;
@@ -93,6 +98,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -102,6 +108,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return imageName;
     }
 
+    @Override
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -111,6 +118,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return environment;
     }
 
+    @Override
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -120,6 +128,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return networkAliases;
     }
 
+    @Override
     public void setNetworkAliases(List<String> networkAliases) {
         this.networkAliases = networkAliases;
     }
@@ -129,6 +138,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return port;
     }
 
+    @Override
     public void setPort(int port) {
         this.port = port;
     }
@@ -138,6 +148,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return resources;
     }
 
+    @Override
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
     }
@@ -147,6 +158,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return shared;
     }
 
+    @Override
     public void setShared(boolean shared) {
         this.shared = shared;
     }
@@ -156,8 +168,19 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return startupTimeout;
     }
 
+    @Override
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    @Override
+    public List<VolumeMapping> getVolumes() {
+        return volumes;
+    }
+
+    @Override
+    public void setVolumes(List<VolumeMapping> volumes) {
+        this.volumes = volumes;
     }
 
     @Override
@@ -165,6 +188,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return username;
     }
 
+    @Override
     public void setUsername(String username) {
         this.username = username;
     }
@@ -174,6 +198,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return password;
     }
 
+    @Override
     public void setPassword(String password) {
         this.password = password;
     }
@@ -183,6 +208,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return dbName;
     }
 
+    @Override
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -192,6 +218,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
         return initScriptPaths;
     }
 
+    @Override
     public void setInitScriptPaths(List<String> initScriptPaths) {
         this.initScriptPaths = initScriptPaths;
     }

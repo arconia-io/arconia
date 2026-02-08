@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaOllamaContainer extends OllamaContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
-
     private final OllamaDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
 
     static final int OLLAMA_PORT = 11434;
 

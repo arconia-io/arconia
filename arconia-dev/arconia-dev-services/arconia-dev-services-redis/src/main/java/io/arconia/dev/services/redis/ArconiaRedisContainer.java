@@ -11,9 +11,9 @@ import io.arconia.testcontainers.redis.RedisContainer;
  */
 final class ArconiaRedisContainer extends RedisContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "redis";
-
     private final RedisDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "redis";
 
     static final int REDIS_PORT = 6379;
 

@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaOracleXeContainer extends OracleContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-xe";
-
     private final OracleXeDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-xe";
 
     static final int ORACLE_PORT = 1521;
 

@@ -15,11 +15,11 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaPulsarContainer extends PulsarContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
-
     private static final Logger logger = LoggerFactory.getLogger(ArconiaPulsarContainer.class);
 
     private final PulsarDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
 
     public ArconiaPulsarContainer(PulsarDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));

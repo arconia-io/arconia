@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaLgtmStackContainer extends LgtmStackContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
-
     private final LgtmDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
 
     static final int GRAFANA_PORT = 3000;
 

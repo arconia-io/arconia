@@ -11,9 +11,9 @@ import io.arconia.testcontainers.phoenix.PhoenixContainer;
  */
 final class ArconiaPhoenixContainer extends PhoenixContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "arizephoenix/phoenix";
-
     private final PhoenixDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "arizephoenix/phoenix";
 
     public ArconiaPhoenixContainer(PhoenixDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));

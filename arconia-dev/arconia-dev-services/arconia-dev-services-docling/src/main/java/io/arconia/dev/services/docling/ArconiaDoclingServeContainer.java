@@ -14,6 +14,8 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
 
     private final DoclingDevServicesProperties properties;
 
+    static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/docling-project/docling-serve";
+
     public ArconiaDoclingServeContainer(DoclingDevServicesProperties properties) {
         super(DoclingServeContainerConfig.builder()
                 .image(properties.getImageName())
@@ -26,6 +28,7 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
         this.setNetworkAliases(properties.getNetworkAliases());
         this.withReuse(BootstrapMode.isDev() && properties.isShared());
         ContainerConfigurer.resources(this, properties);
+        ContainerConfigurer.volumes(this, properties);
     }
 
     @Override

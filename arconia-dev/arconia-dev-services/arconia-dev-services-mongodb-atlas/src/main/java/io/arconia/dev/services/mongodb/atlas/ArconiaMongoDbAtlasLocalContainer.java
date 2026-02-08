@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaMongoDbAtlasLocalContainer extends MongoDBAtlasLocalContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mongodb/mongodb-atlas-local";
-
     private final MongoDbAtlasDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "mongodb/mongodb-atlas-local";
 
     static final int MONGODB_PORT = 27017;
 

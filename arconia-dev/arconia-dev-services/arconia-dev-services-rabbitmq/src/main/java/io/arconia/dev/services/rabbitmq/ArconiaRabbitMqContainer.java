@@ -15,11 +15,11 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaRabbitMqContainer extends RabbitMQContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "rabbitmq";
-
     private static final Logger logger = LoggerFactory.getLogger(ArconiaRabbitMqContainer.class);
 
     private final RabbitMqDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "rabbitmq";
 
     static final int AMQP_PORT = 5672;
 

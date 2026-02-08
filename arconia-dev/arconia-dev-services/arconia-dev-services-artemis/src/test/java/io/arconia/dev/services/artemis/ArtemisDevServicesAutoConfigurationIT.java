@@ -1,16 +1,13 @@
 package io.arconia.dev.services.artemis;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.activemq.ArtemisContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,103 +15,67 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link ArtemisDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class ArtemisDevServicesAutoConfigurationIT {
+class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(ArtemisDevServicesAutoConfiguration.class));
+    private static final ApplicationContextRunner contextRunner = defaultContextRunner(ArtemisDevServicesAutoConfiguration.class);
 
-    @BeforeEach
-    void setUp() {
-        BootstrapMode.clear();
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
     }
 
-    @Test
-    void autoConfigurationNotActivatedWhenGloballyDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(ArtemisContainer.class));
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return ArtemisDevServicesAutoConfiguration.class;
     }
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.artemis.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(ArtemisContainer.class));
+    @Override
+    protected Class<? extends GenericContainer<?>> getContainerClass() {
+        return ArtemisContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "artemis";
     }
 
     @Test
     void containerAvailableInDevMode() {
-        contextRunner
+        getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
-                    assertThat(context).hasSingleBean(ArtemisContainer.class);
-                    ArtemisContainer container = context.getBean(ArtemisContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apache/activemq-artemis");
+                    assertThat(context).hasSingleBean(getContainerClass());
+                    var container = (ArtemisContainer) context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains(ArconiaArtemisContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.getBinds()).isEmpty();
                     container.start();
                     assertThat(container.getUser()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_USERNAME);
                     assertThat(container.getPassword()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_PASSWORD);
                     container.stop();
 
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(ArtemisContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("singleton");
-                });
-    }
-
-    @Test
-    void containerAvailableInTestMode() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(ArtemisContainer.class);
-                    ArtemisContainer container = context.getBean(ArtemisContainer.class);
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThatHasSingletonScope(context);
                 });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-                .withPropertyValues(
-                        "arconia.dev.services.artemis.environment.KEY=value",
-                        "arconia.dev.services.artemis.network-aliases=network1",
-                        "arconia.dev.services.artemis.resources[0].source-path=test-resource.txt",
-                        "arconia.dev.services.artemis.resources[0].container-path=/tmp/test-resource.txt",
-                        "arconia.dev.services.artemis.username=myusername",
-                        "arconia.dev.services.artemis.password=mypassword"
-                )
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
+                "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
+                "arconia.dev.services.%s.password=mypassword".formatted(getServiceName())
+        );
+
+        getContextRunner()
+                .withPropertyValues(properties)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(ArtemisContainer.class);
-                    ArtemisContainer container = context.getBean(ArtemisContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.getNetworkAliases()).contains("network1");
+                    var container = (ArtemisContainer) context.getBean(getContainerClass());
                     container.start();
-                    assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
-                    assertThat(container.execInContainer("ls", "/tmp").getStdout()).contains("test-resource.txt");
+                    assertThatConfigurationIsApplied(container);
                     assertThat(container.getUser()).isEqualTo("myusername");
                     assertThat(container.getPassword()).isEqualTo("mypassword");
                     container.stop();
-                });
-    }
-
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
-                .withInitializer(context -> {
-                    context.getBeanFactory().registerScope("restart", new SimpleThreadScope());
-                })
-                .run(context -> {
-                    assertThat(context).hasSingleBean(ArtemisContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(ArtemisContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
                 });
     }
 

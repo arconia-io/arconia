@@ -1,57 +1,22 @@
 package io.arconia.dev.services.mongodb;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
-import io.arconia.dev.services.api.config.ResourceMapping;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 /**
  * Unit tests for {@link MongoDbDevServicesProperties}.
  */
-class MongoDbDevServicesPropertiesTests {
+class MongoDbDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<MongoDbDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        MongoDbDevServicesProperties properties = new MongoDbDevServicesProperties();
-
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("mongo");
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getNetworkAliases()).isEmpty();
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getResources()).isEmpty();
-        assertThat(properties.isShared()).isFalse();
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofSeconds(30));
+    @Override
+    protected MongoDbDevServicesProperties createProperties() {
+        return new MongoDbDevServicesProperties();
     }
 
-    @Test
-    void shouldUpdateValues() {
-        MongoDbDevServicesProperties properties = new MongoDbDevServicesProperties();
-
-        properties.setEnabled(false);
-        properties.setImageName("mongo:latest");
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setNetworkAliases(List.of("network1", "network2"));
-        properties.setPort(ArconiaMongoDbContainer.MONGODB_PORT);
-        properties.setResources(List.of(new ResourceMapping("test-resource.txt", "/tmp/test-resource.txt")));
-        properties.setShared(true);
-        properties.setStartupTimeout(Duration.ofMinutes(1));
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("mongo:latest");
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
-        assertThat(properties.getPort()).isEqualTo(ArconiaMongoDbContainer.MONGODB_PORT);
-        assertThat(properties.getResources()).hasSize(1);
-        assertThat(properties.getResources().getFirst().getSourcePath()).isEqualTo("test-resource.txt");
-        assertThat(properties.getResources().getFirst().getContainerPath()).isEqualTo("/tmp/test-resource.txt");
-        assertThat(properties.isShared()).isTrue();
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(1));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaMongoDbContainer.COMPATIBLE_IMAGE_NAME)
+                .build();
     }
 
 }

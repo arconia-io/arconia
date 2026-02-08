@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaMongoDbContainer extends MongoDBContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mongo";
-
     private final MongoDbDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "mongo";
 
     static final int MONGODB_PORT = 27017;
 

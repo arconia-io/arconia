@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "postgres";
-
     private final PostgresqlDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "postgres";
 
     public ArconiaPostgreSqlContainer(PostgresqlDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));

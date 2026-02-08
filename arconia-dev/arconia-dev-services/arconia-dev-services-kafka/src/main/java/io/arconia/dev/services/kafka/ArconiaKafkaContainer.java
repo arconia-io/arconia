@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaKafkaContainer extends KafkaContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "apache/kafka-native";
-
     private final KafkaDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "apache/kafka-native";
 
     static final int KAFKA_PORT = 9092;
 

@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaLldapContainer extends LLdapContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
-
     private final LldapDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
 
     static final int LDAP_PORT = 3890;
 

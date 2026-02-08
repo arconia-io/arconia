@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Arize Phoenix Dev Services.
@@ -64,6 +65,14 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
     private Duration startupTimeout = Duration.ofSeconds(30);
 
     /**
+     * Files or directories to mount from the host filesystem into the container.
+     * They are mounted at the specified destination path inside the container
+     * at startup and are mutable (read-write). Changes in either the host
+     * or the container will be immediately reflected in the other.
+     */
+    private List<VolumeMapping> volumes = new ArrayList<>();
+
+    /**
      * Fixed port for exposing the Phoenix OTLP gRPC port to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
@@ -74,6 +83,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -83,6 +93,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return imageName;
     }
 
+    @Override
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -92,6 +103,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return environment;
     }
 
+    @Override
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -101,6 +113,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return networkAliases;
     }
 
+    @Override
     public void setNetworkAliases(List<String> networkAliases) {
         this.networkAliases = networkAliases;
     }
@@ -110,6 +123,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return port;
     }
 
+    @Override
     public void setPort(int port) {
         this.port = port;
     }
@@ -119,6 +133,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return resources;
     }
 
+    @Override
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
     }
@@ -128,6 +143,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return shared;
     }
 
+    @Override
     public void setShared(boolean shared) {
         this.shared = shared;
     }
@@ -137,8 +153,19 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
         return startupTimeout;
     }
 
+    @Override
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    @Override
+    public List<VolumeMapping> getVolumes() {
+        return volumes;
+    }
+
+    @Override
+    public void setVolumes(List<VolumeMapping> volumes) {
+        this.volumes = volumes;
     }
 
     public int getOtlpGrpcPort() {

@@ -3,6 +3,7 @@ package io.arconia.dev.services.core.container;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.Assert;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.MountableFile;
@@ -10,6 +11,7 @@ import org.testcontainers.utility.MountableFile;
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
+import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Utility class for configuring Dev Service containers.
@@ -30,6 +32,7 @@ public final class ContainerConfigurer {
                 .withReuse(isDevMode() && properties.isShared());
 
         resources(container, properties);
+        volumes(container, properties);
     }
 
     /**
@@ -71,6 +74,15 @@ public final class ContainerConfigurer {
 
         // 4. If still not found, throw exception.
         throw new IllegalArgumentException("Resource not found in classpath or filesystem: " + resourcePath);
+    }
+
+    /**
+     * Configures mapped volumes to be bound with read-write access to the container.
+     */
+    public static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
+        for (VolumeMapping mapping : properties.getVolumes()) {
+            container.withFileSystemBind(mapping.getHostPath(), mapping.getContainerPath(), BindMode.READ_WRITE);
+        }
     }
 
     /**

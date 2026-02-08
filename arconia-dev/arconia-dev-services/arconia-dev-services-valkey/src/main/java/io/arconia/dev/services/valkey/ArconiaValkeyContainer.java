@@ -11,9 +11,9 @@ import io.arconia.testcontainers.valkey.ValkeyContainer;
  */
 final class ArconiaValkeyContainer extends ValkeyContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/valkey-io/valkey";
-
     private final ValkeyDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/valkey-io/valkey";
 
     public ArconiaValkeyContainer(ValkeyDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));

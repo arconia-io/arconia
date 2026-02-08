@@ -1,7 +1,7 @@
 package io.arconia.dev.services.api.config;
 
 /**
- * Mapping of resources to be mounted into the container.
+ * Mapping of resources to be copied into a container.
  */
 public final class ResourceMapping {
 

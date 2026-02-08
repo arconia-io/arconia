@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaMariaDbContainer extends MariaDBContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mariadb";
-
     private final MariaDbDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "mariadb";
 
     static final Integer MARIADB_PORT = 3306;
 

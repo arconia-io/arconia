@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.arconia.dev.services.api.config.ResourceMapping;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Redis Dev Services.
@@ -53,7 +53,6 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
      */
     private List<ResourceMapping> resources = new ArrayList<>();
 
-
     /**
      * Whether the dev service is shared among applications.
      * Only applicable in dev mode.
@@ -65,11 +64,20 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
      */
     private Duration startupTimeout = Duration.ofSeconds(30);
 
+    /**
+     * Files or directories to mount from the host filesystem into the container.
+     * They are mounted at the specified destination path inside the container
+     * at startup and are mutable (read-write). Changes in either the host
+     * or the container will be immediately reflected in the other.
+     */
+    private List<VolumeMapping> volumes = new ArrayList<>();
+
     @Override
     public boolean isEnabled() {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -79,6 +87,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return imageName;
     }
 
+    @Override
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -88,6 +97,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return environment;
     }
 
+    @Override
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -97,6 +107,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return networkAliases;
     }
 
+    @Override
     public void setNetworkAliases(List<String> networkAliases) {
         this.networkAliases = networkAliases;
     }
@@ -106,6 +117,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return port;
     }
 
+    @Override
     public void setPort(int port) {
         this.port = port;
     }
@@ -115,6 +127,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return resources;
     }
 
+    @Override
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
     }
@@ -124,6 +137,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return shared;
     }
 
+    @Override
     public void setShared(boolean shared) {
         this.shared = shared;
     }
@@ -133,8 +147,19 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties {
         return startupTimeout;
     }
 
+    @Override
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
+    }
+
+    @Override
+    public List<VolumeMapping> getVolumes() {
+        return volumes;
+    }
+
+    @Override
+    public void setVolumes(List<VolumeMapping> volumes) {
+        this.volumes = volumes;
     }
 
 }

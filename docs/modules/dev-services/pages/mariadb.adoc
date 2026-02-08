@@ -55,6 +55,10 @@ You can configure the Dev Service via configuration properties.
 | `30s`
 | Maximum waiting time for the service to start.
 
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
 | `arconia.dev.services.{service-name}.username`
 | `arconia`
 | Username to be used for connecting to the database.

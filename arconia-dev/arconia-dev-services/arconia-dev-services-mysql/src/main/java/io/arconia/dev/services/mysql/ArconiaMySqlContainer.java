@@ -11,9 +11,9 @@ import io.arconia.dev.services.core.util.ContainerUtils;
  */
 final class ArconiaMySqlContainer extends MySQLContainer {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mysql";
-
     private final MySqlDevServicesProperties properties;
+
+    static final String COMPATIBLE_IMAGE_NAME = "mysql";
 
     static final int MYSQL_PORT = 3306;
 

@@ -70,4 +70,34 @@ public interface BaseDevServicesProperties {
         return Duration.ofSeconds(30);
     }
 
+    /**
+     * Files or directories to mount from the host filesystem into the container.
+     * They are mounted at the specified destination path inside the container
+     * at startup and are mutable (read-write). Changes in either the host
+     * or the container will be immediately reflected in the other.
+     */
+    default List<VolumeMapping> getVolumes() {
+        return List.of();
+    }
+
+    // Setters
+
+    default void setEnabled(boolean enabled) {}
+
+    void setImageName(String imageName);
+
+    default void setEnvironment(Map<String, String> environment) {}
+
+    default void setNetworkAliases(List<String> networkAliases) {}
+
+    default void setPort(int port) {}
+
+    default void setResources(List<ResourceMapping> resources) {}
+
+    default void setShared(boolean shared) {}
+
+    default void setStartupTimeout(Duration startupTimeout) {}
+
+    default void setVolumes(List<VolumeMapping> volumes) {}
+
 }
