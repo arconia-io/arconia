@@ -51,7 +51,7 @@ class ArconiaPostgreSqlContainerTests {
         assertThat(actualTimeout).isEqualTo(properties.getStartupTimeout());
 
         String regex = getWaitStrategyRegex(waitStrategy);
-        assertThat(regex).isEqualTo("(" + READY_REGEX + ")?(" + SKIPPING_INITIALIZATION_REGEX + ")?");
+        assertThat(regex).isEqualTo("(" + READY_REGEX + "|" + SKIPPING_INITIALIZATION_REGEX + ")");
 
         int times = getWaitStrategyTimes(waitStrategy);
         assertThat(times).isEqualTo(2);

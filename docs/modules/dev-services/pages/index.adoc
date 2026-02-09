@@ -15,10 +15,10 @@ Dev Services are designed exclusively for development and testing workflows. The
 
 When Arconia Dev Services are detected during development or testing, the framework:
 
-1. **Starts the container**: Launches an OCI container for the required service using Testcontainers.
-2. **Configures the connection**: Sets up connection properties (URLs, credentials, ports).
-3. **Wires the service**: Integrates the service into your application context using Spring Boot's Service Connection mechanism.
-4. **Manages the lifecycle**: Handles container startup, shutdown, and cleanup.
+1. Starts the container: Launches an OCI container for the required service using Testcontainers.
+2. Configures the connection: Sets up connection properties (URLs, credentials, ports).
+3. Wires the service: Integrates the service into your application context using Spring Boot's Service Connection mechanism.
+4. Manages the lifecycle: Handles container startup, shutdown, and cleanup.
 
 This happens transparently without requiring any code or configuration. Dev Services take precedence over manually configured properties, ensuring your application always connects to the containerized service during development and testing.
 
@@ -82,9 +82,9 @@ The auto-configuration mechanism uses https://docs.spring.io/spring-boot/referen
 
 Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans in the application context:
 
-* **Startup**: Services start when the application context initializes.
-* **Shutdown**: Services stop when the context closes.
-* **Persistence**: Services remain available throughout the lifecycle of your application or tests.
+* Startup: Services start when the application context initializes.
+* Shutdown: Services stop when the context closes.
+* Persistence: Services remain available throughout the lifecycle of your application or tests.
 
 When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools], Dev Services are not recreated on restart. They remain running in the background, ensuring a smooth development experience without wait times or state loss.
 
@@ -140,8 +140,8 @@ Individual services provide additional configuration properties. Refer to each s
 
 Dev Services can be shared across multiple applications during development, allowing you to reuse the same containerized service for multiple projects running simultaneously. This is particularly useful for:
 
-* **Distributed systems**: Share a message broker (e.g., RabbitMQ, Kafka) or observability platform (e.g. Grafana LGTM) across multiple services.
-* **Resource efficiency**: Avoid running duplicate containers for the same service, especially for resource-intensive services (e.g., Docling, Ollama).
+* Distributed systems: Share a message broker (e.g., RabbitMQ, Kafka) or observability platform (e.g. Grafana LGTM) across multiple services.
+* Resource efficiency: Avoid running duplicate containers for the same service, especially for resource-intensive services (e.g., Docling, Ollama).
 
 To enable/disable sharing for a specific Dev Service, you can set the `arconia.dev.services.<service-name>.shared` property. By default, sharing is enabled only for services where it makes sense, such as message brokers, observability platforms, and resource-intensive services.
 
@@ -194,7 +194,7 @@ arconia:
       otel-collector:
         resources:
           - source-path: otel-collector-config.yml
-            container-path: /etc/otel-collector-config.yml
+            container-path: /etc/otelcol-contrib/config.yaml
 ----
 
 ==== Source Path Resolution
@@ -242,6 +242,23 @@ arconia:
           - host-path: ./postgresql/data
             container-path: /var/lib/postgresql/data/pgdata
 ----
+
+=== Networks
+
+Dev Service containers are connected to the default Docker/Podman network and are accessible from your application via the local host and dynamically assigned ports.
+
+==== Fixed Ports
+
+By default, Dev Services use random available ports to avoid conflicts. However, you can configure fixed exposed ports when needed. Each service supports the `arconia.dev.services.<service-name>.port` property to specify a fixed port for exposing the primary service provided by the container.
+
+Some Dev Services may expose multiple ports (e.g., management console ports). In such cases, the Dev Service will offer additional properties to configure fixed ports for those secondary services. For example, the RabbitMQ Dev Service provides the common `arconia.dev.services.rabbitmq.port` property for the main AMQP port and an additional `arconia.dev.services.rabbitmq.management-console-port` property for the management UI port.
+
+A common use case for fixed ports is when other tools or services in your development environment need to connect to the Dev Service container using a known port, or for exposing UI consoles through well-known ports. For example, to expose Grafana on port 3000.
+
+[WARNING]
+====
+Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary.
+====
 
 === Startup Sequence
 
@@ -376,23 +393,6 @@ Response example:
 ----
 
 The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging.
-
-== Networking
-
-Dev Service containers are connected to the default Docker/Podman network and are accessible from your application via the local host and dynamically assigned ports.
-
-=== Fixed Ports
-
-By default, Dev Services use random available ports to avoid conflicts. However, you can configure fixed exposed ports when needed. Each service supports the `arconia.dev.services.<service-name>.port` property to specify a fixed port for exposing the primary service provided by the container.
-
-Some Dev Services may expose multiple ports (e.g., management console ports). In such cases, the Dev Service will offer additional properties to configure fixed ports for those secondary services. For example, the RabbitMQ Dev Service provides the common `arconia.dev.services.rabbitmq.port` property for the main AMQP port and an additional `arconia.dev.services.rabbitmq.management-console-port` property for the management UI port.
-
-A common use case for fixed ports is when other tools or services in your development environment need to connect to the Dev Service container using a known port, or for exposing UI consoles through well-known ports. For example, to expose Grafana on port 3000.
-
-[WARNING]
-====
-Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary.
-====
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
