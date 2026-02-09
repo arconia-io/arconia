@@ -63,6 +63,31 @@ include::ROOT:partial$app-run.adoc[]
 Want to verify which Dev Services are running? If Spring Boot Actuator is in your classpath, check the `/actuator/devservices` endpoint.
 ====
 
+== Supported Services
+
+* Data Stores
+** xref:mariadb.adoc[MariaDB]
+** xref:mongodb.adoc[MongoDB]
+** xref:mongodb-atlas.adoc[MongoDB Atlas]
+** xref:mysql.adoc[MySQL]
+** xref:oracle.adoc[Oracle]
+** xref:oracle-xe.adoc[Oracle XE]
+** xref:postgresql.adoc[PostgreSQL]
+** xref:redis.adoc[Redis]
+** xref:valkey.adoc[Valkey]
+* Event Brokers
+** xref:artemis.adoc[Artemis]
+** xref:kafka.adoc[Kafka]
+** xref:pulsar.adoc[Pulsar]
+** xref:rabbitmq.adoc[RabbitMQ]
+* Observability
+** xref:lgtm.adoc[Grafana LGTM]
+** xref:otel-collector.adoc[OpenTelemetry Collector]
+** xref:phoenix.adoc[Phoenix]
+* xref:docling.adoc[Docling]
+* xref:lldap.adoc[LLDAP]
+* xref:ollama.adoc[Ollama]
+
 == Using Dev Services
 
 Dev Services are available as separate modules for each supported service. You can find the complete list in the xref:_supported_services[Supported Services] section below.
@@ -243,7 +268,7 @@ arconia:
             container-path: /var/lib/postgresql/data/pgdata
 ----
 
-=== Networks
+=== Networks and Ports
 
 Dev Service containers are connected to the default Docker/Podman network and are accessible from your application via the local host and dynamically assigned ports.
 
@@ -272,31 +297,6 @@ In case you want to disable all Dev Services at once, you can set the `arconia.d
 ====
 Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
 ====
-
-== Supported Services
-
-* Data Stores
-** xref:mariadb.adoc[MariaDB]
-** xref:mongodb.adoc[MongoDB]
-** xref:mongodb-atlas.adoc[MongoDB Atlas]
-** xref:mysql.adoc[MySQL]
-** xref:oracle.adoc[Oracle]
-** xref:oracle-xe.adoc[Oracle XE]
-** xref:postgresql.adoc[PostgreSQL]
-** xref:redis.adoc[Redis]
-** xref:valkey.adoc[Valkey]
-* Event Brokers
-** xref:artemis.adoc[Artemis]
-** xref:kafka.adoc[Kafka]
-** xref:pulsar.adoc[Pulsar]
-** xref:rabbitmq.adoc[RabbitMQ]
-* Observability
-** xref:lgtm.adoc[Grafana LGTM]
-** xref:otel-collector.adoc[OpenTelemetry Collector]
-** xref:phoenix.adoc[Phoenix]
-* xref:docling.adoc[Docling]
-* xref:lldap.adoc[LLDAP]
-* xref:ollama.adoc[Ollama]
 
 == Actuator
 
