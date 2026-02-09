@@ -78,7 +78,7 @@ public final class KeycloakContainerRegistrar implements BeanDefinitionRegistryP
                 return;
             }
 
-            var container = KeycloakContainerFactory.create(properties);
+            var container = new ArconiaKeycloakContainer(properties);
 
             logger.info("Starting Keycloak dev-services container (image={})", properties.getImageName());
             container.start();

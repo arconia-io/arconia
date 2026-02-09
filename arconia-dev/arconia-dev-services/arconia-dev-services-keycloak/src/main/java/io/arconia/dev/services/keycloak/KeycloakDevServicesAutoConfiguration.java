@@ -1,35 +1,49 @@
 package io.arconia.dev.services.keycloak;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.keycloak.KeycloakDevServicesAutoConfiguration.KeycloakDevServicesRegistrar;
 
 /**
  * Auto-configuration for Keycloak Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.keycloak", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("keycloak")
 @EnableConfigurationProperties(KeycloakDevServicesProperties.class)
+@Import(KeycloakDevServicesRegistrar.class)
 public final class KeycloakDevServicesAutoConfiguration {
-    @Bean
-    static BeanDefinitionRegistryPostProcessor keycloakContainerRegistrar() {
-        return new KeycloakContainerRegistrar();
-    }
 
-    @Bean
-    static BeanFactoryPostProcessor keycloakContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(KeycloakContainer.class);
+
+    static class KeycloakDevServicesRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(KeycloakDevServicesProperties.CONFIG_PREFIX, KeycloakDevServicesProperties.class);
+
+            registry.registerDevService(service -> service
+                    .name("keycloak")
+                    .description("Keycloak Dev Service")
+                    .container(container -> container
+                            .type(KeycloakContainer.class)
+                            .supplier(() -> new ArconiaKeycloakContainer(properties))
+                    ));
+
+        }
+
     }
 
     @Bean

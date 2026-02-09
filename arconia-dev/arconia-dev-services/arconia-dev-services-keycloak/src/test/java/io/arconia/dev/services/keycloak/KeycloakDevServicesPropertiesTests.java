@@ -1,18 +1,44 @@
 package io.arconia.dev.services.keycloak;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.Duration;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 /**
  * Unit tests for {@link KeycloakDevServicesProperties}.
  */
-class KeycloakDevServicesPropertiesTests {
+class KeycloakDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<KeycloakDevServicesProperties> {
+
+
+    @Override
+    protected KeycloakDevServicesProperties createProperties() {
+        return new KeycloakDevServicesProperties();
+    }
+
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaKeycloakContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
+    }
+
+
+    @Test
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        KeycloakDevServicesProperties properties = createProperties();
+
+        assertThat(properties.getManagementConsolePort()).isEqualTo(0);
+        assertThat(properties.getUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
+        assertThat(properties.getPassword()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_PASSWORD);
+    }
+
+
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
@@ -22,31 +48,20 @@ class KeycloakDevServicesPropertiesTests {
         assertThat(properties.getImageName()).contains("keycloak/keycloak");
         assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
+        assertTrue(properties.isShared());
         assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
         assertThat(properties.getUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
         assertThat(properties.getPassword()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_PASSWORD);
     }
-
     @Test
-    void shouldUpdateValues() {
-        KeycloakDevServicesProperties properties = new KeycloakDevServicesProperties();
+    void shouldUpdateServiceSpecificValues() {
+        KeycloakDevServicesProperties properties = createProperties();
 
-        properties.setEnabled(false);
-        properties.setImageName("keycloak/keycloak:latest");
-        properties.setPort(8080);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
+        properties.setManagementConsolePort(ArconiaKeycloakContainer.WEB_CONSOLE_PORT);
         properties.setUsername("myusername");
         properties.setPassword("mypassword");
 
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("keycloak/keycloak:latest");
-        assertThat(properties.getPort()).isEqualTo(8080);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+        assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaKeycloakContainer.WEB_CONSOLE_PORT);
         assertThat(properties.getUsername()).isEqualTo("myusername");
         assertThat(properties.getPassword()).isEqualTo("mypassword");
     }

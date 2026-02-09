@@ -2,103 +2,80 @@ package io.arconia.dev.services.keycloak;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 /**
  * Integration tests for {@link KeycloakDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class KeycloakDevServicesAutoConfigurationIT {
+class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(KeycloakDevServicesAutoConfiguration.class));
+    private static final ApplicationContextRunner contextRunner = defaultContextRunner(KeycloakDevServicesAutoConfiguration.class);
 
-    @BeforeEach
-    void setUp() {
-        BootstrapMode.clear();
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
     }
 
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return KeycloakDevServicesAutoConfiguration.class;
+    }
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.keycloak.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(KeycloakContainer.class));
+    @Override
+    protected Class<? extends GenericContainer<?>> getContainerClass() {
+        return KeycloakContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "keycloak";
     }
 
     @Test
-    void containerAvailableInDevelopmentMode() {
-        contextRunner
+    void containerAvailableInDevMode() {
+        getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(ctx -> {
-                    assertThat(ctx).hasSingleBean(KeycloakContainer.class);
-                    KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
-                    assertThat(bean.getDockerImageName()).contains("/keycloak/keycloak");
-                    assertThat(bean.getEnv()).isNotEmpty();
-                    assertThat(bean.isShouldBeReused()).isTrue();
-                    bean.start();
-                    assertThat(bean.getAdminUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
-                    assertThat(bean.getAdminPassword()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_PASSWORD);
-                });
-    }
+                .run(context -> {
+                    assertThat(context).hasSingleBean(getContainerClass());
+                    var container = (KeycloakContainer) context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains(ArconiaKeycloakContainer.COMPATIBLE_IMAGE_NAME);
+                    assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
+                    assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.getBinds()).isEmpty();
+                    container.start();
+                    assertThat(container.getAdminUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
+                    assertThat(container.getAdminPassword()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_PASSWORD);
+                    container.stop();
 
-    @Test
-    void containerAvailableInTestMode() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .run(ctx -> {
-                    assertThat(ctx).hasSingleBean(KeycloakContainer.class);
-                    KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
-                    assertThat(bean.getDockerImageName()).contains("/keycloak/keycloak");
-                    assertThat(bean.getEnv()).isNotEmpty();
-                    assertThat(bean.isShouldBeReused()).isFalse();
-                    bean.start();
-                    assertThat(bean.getAdminUsername()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_USERNAME);
-                    assertThat(bean.getAdminPassword()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_PASSWORD);
+                    assertThatHasSingletonScope(context);
                 });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-            .withSystemProperties("arconia.bootstrap.mode=dev")
-            .withPropertyValues(
-                "arconia.dev.services.keycloak.port=1234",
-                "arconia.dev.services.keycloak.shared=never",
-                "arconia.dev.services.keycloak.startup-timeout=90s",
-                "arconia.dev.services.keycloak.username=myusername",
-                "arconia.dev.services.keycloak.password=mypassword")
-            .run(ctx -> {
-                assertThat(ctx).hasSingleBean(KeycloakContainer.class);
-                KeycloakContainer bean = ctx.getBean(KeycloakContainer.class);
-                assertThat(bean.isShouldBeReused()).isFalse();
-                bean.start();
-                assertThat(bean.getMappedPort(ArconiaKeycloakContainer.WEB_CONSOLE_PORT)).isEqualTo(1234);
-                assertThat(bean.getAdminUsername()).isEqualTo("myusername");
-                assertThat(bean.getAdminPassword()).isEqualTo("mypassword");
-            });
-    }
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
+                "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
+                "arconia.dev.services.%s.password=mypassword".formatted(getServiceName())
+        );
 
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
+        getContextRunner()
+                .withPropertyValues(properties)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(KeycloakContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(KeycloakContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    var container = (KeycloakContainer) context.getBean(getContainerClass());
+                    container.start();
+                    assertThatConfigurationIsApplied(container);
+                    assertThat(container.getAdminUsername()).isEqualTo("myusername");
+                    assertThat(container.getAdminPassword()).isEqualTo("mypassword");
+                    container.stop();
                 });
     }
 
