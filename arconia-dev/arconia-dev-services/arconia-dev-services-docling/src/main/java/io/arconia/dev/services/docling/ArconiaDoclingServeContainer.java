@@ -3,28 +3,39 @@ package io.arconia.dev.services.docling;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
+import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * A {@link DoclingServeContainer} specialized for Arconia Dev Services.
+ * A {@link DoclingServeContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaDoclingServeContainer extends DoclingServeContainer {
+final class ArconiaDoclingServeContainer extends DoclingServeContainer {
 
     private final DoclingDevServicesProperties properties;
 
-    /**
-     * HTTP REST API port.
-     */
-    protected static final int DOCLING_PORT = 5001;
+    static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/docling-project/docling-serve";
 
-    public ArconiaDoclingServeContainer(DoclingServeContainerConfig config, DoclingDevServicesProperties properties) {
-        super(config);
+    public ArconiaDoclingServeContainer(DoclingDevServicesProperties properties) {
+        super(DoclingServeContainerConfig.builder()
+                .image(properties.getImageName())
+                .enableUi(BootstrapMode.isDev() && properties.isEnableUi())
+                .containerEnv(properties.getEnvironment())
+                .startupTimeout(properties.getStartupTimeout())
+                .build());
         this.properties = properties;
+
+        this.setNetworkAliases(properties.getNetworkAliases());
+        this.withReuse(BootstrapMode.isDev() && properties.isShared());
+        ContainerConfigurer.resources(this, properties);
+        ContainerConfigurer.volumes(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), DOCLING_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), DEFAULT_DOCLING_PORT);
         }
     }
 

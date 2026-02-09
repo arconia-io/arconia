@@ -1,48 +1,40 @@
 package io.arconia.dev.services.rabbitmq;
 
-import java.time.Duration;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link RabbitMqDevServicesProperties}.
  */
-class RabbitMqDevServicesPropertiesTests {
+class RabbitMqDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<RabbitMqDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        RabbitMqDevServicesProperties properties = new RabbitMqDevServicesProperties();
+    @Override
+    protected RabbitMqDevServicesProperties createProperties() {
+        return new RabbitMqDevServicesProperties();
+    }
 
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("rabbitmq");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaRabbitMqContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
     }
 
     @Test
-    void shouldUpdateValues() {
-        RabbitMqDevServicesProperties properties = new RabbitMqDevServicesProperties();
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        RabbitMqDevServicesProperties properties = createProperties();
+        assertThat(properties.getManagementConsolePort()).isEqualTo(0);
+    }
 
-        properties.setEnabled(false);
-        properties.setImageName("rabbitmq:latest");
-        properties.setPort(ArconiaRabbitMqContainer.RABBITMQ_PORT);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("rabbitmq:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaRabbitMqContainer.RABBITMQ_PORT);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+    @Test
+    void shouldUpdateServiceSpecificValues() {
+        RabbitMqDevServicesProperties properties = createProperties();
+        properties.setManagementConsolePort(ArconiaRabbitMqContainer.HTTP_PORT);
+        assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaRabbitMqContainer.HTTP_PORT);
     }
 
 }

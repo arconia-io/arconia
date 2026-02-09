@@ -3,28 +3,34 @@ package io.arconia.dev.services.oracle;
 import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * An {@link OracleContainer} specialized for Arconia Dev Services.
+ * An {@link OracleContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaOracleContainer extends OracleContainer {
+final class ArconiaOracleContainer extends OracleContainer {
 
     private final OracleDevServicesProperties properties;
 
-    /**
-     * Oracle Net Listener port (JDBC/SQL*Net).
-     */
-    protected static final int ORACLE_PORT = 1521;
+    static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-free";
 
-    public ArconiaOracleContainer(DockerImageName dockerImageName, OracleDevServicesProperties properties) {
-        super(dockerImageName);
+    static final int ORACLE_PORT = 1521;
+
+    public ArconiaOracleContainer(OracleDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
+        ContainerConfigurer.jdbc(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
+        if (ContainerUtils.isValidPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), ORACLE_PORT);
         }
     }
+
 }

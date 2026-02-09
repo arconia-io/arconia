@@ -1,53 +1,46 @@
 package io.arconia.dev.services.docling;
 
-import java.time.Duration;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link DoclingDevServicesProperties}.
  */
-class DoclingDevServicesPropertiesTests {
+class DoclingDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<DoclingDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
+    @Override
+    protected DoclingDevServicesProperties createProperties() {
+        return new DoclingDevServicesProperties();
+    }
 
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("ghcr.io/docling-project/docling-serve");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
-        assertThat(properties.isEnableUi()).isTrue();
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaDoclingServeContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
     }
 
     @Test
-    void shouldUpdateValues() {
-        DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        DoclingDevServicesProperties properties = createProperties();
 
-        properties.setEnabled(false);
-        properties.setImageName("ghcr.io/docling-project/docling-serve:latest");
-        properties.setPort(ArconiaDoclingServeContainer.DOCLING_PORT);
+        assertThat(properties.isEnableUi()).isTrue();
+        assertThat(properties.getApiKey()).isNull();
+    }
 
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
+    @Test
+    void shouldUpdateServiceSpecificValues() {
+        DoclingDevServicesProperties properties = createProperties();
+
         properties.setEnableUi(false);
+        properties.setApiKey("caput-draconis");
 
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("ghcr.io/docling-project/docling-serve:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaDoclingServeContainer.DOCLING_PORT);
-
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
         assertThat(properties.isEnableUi()).isFalse();
+        assertThat(properties.getApiKey()).isEqualTo("caput-draconis");
     }
 
 }

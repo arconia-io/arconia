@@ -3,39 +3,38 @@ package io.arconia.dev.services.lldap;
 import org.testcontainers.ldap.LLdapContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * A {@link LLdapContainer} specialized for Arconia Dev Services.
+ * A {@link LLdapContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaLldapContainer extends LLdapContainer {
+final class ArconiaLldapContainer extends LLdapContainer {
 
     private final LldapDevServicesProperties properties;
 
-    /**
-     * Web UI port.
-     */
-    protected static final int LLDAP_WEB_CONSOLE_PORT = 17170;
+    static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
 
-    /**
-     * LDAP service port (unencrypted LDAP).
-     */
-    protected static final int LLDAP_PORT = 3890;
+    static final int LDAP_PORT = 3890;
 
-    /**
-     * LDAP service port (encrypted LDAP).
-     */
-    protected static final int LDAPS_PORT = 6360;
+    static final int UI_PORT = 17170;
 
-
-    public ArconiaLldapContainer(DockerImageName image, LldapDevServicesProperties properties) {
-        super(image);
+    public ArconiaLldapContainer(LldapDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), LLDAP_WEB_CONSOLE_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), LDAP_PORT);
+        }
+        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+            addFixedExposedPort(properties.getManagementConsolePort(), UI_PORT);
         }
     }
+
 }

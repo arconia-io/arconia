@@ -1,44 +1,43 @@
 package io.arconia.dev.services.lgtm;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.grafana.LgtmStackContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.LgtmDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 
 /**
  * Auto-configuration for Grafana LGTM Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.lgtm", name = "enabled", matchIfMissing = true)
+@ConditionalOnDevServicesEnabled("lgtm")
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)
+@Import(LgtmDevServicesRegistrar.class)
 public final class LgtmDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
+    static class LgtmDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    LgtmStackContainer lgtmContainer(LgtmDevServicesProperties properties) {
-        return new ArconiaLgtmStackContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(LgtmDevServicesProperties.CONFIG_PREFIX, LgtmDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor lgtmContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(LgtmStackContainer.class);
+            registry.registerDevService(service -> service
+                    .name("lgtm")
+                    .description("Grafana LGTM Dev Service")
+                    .container(container -> container
+                            .type(ArconiaLgtmStackContainer.class)
+                            .supplier(() -> new ArconiaLgtmStackContainer(properties))
+                    ));
+        }
+
     }
 
 }

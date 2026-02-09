@@ -11,7 +11,7 @@ For example, if you have a script named `init.sql` located in the `src/main/reso
 
 [source,properties,subs="attributes"]
 ----
-arconia.dev.services.{service-name}.init-script-paths=classpath:data/init.sql
+arconia.dev.services.{service-name}.init-script-paths=data/init.sql
 ----
 
 [TIP]

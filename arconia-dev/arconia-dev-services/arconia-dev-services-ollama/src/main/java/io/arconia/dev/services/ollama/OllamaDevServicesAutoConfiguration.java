@@ -1,42 +1,45 @@
 package io.arconia.dev.services.ollama;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.ollama.OllamaContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.OllamaDevServicesRegistrar;
 
 /**
  * Auto-configuration for Ollama Dev Services.
+ * <p>
+ * If the application is running in dev mode and a native Ollama connection is detected,
+ * the auto-configuration will be skipped.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.ollama", name = "enabled")
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("ollama")
+@ConditionalOnOllamaNativeUnavailable
 @EnableConfigurationProperties(OllamaDevServicesProperties.class)
+@Import(OllamaDevServicesRegistrar.class)
 public final class OllamaDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
+    static class OllamaDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    OllamaContainer ollamaContainer(OllamaDevServicesProperties properties) {
-        return new ArconiaOllamaContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(OllamaDevServicesProperties.CONFIG_PREFIX, OllamaDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor ollamaContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(OllamaContainer.class);
+            registry.registerDevService(service -> service
+                    .name("ollama")
+                    .description("Ollama Dev Service")
+                    .container(container -> container
+                            .type(ArconiaOllamaContainer.class)
+                            .supplier(() -> new ArconiaOllamaContainer(properties))
+                    ));
+        }
+
     }
 
 }

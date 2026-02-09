@@ -18,16 +18,14 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("arizephoenix/phoenix");
 
-    private static final int DEFAULT_GRPC_PORT = 4317;
+    public static final int GRPC_PORT = 4317;
 
-    private static final int DEFAULT_HTTP_PORT = 6006;
+    public static final int HTTP_PORT = 6006;
 
     public PhoenixContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        addExposedPorts(DEFAULT_GRPC_PORT, DEFAULT_HTTP_PORT);
-
+        addExposedPorts(GRPC_PORT, HTTP_PORT);
         waitingFor(Wait.forLogMessage(".*Application startup complete.*", 1));
     }
 
@@ -42,11 +40,11 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
     }
 
     public Integer getGrpcPort() {
-        return getMappedPort(DEFAULT_GRPC_PORT);
+        return getMappedPort(GRPC_PORT);
     }
 
     public Integer getHttpPort() {
-        return getMappedPort(DEFAULT_HTTP_PORT);
+        return getMappedPort(HTTP_PORT);
     }
 
 }

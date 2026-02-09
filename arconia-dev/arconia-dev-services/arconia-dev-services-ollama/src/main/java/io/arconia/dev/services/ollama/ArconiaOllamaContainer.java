@@ -3,28 +3,33 @@ package io.arconia.dev.services.ollama;
 import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * An {@link OllamaContainer} specialized for Arconia Dev Services.
+ * An {@link OllamaContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaOllamaContainer extends OllamaContainer {
+final class ArconiaOllamaContainer extends OllamaContainer {
 
     private final OllamaDevServicesProperties properties;
 
-    /**
-     * Ollama HTTP API port.
-     */
-    protected static final int OLLAMA_PORT = 11434;
+    static final String COMPATIBLE_IMAGE_NAME = "ollama/ollama";
 
-    public ArconiaOllamaContainer(DockerImageName dockerImageName, OllamaDevServicesProperties properties) {
-        super(dockerImageName);
+    static final int OLLAMA_PORT = 11434;
+
+    public ArconiaOllamaContainer(OllamaDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
+        if (ContainerUtils.isValidPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), OLLAMA_PORT);
         }
     }
+
 }

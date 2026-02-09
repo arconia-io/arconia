@@ -1,89 +1,105 @@
 package io.arconia.dev.services.postgresql;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
+
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link PostgresqlDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class PostgresqlDevServicesAutoConfigurationIT {
+class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigurationIT {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(PostgresqlDevServicesAutoConfiguration.class));
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(PostgresqlDevServicesAutoConfiguration.class)
+            .withClassLoader(new FilteredClassLoader(RestartScope.class, PgVectorStore.class));
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-            .withPropertyValues("arconia.dev.services.postgresql.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(PostgreSQLContainer.class));
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
+    }
+
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return PostgresqlDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends JdbcDatabaseContainer<?>> getContainerClass() {
+        return PostgreSQLContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "postgresql";
     }
 
     @Test
     void containerAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(PostgreSQLContainer.class);
-            PostgreSQLContainer container = context.getBean(PostgreSQLContainer.class);
-            assertThat(container.getDockerImageName()).contains("postgres");
+        getContextRunner().run(context -> {
+            assertThat(context).hasSingleBean(getContainerClass());
+            var container = context.getBean(getContainerClass());
+            assertThat(container.getDockerImageName()).contains(ArconiaPostgreSqlContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
             container.start();
-            assertThat(container.getUsername()).isEqualTo("test");
-            assertThat(container.getPassword()).isEqualTo("test");
-            assertThat(container.getDatabaseName()).isEqualTo("test");
+            assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
+            assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
+            assertThat(container.getDatabaseName()).isEqualTo(DEFAULT_DB_NAME);
+            container.stop();
+
+            assertThatHasSingletonScope(context);
         });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-            .withSystemProperties("arconia.bootstrap.mode=dev")
-            .withPropertyValues(
-                "arconia.dev.services.postgresql.port=1234",
-                "arconia.dev.services.postgresql.environment.POSTGRES_USER=postgres",
-                "arconia.dev.services.postgresql.shared=never",
-                "arconia.dev.services.postgresql.startup-timeout=90s",
-                "arconia.dev.services.postgresql.username=mytest",
-                "arconia.dev.services.postgresql.password=mytest",
-                "arconia.dev.services.postgresql.db-name=mytest",
-                "arconia.dev.services.postgresql.init-script-paths=sql/init.sql"
-            )
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(), commonJdbcConfigurationProperties());
+
+        getContextRunner()
+            .withPropertyValues(properties)
             .run(context -> {
-                assertThat(context).hasSingleBean(PostgreSQLContainer.class);
-                PostgreSQLContainer container = context.getBean(PostgreSQLContainer.class);
-                assertThat(container.getEnv()).contains("POSTGRES_USER=postgres");
-                assertThat(container.isShouldBeReused()).isFalse();
+                var container = context.getBean(getContainerClass());
                 container.start();
-                assertThat(container.getMappedPort(ArconiaPostgreSqlContainer.POSTGRESQL_PORT)).isEqualTo(1234);
-                assertThat(container.getUsername()).isEqualTo("mytest");
-                assertThat(container.getPassword()).isEqualTo("mytest");
-                assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                assertThatConfigurationIsApplied(container);
+                assertThatJdbcConfigurationIsApplied(container);
                 assertThat(container.execInContainer("psql", "-U", "mytest", "-d", "mytest", "-t", "-A", "-c",
                     "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text")
                     .getStdout())
                     .contains("true");
-
+                container.stop();
             });
     }
 
     @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
+    void pgVectorImageConfiguredWhenNotSpringAi() {
+        getContextRunner()
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PostgreSQLContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(PostgreSQLContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains("postgres");
+                });
+    }
+
+    @Test
+    void pgVectorImageConfiguredWhenSpringAi() {
+        getContextRunner()
+                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains("pgvector/pgvector");
                 });
     }
 

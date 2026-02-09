@@ -1,42 +1,41 @@
 package io.arconia.dev.services.lldap;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.ldap.LLdapContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.ArtemisDevServicesRegistrar;
 
 /**
  * Auto-configuration for LLDAP Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.lldap", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("lldap")
 @EnableConfigurationProperties(LldapDevServicesProperties.class)
+@Import(ArtemisDevServicesRegistrar.class)
 public final class LldapDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
+    static class ArtemisDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    LLdapContainer lldapContainer(LldapDevServicesProperties properties) {
-        return new ArconiaLldapContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(LldapDevServicesProperties.CONFIG_PREFIX, LldapDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor lldapContainerContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(LLdapContainer.class);
+            registry.registerDevService(service -> service
+                    .name("lldap")
+                    .description("LLDAP Dev Service")
+                    .container(container -> container
+                            .type(ArconiaLldapContainer.class)
+                            .supplier(() -> new ArconiaLldapContainer(properties))
+                    ));
+        }
+
     }
 
 }

@@ -1,48 +1,49 @@
 package io.arconia.dev.services.lgtm;
 
 import java.time.Duration;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link LgtmDevServicesProperties}.
  */
-class LgtmDevServicesPropertiesTests {
+class LgtmDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<LgtmDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
+    @Override
+    protected LgtmDevServicesProperties createProperties() {
+        return new LgtmDevServicesProperties();
+    }
 
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("grafana/otel-lgtm");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .startupTimeout(Duration.ofMinutes(2))
+                .build();
     }
 
     @Test
-    void shouldUpdateValues() {
-        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        LgtmDevServicesProperties properties = createProperties();
 
-        properties.setEnabled(false);
-        properties.setImageName("grafana/otel-lgtm:latest");
-        properties.setPort(ArconiaLgtmStackContainer.GRAFANA_PORT);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
+        assertThat(properties.getOtlpGrpcPort()).isEqualTo(0);
+        assertThat(properties.getOtlpHttpPort()).isEqualTo(0);
+    }
 
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("grafana/otel-lgtm:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaLgtmStackContainer.GRAFANA_PORT);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+    @Test
+    void shouldUpdateServiceSpecificValues() {
+        LgtmDevServicesProperties properties = createProperties();
+
+        properties.setOtlpGrpcPort(ArconiaLgtmStackContainer.OTLP_GRPC_PORT);
+        properties.setOtlpHttpPort(ArconiaLgtmStackContainer.OTLP_HTTP_PORT);
+
+        assertThat(properties.getOtlpGrpcPort()).isEqualTo(ArconiaLgtmStackContainer.OTLP_GRPC_PORT);
+        assertThat(properties.getOtlpHttpPort()).isEqualTo(ArconiaLgtmStackContainer.OTLP_HTTP_PORT);
     }
 
 }

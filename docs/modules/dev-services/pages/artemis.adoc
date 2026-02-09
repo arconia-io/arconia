@@ -16,7 +16,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
 == Configuring the Dev Service
 
@@ -25,28 +25,52 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-| `arconia.dev.services.artemis.enabled`
+| `arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-| `arconia.dev.services.artemis.image-name`
-| `artemis`
+| `arconia.dev.services.{service-name}.image-name`
+| `apache/activemq-artemis`
 | Full name of the container image used in the dev service.
 
-| `arconia.dev.services.artemis.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the service. Example: `ANONYMOUS_LOGIN: "true"`.
+| Environment variables to set in the service.
 
-| `arconia.dev.services.artemis.shared`
-| `dev-mode`
-| When the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-| `arconia.dev.services.artemis.username`
-| `artemis`
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Artemis' TCP port to the host (CORE, MQTT, AMQP, HORNETQ, STOMP, OPENWIRE). When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `30s`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+| `arconia.dev.services.{service-name}.management-console-port`
+| `0`
+| Fixed port for exposing the Artemis Management Console to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.username`
+| `arconia`
 | Username for the Artemis administrator user.
 
-| `arconia.dev.services.artemis.password`
-| `artemis`
+| `arconia.dev.services.{service-name}.password`
+| `arconia`
 | Password for the Artemis administrator user.
 |===
 

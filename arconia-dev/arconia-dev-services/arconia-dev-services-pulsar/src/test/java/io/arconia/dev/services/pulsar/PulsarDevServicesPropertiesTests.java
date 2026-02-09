@@ -1,48 +1,41 @@
 package io.arconia.dev.services.pulsar;
 
-import java.time.Duration;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
+import org.testcontainers.pulsar.PulsarContainer;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link PulsarDevServicesProperties}.
  */
-class PulsarDevServicesPropertiesTests {
+class PulsarDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<PulsarDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
+    @Override
+    protected PulsarDevServicesProperties createProperties() {
+        return new PulsarDevServicesProperties();
+    }
 
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("apachepulsar/pulsar");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaPulsarContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
     }
 
     @Test
-    void shouldUpdateValues() {
-        PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        PulsarDevServicesProperties properties = createProperties();
+        assertThat(properties.getManagementConsolePort()).isEqualTo(0);
+    }
 
-        properties.setEnabled(false);
-        properties.setImageName("apachepulsar/pulsar:latest");
-        properties.setPort(ArconiaPulsarContainer.PULSAR_PORT);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("apachepulsar/pulsar:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaPulsarContainer.PULSAR_PORT);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+    @Test
+    void shouldUpdateServiceSpecificValues() {
+        PulsarDevServicesProperties properties = createProperties();
+        properties.setManagementConsolePort(PulsarContainer.BROKER_HTTP_PORT);
+        assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaPulsarContainer.BROKER_HTTP_PORT);
     }
 
 }

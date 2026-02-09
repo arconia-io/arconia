@@ -1,88 +1,81 @@
 package io.arconia.dev.services.oracle;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.oracle.OracleContainer;
 
+import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
+
+import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link OracleDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-@Disabled("Too slow and heavy for the deployment pipeline")
-class OracleDevServicesAutoConfigurationIT {
+class OracleDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigurationIT {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(OracleDevServicesAutoConfiguration.class));
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(OracleDevServicesAutoConfiguration.class);
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-            .withPropertyValues("arconia.dev.services.oracle.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(OracleContainer.class));
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
+    }
+
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return OracleDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends JdbcDatabaseContainer<?>> getContainerClass() {
+        return OracleContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "oracle";
     }
 
     @Test
+    @Disabled("Too slow and heavy for the deployment pipeline.")
     void containerAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(OracleContainer.class);
-            OracleContainer container = context.getBean(OracleContainer.class);
-            assertThat(container.getDockerImageName()).contains("gvenzl/oracle-free");
+            assertThat(context).hasSingleBean(getContainerClass());
+            var container = context.getBean(getContainerClass());
+            assertThat(container.getDockerImageName()).contains(ArconiaOracleContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
             container.start();
-            assertThat(container.getUsername()).isEqualTo("test");
-            assertThat(container.getPassword()).isEqualTo("test");
-            assertThat(container.getDatabaseName()).isEqualTo("test");
+            assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
+            assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
+            assertThat(container.getDatabaseName()).isEqualTo(DEFAULT_DB_NAME);
+            container.stop();
+
+            assertThatHasSingletonScope(context);
         });
     }
 
     @Test
+    @Disabled("Too slow and heavy for the deployment pipeline.")
     void containerConfigurationApplied() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues(
-                        "arconia.dev.services.oracle.port=1234",
-                        "arconia.dev.services.oracle.environment.KEY=value",
-                        "arconia.dev.services.oracle.shared=never",
-                        "arconia.dev.services.oracle.startup-timeout=90s",
-                        "arconia.dev.services.oracle.username=mytest",
-                        "arconia.dev.services.oracle.password=mytest",
-                        "arconia.dev.services.oracle.db-name=mytest",
-                        "arconia.dev.services.oracle.init-script-paths=sql/init.sql"
-                )
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OracleContainer.class);
-                    OracleContainer container = context.getBean(OracleContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(), commonJdbcConfigurationProperties());
 
+        contextRunner
+                .withPropertyValues(properties)
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaOracleContainer.ORACLE_PORT)).isEqualTo(1234);
-                    assertThat(container.getUsername()).isEqualTo("mytest");
-                    assertThat(container.getPassword()).isEqualTo("mytest");
-                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
-
-                });
-    }
-
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OracleContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(OracleContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    assertThatConfigurationIsApplied(container);
+                    assertThatJdbcConfigurationIsApplied(container);
+                    container.stop();
                 });
     }
 

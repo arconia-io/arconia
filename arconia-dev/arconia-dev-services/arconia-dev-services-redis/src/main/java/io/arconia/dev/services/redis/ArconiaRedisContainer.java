@@ -2,30 +2,34 @@ package io.arconia.dev.services.redis;
 
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.redis.RedisContainer;
 
 /**
- * A {@link RedisContainer} specialized for Arconia Dev Services.
+ * A {@link RedisContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaRedisContainer extends RedisContainer {
+final class ArconiaRedisContainer extends RedisContainer {
 
     private final RedisDevServicesProperties properties;
 
-    /**
-     * Redis RESP protocol port.
-     */
-    private static final int REDIS_PORT = 6379;
+    static final String COMPATIBLE_IMAGE_NAME = "redis";
 
-    public ArconiaRedisContainer(DockerImageName dockerImageName, RedisDevServicesProperties properties) {
-        super(dockerImageName);
+    static final int REDIS_PORT = 6379;
+
+    public ArconiaRedisContainer(RedisDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
+        if (ContainerUtils.isValidPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), REDIS_PORT);
         }
     }
+
 }

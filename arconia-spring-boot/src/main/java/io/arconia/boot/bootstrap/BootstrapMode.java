@@ -26,6 +26,20 @@ public enum BootstrapMode {
     }
 
     /**
+     * Whether the application is running in dev mode.
+     */
+    public static boolean isDev() {
+        return detect() == DEV;
+    }
+
+    /**
+     * Whether the application is running in test mode.
+     */
+    public static boolean isTest() {
+        return detect() == TEST;
+    }
+
+    /**
      * Clears the detected bootstrap mode cache.
      * Do NOT use this method in production code.
      */

@@ -1,15 +1,14 @@
 package io.arconia.dev.services.pulsar;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.pulsar.PulsarContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,11 +16,29 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link PulsarDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class PulsarDevServicesAutoConfigurationIT {
+class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(PulsarDevServicesAutoConfiguration.class));
+    private static final ApplicationContextRunner contextRunner = defaultContextRunner(PulsarDevServicesAutoConfiguration.class);
+
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
+    }
+
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return PulsarDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends GenericContainer<?>> getContainerClass() {
+        return ArconiaPulsarContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "pulsar";
+    }
 
     @BeforeEach
     void setUp() {
@@ -29,67 +46,32 @@ class PulsarDevServicesAutoConfigurationIT {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-            .withPropertyValues("arconia.dev.services.pulsar.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(PulsarContainer.class));
-    }
-
-    @Test
-    void containerAvailableInDevelopmentMode() {
-        contextRunner
+    void containerAvailableInDevMode() {
+        getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PulsarContainer.class);
-                    var container = context.getBean(PulsarContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apachepulsar/pulsar");
+                    assertThat(context).hasSingleBean(getContainerClass());
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains(ArconiaPulsarContainer.COMPATIBLE_IMAGE_NAME);
+                    assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
-                });
-    }
 
-    @Test
-    void containerAvailableInTestMode() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(PulsarContainer.class);
-                    var container = context.getBean(PulsarContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apachepulsar/pulsar");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThatHasSingletonScope(context);
                 });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues(
-                        "arconia.dev.services.pulsar.port=1234",
-                        "arconia.dev.services.pulsar.environment.KEY=value",
-                        "arconia.dev.services.pulsar.shared=never",
-                        "arconia.dev.services.pulsar.startup-timeout=90s"
-                )
-                .run(context -> {
-                    assertThat(context).hasSingleBean(PulsarContainer.class);
-                    var container = context.getBean(PulsarContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
 
+        getContextRunner()
+                .withPropertyValues(properties)
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
                     container.start();
-                    assertThat(container.getMappedPort(ArconiaPulsarContainer.PULSAR_WEB_UI_PORT)).isEqualTo(1234);
-                });
-    }
-
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
-                .run(context -> {
-                    assertThat(context).hasSingleBean(PulsarContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(PulsarContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    assertThatConfigurationIsApplied(container);
+                    container.stop();
                 });
     }
 

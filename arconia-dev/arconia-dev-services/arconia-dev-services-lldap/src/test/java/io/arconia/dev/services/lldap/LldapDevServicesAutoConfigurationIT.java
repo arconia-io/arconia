@@ -1,12 +1,13 @@
 package io.arconia.dev.services.lldap;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ldap.LLdapContainer;
+
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,56 +15,61 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link LldapDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class LldapDevServicesAutoConfigurationIT {
+class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(LldapDevServicesAutoConfiguration.class));
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(LldapDevServicesAutoConfiguration.class);
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.lldap.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(LLdapContainer.class));
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
+    }
+
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return LldapDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends GenericContainer<?>> getContainerClass() {
+        return LLdapContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "lldap";
     }
 
     @Test
     void containerAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(LLdapContainer.class);
-            LLdapContainer container = context.getBean(LLdapContainer.class);
-            assertThat(container.getDockerImageName()).contains("lldap/lldap");
+        getContextRunner().run(context -> {
+            assertThat(context).hasSingleBean(getContainerClass());
+            var container = context.getBean(getContainerClass());
+            assertThat(container.getDockerImageName()).contains(ArconiaLldapContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
+            assertThat(container.getBinds()).isEmpty();
+
+            assertThatHasSingletonScope(context);
         });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues(
-                        "arconia.dev.services.lldap.environment.KEY=value",
-                        "arconia.dev.services.lldap.shared=never",
-                        "arconia.dev.services.lldap.startup-timeout=90s")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(LLdapContainer.class);
-                    LLdapContainer container = context.getBean(LLdapContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
-                });
-    }
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
+                "arconia.dev.services.%s.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman".formatted(getServiceName()),
+                "arconia.dev.services.%s.environment.LLDAP_LDAP_USER_PASS=password".formatted(getServiceName())
+        );
 
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
+        getContextRunner()
+                .withPropertyValues(properties)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(LLdapContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(LLdapContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    var container = context.getBean(getContainerClass());
+                    container.start();
+                    assertThatConfigurationIsApplied(container);
+                    assertThat(container.getEnv()).contains("LLDAP_JWT_SECRET=letItGoWannaBuildSnowman");
+                    assertThat(container.getEnv()).contains("LLDAP_LDAP_USER_PASS=password");
+                    container.stop();
                 });
     }
 

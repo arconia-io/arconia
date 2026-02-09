@@ -17,7 +17,9 @@ dependencies {
 
         api project(":arconia-core")
 
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-api")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-artemis")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-docling")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-kafka")

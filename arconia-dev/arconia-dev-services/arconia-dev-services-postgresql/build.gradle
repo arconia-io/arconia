@@ -16,10 +16,18 @@ dependencies {
 
     optional "org.springframework.boot:spring-boot-devtools"
 
+    testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
+    testImplementation "org.springframework.ai:spring-ai-pgvector-store"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testRuntimeOnly "org.postgresql:postgresql"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 publishing {

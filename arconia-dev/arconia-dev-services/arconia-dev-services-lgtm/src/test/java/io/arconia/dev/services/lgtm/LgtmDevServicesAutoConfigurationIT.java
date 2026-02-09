@@ -1,15 +1,13 @@
 package io.arconia.dev.services.lgtm;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,86 +15,65 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for {@link LgtmDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class LgtmDevServicesAutoConfigurationIT {
+class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(LgtmDevServicesAutoConfiguration.class));
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(LgtmDevServicesAutoConfiguration.class);
 
-    @BeforeEach
-    void setUp() {
-        BootstrapMode.clear();
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
     }
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.lgtm.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return LgtmDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends GenericContainer<?>> getContainerClass() {
+        return LgtmStackContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "lgtm";
     }
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
-        contextRunner
+        getContextRunner()
                 .withPropertyValues("arconia.otel.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(LgtmStackContainer.class));
     }
 
     @Test
-    void containerAvailableInDevelopmentMode() {
-        contextRunner
+    void containerAvailableInDevMode() {
+        getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
-                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                    assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
+                    assertThat(context).hasSingleBean(getContainerClass());
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getDockerImageName()).contains(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
-                });
-    }
+                    assertThat(container.getBinds()).isEmpty();
 
-    @Test
-    void containerAvailableInTestMode() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                    assertThat(container.getDockerImageName()).contains("grafana/otel-lgtm");
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    assertThatHasSingletonScope(context);
                 });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues(
-                        "arconia.dev.services.lgtm.port=1234",
-                        "arconia.dev.services.lgtm.environment.KEY=value",
-                        "arconia.dev.services.lgtm.shared=never",
-                        "arconia.dev.services.lgtm.startup-timeout=90s")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                    LgtmStackContainer container = context.getBean(LgtmStackContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    container.start();
-                    assertThat(container.getMappedPort(ArconiaLgtmStackContainer.GRAFANA_PORT)).isEqualTo(1234);
-                });
-    }
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
 
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
+        getContextRunner()
+                .withPropertyValues(properties)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(LgtmStackContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(LgtmStackContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    var container = context.getBean(getContainerClass());
+                    container.start();
+                    assertThatConfigurationIsApplied(container);
+                    container.stop();
                 });
     }
 

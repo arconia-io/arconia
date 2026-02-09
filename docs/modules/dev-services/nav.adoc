@@ -14,7 +14,7 @@
 ** xref:kafka.adoc[Kafka]
 ** xref:pulsar.adoc[Pulsar]
 ** xref:rabbitmq.adoc[RabbitMQ]
-* OpenTelemetry
+* Observability
 ** xref:lgtm.adoc[Grafana LGTM]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]

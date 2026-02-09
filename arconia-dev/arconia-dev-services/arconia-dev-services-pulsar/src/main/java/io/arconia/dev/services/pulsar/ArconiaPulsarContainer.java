@@ -1,40 +1,48 @@
 package io.arconia.dev.services.pulsar;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
 /**
- * A {@link PulsarContainer} specialized for Arconia Dev Services.
+ * A {@link PulsarContainer} configured for use with Arconia Dev Services.
  */
-public final class ArconiaPulsarContainer extends PulsarContainer {
+final class ArconiaPulsarContainer extends PulsarContainer {
+
+    private static final Logger logger = LoggerFactory.getLogger(ArconiaPulsarContainer.class);
 
     private final PulsarDevServicesProperties properties;
 
-    /**
-     * Pulsar Web UI port.
-     */
-    protected static final int PULSAR_WEB_UI_PORT = 8080;
+    static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
 
-    /**
-     * Pulsar binary protocol port.
-     */
-    protected static final int PULSAR_PORT = 6650;
-
-        /**
-     * Pulsar binary protocol port.
-     */
-    protected static final int PULSAR_TLS_PORT = 6651;
-
-    public ArconiaPulsarContainer(DockerImageName dockerImageName, PulsarDevServicesProperties properties) {
-        super(dockerImageName);
+    public ArconiaPulsarContainer(PulsarDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        ContainerConfigurer.base(this, properties);
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (properties.getPort() > 0) {
-            addFixedExposedPort(properties.getPort(), PULSAR_WEB_UI_PORT);
+        if (ContainerUtils.isValidPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), BROKER_PORT);
+        }
+        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+            addFixedExposedPort(properties.getManagementConsolePort(), BROKER_HTTP_PORT);
         }
     }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        super.containerIsStarted(containerInfo);
+        logger.info("Pulsar Management Console: {}", getHttpServiceUrl());
+    }
+
 }

@@ -1,12 +1,5 @@
 [tabs]
 ======
-CLI::
-+
-[source,shell]
-----
-arconia dev
-----
-
 Gradle::
 +
 [source,shell]
@@ -19,5 +12,12 @@ Maven::
 [source, shell]
 ----
 ./mvnw spring-boot:run
+----
+
+CLI::
++
+[source,shell]
+----
+arconia dev
 ----
 ======

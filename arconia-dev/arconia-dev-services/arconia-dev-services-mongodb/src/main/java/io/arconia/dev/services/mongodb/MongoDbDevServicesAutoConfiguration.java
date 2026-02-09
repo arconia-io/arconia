@@ -1,42 +1,41 @@
 package io.arconia.dev.services.mongodb;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.mongodb.MongoDBContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.MongoDbDevServicesRegistrar;
 
 /**
  * Auto-configuration for MongoDB Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.mongodb", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("mongodb")
 @EnableConfigurationProperties(MongoDbDevServicesProperties.class)
+@Import(MongoDbDevServicesRegistrar.class)
 public final class MongoDbDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "mongo";
+    static class MongoDbDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    MongoDBContainer mongoDbContainer(MongoDbDevServicesProperties properties) {
-        return new ArconiaMongoDbContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
-    }
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(MongoDbDevServicesProperties.CONFIG_PREFIX, MongoDbDevServicesProperties.class);
 
-    @Bean
-    static BeanFactoryPostProcessor mongoDbContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(MongoDBContainer.class);
+            registry.registerDevService(service -> service
+                    .name("mongodb")
+                    .description("MongoDB Dev Service")
+                    .container(container -> container
+                            .type(ArconiaMongoDbContainer.class)
+                            .supplier(() -> new ArconiaMongoDbContainer(properties))
+                    ));
+        }
+
     }
 
 }

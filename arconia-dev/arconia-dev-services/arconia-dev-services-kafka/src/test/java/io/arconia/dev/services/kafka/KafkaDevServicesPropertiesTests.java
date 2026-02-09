@@ -1,48 +1,23 @@
 package io.arconia.dev.services.kafka;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.Duration;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 /**
  * Unit tests for {@link KafkaDevServicesProperties}.
  */
-class KafkaDevServicesPropertiesTests {
+class KafkaDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<KafkaDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        KafkaDevServicesProperties properties = new KafkaDevServicesProperties();
-
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("apache/kafka-native");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+    @Override
+    protected KafkaDevServicesProperties createProperties() {
+        return new KafkaDevServicesProperties();
     }
 
-    @Test
-    void shouldUpdateValues() {
-        KafkaDevServicesProperties properties = new KafkaDevServicesProperties();
-
-        properties.setEnabled(false);
-        properties.setImageName("apache/kafka-native:latest");
-        properties.setPort(ArconiaKafkaContainer.KAFKA_PORT);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("apache/kafka-native:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaKafkaContainer.KAFKA_PORT);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaKafkaContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
     }
 
 }

@@ -9,6 +9,11 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 [NOTE]
 ====
+Since Phoenix only supports OpenTelemetry traces, when the Dev Service is enabled, the export of OpenTelemetry logs and metrics is disabled unless explicitly configured.
+====
+
+[NOTE]
+====
 The Dev Service for Arize Phoenix is mutually exclusive with the Dev Service for xref:lgtm.adoc[Grafana LGTM] and xref:otel-collector.adoc[OpenTelemetry Collector], as they all integrate with OpenTelemetry. If more than one of those Dev Services is included in the project dependencies, ensure you only enable one of them via configuration properties (`arconia.dev.services.<name>.enabled`).
 ====
 
@@ -20,7 +25,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in development mode, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
 == Accessing Phoenix
 
@@ -40,25 +45,45 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-|`arconia.dev.services.phoenix.enabled`
+|`arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-|`arconia.dev.services.phoenix.image-name`
+|`arconia.dev.services.{service-name}.image-name`
 | `arizephoenix/phoenix`
 | Full name of the container image used in the dev service.
 
-|`arconia.dev.services.phoenix.environment`
+|`arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the container. Example: `PHOENIX_WORKING_DIR: "/fawkes"`.
+| Environment variables to set in the container.
 
-|`arconia.dev.services.phoenix.shared`
-| `dev-mode`
-| When the container used in the dev service is shared across applications.
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
 
-| `arconia.dev.services.phoenix.startup-timeout`
-| `120s`
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Phoenix OTLP HTTP and UI port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `30s`
 | Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+| `arconia.dev.services.{service-name}.otlp-grpc-port`
+| `0`
+| Fixed port for exposing the Phoenix OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.
 |===
 
 include::partial$disabling-dev-service.adoc[]

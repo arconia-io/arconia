@@ -1,88 +1,84 @@
 package io.arconia.dev.services.mariadb;
 
+import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.mariadb.MariaDBContainer;
 
+import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
+
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link MariaDbDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
-class MariaDbDevServicesAutoConfigurationIT {
+class MariaDbDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigurationIT {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
-            .withConfiguration(AutoConfigurations.of(MariaDbDevServicesAutoConfiguration.class));
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(MariaDbDevServicesAutoConfiguration.class);
 
-    @Test
-    void autoConfigurationNotActivatedWhenDisabled() {
-        contextRunner
-                .withPropertyValues("arconia.dev.services.mariadb.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(MariaDBContainer.class));
+    @Override
+    protected ApplicationContextRunner getContextRunner() {
+        return contextRunner;
+    }
+
+    @Override
+    protected Class<?> getAutoConfigurationClass() {
+        return MariaDbDevServicesAutoConfiguration.class;
+    }
+
+    @Override
+    protected Class<? extends JdbcDatabaseContainer<?>> getContainerClass() {
+        return MariaDBContainer.class;
+    }
+
+    @Override
+    protected String getServiceName() {
+        return "mariadb";
     }
 
     @Test
     void containerAvailableWithDefaultConfiguration() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(MariaDBContainer.class);
-            MariaDBContainer container = context.getBean(MariaDBContainer.class);
-            assertThat(container.getDockerImageName()).contains("mariadb");
+        getContextRunner().run(context -> {
+            assertThat(context).hasSingleBean(getContainerClass());
+            var container = context.getBean(getContainerClass());
+            assertThat(container.getDockerImageName()).contains(ArconiaMariaDbContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
+            assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();
             container.start();
-            assertThat(container.getUsername()).isEqualTo("test");
-            assertThat(container.getPassword()).isEqualTo("test");
-            assertThat(container.getDatabaseName()).isEqualTo("test");
+            assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
+            assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
+            assertThat(container.getDatabaseName()).isEqualTo(DEFAULT_DB_NAME);
+            container.stop();
+
+            assertThatHasSingletonScope(context);
         });
     }
 
     @Test
     void containerConfigurationApplied() {
-        contextRunner
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues(
-                        "arconia.dev.services.mariadb.port=1234",
-                        "arconia.dev.services.mariadb.environment.KEY=value",
-                        "arconia.dev.services.mariadb.shared=never",
-                        "arconia.dev.services.mariadb.startup-timeout=90s",
-                        "arconia.dev.services.mariadb.username=mytest",
-                        "arconia.dev.services.mariadb.password=mytest",
-                        "arconia.dev.services.mariadb.db-name=mytest",
-                        "arconia.dev.services.mariadb.init-script-paths=sql/init.sql")
+        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(), commonJdbcConfigurationProperties());
+
+        getContextRunner()
+                .withPropertyValues(properties)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(MariaDBContainer.class);
-                    MariaDBContainer container = context.getBean(MariaDBContainer.class);
-                    assertThat(container.getEnv()).contains("KEY=value");
-                    assertThat(container.isShouldBeReused()).isFalse();
+                    var container = context.getBean(getContainerClass());
                     container.start();
-   container.start();
-                    assertThat(container.getMappedPort(ArconiaMariaDbContainer.MARIADB_PORT)).isEqualTo(1234);
-                    assertThat(container.getUsername()).isEqualTo("mytest");
-                    assertThat(container.getPassword()).isEqualTo("mytest");
-                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                    assertThatConfigurationIsApplied(container);
+                    assertThatJdbcConfigurationIsApplied(container);
                     assertThat(container.execInContainer("mariadb", "-u", "mytest", "-pmytest", "mytest", "-N", "-e",
                             "SELECT IF(EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'mytest' AND table_name = 'BOOK'), 'true', 'false')")
                             .getStdout())
                             .contains("true");
-                });
-    }
-
-    @Test
-    void containerWithRestartScope() {
-        contextRunner
-                .withClassLoader(this.getClass().getClassLoader())
-                .run(context -> {
-                    assertThat(context).hasSingleBean(MariaDBContainer.class);
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(MariaDBContainer.class);
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
+                    container.stop();
                 });
     }
 

@@ -1,48 +1,41 @@
 package io.arconia.dev.services.phoenix;
 
-import java.time.Duration;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.core.config.DevServicesProperties;
+import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
+import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link PhoenixDevServicesProperties}.
  */
-class PhoenixDevServicesPropertiesTests {
+class PhoenixDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<PhoenixDevServicesProperties> {
 
-    @Test
-    void shouldCreateInstanceWithDefaultValues() {
-        PhoenixDevServicesProperties properties = new PhoenixDevServicesProperties();
+    @Override
+    protected PhoenixDevServicesProperties createProperties() {
+        return new PhoenixDevServicesProperties();
+    }
 
-        assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getImageName()).contains("arizephoenix/phoenix");
-        assertThat(properties.getPort()).isEqualTo(0);
-        assertThat(properties.getEnvironment()).isEmpty();
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.DEV_MODE);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(2));
+    @Override
+    protected DefaultValues getExpectedDefaults() {
+        return DefaultValues.builder()
+                .imageName(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
+                .build();
     }
 
     @Test
-    void shouldUpdateValues() {
-        PhoenixDevServicesProperties properties = new PhoenixDevServicesProperties();
+    void shouldCreateInstanceWithServiceSpecificDefaultValues() {
+        PhoenixDevServicesProperties properties = createProperties();
+        assertThat(properties.getOtlpGrpcPort()).isEqualTo(0);
+    }
 
-        properties.setEnabled(false);
-        properties.setImageName("arizephoenix/phoenix:latest");
-        properties.setPort(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
-        properties.setEnvironment(Map.of("KEY", "value"));
-        properties.setShared(DevServicesProperties.Shared.ALWAYS);
-        properties.setStartupTimeout(Duration.ofMinutes(5));
-
-        assertThat(properties.isEnabled()).isFalse();
-        assertThat(properties.getImageName()).isEqualTo("arizephoenix/phoenix:latest");
-        assertThat(properties.getPort()).isEqualTo(ArconiaPhoenixContainer.PHOENIX_WEB_UI_PORT);
-        assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-        assertThat(properties.getShared()).isEqualTo(DevServicesProperties.Shared.ALWAYS);
-        assertThat(properties.getStartupTimeout()).isEqualTo(Duration.ofMinutes(5));
+    @Test
+    void shouldUpdateServiceSpecificValues() {
+        PhoenixDevServicesProperties properties = createProperties();
+        properties.setOtlpGrpcPort(PhoenixContainer.GRPC_PORT);
+        assertThat(properties.getOtlpGrpcPort()).isEqualTo(PhoenixContainer.GRPC_PORT);
     }
 
 }

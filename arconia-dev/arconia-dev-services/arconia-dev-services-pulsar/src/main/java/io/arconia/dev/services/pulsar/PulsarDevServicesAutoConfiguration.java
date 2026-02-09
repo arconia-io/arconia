@@ -1,43 +1,42 @@
 package io.arconia.dev.services.pulsar;
 
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.pulsar.PulsarContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.pulsar.PulsarDevServicesAutoConfiguration.PulsarDevServicesRegistrar;
 
 /**
- * Autoconfiguration for Pulsar Dev Services.
+ * Auto-configuration for Pulsar Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.pulsar", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("pulsar")
 @EnableConfigurationProperties(PulsarDevServicesProperties.class)
+@Import(PulsarDevServicesRegistrar.class)
 public final class PulsarDevServicesAutoConfiguration {
 
-    private static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
+    static class PulsarDevServicesRegistrar extends DevServicesRegistrar {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    PulsarContainer pulsarContainer(PulsarDevServicesProperties properties) {
-        return new ArconiaPulsarContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME), properties)
-                .withEnv(properties.getEnvironment())
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(properties.getShared().asBoolean());
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(PulsarDevServicesProperties.CONFIG_PREFIX, PulsarDevServicesProperties.class);
+
+            registry.registerDevService(service -> service
+                    .name("pulsar")
+                    .description("Pulsar Dev Service")
+                    .container(container -> container
+                            .type(ArconiaPulsarContainer.class)
+                            .supplier(() -> new ArconiaPulsarContainer(properties))
+                    )
+            );
+        }
+
     }
-
-    @Bean
-    static BeanFactoryPostProcessor pulsarContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(PulsarContainer.class);
-    }
-
 
 }

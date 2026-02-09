@@ -6,9 +6,15 @@ plugins {
 }
 
 dependencies {
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-api")
     api project(":arconia-spring-boot")
+    api "org.springframework.boot:spring-boot-testcontainers"
+
+    optional "org.springframework.boot:spring-boot-actuator"
+    optional "org.testcontainers:testcontainers-jdbc"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:testcontainers-postgresql"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

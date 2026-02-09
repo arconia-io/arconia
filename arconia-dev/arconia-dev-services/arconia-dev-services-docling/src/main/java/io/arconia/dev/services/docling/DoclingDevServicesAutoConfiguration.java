@@ -1,51 +1,41 @@
 package io.arconia.dev.services.docling;
 
-import ai.docling.testcontainers.serve.DoclingServeContainer;
-import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
-
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.core.config.DevServicesBeanRegistrations;
+import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
+import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
+import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.DoclingDevServicesRegistrar;
 
 /**
  * Auto-configuration for Docling Dev Services.
  */
-@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "arconia.dev.services.docling", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled("docling")
 @EnableConfigurationProperties(DoclingDevServicesProperties.class)
+@Import(DoclingDevServicesRegistrar.class)
 public final class DoclingDevServicesAutoConfiguration {
 
-    @Bean
-    @ServiceConnection
-    @ConditionalOnMissingBean
-    DoclingServeContainer doclingServeContainer(DoclingDevServicesProperties properties) {
-        return new ArconiaDoclingServeContainer(DoclingServeContainerConfig.builder()
-                    .image(properties.getImageName())
-                    .enableUi(shouldEnableUi(properties))
-                    .containerEnv(properties.getEnvironment())
-                    .startupTimeout(properties.getStartupTimeout())
-                    .build(), properties)
-                .withReuse(properties.getShared().asBoolean());
-    }
+    static class DoclingDevServicesRegistrar extends DevServicesRegistrar {
 
-    private static boolean shouldEnableUi(DoclingDevServicesProperties properties) {
-        if (BootstrapMode.DEV == BootstrapMode.detect()) {
-            return properties.isEnableUi();
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties(DoclingDevServicesProperties.CONFIG_PREFIX, DoclingDevServicesProperties.class);
+
+            registry.registerDevService(service -> service
+                    .name("docling")
+                    .description("Docling Dev Service")
+                    .container(container -> container
+                            .type(ArconiaDoclingServeContainer.class)
+                            .supplier(() -> new ArconiaDoclingServeContainer(properties))
+                    ));
         }
-        return false;
-    }
 
-    @Bean
-    static BeanFactoryPostProcessor doclingServeContainerPostProcessor() {
-        return DevServicesBeanRegistrations.beanFactoryPostProcessor(DoclingServeContainer.class);
     }
 
 }
