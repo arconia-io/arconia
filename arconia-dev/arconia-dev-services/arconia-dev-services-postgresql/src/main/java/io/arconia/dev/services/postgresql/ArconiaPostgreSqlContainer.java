@@ -25,7 +25,7 @@ final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
 
         // See: https://github.com/testcontainers/testcontainers-java/issues/4799
         this.waitingFor(Wait
-                .forLogMessage("(" + READY_REGEX + ")?(" + SKIPPING_INITIALIZATION_REGEX + ")?", 2)
+                .forLogMessage("(" + READY_REGEX + "|" + SKIPPING_INITIALIZATION_REGEX + ")", 2)
         );
 
         ContainerConfigurer.base(this, properties);
