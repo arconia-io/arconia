@@ -29,7 +29,7 @@ public class DoclingDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ghcr.io/docling-project/docling-serve:v1.11.0";
+    private String imageName = "ghcr.io/docling-project/docling-serve:v1.13.0";
 
     /**
      * Environment variables to set in the service.

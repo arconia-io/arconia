@@ -5,7 +5,7 @@ package io.arconia.ai.document.docling;
  */
 public class Images {
 
-    public static final String DOCLING = "ghcr.io/docling-project/docling-serve:v1.11.0";
+    public static final String DOCLING = "ghcr.io/docling-project/docling-serve:v1.13.0";
 
     private Images() {
     }
