@@ -23,6 +23,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-artemis")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-docling")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-kafka")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-keycloak")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-lgtm")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-lldap")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mariadb")
