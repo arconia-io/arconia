@@ -215,4 +215,51 @@ class OtlpMetricsExporterConfigurationTests {
             });
     }
 
+    @Test
+    void commonEndpointWithPathPreservedForHttpProtobuf() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel")
+            .run(context -> {
+                OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://eu.api.smith.langchain.com/otel/v1/metrics");
+            });
+    }
+
+    @Test
+    void commonEndpointWithTrailingSlashHandledCorrectly() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com/path/")
+            .run(context -> {
+                OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://example.com/path/v1/metrics");
+            });
+    }
+
+    @Test
+    void commonEndpointWithoutPathAppendsCorrectly() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com")
+            .run(context -> {
+                OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://example.com/v1/metrics");
+            });
+    }
+
+    @Test
+    void commonEndpointNotModifiedForGrpc() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.endpoint=https://example.com/otel",
+                "arconia.otel.metrics.exporter.otlp.protocol=grpc"
+            )
+            .run(context -> {
+                OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(Protocol.GRPC))
+                    .isEqualTo("https://example.com/otel");
+            });
+    }
+
 }

@@ -114,4 +114,51 @@ class OtlpLoggingExporterConfigurationTests {
             });
     }
 
+    @Test
+    void commonEndpointWithPathPreservedForHttpProtobuf() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel")
+            .run(context -> {
+                OtlpLoggingConnectionDetails connectionDetails = context.getBean(OtlpLoggingConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://eu.api.smith.langchain.com/otel/v1/logs");
+            });
+    }
+
+    @Test
+    void commonEndpointWithTrailingSlashHandledCorrectly() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com/path/")
+            .run(context -> {
+                OtlpLoggingConnectionDetails connectionDetails = context.getBean(OtlpLoggingConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://example.com/path/v1/logs");
+            });
+    }
+
+    @Test
+    void commonEndpointWithoutPathAppendsCorrectly() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com")
+            .run(context -> {
+                OtlpLoggingConnectionDetails connectionDetails = context.getBean(OtlpLoggingConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                    .isEqualTo("https://example.com/v1/logs");
+            });
+    }
+
+    @Test
+    void commonEndpointNotModifiedForGrpc() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.endpoint=https://example.com/otel",
+                "arconia.otel.logs.exporter.otlp.protocol=grpc"
+            )
+            .run(context -> {
+                OtlpLoggingConnectionDetails connectionDetails = context.getBean(OtlpLoggingConnectionDetails.class);
+                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.GRPC))
+                    .isEqualTo("https://example.com/otel");
+            });
+    }
+
 }

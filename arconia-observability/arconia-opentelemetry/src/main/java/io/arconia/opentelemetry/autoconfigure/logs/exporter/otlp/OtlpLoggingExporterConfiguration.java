@@ -109,7 +109,10 @@ public final class OtlpLoggingExporterConfiguration {
             if (properties.getOtlp().getEndpoint() != null) {
                 url = properties.getOtlp().getEndpoint().toString();
             } else if (commonProperties.getOtlp().getEndpoint() != null) {
-                url = protocolProperty == Protocol.HTTP_PROTOBUF ? commonProperties.getOtlp().getEndpoint().resolve(LOGS_PATH).toString() : commonProperties.getOtlp().getEndpoint().toString();
+                var endpoint = commonProperties.getOtlp().getEndpoint();
+                url = protocolProperty == Protocol.HTTP_PROTOBUF 
+                    ? endpoint.toString() + (endpoint.getPath().endsWith("/") ? LOGS_PATH.substring(1) : LOGS_PATH)
+                    : endpoint.toString();
             } else {
                 url = protocolProperty == Protocol.HTTP_PROTOBUF ? DEFAULT_HTTP_PROTOBUF_ENDPOINT : DEFAULT_GRPC_ENDPOINT;
             }

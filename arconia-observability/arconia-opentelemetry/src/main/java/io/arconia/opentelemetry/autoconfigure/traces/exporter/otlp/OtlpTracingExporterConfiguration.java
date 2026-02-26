@@ -109,7 +109,10 @@ public final class OtlpTracingExporterConfiguration {
             if (properties.getOtlp().getEndpoint() != null) {
                 url = properties.getOtlp().getEndpoint().toString();
             } else if (commonProperties.getOtlp().getEndpoint() != null) {
-                url = protocolProperty == Protocol.HTTP_PROTOBUF ? commonProperties.getOtlp().getEndpoint().resolve(TRACES_PATH).toString() : commonProperties.getOtlp().getEndpoint().toString();
+                var endpoint = commonProperties.getOtlp().getEndpoint();
+                url = protocolProperty == Protocol.HTTP_PROTOBUF 
+                    ? endpoint.toString() + (endpoint.getPath().endsWith("/") ? TRACES_PATH.substring(1) : TRACES_PATH)
+                    : endpoint.toString();
             } else {
                 url = protocolProperty == Protocol.HTTP_PROTOBUF ? DEFAULT_HTTP_PROTOBUF_ENDPOINT : DEFAULT_GRPC_ENDPOINT;
             }
