@@ -13,8 +13,6 @@ import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceProperties;
 
-import static io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor.SERVICE_INSTANCE_ID;
-import static io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor.SERVICE_NAMESPACE;
 import static io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor.WEBENGINE_NAME;
 import static io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor.WEBENGINE_VERSION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +47,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -63,7 +61,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, "test-service");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -77,8 +75,8 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(SERVICE_NAMESPACE, "test-group");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAMESPACE, "test-group");
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -92,7 +90,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -106,7 +104,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -119,7 +117,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -134,8 +132,8 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, "test-service");
-        verify(resourceBuilder).put(SERVICE_NAMESPACE, "test-group");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAMESPACE, "test-group");
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -149,7 +147,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, "property-service");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
@@ -163,7 +161,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, "attribute-service");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
 
@@ -181,7 +179,7 @@ class EnvironmentResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, "property-service");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
 
@@ -192,37 +190,37 @@ class EnvironmentResourceContributorTests {
 
     @Test
     void shouldUseServiceNamespaceFromAttributesWhenSet() {
-        properties.getAttributes().put(SERVICE_NAMESPACE.getKey(), "attribute-namespace");
+        properties.getAttributes().put(ServiceAttributes.SERVICE_NAMESPACE.getKey(), "attribute-namespace");
         EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
 
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(SERVICE_NAMESPACE, "attribute-namespace");
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), anyString());
+        verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAMESPACE, "attribute-namespace");
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), anyString());
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
 
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
-        assertThat(attributesCaptor.getValue().get(SERVICE_NAMESPACE)).isEqualTo("attribute-namespace");
+        assertThat(attributesCaptor.getValue().get(ServiceAttributes.SERVICE_NAMESPACE)).isEqualTo("attribute-namespace");
     }
 
     @Test
     void shouldUseServiceInstanceIdFromAttributesWhenSet() {
-        properties.getAttributes().put(SERVICE_INSTANCE_ID.getKey(), "custom-instance-id");
+        properties.getAttributes().put(ServiceAttributes.SERVICE_INSTANCE_ID.getKey(), "custom-instance-id");
         EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
 
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ServiceAttributes.SERVICE_NAME, DEFAULT_SERVICE_NAME);
-        verify(resourceBuilder).put(eq(SERVICE_INSTANCE_ID), eq("custom-instance-id"));
+        verify(resourceBuilder).put(eq(ServiceAttributes.SERVICE_INSTANCE_ID), eq("custom-instance-id"));
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
 
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
-        assertThat(attributesCaptor.getValue().get(SERVICE_INSTANCE_ID)).isEqualTo("custom-instance-id");
+        assertThat(attributesCaptor.getValue().get(ServiceAttributes.SERVICE_INSTANCE_ID)).isEqualTo("custom-instance-id");
     }
 
     @Test

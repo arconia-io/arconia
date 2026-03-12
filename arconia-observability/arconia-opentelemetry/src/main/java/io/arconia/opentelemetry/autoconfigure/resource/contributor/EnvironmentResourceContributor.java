@@ -44,8 +44,6 @@ public final class EnvironmentResourceContributor implements ResourceContributor
     // These semantic conventions are experimental, so we define them explicitly to be able to ensure backward
     // compatibility rather than using the constants from OpenTelemetry SemConv project that may change in the future
     // without considering backward compatibility.
-    public static final AttributeKey<String> SERVICE_INSTANCE_ID = AttributeKey.stringKey("service.instance.id");
-    public static final AttributeKey<String> SERVICE_NAMESPACE = AttributeKey.stringKey("service.namespace");
     public static final AttributeKey<String> WEBENGINE_NAME = AttributeKey.stringKey("webengine.name");
     public static final AttributeKey<String> WEBENGINE_VERSION = AttributeKey.stringKey("webengine.version");
 
@@ -69,11 +67,11 @@ public final class EnvironmentResourceContributor implements ResourceContributor
 
         String serviceNamespace = computeServiceNamespace();
         if (StringUtils.hasText(serviceNamespace)) {
-            builder.put(SERVICE_NAMESPACE, serviceNamespace);
+            builder.put(ServiceAttributes.SERVICE_NAMESPACE, serviceNamespace);
         }
 
         String serviceInstanceId = computeServiceInstanceId();
-        builder.put(SERVICE_INSTANCE_ID, serviceInstanceId);
+        builder.put(ServiceAttributes.SERVICE_INSTANCE_ID, serviceInstanceId);
 
         builder.put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         builder.put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
@@ -108,7 +106,7 @@ public final class EnvironmentResourceContributor implements ResourceContributor
 
     @Nullable
     private String computeServiceNamespace() {
-        String serviceNamespace = properties.getAttributes().get(SERVICE_NAMESPACE.getKey());
+        String serviceNamespace = properties.getAttributes().get(ServiceAttributes.SERVICE_NAMESPACE.getKey());
         if (!StringUtils.hasText(serviceNamespace)) {
             serviceNamespace = environment.getProperty("spring.application.group");
         }
@@ -116,7 +114,7 @@ public final class EnvironmentResourceContributor implements ResourceContributor
     }
 
     private String computeServiceInstanceId() {
-        String serviceInstanceId = properties.getAttributes().get(SERVICE_INSTANCE_ID.getKey());
+        String serviceInstanceId = properties.getAttributes().get(ServiceAttributes.SERVICE_INSTANCE_ID.getKey());
         if (!StringUtils.hasText(serviceInstanceId)) {
             serviceInstanceId = DEFAULT_SERVICE_INSTANCE_ID;
         }
