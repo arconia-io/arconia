@@ -15,8 +15,6 @@ final class ArconiaMySqlContainer extends MySQLContainer {
 
     static final String COMPATIBLE_IMAGE_NAME = "mysql";
 
-    static final int MYSQL_PORT = 3306;
-
     public ArconiaMySqlContainer(MySqlDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
