@@ -1,0 +1,133 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.10.0",
+    "install": {
+      "graalvm-ce": {
+        "pkg-path": "graalvm-ce",
+        "version": "25"
+      }
+    },
+    "hook": {},
+    "profile": {},
+    "options": {}
+  },
+  "packages": [
+    {
+      "attr_path": "graalvm-ce",
+      "broken": false,
+      "derivation": "/nix/store/58k50pfavq7hbygkglxp9z5whbwdw1ka-graalvm-ce-25.0.0.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "name": "graalvm-ce-25.0.0",
+      "pname": "graalvm-ce",
+      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "rev_count": 883951,
+      "rev_date": "2025-10-25T06:24:58Z",
+      "scrape_date": "2025-10-27T02:08:16.662334Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "25.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/1qr4pa8sqsskh7nx5wav5vcn0mk4g5jm-graalvm-ce-25.0.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graalvm-ce",
+      "broken": false,
+      "derivation": "/nix/store/734dm9dynn855sc6zf54qkzb1npvkxs8-graalvm-ce-25.0.0.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "name": "graalvm-ce-25.0.0",
+      "pname": "graalvm-ce",
+      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "rev_count": 883951,
+      "rev_date": "2025-10-25T06:24:58Z",
+      "scrape_date": "2025-10-27T02:18:28.065314Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "25.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/gsw2lvnwbjms2b8inrhmlcxi1clcggab-graalvm-ce-25.0.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graalvm-ce",
+      "broken": false,
+      "derivation": "/nix/store/dx9q9i8xcpwr3cnhvkwy5z92fj6j6zl0-graalvm-ce-25.0.0.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "name": "graalvm-ce-25.0.0",
+      "pname": "graalvm-ce",
+      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "rev_count": 883951,
+      "rev_date": "2025-10-25T06:24:58Z",
+      "scrape_date": "2025-10-27T02:29:22.550162Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "25.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/splb0wpi8hn32lmfp5ckb1skrc7j3ff9-graalvm-ce-25.0.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graalvm-ce",
+      "broken": false,
+      "derivation": "/nix/store/mzjqdqzfyj63swjwqjxl98x8ldb68wg4-graalvm-ce-25.0.0.drv",
+      "description": "High-Performance Polyglot VM",
+      "install_id": "graalvm-ce",
+      "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "name": "graalvm-ce-25.0.0",
+      "pname": "graalvm-ce",
+      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
+      "rev_count": 883951,
+      "rev_date": "2025-10-25T06:24:58Z",
+      "scrape_date": "2025-10-27T03:00:56.472164Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "25.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/qn2nvfpzcn1fhjpsysg4nr22g09c05qj-graalvm-ce-25.0.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}

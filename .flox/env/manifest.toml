@@ -1,0 +1,21 @@
+schema-version = "1.10.0"
+
+[install]
+graalvm-ce.pkg-path = "graalvm-ce"
+graalvm-ce.version = "25"
+
+[vars]
+FLOX_DISABLE_METRICS = "true"
+
+[hook]
+
+[profile]
+
+[services]
+
+[include]
+
+[build]
+
+[options]
+systems = ["aarch64-darwin", "aarch64-linux", "x86_64-darwin", "x86_64-linux"]
