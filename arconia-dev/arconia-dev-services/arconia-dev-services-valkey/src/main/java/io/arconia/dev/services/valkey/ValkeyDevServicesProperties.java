@@ -29,7 +29,7 @@ public class ValkeyDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ghcr.io/valkey-io/valkey:9.0-alpine";
+    private String imageName = "ghcr.io/valkey-io/valkey:9.1-alpine";
 
     /**
      * Environment variables to set in the service.
