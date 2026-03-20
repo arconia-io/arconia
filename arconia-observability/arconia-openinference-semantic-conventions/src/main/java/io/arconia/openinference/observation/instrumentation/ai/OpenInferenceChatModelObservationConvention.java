@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.arize.semconv.trace.SemanticConventions;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -23,6 +22,8 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.json.JsonParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import tools.jackson.core.type.TypeReference;
 
 /**
  * {@link ChatModelObservationConvention} for OpenInference.
