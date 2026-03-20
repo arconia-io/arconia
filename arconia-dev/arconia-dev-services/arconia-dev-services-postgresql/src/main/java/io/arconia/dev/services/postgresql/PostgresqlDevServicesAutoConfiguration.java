@@ -32,7 +32,7 @@ public final class PostgresqlDevServicesAutoConfiguration {
             if (ClassUtils.isPresent(PGVECTOR_ENABLED, null)) {
                 defaultImageName = "pgvector/pgvector:pg18";
             } else {
-                defaultImageName = "postgres:18.2-alpine";
+                defaultImageName = "postgres:18.3-alpine";
             }
             setDefaultProperty(PostgresqlDevServicesProperties.CONFIG_PREFIX + ".image-name", defaultImageName);
 
