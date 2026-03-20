@@ -178,7 +178,7 @@ public class DocumentService {
                 .source(HttpSource.builder().url(url).build())
                 .build();
 
-        ConvertDocumentResponse response = doclingClient.convertSource(request);
+        InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingServeApi.convertSource(request);
         return response.getDocument().getMarkdownContent();
     }
 }
@@ -196,7 +196,7 @@ ConvertDocumentRequest request = ConvertDocumentRequest.builder()
             .build())
         .build();
 
-ConvertDocumentResponse response = doclingClient.convertSource(request);
+InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingClient.convertSource(request);
 String markdownContent = response.getDocument().getMarkdownContent();
 String filename = response.getDocument().getFilename();
 ----
@@ -217,7 +217,7 @@ ConvertDocumentRequest request = ConvertDocumentRequest.builder()
             .build())
         .build();
 
-ConvertDocumentResponse response = doclingClient.convertSource(request);
+InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingClient.convertSource(request);
 String markdownContent = response.getDocument().getMarkdownContent();
 ----
 

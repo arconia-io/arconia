@@ -14,6 +14,7 @@ import ai.docling.serve.api.convert.request.options.TableFormerMode;
 import ai.docling.serve.api.convert.request.source.FileSource;
 import ai.docling.serve.api.convert.request.source.HttpSource;
 import ai.docling.serve.api.convert.response.ConvertDocumentResponse;
+import ai.docling.serve.api.convert.response.InBodyConvertDocumentResponse;
 import ai.docling.serve.api.health.HealthCheckResponse;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
@@ -76,16 +77,18 @@ class DoclingServeClientTests {
         ConvertDocumentResponse response = doclingServeApi.convertSource(request);
 
         assertThat(response).isNotNull();
+        assertThat(response).isInstanceOf(InBodyConvertDocumentResponse.class);
 
-        assertThat(response.getStatus()).isNotEmpty();
-        assertThat(response.getDocument()).isNotNull();
-        assertThat(response.getDocument().getFilename()).isNotEmpty();
+        InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
+        assertThat(inBodyResponse.getStatus()).isNotEmpty();
+        assertThat(inBodyResponse.getDocument()).isNotNull();
+        assertThat(inBodyResponse.getDocument().getFilename()).isNotEmpty();
 
-        if (response.getProcessingTime() != null) {
-            assertThat(response.getProcessingTime()).isPositive();
+        if (inBodyResponse.getProcessingTime() != null) {
+            assertThat(inBodyResponse.getProcessingTime()).isPositive();
         }
 
-        assertThat(response.getDocument().getMarkdownContent()).isNotEmpty();
+        assertThat(inBodyResponse.getDocument().getMarkdownContent()).isNotEmpty();
     }
 
     @Test
@@ -98,18 +101,20 @@ class DoclingServeClientTests {
                         .build())
                 .build();
 
-        ConvertDocumentResponse response = doclingServeApi.convertSource(request);
-
+        var response = (InBodyConvertDocumentResponse) doclingServeApi.convertSource(request);
         assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isNotEmpty();
-        assertThat(response.getDocument()).isNotNull();
-        assertThat(response.getDocument().getFilename()).isEqualTo("story.pdf");
+        assertThat(response).isInstanceOf(InBodyConvertDocumentResponse.class);
 
-        if (response.getProcessingTime() != null) {
-            assertThat(response.getProcessingTime()).isPositive();
+        InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
+        assertThat(inBodyResponse.getStatus()).isNotEmpty();
+        assertThat(inBodyResponse.getDocument()).isNotNull();
+        assertThat(inBodyResponse.getDocument().getFilename()).isEqualTo("story.pdf");
+
+        if (inBodyResponse.getProcessingTime() != null) {
+            assertThat(inBodyResponse.getProcessingTime()).isPositive();
         }
 
-        assertThat(response.getDocument().getMarkdownContent()).isNotEmpty();
+        assertThat(inBodyResponse.getDocument().getMarkdownContent()).isNotEmpty();
     }
 
     @Test
@@ -128,10 +133,12 @@ class DoclingServeClientTests {
                 .build();
 
         ConvertDocumentResponse response = doclingServeApi.convertSource(request);
-
         assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isNotEmpty();
-        assertThat(response.getDocument()).isNotNull();
+        assertThat(response).isInstanceOf(InBodyConvertDocumentResponse.class);
+
+        InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
+        assertThat(inBodyResponse.getStatus()).isNotEmpty();
+        assertThat(inBodyResponse.getDocument()).isNotNull();
     }
 
     @Test
