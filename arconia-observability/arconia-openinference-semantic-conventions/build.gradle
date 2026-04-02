@@ -10,9 +10,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-spring-boot")
-    api("com.arize:openinference-semantic-conventions:${openInferenceVersion}") {
-        transitive = false
-    }
+    api "com.arize:openinference-semantic-conventions:${openInferenceVersion}"
     api "io.micrometer:micrometer-core"
     api "io.micrometer:micrometer-observation"
     api "org.springframework.ai:spring-ai-model"
