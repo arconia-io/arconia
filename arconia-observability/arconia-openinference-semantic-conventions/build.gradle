@@ -22,6 +22,12 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    constraints {
+        implementation("io.modelcontextprotocol.sdk:mcp-core:1.1.1") {
+            because "CVE-2026-34237: Upgrade transitive dependency from Spring AI Chat Client"
+        }
+    }
 }
 
 dependencyManagement {
