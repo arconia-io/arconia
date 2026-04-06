@@ -1,7 +1,6 @@
 package io.arconia.dev.services.core.registration;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
@@ -92,22 +91,15 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     }
 
     /**
-     * Set default properties that will only be used if not already defined.
-     * These defaults have the lowest priority and can be overridden by any other property source.
+     * Set default properties for dev/test mode. These are added to the lowest-priority property source,
+     * so any user-defined configuration (application.yml, environment variables, etc.) takes
+     * precedence naturally via the property source hierarchy without requiring explicit checks.
      */
     protected void setDefaultProperties(Map<String, Object> defaults) {
         Assert.notNull(environment, "environment has not been initialized");
 
         if (environment instanceof ConfigurableEnvironment configurableEnvironment) {
-            // Filter out properties that are already set.
-            Map<String, Object> propertiesToAdd = defaults.entrySet().stream()
-                    .filter(entry -> !configurableEnvironment.containsProperty(entry.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-            if (!propertiesToAdd.isEmpty()) {
-                // Add the filtered properties to the environment.
-                DefaultPropertiesPropertySource.addOrMerge(propertiesToAdd, configurableEnvironment.getPropertySources());
-            }
+            DefaultPropertiesPropertySource.addOrMerge(defaults, configurableEnvironment.getPropertySources());
         }
     }
 

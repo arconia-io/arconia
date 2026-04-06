@@ -6,9 +6,12 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.env.DefaultPropertiesPropertySource;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.testcontainers.containers.GenericContainer;
@@ -118,6 +121,56 @@ class DevServicesRegistrarTests {
 
         assertRegistryExists();
         assertBeanDefinitionCount(0);
+    }
+
+    // --- setDefaultProperty ---
+
+    @Test
+    void setDefaultPropertyAddsToDefaultPropertiesSource() {
+        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
+
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:test");
+
+        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:h2:mem:test");
+    }
+
+    @Test
+    void setDefaultPropertyIsOverriddenByHigherPrioritySource() {
+        // Simulate user config at a higher-priority source position
+        MutablePropertySources sources = environment.getPropertySources();
+        sources.addFirst(new MapPropertySource("userConfig", Map.of("spring.datasource.url", "jdbc:postgresql://user-host/db")));
+
+        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
+
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:default");
+
+        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:postgresql://user-host/db");
+    }
+
+    @Test
+    void setDefaultPropertyOverwritesExistingDefaultPropertiesEntry() {
+        // Pre-populate DefaultPropertiesPropertySource with a value
+        DefaultPropertiesPropertySource.addOrMerge(Map.of("spring.datasource.url", "jdbc:old"), environment.getPropertySources());
+
+        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
+
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:new");
+
+        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:new");
+    }
+
+    @Test
+    void setDefaultPropertyLastWriteWinsForSameKey() {
+        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
+
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:first");
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:second");
+
+        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:second");
     }
 
     @Test
