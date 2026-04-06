@@ -20,6 +20,11 @@ dependencies {
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
     implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    constraints {
+        implementation("com.fasterxml.jackson.core:jackson-core:2.21.2") {
+            because "GHSA-72hv-8253-57qq: Upgrade transitive dependency from CycloneDX Gradle plugin"
+        }
+    }
 }
 
 gradlePlugin {
