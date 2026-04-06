@@ -9,7 +9,7 @@ import io.arconia.core.support.Internal;
 /**
  * The mode used to bootstrap the application.
  */
-@Incubating(since = "0.13.0")
+@Incubating
 public enum BootstrapMode {
 
     DEV,

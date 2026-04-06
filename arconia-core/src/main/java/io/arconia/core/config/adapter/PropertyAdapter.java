@@ -57,7 +57,7 @@ public class PropertyAdapter {
             this.adapter = new PropertyAdapter();
         }
 
-        public <T> Builder mapProperty(String externalKey, String arconiaKey, Function<String, T> converter) {
+        public <T> Builder mapProperty(String externalKey, String arconiaKey, Function<String, @Nullable T> converter) {
             Assert.hasText(externalKey, "externalKey cannot be null or empty");
             Assert.hasText(arconiaKey, "arconiaKey cannot be null or empty");
             Assert.notNull(converter, "converter cannot be null");
@@ -72,7 +72,7 @@ public class PropertyAdapter {
             return this;
         }
 
-        public <T> Builder mapEnum(String externalKey, String arconiaKey, Function<String, Function<String, T>> converterFactory) {
+        public <T> Builder mapEnum(String externalKey, String arconiaKey, Function<String, Function<String, @Nullable T>> converterFactory) {
             Assert.notNull(converterFactory, "converterFactory cannot be null");
             return mapProperty(externalKey, arconiaKey, converterFactory.apply(externalKey));
         }
@@ -81,7 +81,6 @@ public class PropertyAdapter {
             return mapProperty(externalKey, arconiaKey, Boolean::valueOf);
         }
 
-        @Nullable
         public Builder mapInteger(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
@@ -93,7 +92,6 @@ public class PropertyAdapter {
             });
         }
 
-        @Nullable
         public Builder mapDouble(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
@@ -105,11 +103,10 @@ public class PropertyAdapter {
             });
         }
 
-        @Nullable
         public Builder mapDuration(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 try {
-                    Matcher matcher = DURATION_PATTERN.matcher(value.strip());
+                    Matcher matcher = DURATION_PATTERN.matcher(value);
                     if (matcher.matches()) {
                         long amount = Long.parseLong(matcher.group(1));
                         String unit = matcher.group(2);
@@ -122,7 +119,7 @@ public class PropertyAdapter {
                         };
                     }
                     // Try parsing as milliseconds
-                    return Duration.ofMillis(Long.parseLong(value.strip()));
+                    return Duration.ofMillis(Long.parseLong(value));
                 } catch (Exception e) {
                     logUnsupportedValue(externalKey, value);
                     return null;
@@ -130,7 +127,6 @@ public class PropertyAdapter {
             });
         }
 
-        @Nullable
         public Builder mapList(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 List<String> propertyList = List.of(value.split(","));
@@ -138,18 +134,16 @@ public class PropertyAdapter {
             });
         }
 
-        @Nullable
         public Builder mapMap(String externalKey, String arconiaKey) {
             return mapMap(externalKey, arconiaKey, null);
         }
 
-        @Nullable
         public Builder mapMap(String externalKey, String arconiaKey, @Nullable Function<Map<String,String>,Map<String,String>> postProcessor) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 Map<String, String> propertyMap = new HashMap<>();
                 String[] keyValuePairs = StringUtils.tokenizeToStringArray(value, ",");
                 for (String pair : keyValuePairs) {
-                    String[] entry = pair.split("=");
+                    String[] entry = pair.split("=", 2);
                     if (entry.length == 2 && StringUtils.hasText(entry[0]) && StringUtils.hasText(entry[1])) {
                         propertyMap.put(entry[0].strip(), StringUtils.uriDecode(entry[1].strip(), StandardCharsets.UTF_8));
                     } else {
@@ -164,7 +158,7 @@ public class PropertyAdapter {
         }
 
         public Builder mapString(String externalKey, String arconiaKey) {
-            return mapProperty(externalKey, arconiaKey, Function.identity());
+            return mapProperty(externalKey, arconiaKey, value -> value);
         }
 
         public PropertyAdapter build() {

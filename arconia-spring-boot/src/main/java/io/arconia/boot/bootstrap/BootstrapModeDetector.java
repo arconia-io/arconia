@@ -17,11 +17,21 @@ final class BootstrapModeDetector {
 
     private static final Logger logger = LoggerFactory.getLogger(BootstrapModeDetector.class);
 
+    private static final Set<String> TEST_CLASS_PREFIXES = Set.of(
+        "org.junit.runners.",
+        "org.junit.platform.",
+        "org.springframework.boot.test.",
+        "cucumber.runtime.");
+
     @Nullable
     private static volatile BootstrapMode cachedMode;
     private static final Object LOCK = new Object();
 
-    static BootstrapMode detect(StackTraceElement @Nullable ... stackTraceElements) {
+    static BootstrapMode detect() {
+        return detect(null);
+    }
+
+    static BootstrapMode detect(StackTraceElement @Nullable [] stackTraceElements) {
         if (cachedMode == null) {
             synchronized (LOCK) {
                 if (cachedMode == null) {
@@ -36,7 +46,7 @@ final class BootstrapModeDetector {
         cachedMode = null;
     }
 
-    private static BootstrapMode doDetect(StackTraceElement @Nullable ... stackTraceElements) {
+    private static BootstrapMode doDetect(StackTraceElement @Nullable [] stackTraceElements) {
         // 1. Check for environment variable or JVM system property set by the Arconia CLI.
         String modeProperty = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase().replace(".", "_"));
         if (!StringUtils.hasText(modeProperty)) {
@@ -53,18 +63,13 @@ final class BootstrapModeDetector {
         // 2. Check the stack trace for known class prefixes that indicate a certain mode.
         long startTime = System.nanoTime();
         StackTraceElement[] stackTrace = (stackTraceElements == null || stackTraceElements.length == 0) ? Thread.currentThread().getStackTrace() : stackTraceElements;
-        Set<String> testClassPrefixes = Set.of(
-            "org.junit.runners.",
-            "org.junit.platform.",
-            "org.springframework.boot.test.",
-            "cucumber.runtime.");
         for (StackTraceElement element : stackTrace) {
             String className = element.getClassName();
             if (className.startsWith(SpringApplicationAotProcessor.class.getName())) {
                 logger.debug("Prod bootstrap mode detection from stack trace took {} ns", System.nanoTime() - startTime);
                 return BootstrapMode.PROD;
             }
-            for (String prefix : testClassPrefixes) {
+            for (String prefix : TEST_CLASS_PREFIXES) {
                 if (className.startsWith(prefix)) {
                     logger.debug("Test bootstrap mode detection from stack trace took {} ns", System.nanoTime() - startTime);
                     return BootstrapMode.TEST;

@@ -168,6 +168,31 @@ class PropertyAdapterTests {
             .doesNotContainKey("arconia.boolean");
     }
 
+    @Test
+    void shouldMapFalseBooleanProperty() {
+        when(environment.getProperty("external.boolean")).thenReturn("false");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapBoolean("external.boolean", "arconia.boolean")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.boolean", false);
+    }
+
+    @Test
+    void shouldMapInvalidBooleanPropertyAsFalse() {
+        when(environment.getProperty("external.boolean")).thenReturn("yes");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapBoolean("external.boolean", "arconia.boolean")
+            .build();
+
+        // Boolean.valueOf returns false for any non-"true" string
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.boolean", false);
+    }
+
     // DOUBLE
 
     @Test
@@ -417,7 +442,7 @@ class PropertyAdapterTests {
     }
 
     @Test
-    void shouldHandleEmptyListValue() {
+    void shouldHandleListWithOnlyDelimiters() {
         when(environment.getProperty("external.list")).thenReturn(",");
 
         var adapter = PropertyAdapter.builder(environment)
@@ -527,6 +552,18 @@ class PropertyAdapterTests {
 
         assertThat(adapter.getArconiaProperties())
             .doesNotContainKey("arconia.map");
+    }
+
+    @Test
+    void shouldHandleMapValuesContainingEquals() {
+        when(environment.getProperty("external.map")).thenReturn("key1=dGVzdA==,key2=value2");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapMap("external.map", "arconia.map")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.map", Map.of("key1", "dGVzdA==", "key2", "value2"));
     }
 
     @Test
