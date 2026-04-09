@@ -7,9 +7,11 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/arconia-io/arconia/badge)](https://scorecard.dev/viewer/?uri=github.com/arconia-io/arconia)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11241/badge)](https://www.bestpractices.dev/projects/11241)
 
-Arconia is a framework that acts as an add-on for Spring Boot, designed to enhance modern enterprise applications built with Java. You can add Arconia to an existing Spring Boot application to boost developer experience, reduce boilerplate, and seamlessly adopt cloud native patterns.
+<p align="center">
+  <img src="arconia-logo.png" alt="The Arconia logo" width="600" />
+</p>
 
-<img src="arconia-logo.png" alt="The Arconia logo" height="250px" />
+Arconia is a framework that acts as an add-on for Spring Boot, designed to enhance modern enterprise applications built with Java. You can add Arconia to an existing Spring Boot application to boost developer experience, reduce boilerplate, and seamlessly adopt cloud native patterns.
 
 > [!NOTE]
 > The Arconia Framework is currently under active development. We're working hard to improve it and appreciate your patience as we refine the tool. Feel free to try it out and share your feedback!
