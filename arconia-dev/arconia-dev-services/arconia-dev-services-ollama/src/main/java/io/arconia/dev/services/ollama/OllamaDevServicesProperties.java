@@ -28,7 +28,7 @@ public class OllamaDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ollama/ollama:0.18.2";
+    private String imageName = "ollama/ollama:0.20.5";
 
     /**
      * Environment variables to set in the service.
