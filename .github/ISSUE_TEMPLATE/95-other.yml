@@ -11,3 +11,17 @@ body:
       placeholder: Describe your issue here...
     validations:
       required: true
+  - type: "checkboxes"
+    id: "sanity-check"
+    attributes:
+      label: "I assert that this issue is relevant for Arconia"
+      options:
+        - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues)."
+          required: true
+        - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
+          required: true
+  - type: "markdown"
+    attributes:
+      value: |
+        Thank you for helping improve Arconia!
+        ---

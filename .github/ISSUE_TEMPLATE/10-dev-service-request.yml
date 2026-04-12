@@ -39,7 +39,7 @@ body:
     options:
       - label: "I assert that this Dev Service does not yet exist in an [open pull request](https://github.com/arconia-io/arconia/pulls)."
         required: true
-      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
+      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues)."
         required: true
       - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
         required: true

@@ -1,164 +1,90 @@
 # Contributing to Arconia
 
-Thank you for considering contributing to Arconia! We appreciate your time and effort in helping make the project better. These guidelines aim to streamline the contribution process, ensure clarity in communication, and align your efforts with the project's goals.
-
-Arconia is an open-source project that welcomes contributions from everyone. Whether it's reporting bugs, suggesting features, improving documentation, or submitting code changes via pull requests, your input is valuable. Please follow these guidelines to ensure a smooth and efficient collaboration.
-
-## Table of Contents
-
-- [Ground Rules](#ground-rules)
-- [Getting Started: Prerequisites](#getting-started-prerequisites)
-- [Contribution Workflow: Issues and Pull Requests](#contribution-workflow-issues-and-pull-requests)
-- [Reporting Bugs and Suggesting Features](#reporting-bugs-and-suggesting-features)
-- [Asking Support Questions](#asking-support-questions)
-- [Reporting Security Vulnerabilities](#reporting-security-vulnerabilities)
-- [Development Guidelines](#development-guidelines)
-  - [Code Style](#code-style)
-  - [Commit Messages](#commit-messages)
-  - [Signing Commits](#signing-commits)
-    - [Developer Certificate of Origin (DCO) Sign-off](#developer-certificate-of-origin-dco-sign-off)
-- [Code of Conduct](#code-of-conduct)
+Thank you for your interest in contributing! Whether it's reporting bugs, suggesting features, improving documentation, or submitting code, your input is welcome and valued.
 
 ## Ground Rules
 
-* **Be Respectful**. Interact politely and respectfully with everyone in the community. Adhere to the [Arconia Code of Conduct](CODE_OF_CONDUCT.md).
-* **Discuss First**. For any non-trivial changes (more than fixing a typo), **please open a [GitHub Issue](https://github.com/arconia-io/arconia/issues/new/choose) first.** Discuss your proposed changes and get feedback before starting work. This prevents wasted effort and ensures alignment. Failure to do so might result in your pull request being rejected.
-* **Use Discussions for Questions**. For general questions or help, please use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions).
-* **Focused Pull Requests**. Keep each pull request focused on a single issue or feature. Link the PR to the corresponding issue (e.g., `Fixes #123` or `Closes gh-XXXX` in the PR description).
+* **Be Respectful.** Adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
+* **Discuss First.** For non-trivial changes, [open an issue](https://github.com/arconia-io/arconia/issues/new/choose) before starting work. PRs without a prior discussion may be rejected.
+* **Use Discussions for Questions.** The issue tracker is not for support questions. Use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions) instead.
+* **Focused PRs.** Each pull request should address a single issue or feature, linked to the corresponding issue (e.g., `Fixes #123`).
+* **Security Vulnerabilities.** Report them responsibly via the [Security Policy](SECURITY.md). Do **not** open a public issue.
 
-## Getting Started: Prerequisites
+## Prerequisites
 
-Before you start contributing code, ensure you have:
-
-* Java 21 or later installed.
+* Java 21+ installed.
 * A container runtime compatible with Testcontainers (e.g., [Podman Desktop](https://podman-desktop.io), [Docker Desktop](https://www.docker.com/products/docker-desktop/)).
 
-## Contribution Workflow: Issues and Pull Requests
+## Contribution Workflow
 
-Contributions are made via GitHub Pull Requests. Here’s the typical workflow:
-
-1. **Find or Create an Issue**. Ensure a [GitHub Issue](https://github.com/arconia-io/arconia/issues) exists for the bug or feature you want to address. If not, create one to discuss the change first (see [Ground Rules](#ground-rules)).
-2. **Fork and Clone**. Fork the `arconia-io/arconia` repository on GitHub and clone your fork locally:
+1. **Find or create an issue.** Ensure a [GitHub Issue](https://github.com/arconia-io/arconia/issues) exists for the change you want to make.
+2. **Fork and clone** the repository:
     ```shell
     git clone https://github.com/<your-username>/arconia.git
     cd arconia
     ```
-3. **Create a Branch**. Create a descriptive branch for your changes off the `main` branch:
+3. **Create a branch** off `main`:
     ```shell
-    git checkout -b my-descriptive-feature-branch main
+    git checkout -b my-feature-branch main
     ```
-4. **Implement Changes**. Make your code changes. Follow the [Code Style](#code-style) guidelines.
-5. **Add Tests**. Write unit or integration tests covering your changes.
-6. **Update Documentation**. If necessary, update documentation in the `docs/` directory.
-7. **Build and Test Locally**. Ensure everything builds and all tests pass:
+4. **Implement your changes.** Follow the [code style](#code-style) guidelines, add tests, and update documentation in `docs/` if needed.
+5. **Build and test locally:**
     ```shell
     ./gradlew build
     ```
-* **Commit Changes**. Commit your work using descriptive messages that follow the [Commit Messages](#commit-messages) format. Crucially, ensure your commits are signed off (see [Signing Commits](#signing-commits)).
+6. **Commit** using [Conventional Commits](#commit-messages) format with a [DCO sign-off](#dco-sign-off):
     ```shell
-    git add .
-    git commit -s -m "feat(core): Implement the new feature"
+    git commit -s -m "feat(core): Add new feature"
     ```
-9. **Keep Branch Updated**. Before pushing, and periodically during development, update your branch with the latest changes from the upstream `main` branch using rebase (NEVER merge):
+7. **Keep your branch updated** via rebase (never merge):
     ```shell
-    # Add upstream remote if you haven't already
-    git remote add upstream https://github.com/arconia-io/arconia.git
-
-    # Fetch latest changes and rebase your branch
     git fetch upstream
     git rebase upstream/main
-    # Resolve any conflicts if they occur
     ```
-10. **Push to Your Fork**. Push your branch to your fork. Use `--force-with-lease` if you rebased or amended commits:
-    ```shell
-    git push origin my-descriptive-feature-branch --force-with-lease
-    ```
-11. **Open a Pull Request**.
-    * Navigate to the `arconia-io/arconia` repository on GitHub.
-    * Click "New pull request" and choose to compare across forks, selecting your fork and branch.
-    * Target the `main` branch of `arconia-io/arconia`.
-    * Ensure the PR title follows the [Commit Messages](#commit-messages) format.
-    * Fill out the pull request template, clearly describing the changes and linking the related issue (e.g., `Fixes #123`).
-12. **Code Review:** Project maintainers will review your PR. Address any feedback by making changes on your branch, committing them (signed-off), and pushing again. The PR will update automatically.
-13. **Merge**. Once the PR is approved and all checks pass, a maintainer will merge it. Congratulations and thank you for your contribution!
+8. **Push and open a PR** targeting `main`. Ensure the PR title follows [Conventional Commits](#commit-messages) format and fill out the PR template.
+9. **Address review feedback.** Maintainers will review your PR. Push additional signed-off commits as needed.
 
 ## Reporting Bugs and Suggesting Features
 
-Use our [GitHub Issues](https://github.com/arconia-io/arconia/issues/new/choose) page to report bugs or suggest features, selecting the appropriate template:
+Use [GitHub Issues](https://github.com/arconia-io/arconia/issues/new/choose) with the appropriate template:
 
 * **Bugs:** Use the **"Bug: Generic"** template.
 * **Features:** Use the **"Request: Feature"** template.
 * **Dev Services:** Use the **"Request: Dev Service"** template.
 
-Before submitting:
-
-1.  Search existing issues to avoid duplicates.
-2.  For bugs, ensure it's reproducible with the latest version.
-3.  Provide clear descriptions and follow the template instructions.
-4.  Remember to discuss significant changes *before* starting implementation (see [Ground Rules](#ground-rules)).
-
-## Asking Support Questions
-
-Please **do not** use the issue tracker for support questions. Use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions) instead.
-
-## Reporting Security Vulnerabilities
-
-If you discover a security vulnerability, report it responsibly by following the instructions in our [Security Policy](SECURITY.md). **Do NOT open a public issue or disclose it publicly.**
+Before submitting, search existing issues to avoid duplicates and ensure bugs are reproducible with the latest version.
 
 ## Development Guidelines
 
 ### Code Style
 
-* The project uses [.editorconfig](/.editorconfig) to define basic code formatting. Please ensure your editor respects this file.
-* Use explicit imports; avoid wildcard (`*`) imports.
-* Follow the existing sorting order when adding items to lists (usually alphabetical).
+* The project uses [.editorconfig](/.editorconfig) for formatting. Ensure your editor respects it.
+* Use explicit imports (no wildcards).
+* Follow existing alphabetical sorting conventions.
 
 ### Commit Messages
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for PR titles and commit messages. This aids automated releases and improves history readability.
+We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for both commit messages and PR titles.
 
-Format:
 ```
 <type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
 ```
 
-* **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `build`, `ci`, `chore`, `revert`, `deps`.
-* **Scopes** (optional, relate to project modules): `core`, `dev`, `k8s`, `multitenancy`, `otel`. Do not include a scope if the change doesn't relate to one of these modules.
-* **Description**: Use present tense ("Add feature", not "Added feature") and imperative mood ("Move cursor", not "Moves cursor").
-* **Breaking Changes**: Indicate breaking changes with `BREAKING CHANGE:` in the footer or by appending `!` after the type/scope (e.g., `feat(core)!:`).
+* **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `build`, `ci`, `chore`, `revert`, `deps`.
+* **Scopes** (optional, relate to project modules): `core`, `dev`, `k8s`, `multitenancy`, `otel`. Omit scope if the change doesn't relate to one of these modules.
+* **Style:** Present tense, imperative mood (e.g., "Add feature", not "Added feature").
+* **Breaking changes:** Append `!` after the type/scope (e.g., `feat(core)!:`) or add `BREAKING CHANGE:` in the footer.
 
 Example: `fix(dev): Correct handling of container startup timeout`
 
-The Pull Request title *must* also follow this convention.
+### DCO Sign-off
 
-### Signing Commits
-
-All commits contributed to Arconia must be **signed-off**, attesting to the [Developer Certificate of Origin (DCO)](#developer-certificate-of-origin-dco-sign-off).
-
-Commits lacking sign-off will block merging.
-
-#### Developer Certificate of Origin (DCO) Sign-off
-
-The DCO certifies you have the right to submit your contribution.
-
-The easiest way to sign-off a commit is using the `-s` flag:
+All commits must include a [Developer Certificate of Origin](dco.txt) sign-off. Commits without it will block merging.
 
 ```shell
+# Sign-off a new commit
 git commit -s -m "Your commit message"
-```
 
-To add a sign-off to your *last* commit if you forgot:
-
-```shell
+# Add sign-off to the last commit
 git commit --amend -s --no-edit
 ```
-
-For older commits, use interactive rebase (`git rebase -i`).
-
-## Code of Conduct
-
-All participants in the Arconia community are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md). Please read it to understand the expected standards of behavior. Treat everyone with respect and kindness.

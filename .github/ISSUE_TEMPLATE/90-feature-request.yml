@@ -40,7 +40,7 @@ body:
     options:
       - label: "I assert that this is a feature request and not a support request. If you need assistance, please use [GitHub Discussions](https://github.com/arconia-io/arconia/discussions)."
         required: true
-      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues). "
+      - label: "I assert that this is not a [duplicate of an existing issue](https://github.com/arconia-io/arconia/issues)."
         required: true
       - label: "I assert that I have read the [Arconia Code of Conduct](https://github.com/arconia-io/arconia/blob/main/CODE_OF_CONDUCT.md) and agree to abide by it."
         required: true

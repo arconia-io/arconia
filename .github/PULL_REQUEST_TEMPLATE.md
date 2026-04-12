@@ -1,5 +1,7 @@
 _Thank you for helping improve Arconia and take time to contribute this pull request!_
 
+_Please ensure the PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format (e.g. `feat(core): Add new feature`)._
+
 ## Description
 
 _Please include a summary of the change and which issue is fixed. If the issue doesn't exist, please create one._
