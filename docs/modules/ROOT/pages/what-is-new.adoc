@@ -5,10 +5,7 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Docling
+== General
 
-* The Arconia Docling integration is now based on Docling Java 0.5, which introduced some breaking changes. `ConvertDocumentResponse` is now an abstract class with three concrete implementations: `InBodyConvertDocumentResponse`, `ZipArchiveConvertDocumentResponse`, and `PreSignedUrlConvertDocumentResponse`. Refer to the https://docling-project.github.io/docling-java/0.5.0/whats-new/[Docling Java release notes] for more information.
-
-== Spring AI
-
-* The Arconia AI Docling Document Reader integration is now based on Spring AI 2.0.0-M3, which represents a further milestone towards alignment with the Spring Boot 4 baseline. It's worth noting that Spring AI is now fully migrated to Jackson 3, aligning with the rest of the Spring ecosystem and the other Arconia projects. Refer to the https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/upgrade-notes.html#upgrading-to-2-0-0-M3[Spring AI release notes] for more information.
+* This version introduces a series of performance and stability improvements and dependency upgrades.
+* We have officially launched the official logo of the Arconia project. We hope you like it!
