@@ -2,11 +2,13 @@
 
 Arconia provides unified observability for Spring Boot applications, combining full support for OpenTelemetry API, SDK, and Instrumentation while also providing a seamless integration with Micrometer API and Instrumentation. The goal is to provide a single, unified observability solution for Spring Boot applications that can give you the best of both worlds: the standardization and ubiquity of OpenTelemetry and the robustness and stability of Micrometer.
 
-If you're currently relying on the OpenTelemetry/OTLP support available in Spring Boot 3, you can easily migrate to Arconia OpenTelemetry. This page guides you through the migration process, highlighting the necessary changes to your dependencies, configuration, and code.
+If you're currently relying on the OpenTelemetry/OTLP support available in Spring Boot, you can easily migrate to Arconia OpenTelemetry. This page guides you through the migration process, highlighting the necessary changes to your dependencies, configuration, and code.
 
 == Arconia BOM
 
 For starters, include the Arconia BOM to your project.
+
+WARNING: The current version of Arconia doesn't support Spring Boot 3.5 any longer. If you want to migrate an existing Spring Boot 3.5 application to using Arconia OpenTelemetry, it's recommended you first upgrade your application to Spring Boot 4.0 (we provide https://github.com/arconia-io/arconia-migrations/blob/main/docs/spring-boot.md[automations] for doing that). If that's not possible, you can use version 0.20.1 of Arconia, which is the latest one still supporting Spring Boot 3.5.
 
 [tabs]
 ======
@@ -39,26 +41,27 @@ Maven::
 ----
 ======
 
-== Main Migration
+Next, follow the instructions based on what version of Spring Boot you're using.
 
-To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration (properties and beans) to the Arconia OpenTelemetry configuration properties. The migration will also add the Arconia OpenTelemetry Spring Boot Starter dependency to your project if not already present, and remove the explicit Micrometer/OpenTelemetry dependencies that are now managed by Arconia and no longer needed.
+== Spring Boot 4.0
 
-WARNING: The OpenRewrite recipe is still experimental and might not cover all possible configurations. Always review the changes made by the recipe to ensure they meet your requirements. Please report any issues you find to help us improve the recipe.
+=== Main Migration
+
+To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration to Arconia OpenTelemetry configuration.
 
 There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
 
-=== Arconia CLI
+==== Arconia CLI
 
 Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can run the migration recipe as follows:
 
 [source,shell]
 ----
-arconia rewrite \
-    --recipe-name io.arconia.rewrite.MigrateSpringBoot3OtlpToArconiaOpenTelemetry \
-    --recipe-library io.arconia.migrations:rewrite-arconia
+arconia rewrite run \
+    --recipe-name io.arconia.rewrite.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
 ----
 
-=== Gradle OpenRewrite Plugin
+==== Gradle OpenRewrite Plugin
 
 Using the https://docs.openrewrite.org[OpenRewrite Gradle Plugin], you can apply the recipe to your project as follows.
 
@@ -88,6 +91,87 @@ rootProject {
             }
         }
     }
+
+    configurations.named("rewrite") {
+        canBeConsumed = false
+    }
+}
+----
+
+Then, run the following command:
+
+[source, shell]
+----
+./gradlew rewriteRun \
+    --init-script init.gradle \
+    -DactiveRecipe=io.arconia.rewrite.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
+----
+
+Finally, you can remove the `init.gradle` file.
+
+==== Maven OpenRewrite Plugin
+
+Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply the recipe to your project as follows:
+
+[source, shell]
+----
+./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
+  -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
+  -Drewrite.activeRecipes=io.arconia.rewrite.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
+----
+
+== Spring Boot 3.5
+
+=== Main Migration
+
+To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration to Arconia OpenTelemetry configuration.
+
+There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
+
+==== Arconia CLI
+
+Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can run the migration recipe as follows:
+
+[source,shell]
+----
+arconia rewrite run \
+    --recipe-name io.arconia.rewrite.MigrateSpringBoot3OtlpToArconiaOpenTelemetry
+----
+
+==== Gradle OpenRewrite Plugin
+
+Using the https://docs.openrewrite.org[OpenRewrite Gradle Plugin], you can apply the recipe to your project as follows.
+
+First, create an `init.gradle` file in your Spring Boot project (root folder) with the following content:
+
+[source,groovy]
+----
+initscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2" }
+    }
+    dependencies {
+        classpath("org.openrewrite:plugin:latest.release")
+    }
+}
+
+rootProject {
+    plugins.apply(org.openrewrite.gradle.RewritePlugin)
+    dependencies {
+        rewrite("io.arconia.migrations:rewrite-arconia:latest.release")
+    }
+
+    afterEvaluate {
+        if (repositories.isEmpty()) {
+            repositories {
+                mavenCentral()
+            }
+        }
+    }
+
+    configurations.named("rewrite") {
+        canBeConsumed = false
+    }
 }
 ----
 
@@ -102,7 +186,7 @@ Then, run the following command:
 
 Finally, you can remove the `init.gradle` file.
 
-=== Maven OpenRewrite Plugin
+==== Maven OpenRewrite Plugin
 
 Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply the recipe to your project as follows:
 
