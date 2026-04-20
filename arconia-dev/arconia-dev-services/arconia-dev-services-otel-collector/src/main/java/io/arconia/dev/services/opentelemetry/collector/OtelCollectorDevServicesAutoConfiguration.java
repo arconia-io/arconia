@@ -30,8 +30,8 @@ public final class OtelCollectorDevServicesAutoConfiguration {
             var properties = bindProperties(OtelCollectorDevServicesProperties.CONFIG_PREFIX, OtelCollectorDevServicesProperties.class);
 
             registry.registerDevService(service -> service
-                    .name("oracle-xe")
-                    .description("Oracle XE Dev Service")
+                    .name("otel-collector")
+                    .description("OpenTelemetry Collector Dev Service")
                     .container(container -> container
                             .type(ArconiaOtelCollectorContainer.class)
                             .serviceConnectionName("otel/opentelemetry-collector")
