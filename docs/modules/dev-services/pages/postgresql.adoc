@@ -29,8 +29,8 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.{service-name}.image-name`
-| ``
-| Full name of the container image used in the dev service. It defaults to a `postgres` or `pgvector/pgvector` image based on whether Spring AI PGVector is detected in the project.
+| `postgres`
+| Full name of the container image used in the dev service. When Spring AI PGVector is detected in the project, it defaults to `pgvector/pgvector` instead.
 
 | `arconia.dev.services.{service-name}.environment`
 | `{}`

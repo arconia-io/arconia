@@ -28,13 +28,9 @@ public final class PostgresqlDevServicesAutoConfiguration {
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
-            String defaultImageName;
             if (ClassUtils.isPresent(PGVECTOR_ENABLED, null)) {
-                defaultImageName = "pgvector/pgvector:pg18";
-            } else {
-                defaultImageName = "postgres:18.3-alpine";
+                setDefaultProperty(PostgresqlDevServicesProperties.CONFIG_PREFIX + ".image-name", "pgvector/pgvector:pg18");
             }
-            setDefaultProperty(PostgresqlDevServicesProperties.CONFIG_PREFIX + ".image-name", defaultImageName);
 
             var properties = bindProperties(PostgresqlDevServicesProperties.CONFIG_PREFIX, PostgresqlDevServicesProperties.class);
 
