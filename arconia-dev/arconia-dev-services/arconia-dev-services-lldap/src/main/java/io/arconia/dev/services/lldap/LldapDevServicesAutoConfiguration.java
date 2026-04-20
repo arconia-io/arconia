@@ -10,7 +10,7 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
-import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.ArtemisDevServicesRegistrar;
+import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.LldapDevServicesRegistrar;
 
 /**
  * Auto-configuration for LLDAP Dev Services.
@@ -18,10 +18,10 @@ import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.ArtemisDe
 @AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("lldap")
 @EnableConfigurationProperties(LldapDevServicesProperties.class)
-@Import(ArtemisDevServicesRegistrar.class)
+@Import(LldapDevServicesRegistrar.class)
 public final class LldapDevServicesAutoConfiguration {
 
-    static class ArtemisDevServicesRegistrar extends DevServicesRegistrar {
+    static class LldapDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
