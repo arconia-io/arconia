@@ -1,6 +1,7 @@
 package io.arconia.dev.services.core.registration;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
@@ -17,7 +18,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 
 /**
@@ -111,10 +111,28 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     }
 
     /**
-     * Check if the application is running in development mode.
+     * Add a dynamic property whose value is resolved lazily from the given supplier.
+     * <p>
+     * This is useful when there is no Spring Boot {@code ConnectionDetails} interface available
+     * for a given integration, providing an alternative mechanism for dev services to contribute
+     * dynamic properties.
+     *
+     * @see DevServiceDynamicPropertySource
      */
-    protected boolean isDevMode() {
-        return BootstrapMode.DEV.equals(BootstrapMode.detect());
+    protected void addDynamicProperty(String name, Supplier<Object> valueSupplier) {
+        Assert.notNull(environment, "environment has not been initialized");
+        Assert.state(environment instanceof ConfigurableEnvironment,
+                "environment must be a ConfigurableEnvironment");
+        DevServiceDynamicPropertySource.getOrCreate((ConfigurableEnvironment) environment)
+                .add(name, valueSupplier);
+    }
+
+    /**
+     * Get the {@link BeanFactory} associated with this registrar.
+     */
+    protected BeanFactory getBeanFactory() {
+        Assert.notNull(beanFactory, "beanFactory has not been initialized");
+        return beanFactory;
     }
 
     /**

@@ -90,14 +90,15 @@ public class DevServicesRegistry {
             beanDefinition.setDescription(service.getDescription());
         }
 
-        // Add @ServiceConnection annotation.
-        Map<String, Object> annotationAttributes = new HashMap<>();
-        if (StringUtils.hasText(containerSpec.getServiceConnectionName())) {
-            // Sets the "value" attribute for the @ServiceConnection annotation
-            annotationAttributes.put("value", containerSpec.getServiceConnectionName());
+        if (containerSpec.isServiceConnectionSupported()) {
+            Map<String, Object> annotationAttributes = new HashMap<>();
+            if (StringUtils.hasText(containerSpec.getServiceConnectionName())) {
+                // Sets the "value" attribute for the @ServiceConnection annotation
+                annotationAttributes.put("value", containerSpec.getServiceConnectionName());
+            }
+            beanDefinition.setAnnotations(MergedAnnotations.from(
+                    AnnotationUtils.synthesizeAnnotation(annotationAttributes, ServiceConnection.class, null)));
         }
-        beanDefinition.setAnnotations(MergedAnnotations.from(
-                AnnotationUtils.synthesizeAnnotation(annotationAttributes, ServiceConnection.class, null)));
 
         // Provide a supplier for creating a Container instance.
         if (containerSpec.getSupplier() != null) {
@@ -260,6 +261,8 @@ public class DevServicesRegistry {
         @Nullable
         private Supplier<? extends Container<?>> supplier;
 
+        private boolean serviceConnectionSupported = true;
+
         @Nullable
         private String serviceConnectionName;
 
@@ -283,9 +286,18 @@ public class DevServicesRegistry {
 
         /**
          * The name of the {@link ServiceConnection} annotation to add to the registered container bean.
+         * <p>
+         * By default, {@code @ServiceConnection} is added with no explicit name,
+         * and Spring Boot auto-detects the connection details factory by container type.
+         * <p>
+         * Passing a non-null value sets the {@code @ServiceConnection} name explicitly.
+         * Passing {@code null} disables {@code @ServiceConnection} entirely, for cases where
+         * no {@code ContainerConnectionDetailsFactory} is available and property-based wiring
+         * (via {@link DevServiceDynamicPropertySource}) is used instead.
          */
         public ContainerSpec serviceConnectionName(@Nullable String name) {
             this.serviceConnectionName = name;
+            this.serviceConnectionSupported = (name != null);
             return this;
         }
 
@@ -297,6 +309,10 @@ public class DevServicesRegistry {
         @Nullable
         Supplier<? extends Container<?>> getSupplier() {
             return supplier;
+        }
+
+        boolean isServiceConnectionSupported() {
+            return serviceConnectionSupported;
         }
 
         @Nullable
