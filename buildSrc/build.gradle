@@ -24,7 +24,7 @@ dependencies {
         implementation("com.fasterxml.jackson.core:jackson-core:2.21.2") {
             because "GHSA-72hv-8253-57qq: Upgrade transitive dependency from CycloneDX Gradle plugin"
         }
-        implementation("org.codehaus.plexus:plexus-utils:3.6.1") {
+        implementation("org.codehaus.plexus:plexus-utils:4.0.3") {
             because "CVE-2025-67030: Upgrade transitive dependency from CycloneDX Gradle plugin"
         }
     }
