@@ -5,7 +5,12 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== General
+== Dev Services
 
-* This version introduces a series of performance and stability improvements and dependency upgrades.
-* We have officially launched the official logo of the Arconia project. We hope you like it!
+=== General
+
+* Dev Services can now be configured with dynamic properties for those integrations that don't support the ConnectionDetails API. That enables more extended use cases and support capabilities for Dev Services.
+
+=== Ollama
+
+* The Ollama Dev Service now automatically configures the Spring AI OpenAI client to use Ollama's OpenAI-compatible API endpoint when the Spring AI OpenAI module is on the classpath.

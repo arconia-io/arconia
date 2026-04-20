@@ -5,7 +5,7 @@ A service providing an https://ollama.com[Ollama] model inference service for de
 
 It works with Spring Boot libraries that support Ollama, including:
 
-* https://spring.io/projects/spring-ai[Spring AI]
+* https://spring.io/projects/spring-ai[Spring AI] (Ollama, OpenAI)
 
 [NOTE]
 ====
@@ -71,3 +71,7 @@ You can configure the Dev Service via configuration properties.
 |===
 
 include::partial$disabling-dev-service.adoc[]
+
+== Spring AI OpenAI Compatibility
+
+When the Spring AI OpenAI module is on the classpath, the Ollama Dev Service automatically configures the OpenAI client to use the Ollama-compatible API endpoint. The `spring.ai.openai.base-url` and `spring.ai.openai.api-key` properties are set dynamically, pointing to the Ollama container when available or to the native Ollama service otherwise.

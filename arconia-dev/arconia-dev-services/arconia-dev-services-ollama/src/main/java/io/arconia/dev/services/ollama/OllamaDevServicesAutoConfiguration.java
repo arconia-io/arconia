@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.springframework.util.ClassUtils;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -27,17 +28,28 @@ public final class OllamaDevServicesAutoConfiguration {
 
     static class OllamaDevServicesRegistrar extends DevServicesRegistrar {
 
+        private static final String OLLAMA_CONNECTION_DETAILS_CLASS =
+                "org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails";
+
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             var properties = bindProperties(OllamaDevServicesProperties.CONFIG_PREFIX, OllamaDevServicesProperties.class);
 
+            // Only enable @ServiceConnection when the Spring AI Ollama module is on the classpath,
+            // since it provides the ContainerConnectionDetailsFactory needed to handle the annotation.
+            boolean ollamaModulePresent = ClassUtils.isPresent(OLLAMA_CONNECTION_DETAILS_CLASS, null);
+
             registry.registerDevService(service -> service
                     .name("ollama")
                     .description("Ollama Dev Service")
-                    .container(container -> container
+                    .container(container -> {
+                        container
                             .type(ArconiaOllamaContainer.class)
-                            .supplier(() -> new ArconiaOllamaContainer(properties))
-                    ));
+                            .supplier(() -> new ArconiaOllamaContainer(properties));
+                        if (!ollamaModulePresent) {
+                            container.serviceConnectionName(null);
+                        }
+                    }));
         }
 
     }

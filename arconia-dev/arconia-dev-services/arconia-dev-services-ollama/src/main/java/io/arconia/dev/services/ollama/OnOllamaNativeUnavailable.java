@@ -25,10 +25,6 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        if (!ClassUtils.isPresent("org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionProperties", null)) {
-            return ConditionOutcome.match("The Spring AI Ollama module is not available in the classpath.");
-        }
-
         Environment environment = context.getEnvironment();
 
         try {
@@ -40,12 +36,7 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
                         OllamaDevServicesProperties.CONFIG_PREFIX + ".ignore-native-service", devServicesProperties.isIgnoreNativeService()));
             }
 
-            OllamaConnectionProperties ollamaProperties = Binder.get(environment)
-                    .bindOrCreate(OllamaConnectionProperties.CONFIG_PREFIX, OllamaConnectionProperties.class);
-
-            String ollamaBaseUrl = StringUtils.hasText(ollamaProperties.getBaseUrl())
-                    ? ollamaProperties.getBaseUrl()
-                    : DEFAULT_BASE_URL;
+            String ollamaBaseUrl = resolveBaseUrl(environment);
 
             boolean isNativeConnection = isOllamaNativeConnection(ollamaBaseUrl);
             if (!isNativeConnection) {
@@ -56,6 +47,21 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
         } catch (Exception e) {
             return ConditionOutcome.match("Failed to evaluate Ollama condition: " + e.getMessage());
         }
+    }
+
+    /**
+     * Resolves the Ollama base URL from the Spring AI Ollama connection properties if available,
+     * otherwise falls back to the default.
+     */
+    private String resolveBaseUrl(Environment environment) {
+        if (ClassUtils.isPresent("org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionProperties", null)) {
+            OllamaConnectionProperties ollamaProperties = Binder.get(environment)
+                    .bindOrCreate(OllamaConnectionProperties.CONFIG_PREFIX, OllamaConnectionProperties.class);
+            if (StringUtils.hasText(ollamaProperties.getBaseUrl())) {
+                return ollamaProperties.getBaseUrl();
+            }
+        }
+        return DEFAULT_BASE_URL;
     }
 
     /**
