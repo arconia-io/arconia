@@ -17,7 +17,7 @@ import io.arconia.core.support.Incubating;
 /**
  * Matches HTTP requests paths for which a tenant context is not attached.
  */
-@Incubating(since = "0.2.0")
+@Incubating
 public class TenantContextIgnorePathMatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);

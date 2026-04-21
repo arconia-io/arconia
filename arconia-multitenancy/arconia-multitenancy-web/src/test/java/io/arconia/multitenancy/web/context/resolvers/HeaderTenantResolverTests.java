@@ -49,6 +49,16 @@ class HeaderTenantResolverTests {
     }
 
     @Test
+    void whenHeaderMissingThenReturnNull() {
+        var headerTenantResolver = new HeaderTenantResolver();
+        var request = new MockHttpServletRequest();
+
+        var actualTenantId = headerTenantResolver.resolveTenantIdentifier(request);
+
+        assertThat(actualTenantId).isNull();
+    }
+
+    @Test
     void whenNullRequestThenThrow() {
         var headerTenantResolver = new HeaderTenantResolver();
 

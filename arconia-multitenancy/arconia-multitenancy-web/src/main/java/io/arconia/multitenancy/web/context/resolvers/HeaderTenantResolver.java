@@ -10,7 +10,7 @@ import io.arconia.core.support.Incubating;
 /**
  * Strategy used to resolve the current tenant from a header in an HTTP request.
  */
-@Incubating(since = "0.1.0")
+@Incubating
 public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
     public static final String DEFAULT_HEADER_NAME = "X-TenantId";

@@ -60,6 +60,7 @@ include 'arconia-spring-boot'
 
 // Spring Boot Starters
 include 'spring-boot-starters:arconia-docling-spring-boot-starter'
+include 'spring-boot-starters:arconia-multitenancy-core-spring-boot-starter'
 include 'spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
 include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
 include 'spring-boot-starters:arconia-spring-boot-starter'

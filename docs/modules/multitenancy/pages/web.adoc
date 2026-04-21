@@ -1,0 +1,255 @@
+= Web
+
+The Arconia Multitenancy Web module adds HTTP-specific multitenancy support for Spring MVC applications. It provides tenant resolution from HTTP headers or cookies, a servlet filter for automatic context management, and a controller annotation for convenient access to the current tenant.
+
+== Dependencies
+
+Add the Arconia Multitenancy Web Spring Boot Starter dependency to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-multitenancy-web-spring-boot-starter'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-multitenancy-web-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
+The web starter includes the core multitenancy module, so all xref:tenant-context.adoc[context], xref:tenant-resolution.adoc[resolution], xref:tenant-details.adoc[tenant details], and xref:observability.adoc[observability] features are available automatically.
+
+== HTTP Tenant Resolution
+
+The web module resolves the tenant identifier from each incoming HTTP request using a configurable strategy.
+
+=== Header-Based Resolution
+
+By default, the tenant identifier is resolved from the `X-TenantId` HTTP header.
+
+[tabs]
+======
+HTTPie::
++
+[source,bash]
+----
+http :8080/api/resource X-TenantId:acme
+----
+
+curl::
++
+[source,bash]
+----
+curl -H "X-TenantId: acme" http://localhost:8080/api/resource
+----
+======
+
+You can customize the header name:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        header:
+          header-name: X-Custom-Tenant
+----
+
+=== Cookie-Based Resolution
+
+Alternatively, you can resolve the tenant from an HTTP cookie by switching the resolution mode.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: cookie
+----
+
+By default, the cookie name is `TENANT-ID`. You can customize it:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: cookie
+        cookie:
+          cookie-name: MY-TENANT
+----
+
+=== Configuration Properties
+
+.HTTP Tenant Resolution Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.resolution.http.enabled`
+|`true`
+|Whether HTTP tenant resolution is enabled.
+
+|`arconia.multitenancy.resolution.http.resolution-mode`
+|`header`
+|Mode of HTTP resolution. Options: `header`, `cookie`.
+
+|`arconia.multitenancy.resolution.http.header.header-name`
+|`X-TenantId`
+|Name of the HTTP header from which to resolve the current tenant.
+
+|`arconia.multitenancy.resolution.http.cookie.cookie-name`
+|`TENANT-ID`
+|Name of the HTTP cookie from which to resolve the current tenant.
+|===
+
+== Tenant Context Filter
+
+The `TenantContextFilter` is a servlet filter that intercepts incoming HTTP requests, resolves the tenant, optionally verifies it via a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], and establishes the xref:tenant-context.adoc[tenant context] for the duration of the request using a `ScopedValue` binding. It publishes `TenantContextAttachedEvent` on entry and `TenantContextClosedEvent` on completion, triggering all registered xref:tenant-context.adoc#_tenant_context_events[event listeners].
+
+If the tenant identifier cannot be resolved (e.g., the header is missing) or verification fails (e.g., the tenant is not found or disabled), the filter returns an HTTP `400 Bad Request` response with a `ProblemDetail` JSON body describing the error.
+
+=== Spring Security Integration
+
+When using Spring Security, the `TenantContextFilter` is auto-configured as a standard servlet filter and runs outside the security filter chain. To ensure tenant context is available during security processing (e.g., for tenant-aware authentication or authorization), you must register the filter in the security filter chain so that it runs before security filters:
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationFilter;
+
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http, TenantContextFilter tenantContextFilter) throws Exception {
+    return http
+        .addFilterBefore(tenantContextFilter, BearerTokenAuthenticationFilter.class)
+        // ... other security configuration
+        .build();
+}
+----
+
+=== Ignoring Paths
+
+Certain paths can be excluded from tenant resolution. By default, the following paths are ignored:
+
+* `/actuator/**`
+* `/webjars/**`
+* `/css/**`
+* `/js/**`
+* `.ico`
+
+You can add additional paths to ignore without replacing the defaults:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        filter:
+          additional-ignore-paths:
+            - /health
+            - /public/**
+----
+
+You can also replace the default ignored paths entirely:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        filter:
+          ignore-paths:
+            - /actuator/**
+            - /public/**
+----
+
+=== Disabling the Filter
+
+You can disable the tenant context filter while keeping the rest of the multitenancy configuration active:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        filter:
+          enabled: false
+----
+
+=== Configuration Properties
+
+.Tenant Context Filter Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.resolution.http.filter.enabled`
+|`true`
+|Whether the HTTP filter resolving the current tenant is enabled.
+
+|`arconia.multitenancy.resolution.http.filter.ignore-paths`
+|`/actuator/\**, /webjars/**, /css/**, /js/**, .ico`
+|HTTP request paths for which tenant resolution will not be performed.
+
+|`arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
+|`[]`
+|Additional HTTP request paths for which tenant resolution will not be performed.
+|===
+
+== @TenantIdentifier Annotation
+
+In Spring MVC controllers, you can inject the current tenant identifier directly into handler method parameters using the `@TenantIdentifier` annotation.
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.annotations.TenantIdentifier;
+
+@RestController
+class TenantController {
+
+    @GetMapping("/tenant")
+    String currentTenant(@TenantIdentifier String tenantId) {
+        return tenantId;
+    }
+
+}
+----
+
+The annotation resolves the value from the xref:tenant-context.adoc[`TenantContext`] and supports `String` parameters.
+
+NOTE: You can also use the `TenantContext` directly to access the tenant identifier from any component, not just controllers. The `@TenantIdentifier` annotation is a convenience for Spring MVC handler methods.
+
+== Custom Tenant Resolution
+
+You can implement your own HTTP tenant resolution strategy by providing a custom `HttpRequestTenantResolver` bean. This replaces the default header or cookie resolver.
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
+
+@Bean
+HttpRequestTenantResolver customTenantResolver() {
+    return request -> {
+        // Custom logic to extract tenant from the request
+        return request.getParameter("tenant");
+    };
+}
+----
+
+`HttpRequestTenantResolver` is a specialization of the core xref:tenant-resolution.adoc[`TenantResolver<T>`] interface for `HttpServletRequest` sources.

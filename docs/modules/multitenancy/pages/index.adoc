@@ -1,0 +1,190 @@
+= Arconia Multitenancy
+
+Arconia Multitenancy provides comprehensive multitenancy support for Spring Boot applications, handling tenant resolution, context propagation, and observability integration out of the box.
+
+Need to build a multitenant application where each request is associated with a specific tenant? Add the appropriate Arconia Multitenancy starter to your project and get automatic tenant resolution, scoped context propagation, and observability enrichment with sensible defaults and minimal configuration.
+
+Built on Spring Boot's auto-configuration model, Arconia Multitenancy is designed as a set of composable modules that you can adopt incrementally based on your needs.
+
+NOTE: Arconia Multitenancy requires Java 25+ because it uses the `ScopedValue` API (https://openjdk.org/jeps/506[JEP 506]) for tenant context propagation. All the other Arconia modules still support Java 21, but if you want to use Arconia Multitenancy, your application must run on Java 25 or later.
+
+== Quick Start
+
+The most common way to get started is with the Web starter, which provides HTTP-based tenant resolution for servlet applications.
+
+=== Dependencies
+
+Add the Arconia Multitenancy Web Spring Boot Starter dependency to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-multitenancy-web-spring-boot-starter'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-multitenancy-web-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencyManagement {
+	imports {
+		mavenBom "io.arconia:arconia-bom:{page-component-version}"
+	}
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
+
+=== Running the Application
+
+You can run your Spring Boot application using your preferred method.
+
+include::ROOT:partial$app-run.adoc[]
+
+=== Sending a Request
+
+By default, Arconia Multitenancy resolves the current tenant from the `X-TenantId` HTTP header. Include this header in your requests to identify the tenant.
+
+[tabs]
+======
+HTTPie::
++
+[source,bash]
+----
+http :8080/api/resource X-TenantId:acme
+----
+
+curl::
++
+[source,bash]
+----
+curl -H "X-TenantId: acme" http://localhost:8080/api/resource
+----
+======
+
+If the header is missing, the server responds with HTTP `400 Bad Request`.
+
+=== Accessing the Current Tenant
+
+You can access the current tenant identifier in your controllers using the `@TenantIdentifier` annotation on a method parameter.
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.annotations.TenantIdentifier;
+
+@RestController
+class GreetingController {
+
+    @GetMapping("/greeting")
+    String greeting(@TenantIdentifier String tenantId) {
+        return "Hello, " + tenantId + "!";
+    }
+
+}
+----
+
+Alternatively, you can access the tenant identifier anywhere in your code using the `TenantContext`.
+
+[source,java]
+----
+import io.arconia.multitenancy.core.context.TenantContext;
+
+String tenantId = TenantContext.getRequiredTenantIdentifier();
+----
+
+== How It Works
+
+When a request arrives, the framework:
+
+1. *Resolves the tenant*. Extracts the tenant identifier from the request source using a configurable xref:tenant-resolution.adoc[`TenantResolver`].
+2. *Verifies the tenant (optional)*. If a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] is configured, checks that the tenant exists and is enabled.
+3. *Binds the context*. Binds the tenant identifier to a xref:tenant-context.adoc[`ScopedValue`] via `TenantContext`, making it available throughout the request scope.
+4. *Publishes a context event*. Fires a `TenantContextAttachedEvent` that triggers registered xref:tenant-context.adoc#_tenant_context_events[listeners] (e.g., MDC enrichment).
+5. *Executes the request*. The request proceeds with the tenant context available. All Micrometer observations are automatically enriched with the tenant identifier.
+6. *Cleans up*. After the request completes, fires a `TenantContextClosedEvent`. The `ScopedValue` binding is automatically removed when the scope exits.
+
+In xref:web.adoc[web applications], this happens transparently via a servlet filter (`TenantContextFilter`) that is auto-configured when using the web starter.
+
+== Modules
+
+Arconia Multitenancy is organized into modules, each addressing a specific concern. You can use them independently or combine them as needed.
+
+=== Core
+
+The core module (`arconia-multitenancy-core-spring-boot-starter`) provides the foundational building blocks for multitenancy, independent of any specific application layer:
+
+* *xref:tenant-context.adoc[Tenant Context]*: Scoped context propagation via `TenantContext` using Java's `ScopedValue` API.
+* *xref:tenant-resolution.adoc[Tenant Resolution]*: Strategy-based tenant resolution with built-in and custom resolvers.
+* *xref:tenant-details.adoc[Tenant Details]*: Tenant metadata management via `TenantDetailsService` and verification via `TenantVerifier`.
+* *xref:observability.adoc[Observability]*: SLF4J MDC logging enrichment and Micrometer observation integration.
+* *Caching*: Tenant-aware cache key generation for cache isolation between tenants.
+
+If you are building a non-web application (e.g., a message consumer or a batch job), you can use the core starter directly:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-multitenancy-core-spring-boot-starter'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-multitenancy-core-spring-boot-starter</artifactId>
+</dependency>
+----
+======
+
+=== Web
+
+The xref:web.adoc[web module] (`arconia-multitenancy-web-spring-boot-starter`) adds HTTP-specific multitenancy support for Spring MVC applications:
+
+* HTTP tenant resolution from headers or cookies.
+* A servlet filter (`TenantContextFilter`) that establishes the tenant context for each request.
+* The `@TenantIdentifier` annotation for injecting the tenant into controller methods.
+
+The web starter includes the core module, so all core features are available automatically.

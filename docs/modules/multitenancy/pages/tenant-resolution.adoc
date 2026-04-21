@@ -1,0 +1,67 @@
+= Tenant Resolution
+
+Tenant resolution is the process of identifying which tenant a request belongs to. Arconia Multitenancy defines a strategy-based model for resolving tenants, with built-in implementations and support for custom resolvers.
+
+== TenantResolver
+
+The `TenantResolver<T>` interface is the core abstraction for tenant resolution. It is a functional interface parameterized by the type of source context used to extract the tenant identifier.
+
+[source,java]
+----
+@FunctionalInterface
+public interface TenantResolver<T> {
+
+    String resolveTenantIdentifier(T source);
+
+}
+----
+
+Different modules provide specialized implementations of this interface for specific source contexts. For example, the xref:web.adoc[web module] provides `HttpRequestTenantResolver` to resolve tenants from HTTP requests.
+
+== Fixed Tenant Resolution
+
+For single-tenant applications or testing scenarios, the core module provides a `FixedTenantResolver` that always returns the same tenant identifier.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      fixed:
+        enabled: true
+        tenant-identifier: my-tenant
+----
+
+When fixed resolution is enabled, every request is associated with the configured tenant identifier, regardless of the source context.
+
+.Fixed Tenant Resolution Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.resolution.fixed.enabled`
+|`false`
+|Whether a fixed tenant resolution strategy should be used.
+
+|`arconia.multitenancy.resolution.fixed.tenant-identifier`
+|`default`
+|Identifier of the fixed tenant to use in each context.
+|===
+
+== Custom Tenant Resolution
+
+You can implement the `TenantResolver<T>` interface to create custom resolution strategies for any source context:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.context.resolvers.TenantResolver;
+
+@Bean
+TenantResolver<MyContext> customTenantResolver() {
+    return context -> {
+        // Custom logic to extract tenant from the context
+        return context.getTenantId();
+    };
+}
+----
+
+For HTTP-specific custom resolvers, see xref:web.adoc#_custom_tenant_resolution[Custom Tenant Resolution] in the Web module documentation.

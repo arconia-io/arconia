@@ -1,7 +1,6 @@
 package io.arconia.multitenancy.web.autoconfigure;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -86,17 +85,17 @@ class MultitenancyWebAutoConfigurationTests {
                 .withPropertyValues("arconia.multitenancy.resolution.http.filter.ignore-paths=/actuator/**,/status")
                 .run(context -> {
                     assertThat(context).hasSingleBean(TenantContextIgnorePathMatcher.class);
-                    var tenatContextIgnorePathMatcher = context.getBean(TenantContextIgnorePathMatcher.class);
+                    var tenantContextIgnorePathMatcher = context.getBean(TenantContextIgnorePathMatcher.class);
                     var mockRequest = new MockHttpServletRequest();
                     mockRequest.setRequestURI("/actuator/prometheus");
-                    assertThat(tenatContextIgnorePathMatcher.matches(mockRequest)).isTrue();
+                    assertThat(tenantContextIgnorePathMatcher.matches(mockRequest)).isTrue();
                 });
     }
 
     @Test
     void tenantContextFilterDisabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(NoSuchBeanDefinitionException.class));
+                .run(context -> assertThat(context).doesNotHaveBean(TenantContextFilter.class));
     }
 
     @Test

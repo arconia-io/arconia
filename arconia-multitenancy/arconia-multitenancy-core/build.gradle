@@ -5,6 +5,12 @@ plugins {
     id "release-conventions"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
@@ -13,6 +19,7 @@ dependencies {
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
 
+    testImplementation "io.micrometer:micrometer-observation-test"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

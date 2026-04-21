@@ -14,3 +14,30 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Ollama
 
 * The Ollama Dev Service now automatically configures the Spring AI OpenAI client to use Ollama's OpenAI-compatible API endpoint when the Spring AI OpenAI module is on the classpath.
+
+== Multitenancy
+
+This release defines a new baseline for the xref:multitenancy:index.adoc[Arconia Multitenancy] module.
+
+=== Highlights
+
+* *Java 25 `ScopedValue` for tenant context*: The `TenantContext` class uses Java's `ScopedValue` API (https://openjdk.org/jeps/506[JEP 506]) for tenant context propagation, ensuring automatic cleanup and safe usage with virtual threads.
+* *HTTP tenant resolution*: Resolve tenants from HTTP headers or cookies via the `arconia-multitenancy-web-spring-boot-starter`.
+* *Micrometer observation enrichment*: All observations are automatically enriched with the tenant identifier via an `ObservationFilter`.
+* *SLF4J MDC integration*: Tenant identifier is automatically added to the MDC for log correlation.
+* *Tenant verification*: Optional `TenantVerifier` for validating resolved tenants against a `TenantDetailsService`.
+* *Tenant-aware caching*: Built-in `TenantKeyGenerator` for cache isolation between tenants.
+
+=== Breaking Changes
+
+The following breaking changes were introduced in this release for the multitenancy modules.
+
+TIP: Most mechanical changes (type renames, package moves, property keys, method renames) are applied automatically by the xref:upgrading-arconia.adoc[Arconia migration recipes]. The changes below require manual attention.
+
+==== Java 25 Required
+
+The multitenancy modules now require Java 25+ due to the use of the `ScopedValue` API. The rest of Arconia keeps working on Java 21+.
+
+==== `TenantContextHolder` Replaced by `TenantContext`
+
+`TenantContextHolder` has been replaced by `TenantContext`, which uses `ScopedValue` instead of `ThreadLocal`. The type rename is applied automatically, but the API change from `set()`/`clear()` to `TenantContext.where("tenant").run(...)` requires manual migration.

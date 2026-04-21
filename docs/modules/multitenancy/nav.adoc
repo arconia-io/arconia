@@ -1,0 +1,7 @@
+.xref:index.adoc[Multitenancy]
+* Core
+** xref:tenant-context.adoc[Tenant Context]
+** xref:tenant-resolution.adoc[Tenant Resolution]
+** xref:tenant-details.adoc[Tenant Details]
+** xref:observability.adoc[Observability]
+* xref:web.adoc[Web]

@@ -9,8 +9,14 @@ import org.jspecify.annotations.Nullable;
  */
 public interface TenantDetailsService {
 
+    /**
+     * Loads all tenants.
+     */
     List<? extends TenantDetails> loadAllTenants();
 
+    /**
+     * Loads a tenant by identifier.
+     */
     @Nullable
     TenantDetails loadTenantByIdentifier(String identifier);
 

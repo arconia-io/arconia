@@ -2,12 +2,11 @@ package io.arconia.multitenancy.web.context.annotations;
 
 import java.lang.reflect.Method;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.ReflectionUtils;
 
-import io.arconia.multitenancy.core.context.TenantContextHolder;
+import io.arconia.multitenancy.core.context.TenantContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,11 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TenantIdentifierArgumentResolverTests {
 
     private final TenantIdentifierArgumentResolver argumentResolver = new TenantIdentifierArgumentResolver();
-
-    @AfterEach
-    void cleanup() {
-        TenantContextHolder.clear();
-    }
 
     @Test
     void doesNotSupportParameterWithoutAnnotation() {
@@ -40,11 +34,18 @@ class TenantIdentifierArgumentResolverTests {
 
     @Test
     void resolveTenantIdentifierArgument() {
-        String expectedTenantIdentifier = "acme";
-        TenantContextHolder.setTenantIdentifier(expectedTenantIdentifier);
+        TenantContext.where("acme").run(() -> {
+            String actualTenantIdentifier = (String) argumentResolver
+                .resolveArgument(showTenantIdentifierAnnotation(), null, null, null);
+            assertThat(actualTenantIdentifier).isEqualTo("acme");
+        });
+    }
+
+    @Test
+    void resolveTenantIdentifierWhenNoContextBound() {
         String actualTenantIdentifier = (String) argumentResolver.resolveArgument(showTenantIdentifierAnnotation(),
                 null, null, null);
-        assertThat(actualTenantIdentifier).isEqualTo(expectedTenantIdentifier);
+        assertThat(actualTenantIdentifier).isNull();
     }
 
     private MethodParameter showTenantIdentifierNoAnnotation() {

@@ -5,11 +5,9 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
-import io.arconia.multitenancy.core.context.events.HolderTenantContextEventListener;
-import io.arconia.multitenancy.core.context.events.MdcTenantContextEventListener;
-import io.arconia.multitenancy.core.context.events.ObservationTenantContextEventListener;
 import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
-import io.arconia.multitenancy.core.events.TenantEventPublisher;
+import io.arconia.multitenancy.core.observability.MdcTenantEventListener;
+import io.arconia.multitenancy.core.observability.TenantObservationFilter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,37 +27,30 @@ class MultitenancyCoreAutoConfigurationTests {
     }
 
     @Test
-    void holderTenantContextEventListener() {
+    void tenantObservationFilterWhenDefault() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(HolderTenantContextEventListener.class);
+            assertThat(context).hasSingleBean(TenantObservationFilter.class);
         });
     }
 
     @Test
-    void observationTenantContextEventListenerWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(ObservationTenantContextEventListener.class);
-        });
-    }
-
-    @Test
-    void observationTenantContextEventListenerWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.management.observations.enabled=false").run(context -> {
-            assertThat(context).doesNotHaveBean(ObservationTenantContextEventListener.class);
+    void tenantObservationFilterWhenDisabled() {
+        contextRunner.withPropertyValues("arconia.multitenancy.observations.enabled=false").run(context -> {
+            assertThat(context).doesNotHaveBean(TenantObservationFilter.class);
         });
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDefault() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(MdcTenantContextEventListener.class);
+            assertThat(context).hasSingleBean(MdcTenantEventListener.class);
         });
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.management.mdc.enabled=false").run(context -> {
-            assertThat(context).doesNotHaveBean(MdcTenantContextEventListener.class);
+        contextRunner.withPropertyValues("arconia.multitenancy.logging.mdc.enabled=false").run(context -> {
+            assertThat(context).doesNotHaveBean(MdcTenantEventListener.class);
         });
     }
 
@@ -74,13 +65,6 @@ class MultitenancyCoreAutoConfigurationTests {
     void fixedTenantResolverWhenEnabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true").run(context -> {
             assertThat(context).hasSingleBean(FixedTenantResolver.class);
-        });
-    }
-
-    @Test
-    void tenantEventPublisher() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(TenantEventPublisher.class);
         });
     }
 

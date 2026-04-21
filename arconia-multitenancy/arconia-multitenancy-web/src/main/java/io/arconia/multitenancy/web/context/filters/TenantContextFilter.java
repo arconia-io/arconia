@@ -7,27 +7,29 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.filter.ServerHttpObservationFilter;
 
 import tools.jackson.databind.json.JsonMapper;
 
 import io.arconia.core.support.Incubating;
+import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
 import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
-import io.arconia.multitenancy.core.events.TenantEventPublisher;
-import io.arconia.multitenancy.core.exceptions.TenantResolutionException;
+import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
+import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 
 /**
  * Establish a tenant context from an HTTP request, if tenant information is available.
  */
-@Incubating(since = "0.1.0")
+@Incubating
 public final class TenantContextFilter extends OncePerRequestFilter {
 
     private static final String MISSING_TENANT_ERROR_MESSAGE = "A tenant identifier must be specified for HTTP requests to %s";
@@ -36,18 +38,23 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     private final TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
 
-    private final TenantEventPublisher tenantEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Nullable
+    private final TenantVerifier tenantVerifier;
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
-            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, TenantEventPublisher tenantEventPublisher) {
+            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, ApplicationEventPublisher eventPublisher,
+            @Nullable TenantVerifier tenantVerifier) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
         Assert.notNull(tenantContextIgnorePathMatcher, "ignorePathMatcher cannot be null");
-        Assert.notNull(tenantEventPublisher, "tenantEventPublisher cannot be null");
+        Assert.notNull(eventPublisher, "eventPublisher cannot be null");
         this.httpRequestTenantResolver = httpRequestTenantResolver;
         this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
-        this.tenantEventPublisher = tenantEventPublisher;
+        this.eventPublisher = eventPublisher;
+        this.tenantVerifier = tenantVerifier;
     }
 
     @Override
@@ -55,24 +62,38 @@ public final class TenantContextFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         var tenantIdentifier = httpRequestTenantResolver.resolveTenantIdentifier(request);
         if (!StringUtils.hasText(tenantIdentifier)) {
-            handleTenantResolutionException(response, MISSING_TENANT_ERROR_MESSAGE.formatted(request.getRequestURI()));
+            handleTenantVerificationException(response, MISSING_TENANT_ERROR_MESSAGE.formatted(request.getRequestURI()));
             return;
         }
 
-        try {
-            publishTenantContextAttachedEvent(tenantIdentifier, request);
-        }
-        catch (TenantResolutionException exception) {
-            publishTenantContextClosedEvent(tenantIdentifier, request);
-            handleTenantResolutionException(response, exception.getMessage());
-            return;
+        if (tenantVerifier != null) {
+            try {
+                tenantVerifier.verify(tenantIdentifier);
+            }
+            catch (TenantVerificationException exception) {
+                handleTenantVerificationException(response, exception.getMessage());
+                return;
+            }
         }
 
         try {
-            filterChain.doFilter(request, response);
+            TenantContext.where(tenantIdentifier).call(() -> {
+                eventPublisher.publishEvent(new TenantContextAttachedEvent(tenantIdentifier, request));
+                try {
+                    filterChain.doFilter(request, response);
+                }
+                finally {
+                    eventPublisher.publishEvent(new TenantContextClosedEvent(tenantIdentifier, request));
+                }
+                return null;
+            });
         }
-        finally {
-            publishTenantContextClosedEvent(tenantIdentifier, request);
+        catch (Exception ex) {
+            switch (ex) {
+                case ServletException se -> throw se;
+                case IOException ioe -> throw ioe;
+                default -> throw new ServletException(ex);
+            }
         }
     }
 
@@ -81,19 +102,7 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         return tenantContextIgnorePathMatcher.matches(request);
     }
 
-    private void publishTenantContextAttachedEvent(String tenantIdentifier, HttpServletRequest request) {
-        var tenantContextAttachedEvent = new TenantContextAttachedEvent(tenantIdentifier, request);
-        var observationContext = ServerHttpObservationFilter.findObservationContext(request);
-        observationContext.ifPresent(tenantContextAttachedEvent::setObservationContext);
-        tenantEventPublisher.publishTenantEvent(tenantContextAttachedEvent);
-    }
-
-    private void publishTenantContextClosedEvent(String tenantIdentifier, HttpServletRequest request) {
-        var tenantContextClosedEvent = new TenantContextClosedEvent(tenantIdentifier, request);
-        tenantEventPublisher.publishTenantEvent(tenantContextClosedEvent);
-    }
-
-    private void handleTenantResolutionException(HttpServletResponse response, String exceptionMessage)
+    private void handleTenantVerificationException(HttpServletResponse response, String exceptionMessage)
             throws IOException {
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exceptionMessage);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

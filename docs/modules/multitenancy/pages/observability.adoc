@@ -1,0 +1,74 @@
+= Observability
+
+Arconia Multitenancy integrates with logging and observability tools to provide tenant-aware telemetry data. Both MDC logging enrichment and Micrometer observation enrichment are enabled by default.
+
+== MDC Logging
+
+The current tenant identifier is automatically added to the SLF4J MDC (Mapped Diagnostic Context) for every request. This allows you to filter and correlate log entries by tenant.
+
+By default, the MDC key is `tenantId`. You can include it in your log pattern:
+
+[source,yaml]
+----
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] [%X{tenantId}] %-5level %logger{36} - %msg%n"
+----
+
+Log output will include the tenant identifier:
+
+[source,logs]
+----
+14:32:01.123 [http-nio-8080-exec-1] [acme] INFO  c.e.GreetingController - Processing request
+14:32:01.456 [http-nio-8080-exec-2] [beans] INFO  c.e.GreetingController - Processing request
+----
+
+=== Configuration Properties
+
+.MDC Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.logging.mdc.enabled`
+|`true`
+|Whether to include tenant information in MDC.
+
+|`arconia.multitenancy.logging.mdc.key-name`
+|`tenantId`
+|Name of the key to use for the tenant identifier in MDC.
+|===
+
+== Micrometer Observations
+
+Arconia Multitenancy uses a Micrometer https://docs.micrometer.io/micrometer/reference/observation/components.html#micrometer-observation-predicates-filters[`ObservationFilter`] to automatically enrich all observations with the current tenant identifier. Any observation that completes while a tenant context is active will include the tenant information, covering service calls, repository queries, cache operations, and other instrumented components.
+
+By default, the tenant identifier appears only in traces. This is the recommended approach for tenants with many possible values, as including high-cardinality attributes in metrics can cause cardinality explosion.
+
+If you have a small, bounded number of tenants and want the identifier in metrics as well, set the cardinality to `low`:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    observations:
+      cardinality: low
+----
+
+=== Configuration Properties
+
+.Observation Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.observations.enabled`
+|`true`
+|Whether observations are enhanced with tenant information.
+
+|`arconia.multitenancy.observations.key-name`
+|`tenant.id`
+|Name of the key to use for the tenant identifier in observations.
+
+|`arconia.multitenancy.observations.cardinality`
+|`high`
+|The cardinality of the tenant identifier key value. `high` (default) makes it appear only in traces. `low` makes it appear in both metrics and traces.
+|===

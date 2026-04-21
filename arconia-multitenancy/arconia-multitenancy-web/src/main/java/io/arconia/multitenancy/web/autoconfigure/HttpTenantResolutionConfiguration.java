@@ -2,16 +2,19 @@ package io.arconia.multitenancy.web.autoconfigure;
 
 import java.util.HashSet;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.multitenancy.core.autoconfigure.FixedTenantResolutionProperties;
 import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
-import io.arconia.multitenancy.core.events.TenantEventPublisher;
+import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
 import io.arconia.multitenancy.web.context.filters.TenantContextIgnorePathMatcher;
 import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
@@ -23,14 +26,13 @@ import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(HttpTenantResolutionProperties.class)
-@ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "enabled", havingValue = "true",
+@ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "enabled",
         matchIfMissing = true)
 public final class HttpTenantResolutionConfiguration {
 
     @Bean
     @ConditionalOnBean(FixedTenantResolver.class)
-    @ConditionalOnProperty(prefix = FixedTenantResolutionProperties.CONFIG_PREFIX, value = "enabled",
-            havingValue = "true")
+    @ConditionalOnBooleanProperty(prefix = FixedTenantResolutionProperties.CONFIG_PREFIX, value = "enabled")
     HttpRequestTenantResolver fixedHttpRequestTenantResolver(FixedTenantResolver fixedTenantResolver) {
         return fixedTenantResolver::resolveTenantIdentifier;
     }
@@ -52,17 +54,17 @@ public final class HttpTenantResolutionConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "filter.enabled",
-            havingValue = "true", matchIfMissing = true)
+    @ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "filter.enabled",
+            matchIfMissing = true)
     static class HttpTenantFilterConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
         TenantContextFilter tenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
-                TenantEventPublisher tenantEventPublisher) {
-            return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher,
-                    tenantEventPublisher);
+                ApplicationEventPublisher eventPublisher, ObjectProvider<TenantVerifier> tenantVerifier) {
+            return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
+                    tenantVerifier.getIfAvailable());
         }
 
         @Bean

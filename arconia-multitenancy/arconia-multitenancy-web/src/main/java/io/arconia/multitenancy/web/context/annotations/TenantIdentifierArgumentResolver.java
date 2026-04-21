@@ -8,7 +8,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import io.arconia.core.support.Incubating;
-import io.arconia.multitenancy.core.context.TenantContextHolder;
+import io.arconia.multitenancy.core.context.TenantContext;
 
 /**
  * Allows resolving the current tenant identifier using the {@link TenantIdentifier}
@@ -20,13 +20,13 @@ import io.arconia.multitenancy.core.context.TenantContextHolder;
  * &#64;RestController
  * class MyRestController {
  *     &#64;GetMapping("/tenant")
- *     String getCurrentTenant(@CurrentTenantIdentifier String tenantIdentifier) {
+ *     String getCurrentTenant(@TenantIdentifier String tenantIdentifier) {
  *         return tenantIdentifier;
  *     }
  * }
  * </pre>
  */
-@Incubating(since = "0.3.0")
+@Incubating
 public final class TenantIdentifierArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
@@ -39,7 +39,7 @@ public final class TenantIdentifierArgumentResolver implements HandlerMethodArgu
     @Override
     public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
-        return TenantContextHolder.getTenantIdentifier();
+        return TenantContext.getTenantIdentifier();
     }
 
 }

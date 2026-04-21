@@ -3,7 +3,7 @@ package io.arconia.multitenancy.core.cache;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 
-import io.arconia.multitenancy.core.context.TenantContextHolder;
+import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,22 +20,20 @@ class DefaultTenantKeyGeneratorTests {
     void whenTenantContextDefinedThenGenerateCacheKey() {
         var objectToCache = new Object[] { "something" };
 
-        TenantContextHolder.setTenantIdentifier("tenant1");
-        Object key1 = generateCacheKey(objectToCache);
-        Object key2 = generateCacheKey(objectToCache);
-        TenantContextHolder.clear();
+        TenantContext.where("tenant1").run(() -> {
+            Object key1 = generateCacheKey(objectToCache);
+            Object key2 = generateCacheKey(objectToCache);
+            assertThat(key1.hashCode()).isEqualTo(key2.hashCode());
 
-        TenantContextHolder.setTenantIdentifier("tenant2");
-        Object key3 = generateCacheKey(objectToCache);
-        TenantContextHolder.clear();
-
-        assertThat(key1.hashCode()).isEqualTo(key2.hashCode());
-        assertThat(key1.hashCode()).isNotEqualTo(key3.hashCode());
+            TenantContext.where("tenant2").run(() -> {
+                Object key3 = generateCacheKey(objectToCache);
+                assertThat(key1.hashCode()).isNotEqualTo(key3.hashCode());
+            });
+        });
     }
 
     @Test
     void whenTenantContextNotDefinedThenThrow() {
-        TenantContextHolder.clear();
         assertThatThrownBy(() -> generateCacheKey(new Object[] { "something" }))
             .isInstanceOf(TenantNotFoundException.class)
             .hasMessageContaining("No tenant found in the current context");

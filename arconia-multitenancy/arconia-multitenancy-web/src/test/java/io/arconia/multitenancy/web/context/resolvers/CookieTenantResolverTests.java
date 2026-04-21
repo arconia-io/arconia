@@ -51,6 +51,16 @@ class CookieTenantResolverTests {
     }
 
     @Test
+    void whenNoCookiesPresentThenReturnNull() {
+        var cookieTenantResolver = new CookieTenantResolver();
+        var request = new MockHttpServletRequest();
+
+        var actualTenantId = cookieTenantResolver.resolveTenantIdentifier(request);
+
+        assertThat(actualTenantId).isNull();
+    }
+
+    @Test
     void whenNullRequestThenThrow() {
         var cookieTenantResolver = new CookieTenantResolver();
 

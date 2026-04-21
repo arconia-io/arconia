@@ -1,0 +1,150 @@
+= Tenant Details
+
+Arconia Multitenancy provides an optional mechanism for managing tenant metadata and validating tenant identifiers against a known set of tenants.
+
+== TenantDetails
+
+The `TenantDetails` interface represents the core information about a tenant:
+
+[source,java]
+----
+public interface TenantDetails {
+
+    String identifier();
+
+    boolean enabled();
+
+    default Map<String, Object> attributes() {
+        return Map.of();
+    }
+
+}
+----
+
+Arconia provides a default implementation (`Tenant` record) that supports all these properties and can be constructed using a builder pattern:
+
+[source,java]
+----
+var tenant = Tenant.builder()
+    .identifier("acme")
+    .enabled(true)
+    .addAttribute("plan", "premium")
+    .build();
+----
+
+== TenantDetailsService
+
+The `TenantDetailsService` interface defines the contract for loading tenant information:
+
+[source,java]
+----
+public interface TenantDetailsService {
+
+    List<? extends TenantDetails> loadAllTenants();
+
+    TenantDetails loadTenantByIdentifier(String identifier);
+
+}
+----
+
+When a `TenantDetailsService` bean is available, a `DefaultTenantVerifier` is auto-configured that checks each resolved tenant identifier against the service. See <<_tenant_verification>> for details.
+
+== Properties-Based Tenant Details
+
+For simple use cases, you can define tenants directly in your application configuration:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    details:
+      source: properties
+      tenants:
+        - identifier: acme
+          enabled: true
+          attributes:
+            plan: premium
+            region: eu-nort-1
+        - identifier: beans
+          enabled: true
+        - identifier: pixie
+          enabled: false
+          attributes:
+            onboarding: true
+----
+
+When `source` is set to `properties`, Arconia auto-configures a `PropertiesTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
+
+.Tenant Details Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.details.source`
+|`none`
+|The source of tenant details. Options: `none`, `properties`.
+
+|`arconia.multitenancy.details.tenants`
+|`[]`
+|List of tenant configurations.
+
+|`arconia.multitenancy.details.tenants[].identifier`
+|
+|Unique identifier for the tenant. Required.
+
+|`arconia.multitenancy.details.tenants[].enabled`
+|`true`
+|Whether the tenant is enabled.
+
+|`arconia.multitenancy.details.tenants[].attributes`
+|`{}`
+|Additional metadata for the tenant as key-value pairs.
+|===
+
+== Custom TenantDetailsService
+
+For dynamic tenant management (e.g., loading tenants from a database), implement the `TenantDetailsService` interface and register it as a Spring bean:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
+import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
+
+@Bean
+TenantDetailsService tenantDetailsService(TenantRepository tenantRepository) {
+    return new TenantDetailsService() {
+
+        @Override
+        public List<? extends TenantDetails> loadAllTenants() {
+            return tenantRepository.findAll();
+        }
+
+        @Override
+        public TenantDetails loadTenantByIdentifier(String identifier) {
+            return tenantRepository.findByIdentifier(identifier);
+        }
+
+    };
+}
+----
+
+When a custom `TenantDetailsService` is registered, tenant verification is automatically enabled.
+
+== Tenant Verification
+
+The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier is valid and allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled.
+
+Entry points such as the xref:web.adoc[`TenantContextFilter`] call the verifier directly before establishing the tenant context. If verification fails, a `TenantVerificationException` is thrown, resulting in an HTTP `400 Bad Request` response.
+
+You can provide a custom `TenantVerifier` bean to implement your own verification logic:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
+
+@Bean
+TenantVerifier tenantVerifier() {
+    return tenantIdentifier -> {
+        // Custom verification logic (e.g., check quotas, feature flags)
+    };
+}
+----

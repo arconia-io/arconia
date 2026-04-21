@@ -13,7 +13,7 @@ import io.arconia.core.support.Incubating;
 /**
  * Strategy used to resolve the current tenant from a cookie in an HTTP request.
  */
-@Incubating(since = "0.1.0")
+@Incubating
 public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
     public static final String DEFAULT_COOKIE_NAME = "TENANT-ID";
@@ -33,7 +33,11 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
     @Nullable
     public String resolveTenantIdentifier(HttpServletRequest request) {
         Assert.notNull(request, "request cannot be null");
-        return Arrays.stream(request.getCookies())
+        var cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        return Arrays.stream(cookies)
             .filter(cookie -> cookie.getName().equals(tenantCookieName))
             .map(Cookie::getValue)
             .findFirst()

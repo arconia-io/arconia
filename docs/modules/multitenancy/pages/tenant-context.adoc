@@ -1,0 +1,124 @@
+= Tenant Context
+
+Once a tenant is resolved, the tenant context is propagated through the request lifecycle using Java's `ScopedValue` API. The tenant identifier is bound for a specific scope and automatically unbound when the scope exits, making it impossible to leak tenant context across requests.
+
+== TenantContext
+
+The `TenantContext` provides static methods to access the current tenant identifier from anywhere in your code. It uses a `ScopedValue` internally, ensuring the tenant context is immutable within a scope and automatically cleaned up.
+
+[source,java]
+----
+import io.arconia.multitenancy.core.context.TenantContext;
+
+// Get the current tenant (may be null)
+String tenantId = TenantContext.getTenantIdentifier();
+
+// Get the current tenant (throws TenantNotFoundException if not bound)
+String tenantId = TenantContext.getRequiredTenantIdentifier();
+----
+
+In xref:web.adoc[web applications], the `TenantContext` is automatically bound for each HTTP request by the `TenantContextFilter`. You do not need to manage it manually.
+
+=== Manual Context Management
+
+For non-web scenarios (e.g., background jobs, message consumers), you can bind the tenant context using `TenantContext.where()`:
+
+[source,java]
+----
+TenantContext.where("acme").run(() -> {
+    // Business logic with tenant context
+});
+// Tenant context is automatically unbound here
+----
+
+Nested scopes can rebind to a different tenant. The outer binding is restored when the inner scope exits:
+
+[source,java]
+----
+TenantContext.where("acme").run(() -> {
+    // TenantContext.getTenantIdentifier() returns "acme"
+    TenantContext.where("beans").run(() -> {
+        // TenantContext.getTenantIdentifier() returns "beans"
+    });
+    // TenantContext.getTenantIdentifier() returns "acme" again
+});
+----
+
+== Tenant Context Events
+
+Spring application events are published at key points in the tenant context lifecycle, allowing you to react to tenant context changes with custom behavior.
+
+=== TenantContextAttachedEvent
+
+Published when a tenant context is established. This event carries the tenant identifier. For example, the built-in `MdcTenantEventListener` listens for this event to add the tenant to the SLF4J MDC, enabling tenant information in logs (see xref:observability.adoc[Observability]).
+
+=== TenantContextClosedEvent
+
+Published when a tenant context ends. For example, the built-in `MdcTenantEventListener` listens for this event to clear the tenant from the SLF4J MDC, preventing tenant information from leaking into subsequent requests (see xref:observability.adoc[Observability]).
+
+=== Custom Event Listeners
+
+You can register your own listeners to react to tenant context events:
+
+[source,java]
+----
+import org.springframework.context.event.EventListener;
+
+import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
+import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
+
+@Component
+class CustomTenantListener {
+
+    @EventListener
+    void onTenantAttached(TenantContextAttachedEvent event) {
+        String tenantId = event.getTenantIdentifier();
+        // Custom logic when tenant context starts
+    }
+
+    @EventListener
+    void onTenantClosed(TenantContextClosedEvent event) {
+        String tenantId = event.getTenantIdentifier();
+        // Custom logic when tenant context ends
+    }
+
+}
+----
+
+== Tenant-Aware Caching
+
+Arconia Multitenancy provides tenant-aware cache key generation through the `TenantKeyGenerator` interface (an extension of Spring's `KeyGenerator`), ensuring cache isolation between tenants.
+
+A `DefaultTenantKeyGenerator` is auto-configured as a bean named `tenantKeyGenerator`. It generates cache keys by combining the current tenant identifier with the method parameters, so the same input for different tenants produces different cache entries. You can use it with Spring's `@Cacheable` annotation:
+
+[source,java]
+----
+import org.springframework.cache.annotation.Cacheable;
+
+@Service
+class ProductService {
+
+    @Cacheable(value = "products", keyGenerator = "tenantKeyGenerator")
+    Product findProduct(String productId) {
+        // This result is cached per tenant
+        return productRepository.findById(productId);
+    }
+
+}
+----
+
+=== Custom TenantKeyGenerator
+
+You can provide your own `TenantKeyGenerator` bean to customize how tenant-aware cache keys are generated. It takes precedence over the auto-configured default:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
+
+@Bean
+TenantKeyGenerator tenantKeyGenerator() {
+    return (target, method, params) -> {
+        // Custom key generation logic
+    };
+}
+----
