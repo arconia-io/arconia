@@ -5,6 +5,12 @@ plugins {
     id "release-conventions"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 dependencies {
     api project(":arconia-spring-boot")
     api project(":arconia-multitenancy:arconia-multitenancy-web")
