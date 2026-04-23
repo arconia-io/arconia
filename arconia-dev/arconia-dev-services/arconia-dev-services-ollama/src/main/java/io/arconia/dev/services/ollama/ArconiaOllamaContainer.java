@@ -1,5 +1,7 @@
 package io.arconia.dev.services.ollama;
 
+import java.util.List;
+
 import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -19,6 +21,18 @@ final class ArconiaOllamaContainer extends OllamaContainer {
 
     public ArconiaOllamaContainer(OllamaDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+
+        // Workaround for https://github.com/testcontainers/testcontainers-java/issues/9287
+        // OllamaContainer assumes the nvidia runtime works if listed in docker info,
+        // but Docker Desktop may inject a phantom nvidia runtime via WSL even without an NVIDIA GPU.
+        if (System.getProperty("os.name", "").toLowerCase().contains("win")) {
+            this.withCreateContainerCmdModifier(cmd -> {
+                if (cmd.getHostConfig() != null) {
+                    cmd.getHostConfig().withDeviceRequests(List.of());
+                }
+            });
+        }
+
         this.properties = properties;
 
         ContainerConfigurer.base(this, properties);

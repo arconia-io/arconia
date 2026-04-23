@@ -14,6 +14,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Ollama
 
 * The Ollama Dev Service now automatically configures the Spring AI OpenAI client to use Ollama's OpenAI-compatible API endpoint when the Spring AI OpenAI module is on the classpath.
+* Workaround for a https://github.com/testcontainers/testcontainers-java/issues/9287[Testcontainers bug] where Docker Desktop on Windows injects a phantom nvidia runtime via WSL, causing Ollama container startup to fail on non-NVIDIA hosts.
 
 == Multitenancy
 
