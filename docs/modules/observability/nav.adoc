@@ -1,3 +1,0 @@
-.Observability
-* xref:index.adoc[Introduction]
-* xref:generative-ai.adoc[Generative AI]

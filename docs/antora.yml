@@ -5,7 +5,7 @@ nav:
   - modules/dev-services/nav.adoc
   - modules/kubernetes/nav.adoc
   - modules/multitenancy/nav.adoc
-  - modules/observability/nav.adoc
+  - modules/observation/nav.adoc
   - modules/opentelemetry/nav.adoc
   - modules/generative-ai/nav.adoc
   - modules/integrations/nav.adoc

@@ -41,3 +41,19 @@ The multitenancy modules now require Java 25+ due to the use of the `ScopedValue
 ==== `TenantContextHolder` Replaced by `TenantContext`
 
 `TenantContextHolder` has been replaced by `TenantContext`, which uses `ScopedValue` instead of `ThreadLocal`. The type rename is applied automatically, but the API change from `set()`/`clear()` to `TenantContext.where("tenant").run(...)` requires manual migration.
+
+== Observation
+
+=== General
+
+* A new `arconia-observation` module was introduced for configuring semantic convention selection via the `arconia.observations.conventions.type` configuration property.
+* The convention type is a plain `String` property (default: `"micrometer"`), allowing convention modules to activate without coupling the core to specific implementations.
+
+=== OpenInference Semantic Conventions
+
+* All classes in the `arconia-openinference-semantic-conventions` module have been relocated from `io.arconia.openinference.observation` to `io.arconia.observation.openinference`.
+* The `OpenInferenceProperties.enabled` property has been replaced by `arconia.observations.conventions.type=openinference` for activation.
+* The configuration property prefix has changed from `arconia.observations.generative-ai.openinference` to `arconia.observations.conventions.openinference`.
+* The nested options property group has been renamed from `traces` to `options` (e.g., `arconia.observations.conventions.openinference.options.hide-inputs`).
+* The `hide-embedding-vectors` option has been renamed to `hide-embeddings-vectors`.
+* New options: `hide-choices` and `hide-embeddings-text`.

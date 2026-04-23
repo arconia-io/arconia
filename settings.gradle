@@ -48,8 +48,11 @@ include 'arconia-kubernetes:arconia-kubernetes-service-binding'
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
 
+// Observation
+include 'arconia-observation:arconia-observation'
+include 'arconia-observation:arconia-openinference-semantic-conventions'
+
 // Observability
-include 'arconia-observability:arconia-openinference-semantic-conventions'
 include 'arconia-observability:arconia-opentelemetry'
 include 'arconia-observability:arconia-opentelemetry-logback-bridge'
 include 'arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge'
