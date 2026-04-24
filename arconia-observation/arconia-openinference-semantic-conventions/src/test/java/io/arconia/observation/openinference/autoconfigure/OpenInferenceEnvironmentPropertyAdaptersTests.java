@@ -30,7 +30,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenInferenceEnvironmentPropertyAdapters.traces(environment);
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".traces";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-llm-invocation-parameters")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-inputs")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-outputs")).isEqualTo(true);
@@ -53,7 +53,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenInferenceEnvironmentPropertyAdapters.traces(environment);
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".traces";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
         assertThat(adapter.getArconiaProperties().containsKey(prefix + ".hide-llm-invocation-parameters")).isTrue();
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-llm-invocation-parameters")).isEqualTo(false);
     }
