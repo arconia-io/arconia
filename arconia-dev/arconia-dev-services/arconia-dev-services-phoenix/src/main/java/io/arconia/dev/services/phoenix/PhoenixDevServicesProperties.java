@@ -28,7 +28,7 @@ public class PhoenixDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "arizephoenix/phoenix:version-14.2-nonroot";
+    private String imageName = "arizephoenix/phoenix:version-14.12.0-nonroot";
 
     /**
      * Environment variables to set in the service.
