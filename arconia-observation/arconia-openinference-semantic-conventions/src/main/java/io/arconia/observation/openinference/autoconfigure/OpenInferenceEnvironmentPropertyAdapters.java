@@ -21,7 +21,7 @@ class OpenInferenceEnvironmentPropertyAdapters {
      */
     static PropertyAdapter traces(ConfigurableEnvironment environment) {
         Assert.notNull(environment, "environment cannot be null");
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".traces";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
         return PropertyAdapter.builder(environment)
                 .mapBoolean("OPENINFERENCE_HIDE_CHOICES", prefix + ".hide-choices")
                 .mapBoolean("OPENINFERENCE_HIDE_LLM_INVOCATION_PARAMETERS", prefix + ".hide-llm-invocation-parameters")

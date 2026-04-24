@@ -22,6 +22,8 @@ dependencies {
     optional "org.springframework.ai:spring-ai-client-chat"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly project(":arconia-observability:arconia-opentelemetry")
+    testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     constraints {
