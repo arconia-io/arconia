@@ -50,10 +50,10 @@ dependencies {
         api project(":arconia-observation:arconia-observation")
         api project(":arconia-observation:arconia-openinference-semantic-conventions")
 
-        api project(":arconia-observability:arconia-opentelemetry")
-        api project(":arconia-observability:arconia-opentelemetry-logback-bridge")
-        api project(":arconia-observability:arconia-opentelemetry-micrometer-metrics-bridge")
-        api project(":arconia-observability:arconia-opentelemetry-micrometer-registry-otlp")
+        api project(":arconia-opentelemetry:arconia-opentelemetry")
+        api project(":arconia-opentelemetry:arconia-opentelemetry-logback-bridge")
+        api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge")
+        api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp")
 
         api project(":arconia-spring-boot")
 

@@ -13,7 +13,7 @@ dependencies {
     api "org.springframework.boot:spring-boot-micrometer-metrics"
     api "org.springframework.boot:spring-boot-starter"
 
-    optional project(":arconia-observability:arconia-opentelemetry")
+    optional project(":arconia-opentelemetry:arconia-opentelemetry")
     optional("io.micrometer:micrometer-registry-otlp")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
