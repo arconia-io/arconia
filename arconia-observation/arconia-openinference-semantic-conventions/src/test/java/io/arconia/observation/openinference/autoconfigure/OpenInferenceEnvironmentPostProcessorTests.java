@@ -39,7 +39,7 @@ class OpenInferenceEnvironmentPostProcessorTests {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".traces";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
         assertThat(environment.getProperty(prefix + ".hide-inputs")).isEqualTo("true");
         assertThat(environment.getProperty(prefix + ".base64-image-max-length")).isEqualTo("64000");
     }
@@ -51,7 +51,7 @@ class OpenInferenceEnvironmentPostProcessorTests {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".traces";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
         assertThat(environment.getProperty(prefix + ".base64-image-max-length")).isNull();
     }
 
