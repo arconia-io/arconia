@@ -93,6 +93,39 @@ Semantic Conventions for HTTP Server are based on the support provided by the ht
 |	Whether to enable HTTP semantic conventions.
 |===
 
+== Database
+
+Activated when the https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[Datasource Micrometer] dependencies are added to the project. They automatically instrument all `DataSource` beans in your Spring Boot application, generating metrics and traces for database queries executed via JDBC following the stable https://opentelemetry.io/docs/specs/semconv/database/[OpenTelemetry Semantic Conventions for Database]. Arconia manages the versions of the dependencies for you.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot'
+  implementation 'net.ttddyy.observation:datasource-micrometer-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>net.ttddyy.observation</groupId>
+    <artifactId>datasource-micrometer-spring-boot</artifactId>
+</dependency>
+<dependency>
+    <groupId>net.ttddyy.observation</groupId>
+    <artifactId>datasource-micrometer-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+Refer to the https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[Datasource Micrometer documentation] for configuration options and more details.
+
 == Generative AI
 
 [WARNING]

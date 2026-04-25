@@ -1,56 +1,38 @@
-= OpenTelemetry Instrumentation
+= Instrumentation
 
-Arconia OpenTelemetry supports instrumentation for Spring Boot applications in two ways:
-
-* **Micrometer Instrumentation**. Micrometer provides APIs for instrumenting Java applications, including `Observation`, `MeterRegistry`, and `Tracer`. Most libraries in the Spring and Java ecosystems are already instrumented with Micrometer. Arconia OpenTelemetry includes a bridge between Micrometer and OpenTelemetry, allowing you to export metrics and traces to OpenTelemetry.
-* **OpenTelemetry Java Instrumentation**. OpenTelemetry provides a set of instrumentation libraries for Java applications.
-
-You can instrument your applications either by using the Micrometer APIs or the OpenTelemetry APIs. The choice depends on your requirements and the libraries you are using.
+Arconia OpenTelemetry supports two instrumentation approaches for Spring Boot applications. You can choose either based on your requirements and the libraries you are using.
 
 NOTE: The OpenTelemetry Java Agent is not supported by Arconia OpenTelemetry. If you'd like to continue using the Agent, check out the https://paketo.io/docs/howto/app-monitor/#opentelemetry[OpenTelemetry Buildpack] for adding it to your application out-of-the-box.
 
-== Micrometer Instrumentation
+== Micrometer APIs
 
-Micrometer-based instrumentation is recommended by the Spring Boot project, and it can be customized via the usual Spring Boot facilities. Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
+The https://micrometer.io[Micrometer] project provides APIs for instrumenting Java applications. The Spring portfolio is instrumented with Micrometer, following stable semantic conventions. Arconia OpenTelemetry includes bridges between Micrometer and OpenTelemetry, so all Micrometer-generated telemetry is automatically exported to OpenTelemetry backends.
 
-There are three types of instrumentation you can find in the libraries from the Spring ecosystem:
+The following APIs are available:
 
-* Metrics instrumentation using the `MeterRegistry` API. In Arconia, such metrics are automatically bridged and exported to OpenTelemetry (either via the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge]).
-* Traces instrumentation using the `Tracer` API. In Arconia, such traces are automatically bridged and exported to OpenTelemetry (via the xref:opentelemetry:traces.adoc#_micrometer_tracing_bridge_from_micrometer[Micrometer Tracing OpenTelemetry Bridge]).
-* Unified instrumentation using the `Observation` API, which results in both metrics and traced being generated. In Arconia, both of them are automatically bridged and exported to OpenTelemetry.
+* **`Observation`**: the recommended API. A single observation produces both metrics and traces, decoupling the capturing of contextual information from the generation of telemetry data.
+* **`MeterRegistry`**: for metrics-only instrumentation. Metrics are automatically exported to OpenTelemetry via the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge].
+* **`Tracer`**: for traces-only instrumentation. Traces are automatically exported to OpenTelemetry via the xref:opentelemetry:traces.adoc#_micrometer_tracing_bridge_from_micrometer[Micrometer Tracing OpenTelemetry Bridge].
 
-The `Observation` API is the recommended way to instrument your applications, as it provides a unified way to generate observability signals and offers great flexibility since it decouples the capturing of contextual information from the actual generation of telemetry data.
+Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
 
-NOTE: Micrometer-based instrumentation follows its own semantic conventions, which have been stable for a long time and are safe to use in production. It doesn't completely follow the https://opentelemetry.io/docs/specs/semconv/[OpenTelemetry Semantic Conventions], though it's possible to switch to them in some cases. Arconia will provide configuration options in the future to let you choose which semantic conventions to use for Micrometer-based instrumentation.
+By default, Micrometer-based instrumentation uses its own stable naming conventions. Arconia lets you switch to different types like the xref:observation:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] or the xref:observation:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions] instead. Check out the xref:observation:semantic-conventions/index.adoc[Semantic Conventions] documentation for more details.
 
-=== JDBC Instrumentation
+== OpenTelemetry APIs
 
-The JDBC instrumentation for Micrometer is provided by the https://github.com/jdbc-observations/datasource-micrometer/[`net.ttddyy.observation:datasource-micrometer-spring-boot`] dependency, which you need to add to your project in order to enable it. Once added, it will automatically instrument all `DataSource` beans in your Spring Boot application, generating metrics and traces for database queries executed via JDBC. Arconia manages the version of the dependency for you, so you don't need to specify it explicitly.
+The https://opentelemetry.io/docs/languages/java/[OpenTelemetry Java] project provides its own APIs for instrumenting applications. The main APIs available for instrumentation are:
 
-[tabs]
-======
-Gradle::
-+
-[source,groovy]
-----
-dependencies {
-    implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot'
-}
-----
+* **`Tracer`**: for creating spans and distributed traces.
+* **`Meter`**: for recording metrics (counters, histograms, gauges).
+* **`Logger`**: for emitting structured log records.
+* **`Context`**: for propagating context across threads and services.
 
-Maven::
-+
-[source,xml]
-----
-<dependency>
-    <groupId>net.ttddyy.observation</groupId>
-    <artifactId>datasource-micrometer-spring-boot</artifactId>
-</dependency>
-----
-======
+Check out the https://opentelemetry.io/docs/languages/java/api/[OpenTelemetry Java API documentation] for more information on how to use these APIs directly.
 
-== OpenTelemetry Instrumentation
+=== OpenTelemetry Java Instrumentation Libraries
 
-The OpenTelemetry Java Instrumentation project provides a set of libraries that automatically instrument your Java applications to generate telemetry data. Arconia OpenTelemetry doesn't use any of them by default, but it provides the necessary setup to let you easily add them to your project and use them. Check out the https://opentelemetry.io/docs/languages/java/instrumentation/#library-instrumentation[OpenTelemetry documentation] for more information.
+The https://github.com/open-telemetry/opentelemetry-java-instrumentation[OpenTelemetry Java Instrumentation] project provides libraries that instrument different Java libraries and frameworks. A full list of supported libraries is available in the https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/supported-libraries.md[project documentation].
 
-WARNING: OpenTelemetry-based instrumentation follows the https://opentelemetry.io/docs/specs/semconv[OpenTelemetry Semantic Conventions], including those that are still experimental and subject to change. Care should be taken, as they might change in a non-backward-compatible way in the future without notice. Furthermore, some instrumentation libraries might still be experimental and not yet stable, so they might change in a non-backward-compatible way in the future without notice. Always check the documentation of the specific instrumentation library you are using for more information on its stability and compatibility.
+Arconia OpenTelemetry doesn't use any of these libraries by default. It is possible to add them to your project, but the recommendation is to prefer the built-in instrumentation in the Spring portfolio based on Micrometer. With Arconia, you can easily adopt the xref:observation:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] on top of the Micrometer-based instrumentation, getting the best of both worlds: stable instrumentation with standard naming.
+
+WARNING: Several instrumentation libraries in the OpenTelemetry Java Instrumentation project are not stable yet (marked as experimental) and follow experimental semantic conventions. Both the libraries and the conventions are subject to breaking changes without notice. Always check the documentation and stability status of the specific instrumentation library before adopting it.
