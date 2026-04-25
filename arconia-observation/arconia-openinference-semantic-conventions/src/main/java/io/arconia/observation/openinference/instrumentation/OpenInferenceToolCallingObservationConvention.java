@@ -8,16 +8,17 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.tool.observation.DefaultToolCallingObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * {@link ToolCallingObservationConvention} for OpenInference.
  */
 public class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
-    private final OpenInferenceOptions tracingOptions;
+    private final OpenInferenceOptions openInferenceOptions;
 
-    public OpenInferenceToolCallingObservationConvention(OpenInferenceOptions tracingOptions) {
-        this.tracingOptions = tracingOptions;
+    public OpenInferenceToolCallingObservationConvention(OpenInferenceOptions openInferenceOptions) {
+        this.openInferenceOptions = openInferenceOptions;
     }
 
     @Override
@@ -53,22 +54,24 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
     private KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallArguments = context.getToolCallArguments();
 
-        if (tracingOptions.isHideInputs()) {
-            return keyValues.and(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER);
+        if (openInferenceOptions.isHideInputs()) {
+            return keyValues.and(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER)
+                    .and(SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
         } else {
             return keyValues.and(SemanticConventions.INPUT_VALUE, toolCallArguments)
-                    .and(SemanticConventions.INPUT_MIME_TYPE, "application/json");
+                    .and(SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE);
         }
     }
 
     private KeyValues toolCallResult(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallResult = context.getToolCallResult();
 
-        if (tracingOptions.isHideOutputs()) {
-            return keyValues.and(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER);
+        if (openInferenceOptions.isHideOutputs()) {
+            return keyValues.and(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER)
+                    .and(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
         } else {
             return keyValues.and(SemanticConventions.OUTPUT_VALUE, toolCallResult != null ? toolCallResult : "{}")
-                    .and(SemanticConventions.OUTPUT_MIME_TYPE, "application/json");
+                    .and(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE);
         }
     }
 

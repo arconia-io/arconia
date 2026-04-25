@@ -11,9 +11,9 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.arconia.observation.conventions.ObservationConventionsProvider;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceChatModelObservationConvention;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
-import io.arconia.observation.openinference.instrumentation.OpenInferenceOnlyObservationPredicate;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceToolCallingObservationConvention;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,61 +25,63 @@ import static org.mockito.Mockito.mock;
 class OpenInferenceAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(OpenInferenceAutoConfiguration.class))
-            .withPropertyValues("arconia.otel.enabled=true", "arconia.observations.conventions.type=openinference");
+            .withConfiguration(AutoConfigurations.of(OpenInferenceAutoConfiguration.class));
 
     @Test
-    void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
-        contextRunner
-            .withPropertyValues("arconia.otel.enabled=false")
-            .run(context -> {
-                assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceEmbeddingModelObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceToolCallingObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceOnlyObservationPredicate.class);
-            });
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenOpenInferenceDisabled() {
-        contextRunner
-            .withPropertyValues("arconia.observations.conventions.type=micrometer")
-            .run(context -> {
-                assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceEmbeddingModelObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceToolCallingObservationConvention.class);
-                assertThat(context).doesNotHaveBean(OpenInferenceOnlyObservationPredicate.class);
-            });
-    }
-
-    @Test
-    void autoConfigurationNotActivatedWhenModelObservationContextClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(ModelObservationContext.class))
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenInferenceEmbeddingModelObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenInferenceToolCallingObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenInferenceOnlyObservationPredicate.class);
-                });
-    }
-
-    @Test
-    void observationConventionsAvailableWithDefaultConfiguration() {
+    void autoActivatesWhenConventionTypePropertyNotSet() {
         contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(ObservationConventionsProvider.class);
+            assertThat(context.getBean(ObservationConventionsProvider.class).name()).isEqualTo("openinference");
+
             assertThat(context).hasSingleBean(OpenInferenceChatModelObservationConvention.class);
             assertThat(context).hasSingleBean(OpenInferenceEmbeddingModelObservationConvention.class);
             assertThat(context).hasSingleBean(OpenInferenceToolCallingObservationConvention.class);
-            assertThat(context).hasSingleBean(OpenInferenceOnlyObservationPredicate.class);
         });
     }
 
     @Test
-    void springAiOnlyObservationPredicateNotRegisteredWhenDisabled() {
+    void activatesWhenConventionTypeExplicitlySetToOpenInference() {
         contextRunner
-            .withPropertyValues("arconia.observations.conventions.openinference.exclusive=false")
+            .withPropertyValues("arconia.observations.conventions.type=openinference")
             .run(context -> {
-                assertThat(context).doesNotHaveBean(OpenInferenceOnlyObservationPredicate.class);
+                assertThat(context).hasSingleBean(ObservationConventionsProvider.class);
+                assertThat(context).hasSingleBean(OpenInferenceChatModelObservationConvention.class);
+                assertThat(context).hasSingleBean(OpenInferenceEmbeddingModelObservationConvention.class);
+                assertThat(context).hasSingleBean(OpenInferenceToolCallingObservationConvention.class);
             });
+    }
+
+    @Test
+    void doesNotActivateWhenConventionTypeSetToDifferentValue() {
+        contextRunner
+            .withPropertyValues("arconia.observations.conventions.type=micrometer")
+            .run(context -> {
+                assertThat(context).doesNotHaveBean(ObservationConventionsProvider.class);
+                assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationConvention.class);
+                assertThat(context).doesNotHaveBean(OpenInferenceEmbeddingModelObservationConvention.class);
+                assertThat(context).doesNotHaveBean(OpenInferenceToolCallingObservationConvention.class);
+            });
+    }
+
+    @Test
+    void doesNotActivateWhenModelObservationContextClassMissing() {
+        contextRunner.withClassLoader(new FilteredClassLoader(ModelObservationContext.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(ObservationConventionsProvider.class);
+                    assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenInferenceEmbeddingModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenInferenceToolCallingObservationConvention.class);
+                });
+    }
+
+    @Test
+    void observationConventionsAvailableWithExplicitConfiguration() {
+        contextRunner.withPropertyValues("arconia.observations.conventions.type=openinference").run(context -> {
+            assertThat(context).hasSingleBean(ObservationConventionsProvider.class);
+            assertThat(context).hasSingleBean(OpenInferenceChatModelObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenInferenceEmbeddingModelObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenInferenceToolCallingObservationConvention.class);
+        });
     }
 
     @Test
@@ -89,7 +91,8 @@ class OpenInferenceAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(ChatModelObservationConvention.class);
                 assertThat(context.getBean(ChatModelObservationConvention.class))
-                    .isSameAs(context.getBean(CustomChatModelObservationConventionConfiguration.class).customChatModelObservationConvention());
+                    .isSameAs(context.getBean(CustomChatModelObservationConventionConfiguration.class)
+                            .customChatModelObservationConvention());
             });
     }
 
@@ -100,7 +103,8 @@ class OpenInferenceAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(EmbeddingModelObservationConvention.class);
                 assertThat(context.getBean(EmbeddingModelObservationConvention.class))
-                    .isSameAs(context.getBean(CustomEmbeddingModelObservationConventionConfiguration.class).customEmbeddingModelObservationConvention());
+                    .isSameAs(context.getBean(CustomEmbeddingModelObservationConventionConfiguration.class)
+                            .customEmbeddingModelObservationConvention());
             });
     }
 
@@ -111,7 +115,8 @@ class OpenInferenceAutoConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(ToolCallingObservationConvention.class);
                 assertThat(context.getBean(ToolCallingObservationConvention.class))
-                    .isSameAs(context.getBean(CustomToolCallingObservationConventionConfiguration.class).customToolCallingObservationConvention());
+                    .isSameAs(context.getBean(CustomToolCallingObservationConventionConfiguration.class)
+                            .customToolCallingObservationConvention());
             });
     }
 

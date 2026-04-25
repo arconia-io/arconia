@@ -20,7 +20,7 @@ class OpenInferenceChatClientConfiguration {
     @Bean
     @ConditionalOnMissingBean(ChatClientObservationConvention.class)
     OpenInferenceChatClientObservationConvention chatClientObservationConvention(OpenInferenceProperties properties) {
-        return new OpenInferenceChatClientObservationConvention(properties.getOptions());
+        return new OpenInferenceChatClientObservationConvention(properties);
     }
 
     @Bean

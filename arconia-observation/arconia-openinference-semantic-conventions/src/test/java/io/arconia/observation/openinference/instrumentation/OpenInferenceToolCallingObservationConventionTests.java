@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenInferenceToolCallingObservationConventionTests {
 
-    private final OpenInferenceOptions tracingOptions = new OpenInferenceOptions();
+    private final OpenInferenceOptions openInferenceOptions = new OpenInferenceOptions();
     private final OpenInferenceToolCallingObservationConvention observationConvention
-            = new OpenInferenceToolCallingObservationConvention(tracingOptions);
+            = new OpenInferenceToolCallingObservationConvention(openInferenceOptions);
 
     @Test
     void name() {

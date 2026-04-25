@@ -3,13 +3,11 @@
 
 Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer Observation APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions.
 
-Many systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:dev-services:phoenix.adoc[Arize Phoenix Dev Service] documentation for more details.
-
-NOTE: The OpenInference Semantic Conventions can be used in your Spring AI applications even if you're not using Arconia OpenTelemetry.
+Several systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
 
 == Getting Started
 
-First, add the Arconia OpenInference Semantic Conventions dependency to your project.
+Add the Arconia OpenInference Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
 
 [tabs]
 ======
@@ -33,13 +31,6 @@ Maven::
 ----
 ======
 
-Then, set the convention type to `openinference` in your configuration:
-
-[source,properties]
-----
-arconia.observations.conventions.type=openinference
-----
-
 == Configuration Properties
 
 You can configure the OpenInference Semantic Conventions via configuration properties.
@@ -47,59 +38,56 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 .OpenInference Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.observations.conventions.openinference.exclusive`
-|	`true`
-|	Whether to exclude any non-AI observations from the exported telemetry for the application.
 
-|	`arconia.observations.conventions.openinference.options.base64-image-max-length`
+|	`arconia.observations.conventions.openinference.base64-image-max-length`
 |	`32 000`
 |	Maximum length of a base64-encoded image.
 
-|	`arconia.observations.conventions.openinference.options.hide-choices`
+|	`arconia.observations.conventions.openinference.hide-choices`
 |	`false`
 |	Whether to hide all LLM choices.
 
-|	`arconia.observations.conventions.openinference.options.hide-embeddings-text`
+|	`arconia.observations.conventions.openinference.hide-embeddings-text`
 |	`false`
 |	Whether to hide all embedding text.
 
-|	`arconia.observations.conventions.openinference.options.hide-embeddings-vectors`
+|	`arconia.observations.conventions.openinference.hide-embeddings-vectors`
 |	`false`
 |	Whether to hide all embedding vectors.
 
-|	`arconia.observations.conventions.openinference.options.hide-llm-invocation-parameters`
+|	`arconia.observations.conventions.openinference.hide-llm-invocation-parameters`
 |	`false`
 |	Whether to hide the LLM invocation parameters.
 
-|	`arconia.observations.conventions.openinference.options.hide-inputs`
+|	`arconia.observations.conventions.openinference.hide-inputs`
 |	`false`
 |	Whether to hide all inputs.
 
-|	`arconia.observations.conventions.openinference.options.hide-input-images`
+|	`arconia.observations.conventions.openinference.hide-input-images`
 |	`false`
 |	Whether to hide all images from the input messages.
 
-|	`arconia.observations.conventions.openinference.options.hide-input-messages`
+|	`arconia.observations.conventions.openinference.hide-input-messages`
 |	`false`
 |	Whether to hide all input messages.
 
-|	`arconia.observations.conventions.openinference.options.hide-input-text`
+|	`arconia.observations.conventions.openinference.hide-input-text`
 |	`false`
 |	Whether to hide all texts from the input messages.
 
-|	`arconia.observations.conventions.openinference.options.hide-outputs`
+|	`arconia.observations.conventions.openinference.hide-outputs`
 |	`false`
-|	Whether to hide all output messages.
+|	Whether to hide all outputs.
 
-|	`arconia.observations.conventions.openinference.options.hide-output-text`
+|	`arconia.observations.conventions.openinference.hide-output-text`
 |	`false`
 |	Whether to hide all texts from the output messages.
 
-|	`arconia.observations.conventions.openinference.options.hide-output-messages`
+|	`arconia.observations.conventions.openinference.hide-output-messages`
 |	`false`
 |	Whether to hide all output messages.
 
-|	`arconia.observations.conventions.openinference.options.hide-prompts`
+|	`arconia.observations.conventions.openinference.hide-prompts`
 |	`false`
 |	Whether to hide all LLM prompts.
 |===

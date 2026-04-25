@@ -16,6 +16,7 @@ import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.EmbeddingResponseMetadata;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
+import org.springframework.ai.embedding.observation.EmbeddingModelObservationDocumentation;
 import org.springframework.ai.observation.conventions.AiProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,9 +26,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenInferenceEmbeddingModelObservationConventionTests {
 
-    private final OpenInferenceOptions tracingOptions = new OpenInferenceOptions();
+    private final OpenInferenceOptions openInferenceOptions = new OpenInferenceOptions();
     private final OpenInferenceEmbeddingModelObservationConvention observationConvention
-            = new OpenInferenceEmbeddingModelObservationConvention(tracingOptions);
+            = new OpenInferenceEmbeddingModelObservationConvention(openInferenceOptions);
 
     @Test
     void shouldHaveName() {
@@ -69,9 +70,8 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
         assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
-                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
-                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai"),
-                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral")
+                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral"),
+                KeyValue.of(EmbeddingModelObservationDocumentation.LowCardinalityKeyNames.AI_PROVIDER, "spring_ai")
         );
     }
 
@@ -89,9 +89,8 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
 
         assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
-                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
-                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai"),
-                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral-42")
+                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral-42"),
+                KeyValue.of(EmbeddingModelObservationDocumentation.LowCardinalityKeyNames.AI_PROVIDER, "spring_ai")
         );
     }
 
@@ -111,7 +110,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
         assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.EMBEDDING_EMBEDDINGS + ".0." + SemanticConventions.EMBEDDING_TEXT, "Embed this text"),
                 KeyValue.of(SemanticConventions.EMBEDDING_EMBEDDINGS + ".1." + SemanticConventions.EMBEDDING_TEXT, "Embed this other text"),
-                KeyValue.of(SemanticConventions.LLM_INVOCATION_PARAMETERS, """
+                KeyValue.of(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, """
                         {"dimensions":128}""")
         );
     }
@@ -144,7 +143,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.EMBEDDING_EMBEDDINGS + ".1." + SemanticConventions.EMBEDDING_VECTOR, "<3 dimensional vector>"),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, "1000"),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, "1000"),
-                KeyValue.of(SemanticConventions.LLM_INVOCATION_PARAMETERS, """
+                KeyValue.of(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, """
                         {"dimensions":3}""")
         );
     }
@@ -172,7 +171,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
         String embeddingVectorKey = SemanticConventions.EMBEDDING_EMBEDDINGS + ".0." + SemanticConventions.EMBEDDING_VECTOR;
 
         assertRedactionBehavior(context, OpenInferenceOptions::setHideLlmInvocationParameters,
-                SemanticConventions.LLM_INVOCATION_PARAMETERS);
+                SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS);
         assertRedactionBehavior(context, OpenInferenceOptions::setHideInputs, embeddingTextKey);
         assertRedactionBehavior(context, OpenInferenceOptions::setHideEmbeddingsText, embeddingTextKey);
         assertRedactionBehavior(context, OpenInferenceOptions::setHideOutputs, embeddingVectorKey);

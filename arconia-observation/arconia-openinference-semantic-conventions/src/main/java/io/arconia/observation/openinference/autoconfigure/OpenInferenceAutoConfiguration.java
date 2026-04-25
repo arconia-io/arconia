@@ -5,7 +5,6 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.ai.model.observation.ModelObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,11 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import io.arconia.observation.autoconfigure.ObservationProperties;
+import io.arconia.observation.conventions.ObservationConventionsProvider;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceChatModelObservationConvention;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
-import io.arconia.observation.openinference.instrumentation.OpenInferenceOnlyObservationPredicate;
 import io.arconia.observation.openinference.instrumentation.OpenInferenceToolCallingObservationConvention;
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 
 /**
  * Auto-configuration for OpenInference instrumentation in Spring AI.
@@ -30,34 +28,32 @@ import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
         "org.springframework.ai.model.tool.autoconfigure.ToolCallingAutoConfiguration",
 })
 @ConditionalOnClass(ModelObservationContext.class)
-@ConditionalOnOpenTelemetry
-@ConditionalOnProperty(prefix = ObservationProperties.CONFIG_PREFIX, name = "conventions.type", havingValue = "openinference")
+@ConditionalOnProperty(prefix = ObservationProperties.CONFIG_PREFIX, name = "conventions.type", havingValue = "openinference", matchIfMissing = true)
 @EnableConfigurationProperties(OpenInferenceProperties.class)
 @Import({OpenInferenceChatClientConfiguration.class, OpenInferenceResourceConfiguration.class})
 public final class OpenInferenceAutoConfiguration {
 
     @Bean
+    ObservationConventionsProvider openInferenceConventionsProvider() {
+        return () -> "openinference";
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ChatModelObservationConvention.class)
     OpenInferenceChatModelObservationConvention chatModelObservationConvention(OpenInferenceProperties properties) {
-        return new OpenInferenceChatModelObservationConvention(properties.getOptions());
+        return new OpenInferenceChatModelObservationConvention(properties);
     }
 
     @Bean
     @ConditionalOnMissingBean(EmbeddingModelObservationConvention.class)
     OpenInferenceEmbeddingModelObservationConvention embeddingModelObservationConvention(OpenInferenceProperties properties) {
-        return new OpenInferenceEmbeddingModelObservationConvention(properties.getOptions());
+        return new OpenInferenceEmbeddingModelObservationConvention(properties);
     }
 
     @Bean
     @ConditionalOnMissingBean(ToolCallingObservationConvention.class)
     OpenInferenceToolCallingObservationConvention toolCallingObservationConvention(OpenInferenceProperties properties) {
-        return new OpenInferenceToolCallingObservationConvention(properties.getOptions());
-    }
-
-    @Bean
-    @ConditionalOnBooleanProperty(prefix = OpenInferenceProperties.CONFIG_PREFIX, value = "exclusive", matchIfMissing = true)
-    OpenInferenceOnlyObservationPredicate openInferenceSpringAiOnlyObservationPredicate() {
-        return new OpenInferenceOnlyObservationPredicate();
+        return new OpenInferenceToolCallingObservationConvention(properties);
     }
 
 }

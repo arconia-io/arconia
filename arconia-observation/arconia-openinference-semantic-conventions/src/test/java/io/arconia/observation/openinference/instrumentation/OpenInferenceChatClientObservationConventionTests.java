@@ -1,5 +1,7 @@
 package io.arconia.observation.openinference.instrumentation;
 
+import java.util.List;
+
 import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.common.KeyValue;
@@ -7,8 +9,12 @@ import io.micrometer.common.KeyValue;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,9 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenInferenceChatClientObservationConventionTests {
 
-    private final OpenInferenceOptions tracingOptions = new OpenInferenceOptions();
+    private final OpenInferenceOptions openInferenceOptions = new OpenInferenceOptions();
     private final OpenInferenceChatClientObservationConvention observationConvention
-            = new OpenInferenceChatClientObservationConvention(tracingOptions);
+            = new OpenInferenceChatClientObservationConvention(openInferenceOptions);
 
     @Test
     void name() {
@@ -63,6 +69,57 @@ class OpenInferenceChatClientObservationConventionTests {
         assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.SESSION_ID, "007"),
                 KeyValue.of(SemanticConventions.INPUT_VALUE, "Hello")
+        );
+    }
+
+    @Test
+    void shouldHaveOutputValueWhenResponseAvailable() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(Prompt.builder().content("Hello").build())
+                        .build())
+                .build();
+        var chatResponse = ChatResponse.builder()
+                .generations(List.of(new Generation(new AssistantMessage("Hi there!"))))
+                .build();
+        context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.INPUT_VALUE, "Hello"),
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, "Hi there!")
+        );
+    }
+
+    @Test
+    void shouldNotHaveOutputValueWhenNoResponse() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(Prompt.builder().content("Hello").build())
+                        .build())
+                .build();
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context))
+                .noneSatisfy(kv -> assertThat(kv.getKey()).isEqualTo(SemanticConventions.OUTPUT_VALUE));
+    }
+
+    @Test
+    void shouldRedactOutputValueWhenConfigured() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(Prompt.builder().content("Hello").build())
+                        .build())
+                .build();
+        var chatResponse = ChatResponse.builder()
+                .generations(List.of(new Generation(new AssistantMessage("Hi there!"))))
+                .build();
+        context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
+
+        OpenInferenceOptions redactingOptions = new OpenInferenceOptions();
+        redactingOptions.setHideOutputs(true);
+        var redactingConvention = new OpenInferenceChatClientObservationConvention(redactingOptions);
+
+        assertThat(redactingConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER)
         );
     }
 

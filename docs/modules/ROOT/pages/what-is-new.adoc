@@ -47,14 +47,16 @@ The multitenancy modules now require Java 25+ due to the use of the `ScopedValue
 
 === General
 
-* A new `arconia-observation` module was introduced for configuring semantic convention selection via the `arconia.observations.conventions.type` configuration property.
-* The convention type is a plain `String` property (default: `"micrometer"`), allowing convention modules to activate without coupling the core to specific implementations.
+* A new `arconia-observation` module was introduced for managing observation convention modules.
+* Convention modules auto-activate when their dependency is on the classpath. No configuration property is required. A new `ObservationConventionsProvider` interface enables auto-discovery of convention modules, including user-provided ones.
+* When multiple convention modules are detected without an explicit selection, a `FailureAnalyzer` provides an actionable error message guiding the user to set the `arconia.observations.conventions.type` property.
 
 === OpenInference Semantic Conventions
 
 * All classes in the `arconia-openinference-semantic-conventions` module have been relocated from `io.arconia.openinference.observation` to `io.arconia.observation.openinference`.
-* The `OpenInferenceProperties.enabled` property has been replaced by `arconia.observations.conventions.type=openinference` for activation.
 * The configuration property prefix has changed from `arconia.observations.generative-ai.openinference` to `arconia.observations.conventions.openinference`.
-* The nested options property group has been renamed from `traces` to `options` (e.g., `arconia.observations.conventions.openinference.options.hide-inputs`).
+* The `exclusive` property has been removed. If you'd like to filter out some observations from being sent to an observability backend, you can define an `ObservationPredicate` in your application or rely on the telemetry collector (e.g. the OpenTelemetry Collector).
 * The `hide-embedding-vectors` option has been renamed to `hide-embeddings-vectors`.
 * New options: `hide-choices` and `hide-embeddings-text`.
+* LLM spans now support multimodal `message.contents` for messages with media (images, audio), with `hideInputImages` and `base64ImageMaxLength` support.
+* AGENT spans now capture `output.value` from the chat client response.

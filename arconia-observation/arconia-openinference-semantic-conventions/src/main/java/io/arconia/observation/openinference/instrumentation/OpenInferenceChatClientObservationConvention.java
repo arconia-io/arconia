@@ -9,6 +9,8 @@ import org.springframework.ai.chat.client.observation.ChatClientObservationConte
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -17,10 +19,10 @@ import org.springframework.util.StringUtils;
  */
 public class OpenInferenceChatClientObservationConvention extends DefaultChatClientObservationConvention {
 
-    private final OpenInferenceOptions tracingOptions;
+    private final OpenInferenceOptions openInferenceOptions;
 
-    public OpenInferenceChatClientObservationConvention(OpenInferenceOptions tracingOptions) {
-        this.tracingOptions = tracingOptions;
+    public OpenInferenceChatClientObservationConvention(OpenInferenceOptions openInferenceOptions) {
+        this.openInferenceOptions = openInferenceOptions;
     }
 
     protected KeyValue aiOperationType(ChatClientObservationContext context) {
@@ -33,6 +35,7 @@ public class OpenInferenceChatClientObservationConvention extends DefaultChatCli
         keyValues = advisors(keyValues, context);
         keyValues = conversationId(keyValues, context);
         keyValues = input(keyValues, context);
+        keyValues = output(keyValues, context);
         keyValues = tools(keyValues, context);
         return keyValues;
     }
@@ -58,10 +61,33 @@ public class OpenInferenceChatClientObservationConvention extends DefaultChatCli
             return keyValues;
         }
 
-        if (tracingOptions.isHideInputs() || tracingOptions.isHideInputMessages() || tracingOptions.isHideInputText()) {
+        if (openInferenceOptions.isHideInputs() || openInferenceOptions.isHideInputMessages() || openInferenceOptions.isHideInputText()) {
             return keyValues.and(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         } else {
             return keyValues.and(SemanticConventions.INPUT_VALUE, userInput);
+        }
+    }
+
+    private KeyValues output(KeyValues keyValues, ChatClientObservationContext context) {
+        if (context.getResponse() == null || context.getResponse().chatResponse() == null) {
+            return keyValues;
+        }
+
+        ChatResponse chatResponse = context.getResponse().chatResponse();
+        Generation result = chatResponse.getResult();
+        if (result == null) {
+            return keyValues;
+        }
+
+        String outputText = result.getOutput().getText();
+        if (!StringUtils.hasText(outputText)) {
+            return keyValues;
+        }
+
+        if (openInferenceOptions.isHideOutputs() || openInferenceOptions.isHideOutputMessages() || openInferenceOptions.isHideOutputText()) {
+            return keyValues.and(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER);
+        } else {
+            return keyValues.and(SemanticConventions.OUTPUT_VALUE, outputText);
         }
     }
 

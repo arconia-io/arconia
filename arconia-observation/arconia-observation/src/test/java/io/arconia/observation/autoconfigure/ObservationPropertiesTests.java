@@ -14,7 +14,7 @@ class ObservationPropertiesTests {
         ObservationProperties properties = new ObservationProperties();
 
         assertThat(properties.getConventions()).isNotNull();
-        assertThat(properties.getConventions().getType()).isEqualTo("micrometer");
+        assertThat(properties.getConventions().getType()).isNull();
     }
 
     @Test

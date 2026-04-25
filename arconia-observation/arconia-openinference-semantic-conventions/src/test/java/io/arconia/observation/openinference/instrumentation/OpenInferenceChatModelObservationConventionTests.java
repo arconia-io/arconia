@@ -1,5 +1,6 @@
 package io.arconia.observation.openinference.instrumentation;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,12 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.content.Media;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.util.MimeType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,9 +41,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenInferenceChatModelObservationConventionTests {
 
-    private final OpenInferenceOptions tracingOptions = new OpenInferenceOptions();
+    private final OpenInferenceOptions openInferenceOptions = new OpenInferenceOptions();
     private final OpenInferenceChatModelObservationConvention observationConvention
-            = new OpenInferenceChatModelObservationConvention(tracingOptions);
+            = new OpenInferenceChatModelObservationConvention(openInferenceOptions);
 
     @Test
     void shouldHaveName() {
@@ -263,6 +266,170 @@ class OpenInferenceChatModelObservationConventionTests {
         );
     }
 
+
+    @Test
+    void shouldUseMessageContentsForMultimodalInputMessages() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(URI.create("https://example.com/image.png"))
+                        .build())
+                .build();
+        List<Message> messages = List.of(userMessage);
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0";
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_ROLE, "user"),
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "What's in this image?"),
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".1." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, "https://example.com/image.png")
+        );
+        // Should not have flat message.content when multimodal
+        assertThat(observationConvention.getHighCardinalityKeyValues(context))
+                .noneSatisfy(kv -> assertThat(kv.getKey()).isEqualTo(prefix + "." + SemanticConventions.MESSAGE_CONTENT));
+    }
+
+    @Test
+    void shouldUseMessageContentForTextOnlyMessages() {
+        List<Message> messages = List.of(new UserMessage("Hello"));
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0";
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENT, "Hello")
+        );
+        // Should not have message.contents when text-only
+        assertThat(observationConvention.getHighCardinalityKeyValues(context))
+                .noneSatisfy(kv -> assertThat(kv.getKey()).startsWith(prefix + "." + SemanticConventions.MESSAGE_CONTENTS));
+    }
+
+    @Test
+    void shouldUseMessageContentsWithMultipleMedia() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Compare these images")
+                .media(
+                        Media.builder()
+                                .mimeType(Media.Format.IMAGE_PNG)
+                                .data(URI.create("https://example.com/image1.png"))
+                                .build(),
+                        Media.builder()
+                                .mimeType(Media.Format.IMAGE_JPEG)
+                                .data(URI.create("https://example.com/image2.jpg"))
+                                .build())
+                .build();
+        List<Message> messages = List.of(userMessage);
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS;
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "Compare these images"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, "https://example.com/image1.png"),
+                KeyValue.of(prefix + ".2." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
+                KeyValue.of(prefix + ".2." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, "https://example.com/image2.jpg")
+        );
+    }
+
+    @Test
+    void shouldUseMessageContentsWithAudioMedia() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Transcribe this audio")
+                .media(Media.builder()
+                        .mimeType(MimeType.valueOf("audio/mpeg"))
+                        .data(URI.create("https://example.com/audio.mp3"))
+                        .build())
+                .build();
+        List<Message> messages = List.of(userMessage);
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS;
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "Transcribe this audio"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"),
+                KeyValue.of(prefix + ".1." + "message_content.audio" + "." + SemanticConventions.AUDIO_URL, "https://example.com/audio.mp3")
+        );
+    }
+
+    @Test
+    void shouldRedactImagesInMultimodalMessages() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(URI.create("https://example.com/image.png"))
+                        .build())
+                .build();
+        List<Message> messages = List.of(userMessage);
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        OpenInferenceOptions redactingOptions = new OpenInferenceOptions();
+        redactingOptions.setHideInputImages(true);
+        var redactingConvention = new OpenInferenceChatModelObservationConvention(redactingOptions);
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS;
+        assertThat(redactingConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
+                KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "What's in this image?"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, OpenInferenceOptions.REDACTED_PLACEHOLDER)
+        );
+    }
+
+    @Test
+    void shouldTruncateBase64ImageData() {
+        byte[] imageBytes = new byte[50_000];
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(imageBytes)
+                        .build())
+                .build();
+        List<Message> messages = List.of(userMessage);
+        ChatOptions options = ChatOptions.builder().model("mistral").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        OpenInferenceOptions limitedOptions = new OpenInferenceOptions();
+        limitedOptions.setBase64ImageMaxLength(100);
+        var limitedConvention = new OpenInferenceChatModelObservationConvention(limitedOptions);
+
+        String imageUrlKey = SemanticConventions.LLM_INPUT_MESSAGES + ".0."
+                + SemanticConventions.MESSAGE_CONTENTS + ".1."
+                + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL;
+        KeyValues keyValues = limitedConvention.getHighCardinalityKeyValues(context);
+        String imageUrl = findKeyValue(keyValues, imageUrlKey);
+
+        assertThat(imageUrl).hasSize(100);
+        assertThat(imageUrl).startsWith("data:image/png;base64,");
+    }
 
     @Test
     void shouldRedactMessages() {

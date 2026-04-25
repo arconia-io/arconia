@@ -1,5 +1,6 @@
 package io.arconia.observation.autoconfigure;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = ObservationProperties.CONFIG_PREFIX)
@@ -20,16 +21,19 @@ public class ObservationProperties {
 
         /**
          * Type of semantic conventions to use for observations.
-         * Each convention module activates when this value matches its identifier
-         * (e.g., "micrometer", "openinference", "opentelemetry").
+         * When set, only the convention module matching this value activates
+         * (e.g., "openinference"). When not set, convention modules auto-activate
+         * based on classpath detection.
          */
-        private String type = "micrometer";
+        @Nullable
+        private String type;
 
+        @Nullable
         public String getType() {
             return type;
         }
 
-        public void setType(String type) {
+        public void setType(@Nullable String type) {
             this.type = type;
         }
 

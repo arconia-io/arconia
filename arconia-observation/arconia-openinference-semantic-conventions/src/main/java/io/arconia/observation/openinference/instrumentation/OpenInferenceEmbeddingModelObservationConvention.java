@@ -22,29 +22,19 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
 
     private static final KeyValue MODEL_NONE = KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, KeyValue.NONE_VALUE);
 
-    private final OpenInferenceOptions tracingOptions;
+    private final OpenInferenceOptions openInferenceOptions;
 
-    public OpenInferenceEmbeddingModelObservationConvention(OpenInferenceOptions tracingOptions) {
-        this.tracingOptions = tracingOptions;
+    public OpenInferenceEmbeddingModelObservationConvention(OpenInferenceOptions openInferenceOptions) {
+        this.openInferenceOptions = openInferenceOptions;
     }
 
     @Override
     public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
-        return KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context), embeddingModelName(context));
+        return KeyValues.of(aiOperationType(context), aiProvider(context), embeddingModelName(context));
     }
 
     protected KeyValue aiOperationType(EmbeddingModelObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.EMBEDDING.getValue());
-    }
-
-    protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
-        return KeyValue.of(SemanticConventions.LLM_PROVIDER,
-                OpenInferenceConventionsConverters.toLlmProvider(context.getOperationMetadata().provider()));
-    }
-
-    private KeyValue llmSystem(EmbeddingModelObservationContext context) {
-        return KeyValue.of(SemanticConventions.LLM_SYSTEM,
-                OpenInferenceConventionsConverters.toLlmSystem(context.getOperationMetadata().provider()));
     }
 
     private KeyValue embeddingModelName(EmbeddingModelObservationContext context) {
@@ -62,7 +52,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
 
         // Request
         keyValues = embeddingsTexts(keyValues, context);
-        keyValues = llmInvocationParameters(keyValues, context);
+        keyValues = embeddingInvocationParameters(keyValues, context);
 
         // Response
         keyValues = embeddingsVectors(keyValues, context);
@@ -82,7 +72,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         List<String> embeddingTexts = new ArrayList<>(context.getRequest().getInstructions());
         for (int i = 0; i < embeddingTexts.size(); i++) {
             String embeddingText = embeddingTexts.get(i);
-            if (tracingOptions.isHideInputs() || tracingOptions.isHideEmbeddingsText()) {
+            if (openInferenceOptions.isHideInputs() || openInferenceOptions.isHideEmbeddingsText()) {
                 keyValues = keyValues.and(
                         SemanticConventions.EMBEDDING_EMBEDDINGS + "." + i + "." + SemanticConventions.EMBEDDING_TEXT,
                         OpenInferenceOptions.REDACTED_PLACEHOLDER
@@ -98,9 +88,9 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         return keyValues;
     }
 
-    private KeyValues llmInvocationParameters(KeyValues keyValues, EmbeddingModelObservationContext context) {
-        if (tracingOptions.isHideLlmInvocationParameters()) {
-            return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS, OpenInferenceOptions.REDACTED_PLACEHOLDER);
+    private KeyValues embeddingInvocationParameters(KeyValues keyValues, EmbeddingModelObservationContext context) {
+        if (openInferenceOptions.isHideLlmInvocationParameters()) {
+            return keyValues.and(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         }
 
         EmbeddingOptions options = context.getRequest().getOptions();
@@ -114,7 +104,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
             invocationParameters.put("dimensions", options.getDimensions());
         }
 
-        return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS, JsonParser.toJson(invocationParameters));
+        return keyValues.and(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, JsonParser.toJson(invocationParameters));
     }
 
     // Response
@@ -127,7 +117,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         List<Embedding> embeddings = new ArrayList<>(context.getResponse().getResults());
         for (int i = 0; i < embeddings.size(); i++) {
             Embedding embedding = embeddings.get(i);
-            if (tracingOptions.isHideOutputs() || tracingOptions.isHideEmbeddingsVectors()) {
+            if (openInferenceOptions.isHideOutputs() || openInferenceOptions.isHideEmbeddingsVectors()) {
                 keyValues = keyValues.and(
                         SemanticConventions.EMBEDDING_EMBEDDINGS + "." + i + "." + SemanticConventions.EMBEDDING_VECTOR,
                         OpenInferenceOptions.REDACTED_PLACEHOLDER
