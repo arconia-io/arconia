@@ -82,7 +82,8 @@ Semantic Conventions for JVM are based on the support provided by the https://mi
 
 Activated when the application is a servlet-based web application. Provides semantic conventions for HTTP server request observations, following the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP] specification.
 
-Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project.
+Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projec
+-ts/spring-framework[Spring Framework] project, extended by Arconia to support additional stable attributes.
 
 .HTTP Configuration Properties
 |===
@@ -91,6 +92,10 @@ Semantic Conventions for HTTP Server are based on the support provided by the ht
 |	`arconia.observations.conventions.opentelemetry.http.enabled`
 |	`true`
 |	Whether to enable HTTP semantic conventions.
+
+|	`arconia.observations.conventions.opentelemetry.http.include-url-query`
+|	`false`
+|	Whether to include the URL query string in the HTTP server observations. Disabled by default due to potential PII sensitivity.
 |===
 
 == Database

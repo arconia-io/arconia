@@ -23,14 +23,15 @@ dependencies {
     optional "org.springframework.ai:spring-ai-client-chat"
     optional "org.springframework:spring-web"
     optional "io.micrometer:micrometer-tracing-bridge-otel"
+    optional "jakarta.servlet:jakarta.servlet-api"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework:spring-web"
+    testImplementation "jakarta.servlet:jakarta.servlet-api"
     testRuntimeOnly project(":arconia-opentelemetry:arconia-opentelemetry")
     testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-    testRuntimeOnly "org.springframework:spring-web"
     testRuntimeOnly "org.springframework:spring-webmvc"
-    testRuntimeOnly "jakarta.servlet:jakarta.servlet-api"
 
     constraints {
         implementation("io.modelcontextprotocol.sdk:mcp-core:1.1.1") {

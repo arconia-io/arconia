@@ -3,6 +3,7 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryGenAiOptions;
+import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryHttpOptions;
 
 /**
  * Configuration properties for the OpenTelemetry Semantic Conventions.
@@ -56,7 +57,7 @@ public class OpenTelemetryConventionsProperties {
 
     }
 
-    public static class Http {
+    public static class Http extends OpenTelemetryHttpOptions {
 
         /**
          * Whether to enable HTTP semantic conventions.

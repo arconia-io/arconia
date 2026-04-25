@@ -23,6 +23,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import io.arconia.observation.autoconfigure.ObservationProperties;
+import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvmMemoryMeterFilter;
+import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvmMemoryMetrics;
 
 /**
  * Auto-configuration for OpenTelemetry Semantic Conventions for JVM metrics.
@@ -38,10 +40,15 @@ import io.arconia.observation.autoconfigure.ObservationProperties;
 public final class JvmConventionsAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
-    JvmMemoryMetrics jvmMemoryMetrics() {
+    @ConditionalOnMissingBean(JvmMemoryMetrics.class)
+    OpenTelemetryJvmMemoryMetrics jvmMemoryMetrics() {
         JvmMemoryMeterConventions conventions = new OpenTelemetryJvmMemoryMeterConventions(Tags.empty());
-        return new JvmMemoryMetrics(List.of(), conventions);
+        return new OpenTelemetryJvmMemoryMetrics(List.of(), conventions);
+    }
+    
+    @Bean
+    OpenTelemetryJvmMemoryMeterFilter openTelemetryJvmMemoryMeterFilter() {
+        return new OpenTelemetryJvmMemoryMeterFilter();
     }
 
     @Bean
