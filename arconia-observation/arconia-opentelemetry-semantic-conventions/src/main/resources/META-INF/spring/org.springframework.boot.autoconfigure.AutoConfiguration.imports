@@ -1,0 +1,4 @@
+io.arconia.observation.opentelemetry.autoconfigure.OpenTelemetryConventionsAutoConfiguration
+io.arconia.observation.opentelemetry.autoconfigure.GenerativeAiConventionsAutoConfiguration
+io.arconia.observation.opentelemetry.autoconfigure.HttpConventionsAutoConfiguration
+io.arconia.observation.opentelemetry.autoconfigure.JvmConventionsAutoConfiguration

@@ -16,6 +16,32 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The Ollama Dev Service now automatically configures the Spring AI OpenAI client to use Ollama's OpenAI-compatible API endpoint when the Spring AI OpenAI module is on the classpath.
 * Workaround for a https://github.com/testcontainers/testcontainers-java/issues/9287[Testcontainers bug] where Docker Desktop on Windows injects a phantom nvidia runtime via WSL, causing Ollama container startup to fail on non-NVIDIA hosts.
 
+== Observation
+
+=== General
+
+* A new `arconia-observation` module was introduced for managing observation convention modules.
+* Convention modules auto-activate when their dependency is on the classpath. No configuration property is required. A new `ObservationConventionsProvider` interface enables auto-discovery of convention modules, including user-provided ones.
+* When multiple convention modules are detected without an explicit selection, a `FailureAnalyzer` provides an actionable error message guiding the user to set the `arconia.observations.conventions.type` property.
+
+=== OpenTelemetry Semantic Conventions
+
+* A new `arconia-opentelemetry-semantic-conventions` module was introduced, providing support for the https://opentelemetry.io/docs/specs/semconv/[OpenTelemetry Semantic Conventions].
+* JVM metrics: OpenTelemetry-aligned naming for memory, thread, class loader, and CPU metrics, based on the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM].
+* HTTP Server: OpenTelemetry-aligned naming for HTTP server request observations (servlet-based web applications), based on the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP].
+* Generative AI: Support for the experimental https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI], including chat model, embedding model, and tool execution spans; token usage metrics; input/output message content capturing (as span attributes or span events); and multimodal media support.
+* Content capturing for Generative AI observations is opt-in via the `arconia.observations.conventions.opentelemetry.generative-ai.inference.capture-content` property (`none`, `span-attributes`, `span-events`).
+
+=== OpenInference Semantic Conventions
+
+* All classes in the `arconia-openinference-semantic-conventions` module have been relocated from `io.arconia.openinference.observation` to `io.arconia.observation.openinference`.
+* The configuration property prefix has changed from `arconia.observations.generative-ai.openinference` to `arconia.observations.conventions.openinference`.
+* The `exclusive` property has been removed. If you'd like to filter out some observations from being sent to an observability backend, you can define an `ObservationPredicate` in your application or rely on the telemetry collector (e.g. the OpenTelemetry Collector).
+* The `hide-embedding-vectors` option has been renamed to `hide-embeddings-vectors`.
+* New options: `hide-choices` and `hide-embeddings-text`.
+* LLM spans now support multimodal `message.contents` for messages with media (images, audio), with `hideInputImages` and `base64ImageMaxLength` support.
+* AGENT spans now capture `output.value` from the chat client response.
+
 == Multitenancy
 
 This release defines a new baseline for the xref:multitenancy:index.adoc[Arconia Multitenancy] module.
@@ -42,21 +68,3 @@ The multitenancy modules now require Java 25+ due to the use of the `ScopedValue
 ==== `TenantContextHolder` Replaced by `TenantContext`
 
 `TenantContextHolder` has been replaced by `TenantContext`, which uses `ScopedValue` instead of `ThreadLocal`. The type rename is applied automatically, but the API change from `set()`/`clear()` to `TenantContext.where("tenant").run(...)` requires manual migration.
-
-== Observation
-
-=== General
-
-* A new `arconia-observation` module was introduced for managing observation convention modules.
-* Convention modules auto-activate when their dependency is on the classpath. No configuration property is required. A new `ObservationConventionsProvider` interface enables auto-discovery of convention modules, including user-provided ones.
-* When multiple convention modules are detected without an explicit selection, a `FailureAnalyzer` provides an actionable error message guiding the user to set the `arconia.observations.conventions.type` property.
-
-=== OpenInference Semantic Conventions
-
-* All classes in the `arconia-openinference-semantic-conventions` module have been relocated from `io.arconia.openinference.observation` to `io.arconia.observation.openinference`.
-* The configuration property prefix has changed from `arconia.observations.generative-ai.openinference` to `arconia.observations.conventions.openinference`.
-* The `exclusive` property has been removed. If you'd like to filter out some observations from being sent to an observability backend, you can define an `ObservationPredicate` in your application or rely on the telemetry collector (e.g. the OpenTelemetry Collector).
-* The `hide-embedding-vectors` option has been renamed to `hide-embeddings-vectors`.
-* New options: `hide-choices` and `hide-embeddings-text`.
-* LLM spans now support multimodal `message.contents` for messages with media (images, audio), with `hideInputImages` and `base64ImageMaxLength` support.
-* AGENT spans now capture `output.value` from the chat client response.

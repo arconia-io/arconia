@@ -51,6 +51,7 @@ include 'arconia-multitenancy:arconia-multitenancy-web'
 // Observation
 include 'arconia-observation:arconia-observation'
 include 'arconia-observation:arconia-openinference-semantic-conventions'
+include 'arconia-observation:arconia-opentelemetry-semantic-conventions'
 
 // Observability
 include 'arconia-opentelemetry:arconia-opentelemetry'

@@ -4,6 +4,7 @@ Spring Boot applications instrumented with the Micrometer Observation APIs can e
 
 Arconia provides support for the following semantic conventions:
 
+* xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions].
 * xref:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions].
 
 == Auto-Activation

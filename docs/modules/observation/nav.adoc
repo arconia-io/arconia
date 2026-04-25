@@ -2,4 +2,5 @@
 * xref:index.adoc[Introduction]
 * Semantic Conventions
 ** xref:semantic-conventions/index.adoc[Introduction]
+** xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry]
 ** xref:semantic-conventions/openinference.adoc[OpenInference]

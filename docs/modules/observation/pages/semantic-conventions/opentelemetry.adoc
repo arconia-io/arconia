@@ -1,0 +1,147 @@
+= OpenTelemetry Semantic Conventions
+
+The Spring portfolio provides built-in instrumentation based on the Micrometer APIs. Arconia lets you configure your applications to export telemetry data adopting the https://opentelemetry.io/docs/specs/semconv/[OpenTelemetry Semantic Conventions] instead of the default Micrometer conventions.
+
+OpenTelemetry Semantic Conventions are the standard for cloud-native observability and are supported by a wide range of backends, including https://grafana.com[Grafana], https://www.honeycomb.io[Honeycomb], and https://dash0.com[Dash0]. Arconia provides Dev Services for OpenTelemetry backends. Check out the xref:dev-services:index.adoc[Dev Services] documentation for more details.
+
+== Getting Started
+
+Add the Arconia OpenTelemetry Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-opentelemetry-semantic-conventions'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-semantic-conventions</artifactId>
+</dependency>
+----
+======
+
+Your application also needs OpenTelemetry configured for traces and metrics export. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+Alternatively, you can use the Spring Boot OpenTelemetry starter (`org.springframework.boot:spring-boot-starter-opentelemetry`). However, be aware that it provides only partial support for OpenTelemetry.
+
+Each observation group can be individually disabled via the `enabled` property.
+
+== JVM
+
+Always activated. Provides OpenTelemetry-aligned naming for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification:
+
+* Memory metrics
+* Thread metrics
+* Class loader metrics
+* CPU/processor metrics.
+
+Semantic Conventions for JVM are based on the support provided by the https://micrometer.io[Micrometer Metrics] project.
+
+.JVM Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.jvm.enabled`
+|	`true`
+|	Whether to enable JVM semantic conventions.
+|===
+
+== HTTP Server
+
+Activated when the application is a servlet-based web application. Provides semantic conventions for HTTP server request observations, following the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP] specification.
+
+Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project.
+
+.HTTP Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.http.enabled`
+|	`true`
+|	Whether to enable HTTP semantic conventions.
+|===
+
+== Generative AI
+
+[WARNING]
+====
+The https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI] are still experimental and are therefore subjected to future changes before reaching a stable status.
+====
+
+Activated when https://spring.io/projects/spring-ai[Spring AI] is on the classpath. Provides semantic conventions for generative AI observations, following the experimental https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI] specification:
+
+* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Embedding model spans with dimension tracking.
+* Tool execution spans.
+* Chat client observations (including conversation ID tracking via chat memory).
+* Token usage metrics.
+* Input/output message content, captured as span attributes or span events.
+
+Content capturing is opt-in due to potential PII sensitivity.
+
+.Generative AI Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.generative-ai.enabled`
+|	`true`
+|	Whether to enable Generative AI semantic conventions.
+|===
+
+=== Inference
+
+.Generative AI Inference Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.generative-ai.inference.capture-content`
+|	`none`
+|	How to capture input and output message content. Disabled by default due to potential PII sensitivity. Accepted values: `none`, `span-attributes`, `span-events`.
+
+|	`arconia.observations.conventions.opentelemetry.generative-ai.inference.include-tool-definitions`
+|	`false`
+|	Whether to include tool definitions in inference observations. Disabled by default due to potential size issues.
+|===
+
+=== Tool Execution
+
+.Generative AI Tool Execution Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.generative-ai.tool-execution.include-content`
+|	`false`
+|	Whether to include tool content (arguments and result) in tool execution observations. Disabled by default due to potential PII sensitivity.
+|===
