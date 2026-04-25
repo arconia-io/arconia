@@ -69,10 +69,11 @@ dependencies {
         api project(":arconia-testcontainers:arconia-testcontainers-valkey")
 
         api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
-        api "net.ttddyy.observation:datasource-micrometer-spring-boot:${datasourceMicrometerSpringBootVersion}"
+        api "io.opentelemetry.semconv:opentelemetry-semconv-incubating:${openTelemetrySemanticConventionsVersion}-alpha"
     }
 
     api platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha")
+    api platform("net.ttddyy.observation:datasource-micrometer-bom:${datasourceMicrometerSpringBootVersion}")
 }
 
 publishing {
