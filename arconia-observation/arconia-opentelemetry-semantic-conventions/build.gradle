@@ -34,7 +34,7 @@ dependencies {
     testRuntimeOnly "org.springframework:spring-webmvc"
 
     constraints {
-        implementation("io.modelcontextprotocol.sdk:mcp-core:1.1.1") {
+        implementation("io.modelcontextprotocol.sdk:mcp-core:1.1.2") {
             because "CVE-2026-34237: Upgrade transitive dependency from Spring AI Chat Client"
         }
     }
