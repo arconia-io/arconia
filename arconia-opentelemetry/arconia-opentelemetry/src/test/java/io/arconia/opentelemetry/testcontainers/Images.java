@@ -9,7 +9,7 @@ public final class Images {
 
     public static final String OTEL_COLLECTOR = "otel/opentelemetry-collector-contrib:0.150.1";
 
-    public static final String PHOENIX = "arizephoenix/phoenix:version-14.12.0-nonroot";
+    public static final String PHOENIX = "arizephoenix/phoenix:version-14.14.0-nonroot";
 
     private Images() {
     }
