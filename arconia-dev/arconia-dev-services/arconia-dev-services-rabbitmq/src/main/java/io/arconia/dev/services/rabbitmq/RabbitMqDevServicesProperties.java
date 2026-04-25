@@ -28,7 +28,7 @@ public class RabbitMqDevServicesProperties implements BaseDevServicesProperties 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "rabbitmq:4.2-management-alpine";
+    private String imageName = "rabbitmq:4.3-management-alpine";
 
     /**
      * Environment variables to set in the service.
