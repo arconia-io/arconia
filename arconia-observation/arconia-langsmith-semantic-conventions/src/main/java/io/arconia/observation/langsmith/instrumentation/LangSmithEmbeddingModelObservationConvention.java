@@ -11,12 +11,6 @@ import org.springframework.util.StringUtils;
 
 public final class LangSmithEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
-    private static final KeyValue REQUEST_MODEL_NONE = KeyValue
-            .of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), KeyValue.NONE_VALUE);
-
-    private static final KeyValue RESPONSE_MODEL_NONE = KeyValue
-            .of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey(), KeyValue.NONE_VALUE);
-
     @Override
     public String getContextualName(EmbeddingModelObservationContext context) {
         EmbeddingOptions options = context.getRequest().getOptions();
@@ -50,25 +44,6 @@ public final class LangSmithEmbeddingModelObservationConvention extends DefaultE
     private KeyValue langSmithSpanKind(EmbeddingModelObservationContext context) {
         return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
                 LangSmithConventionsConverter.toSpanKind(context.getOperationMetadata().operationType()));
-    }
-
-    @Override
-    protected KeyValue requestModel(EmbeddingModelObservationContext context) {
-        EmbeddingOptions options = context.getRequest().getOptions();
-        if (options != null && StringUtils.hasText(options.getModel())) {
-            return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(),
-                    options.getModel());
-        }
-        return REQUEST_MODEL_NONE;
-    }
-
-    @Override
-    protected KeyValue responseModel(EmbeddingModelObservationContext context) {
-        if (context.getResponse() != null && StringUtils.hasText(context.getResponse().getMetadata().getModel())) {
-            return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey(),
-                    context.getResponse().getMetadata().getModel());
-        }
-        return RESPONSE_MODEL_NONE;
     }
 
     // HIGH CARDINALITY
