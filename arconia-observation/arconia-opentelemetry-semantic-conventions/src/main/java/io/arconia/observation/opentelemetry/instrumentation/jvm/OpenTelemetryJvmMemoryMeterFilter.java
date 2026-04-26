@@ -5,12 +5,21 @@ import java.util.List;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.opentelemetry.semconv.JvmAttributes;
 
 /**
  * Filter to map missing Micrometer JVM memory metrics to OpenTelemetry semantic conventions.
  */
 public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
+
+    @Override
+    public MeterFilterReply accept(Meter.Id id) {
+        if ("jvm.memory.usage.after.gc".equals(id.getName())) {
+            return MeterFilterReply.DENY;
+        }
+        return MeterFilterReply.NEUTRAL;
+    }
 
     @Override
     public Meter.Id map(Meter.Id id) {

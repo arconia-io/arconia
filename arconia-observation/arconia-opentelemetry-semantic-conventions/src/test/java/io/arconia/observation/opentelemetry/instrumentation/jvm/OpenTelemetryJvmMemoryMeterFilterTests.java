@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.instrumentation.jvm;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.opentelemetry.semconv.JvmAttributes;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenTelemetryJvmMemoryMeterFilterTests {
 
     private final OpenTelemetryJvmMemoryMeterFilter filter = new OpenTelemetryJvmMemoryMeterFilter();
+
+    @Test
+    void deniesMemoryUsageAfterGc() {
+        Meter.Id id = new Meter.Id("jvm.memory.usage.after.gc",
+                Tags.empty(),
+                null, null, Meter.Type.GAUGE);
+
+        assertThat(filter.accept(id)).isEqualTo(MeterFilterReply.DENY);
+    }
+
+    @Test
+    void acceptsUnrelatedMeters() {
+        Meter.Id id = new Meter.Id("jvm.memory.used",
+                Tags.of("area", "heap"),
+                null, null, Meter.Type.GAUGE);
+
+        assertThat(filter.accept(id)).isEqualTo(MeterFilterReply.NEUTRAL);
+    }
 
     @Test
     void mapsGcPauseToGcDuration() {
