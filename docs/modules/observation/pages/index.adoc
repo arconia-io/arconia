@@ -3,4 +3,4 @@
 
 Arconia Observation extends the observability capabilities of Spring Boot applications by providing a pluggable model for xref:semantic-conventions/index.adoc[semantic conventions]. It lets you choose which conventions to adopt when exporting telemetry data, so you can match the expectations of your observability backend.
 
-By default, Spring Boot applications use the built-in Micrometer conventions. Arconia lets you switch to alternative conventions, such as xref:semantic-conventions/openinference.adoc[OpenInference], through a single configuration property, with no code changes required.
+By default, Spring Boot applications use the built-in Micrometer conventions. Arconia lets you switch to alternative conventions through a single configuration property, with no code changes required.

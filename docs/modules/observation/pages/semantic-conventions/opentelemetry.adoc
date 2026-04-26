@@ -2,7 +2,7 @@
 
 The Spring portfolio provides built-in instrumentation based on the Micrometer APIs. Arconia lets you configure your applications to export telemetry data adopting the https://opentelemetry.io/docs/specs/semconv/[OpenTelemetry Semantic Conventions] instead of the default Micrometer conventions.
 
-OpenTelemetry Semantic Conventions are the standard for cloud-native observability and are supported by a wide range of backends, including https://grafana.com[Grafana], https://www.honeycomb.io[Honeycomb], and https://dash0.com[Dash0]. Arconia provides Dev Services for OpenTelemetry backends. Check out the xref:dev-services:index.adoc[Dev Services] documentation for more details.
+OpenTelemetry Semantic Conventions are the standard for cloud-native observability and are supported by a wide range of backends, from on-premises to cloud solutions. Arconia provides Dev Services for OpenTelemetry backends you can use during development and testing. Check out the xref:dev-services:index.adoc[Dev Services] documentation for more details.
 
 == Getting Started
 
@@ -54,20 +54,18 @@ Maven::
 ----
 ======
 
-Alternatively, you can use the Spring Boot OpenTelemetry starter (`org.springframework.boot:spring-boot-starter-opentelemetry`). However, be aware that it provides only partial support for OpenTelemetry.
-
-Each observation group can be individually disabled via the `enabled` property.
+If you use one of the available xref:dev-services:index.adoc[OpenTelemetry Dev Services] during development or testing, Arconia will configure OpenTelemetry automatically to export logs, metrics, and traces to the specific service based on the OpenTelemetry Semantic Conventions.
 
 == JVM
 
-Always activated. Provides OpenTelemetry-aligned naming for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification:
+Provides semantic conventions for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification:
 
 * Memory metrics
 * Thread metrics
 * Class loader metrics
 * CPU/processor metrics.
 
-Semantic Conventions for JVM are based on the support provided by the https://micrometer.io[Micrometer Metrics] project.
+Semantic Conventions for JVM are based on the support provided by the https://micrometer.io[Micrometer Metrics] project, extended by Arconia to support additional stable conventions.
 
 .JVM Configuration Properties
 |===
@@ -82,8 +80,7 @@ Semantic Conventions for JVM are based on the support provided by the https://mi
 
 Activated when the application is a servlet-based web application. Provides semantic conventions for HTTP server request observations, following the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP] specification.
 
-Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projec
--ts/spring-framework[Spring Framework] project, extended by Arconia to support additional stable attributes.
+Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to support additional stable conventions.
 
 .HTTP Configuration Properties
 |===
@@ -135,12 +132,12 @@ Refer to the https://jdbc-observations.github.io/datasource-micrometer/docs/curr
 
 [WARNING]
 ====
-The https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI] are still experimental and are therefore subjected to future changes before reaching a stable status.
+The https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI] are still experimental, and they might change in the future.
 ====
 
 Activated when https://spring.io/projects/spring-ai[Spring AI] is on the classpath. Provides semantic conventions for generative AI observations, following the experimental https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI] specification:
 
-* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
 * Embedding model spans with dimension tracking.
 * Tool execution spans.
 * Chat client observations (including conversation ID tracking via chat memory).

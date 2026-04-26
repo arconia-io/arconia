@@ -1,9 +1,14 @@
 = OpenInference Semantic Conventions
 :page-aliases: observability:generative-ai.adoc, observability:ai.adoc
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer Observation APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions.
+Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://arize.com/docs/phoenix[Arize Phoenix].
 
-Several systems have been adopting the OpenInference specification to provide a consistent way to monitor and observe AI models, including the https://arize.com/docs/phoenix[Arize Phoenix] platform that Arconia makes available as a Dev Service for you to run and test locally. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
+Arconia provides a Phoenix Dev Service you can use during development and testing. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
+
+[WARNING]
+====
+The https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] are still experimental, and they might change in the future.
+====
 
 == Getting Started
 
@@ -30,6 +35,45 @@ Maven::
 </dependency>
 ----
 ======
+
+Your application also needs OpenTelemetry configured for exporting traces. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+If you use the xref:dev-services:phoenix.adoc[Phoenix Dev Service] during development or testing, Arconia will configure OpenTelemetry automatically to export traces to Phoenix based on the OpenInference Semantic Conventions.
+
+== Features
+
+The module provides semantic conventions for the following observation types:
+
+* Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
+* Embedding model spans with dimension tracking.
+* Tool execution spans.
+* Chat client observations (including conversation ID tracking via chat memory).
+* Token usage metrics.
+* Input/output message content, captured as span attributes or span events.
+
+Content capturing is enabled by default, according to the OpenInference Semantic Conventions specification.
 
 == Configuration Properties
 

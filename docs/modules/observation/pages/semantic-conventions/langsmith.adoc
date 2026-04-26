@@ -1,8 +1,11 @@
 = LangSmith Semantic Conventions
 
-Spring AI provides built-in instrumentation for models and workflows based on the Micrometer Observation APIs. Arconia lets you configure your Spring AI applications to export telemetry data compatible with https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions], enabling rich trace visualization in the https://www.langchain.com/langsmith[LangSmith] platform.
+Spring AI provides built-in instrumentation for models and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in the https://www.langchain.com/langsmith[LangSmith] platform.
 
-LangSmith Semantic Conventions combine standard GenAI OpenTelemetry attributes with LangSmith-specific attributes to provide the best trace rendering experience in the LangSmith UI, including chat message rendering, tool call visualization, and token usage tracking.
+[WARNING]
+====
+The https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions] are still experimental, and they might change in the future.
+====
 
 == Getting Started
 
@@ -30,7 +33,7 @@ Maven::
 ----
 ======
 
-Your application also needs OpenTelemetry configured for exporting traces, pointing to the LangSmith OTLP endpoint. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+Your application also needs OpenTelemetry configured for exporting traces. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
 
 [tabs]
 ======
@@ -54,7 +57,7 @@ Maven::
 ----
 ======
 
-Then configure the OTLP exporter to send traces to LangSmith:
+Then, configure the OTLP exporter to send traces to LangSmith, making sure you defined your LangSmith API Key in a `LANGSMITH_API_KEY` environment variable:
 
 [source,properties]
 ----
@@ -63,6 +66,14 @@ otel.exporter.otlp.headers=x-api-key=${LANGSMITH_API_KEY}
 ----
 
 For US-hosted LangSmith, use `https://api.smith.langchain.com/otel` as the endpoint.
+
+Alternatively, you can use the standard OpenTelemetry Environment Variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_ENDPOINT=https://eu.api.smith.langchain.com/otel
+OTEL_EXPORTER_OTLP_HEADERS="x-api-key=<your-langsmith-api-key>"
+----
 
 == Features
 

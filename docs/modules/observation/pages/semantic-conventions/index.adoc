@@ -1,11 +1,11 @@
 = Semantic Conventions
 
-Spring Boot applications instrumented with the Micrometer Observation APIs can export telemetry data adopting specific semantic conventions. Semantic conventions define a standard set of attributes and naming rules for observations, ensuring consistency across different observability backends.
+Spring Boot applications instrumented with the Micrometer APIs can export telemetry data adopting specific semantic conventions. Semantic conventions define a standard set of attributes and naming rules for observations, ensuring consistency across different observability backends.
 
 Arconia provides support for the following semantic conventions:
 
-* xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions].
-* xref:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions].
+* xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions]
+* xref:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions]
 * xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions].
 
 == Auto-Activation
@@ -18,8 +18,8 @@ If multiple convention modules are present on the classpath, Arconia will detect
 |===
 |Property |Default |Description
 |	`arconia.observations.conventions.type`
-|	``
-|	When set, only the convention module matching this value activates (e.g., `openinference`). When not set, convention modules auto-activate based on classpath detection.
+|	-
+|	When set, only the convention module matching this value activates (e.g., `opentelemetry`). When not set, convention modules auto-activate based on classpath detection.
 |===
 
 == Custom Convention Modules
