@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
-import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.util.json.JsonParser;
 import org.springframework.util.CollectionUtils;
 
@@ -59,7 +58,7 @@ public class OpenTelemetryChatClientEventObservationHandler implements Observati
 
     @Override
     public boolean supportsContext(Observation.Context context) {
-        return context instanceof ChatModelObservationContext;
+        return context instanceof ChatClientObservationContext;
     }
 
 }
