@@ -2,10 +2,12 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.arconia.observation.conventions.ObservationConventionsProvider;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryGenAiOptions;
+import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceBuilderCustomizer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +24,7 @@ class OpenTelemetryConventionsAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(ObservationConventionsProvider.class);
             assertThat(context.getBean(ObservationConventionsProvider.class).name()).isEqualTo("opentelemetry");
+            assertThat(context).hasSingleBean(OpenTelemetryResourceBuilderCustomizer.class);
         });
     }
 
@@ -39,6 +42,14 @@ class OpenTelemetryConventionsAutoConfigurationTests {
                 .withPropertyValues("arconia.observations.conventions.type=micrometer")
                 .run(context ->
                         assertThat(context).doesNotHaveBean(ObservationConventionsProvider.class));
+    }
+
+    @Test
+    void noResourceBuilderCustomizerWhenNotInClassapth() {
+        contextRunner
+                .withClassLoader(new FilteredClassLoader(OpenTelemetryResourceBuilderCustomizer.class))
+                .run(context ->
+                        assertThat(context).doesNotHaveBean(OpenTelemetryResourceBuilderCustomizer.class));
     }
 
     @Test
