@@ -4,3 +4,4 @@
 ** xref:semantic-conventions/index.adoc[Introduction]
 ** xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry]
 ** xref:semantic-conventions/openinference.adoc[OpenInference]
+** xref:semantic-conventions/langsmith.adoc[LangSmith]

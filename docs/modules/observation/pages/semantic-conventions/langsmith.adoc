@@ -1,0 +1,115 @@
+= LangSmith Semantic Conventions
+
+Spring AI provides built-in instrumentation for models and workflows based on the Micrometer Observation APIs. Arconia lets you configure your Spring AI applications to export telemetry data compatible with https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions], enabling rich trace visualization in the https://www.langchain.com/langsmith[LangSmith] platform.
+
+LangSmith Semantic Conventions combine standard GenAI OpenTelemetry attributes with LangSmith-specific attributes to provide the best trace rendering experience in the LangSmith UI, including chat message rendering, tool call visualization, and token usage tracking.
+
+== Getting Started
+
+Add the Arconia LangSmith Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-langsmith-semantic-conventions'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-langsmith-semantic-conventions</artifactId>
+</dependency>
+----
+======
+
+Your application also needs OpenTelemetry configured for exporting traces, pointing to the LangSmith OTLP endpoint. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+Then configure the OTLP exporter to send traces to LangSmith:
+
+[source,properties]
+----
+otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel
+otel.exporter.otlp.headers=x-api-key=${LANGSMITH_API_KEY}
+----
+
+For US-hosted LangSmith, use `https://api.smith.langchain.com/otel` as the endpoint.
+
+== Features
+
+The module provides semantic conventions for the following observation types:
+
+* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Embedding model spans.
+* Tool execution spans with input/output content.
+* Chat client spans with session tracking and input/output content.
+* Token usage for inference operations.
+* Input/output message content, captured as span events.
+
+Content capturing is enabled by default, matching the behavior of the official LangSmith SDKs.
+
+== Configuration Properties
+
+.LangSmith Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.langsmith.enabled`
+|	`true`
+|	Whether to enable LangSmith semantic conventions.
+|===
+
+=== Inference
+
+.LangSmith Inference Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.langsmith.inference.include-content`
+|	`true`
+|	Whether to include input and output message content in inference observations.
+
+|	`arconia.observations.conventions.langsmith.inference.include-tool-definitions`
+|	`true`
+|	Whether to include tool definitions in inference observations.
+|===
+
+=== Tool Execution
+
+.LangSmith Tool Execution Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.langsmith.tool-execution.include-content`
+|	`true`
+|	Whether to include tool content (arguments and result) in tool execution observations.
+|===

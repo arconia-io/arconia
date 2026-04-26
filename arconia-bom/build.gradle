@@ -48,6 +48,7 @@ dependencies {
         api project(":arconia-multitenancy:arconia-multitenancy-web")
 
         api project(":arconia-observation:arconia-observation")
+        api project(":arconia-observation:arconia-langsmith-semantic-conventions")
         api project(":arconia-observation:arconia-openinference-semantic-conventions")
         api project(":arconia-observation:arconia-opentelemetry-semantic-conventions")
 

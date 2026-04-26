@@ -32,6 +32,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * Generative AI: Support for the experimental https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI], including chat model, embedding model, and tool execution spans; token usage metrics; input/output message content capturing (as span attributes or span events); and multimodal media support.
 * Content capturing for Generative AI observations is opt-in via the `arconia.observations.conventions.opentelemetry.generative-ai.inference.capture-content` property (`none`, `span-attributes`, `span-events`).
 
+=== LangSmith Semantic Conventions
+
+* A new `arconia-langsmith-semantic-conventions` module was introduced, providing support for exporting traces to https://www.langchain.com/langsmith[LangSmith] via its https://docs.langchain.com/langsmith/trace-with-opentelemetry[OpenTelemetry trace ingestion] endpoint.
+* Support for the experimental https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions for Generative AI], including chat model, embedding model, and tool execution spans; token usage metrics; input/output message content capturing (as span events).
+
 === OpenInference Semantic Conventions
 
 * All classes in the `arconia-openinference-semantic-conventions` module have been relocated from `io.arconia.openinference.observation` to `io.arconia.observation.openinference`.

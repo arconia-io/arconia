@@ -1,4 +1,4 @@
-package io.arconia.observation.opentelemetry.instrumentation.util;
+package io.arconia.observation.langsmith.instrumentation;
 
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.micrometer.tracing.otel.bridge.OtelSpan;
@@ -6,7 +6,7 @@ import io.opentelemetry.api.trace.Span;
 
 import org.jspecify.annotations.Nullable;
 
-public final class MicrometerBridge {
+final class MicrometerBridge {
 
     private MicrometerBridge() {}
 

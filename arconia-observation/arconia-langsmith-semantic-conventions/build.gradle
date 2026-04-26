@@ -1,0 +1,54 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-spring-boot")
+    api project(":arconia-observation:arconia-observation")
+    api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
+    api "io.opentelemetry.semconv:opentelemetry-semconv-incubating:${openTelemetrySemanticConventionsVersion}-alpha"
+
+    implementation "tools.jackson.core:jackson-databind"
+
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional "org.springframework.ai:spring-ai-model"
+    optional "org.springframework.ai:spring-ai-client-chat"
+    optional "io.micrometer:micrometer-tracing-bridge-otel"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly project(":arconia-opentelemetry:arconia-opentelemetry")
+    testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    constraints {
+        implementation("io.modelcontextprotocol.sdk:mcp-core:1.1.2") {
+            because "CVE-2026-34237: Upgrade transitive dependency from Spring AI Chat Client"
+        }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia LangSmith Semantic Conventions"
+                description = "Arconia LangSmith Semantic Conventions."
+            }
+        }
+    }
+}

@@ -50,6 +50,7 @@ include 'arconia-multitenancy:arconia-multitenancy-web'
 
 // Observation
 include 'arconia-observation:arconia-observation'
+include 'arconia-observation:arconia-langsmith-semantic-conventions'
 include 'arconia-observation:arconia-openinference-semantic-conventions'
 include 'arconia-observation:arconia-opentelemetry-semantic-conventions'
 
