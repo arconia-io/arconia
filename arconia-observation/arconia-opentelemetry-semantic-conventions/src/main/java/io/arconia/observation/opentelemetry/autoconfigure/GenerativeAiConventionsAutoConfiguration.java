@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.autoconfigure.ObservationProperties;
+import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatClientEventObservationHandler;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatModelEventObservationHandler;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatModelMeterObservationHandler;
@@ -88,8 +89,15 @@ public final class GenerativeAiConventionsAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(ChatClientObservationConvention.class)
-        OpenTelemetryChatClientObservationConvention chatClientObservationConvention() {
-            return new OpenTelemetryChatClientObservationConvention();
+        OpenTelemetryChatClientObservationConvention chatClientObservationConvention(OpenTelemetryConventionsProperties properties) {
+            return new OpenTelemetryChatClientObservationConvention(properties.getGenerativeAi());
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
+        OpenTelemetryChatClientEventObservationHandler chatClientEventObservationHandler(OpenTelemetryConventionsProperties properties) {
+            return new OpenTelemetryChatClientEventObservationHandler(properties.getGenerativeAi());
         }
 
     }

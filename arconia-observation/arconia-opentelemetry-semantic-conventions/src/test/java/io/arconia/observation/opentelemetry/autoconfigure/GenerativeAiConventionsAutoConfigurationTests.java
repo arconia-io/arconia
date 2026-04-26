@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatClientEventObservationHandler;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatModelEventObservationHandler;
 import io.arconia.observation.opentelemetry.instrumentation.genai.OpenTelemetryChatModelMeterObservationHandler;
@@ -90,32 +91,41 @@ class GenerativeAiConventionsAutoConfigurationTests {
 
     @Test
     void registersChatClientBeanWhenChatClientOnClasspath() {
-        contextRunner.run(context ->
-                assertThat(context).hasSingleBean(OpenTelemetryChatClientObservationConvention.class));
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(OpenTelemetryChatClientObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenTelemetryChatClientEventObservationHandler.class);
+
+        });
     }
 
     @Test
     void doesNotRegisterChatClientBeanWhenChatClientNotOnClasspath() {
         contextRunner
                 .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(OpenTelemetryChatClientObservationConvention.class));
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OpenTelemetryChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryChatClientEventObservationHandler.class);
+                });
     }
 
     // Event handler
 
     @Test
     void registersEventHandlerWhenOtelBridgeOnClasspath() {
-        contextRunner.run(context ->
-                assertThat(context).hasSingleBean(OpenTelemetryChatModelEventObservationHandler.class));
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(OpenTelemetryChatModelEventObservationHandler.class);
+            assertThat(context).hasSingleBean(OpenTelemetryChatClientEventObservationHandler.class);
+        });
     }
 
     @Test
     void doesNotRegisterEventHandlerWhenOtelBridgeNotOnClasspath() {
         contextRunner
                 .withClassLoader(new FilteredClassLoader("io.micrometer.tracing.otel.bridge.OtelSpan"))
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
+                .run(context -> {
+                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
+                        assertThat(context).doesNotHaveBean(OpenTelemetryChatClientEventObservationHandler.class);
+                });
     }
 
     // Custom bean precedence
