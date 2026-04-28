@@ -21,7 +21,7 @@ dependencies {
     implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     constraints {
-        implementation("com.fasterxml.jackson.core:jackson-core:2.21.2") {
+        implementation("com.fasterxml.jackson.core:jackson-core:2.21.3") {
             because "GHSA-72hv-8253-57qq: Upgrade transitive dependency from CycloneDX Gradle plugin"
         }
         implementation("org.codehaus.plexus:plexus-utils:3.6.1") {
