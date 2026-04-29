@@ -2,4 +2,5 @@
 * xref:semantic-conventions/index.adoc[Semantic Conventions]
 ** xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry]
 ** xref:semantic-conventions/openinference.adoc[OpenInference]
+** xref:semantic-conventions/openllmetry.adoc[OpenLLMetry]
 ** xref:semantic-conventions/langsmith.adoc[LangSmith]
