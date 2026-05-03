@@ -20,6 +20,9 @@ types:
 scopes:
   - core
   - dev
+  - docling
   - k8s
   - multitenancy
+  - obs
   - otel
+  - testcontainers
