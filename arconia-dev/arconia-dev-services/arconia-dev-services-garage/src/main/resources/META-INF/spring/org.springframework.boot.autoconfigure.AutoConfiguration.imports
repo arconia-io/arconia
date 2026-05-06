@@ -1,0 +1,2 @@
+io.arconia.dev.services.garage.GarageDevServicesAutoConfiguration
+io.arconia.dev.services.garage.GarageSpringCloudAwsDevServicesAutoConfiguration
