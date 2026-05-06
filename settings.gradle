@@ -20,6 +20,7 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-tests'
 
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-artemis'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-docling'
+include 'arconia-dev:arconia-dev-services:arconia-dev-services-garage'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-kafka'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-lgtm'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-lldap'
@@ -71,6 +72,7 @@ include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
 include 'spring-boot-starters:arconia-spring-boot-starter'
 
 // Testcontainers
+include 'arconia-testcontainers:arconia-testcontainers-garage'
 include 'arconia-testcontainers:arconia-testcontainers-phoenix'
 include 'arconia-testcontainers:arconia-testcontainers-redis'
 include 'arconia-testcontainers:arconia-testcontainers-valkey'

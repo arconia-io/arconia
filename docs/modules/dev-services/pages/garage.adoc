@@ -1,0 +1,71 @@
+= Garage Dev Service
+:service-name: garage
+
+A service providing a https://garagehq.deuxfleurs.fr[Garage] S3-compatible object store for development and testing purposes.
+
+It works with Spring Boot libraries that support the Amazon S3 API, including:
+
+* https://awspring.io[Spring Cloud AWS] (S3 client and `S3Template`)
+* https://aws.amazon.com/sdk-for-java/[AWS SDK for Java v2] (`S3Client`, `S3AsyncClient`)
+
+When Spring Cloud AWS is on the classpath, the Dev Service publishes an `AwsConnectionDetails` bean that wires endpoint, region, and credentials directly into the AWS clients via Spring Boot's `@ServiceConnection` mechanism. It also defaults `spring.cloud.aws.s3.path-style-access-enabled` to `true`, which is required by Garage.
+
+The container is bootstrapped automatically the first time it starts: cluster layout is assigned and applied, a deterministic access key is imported, and a default bucket is created and granted to that key.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.{service-name}.image-name`
+| `dxflrs/garage:v2.3.0`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.{service-name}.environment`
+| `{}`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
+
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Garage S3 API port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.shared`
+| `false`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `60s`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+| `arconia.dev.services.{service-name}.bucket-name`
+| `arconia`
+| Name of the bucket created automatically when the container starts.
+|===
+
+include::partial$disabling-dev-service.adoc[]

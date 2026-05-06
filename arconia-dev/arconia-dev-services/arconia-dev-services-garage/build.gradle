@@ -1,0 +1,45 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-testcontainers:arconia-testcontainers-garage")
+    api "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-testcontainers"
+
+    optional "io.awspring.cloud:spring-cloud-aws-autoconfigure"
+    optional "io.awspring.cloud:spring-cloud-aws-s3"
+    optional "org.springframework.boot:spring-boot-devtools"
+
+    testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
+    testImplementation "io.awspring.cloud:spring-cloud-aws-autoconfigure"
+    testImplementation "io.awspring.cloud:spring-cloud-aws-s3"
+    testImplementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services Garage"
+                description = "Arconia Dev Services Garage."
+            }
+        }
+    }
+}

@@ -14,6 +14,8 @@
 ** xref:kafka.adoc[Kafka]
 ** xref:pulsar.adoc[Pulsar]
 ** xref:rabbitmq.adoc[RabbitMQ]
+* Object Stores
+** xref:garage.adoc[Garage]
 * Observability
 ** xref:lgtm.adoc[Grafana LGTM]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
