@@ -27,7 +27,6 @@ class ArconiaGarageContainerTests {
         container.configure();
 
         var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
         assertThat(portBindings)
                 .anyMatch(binding -> binding.startsWith(
                         properties.getPort() + ":" + GarageContainer.S3_API_PORT));

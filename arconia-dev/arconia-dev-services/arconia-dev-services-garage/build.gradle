@@ -38,7 +38,7 @@ publishing {
         mavenJava(MavenPublication) {
             pom {
                 name = "Arconia Dev Services Garage"
-                description = "Arconia Dev Services Garage."
+                description = "Auto-configuration for Garage as an Arconia Dev Service."
             }
         }
     }

@@ -34,7 +34,7 @@ class GarageContainerConnectionDetailsFactory
 
         @Override
         public URI getEndpoint() {
-            return URI.create(getContainer().getS3Endpoint());
+            return getContainer().getS3EndpointUri();
         }
 
         @Override

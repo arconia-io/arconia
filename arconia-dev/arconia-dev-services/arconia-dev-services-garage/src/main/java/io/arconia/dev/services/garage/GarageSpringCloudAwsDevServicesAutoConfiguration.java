@@ -20,6 +20,14 @@ import io.arconia.dev.services.garage.GarageSpringCloudAwsDevServicesAutoConfigu
  * <p>The endpoint, region, and credentials are provided through the
  * {@link GarageContainerConnectionDetailsFactory} via {@code AwsConnectionDetails}.
  */
+/**
+ * Auto-configuration that contributes Spring Cloud AWS S3 defaults required by Garage —
+ * specifically path-style addressing, which is mandatory for S3-compatible stores like Garage
+ * but is not part of {@code AwsConnectionDetails}.
+ *
+ * <p>The endpoint, region, and credentials are provided through the
+ * {@link GarageContainerConnectionDetailsFactory} via {@code AwsConnectionDetails}.
+ */
 @AutoConfiguration(after = GarageDevServicesAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("garage")
 @ConditionalOnClass(name = "io.awspring.cloud.autoconfigure.s3.properties.S3Properties")

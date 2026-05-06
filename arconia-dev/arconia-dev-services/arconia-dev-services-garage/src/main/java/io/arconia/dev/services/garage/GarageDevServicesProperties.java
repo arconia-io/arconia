@@ -29,7 +29,7 @@ public class GarageDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "dxflrs/garage:v2.3.0";
+    private String imageName = GarageContainer.DEFAULT_IMAGE;
 
     /**
      * Environment variables to set in the service.

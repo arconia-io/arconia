@@ -1,5 +1,7 @@
 package io.arconia.testcontainers.garage;
 
+import java.net.URI;
+
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -24,8 +26,12 @@ public class GarageContainer extends GenericContainer<GarageContainer> {
     public static final int S3_WEB_PORT = 3902;
     public static final int ADMIN_PORT = 3903;
 
+    public static final String DEFAULT_IMAGE = "dxflrs/garage:v2.3.0";
+
     public static final String DEFAULT_REGION = "garage";
+    @SuppressWarnings("java:S6419")
     public static final String DEFAULT_ACCESS_KEY = "GK00000000000000000000000a";
+    @SuppressWarnings("java:S6419")
     public static final String DEFAULT_SECRET_KEY =
             "0000000000000000000000000000000000000000000000000000000000000000";
     public static final String DEFAULT_BUCKET = "arconia";
@@ -97,10 +103,14 @@ public class GarageContainer extends GenericContainer<GarageContainer> {
     private ExecResult exec(String... command) throws Exception {
         var result = execInContainer(command);
         if (result.getExitCode() != 0) {
+            // Truncate to first 3 tokens to avoid leaking credential arguments (e.g. key import).
+            String display = command.length > 3
+                    ? command[0] + " " + command[1] + " " + command[2] + " ..."
+                    : String.join(" ", command);
             throw new IllegalStateException(
                     "Garage command failed (exit %d): %s%nstdout: %s%nstderr: %s".formatted(
                             result.getExitCode(),
-                            String.join(" ", command),
+                            display,
                             result.getStdout(),
                             result.getStderr()));
         }
@@ -142,6 +152,10 @@ public class GarageContainer extends GenericContainer<GarageContainer> {
 
     public String getS3Endpoint() {
         return "http://" + getHost() + ":" + getMappedPort(S3_API_PORT);
+    }
+
+    public URI getS3EndpointUri() {
+        return URI.create(getS3Endpoint());
     }
 
     public Integer getS3Port() {

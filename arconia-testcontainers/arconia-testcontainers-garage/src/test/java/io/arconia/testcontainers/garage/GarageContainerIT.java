@@ -24,15 +24,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class GarageContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse("dxflrs/garage:v2.3.0");
+    private static final DockerImageName IMAGE = DockerImageName.parse(GarageContainer.DEFAULT_IMAGE);
 
     @Test
     void containerStartsAndStopsSuccessfully() {
         try (var container = new GarageContainer(IMAGE)) {
             container.start();
-            assertThat(container.getCurrentContainerInfo().getState().getStatus())
-                    .isEqualTo("running");
-            container.stop();
+            assertThat(container.getS3Endpoint()).startsWith("http://");
+            assertThat(container.getS3Port()).isPositive();
+        }
+    }
+
+    @Test
+    void customCredentialsAcceptedByS3Api() {
+        var customKey = "GK11111111111111111111111a";
+        var customSecret = "1111111111111111111111111111111111111111111111111111111111111111";
+
+        try (var container = new GarageContainer(IMAGE).withCredentials(customKey, customSecret)) {
+            container.start();
+            assertThat(container.getAccessKey()).isEqualTo(customKey);
+            assertThat(container.getSecretKey()).isEqualTo(customSecret);
+
+            try (var s3 = buildClient(container)) {
+                var key = "custom-creds.txt";
+                var body = "custom credentials work";
+                s3.putObject(PutObjectRequest.builder().bucket(container.getDefaultBucket()).key(key).build(),
+                        RequestBody.fromString(body));
+                var fetched = s3.getObjectAsBytes(GetObjectRequest.builder()
+                        .bucket(container.getDefaultBucket()).key(key).build());
+                assertThat(fetched.asString(StandardCharsets.UTF_8)).isEqualTo(body);
+            }
         }
     }
 
