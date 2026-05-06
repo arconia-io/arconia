@@ -54,7 +54,7 @@ class OpenTelemetryGenAiConventionsConverterTests {
     @CsvSource({
             "CHAT, chat",
             "EMBEDDING, embeddings",
-            "IMAGE, generate_content",
+            "IMAGE, image",
             "TEXT_COMPLETION, text_completion",
             "chat, chat",
             "embedding, embeddings",
