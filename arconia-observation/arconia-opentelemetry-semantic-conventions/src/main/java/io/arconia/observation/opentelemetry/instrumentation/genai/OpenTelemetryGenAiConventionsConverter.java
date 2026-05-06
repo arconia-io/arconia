@@ -16,7 +16,7 @@ final class OpenTelemetryGenAiConventionsConverter {
             return switch(aiOperationTypeEnum) {
                 case AiOperationType.CHAT -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.CHAT;
                 case AiOperationType.EMBEDDING -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EMBEDDINGS;
-                case AiOperationType.IMAGE -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.GENERATE_CONTENT;
+                case AiOperationType.IMAGE -> AiOperationType.IMAGE.value();
                 case AiOperationType.TEXT_COMPLETION -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.TEXT_COMPLETION;
                 default -> aiOperationTypeEnum.value();
             };

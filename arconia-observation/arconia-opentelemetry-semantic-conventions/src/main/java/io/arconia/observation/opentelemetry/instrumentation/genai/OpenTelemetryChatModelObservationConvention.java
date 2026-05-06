@@ -13,6 +13,7 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.chat.observation.DefaultChatModelObservationConvention;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.model.tool.StructuredOutputChatOptions;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.json.JsonParser;
@@ -58,12 +59,23 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
     @Override
     public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
+        keyValues = outputType(keyValues, context);
         keyValues = usageCacheWriteInputTokens(keyValues, context);
         keyValues = usageCacheReadInputTokens(keyValues, context);
         // Content
         if (OpenTelemetryGenAiOptions.CaptureContentFormat.SPAN_ATTRIBUTES == openTelemetryGenAiOptions.getInference().getCaptureContent()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
+        }
+        return keyValues;
+    }
+
+    private KeyValues outputType(KeyValues keyValues, ChatModelObservationContext context) {
+        ChatOptions options = context.getRequest().getOptions();
+        if (options instanceof StructuredOutputChatOptions structuredOutputOptions) {
+            var outputType = structuredOutputOptions.getOutputSchema() != null ? GenAiIncubatingAttributes.GenAiOutputTypeIncubatingValues.JSON
+                    : GenAiIncubatingAttributes.GenAiOutputTypeIncubatingValues.TEXT;
+            return keyValues.and(GenAiIncubatingAttributes.GEN_AI_OUTPUT_TYPE.getKey(), outputType);
         }
         return keyValues;
     }
@@ -107,7 +119,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
     // Response
 
     private KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null) {
+        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens() != null) {
             return keyValues.and(
                     GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS.getKey(),
                     String.valueOf(context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens()));
@@ -116,7 +128,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
     }
 
     private KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null) {
+        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheReadInputTokens() != null) {
             return keyValues.and(
                     GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(),
                     String.valueOf(context.getResponse().getMetadata().getUsage().getCacheReadInputTokens()));

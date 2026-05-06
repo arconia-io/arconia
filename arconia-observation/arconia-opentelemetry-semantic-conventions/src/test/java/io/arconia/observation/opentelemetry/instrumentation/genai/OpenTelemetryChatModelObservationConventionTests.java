@@ -10,6 +10,7 @@ import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.json.JSONException;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -25,6 +26,7 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.model.tool.StructuredOutputChatOptions;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.ai.tool.ToolCallback;
@@ -207,6 +209,45 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldHaveOutputTypeJsonWhenStructuredOutputOptionsWithSchema() {
+        TestStructuredOutputChatOptions chatOptions = new TestStructuredOutputChatOptions(
+                """
+                {"type": "object", "properties": {"answer": {"type": "string"}}}""");
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OUTPUT_TYPE.getKey(),
+                        GenAiIncubatingAttributes.GenAiOutputTypeIncubatingValues.JSON));
+    }
+
+    @Test
+    void shouldHaveOutputTypeTextWhenStructuredOutputOptionsWithoutSchema() {
+        TestStructuredOutputChatOptions chatOptions = new TestStructuredOutputChatOptions(null);
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OUTPUT_TYPE.getKey(),
+                        GenAiIncubatingAttributes.GenAiOutputTypeIncubatingValues.TEXT));
+    }
+
+    @Test
+    void shouldNotHaveOutputTypeWhenNotStructuredOutputOptions() {
+        ChatModelObservationContext context = createContext("mistral");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_OUTPUT_TYPE.getKey()));
+    }
+
+    @Test
     void shouldNotIncludeToolDefinitionsWhenDisabled() {
         options.getInference().setIncludeToolDefinitions(false);
 
@@ -264,6 +305,69 @@ class OpenTelemetryChatModelObservationConventionTests {
                 .findFirst()
                 .map(KeyValue::getValue)
                 .orElseThrow(() -> new AssertionError("Key not found: " + key));
+    }
+
+    static class TestStructuredOutputChatOptions implements StructuredOutputChatOptions {
+        private @Nullable String outputSchema;
+
+        TestStructuredOutputChatOptions(@Nullable String outputSchema) {
+            this.outputSchema = outputSchema;
+        }
+
+        @Override
+        public @Nullable String getOutputSchema() {
+            return this.outputSchema;
+        }
+
+        @Override
+        public void setOutputSchema(@Nullable String outputSchema) {
+            this.outputSchema = outputSchema;
+        }
+
+        @Override
+        public @Nullable String getModel() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Double getFrequencyPenalty() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Integer getMaxTokens() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Double getPresencePenalty() {
+            return null;
+        }
+
+        @Override
+        public @Nullable List<String> getStopSequences() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Double getTemperature() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Integer getTopK() {
+            return null;
+        }
+
+        @Override
+        public @Nullable Double getTopP() {
+            return null;
+        }
+
+        @Override
+        public ChatOptions copy() {
+            return new TestStructuredOutputChatOptions(this.outputSchema);
+        }
     }
 
     static class TestUsage implements Usage {
