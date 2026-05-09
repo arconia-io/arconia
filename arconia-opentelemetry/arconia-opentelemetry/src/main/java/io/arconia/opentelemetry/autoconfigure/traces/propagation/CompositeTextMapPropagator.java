@@ -65,13 +65,13 @@ class CompositeTextMapPropagator implements TextMapPropagator {
 		this.injectors = injectors;
 		this.extractors = mutuallyExclusiveExtractors;
 		this.baggagePropagator = baggagePropagator;
-		Set<String> fields = new LinkedHashSet<>();
-		fields(this.injectors).forEach(fields::add);
-		fields(this.extractors).forEach(fields::add);
+		Set<String> initFields = new LinkedHashSet<>();
+		fields(this.injectors).forEach(initFields::add);
+		fields(this.extractors).forEach(initFields::add);
 		if (baggagePropagator != null) {
-			fields.addAll(baggagePropagator.fields());
+			initFields.addAll(baggagePropagator.fields());
 		}
-		this.fields = Collections.unmodifiableSet(fields);
+		this.fields = Collections.unmodifiableSet(initFields);
 	}
 
 	private Stream<String> fields(Collection<TextMapPropagator> propagators) {

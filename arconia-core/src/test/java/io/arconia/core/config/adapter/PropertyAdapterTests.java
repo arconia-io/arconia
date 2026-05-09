@@ -647,7 +647,13 @@ class PropertyAdapterTests {
         when(environment.getProperty("external.custom")).thenReturn("42");
 
         var adapter = PropertyAdapter.builder(environment)
-            .mapProperty("external.custom", "arconia.custom", Integer::parseInt)
+            .mapProperty("external.custom", "arconia.custom", value -> {
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            })
             .build();
 
         assertThat(adapter.getArconiaProperties())
