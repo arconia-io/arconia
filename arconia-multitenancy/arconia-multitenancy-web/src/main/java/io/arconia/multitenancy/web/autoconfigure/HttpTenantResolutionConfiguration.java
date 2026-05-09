@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.multitenancy.core.autoconfigure.FixedTenantResolutionProperties;
 import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
+import io.arconia.multitenancy.core.observability.TenantObservationFilter;
 import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
 import io.arconia.multitenancy.web.context.filters.TenantContextIgnorePathMatcher;
@@ -62,9 +63,10 @@ public final class HttpTenantResolutionConfiguration {
         @ConditionalOnMissingBean
         TenantContextFilter tenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
-                ApplicationEventPublisher eventPublisher, ObjectProvider<TenantVerifier> tenantVerifier) {
+                ApplicationEventPublisher eventPublisher, ObjectProvider<TenantVerifier> tenantVerifier,
+                ObjectProvider<TenantObservationFilter> tenantObservationFilter) {
             return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
-                    tenantVerifier.getIfAvailable());
+                    tenantVerifier.getIfAvailable(), tenantObservationFilter.getIfAvailable());
         }
 
         @Bean

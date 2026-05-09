@@ -7,6 +7,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import io.micrometer.common.KeyValue;
+
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.filter.ServerHttpObservationFilter;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -23,6 +26,8 @@ import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
 import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
 import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
+import io.arconia.multitenancy.core.observability.Cardinality;
+import io.arconia.multitenancy.core.observability.TenantObservationFilter;
 import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 
@@ -43,11 +48,14 @@ public final class TenantContextFilter extends OncePerRequestFilter {
     @Nullable
     private final TenantVerifier tenantVerifier;
 
+    @Nullable
+    private final TenantObservationFilter tenantObservationFilter;
+
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
             TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, ApplicationEventPublisher eventPublisher,
-            @Nullable TenantVerifier tenantVerifier) {
+            @Nullable TenantVerifier tenantVerifier, @Nullable TenantObservationFilter tenantObservationFilter) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
         Assert.notNull(tenantContextIgnorePathMatcher, "ignorePathMatcher cannot be null");
         Assert.notNull(eventPublisher, "eventPublisher cannot be null");
@@ -55,6 +63,7 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
         this.eventPublisher = eventPublisher;
         this.tenantVerifier = tenantVerifier;
+        this.tenantObservationFilter = tenantObservationFilter;
     }
 
     @Override
@@ -74,6 +83,17 @@ public final class TenantContextFilter extends OncePerRequestFilter {
                 handleTenantVerificationException(response, exception.getMessage());
                 return;
             }
+        }
+
+        if (tenantObservationFilter != null) {
+            ServerHttpObservationFilter.findObservationContext(request).ifPresent(ctx -> {
+                var keyValue = KeyValue.of(tenantObservationFilter.getTenantIdentifierKey(), tenantIdentifier);
+                if (tenantObservationFilter.getCardinality() == Cardinality.LOW) {
+                    ctx.addLowCardinalityKeyValue(keyValue);
+                } else {
+                    ctx.addHighCardinalityKeyValue(keyValue);
+                }
+            });
         }
 
         try {

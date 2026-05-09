@@ -4,8 +4,6 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationFilter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
@@ -17,8 +15,6 @@ import io.arconia.multitenancy.core.context.TenantContext;
  */
 @Incubating
 public final class TenantObservationFilter implements ObservationFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(TenantObservationFilter.class);
 
     static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
 
@@ -37,6 +33,14 @@ public final class TenantObservationFilter implements ObservationFilter {
         this.cardinality = cardinality;
     }
 
+    public String getTenantIdentifierKey() {
+        return tenantIdentifierKey;
+    }
+
+    public Cardinality getCardinality() {
+        return cardinality;
+    }
+
     @Override
     public Observation.Context map(Observation.Context context) {
         var tenantIdentifier = TenantContext.getTenantIdentifier();
@@ -44,13 +48,10 @@ public final class TenantObservationFilter implements ObservationFilter {
             return context;
         }
 
-        logger.trace("Enhancing observation with tenant context for: {}", tenantIdentifier);
-
         var keyValue = KeyValue.of(tenantIdentifierKey, tenantIdentifier);
         if (cardinality == Cardinality.LOW) {
             context.addLowCardinalityKeyValue(keyValue);
-        }
-        else {
+        } else {
             context.addHighCardinalityKeyValue(keyValue);
         }
 

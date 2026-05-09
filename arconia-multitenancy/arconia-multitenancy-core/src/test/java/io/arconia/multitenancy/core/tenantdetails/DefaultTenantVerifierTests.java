@@ -21,6 +21,34 @@ class DefaultTenantVerifierTests {
     }
 
     @Test
+    void whenNullTenantIdentifierThenThrow() {
+        var service = Mockito.mock(TenantDetailsService.class);
+        var verifier = new DefaultTenantVerifier(service);
+
+        assertThatThrownBy(() -> verifier.verify(null)).isInstanceOf(TenantVerificationException.class)
+            .hasMessageContaining("The tenant identifier must contain only alphanumeric characters, dashes (-), and underscores (_)");
+    }
+
+    @Test
+    void whenTenantIdentifierContainsInvalidCharactersThenThrow() {
+        var service = Mockito.mock(TenantDetailsService.class);
+        var verifier = new DefaultTenantVerifier(service);
+
+        assertThatThrownBy(() -> verifier.verify("acme\nmalicious")).isInstanceOf(TenantVerificationException.class)
+            .hasMessageContaining("The tenant identifier must contain only alphanumeric characters, dashes (-), and underscores (_)");
+    }
+
+    @Test
+    void whenTenantIdentifierContainsAlphanumericDashUnderscoreThenPass() {
+        var tenant = Tenant.builder().identifier("acme-corp_2").enabled(true).build();
+        var service = Mockito.mock(TenantDetailsService.class);
+        when(service.loadTenantByIdentifier("acme-corp_2")).thenReturn(tenant);
+        var verifier = new DefaultTenantVerifier(service);
+
+        assertThatNoException().isThrownBy(() -> verifier.verify("acme-corp_2"));
+    }
+
+    @Test
     void whenTenantExistsAndEnabledThenPass() {
         var tenant = Tenant.builder().identifier("acme").enabled(true).build();
         var service = Mockito.mock(TenantDetailsService.class);
