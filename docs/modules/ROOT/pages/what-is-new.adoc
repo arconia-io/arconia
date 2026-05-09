@@ -7,6 +7,14 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
+=== General
+
+* Dev services within the same category are now mutually exclusive. If more than one is active at the same time, the application fails at startup with a clear error message indicating which services are in conflict and how to resolve it. The following groups are enforced:
+** *JDBC*: MariaDB, MySQL, Oracle, Oracle XE, PostgreSQL;
+** *MongoDB*: MongoDB, MongoDB Atlas;
+** *OpenTelemetry*: Grafana LGTM, OpenLit, OpenTelemetry Collector, Arize Phoenix;
+** *Redis*: Redis, Valkey.
+
 === OpenLit
 
 * A new OpenLit Dev Service has been introduced providing an https://openlit.io[OpenLit] instance, an open-source AI observability and evaluation platform. It works with Spring AI and xref:opentelemetry:index.adoc[Arconia OpenTelemetry]. Learn more about this new Dev Service in the xref:dev-services:openlit.adoc[dedicated documentation].

@@ -8,6 +8,11 @@ It works with Spring Boot libraries that support MariaDB via JDBC, including:
 * https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
 * https://spring.io/projects/spring-data-jpa[Spring Data JPA]
 
+[NOTE]
+====
+This Dev Service is mutually exclusive with other JDBC dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
+====
+
 == Dependencies
 
 include::partial$dependencies.adoc[]

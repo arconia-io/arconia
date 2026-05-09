@@ -14,7 +14,7 @@ Since Phoenix only supports OpenTelemetry traces, when the Dev Service is enable
 
 [NOTE]
 ====
-The Dev Service for Arize Phoenix is mutually exclusive with the Dev Service for xref:lgtm.adoc[Grafana LGTM] and xref:otel-collector.adoc[OpenTelemetry Collector], as they all integrate with OpenTelemetry. If more than one of those Dev Services is included in the project dependencies, ensure you only enable one of them via configuration properties (`arconia.dev.services.<name>.enabled`).
+This Dev Service is mutually exclusive with other OpenTelemetry dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
 ====
 
 == Dependencies

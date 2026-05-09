@@ -105,7 +105,7 @@ Maven::
 ----
 ======
 
-NOTE: Arconia also provides the xref:dev-services:phoenix.adoc[Arize Phoenix Dev Service] if you're looking for an AI Observability and Evaluation platform based on OpenTelemetry.
+NOTE: Other OpenTelemetry dev services are available. Refer to xref:dev-services:index.adoc[Arconia Dev Services] for all options.
 
 === Running the Application
 

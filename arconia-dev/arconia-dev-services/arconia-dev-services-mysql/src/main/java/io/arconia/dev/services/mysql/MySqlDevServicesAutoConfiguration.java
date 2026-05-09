@@ -3,9 +3,12 @@ package io.arconia.dev.services.mysql;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
+import io.arconia.dev.services.api.provider.DevServiceCategories;
+import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
@@ -20,6 +23,11 @@ import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.MySqlDevS
 @EnableConfigurationProperties(MySqlDevServicesProperties.class)
 @Import(MySqlDevServicesRegistrar.class)
 public final class MySqlDevServicesAutoConfiguration {
+
+    @Bean
+    DevServiceProvider mySqlDevServiceProvider() {
+        return DevServiceProvider.of("mysql", DevServiceCategories.JDBC);
+    }
 
     static class MySqlDevServicesRegistrar extends DevServicesRegistrar {
 

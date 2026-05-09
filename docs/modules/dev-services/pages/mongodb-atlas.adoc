@@ -9,6 +9,11 @@ It works with Spring Boot libraries that support MongoDB Atlas including:
 * https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
 * https://spring.io/projects/spring-session[Spring Session for MongoDB]
 
+[NOTE]
+====
+This Dev Service is mutually exclusive with other MongoDB dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
+====
+
 == Dependencies
 
 include::partial$dependencies.adoc[]

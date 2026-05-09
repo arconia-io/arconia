@@ -3,9 +3,13 @@ package io.arconia.dev.services.postgresql;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
+
+import io.arconia.dev.services.api.provider.DevServiceCategories;
+import io.arconia.dev.services.api.provider.DevServiceProvider;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -21,6 +25,11 @@ import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration
 @EnableConfigurationProperties(PostgresqlDevServicesProperties.class)
 @Import(PostgresqlDevServicesRegistrar.class)
 public final class PostgresqlDevServicesAutoConfiguration {
+
+    @Bean
+    DevServiceProvider postgresqlDevServiceProvider() {
+        return DevServiceProvider.of("postgresql", DevServiceCategories.JDBC);
+    }
 
     static class PostgresqlDevServicesRegistrar extends DevServicesRegistrar {
 
