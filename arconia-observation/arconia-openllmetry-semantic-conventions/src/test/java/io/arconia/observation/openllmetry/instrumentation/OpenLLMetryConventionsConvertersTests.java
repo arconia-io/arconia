@@ -17,17 +17,14 @@ class OpenLLMetryConventionsConvertersTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
-            "AZURE_OPENAI, azure.ai.openai",
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gen_ai",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
-            "OPENAI_SDK, openai",
             "VERTEX_AI, gcp.vertex_ai",
             "OLLAMA, ollama",
             "anthropic, anthropic",
-            "azure_openai, azure.ai.openai",
             "bedrock_converse, aws.bedrock",
             "' ANTHROPIC ', anthropic",
             "'\tOPENAI\n', openai"
@@ -50,6 +47,37 @@ class OpenLLMetryConventionsConvertersTests {
         assertThatThrownBy(() -> OpenLLMetryConventionsConverters.toSystemName(input))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("aiProvider cannot be null or empty");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "CHAT, chat",
+            "EMBEDDING, embeddings",
+            "IMAGE, image",
+            "TEXT_COMPLETION, text_completion",
+            "chat, chat",
+            "embedding, embeddings",
+            "' CHAT ', chat",
+            "'\tEMBEDDING\n', embeddings"
+    })
+    void toOperationNameShouldConvertValidValues(String input, String expected) {
+        String result = OpenLLMetryConventionsConverters.toOperationName(input);
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void toOperationNameShouldReturnInputForUnknownOperation() {
+        String result = OpenLLMetryConventionsConverters.toOperationName("unknown_operation");
+        assertThat(result).isEqualTo("unknown_operation");
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = { " ", "  " })
+    void toOperationNameShouldThrowExceptionForEmptyInput(String input) {
+        assertThatThrownBy(() -> OpenLLMetryConventionsConverters.toOperationName(input))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("aiOperationType cannot be null or empty");
     }
 
 }

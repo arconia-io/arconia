@@ -14,49 +14,48 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenLLMetryAdvisorObservationConventionTests {
 
-    private final OpenLLMetryAdvisorObservationConvention observationConvention
+    private final OpenLLMetryAdvisorObservationConvention convention
             = new OpenLLMetryAdvisorObservationConvention();
 
     @Test
     void shouldHaveName() {
-        assertThat(observationConvention.getName())
+        assertThat(convention.getName())
                 .isEqualTo(OpenLLMetryAdvisorObservationConvention.DEFAULT_NAME);
     }
 
     @Test
     void contextualNameAdvisorNameHasNoSuffix() {
-        var context = AdvisorObservationContext.builder()
-                .advisorName("call")
-                .chatClientRequest(ChatClientRequest.builder()
-                        .prompt(Prompt.builder().content("Hello").build())
-                        .build())
-                .build();
-        assertThat(observationConvention.getContextualName(context)).isEqualTo("call");
+        var context = createContext("call");
+
+        assertThat(convention.getContextualName(context)).isEqualTo("call");
     }
 
     @Test
     void contextualNameAdvisorNameHasSuffix() {
-        var context = AdvisorObservationContext.builder()
-                .advisorName("call_advisor")
-                .chatClientRequest(ChatClientRequest.builder()
-                        .prompt(Prompt.builder().content("Hello").build())
-                        .build())
-                .build();
-        assertThat(observationConvention.getContextualName(context)).isEqualTo("call");
+        var context = createContext("call_advisor");
+
+        assertThat(convention.getContextualName(context)).isEqualTo("call");
     }
 
     @Test
     void shouldHaveLowCardinalityKeyValues() {
-        var context = AdvisorObservationContext.builder()
-                .advisorName("call")
+        var context = createContext("call");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, "task"),
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "call")
+        );
+    }
+
+    // Helpers
+
+    private AdvisorObservationContext createContext(String advisorName) {
+        return AdvisorObservationContext.builder()
+                .advisorName(advisorName)
                 .chatClientRequest(ChatClientRequest.builder()
                         .prompt(Prompt.builder().content("Hello").build())
                         .build())
                 .build();
-
-        assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
-                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, "task")
-        );
     }
 
 }

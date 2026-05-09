@@ -10,9 +10,6 @@ import org.springframework.util.Assert;
 
 public final class OpenTelemetryToolCallingModelObservationConvention extends DefaultToolCallingObservationConvention {
 
-    private static final KeyValue OPERATION_NAME = KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(),
-            GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EXECUTE_TOOL);
-
     private static final KeyValue TOOL_CALL_RESULT_NONE = KeyValue
             .of(GenAiMoreIncubatingAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(), KeyValue.NONE_VALUE);
 
@@ -35,11 +32,6 @@ public final class OpenTelemetryToolCallingModelObservationConvention extends De
     @Override
     public KeyValues getLowCardinalityKeyValues(ToolCallingObservationContext context) {
         return KeyValues.of(aiOperationType(context), toolType(context), toolDefinitionName(context));
-    }
-
-    @Override
-    protected KeyValue aiOperationType(ToolCallingObservationContext context) {
-        return OPERATION_NAME;
     }
 
     @Override

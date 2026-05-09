@@ -46,8 +46,8 @@ public final class OpenLLMetryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(EmbeddingModelObservationConvention.class)
-    OpenLLMetryEmbeddingModelObservationConvention embeddingModelObservationConvention(OpenLLMetryProperties properties) {
-        return new OpenLLMetryEmbeddingModelObservationConvention(properties);
+    OpenLLMetryEmbeddingModelObservationConvention embeddingModelObservationConvention() {
+        return new OpenLLMetryEmbeddingModelObservationConvention();
     }
 
     @Bean

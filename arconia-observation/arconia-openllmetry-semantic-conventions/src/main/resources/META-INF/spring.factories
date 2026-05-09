@@ -1,3 +1,0 @@
-# Environment Post Processors
-org.springframework.boot.EnvironmentPostProcessor=\
-io.arconia.observation.openllmetry.autoconfigure.OpenLLMetryEnvironmentPostProcessor

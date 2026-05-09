@@ -5,32 +5,63 @@ package io.arconia.observation.openllmetry.instrumentation;
  */
 public class OpenLLMetryOptions {
 
-    public static final String REDACTED_PLACEHOLDER = "__REDACTED__";
+    private final Inference inference = new Inference();
 
-    /**
-     * Whether to include input and output content in traces.
-     */
-    private boolean traceContent = true;
+    private final ToolExecution toolExecution = new ToolExecution();
 
-    /**
-     * Whether to include tool definitions in traces.
-     */
-    private boolean includeToolDefinitions = true;
-
-    public boolean isTraceContent() {
-        return traceContent;
+    public Inference getInference() {
+        return inference;
     }
 
-    public void setTraceContent(boolean traceContent) {
-        this.traceContent = traceContent;
+    public ToolExecution getToolExecution() {
+        return toolExecution;
     }
 
-    public boolean isIncludeToolDefinitions() {
-        return includeToolDefinitions;
+    public static class Inference {
+
+        /**
+         * Whether to include input and output message content in an inference observation.
+         */
+        private boolean includeContent = true;
+
+        /**
+         * Whether to include the tool definitions in an inference observation.
+         */
+        private boolean includeToolDefinitions = true;
+
+        public boolean isIncludeContent() {
+            return includeContent;
+        }
+
+        public void setIncludeContent(boolean includeContent) {
+            this.includeContent = includeContent;
+        }
+
+        public boolean isIncludeToolDefinitions() {
+            return includeToolDefinitions;
+        }
+
+        public void setIncludeToolDefinitions(boolean includeToolDefinitions) {
+            this.includeToolDefinitions = includeToolDefinitions;
+        }
+
     }
 
-    public void setIncludeToolDefinitions(boolean includeToolDefinitions) {
-        this.includeToolDefinitions = includeToolDefinitions;
+    public static class ToolExecution {
+
+        /**
+         * Whether to include the tool content (arguments and result) in a tool execution observation.
+         */
+        private boolean includeContent = true;
+
+        public boolean isIncludeContent() {
+            return includeContent;
+        }
+
+        public void setIncludeContent(boolean includeContent) {
+            this.includeContent = includeContent;
+        }
+
     }
 
 }

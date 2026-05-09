@@ -60,8 +60,6 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
     public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
         keyValues = outputType(keyValues, context);
-        keyValues = usageCacheWriteInputTokens(keyValues, context);
-        keyValues = usageCacheReadInputTokens(keyValues, context);
         // Content
         if (OpenTelemetryGenAiOptions.CaptureContentFormat.SPAN_ATTRIBUTES == openTelemetryGenAiOptions.getInference().getCaptureContent()) {
             keyValues = inputMessages(keyValues, context);
@@ -114,28 +112,6 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
         }
 
         return keyValues.and(GenAiMoreIncubatingAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(), JsonParser.toJson(toolDefinitions));
-    }
-
-    // Response
-
-    @Override
-    protected KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens() != null) {
-            return keyValues.and(
-                    GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS.getKey(),
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens()));
-        }
-        return keyValues;
-    }
-
-    @Override
-    protected KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheReadInputTokens() != null) {
-            return keyValues.and(
-                    GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(),
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getCacheReadInputTokens()));
-        }
-        return keyValues;
     }
 
     // Content

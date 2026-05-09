@@ -1,14 +1,18 @@
 package io.arconia.observation.openllmetry.instrumentation;
 
+import java.util.List;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+
+import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.util.json.JsonParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -25,22 +29,34 @@ public class OpenLLMetryChatClientObservationConvention extends DefaultChatClien
         this.openLLMetryOptions = openLLMetryOptions;
     }
 
-    protected KeyValue aiOperationType(ChatClientObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.SPAN_KIND_WORKFLOW);
+    // LOW CARDINALITY
+
+    @Override
+    public KeyValues getLowCardinalityKeyValues(ChatClientObservationContext context) {
+        return super.getLowCardinalityKeyValues(context)
+                .and(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "chat_client");
     }
 
     @Override
+    protected KeyValue aiOperationType(ChatClientObservationContext context) {
+        return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TraceloopSpanKind.WORKFLOW.getValue());
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
     public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
-        var keyValues = KeyValues.empty();
-        keyValues = advisors(keyValues, context);
-        keyValues = associationProperties(keyValues, context);
-        keyValues = entityInput(keyValues, context);
-        keyValues = entityOutput(keyValues, context);
-        keyValues = tools(keyValues, context);
+        var keyValues = super.getHighCardinalityKeyValues(context);
+        // Content
+        if (openLLMetryOptions.getInference().isIncludeContent()) {
+            keyValues = entityInput(keyValues, context);
+            keyValues = entityOutput(keyValues, context);
+        }
         return keyValues;
     }
 
-    protected KeyValues associationProperties(KeyValues keyValues, ChatClientObservationContext context) {
+    @Override
+    protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
         if (CollectionUtils.isEmpty(context.getRequest().context())) {
             return keyValues;
         }
@@ -51,45 +67,30 @@ public class OpenLLMetryChatClientObservationConvention extends DefaultChatClien
             return keyValues;
         }
 
-        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES + ".conversation_id",
+        return keyValues.and(
+                GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(),
                 conversationId);
     }
 
-    private KeyValues entityInput(KeyValues keyValues, ChatClientObservationContext context) {
-        String userInput = context.getRequest().prompt().getUserMessage().getText();
+    // Content
 
-        if (!StringUtils.hasText(userInput)) {
+    private KeyValues entityInput(KeyValues keyValues, ChatClientObservationContext context) {
+        List<Message> messages = context.getRequest().prompt().getInstructions();
+        if (CollectionUtils.isEmpty(messages)) {
             return keyValues;
         }
 
-        if (!openLLMetryOptions.isTraceContent()) {
-            return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, OpenLLMetryOptions.REDACTED_PLACEHOLDER);
-        }
-
-        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, userInput);
+        var inputMessages = OpenTelemetryGenAiContent.fromMessages(messages);
+        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, JsonParser.toJson(inputMessages));
     }
 
     private KeyValues entityOutput(KeyValues keyValues, ChatClientObservationContext context) {
-        if (context.getResponse() == null || context.getResponse().chatResponse() == null) {
+        if (context.getResponse() == null || CollectionUtils.isEmpty(context.getResponse().chatResponse().getResults())) {
             return keyValues;
         }
 
-        ChatResponse chatResponse = context.getResponse().chatResponse();
-        Generation result = chatResponse.getResult();
-        if (result == null) {
-            return keyValues;
-        }
-
-        String outputText = result.getOutput().getText();
-        if (!StringUtils.hasText(outputText)) {
-            return keyValues;
-        }
-
-        if (!openLLMetryOptions.isTraceContent()) {
-            return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, OpenLLMetryOptions.REDACTED_PLACEHOLDER);
-        }
-
-        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, outputText);
+        var outputMessages = OpenTelemetryGenAiContent.fromGenerations(context.getResponse().chatResponse().getResults());
+        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, JsonParser.toJson(outputMessages));
     }
 
 }

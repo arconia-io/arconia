@@ -1,10 +1,10 @@
 = OpenLLMetry Semantic Conventions
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://github.com/traceloop/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop] and other OpenTelemetry-compatible backends.
+Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop], https://langfuse.com[Langfuse], https://www.dash0.com[Dash0], and other OpenTelemetry-compatible backends.
 
 [WARNING]
 ====
-The https://github.com/traceloop/openllmetry[OpenLLMetry Semantic Conventions] are still experimental, and they might change in the future.
+The https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] are still experimental, and they might change in the future.
 ====
 
 == Getting Started
@@ -57,42 +57,70 @@ Maven::
 ----
 ======
 
+=== Traceloop
+
+Configure the OTLP exporter to send traces to https://www.traceloop.com[Traceloop], making sure you defined your Traceloop API Key in a `TRACELOOP_API_KEY` environment variable:
+
+[source,properties]
+----
+arconia.otel.exporter.otlp.endpoint=https://api.traceloop.com
+arconia.otel.exporter.otlp.headers=Authorization=Bearer ${TRACELOOP_API_KEY}
+----
+
+Alternatively, you can use the standard OpenTelemetry environment variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_ENDPOINT=https://api.traceloop.com
+OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-traceloop-api-key>"
+----
+
+Since Traceloop supports only traces, you might want to disable the export of logs and metrics:
+
+[source,properties]
+----
+arconia.otel.logs.exporter.type=none
+arconia.otel.metrics.exporter.type=none
+----
+
 == Features
 
-The module provides semantic conventions for the following observation types:
+The module provides OpenLLMetry-compatible semantic conventions for all Spring AI observation types.
 
-* Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences) using standard `gen_ai.*` attributes.
-* Embedding model spans with dimension tracking.
-* Tool execution spans with `traceloop.entity.input` and `traceloop.entity.output` attributes.
-* Chat client observations with workflow tracking via `traceloop.span.kind` and conversation ID via `traceloop.association.properties`.
-* Token usage metrics (`gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.usage.total_tokens`).
-* Input/output message content, captured as JSON in `traceloop.entity.input` and `traceloop.entity.output` span attributes.
+* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Embedding model spans.
+* Tool execution spans with input/output content.
+* Chat client spans with session tracking and input/output content.
+* Token usage for inference operations.
+* Input/output message content, captured as span events.
+* Workflow and task spans.
 
 Content capturing is enabled by default, matching the behavior of the official OpenLLMetry SDKs.
 
 == Configuration Properties
 
-.OpenLLMetry Configuration Properties
+=== Inference
+
+.OpenLLMetry Inference Configuration Properties
 |===
 |Property |Default |Description
 
-|	`arconia.observations.conventions.openllmetry.trace-content`
+|	`arconia.observations.conventions.openllmetry.inference.include-content`
 |	`true`
-|	Whether to include input and output content in traces (messages, tool arguments, tool results).
+|	Whether to include input and output message content in inference observations.
 
-|	`arconia.observations.conventions.openllmetry.include-tool-definitions`
+|	`arconia.observations.conventions.openllmetry.inference.include-tool-definitions`
 |	`true`
-|	Whether to include tool definitions in traces.
+|	Whether to include tool definitions in inference observations.
 |===
 
-== Environment Variables
+=== Tool Execution
 
-Arconia supports the https://www.traceloop.com/docs/openllmetry/configuration[OpenLLMetry/Traceloop environment variables] for configuring the OpenLLMetry semantic conventions. If both the environment variables and the Arconia configuration properties are set, the environment variables will take precedence.
-
-.Supported Environment Variables
+.OpenLLMetry Tool Execution Configuration Properties
 |===
-|Environment Variable |Description
+|Property |Default |Description
 
-|	`TRACELOOP_TRACE_CONTENT`
-|	Whether to capture trace content (`true` or `false`). Maps to `arconia.observations.conventions.openllmetry.trace-content`.
+|	`arconia.observations.conventions.openllmetry.tool-execution.include-content`
+|	`true`
+|	Whether to include tool content (arguments and result) in tool execution observations.
 |===

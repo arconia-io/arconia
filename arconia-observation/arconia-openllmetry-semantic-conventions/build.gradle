@@ -12,6 +12,7 @@ dependencies {
     api project(":arconia-spring-boot")
     api project(":arconia-observation:arconia-observation")
     api "org.springframework.ai:spring-ai-model"
+    api "io.opentelemetry.semconv:opentelemetry-semconv-incubating:${openTelemetrySemanticConventionsVersion}-alpha"
 
     implementation "tools.jackson.core:jackson-databind"
 

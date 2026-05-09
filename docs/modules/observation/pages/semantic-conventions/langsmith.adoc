@@ -61,8 +61,8 @@ Then, configure the OTLP exporter to send traces to LangSmith, making sure you d
 
 [source,properties]
 ----
-otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel
-otel.exporter.otlp.headers=x-api-key=${LANGSMITH_API_KEY}
+arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel
+arconia.otel.exporter.otlp.headers=x-api-key=${LANGSMITH_API_KEY}
 ----
 
 For US-hosted LangSmith, use `https://api.smith.langchain.com/otel` as the endpoint.
@@ -73,6 +73,14 @@ Alternatively, you can use the standard OpenTelemetry Environment Variables:
 ----
 OTEL_EXPORTER_OTLP_ENDPOINT=https://eu.api.smith.langchain.com/otel
 OTEL_EXPORTER_OTLP_HEADERS="x-api-key=<your-langsmith-api-key>"
+----
+
+Since Langsmith supports only traces, you might want to disable the export of logs and metrics:
+
+[source,properties]
+----
+arconia.otel.logs.exporter.type=none
+arconia.otel.metrics.exporter.type=none
 ----
 
 == Features

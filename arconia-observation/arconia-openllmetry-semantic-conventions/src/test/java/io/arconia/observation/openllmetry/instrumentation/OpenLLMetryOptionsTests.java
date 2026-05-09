@@ -13,19 +13,22 @@ class OpenLLMetryOptionsTests {
     void shouldCreateInstanceWithDefaultValues() {
         OpenLLMetryOptions options = new OpenLLMetryOptions();
 
-        assertThat(options.isTraceContent()).isTrue();
-        assertThat(options.isIncludeToolDefinitions()).isTrue();
+        assertThat(options.getInference().isIncludeContent()).isTrue();
+        assertThat(options.getInference().isIncludeToolDefinitions()).isTrue();
+        assertThat(options.getToolExecution().isIncludeContent()).isTrue();
     }
 
     @Test
     void shouldUpdateValues() {
         OpenLLMetryOptions options = new OpenLLMetryOptions();
 
-        options.setTraceContent(false);
-        options.setIncludeToolDefinitions(false);
+        options.getInference().setIncludeContent(false);
+        options.getInference().setIncludeToolDefinitions(false);
+        options.getToolExecution().setIncludeContent(false);
 
-        assertThat(options.isTraceContent()).isFalse();
-        assertThat(options.isIncludeToolDefinitions()).isFalse();
+        assertThat(options.getInference().isIncludeContent()).isFalse();
+        assertThat(options.getInference().isIncludeToolDefinitions()).isFalse();
+        assertThat(options.getToolExecution().isIncludeContent()).isFalse();
     }
 
 }

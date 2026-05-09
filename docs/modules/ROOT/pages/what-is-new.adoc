@@ -18,3 +18,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === OpenLit
 
 * A new OpenLit Dev Service has been introduced providing an https://openlit.io[OpenLit] instance, an open-source AI observability and evaluation platform. It works with Spring AI and xref:opentelemetry:index.adoc[Arconia OpenTelemetry]. Learn more about this new Dev Service in the xref:dev-services:openlit.adoc[dedicated documentation].
+
+== Observability
+
+=== OpenLLMetry Semantic Conventions
+
+* A new `arconia-openllmetry-semantic-conventions` module was introduced, providing support for exporting traces to https://www.traceloop.com[Traceloop] and other AI observability platforms supporting https://traceloop.com/docs/openllmetry[OpenLLMetry] via OpenTelemetry.
+* Support for the experimental https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions for Generative AI], including chat model, embedding model, and tool execution spans; token usage metrics; input/output message content capturing.

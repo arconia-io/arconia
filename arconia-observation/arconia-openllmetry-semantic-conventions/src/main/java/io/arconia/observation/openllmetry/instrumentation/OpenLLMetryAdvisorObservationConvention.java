@@ -1,6 +1,7 @@
 package io.arconia.observation.openllmetry.instrumentation;
 
 import io.micrometer.common.KeyValue;
+import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
@@ -13,8 +14,15 @@ import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObse
  */
 public class OpenLLMetryAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
 
+    @Override
+    public KeyValues getLowCardinalityKeyValues(AdvisorObservationContext context) {
+        return super.getLowCardinalityKeyValues(context)
+                .and(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, context.getAdvisorName());
+    }
+
+    @Override
     protected KeyValue aiOperationType(AdvisorObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.SPAN_KIND_TASK);
+        return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TraceloopSpanKind.TASK.getValue());
     }
 
 }
