@@ -110,8 +110,12 @@ jobs:
 
       - name: Trigger documentation update
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: arconia-io/arconia-docs
-          event-type: docs-update
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/arconia-io/arconia-docs/dispatches \
+            -f event_type='docs-update'
