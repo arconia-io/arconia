@@ -82,6 +82,7 @@ Want to verify which Dev Services are running? If Spring Boot Actuator is in you
 ** xref:rabbitmq.adoc[RabbitMQ]
 * Observability
 ** xref:lgtm.adoc[Grafana LGTM]
+** xref:openlit.adoc[OpenLit]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]

@@ -1,0 +1,101 @@
+= OpenLit
+:service-name: openlit
+
+A service providing https://openlit.io[OpenLit], an AI Observability and Evaluation platform based on OpenTelemetry, for development and testing purposes. It consists of:
+
+* https://openlit.io[OpenLit] for visualizing and exploring telemetry data from AI applications.
+* https://opentelemetry.io/docs/collector[OpenTelemetry Collector] for collecting telemetry data from your application using OTLP.
+* https://clickhouse.com[ClickHouse] as the backend database for storing telemetry data.
+
+It works with Spring Boot libraries that support OpenTelemetry, including:
+
+* xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+[NOTE]
+====
+Since OpenLit does not support OpenTelemetry logs, when the Dev Service is enabled, the export of OpenTelemetry logs is disabled unless explicitly configured.
+====
+
+[NOTE]
+====
+The Dev Service for OpenLit is mutually exclusive with the Dev Service for xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], and xref:phoenix.adoc[Arize Phoenix], as they all integrate with OpenTelemetry. If more than one of those Dev Services is included in the project dependencies, ensure you only enable one of them via configuration properties (`arconia.dev.services.<name>.enabled`).
+====
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
+
+== Accessing OpenLit
+
+The application logs will show you the URL where you can access the OpenLit UI.
+
+[source,logs]
+----
+...i.a.t.openlit.OpenLitContainer            : OpenLit UI: http://localhost:<port>
+----
+
+By default, metrics and traces are exported via OTLP using the HTTP/Protobuf format.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+|`arconia.dev.services.{service-name}.image-name`
+| `ghcr.io/openlit/openlit:1.20.0`
+| Full name of the container image used for OpenLit.
+
+|`arconia.dev.services.{service-name}.clickhouse-image-name`
+| `clickhouse/clickhouse-server:26.4-distroless`
+| Full name of the container image used for the internal ClickHouse instance.
+
+|`arconia.dev.services.{service-name}.environment`
+| `{}`
+| Environment variables to set in the container.
+
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
+
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the OpenLit UI port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `120s`
+| Maximum waiting time for the service to start.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+| `arconia.dev.services.{service-name}.otlp-grpc-port`
+| `0`
+| Fixed port for exposing the OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.otlp-http-port`
+| `0`
+| Fixed port for exposing the OTLP HTTP port to the host. When it's 0 (default), a random available port is assigned dynamically.
+|===
+
+include::partial$disabling-dev-service.adoc[]

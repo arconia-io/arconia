@@ -16,6 +16,7 @@
 ** xref:rabbitmq.adoc[RabbitMQ]
 * Observability
 ** xref:lgtm.adoc[Grafana LGTM]
+** xref:openlit.adoc[OpenLit]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]
