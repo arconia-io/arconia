@@ -65,8 +65,13 @@ public final class HttpTenantResolutionConfiguration {
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
                 ApplicationEventPublisher eventPublisher, ObjectProvider<TenantVerifier> tenantVerifier,
                 ObjectProvider<TenantObservationFilter> tenantObservationFilter) {
-            return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
-                    tenantVerifier.getIfAvailable(), tenantObservationFilter.getIfAvailable());
+            return TenantContextFilter.builder()
+                .httpRequestTenantResolver(httpRequestTenantResolver)
+                .tenantContextIgnorePathMatcher(tenantContextIgnorePathMatcher)
+                .eventPublisher(eventPublisher)
+                .tenantVerifier(tenantVerifier.getIfAvailable())
+                .tenantObservationFilter(tenantObservationFilter.getIfAvailable())
+                .build();
         }
 
         @Bean

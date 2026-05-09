@@ -53,7 +53,7 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
-    public TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
+    private TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
             TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, ApplicationEventPublisher eventPublisher,
             @Nullable TenantVerifier tenantVerifier, @Nullable TenantObservationFilter tenantObservationFilter) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
@@ -128,6 +128,58 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().write(jsonMapper.writeValueAsString(problemDetail));
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private HttpRequestTenantResolver httpRequestTenantResolver;
+
+        private TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
+
+        private ApplicationEventPublisher eventPublisher;
+
+        @Nullable
+        private TenantVerifier tenantVerifier;
+
+        @Nullable
+        private TenantObservationFilter tenantObservationFilter;
+
+        private Builder() {}
+
+        public Builder httpRequestTenantResolver(HttpRequestTenantResolver httpRequestTenantResolver) {
+            this.httpRequestTenantResolver = httpRequestTenantResolver;
+            return this;
+        }
+
+        public Builder tenantContextIgnorePathMatcher(TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher) {
+            this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
+            return this;
+        }
+
+        public Builder eventPublisher(ApplicationEventPublisher eventPublisher) {
+            this.eventPublisher = eventPublisher;
+            return this;
+        }
+
+        public Builder tenantVerifier(@Nullable TenantVerifier tenantVerifier) {
+            this.tenantVerifier = tenantVerifier;
+            return this;
+        }
+
+        public Builder tenantObservationFilter(@Nullable TenantObservationFilter tenantObservationFilter) {
+            this.tenantObservationFilter = tenantObservationFilter;
+            return this;
+        }
+
+        public TenantContextFilter build() {
+            return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
+                    tenantVerifier, tenantObservationFilter);
+        }
+
     }
 
 }
