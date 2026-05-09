@@ -127,7 +127,7 @@ class DevServicesRegistrarTests {
 
     @Test
     void setDefaultPropertyAddsToDefaultPropertiesSource() {
-        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
         registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
 
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:test");
@@ -141,7 +141,7 @@ class DevServicesRegistrarTests {
         MutablePropertySources sources = environment.getPropertySources();
         sources.addFirst(new MapPropertySource("userConfig", Map.of("spring.datasource.url", "jdbc:postgresql://user-host/db")));
 
-        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
         registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
 
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:default");
@@ -154,7 +154,7 @@ class DevServicesRegistrarTests {
         // Pre-populate DefaultPropertiesPropertySource with a value
         DefaultPropertiesPropertySource.addOrMerge(Map.of("spring.datasource.url", "jdbc:old"), environment.getPropertySources());
 
-        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
         registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
 
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:new");
@@ -164,7 +164,7 @@ class DevServicesRegistrarTests {
 
     @Test
     void setDefaultPropertyLastWriteWinsForSameKey() {
-        TestRegistrar registrar = new TestRegistrar(registry -> {});
+        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
         registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
 
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:first");
@@ -199,7 +199,7 @@ class DevServicesRegistrarTests {
     @SafeVarargs
     private void doRegister(Consumer<DevServicesRegistry>... registrars) {
         for (Consumer<DevServicesRegistry> consumer : registrars) {
-            TestRegistrar registrar = new TestRegistrar(consumer);
+            TestRegistrar registrar = new TestRegistrar(consumer, environment, beanDefinitionRegistry);
             registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
         }
     }
@@ -244,11 +244,11 @@ class DevServicesRegistrarTests {
         assertThat(beanDefinitionRegistry.containsSingleton(DevServicesRegistrar.DEV_SERVICES_REGISTRY_BEAN_NAME)).isTrue();
     }
 
-    private class TestRegistrar extends DevServicesRegistrar {
+    private static class TestRegistrar extends DevServicesRegistrar {
 
         private final Consumer<DevServicesRegistry> registrar;
 
-        TestRegistrar(Consumer<DevServicesRegistry> registrar) {
+        TestRegistrar(Consumer<DevServicesRegistry> registrar, Environment environment, DefaultListableBeanFactory beanDefinitionRegistry) {
             this.registrar = registrar;
             setEnvironment(environment);
             setBeanFactory(beanDefinitionRegistry);
