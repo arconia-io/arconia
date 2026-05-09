@@ -69,7 +69,7 @@ jobs:
           queries: security-extended
 
       - name: Build
-        run: ./gradlew assemble
+        run: ./gradlew assemble --no-build-cache
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
