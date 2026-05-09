@@ -25,6 +25,7 @@ public class OpenInferenceChatClientObservationConvention extends DefaultChatCli
         this.openInferenceOptions = openInferenceOptions;
     }
 
+    @Override
     protected KeyValue aiOperationType(ChatClientObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.AGENT.getValue());
     }
