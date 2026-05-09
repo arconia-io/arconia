@@ -31,7 +31,6 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
 
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
-        Assert.notNull(eventType, "eventType cannot be null");
         return isAssignableFrom(eventType.getRawClass(), EVENT_TYPES);
     }
 
