@@ -66,13 +66,14 @@ Want to verify which Dev Services are running? If Spring Boot Actuator is in you
 == Supported Services
 
 * Data Stores
-** xref:mariadb.adoc[MariaDB]
+** JDBC
+*** xref:mariadb.adoc[MariaDB]
+*** xref:mysql.adoc[MySQL]
+*** xref:oracle.adoc[Oracle]
+*** xref:oracle-xe.adoc[Oracle XE]
+*** xref:postgresql.adoc[PostgreSQL]
 ** xref:mongodb.adoc[MongoDB]
 ** xref:mongodb-atlas.adoc[MongoDB Atlas]
-** xref:mysql.adoc[MySQL]
-** xref:oracle.adoc[Oracle]
-** xref:oracle-xe.adoc[Oracle XE]
-** xref:postgresql.adoc[PostgreSQL]
 ** xref:redis.adoc[Redis]
 ** xref:valkey.adoc[Valkey]
 * Event Brokers
