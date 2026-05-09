@@ -13,9 +13,6 @@ public final class OpenTelemetryToolCallingModelObservationConvention extends De
     private static final KeyValue OPERATION_NAME = KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(),
             GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EXECUTE_TOOL);
 
-    private static final KeyValue TOOL_TYPE = KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(),
-            "function");
-
     private static final KeyValue TOOL_CALL_RESULT_NONE = KeyValue
             .of(GenAiMoreIncubatingAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(), KeyValue.NONE_VALUE);
 
@@ -45,8 +42,8 @@ public final class OpenTelemetryToolCallingModelObservationConvention extends De
         return OPERATION_NAME;
     }
 
-    private KeyValue toolType(ToolCallingObservationContext context) {
-        return TOOL_TYPE;
+    protected KeyValue toolType(ToolCallingObservationContext context) {
+        return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), context.getToolType());
     }
 
     @Override

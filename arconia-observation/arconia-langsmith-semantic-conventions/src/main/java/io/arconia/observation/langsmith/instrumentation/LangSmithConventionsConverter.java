@@ -19,12 +19,11 @@ final class LangSmithConventionsConverter {
             AiProvider aiProviderEnum = AiProvider.valueOf(aiProvider.toUpperCase().strip());
             return switch (aiProviderEnum) {
                 case AiProvider.ANTHROPIC -> "anthropic";
-                case AiProvider.AZURE_OPENAI -> "azure_openai";
                 case AiProvider.BEDROCK_CONVERSE -> "aws_bedrock";
                 case AiProvider.DEEPSEEK -> "deepseek";
                 case AiProvider.GOOGLE_GENAI_AI -> "gcp_gen_ai";
                 case AiProvider.MISTRAL_AI -> "mistral_ai";
-                case AiProvider.OPENAI, AiProvider.OPENAI_SDK -> "openai";
+                case AiProvider.OPENAI -> "openai";
                 case AiProvider.VERTEX_AI -> "gcp_vertex_ai";
                 default -> aiProviderEnum.value();
             };

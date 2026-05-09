@@ -118,7 +118,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
 
     // Response
 
-    private KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
+    protected KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens() != null) {
             return keyValues.and(
                     GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS.getKey(),
@@ -127,7 +127,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
-    private KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
+    protected KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheReadInputTokens() != null) {
             return keyValues.and(
                     GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(),

@@ -20,12 +20,11 @@ final class OpenInferenceConventionsConverters {
             AiProvider aiProviderEnum = AiProvider.valueOf(aiProvider.toUpperCase().strip());
             return switch(aiProviderEnum) {
                 case AiProvider.ANTHROPIC -> SemanticConventions.LLMProvider.ANTHROPIC.getValue();
-                case AiProvider.AZURE_OPENAI -> SemanticConventions.LLMProvider.AZURE.getValue();
                 case AiProvider.BEDROCK_CONVERSE -> SemanticConventions.LLMProvider.AWS.getValue();
                 case AiProvider.DEEPSEEK -> SemanticConventions.LLMProvider.DEEPSEEK.getValue();
                 case AiProvider.GOOGLE_GENAI_AI, AiProvider.VERTEX_AI -> SemanticConventions.LLMProvider.GOOGLE.getValue();
                 case AiProvider.MISTRAL_AI -> SemanticConventions.LLMProvider.MISTRALAI.getValue();
-                case AiProvider.OPENAI, AiProvider.OPENAI_SDK -> SemanticConventions.LLMProvider.OPENAI.getValue();
+                case AiProvider.OPENAI -> SemanticConventions.LLMProvider.OPENAI.getValue();
                 default -> aiProviderEnum.value();
             };
         } catch (IllegalArgumentException e) {
@@ -46,7 +45,7 @@ final class OpenInferenceConventionsConverters {
                 case AiProvider.BEDROCK_CONVERSE -> SemanticConventions.LLMSystem.AMAZON.getValue();
                 case AiProvider.DEEPSEEK -> SemanticConventions.LLMSystem.DEEPSEEK.getValue();
                 case AiProvider.MISTRAL_AI -> SemanticConventions.LLMSystem.MISTRALAI.getValue();
-                case AiProvider.OPENAI, AiProvider.OPENAI_SDK -> SemanticConventions.LLMSystem.OPENAI.getValue();
+                case AiProvider.OPENAI -> SemanticConventions.LLMSystem.OPENAI.getValue();
                 case AiProvider.GOOGLE_GENAI_AI, AiProvider.VERTEX_AI -> SemanticConventions.LLMSystem.VERTEXAI.getValue();
                 default -> aiProviderEnum.value();
             };

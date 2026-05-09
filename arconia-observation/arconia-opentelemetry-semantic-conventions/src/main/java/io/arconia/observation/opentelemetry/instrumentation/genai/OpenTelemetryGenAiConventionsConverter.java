@@ -32,12 +32,11 @@ final class OpenTelemetryGenAiConventionsConverter {
             AiProvider aiProviderEnum = AiProvider.valueOf(aiProvider.toUpperCase().strip());
             return switch(aiProviderEnum) {
                 case AiProvider.ANTHROPIC -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.ANTHROPIC;
-                case AiProvider.AZURE_OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AZURE_AI_OPENAI;
                 case AiProvider.BEDROCK_CONVERSE -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AWS_BEDROCK;
                 case AiProvider.DEEPSEEK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.DEEPSEEK;
                 case AiProvider.GOOGLE_GENAI_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEN_AI;
                 case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
-                case AiProvider.OPENAI, AiProvider.OPENAI_SDK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
+                case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
                 case AiProvider.VERTEX_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_VERTEX_AI;
                 default -> aiProviderEnum.value();
             };
