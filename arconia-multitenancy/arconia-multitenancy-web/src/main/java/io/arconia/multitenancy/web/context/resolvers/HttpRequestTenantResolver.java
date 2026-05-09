@@ -14,6 +14,7 @@ public interface HttpRequestTenantResolver extends TenantResolver<HttpServletReq
     /**
      * Resolves a tenant identifier from an HTTP request.
      */
+    @Override
     @Nullable
     String resolveTenantIdentifier(HttpServletRequest request);
 

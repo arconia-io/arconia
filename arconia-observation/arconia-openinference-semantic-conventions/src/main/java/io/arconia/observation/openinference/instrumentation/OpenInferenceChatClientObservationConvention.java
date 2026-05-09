@@ -40,6 +40,7 @@ public class OpenInferenceChatClientObservationConvention extends DefaultChatCli
         return keyValues;
     }
 
+    @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
         if (CollectionUtils.isEmpty(context.getRequest().context())) {
             return keyValues;

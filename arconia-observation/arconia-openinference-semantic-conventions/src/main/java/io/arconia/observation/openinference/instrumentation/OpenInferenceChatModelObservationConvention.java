@@ -47,11 +47,13 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context), llmModelName(context));
     }
 
+    @Override
     protected KeyValue aiOperationType(ChatModelObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND,
                 SemanticConventions.OpenInferenceSpanKind.LLM.getValue());
     }
 
+    @Override
     protected KeyValue aiProvider(ChatModelObservationContext context) {
         return KeyValue.of(SemanticConventions.LLM_PROVIDER,
                 OpenInferenceConventionsConverters.toLlmProvider(context.getOperationMetadata().provider()));
@@ -262,6 +264,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
+    @Override
     protected KeyValues responseFinishReasons(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && context.getResponse().getResult() != null) {
             var finishReason = context.getResponse().getResult().getMetadata().getFinishReason();
@@ -274,6 +277,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null) {
             return keyValues.and(
@@ -283,6 +287,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageOutputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null) {
             return keyValues.and(
@@ -292,6 +297,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageTotalTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null) {
             return keyValues.and(

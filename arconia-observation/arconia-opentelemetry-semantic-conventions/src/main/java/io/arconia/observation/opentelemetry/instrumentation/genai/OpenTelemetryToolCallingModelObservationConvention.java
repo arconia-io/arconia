@@ -42,6 +42,7 @@ public final class OpenTelemetryToolCallingModelObservationConvention extends De
         return OPERATION_NAME;
     }
 
+    @Override
     protected KeyValue toolType(ToolCallingObservationContext context) {
         return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), context.getToolType());
     }

@@ -118,6 +118,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
 
     // Response
 
+    @Override
     protected KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens() != null) {
             return keyValues.and(
@@ -127,6 +128,7 @@ public final class OpenTelemetryChatModelObservationConvention extends DefaultCh
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheReadInputTokens() != null) {
             return keyValues.and(

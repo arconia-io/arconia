@@ -13,6 +13,7 @@ import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObse
  */
 public class OpenInferenceAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
 
+    @Override
     protected KeyValue aiOperationType(AdvisorObservationContext context) {
         if (context.getAdvisorName().strip().toLowerCase().contains("guardrail")) {
             return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.GUARDRAIL.getValue());

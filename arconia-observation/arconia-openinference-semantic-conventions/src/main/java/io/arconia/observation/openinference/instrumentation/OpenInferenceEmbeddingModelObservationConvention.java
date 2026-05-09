@@ -33,6 +33,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         return KeyValues.of(aiOperationType(context), aiProvider(context), embeddingModelName(context));
     }
 
+    @Override
     protected KeyValue aiOperationType(EmbeddingModelObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.EMBEDDING.getValue());
     }
@@ -133,6 +134,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
         if (context.getResponse() != null) {
             return keyValues.and(
@@ -142,6 +144,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         return keyValues;
     }
 
+    @Override
     protected KeyValues usageTotalTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
         if (context.getResponse() != null) {
             return keyValues.and(

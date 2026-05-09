@@ -23,13 +23,15 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
 
     @Override
     public KeyValues getLowCardinalityKeyValues(ToolCallingObservationContext context) {
-        return KeyValues.of(aiOperationType(), aiProvider(context), toolDefinitionName(context));
+        return KeyValues.of(aiOperationType(context), aiProvider(context), toolDefinitionName(context));
     }
 
-    protected KeyValue aiOperationType() {
+    @Override
+    protected KeyValue aiOperationType(ToolCallingObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.TOOL.getValue());
     }
 
+    @Override
     protected KeyValue toolDefinitionName(ToolCallingObservationContext context) {
         String toolName = context.getToolDefinition().name();
         return KeyValue.of(SemanticConventions.TOOL_NAME, toolName);
@@ -44,6 +46,7 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
         return keyValues;
     }
 
+    @Override
     protected KeyValues toolDefinitionDescription(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolDescription = context.getToolDefinition().description();
         return keyValues.and(
