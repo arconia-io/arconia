@@ -23,16 +23,14 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testRuntimeOnly "org.postgresql:postgresql"
 
-    constraints {
-        testImplementation("org.postgresql:postgresql:42.7.11") {
-            because "CVE-2026-42198: Upgrade transitive dependency from Spring AI PGVector"
-        }
-    }
 }
 
 dependencyManagement {
     imports {
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+    dependencies {
+        dependency "org.postgresql:postgresql:42.7.11"
     }
 }
 
