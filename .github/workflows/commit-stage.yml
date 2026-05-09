@@ -30,16 +30,12 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-      discussions: write
-      issues: write
-      pull-requests: write
     steps:
       - name: Check out source code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Reclaim disk space
         shell: bash
@@ -63,23 +59,47 @@ jobs:
       - name: Generate SBOMs
         run: ./gradlew cyclonedxBom
 
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write
+      discussions: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+
       - name: Stage artifacts to local directory
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: ./gradlew publish
 
-      - name: Define environment variables for Java project
-        if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Define project properties
+        id: project-props
         run: |
           GROUP=$(./gradlew properties | grep 'group:' | awk '{print $2}')
-          echo "GROUP=$GROUP" >> $GITHUB_ENV
+          echo "group=$GROUP" >> $GITHUB_OUTPUT
           echo "group: $GROUP"
-          
+
           VERSION=$(./gradlew properties | grep 'version:' | awk '{print $2}')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "version: $VERSION"
 
       - name: Release
-        if: ${{ github.ref == 'refs/heads/main' }}
         uses: jreleaser/release-action@90ac653bb9c79d11179e65d81499f3f34527dcd5 # v2.5.0
         with:
           arguments: full-release
@@ -95,8 +115,8 @@ jobs:
           JRELEASER_MAVENCENTRAL_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
           JRELEASER_NEXUS2_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           JRELEASER_NEXUS2_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
-          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.GROUP }}
-          JRELEASER_PROJECT_VERSION: ${{ env.VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ steps.project-props.outputs.group }}
+          JRELEASER_PROJECT_VERSION: ${{ steps.project-props.outputs.version }}
 
       - name: Upload JReleaser output
         if: always()
@@ -109,7 +129,6 @@ jobs:
             out/jreleaser/output.properties
 
       - name: Trigger documentation update
-        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
