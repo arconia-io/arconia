@@ -11,6 +11,12 @@ dependencies {
     api "org.springframework.boot:spring-boot-starter"
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "ai.docling:docling-bom:${doclingVersion}"
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

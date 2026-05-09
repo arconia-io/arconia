@@ -11,14 +11,21 @@ dependencies {
 
     api project(":arconia-core")
     api project(":arconia-integrations:arconia-docling")
-    api "org.springframework.ai:spring-ai-commons:${springAiVersion}"
+    api "org.springframework.ai:spring-ai-commons"
     api "org.springframework.boot:spring-boot-starter"
 
-    testImplementation "ai.docling:docling-testcontainers:${doclingVersion}"
+    testImplementation "ai.docling:docling-testcontainers"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-testcontainers"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "ai.docling:docling-bom:${doclingVersion}"
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 publishing {

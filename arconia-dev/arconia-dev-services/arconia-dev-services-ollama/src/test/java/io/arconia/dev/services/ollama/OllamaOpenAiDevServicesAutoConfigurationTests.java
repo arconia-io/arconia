@@ -1,7 +1,7 @@
 package io.arconia.dev.services.ollama;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.model.openai.autoconfigure.OpenAiConnectionProperties;
+import org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -49,7 +49,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void propertySourceNotRegisteredWhenOpenAiNotOnClasspath() {
         contextRunner
-                .withClassLoader(new FilteredClassLoader(RestartScope.class, OpenAiConnectionProperties.class))
+                .withClassLoader(new FilteredClassLoader(RestartScope.class, OpenAiCommonProperties.class))
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
                         .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
     }

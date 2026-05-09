@@ -36,7 +36,7 @@ class OpenInferenceToolCallingObservationConventionTests {
         var context = ToolCallingObservationContext.builder()
                 .toolDefinition(ToolDefinition.builder().name("search").description("something").inputSchema("{}").build())
                 .build();
-        assertThat(observationConvention.getContextualName(context)).isEqualTo("tool_call search");
+        assertThat(observationConvention.getContextualName(context)).isEqualTo("execute_tool search");
     }
 
     @Test

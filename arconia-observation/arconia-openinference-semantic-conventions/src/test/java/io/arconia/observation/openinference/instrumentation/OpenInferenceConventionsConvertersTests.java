@@ -17,17 +17,14 @@ class OpenInferenceConventionsConvertersTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
-            "AZURE_OPENAI, azure",
             "BEDROCK_CONVERSE, aws",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, google",
             "MISTRAL_AI, mistralai",
             "OPENAI, openai",
-            "OPENAI_SDK, openai",
             "VERTEX_AI, google",
             "OLLAMA, ollama",
             "anthropic, anthropic",
-            "azure_openai, azure",
             "bedrock_converse, aws",
             "' ANTHROPIC ', anthropic",
             "'\tOPENAI\n', openai"
@@ -58,7 +55,6 @@ class OpenInferenceConventionsConvertersTests {
             "DEEPSEEK, deepseek",
             "MISTRAL_AI, mistralai",
             "OPENAI, openai",
-            "OPENAI_SDK, openai",
             "OLLAMA, ollama",
             "anthropic, anthropic",
             "mistral_ai, mistralai",

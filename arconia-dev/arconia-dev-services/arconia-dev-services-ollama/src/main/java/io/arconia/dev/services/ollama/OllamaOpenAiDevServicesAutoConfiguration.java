@@ -25,7 +25,7 @@ import io.arconia.dev.services.ollama.OllamaOpenAiDevServicesAutoConfiguration.O
  */
 @AutoConfiguration(after = OllamaDevServicesAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("ollama")
-@ConditionalOnClass(name = "org.springframework.ai.model.openai.autoconfigure.OpenAiConnectionProperties")
+@ConditionalOnClass(name = "org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties")
 @Import(OllamaOpenAiPropertyRegistrar.class)
 public class OllamaOpenAiDevServicesAutoConfiguration {
 

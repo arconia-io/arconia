@@ -19,13 +19,11 @@ class LangSmithConventionsConverterTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
-            "AZURE_OPENAI, azure_openai",
             "BEDROCK_CONVERSE, aws_bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp_gen_ai",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
-            "OPENAI_SDK, openai",
             "VERTEX_AI, gcp_vertex_ai",
             "anthropic, anthropic",
             "azure_openai, azure_openai",

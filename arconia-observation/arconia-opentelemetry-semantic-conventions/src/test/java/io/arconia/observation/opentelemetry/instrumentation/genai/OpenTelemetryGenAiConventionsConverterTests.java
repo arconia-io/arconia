@@ -17,16 +17,13 @@ class OpenTelemetryGenAiConventionsConverterTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
-            "AZURE_OPENAI, azure.ai.openai",
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gen_ai",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
-            "OPENAI_SDK, openai",
             "VERTEX_AI, gcp.vertex_ai",
             "anthropic, anthropic",
-            "azure_openai, azure.ai.openai",
             "' ANTHROPIC ', anthropic",
             "'\tOPENAI\n', openai"
     })
