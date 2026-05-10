@@ -31,7 +31,7 @@ class JvmConventionsAutoConfigurationTests {
     // Activation / deactivation
 
     @Test
-    void activatesWhenConventionTypePropertyNotSet() {
+    void activatesWhenOnClasspath() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMetrics.class);
             assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMeterFilter.class);
@@ -42,32 +42,9 @@ class JvmConventionsAutoConfigurationTests {
     }
 
     @Test
-    void activatesWhenConventionTypeExplicitlySetToOpenTelemetry() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.type=opentelemetry")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMetrics.class);
-                    assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMeterFilter.class);
-                });
-    }
-
-    @Test
     void doesNotActivateWhenDisabled() {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.jvm.enabled=false")
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMetrics.class);
-                    assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMeterFilter.class);
-                    assertThat(context).doesNotHaveBean(JvmThreadMetrics.class);
-                    assertThat(context).doesNotHaveBean(ClassLoaderMetrics.class);
-                    assertThat(context).doesNotHaveBean(ProcessorMetrics.class);
-                });
-    }
-
-    @Test
-    void doesNotActivateWhenConventionTypeSetToDifferentValue() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.type=micrometer")
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMetrics.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMeterFilter.class);

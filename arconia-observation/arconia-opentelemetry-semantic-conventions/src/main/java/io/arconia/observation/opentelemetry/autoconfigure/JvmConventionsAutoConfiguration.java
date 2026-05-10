@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
-import io.arconia.observation.autoconfigure.ObservationProperties;
 import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvmMemoryMeterFilter;
 import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvmMemoryMetrics;
 
@@ -35,7 +34,6 @@ import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvm
         "org.springframework.boot.micrometer.metrics.autoconfigure.jvm.JvmMetricsAutoConfiguration",
         "org.springframework.boot.micrometer.metrics.autoconfigure.system.SystemMetricsAutoConfiguration"
 })
-@ConditionalOnProperty(prefix = ObservationProperties.CONFIG_PREFIX, name = "conventions.type", havingValue = "opentelemetry", matchIfMissing = true)
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryConventionsProperties.CONFIG_PREFIX, value = "jvm.enabled", matchIfMissing = true)
 public final class JvmConventionsAutoConfiguration {
 

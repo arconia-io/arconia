@@ -16,7 +16,7 @@ The following APIs are available:
 
 Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
 
-By default, Micrometer-based instrumentation uses its own stable naming conventions. Arconia lets you switch to different types like the xref:observation:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] or the xref:observation:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions] instead. Check out the xref:observation:semantic-conventions/index.adoc[Semantic Conventions] documentation for more details.
+By default, Micrometer-based instrumentation uses its own stable naming conventions. Arconia lets you switch to different types like the xref:observability:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] or the xref:observability:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions] instead. Check out the xref:observability:semantic-conventions/index.adoc[Semantic Conventions] documentation for more details.
 
 == OpenTelemetry APIs
 
@@ -33,6 +33,6 @@ Check out the https://opentelemetry.io/docs/languages/java/api/[OpenTelemetry Ja
 
 The https://github.com/open-telemetry/opentelemetry-java-instrumentation[OpenTelemetry Java Instrumentation] project provides libraries that instrument different Java libraries and frameworks. A full list of supported libraries is available in the https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/supported-libraries.md[project documentation].
 
-Arconia OpenTelemetry doesn't use any of these libraries by default. It is possible to add them to your project, but the recommendation is to prefer the built-in instrumentation in the Spring portfolio based on Micrometer. With Arconia, you can easily adopt the xref:observation:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] on top of the Micrometer-based instrumentation, getting the best of both worlds: stable instrumentation with standard naming.
+Arconia OpenTelemetry doesn't use any of these libraries by default. It is possible to add them to your project, but the recommendation is to prefer the built-in instrumentation in the Spring portfolio based on Micrometer. With Arconia, you can easily adopt the xref:observability:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] on top of the Micrometer-based instrumentation, getting the best of both worlds: stable instrumentation with standard naming.
 
 WARNING: Several instrumentation libraries in the OpenTelemetry Java Instrumentation project are not stable yet (marked as experimental) and follow experimental semantic conventions. Both the libraries and the conventions are subject to breaking changes without notice. Always check the documentation and stability status of the specific instrumentation library before adopting it.

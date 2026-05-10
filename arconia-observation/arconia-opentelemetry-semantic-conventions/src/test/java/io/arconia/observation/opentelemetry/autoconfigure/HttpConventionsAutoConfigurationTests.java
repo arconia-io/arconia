@@ -48,14 +48,6 @@ class HttpConventionsAutoConfigurationTests {
     }
 
     @Test
-    void doesNotActivateWhenConventionTypeSetToDifferentValue() {
-        webContextRunner
-                .withPropertyValues("arconia.observations.conventions.type=micrometer")
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class));
-    }
-
-    @Test
     void doesNotActivateWhenSpringWebNotOnClasspath() {
         webContextRunner
                 .withClassLoader(new FilteredClassLoader(OpenTelemetryServerRequestObservationConvention.class))

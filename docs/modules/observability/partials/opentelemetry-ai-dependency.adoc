@@ -1,0 +1,21 @@
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-opentelemetry-ai-semantic-conventions'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-ai-semantic-conventions</artifactId>
+</dependency>
+----
+======

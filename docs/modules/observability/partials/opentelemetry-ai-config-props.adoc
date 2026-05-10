@@ -1,0 +1,25 @@
+.OpenTelemetry AI Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.ai.enabled`
+|	`true`
+|	Whether to enable the OpenTelemetry AI Semantic Conventions module.
+
+|	`arconia.observations.conventions.opentelemetry.ai.flavor`
+|	`opentelemetry`
+|	The convention flavor to apply. Accepted values: `opentelemetry`, `openllmetry`, `langsmith`.
+
+|	`arconia.observations.conventions.opentelemetry.ai.capture-content`
+|	`{flavor-default-capture-content}`
+|	How to capture input and output message content. Accepted values: `none`, `span-attributes`, `span-events`.
+
+|	`arconia.observations.conventions.opentelemetry.ai.include-tool-definitions`
+|	`{flavor-default-include-tool-definitions}`
+|	Whether to include tool definitions in inference observations.
+
+|	`arconia.observations.conventions.opentelemetry.ai.include-tool-call-content`
+|	`{flavor-default-include-tool-call-content}`
+|	Whether to include tool content (arguments and result) in tool execution observations.
+
+|===

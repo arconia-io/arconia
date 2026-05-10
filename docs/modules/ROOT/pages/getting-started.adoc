@@ -63,7 +63,7 @@ Arconia is modular: you only add what you need on top of your standard Spring Bo
 | xref:opentelemetry:index.adoc[OpenTelemetry]
 | Unified observability combining OpenTelemetry and Micrometer for logs, metrics, and traces.
 
-| xref:observation:index.adoc[AI Observability]
+| xref:observability:semantic-conventions/index.adoc[AI Observability]
 | Semantic conventions and integrations for AI observability platforms.
 
 | xref:generative-ai:docling-document-reader.adoc[Docling]

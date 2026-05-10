@@ -1,0 +1,96 @@
+= OpenLLMetry Semantic Conventions
+:page-aliases: observation:semantic-conventions/openllmetry.adoc
+
+:flavor-value: openllmetry
+:flavor-default-capture-content: span-attributes
+:flavor-default-include-tool-definitions: true
+:flavor-default-include-tool-call-content: true
+
+Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop].
+
+[WARNING]
+====
+The https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] are still experimental, and they might change in the future.
+====
+
+== Getting Started
+
+Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+
+include::partial$opentelemetry-ai-dependency.adoc[]
+
+include::partial$ai-conventions-activation.adoc[]
+
+Set the convention flavor to `openllmetry`:
+
+[source,properties]
+----
+arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry
+----
+
+Your application also needs OpenTelemetry configured for exporting traces. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+=== Traceloop
+
+Configure the OTLP exporter to send traces to https://www.traceloop.com[Traceloop], making sure you defined your Traceloop API Key in a `TRACELOOP_API_KEY` environment variable:
+
+[source,properties]
+----
+arconia.otel.exporter.otlp.endpoint=https://api.traceloop.com
+arconia.otel.exporter.otlp.headers=Authorization=Bearer ${TRACELOOP_API_KEY}
+----
+
+Alternatively, you can use the standard OpenTelemetry environment variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_ENDPOINT=https://api.traceloop.com
+OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-traceloop-api-key>"
+----
+
+Since Traceloop supports only traces, you might want to disable the export of logs and metrics:
+
+[source,properties]
+----
+arconia.otel.logs.exporter.type=none
+arconia.otel.metrics.exporter.type=none
+----
+
+== Features
+
+The module provides OpenLLMetry-compatible semantic conventions for all Spring AI observation types.
+
+* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Embedding model spans.
+* Tool execution spans with input/output content.
+* Chat client spans with session tracking and input/output content.
+* Token usage for inference operations.
+* Input/output message content, captured as span attributes.
+
+Content capturing is enabled by default, matching the behavior of the official OpenLLMetry SDKs.
+
+== Configuration Properties
+
+include::partial$opentelemetry-ai-config-props.adoc[]

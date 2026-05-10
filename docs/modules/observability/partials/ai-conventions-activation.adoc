@@ -1,0 +1,4 @@
+[NOTE]
+====
+If another Generative AI convention module is also active, Arconia fails at startup with an actionable error message. Disable the unwanted module via its `enabled` property.
+====

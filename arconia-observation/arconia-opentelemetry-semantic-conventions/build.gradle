@@ -12,15 +12,12 @@ dependencies {
     api project(":arconia-spring-boot")
     api project(":arconia-observation:arconia-observation")
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
-    api "io.opentelemetry.semconv:opentelemetry-semconv-incubating:${openTelemetrySemanticConventionsVersion}-alpha"
 
     implementation "tools.jackson.core:jackson-databind"
 
     implementation "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
-    optional "org.springframework.ai:spring-ai-model"
-    optional "org.springframework.ai:spring-ai-client-chat"
     optional "org.springframework:spring-web"
     optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "jakarta.servlet:jakarta.servlet-api"
@@ -37,7 +34,6 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
 }
 
