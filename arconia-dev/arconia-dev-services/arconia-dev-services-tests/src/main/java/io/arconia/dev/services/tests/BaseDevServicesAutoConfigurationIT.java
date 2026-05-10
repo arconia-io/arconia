@@ -131,8 +131,8 @@ public abstract class BaseDevServicesAutoConfigurationIT {
         );
         assertThat(mappedResourceContent).isNotEmpty();
 
-        assertThat(container.getBinds().getFirst().getPath()).isEqualTo(testMountDir.toAbsolutePath().toString());
-        assertThat(container.getBinds().getFirst().getVolume().getPath()).isEqualTo("/arconia");
+        assertThat(container.getBinds()).anyMatch(b -> b.getPath().equals(testMountDir.toAbsolutePath().toString()));
+        assertThat(container.getBinds()).anyMatch(b -> b.getVolume().getPath().equals("/arconia"));
     }
 
     /**

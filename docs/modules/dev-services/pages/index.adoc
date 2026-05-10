@@ -87,6 +87,7 @@ Want to verify which Dev Services are running? If Spring Boot Actuator is in you
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]
+* xref:floci.adoc[Floci]
 * xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
 

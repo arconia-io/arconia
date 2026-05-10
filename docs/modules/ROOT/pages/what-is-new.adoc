@@ -15,6 +15,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 ** *OpenTelemetry*: Grafana LGTM, OpenLit, OpenTelemetry Collector, Arize Phoenix;
 ** *Redis*: Redis, Valkey.
 
+=== Floci
+
+* A new Floci Dev Service has been introduced providing a https://floci.io[Floci] instance, a free open-source local AWS emulator. It works with https://awspring.io[Spring Cloud AWS]. Learn more about this new Dev Service in the xref:dev-services:floci.adoc[dedicated documentation].
+
 === OpenLit
 
 * A new OpenLit Dev Service has been introduced providing an https://openlit.io[OpenLit] instance, an open-source AI observability and evaluation platform. It works with Spring AI and xref:opentelemetry:index.adoc[Arconia OpenTelemetry]. Learn more about this new Dev Service in the xref:dev-services:openlit.adoc[dedicated documentation].

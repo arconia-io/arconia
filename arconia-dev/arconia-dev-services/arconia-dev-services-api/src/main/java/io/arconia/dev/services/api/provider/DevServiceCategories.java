@@ -5,6 +5,8 @@ package io.arconia.dev.services.api.provider;
  */
 public final class DevServiceCategories {
 
+    public static final String AWS = "aws";
+
     public static final String JDBC = "jdbc";
 
     public static final String MONGODB = "mongodb";
