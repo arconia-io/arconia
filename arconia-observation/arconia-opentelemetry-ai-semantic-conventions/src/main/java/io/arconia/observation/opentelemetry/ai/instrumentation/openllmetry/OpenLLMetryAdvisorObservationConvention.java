@@ -4,15 +4,16 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
-import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObservationConvention;
 import org.springframework.ai.observation.conventions.AiProvider;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
+
 /**
- * OpenLLMetry flavor of {@link DefaultAdvisorObservationConvention}.
+ * OpenLLMetry flavor of {@link OpenTelemetryAdvisorObservationConvention}.
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
-public final class OpenLLMetryAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
+public final class OpenLLMetryAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override
     public KeyValues getLowCardinalityKeyValues(AdvisorObservationContext context) {

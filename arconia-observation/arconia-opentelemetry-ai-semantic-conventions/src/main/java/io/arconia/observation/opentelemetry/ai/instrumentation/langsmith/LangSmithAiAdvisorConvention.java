@@ -4,15 +4,16 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
-import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObservationConvention;
 import org.springframework.ai.observation.conventions.AiProvider;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
+
 /**
- * LangSmith flavor of {@link DefaultAdvisorObservationConvention}.
+ * LangSmith flavor of {@link OpenTelemetryAdvisorObservationConvention}.
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
-public final class LangSmithAiAdvisorConvention extends DefaultAdvisorObservationConvention {
+public final class LangSmithAiAdvisorConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override
     public KeyValues getLowCardinalityKeyValues(AdvisorObservationContext context) {

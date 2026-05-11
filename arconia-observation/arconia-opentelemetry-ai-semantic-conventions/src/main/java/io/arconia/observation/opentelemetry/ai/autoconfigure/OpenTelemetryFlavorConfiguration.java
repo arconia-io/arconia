@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
@@ -81,6 +82,12 @@ class OpenTelemetryFlavorConfiguration {
         @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
         OpenTelemetryChatClientEventObservationHandler chatClientEventObservationHandler(OpenTelemetryAiConventionsProperties properties) {
             return new OpenTelemetryChatClientEventObservationHandler(properties);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(AdvisorObservationConvention.class)
+        OpenTelemetryAdvisorObservationConvention advisorObservationConvention() {
+            return new OpenTelemetryAdvisorObservationConvention();
         }
 
     }
