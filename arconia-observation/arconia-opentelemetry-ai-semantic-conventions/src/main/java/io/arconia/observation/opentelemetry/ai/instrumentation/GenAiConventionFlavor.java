@@ -27,6 +27,13 @@ public enum GenAiConventionFlavor {
      *
      * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
      */
-    LANGSMITH
+    LANGSMITH,
+
+    /**
+     * OpenLIT semantic conventions.
+     *
+     * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
+     */
+    OPENLIT
 
 }

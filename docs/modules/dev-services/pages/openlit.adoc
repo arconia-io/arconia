@@ -40,6 +40,11 @@ The application logs will show you the URL where you can access the OpenLit UI.
 ...i.a.t.openlit.OpenLitContainer            : OpenLit UI: http://localhost:<port>
 ----
 
+Use the following default credentials to log in:
+
+* *Email:* `user@openlit.io`
+* *Password:* `openlituser`
+
 By default, metrics and traces are exported via OTLP using the HTTP/Protobuf format.
 
 == Configuring the Dev Service

@@ -1,0 +1,126 @@
+= OpenLIT Semantic Conventions
+:page-aliases: observation:semantic-conventions/openlit.adoc
+
+:flavor-value: openlit
+:flavor-default-capture-content: span-attributes
+:flavor-default-include-tool-definitions: true
+:flavor-default-include-tool-call-content: true
+
+Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.openlit.io[OpenLIT Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace and metric visualization in platforms like https://openlit.io[OpenLIT].
+
+Arconia provides an OpenLIT Dev Service you can use during development and testing. Check out the xref:dev-services:openlit.adoc[OpenLIT Dev Service] documentation for more details.
+
+[WARNING]
+====
+The https://docs.openlit.io[OpenLIT Semantic Conventions] are still experimental, and they might change in the future.
+====
+
+== Getting Started
+
+Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project.
+
+include::partial$opentelemetry-ai-dependency.adoc[]
+
+include::partial$ai-conventions-activation.adoc[]
+
+Set the convention flavor to `openlit`:
+
+[source,properties]
+----
+arconia.observations.conventions.opentelemetry.ai.flavor=openlit
+----
+
+Your application also needs OpenTelemetry configured for exporting traces and metrics. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+----
+======
+
+=== Dev Service
+
+During development and testing, you can use the xref:dev-services:openlit.adoc[OpenLIT Dev Service] to spin up a local OpenLIT instance automatically. Add the Dev Service dependency to your project:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencies {
+  testAndDevelopmentOnly "io.arconia:arconia-dev-services-openlit"
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-openlit</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+When the Dev Service is active, Arconia configures OpenTelemetry automatically to export traces and metrics to OpenLIT based on the OpenLIT Semantic Conventions. No additional OTLP configuration is needed for local development.
+
+=== OpenLIT
+
+To send telemetry to a hosted OpenLIT instance, configure the OTLP exporter with your endpoint and API key:
+
+[source,properties]
+----
+arconia.otel.exporter.otlp.endpoint=https://<your-openlit-endpoint>
+arconia.otel.exporter.otlp.headers=Authorization=Bearer ${OPENLIT_API_KEY}
+----
+
+Alternatively, you can use the standard OpenTelemetry environment variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-openlit-endpoint>
+OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-openlit-api-key>"
+----
+
+[NOTE]
+====
+Since OpenLit only supports OpenTelemetry metrics and traces, configure your application to disable the export of logs when targeting an OpenLit instance, or export them to a different backend.
+====
+
+== Features
+
+The module provides OpenLIT-compatible semantic conventions for all Spring AI observation types.
+
+* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
+* Embedding model spans.
+* Image model spans.
+* Tool execution spans with input/output content.
+* Chat client spans with session tracking and input/output content.
+* Token usage metrics.
+* Input/output message content, captured as span attributes.
+
+Content capturing is enabled by default, matching the behavior of the official OpenLIT SDKs.
+
+== Configuration Properties
+
+include::partial$opentelemetry-ai-config-props.adoc[]

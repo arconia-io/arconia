@@ -42,7 +42,7 @@ class OpenTelemetryChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_workflow"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), "false")
         );

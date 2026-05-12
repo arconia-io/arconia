@@ -8,6 +8,7 @@ import org.springframework.ai.chat.observation.ChatModelMeterObservationHandler;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelMeterObservationHandler;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
+import org.springframework.ai.image.observation.ImageModelObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -24,6 +25,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
 
 @Configuration(proxyBeanMethods = false)
@@ -46,6 +48,13 @@ class OpenTelemetryFlavorConfiguration {
     @ConditionalOnMissingBean(ToolCallingObservationConvention.class)
     OpenTelemetryToolCallingObservationConvention toolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         return new OpenTelemetryToolCallingObservationConvention(properties);
+    }
+
+    @Bean
+    @ConditionalOnClass(ImageModelObservationConvention.class)
+    @ConditionalOnMissingBean(ImageModelObservationConvention.class)
+    OpenTelemetryImageModelObservationConvention imageModelObservationConvention() {
+        return new OpenTelemetryImageModelObservationConvention();
     }
 
     @Bean

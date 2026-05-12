@@ -7,5 +7,6 @@ Arconia provides support for the following semantic conventions:
 
 * xref:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions]
 * xref:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions]
+* xref:semantic-conventions/openlit.adoc[OpenLIT Semantic Conventions]
 * xref:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions]
-* xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions].
+* xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions]

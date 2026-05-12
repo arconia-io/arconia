@@ -10,6 +10,7 @@ import org.springframework.ai.chat.client.observation.ChatClientObservationConte
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.observation.conventions.SpringAiKind;
 import org.springframework.ai.util.json.JsonParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -32,9 +33,14 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
     }
 
     @Override
+    public String getContextualName(ChatClientObservationContext context) {
+        return "%s %s".formatted(GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_WORKFLOW, SpringAiKind.CHAT_CLIENT.value());
+    }
+
+    @Override
     protected KeyValue aiOperationType(ChatClientObservationContext context) {
         return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(),
-                GenAiConventionsConverter.toOperationName(context.getOperationMetadata().operationType()));
+                GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_WORKFLOW);
     }
 
     @Override

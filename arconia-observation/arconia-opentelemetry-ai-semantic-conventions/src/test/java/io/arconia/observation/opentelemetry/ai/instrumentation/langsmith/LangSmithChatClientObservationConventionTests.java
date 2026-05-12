@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link LangSmithChatClientObservationConvention}.
  */
-class LangSmithAiChatClientConventionTests {
+class LangSmithChatClientObservationConventionTests {
 
     private final OpenTelemetryAiConventionsProperties properties = new OpenTelemetryAiConventionsProperties();
     private final LangSmithChatClientObservationConvention convention =
@@ -35,7 +35,7 @@ class LangSmithAiChatClientConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_workflow"),
                 KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
         );
@@ -67,7 +67,7 @@ class LangSmithAiChatClientConventionTests {
     }
 
     @Test
-    void shouldUseOtelConversationIdKeyWhenConversationIdPresent() {
+    void shouldNotUseOtelConversationIdKeyWhenConversationIdPresent() {
         var context = ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
                         .prompt(Prompt.builder().content("Hello").build())

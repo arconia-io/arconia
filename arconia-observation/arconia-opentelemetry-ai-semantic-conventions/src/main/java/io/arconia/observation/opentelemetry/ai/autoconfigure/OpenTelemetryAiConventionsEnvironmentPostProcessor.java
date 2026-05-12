@@ -14,7 +14,7 @@ import org.springframework.util.Assert;
  * any user-configured value always takes precedence.
  * <p>
  * OpenTelemetry defaults to the conservative OTel baseline (NONE, no tool definitions).
- * OpenLLMetry defaults to SPAN_ATTRIBUTES with tool definitions included.
+ * OpenLLMetry and OpenLIT default to SPAN_ATTRIBUTES with tool definitions included.
  * LangSmith defaults to SPAN_EVENTS (content is emitted via span events by LangSmith handlers)
  * with tool definitions included.
  */
@@ -41,7 +41,7 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentP
         String flavor = environment.getProperty(FLAVOUR_KEY, "opentelemetry").toLowerCase();
 
         Map<String, Object> defaults = switch (flavor) {
-            case "openllmetry" -> Map.of(
+            case "openllmetry", "openlit" -> Map.of(
                     CAPTURE_CONTENT_KEY, "SPAN_ATTRIBUTES",
                     INCLUDE_TOOL_DEFINITIONS_KEY, "true",
                     TOOL_EXECUTION_INCLUDE_CONTENT_KEY, "true"

@@ -8,7 +8,7 @@ import org.springframework.util.Assert;
 
 /**
  * Converters from Spring AI observation conventions to GenAI semantic convention values,
- * covering all supported flavors (OpenTelemetry, OpenLLMetry, LangSmith).
+ * covering all supported flavors (OpenTelemetry, OpenLLMetry, LangSmith, OpenLIT).
  */
 public final class GenAiConventionsConverter {
 
@@ -49,6 +49,28 @@ public final class GenAiConventionsConverter {
                 case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
                 case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
                 case AiProvider.VERTEX_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_VERTEX_AI;
+                default -> provider.value();
+            };
+        } catch (IllegalArgumentException e) {
+            return aiProvider;
+        }
+    }
+
+    /**
+     * Converts an {@link AiProvider} value to an OpenLIT {@code gen_ai.system} value.
+     */
+    public static String toOpenLitProviderName(String aiProvider) {
+        Assert.hasText(aiProvider, "aiProvider cannot be null or empty");
+        try {
+            AiProvider provider = AiProvider.valueOf(aiProvider.toUpperCase().strip());
+            return switch (provider) {
+                case AiProvider.ANTHROPIC -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.ANTHROPIC;
+                case AiProvider.BEDROCK_CONVERSE -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AWS_BEDROCK;
+                case AiProvider.DEEPSEEK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.DEEPSEEK;
+                case AiProvider.GOOGLE_GENAI_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEMINI;
+                case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
+                case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
+                case AiProvider.VERTEX_AI -> "vertex_ai";
                 default -> provider.value();
             };
         } catch (IllegalArgumentException e) {

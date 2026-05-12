@@ -63,7 +63,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
 
     @Override
     protected KeyValues outputMessages(KeyValues keyValues, ChatClientObservationContext context) {
-        // LangSmith uses span events instead of span attributes for input messages.
+        // LangSmith uses span events instead of span attributes for output messages.
         return keyValues;
     }
 

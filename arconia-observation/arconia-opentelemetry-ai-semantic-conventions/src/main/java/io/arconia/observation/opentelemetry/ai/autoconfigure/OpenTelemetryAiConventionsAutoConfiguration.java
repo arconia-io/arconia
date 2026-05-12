@@ -14,7 +14,7 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
 
 /**
  * Auto-configuration for OpenTelemetry AI Semantic Conventions.
- * Supports multiple flavors: {@code opentelemetry} (default), {@code openllmetry}, and {@code langsmith}.
+ * Supports multiple flavors: {@code opentelemetry} (default), {@code openllmetry}, {@code langsmith}, and {@code openlit}.
  *
  * @see OpenTelemetryAiConventionsProperties
  */
@@ -27,7 +27,7 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
 @ConditionalOnClass({ ChatModelObservationConvention.class, EmbeddingModelObservationConvention.class, ToolCallingObservationConvention.class })
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(OpenTelemetryAiConventionsProperties.class)
-@Import({ OpenTelemetryFlavorConfiguration.class, OpenLLMetryFlavorConfiguration.class, LangSmithFlavorConfiguration.class })
+@Import({ OpenTelemetryFlavorConfiguration.class, OpenLLMetryFlavorConfiguration.class, LangSmithFlavorConfiguration.class, OpenLitFlavorConfiguration.class })
 public final class OpenTelemetryAiConventionsAutoConfiguration {
 
     @Bean

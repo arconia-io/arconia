@@ -17,42 +17,42 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryAdvisorObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryEmbeddingModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitAdvisorObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitEmbeddingModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitImageModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
-import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "openllmetry")
-class OpenLLMetryFlavorConfiguration {
+@ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "openlit")
+class OpenLitFlavorConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ChatModelObservationConvention.class)
-    OpenLLMetryChatModelObservationConvention chatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
-        return new OpenLLMetryChatModelObservationConvention(properties);
+    OpenLitChatModelObservationConvention chatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
+        return new OpenLitChatModelObservationConvention(properties);
     }
 
     @Bean
     @ConditionalOnMissingBean(EmbeddingModelObservationConvention.class)
-    OpenLLMetryEmbeddingModelObservationConvention embeddingModelObservationConvention() {
-        return new OpenLLMetryEmbeddingModelObservationConvention();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ToolCallingObservationConvention.class)
-    OpenLLMetryToolCallingObservationConvention toolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
-        return new OpenLLMetryToolCallingObservationConvention(properties);
+    OpenLitEmbeddingModelObservationConvention embeddingModelObservationConvention() {
+        return new OpenLitEmbeddingModelObservationConvention();
     }
 
     @Bean
     @ConditionalOnClass(ImageModelObservationConvention.class)
     @ConditionalOnMissingBean(ImageModelObservationConvention.class)
-    OpenTelemetryImageModelObservationConvention imageModelObservationConvention() {
-        return new OpenTelemetryImageModelObservationConvention();
+    OpenLitImageModelObservationConvention imageModelObservationConvention() {
+        return new OpenLitImageModelObservationConvention();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ToolCallingObservationConvention.class)
+    OpenLitToolCallingObservationConvention toolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
+        return new OpenLitToolCallingObservationConvention(properties);
     }
 
     @Bean
@@ -73,14 +73,14 @@ class OpenLLMetryFlavorConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(ChatClientObservationConvention.class)
-        OpenLLMetryChatClientObservationConvention chatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
-            return new OpenLLMetryChatClientObservationConvention(properties);
+        OpenLitChatClientObservationConvention chatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
+            return new OpenLitChatClientObservationConvention(properties);
         }
 
         @Bean
         @ConditionalOnMissingBean(AdvisorObservationConvention.class)
-        OpenLLMetryAdvisorObservationConvention advisorObservationConvention() {
-            return new OpenLLMetryAdvisorObservationConvention();
+        OpenLitAdvisorObservationConvention advisorObservationConvention() {
+            return new OpenLitAdvisorObservationConvention();
         }
 
     }

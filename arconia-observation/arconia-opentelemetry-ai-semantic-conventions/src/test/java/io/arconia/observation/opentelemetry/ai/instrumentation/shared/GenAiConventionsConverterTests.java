@@ -11,11 +11,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link GenAiConventionsConverter}.
- * Consolidates converter tests from OTel, OpenLLMetry, and LangSmith flavors.
  */
 class GenAiConventionsConverterTests {
 
-    // toProviderName / toSystemName (same values, used by OTel and OpenLLMetry)
+    // toProviderName
 
     @ParameterizedTest
     @CsvSource({
@@ -50,37 +49,37 @@ class GenAiConventionsConverterTests {
                 .hasMessageContaining("aiProvider cannot be null or empty");
     }
 
+    // toOpenLitProviderName
+
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
-            "GOOGLE_GENAI_AI, gcp.gen_ai",
+            "GOOGLE_GENAI_AI, gcp.gemini",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
-            "VERTEX_AI, gcp.vertex_ai",
-            "OLLAMA, ollama",
+            "VERTEX_AI, vertex_ai",
             "anthropic, anthropic",
-            "bedrock_converse, aws.bedrock",
             "' ANTHROPIC ', anthropic",
             "'\tOPENAI\n', openai"
     })
-    void toSystemNameShouldConvertValidValues(String input, String expected) {
-        String result = GenAiConventionsConverter.toProviderName(input);
+    void toOpenLitProviderNameShouldConvertValidValues(String input, String expected) {
+        String result = GenAiConventionsConverter.toOpenLitProviderName(input);
         assertThat(result).isEqualTo(expected);
     }
 
     @Test
-    void toSystemNameShouldReturnInputForUnknownProvider() {
-        String result = GenAiConventionsConverter.toProviderName("unknown_provider");
+    void toOpenLitProviderNameShouldReturnInputForUnknownProvider() {
+        String result = GenAiConventionsConverter.toOpenLitProviderName("unknown_provider");
         assertThat(result).isEqualTo("unknown_provider");
     }
 
     @ParameterizedTest
     @EmptySource
     @ValueSource(strings = { " ", "  " })
-    void toSystemNameShouldThrowExceptionForEmptyInput(String input) {
-        assertThatThrownBy(() -> GenAiConventionsConverter.toProviderName(input))
+    void toOpenLitProviderNameShouldThrowExceptionForEmptyInput(String input) {
+        assertThatThrownBy(() -> GenAiConventionsConverter.toOpenLitProviderName(input))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("aiProvider cannot be null or empty");
     }
@@ -93,6 +92,8 @@ class GenAiConventionsConverterTests {
             "EMBEDDING, embeddings",
             "IMAGE, image",
             "TEXT_COMPLETION, text_completion",
+            "FRAMEWORK, framework",
+            "EXECUTE_TOOL, execute_tool",
             "chat, chat",
             "embedding, embeddings",
             "' CHAT ', chat",
@@ -113,39 +114,6 @@ class GenAiConventionsConverterTests {
     @EmptySource
     @ValueSource(strings = { " ", "  " })
     void toOperationNameShouldThrowExceptionForEmptyInput(String input) {
-        assertThatThrownBy(() -> GenAiConventionsConverter.toOperationName(input))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("aiOperationType cannot be null or empty");
-    }
-
-    // toLangSmithOperationName
-
-    @ParameterizedTest
-    @CsvSource({
-            "CHAT, chat",
-            "EMBEDDING, embeddings",
-            "IMAGE, image",
-            "TEXT_COMPLETION, text_completion",
-            "chat, chat",
-            "embedding, embeddings",
-            "' CHAT ', chat",
-            "'\tEMBEDDING\n', embeddings"
-    })
-    void toLangSmithOperationNameShouldConvertValidValues(String input, String expected) {
-        String result = GenAiConventionsConverter.toOperationName(input);
-        assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    void toLangSmithOperationNameShouldReturnInputForUnknownOperation() {
-        String result = GenAiConventionsConverter.toProviderName("unknown_operation");
-        assertThat(result).isEqualTo("unknown_operation");
-    }
-
-    @ParameterizedTest
-    @EmptySource
-    @ValueSource(strings = { " ", "  " })
-    void toLangSmithOperationNameShouldThrowExceptionForEmptyInput(String input) {
         assertThatThrownBy(() -> GenAiConventionsConverter.toOperationName(input))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("aiOperationType cannot be null or empty");

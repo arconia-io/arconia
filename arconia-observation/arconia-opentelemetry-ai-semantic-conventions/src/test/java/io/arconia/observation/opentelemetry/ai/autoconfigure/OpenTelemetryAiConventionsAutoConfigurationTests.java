@@ -8,6 +8,7 @@ import org.springframework.ai.chat.client.advisor.observation.AdvisorObservation
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
+import org.springframework.ai.image.observation.ImageModelObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -24,6 +25,12 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmi
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitAdvisorObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitEmbeddingModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitImageModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
@@ -36,6 +43,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +51,7 @@ import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link OpenTelemetryAiConventionsAutoConfiguration}.
- * Covers all three flavors: opentelemetry (default), openllmetry, and langsmith.
+ * Covers all four flavors: opentelemetry (default), openllmetry, langsmith, and openlit.
  */
 class OpenTelemetryAiConventionsAutoConfigurationTests {
 
@@ -111,6 +119,12 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     assertThat(context).hasSingleBean(OpenTelemetryEmbeddingModelObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
                 });
+    }
+
+    @Test
+    void otelFlavorRegistersImageModelBeanWhenImageModelOnClasspath() {
+        contextRunner.run(context ->
+                assertThat(context).hasSingleBean(OpenTelemetryImageModelObservationConvention.class));
     }
 
     @Test
@@ -203,8 +217,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelMeterObservationHandler.class);
-                    assertThat(context).doesNotHaveBean(OpenTelemetryEmbeddingMeterObservationHandler.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
                 });
     }
@@ -318,8 +330,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelMeterObservationHandler.class);
-                    assertThat(context).doesNotHaveBean(OpenTelemetryEmbeddingMeterObservationHandler.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
                 });
     }
@@ -435,6 +445,119 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     }
 
     // -------------------------------------------------------------------------
+    // OpenLIT flavor
+    // -------------------------------------------------------------------------
+
+    @Test
+    void openlitFlavorActivatesWhenFlavorSet() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OpenLitChatModelObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenLitEmbeddingModelObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenLitToolCallingObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenLitImageModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorDoesNotActivateOtelOnlyBeans() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .run(context ->
+                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
+    }
+
+    @Test
+    void openlitFlavorRegistersChatClientBeansWhenChatClientOnClasspath() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OpenLitChatClientObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenLitAdvisorObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorDoesNotRegisterChatClientBeansWhenChatClientNotOnClasspath() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OpenLitChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitAdvisorObservationConvention.class);
+                });
+    }
+
+    // Custom bean precedence (OpenLIT flavor)
+
+    @Test
+    void openlitFlavorCustomChatModelConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomChatModelConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ChatModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitChatModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorCustomEmbeddingModelConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomEmbeddingModelConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(EmbeddingModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitEmbeddingModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorCustomToolCallingConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomToolCallingConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ToolCallingObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitToolCallingObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorCustomImageModelConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomImageModelConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ImageModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitImageModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorCustomChatClientConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomChatClientConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitChatClientObservationConvention.class);
+                });
+    }
+
+    @Test
+    void openlitFlavorCustomAdvisorConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
+                .withUserConfiguration(CustomAdvisorConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(AdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenLitAdvisorObservationConvention.class);
+                });
+    }
+
+    // -------------------------------------------------------------------------
     // Shared custom bean configurations
     // -------------------------------------------------------------------------
 
@@ -475,6 +598,14 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
         @Bean
         AdvisorObservationConvention advisorObservationConvention() {
             return mock(AdvisorObservationConvention.class);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomImageModelConventionConfig {
+        @Bean
+        ImageModelObservationConvention imageModelObservationConvention() {
+            return mock(ImageModelObservationConvention.class);
         }
     }
 

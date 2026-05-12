@@ -62,7 +62,65 @@ Maven::
 ----
 ======
 
-If you use the xref:dev-services:phoenix.adoc[Phoenix Dev Service] during development or testing, Arconia will configure OpenTelemetry automatically to export traces to Phoenix based on the OpenInference Semantic Conventions.
+=== Dev Service
+
+During development and testing, you can use the xref:dev-services:phoenix.adoc[Phoenix Dev Service] to spin up a local Arize Phoenix instance automatically. Add the Dev Service dependency to your project:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencies {
+  testAndDevelopmentOnly "io.arconia:arconia-dev-services-phoenix"
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-services-phoenix</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+When the Dev Service is active, Arconia configures OpenTelemetry automatically to export traces to Phoenix based on the OpenInference Semantic Conventions. No additional OTLP configuration is needed for local development.
+
+=== Arize Phoenix
+
+To send telemetry to a hosted Arize Phoenix instance, configure the OTLP exporter with your endpoint:
+
+[source,properties]
+----
+arconia.otel.exporter.otlp.endpoint=https://<your-phoenix-endpoint>
+arconia.otel.exporter.otlp.headers=Authorization=Bearer ${PHOENIX_API_KEY}
+----
+
+Alternatively, you can use the standard OpenTelemetry environment variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-phoenix-endpoint>
+OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-phoenix-api-key>"
+----
+
+You can also set the project name to control how traces are grouped in Phoenix:
+
+[source,properties]
+----
+arconia.observations.conventions.openinference.ai.project-name=my-app
+----
+
+[NOTE]
+====
+Since Phoenix only supports OpenTelemetry traces, configure your application to disable the export of logs and metrics when targeting a Phoenix instance or export them to a different backend.
+====
 
 == Features
 

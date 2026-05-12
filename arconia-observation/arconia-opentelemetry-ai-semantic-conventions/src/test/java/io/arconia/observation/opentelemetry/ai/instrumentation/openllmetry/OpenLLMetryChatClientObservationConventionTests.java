@@ -41,7 +41,7 @@ class OpenLLMetryChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_workflow"),
                 KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM, "spring_ai"),
                 KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, "false"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "chat_client"),

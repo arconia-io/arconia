@@ -82,6 +82,17 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
     }
 
     @Test
+    void openlitFlavorShouldHaveContentDefaults() {
+        var environment = new MockEnvironment()
+                .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "openlit");
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("SPAN_ATTRIBUTES");
+        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("true");
+    }
+
+    @Test
     void flavorMatchingShouldBeCaseInsensitive() {
         var environment = new MockEnvironment()
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "OpenLLMetry");
