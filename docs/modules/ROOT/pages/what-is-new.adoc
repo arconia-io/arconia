@@ -28,11 +28,12 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === OpenTelemetry AI Semantic Conventions
 
 * The Generative AI conventions have been extracted from `arconia-opentelemetry-semantic-conventions` into the dedicated `arconia-opentelemetry-ai-semantic-conventions` module. Applications using `arconia-opentelemetry-semantic-conventions` for AI instrumentation must add the new module.
-* The new `arconia-opentelemetry-ai-semantic-conventions` module now consolidates all OpenTelemetry-based GenAI convention support into a single dependency, including the existing LangSmith support and the new OpenLLMetry support. As a consequence, the `arconia-langsmith-semantic-conventions` module has been removed. The active convention flavor is selected via the `arconia.observations.conventions.opentelemetry.ai.flavor` property:
+* The new `arconia-opentelemetry-ai-semantic-conventions` module now consolidates all OpenTelemetry-based GenAI convention support into a single dependency, including the existing LangSmith support and the new OpenLit and OpenLLMetry support. As a consequence, the `arconia-langsmith-semantic-conventions` module has been removed. The active convention flavor is selected via the `arconia.observations.conventions.opentelemetry.ai.flavor` property:
 ** `opentelemetry` (default): standard https://opentelemetry.io/docs/specs/semconv/gen-ai/[OTel GenAI Semantic Conventions].
+** `openlit`: https://openlit.io[OpenLit]-compatible conventions for OpenLit and other compatible platforms.
 ** `openllmetry`: https://traceloop.com/docs/openllmetry[OpenLLMetry]-compatible conventions for Traceloop and other compatible platforms.
 ** `langsmith`: https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith]-compatible conventions for the LangSmith platform.
-* Content capturing, tool definitions, and tool call content are controlled by a single flat set of properties under `arconia.observations.conventions.opentelemetry.ai.*`. Defaults are flavor-specific and aligned with the official SDKs and conventions: the `opentelemetry` flavor disables content capture by default (PII sensitivity); `openllmetry` enables it as `span-attributes`; `langsmith` enables it as `span-events`.
+* Content capturing, tool definitions, and tool call content are controlled by a single flat set of properties under `arconia.observations.conventions.opentelemetry.ai.*`. Defaults are flavor-specific and aligned with the official SDKs and conventions: the `opentelemetry` flavor disables content capture by default (PII sensitivity); `openlit` and `openllmetry` enable it as `span-attributes`; `langsmith` enables it as `span-events`.
 
 === OpenInference AI Semantic Conventions
 
