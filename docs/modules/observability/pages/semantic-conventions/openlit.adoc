@@ -82,6 +82,15 @@ Maven::
 ----
 ======
 
+The application logs will show you the URL where you can access the OpenLit UI.
+
+[source,logs]
+----
+...openlit.OpenLitContainer: OpenLit UI: http://localhost:<port>
+----
+
+The credentials for the pre-configured demo account are: `user@openlit.io` (username) and `openlituser` (password).
+
 When the Dev Service is active, Arconia configures OpenTelemetry automatically to export traces and metrics to OpenLIT based on the OpenLIT Semantic Conventions. No additional OTLP configuration is needed for local development.
 
 === OpenLIT
