@@ -18,11 +18,7 @@ final class ArconiaOpenLitContainer extends OpenLitContainer {
     ArconiaOpenLitContainer(OpenLitDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()));
         this.properties = properties;
-        withClickHouseImage(properties.getClickhouseImageName());
-
-        this.withEnv("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
-        this.withEnv("DEMO_ACCOUNT_PASSWORD", "openlituser");
-
+        this.withClickHouseImage(properties.getClickhouseImageName());
         ContainerConfigurer.base(this, properties);
     }
 

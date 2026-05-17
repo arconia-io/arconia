@@ -149,7 +149,7 @@ include::partial$opentelemetry-ai-dependency.adoc[]
 
 include::partial$ai-conventions-activation.adoc[]
 
-The module supports multiple convention _flavors_. The default `opentelemetry` flavor targets standard OTel-compatible backends. For platform-specific setup using alternative conventions, refer to the dedicated pages: xref:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions] and xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions].
+The module supports multiple convention _flavors_. The default `opentelemetry` flavor targets standard OTel-compatible backends. For platform-specific setup using alternative conventions, refer to the dedicated pages: xref:semantic-conventions/openlit.adoc[OpenLit Semantic Conventions], xref:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions] and xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions].
 
 === Features
 

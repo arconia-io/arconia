@@ -8,18 +8,18 @@
 
 |	`arconia.observations.conventions.opentelemetry.ai.flavor`
 |	`opentelemetry`
-|	The convention flavor to apply. Accepted values: `opentelemetry`, `openllmetry`, `langsmith`.
+|	The convention flavor to apply. Accepted values: `opentelemetry`, `openlit`, `openllmetry`, `langsmith`.
 
 |	`arconia.observations.conventions.opentelemetry.ai.capture-content`
-|	`{flavor-default-capture-content}`
+|	`{flavor-default-capture-content}` (when flavor is `{flavor-value}`)
 |	How to capture input and output message content. Accepted values: `none`, `span-attributes`, `span-events`.
 
 |	`arconia.observations.conventions.opentelemetry.ai.include-tool-definitions`
-|	`{flavor-default-include-tool-definitions}`
+|	`{flavor-default-include-tool-definitions}` (when flavor is `{flavor-value}`)
 |	Whether to include tool definitions in inference observations.
 
 |	`arconia.observations.conventions.opentelemetry.ai.include-tool-call-content`
-|	`{flavor-default-include-tool-call-content}`
+|	`{flavor-default-include-tool-call-content}` (when flavor is `{flavor-value}`)
 |	Whether to include tool content (arguments and result) in tool execution observations.
 
 |===

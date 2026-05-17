@@ -13,11 +13,6 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 [NOTE]
 ====
-Since OpenLit does not support OpenTelemetry logs, when the Dev Service is enabled, the export of OpenTelemetry logs is disabled unless explicitly configured.
-====
-
-[NOTE]
-====
 This Dev Service is mutually exclusive with other OpenTelemetry dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
 ====
 
@@ -40,12 +35,9 @@ The application logs will show you the URL where you can access the OpenLit UI.
 ...i.a.t.openlit.OpenLitContainer            : OpenLit UI: http://localhost:<port>
 ----
 
-Use the following default credentials to log in:
+The service is pre-configured with a demo account which is automatically authenticated when accessing OpenLit the first time. The credentials are: `user@openlit.io` (username) and `openlituser` (password).
 
-* *Email:* `user@openlit.io`
-* *Password:* `openlituser`
-
-By default, metrics and traces are exported via OTLP using the HTTP/Protobuf format.
+By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
 
 == Configuring the Dev Service
 
@@ -59,11 +51,11 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is enabled.
 
 |`arconia.dev.services.{service-name}.image-name`
-| `ghcr.io/openlit/openlit:1.20.0`
+| `ghcr.io/openlit/openlit`
 | Full name of the container image used for OpenLit.
 
 |`arconia.dev.services.{service-name}.clickhouse-image-name`
-| `clickhouse/clickhouse-server:26.4-distroless`
+| `clickhouse/clickhouse-server`
 | Full name of the container image used for the internal ClickHouse instance.
 
 |`arconia.dev.services.{service-name}.environment`

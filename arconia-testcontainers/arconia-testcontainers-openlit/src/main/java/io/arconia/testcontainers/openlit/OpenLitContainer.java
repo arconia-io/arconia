@@ -34,10 +34,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     private static final DockerImageName DEFAULT_CLICKHOUSE_IMAGE_NAME =
             DockerImageName.parse("clickhouse/clickhouse-server");
 
-    static final String CLICKHOUSE_DATABASE = "openlit";
-    static final String CLICKHOUSE_USERNAME = "default";
-    static final String CLICKHOUSE_PASSWORD = "OPENLIT";
-
     private static final String CLICKHOUSE_NETWORK_ALIAS = "clickhouse";
     private static final String OTEL_COLLECTOR_CONFIG_PATH = "/etc/otel/otel-collector-config.yaml";
 
@@ -72,6 +68,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 ttl: 730h
                 logs_table_name: otel_logs
                 traces_table_name: otel_traces
+                metrics_table_name: otel_metrics
                 timeout: 5s
                 retry_on_failure:
                   enabled: true
@@ -81,6 +78,10 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
             service:
               pipelines:
+                logs:
+                  receivers: [otlp]
+                  processors: [batch]
+                  exporters: [clickhouse]
                 traces:
                   receivers: [otlp]
                   processors: [memory_limiter, batch]
@@ -101,7 +102,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(UI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT);
-        waitingFor(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500));
+        this.waitingFor(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500));
     }
 
     public OpenLitContainer withClickHouseImage(DockerImageName imageName) {
@@ -127,27 +128,37 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 clickHouseImageName.asCompatibleSubstituteFor("clickhouse/clickhouse-server"))
                 .withNetwork(network)
                 .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
-                .withUsername(CLICKHOUSE_USERNAME)
-                .withPassword(CLICKHOUSE_PASSWORD)
-                .withDatabaseName(CLICKHOUSE_DATABASE)
                 .withReuse(isShouldBeReused());
 
         clickHouseContainer.start();
         dependsOn(clickHouseContainer);
 
         String otelCollectorConfig = OTEL_COLLECTOR_CONFIG_TEMPLATE.formatted(
-                CLICKHOUSE_NETWORK_ALIAS, CLICKHOUSE_DATABASE, CLICKHOUSE_USERNAME, CLICKHOUSE_PASSWORD);
+                CLICKHOUSE_NETWORK_ALIAS, clickHouseContainer.getDatabaseName(),
+                clickHouseContainer.getUsername(), clickHouseContainer.getPassword());
 
-        withEnv("INIT_DB_HOST", CLICKHOUSE_NETWORK_ALIAS)
-                .withEnv("INIT_DB_PORT", "8123")
-                .withEnv("INIT_DB_DATABASE", CLICKHOUSE_DATABASE)
-                .withEnv("INIT_DB_USERNAME", CLICKHOUSE_USERNAME)
-                .withEnv("INIT_DB_PASSWORD", CLICKHOUSE_PASSWORD)
-                .withEnv("SQLITE_DATABASE_URL", "file:/app/client/data/data.db")
-                .withEnv("PORT", String.valueOf(UI_PORT))
-                .withEnv("DOCKER_PORT", String.valueOf(UI_PORT))
-                .withTmpFs(Map.of("/app/client/data", "rw"))
-                .withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
+        this.withEnv("PORT", String.valueOf(UI_PORT));
+        this.withEnv("TELEMETRY_ENABLED", "false");
+
+        // Sets the host address of the ClickHouse server for OpenLIT to connect.
+        this.withEnv("INIT_DB_HOST", CLICKHOUSE_NETWORK_ALIAS);
+        // Sets the port on which ClickHouse listens.
+        this.withEnv("INIT_DB_PORT", "8123");
+        // Sets the name of the database in Clickhouse to be used by OpenLIT.
+        this.withEnv("INIT_DB_DATABASE", clickHouseContainer.getDatabaseName());
+        // Sets the username for authenticating with ClickHouse.
+        this.withEnv("INIT_DB_USERNAME", clickHouseContainer.getUsername());
+        // Sets the password for authenticating with ClickHouse.
+        this.withEnv("INIT_DB_PASSWORD", clickHouseContainer.getPassword());
+
+        // Sets the location where SQLITE data is stored.
+        this.withEnv("SQLITE_DATABASE_URL", "file:/app/client/data/data.db");
+        this.withTmpFs(Map.of("/app/client/data", "rw"));
+
+        this.withEnv("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
+        this.withEnv("DEMO_ACCOUNT_PASSWORD", "openlituser");
+
+        this.withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
     }
 
     @Override

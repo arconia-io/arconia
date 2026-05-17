@@ -91,7 +91,7 @@ The application logs will show you the URL where you can access the OpenLit UI.
 
 The credentials for the pre-configured demo account are: `user@openlit.io` (username) and `openlituser` (password).
 
-When the Dev Service is active, Arconia configures OpenTelemetry automatically to export traces and metrics to OpenLIT based on the OpenLIT Semantic Conventions. No additional OTLP configuration is needed for local development.
+When the Dev Service is active, Arconia configures OpenTelemetry automatically to export logs, metrics, and traces to OpenLIT based on the OpenLIT Semantic Conventions. No additional OTLP configuration is needed for local development.
 
 === OpenLIT
 
@@ -110,11 +110,6 @@ Alternatively, you can use the standard OpenTelemetry environment variables:
 OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-openlit-endpoint>
 OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-openlit-api-key>"
 ----
-
-[NOTE]
-====
-Since OpenLit only supports OpenTelemetry metrics and traces, configure your application to disable the export of logs when targeting an OpenLit instance, or export them to a different backend.
-====
 
 == Features
 

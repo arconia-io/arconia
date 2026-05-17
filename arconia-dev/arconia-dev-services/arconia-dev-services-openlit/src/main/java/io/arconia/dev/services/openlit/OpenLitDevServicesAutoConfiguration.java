@@ -15,7 +15,6 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.openlit.OpenLitDevServicesAutoConfiguration.OpenLitDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 
 /**
  * Auto-configuration for OpenLit Dev Services.
@@ -45,10 +44,6 @@ public final class OpenLitDevServicesAutoConfiguration {
                             .type(ArconiaOpenLitContainer.class)
                             .supplier(() -> new ArconiaOpenLitContainer(properties))
                     ));
-
-            // OpenLit does not support OpenTelemetry Logs, so we disable the export of Logs,
-            // unless the developer has explicitly enabled them in the configuration.
-            setDefaultProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type", "none");
         }
 
     }
