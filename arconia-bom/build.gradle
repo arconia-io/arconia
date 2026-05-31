@@ -17,6 +17,8 @@ dependencies {
 
         api project(":arconia-core")
 
+        api project(":arconia-data:arconia-data-jdbc-sqlite")
+
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-api")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
 

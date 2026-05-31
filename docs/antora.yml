@@ -2,6 +2,7 @@ name: arconia
 title: Arconia Framework
 nav:
   - modules/ROOT/nav.adoc
+  - modules/data/nav.adoc
   - modules/dev-services/nav.adoc
   - modules/kubernetes/nav.adoc
   - modules/multitenancy/nav.adoc

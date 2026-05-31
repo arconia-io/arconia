@@ -1,0 +1,2 @@
+org.springframework.data.jdbc.core.dialect.DialectResolver$JdbcDialectProvider=\
+  io.arconia.data.jdbc.sqlite.dialect.SqliteJdbcDialectProvider

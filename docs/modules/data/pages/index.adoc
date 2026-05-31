@@ -1,0 +1,13 @@
+= Arconia Data
+
+Arconia Data extends https://spring.io/projects/spring-data[Spring Data] with support for additional databases and data access scenarios not covered out of the box.
+
+Each module is self-contained and can be added independently based on the database technology your application needs.
+
+== Modules
+
+=== JDBC
+
+Modules that extend https://spring.io/projects/spring-data-jdbc[Spring Data JDBC] with dialects and driver integrations for databases that are not supported by Spring Data out of the box.
+
+* xref:jdbc-sqlite.adoc[SQLite]: adds https://www.sqlite.org[SQLite] support to Spring Data JDBC.

@@ -5,37 +5,8 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Dev Services
+== Data
 
-=== General
+=== Data JDBC SQLite
 
-* Dev services within the same category are now mutually exclusive. If more than one is active at the same time, the application fails at startup with a clear error message indicating which services are in conflict and how to resolve it. The following groups are enforced:
-** *JDBC*: MariaDB, MySQL, Oracle, Oracle XE, PostgreSQL;
-** *MongoDB*: MongoDB, MongoDB Atlas;
-** *OpenTelemetry*: Grafana LGTM, OpenLit, OpenTelemetry Collector, Arize Phoenix;
-** *Redis*: Redis, Valkey.
-
-=== Floci
-
-* A new Floci Dev Service has been introduced providing a https://floci.io[Floci] instance, a free open-source local AWS emulator. It works with https://awspring.io[Spring Cloud AWS]. Learn more about this new Dev Service in the xref:dev-services:floci.adoc[dedicated documentation].
-
-=== OpenLit
-
-* A new OpenLit Dev Service has been introduced providing an https://openlit.io[OpenLit] instance, an open-source AI observability and evaluation platform. It works with Spring AI and xref:opentelemetry:index.adoc[Arconia OpenTelemetry AI Semantic Conventions]. Learn more about this new Dev Service in the xref:dev-services:openlit.adoc[dedicated documentation].
-
-== Observability
-
-=== OpenTelemetry AI Semantic Conventions
-
-* The Generative AI conventions have been extracted from `arconia-opentelemetry-semantic-conventions` into the dedicated `arconia-opentelemetry-ai-semantic-conventions` module. Applications using `arconia-opentelemetry-semantic-conventions` for AI instrumentation must add the new module.
-* The new `arconia-opentelemetry-ai-semantic-conventions` module now consolidates all OpenTelemetry-based GenAI convention support into a single dependency, including the existing LangSmith support and the new OpenLit and OpenLLMetry support. As a consequence, the `arconia-langsmith-semantic-conventions` module has been removed. The active convention flavor is selected via the `arconia.observations.conventions.opentelemetry.ai.flavor` property:
-** `opentelemetry` (default): standard https://opentelemetry.io/docs/specs/semconv/gen-ai/[OTel GenAI Semantic Conventions].
-** `openlit`: https://openlit.io[OpenLit]-compatible conventions for OpenLit and other compatible platforms.
-** `openllmetry`: https://traceloop.com/docs/openllmetry[OpenLLMetry]-compatible conventions for Traceloop and other compatible platforms.
-** `langsmith`: https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith]-compatible conventions for the LangSmith platform.
-* Content capturing, tool definitions, and tool call content are controlled by a single flat set of properties under `arconia.observations.conventions.opentelemetry.ai.*`. Defaults are flavor-specific and aligned with the official SDKs and conventions: the `opentelemetry` flavor disables content capture by default (PII sensitivity); `openlit` and `openllmetry` enable it as `span-attributes`; `langsmith` enables it as `span-events`.
-
-=== OpenInference AI Semantic Conventions
-
-* The `arconia-openinference-semantic-conventions` module has been renamed to `arconia-openinference-ai-semantic-conventions` for consistency with the corresponding OpenTelemetry module.
-* All `arconia.observations.conventions.openinference.\*` properties have moved to `arconia.observations.conventions.openinference.ai.*`.
+* A new `arconia-data-jdbc-sqlite` module has been introduced to add https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect and the SQLite JDBC driver, so SQLite can be used as the database backing your Spring Data JDBC repositories. Learn more about this new module in the xref:data:jdbc-sqlite.adoc[dedicated documentation].
