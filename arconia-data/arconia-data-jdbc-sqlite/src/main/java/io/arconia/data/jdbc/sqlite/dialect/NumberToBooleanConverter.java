@@ -4,10 +4,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
 /**
- * A {@link ReadingConverter} to convert from {@link Number} to {@link Boolean}.
- * 0 is considered {@literal false}, everything else is considered {@literal true}.
- * <p>
- * Based on org.springframework.data.relational.core.dialect.NumberToBooleanConverter
+ * Reads a {@link Number} as a {@link Boolean}: zero maps to {@code false}, any other value
+ * maps to {@code true}.
+ *
+ * <p>Based on {@code org.springframework.data.relational.core.dialect.NumberToBooleanConverter}
  * (Spring Data Relational, Apache-2.0).
  */
 @ReadingConverter

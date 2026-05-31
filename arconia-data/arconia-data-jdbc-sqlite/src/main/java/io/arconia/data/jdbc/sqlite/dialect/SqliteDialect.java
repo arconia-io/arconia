@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.relational.core.dialect.AbstractDialect;
+import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.data.relational.core.dialect.IdGeneration;
 import org.springframework.data.relational.core.dialect.LimitClause;
 import org.springframework.data.relational.core.dialect.LockClause;
@@ -11,7 +12,7 @@ import org.springframework.data.relational.core.sql.IdentifierProcessing;
 import org.springframework.data.relational.core.sql.LockOptions;
 
 /**
- * An SQL dialect for SQLite.
+ * SQL {@link Dialect} for SQLite.
  */
 public class SqliteDialect extends AbstractDialect {
 
@@ -43,7 +44,7 @@ public class SqliteDialect extends AbstractDialect {
     };
 
     /**
-     * Sqlite uses file-level locking, so no SQL lock syntax is emitted.
+     * SQLite uses file-level locking, so no SQL lock clause is emitted.
      */
     private static final LockClause LOCK_CLAUSE = new LockClause() {
         @Override
@@ -58,8 +59,8 @@ public class SqliteDialect extends AbstractDialect {
     };
 
     /**
-     * Sqlite does not support sequences. Identity is managed via ROWID internally.
-     * Batch inserts are disabled because the Sqlite JDBC driver does not return
+     * SQLite manages identity internally via {@code ROWID} and does not support sequences.
+     * Batch ID generation is disabled because the SQLite JDBC driver does not return
      * generated keys from batch statement executions.
      */
     private static final IdGeneration ID_GENERATION = new IdGeneration() {
@@ -103,7 +104,7 @@ public class SqliteDialect extends AbstractDialect {
     }
 
     /**
-     * Sqlite does not support the LATERAL joins that single-query loading relies on.
+     * SQLite does not support the {@code LATERAL} joins that single-query loading relies on.
      */
     @Override
     public boolean supportsSingleQueryLoading() {

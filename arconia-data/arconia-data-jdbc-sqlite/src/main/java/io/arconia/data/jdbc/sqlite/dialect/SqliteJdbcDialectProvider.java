@@ -12,7 +12,10 @@ import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.jdbc.core.JdbcOperations;
 
 /**
- * JDBC Dialect discovery mechanism for SQLite.
+ * Resolves {@link JdbcSqliteDialect} when the underlying database is SQLite.
+ *
+ * <p>Registered via {@code META-INF/spring.factories} and discovered by Spring Data JDBC's
+ * {@link DialectResolver}.
  */
 class SqliteJdbcDialectProvider implements DialectResolver.JdbcDialectProvider {
 

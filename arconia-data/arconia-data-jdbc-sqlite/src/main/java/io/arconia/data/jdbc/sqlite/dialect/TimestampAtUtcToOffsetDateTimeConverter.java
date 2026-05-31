@@ -8,11 +8,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
 /**
- * A reading convert to convert {@link Timestamp} to {@link OffsetDateTime}. For the conversion the {@link Timestamp}
- * gets considered to be at UTC and the result of the conversion will have an offset of 0 and represent the same
- * instant.
- * <p>
- * Based on org.springframework.data.relational.core.dialect.TimestampAtUtcToOffsetDateTimeConverter
+ * Reads a {@link Timestamp} as an {@link OffsetDateTime}. The timestamp is interpreted as UTC;
+ * the resulting value represents the same instant with a zero offset.
+ *
+ * <p>Based on {@code org.springframework.data.relational.core.dialect.TimestampAtUtcToOffsetDateTimeConverter}
  * (Spring Data Relational, Apache-2.0).
  */
 @ReadingConverter
