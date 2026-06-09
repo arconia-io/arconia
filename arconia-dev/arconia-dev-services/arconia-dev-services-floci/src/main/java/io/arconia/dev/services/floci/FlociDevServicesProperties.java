@@ -28,7 +28,7 @@ public class FlociDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "floci/floci:1.5.9";
+    private String imageName = "floci/floci:1.5.23";
 
     /**
      * Environment variables to set in the service.
