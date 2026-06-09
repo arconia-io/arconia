@@ -11,6 +11,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * A new `arconia-data-jdbc-sqlite` module has been introduced to add https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect and the SQLite JDBC driver, so SQLite can be used as the database backing your Spring Data JDBC repositories. Learn more about this new module in the xref:data:jdbc-sqlite.adoc[dedicated documentation].
 
+== Dev Services
+
+* The Valkey Dev Service module (`arconia-dev-services-valkey`) has been removed as it's currently redundant with respect to the Redis Dev Service. If you were using the Valkey Dev Service, you can switch it with the Redis equivalent (`arconia-dev-services-redis`) and define a Valkey image via the `arconia.dev.services.redis.image-name`.
+
 == Kubernetes
 
 === Kubernetes Service Binding
