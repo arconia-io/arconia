@@ -10,7 +10,7 @@ import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.json.JSONException;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -145,7 +145,49 @@ class OpenTelemetryChatModelObservationConventionTests {
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
-                .toolNames("get_weather")
+                .toolCallbacks(new TestToolCallback(ToolDefinition.builder()
+                        .name("something")
+                        .description("something")
+                        .inputSchema("{}")
+                        .build()))
+                .build();
+
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()));
+    }
+
+    @Test
+    void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreNull() {
+        properties.setIncludeToolDefinitions(true);
+
+        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
+                .model("mistral")
+                .toolCallbacks((List<ToolCallback>) null)
+                .build();
+
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()));
+    }
+
+    @Test
+    void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreEmpty() {
+        properties.setIncludeToolDefinitions(true);
+
+        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
+                .model("mistral")
+                .toolCallbacks(List.of())
                 .build();
 
         ChatModelObservationContext context = ChatModelObservationContext.builder()
@@ -263,8 +305,10 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldHaveOutputTypeJsonWhenStructuredOutputOptionsWithSchema() {
-        TestStructuredOutputChatOptions chatOptions = new TestStructuredOutputChatOptions("""
-                {"type": "object", "properties": {"answer": {"type": "string"}}}""");
+        ChatOptions chatOptions = StructuredOutputChatOptions.builder()
+                .outputSchema("""
+                {"type": "object", "properties": {"answer": {"type": "string"}}}""")
+                .build();
         ChatModelObservationContext context = ChatModelObservationContext.builder()
                 .prompt(new Prompt(List.of(new UserMessage("Hi")), chatOptions))
                 .provider(AiProvider.SPRING_AI.value())
@@ -278,7 +322,9 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldHaveOutputTypeTextWhenStructuredOutputOptionsWithoutSchema() {
-        TestStructuredOutputChatOptions chatOptions = new TestStructuredOutputChatOptions(null);
+        ChatOptions chatOptions = StructuredOutputChatOptions.builder()
+                .outputSchema(null)
+                .build();
         ChatModelObservationContext context = ChatModelObservationContext.builder()
                 .prompt(new Prompt(List.of(new UserMessage("Hi")), chatOptions))
                 .provider(AiProvider.SPRING_AI.value())
@@ -341,59 +387,15 @@ class OpenTelemetryChatModelObservationConventionTests {
                 .orElseThrow(() -> new AssertionError("Key not found: " + key));
     }
 
-    static class TestStructuredOutputChatOptions implements StructuredOutputChatOptions {
-        private @Nullable String outputSchema;
-
-        TestStructuredOutputChatOptions(@Nullable String outputSchema) {
-            this.outputSchema = outputSchema;
-        }
-
-        @Override
-        public @Nullable String getOutputSchema() {
-            return this.outputSchema;
-        }
-
-        @Override
-        public void setOutputSchema(@Nullable String outputSchema) {
-            this.outputSchema = outputSchema;
-        }
-
-        @Override
-        public @Nullable String getModel() { return null; }
-
-        @Override
-        public @Nullable Double getFrequencyPenalty() { return null; }
-
-        @Override
-        public @Nullable Integer getMaxTokens() { return null; }
-
-        @Override
-        public @Nullable Double getPresencePenalty() { return null; }
-
-        @Override
-        public @Nullable List<String> getStopSequences() { return null; }
-
-        @Override
-        public @Nullable Double getTemperature() { return null; }
-
-        @Override
-        public @Nullable Integer getTopK() { return null; }
-
-        @Override
-        public @Nullable Double getTopP() { return null; }
-
-        @Override
-        public ChatOptions copy() {
-            return new TestStructuredOutputChatOptions(this.outputSchema);
-        }
-    }
-
     static class TestUsage implements Usage {
         @Override
+        @NonNull
         public Integer getPromptTokens() { return 1000; }
         @Override
+        @NonNull
         public Integer getCompletionTokens() { return 500; }
         @Override
+        @NonNull
         public Integer getTotalTokens() { return 1500; }
         @Override
         public Long getCacheWriteInputTokens() { return 1000L; }
@@ -417,9 +419,11 @@ class OpenTelemetryChatModelObservationConventionTests {
             this.toolDefinition = toolDefinition;
         }
         @Override
+        @NonNull
         public ToolDefinition getToolDefinition() { return toolDefinition; }
         @Override
-        public String call(String toolInput) { return ""; }
+        @NonNull
+        public String call(@NonNull String toolInput) { return ""; }
     }
 
 }

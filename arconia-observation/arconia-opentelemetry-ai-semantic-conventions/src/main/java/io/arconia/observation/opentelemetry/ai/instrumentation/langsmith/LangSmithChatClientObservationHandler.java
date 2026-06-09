@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.StringUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -22,6 +22,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.Micrometer
  * Observation handler that emits input/output span events for chat client observations.
  */
 public final class LangSmithChatClientObservationHandler implements ObservationHandler<ChatClientObservationContext> {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 
@@ -58,7 +60,7 @@ public final class LangSmithChatClientObservationHandler implements ObservationH
         messageMap.put("role", "user");
         messageMap.put("content", userInput);
         span.addEvent(LangSmithAttributes.GEN_AI_USER_MESSAGE,
-                Attributes.of(LangSmithAttributes.GEN_AI_EVENT_CONTENT, JsonParser.toJson(messageMap)));
+                Attributes.of(LangSmithAttributes.GEN_AI_EVENT_CONTENT, jsonHelper.toJson(messageMap)));
     }
 
     private void emitOutputEvent(Span span, ChatClientObservationContext context) {
@@ -78,7 +80,7 @@ public final class LangSmithChatClientObservationHandler implements ObservationH
         messageMap.put("role", "assistant");
         messageMap.put("content", outputText);
         span.addEvent(LangSmithAttributes.GEN_AI_ASSISTANT_MESSAGE,
-                Attributes.of(LangSmithAttributes.GEN_AI_EVENT_CONTENT, JsonParser.toJson(messageMap)));
+                Attributes.of(LangSmithAttributes.GEN_AI_EVENT_CONTENT, jsonHelper.toJson(messageMap)));
     }
 
 }

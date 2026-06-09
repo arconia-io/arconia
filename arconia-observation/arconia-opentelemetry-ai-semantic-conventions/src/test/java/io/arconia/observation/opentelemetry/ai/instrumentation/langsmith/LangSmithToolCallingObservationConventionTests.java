@@ -115,6 +115,18 @@ class LangSmithToolCallingObservationConventionTests {
     }
 
     @Test
+    void shouldWrapJsonNullResultAsJsonObject() throws JSONException {
+        properties.setIncludeToolCallContent(true);
+        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
+        context.setToolCallResult("null");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        JSONAssert.assertEquals("""
+                {"output": "{}"}""", completion, JSONCompareMode.STRICT);
+    }
+
+    @Test
     void shouldPassThroughJsonObjectResult() throws JSONException {
         properties.setIncludeToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");

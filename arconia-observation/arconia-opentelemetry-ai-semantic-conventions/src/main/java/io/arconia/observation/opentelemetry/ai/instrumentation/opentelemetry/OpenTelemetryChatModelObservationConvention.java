@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -17,11 +18,10 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.tool.StructuredOutputChatOptions;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import tools.jackson.core.type.TypeReference;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -35,6 +35,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OpenTelemetry Semantic Conventions for Generative AI</a>
  */
 public class OpenTelemetryChatModelObservationConvention extends DefaultChatModelObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 
@@ -104,25 +106,22 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
         if (!(context.getRequest().getOptions() instanceof ToolCallingChatOptions options)) {
             return keyValues;
         }
+        if (CollectionUtils.isEmpty(options.getToolCallbacks())) {
+            return keyValues;
+        }
         return keyValues.and(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(),
-                JsonParser.toJson(buildToolDefinitions(options)));
+                jsonHelper.toJson(buildToolDefinitions(options.getToolCallbacks())));
     }
 
-    protected List<Map<String, Object>> buildToolDefinitions(ToolCallingChatOptions options) {
+    protected List<Map<String, Object>> buildToolDefinitions(List<ToolCallback> toolCallbacks) {
         List<Map<String, Object>> toolDefinitions = new ArrayList<>();
-        for (ToolCallback toolCallback : new ArrayList<>(options.getToolCallbacks())) {
+        for (ToolCallback toolCallback : toolCallbacks) {
             Map<String, Object> toolDef = new HashMap<>();
             toolDef.put("type", "function");
             toolDef.put("name", toolCallback.getToolDefinition().name());
             toolDef.put("description", toolCallback.getToolDefinition().description());
-            toolDef.put("parameters", JsonParser.fromJson(toolCallback.getToolDefinition().inputSchema(),
-                    new TypeReference<Map<String, Object>>() {}));
-            toolDefinitions.add(toolDef);
-        }
-        for (String toolName : new ArrayList<>(options.getToolNames())) {
-            Map<String, Object> toolDef = new HashMap<>();
-            toolDef.put("type", "function");
-            toolDef.put("name", toolName);
+            toolDef.put("parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallback.getToolDefinition().inputSchema(),
+                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of()));
             toolDefinitions.add(toolDef);
         }
         return toolDefinitions;
@@ -137,7 +136,7 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
         }
         var inputMessages = GenAiContent.fromMessages(messages);
         if (!inputMessages.isEmpty()) {
-            return keyValues.and(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey(), JsonParser.toJson(inputMessages));
+            return keyValues.and(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey(), jsonHelper.toJson(inputMessages));
         }
         return keyValues;
     }
@@ -148,7 +147,7 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
         }
         var outputMessages = GenAiContent.fromGenerations(context.getResponse().getResults());
         if (!outputMessages.isEmpty()) {
-            return keyValues.and(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey(), JsonParser.toJson(outputMessages));
+            return keyValues.and(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey(), jsonHelper.toJson(outputMessages));
         }
         return keyValues;
     }

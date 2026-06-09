@@ -8,6 +8,7 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.EmbeddingOptions;
@@ -107,10 +108,13 @@ class OpenLLMetryEmbeddingModelObservationConventionTests {
 
     static class TestUsage implements Usage {
         @Override
+        @NonNull
         public Integer getPromptTokens() { return 100; }
         @Override
+        @NonNull
         public Integer getCompletionTokens() { return 0; }
         @Override
+        @NonNull
         public Integer getTotalTokens() { return 100; }
         @Override
         public Map<String, Integer> getNativeUsage() {

@@ -5,7 +5,8 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
+import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
@@ -17,6 +18,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
 public final class LangSmithChatModelObservationConvention extends OpenTelemetryChatModelObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     public LangSmithChatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);
@@ -48,7 +51,10 @@ public final class LangSmithChatModelObservationConvention extends OpenTelemetry
         if (!(context.getRequest().getOptions() instanceof ToolCallingChatOptions options)) {
             return keyValues;
         }
-        return keyValues.and(LangSmithAttributes.TOOLS.getKey(), JsonParser.toJson(buildToolDefinitions(options)));
+        if (CollectionUtils.isEmpty(options.getToolCallbacks())) {
+            return keyValues;
+        }
+        return keyValues.and(LangSmithAttributes.TOOLS.getKey(), jsonHelper.toJson(buildToolDefinitions(options.getToolCallbacks())));
     }
 
     @Override

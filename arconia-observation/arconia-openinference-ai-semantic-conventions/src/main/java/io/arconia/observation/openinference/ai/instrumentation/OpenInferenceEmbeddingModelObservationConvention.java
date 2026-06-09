@@ -14,13 +14,15 @@ import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 public final class OpenInferenceEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
     private static final KeyValue MODEL_NONE = KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, KeyValue.NONE_VALUE);
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenInferenceOptions openInferenceOptions;
 
@@ -105,7 +107,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
             invocationParameters.put("dimensions", options.getDimensions());
         }
 
-        return keyValues.and(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, JsonParser.toJson(invocationParameters));
+        return keyValues.and(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, jsonHelper.toJson(invocationParameters));
     }
 
     // Response

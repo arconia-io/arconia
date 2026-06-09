@@ -216,9 +216,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     void openllmetryFlavorDoesNotActivateOtelOnlyBeans() {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry")
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
-                });
+                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
     }
 
     @Test
@@ -329,9 +327,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     void langsmithFlavorDoesNotActivateOtelOnlyBeans() {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
-                });
+                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
     }
 
     @Test

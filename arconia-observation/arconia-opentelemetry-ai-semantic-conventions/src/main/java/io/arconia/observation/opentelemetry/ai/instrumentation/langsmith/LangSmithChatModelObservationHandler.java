@@ -18,7 +18,7 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -34,6 +34,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.Micrometer
  * expects numeric types for usage metrics).
  */
 public final class LangSmithChatModelObservationHandler implements ObservationHandler<ChatModelObservationContext> {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 
@@ -112,7 +114,7 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
         if (StringUtils.hasText(message.getText())) {
             messageMap.put("content", message.getText());
         }
-        return JsonParser.toJson(messageMap);
+        return jsonHelper.toJson(messageMap);
     }
 
     private String buildAssistantMessageJson(AssistantMessage message) {
@@ -131,7 +133,7 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
             }
             messageMap.put("tool_calls", toolCalls);
         }
-        return JsonParser.toJson(messageMap);
+        return jsonHelper.toJson(messageMap);
     }
 
     private String buildToolResponseJson(ToolResponseMessage.ToolResponse response) {
@@ -142,7 +144,7 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
         if (StringUtils.hasText(response.responseData())) {
             messageMap.put("content", response.responseData());
         }
-        return JsonParser.toJson(messageMap);
+        return jsonHelper.toJson(messageMap);
     }
 
     private static String toEventName(MessageType messageType) {
