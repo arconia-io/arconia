@@ -15,7 +15,7 @@ class FlociDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Flo
     @Override
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
-                .imageName(ArconiaFlociContainer.COMPATIBLE_IMAGE_NAME)
+                .imageName("floci/floci")
                 .build();
     }
 

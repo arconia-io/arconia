@@ -39,7 +39,7 @@ class OpenTelemetryAdvisorObservationConventionTests {
     void shouldHaveLowCardinalityKeyValues() {
         var context = createContext("call");
 
-        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+        assertThat(convention.getLowCardinalityKeyValues(context)).containsExactlyInAnyOrder(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of("spring.ai.kind", "advisor"),
