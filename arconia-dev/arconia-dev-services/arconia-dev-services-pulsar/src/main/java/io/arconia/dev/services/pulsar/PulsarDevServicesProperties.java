@@ -29,7 +29,7 @@ public class PulsarDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "apachepulsar/pulsar:4.2.1";
+    private String imageName = "apachepulsar/pulsar:4.2.2";
 
     /**
      * Environment variables to set in the service.
