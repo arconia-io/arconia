@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class OpenLitContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse("ghcr.io/openlit/openlit:1.20.0");
-    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.4-distroless");
+    private static final DockerImageName IMAGE = DockerImageName.parse("ghcr.io/openlit/openlit:1.21.1");
+    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.5-distroless");
 
     @Test
     void containerStartsAndStopsSuccessfully() {
