@@ -46,9 +46,6 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-valkey'
 // Integrations
 include 'arconia-integrations:arconia-docling'
 
-// Kubernetes
-include 'arconia-kubernetes:arconia-kubernetes-service-binding'
-
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'

@@ -54,9 +54,6 @@ Arconia is modular: you only add what you need on top of your standard Spring Bo
 | xref:dev-services:index.adoc[Dev Services]
 | Automatic provisioning of containerized services for development and testing.
 
-| xref:kubernetes:index.adoc[Kubernetes]
-| Configuration and deployment of Spring Boot applications to Kubernetes.
-
 | xref:multitenancy:index.adoc[Multitenancy]
 | Built-in support for multitenant applications.
 
@@ -68,4 +65,7 @@ Arconia is modular: you only add what you need on top of your standard Spring Bo
 
 | xref:generative-ai:docling-document-reader.adoc[Docling]
 | AI-powered document processing with the Docling document reader.
+
+| xref:data:index.adoc[Data]
+| Extend Spring Data with additional databases and data access scenarios.
 |===

@@ -23,7 +23,7 @@ New to Arconia? Follow the xref:getting-started.adoc[Getting Started] guide to a
 * *xref:observability:index.adoc[AI Observability]*. Supporting AI observability with pluggable semantic conventions, including xref:observability:semantic-conventions/opentelemetry.adoc[OpenTelemetry], xref:observability:semantic-conventions/openinference.adoc[OpenInference], xref:observability:semantic-conventions/openlit.adoc[OpenLit], xref:observability:semantic-conventions/openllmetry.adoc[OpenLLMetry], and xref:observability:semantic-conventions/langsmith.adoc[LangSmith], with integrations for platforms like xref:dev-services:phoenix.adoc[Arize Phoenix], xref:dev-services:lgtm.adoc[Grafana LGTM], and xref:dev-services:openlit.adoc[OpenLit].
 * *xref:generative-ai:docling-document-reader.adoc[Docling]*. AI-powered document processing, enabling structured content extraction from PDFs, Office files, and HTML documents for use in AI pipelines.
 * *xref:multitenancy:index.adoc[Multitenancy]*. Offering built-in support for multitenant applications, including web, data, security, and configuration aspects.
-* *xref:kubernetes:index.adoc[Kubernetes]*. Simplifying the configuration and deployment of Spring Boot applications to Kubernetes, including the build of multi-architecture container images and support for the Service Binding specification.
+* *xref:data:index.adoc[Data]*. Extending Spring Data with support for additional databases and data access scenarios not covered out of the box.
 
 == Community
 

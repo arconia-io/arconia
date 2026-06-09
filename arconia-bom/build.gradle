@@ -46,8 +46,6 @@ dependencies {
 
         api project(":arconia-integrations:arconia-docling")
 
-        api project(":arconia-kubernetes:arconia-kubernetes-service-binding")
-
         api project(":arconia-multitenancy:arconia-multitenancy-core")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
 
