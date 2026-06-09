@@ -15,6 +15,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The Valkey Dev Service module (`arconia-dev-services-valkey`) has been removed as it's currently redundant with respect to the Redis Dev Service. If you were using the Valkey Dev Service, you can switch it with the Redis equivalent (`arconia-dev-services-redis`) and define a Valkey image via the `arconia.dev.services.redis.image-name`.
 
+== Generative AI
+
+* The Arconia modules integrating with Spring AI are baselined on Spring AI 2.0.0-RC2, preparing towards its GA release. If you need to migrate your applications from Spring AI 1.x to 2.x, you might find useful https://docs.arconia.io/arconia-migrations/latest/spring/spring-ai/2-0/[our OpenRewrite recipes] to perform the upgrade automatically.
+
 == Kubernetes
 
 === Kubernetes Service Binding
