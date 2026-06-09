@@ -9,7 +9,7 @@ public final class Images {
 
     public static final String LGTM = "grafana/otel-lgtm:0.28.0";
 
-    public static final String OTEL_COLLECTOR = "otel/opentelemetry-collector-contrib:0.152.0";
+    public static final String OTEL_COLLECTOR = "otel/opentelemetry-collector-contrib:0.153.0";
 
     public static final String OPENLIT = "ghcr.io/openlit/openlit:1.21.1";
 
