@@ -37,7 +37,7 @@ dependencies {
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
-    testRuntimeOnly "io.grpc:grpc-netty-shaded:1.81.0"
+    testRuntimeOnly "io.grpc:grpc-netty-shaded:1.82.0"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
