@@ -22,11 +22,12 @@
 
 ## ✨&nbsp; Features
 
-- **Developer Experience.** First-class support for development and testing modes in Spring Boot applications, making local development easier, more productive, and more fun. Includes Dev Services for automatic provisioning of external services using containers.
-- **Generative AI.** Extended integration capabilities for Spring Boot applications, including AI observability and evaluation platforms, AI inference services, and AI document processors.
-- **Kubernetes.** Simplified configuration and deployment of Spring Boot applications to Kubernetes, including multi-architecture container images, Service Binding specification support, and automatic generation of Kubernetes manifests.
+- **Dev Services.** First-class support for development and testing modes in Spring Boot applications. Dev Services automatically provisions external services using containers, making local development and testing easier, more productive, and more fun.
+- **OpenTelemetry.** Unified observability for Spring Boot applications, combining full support for OpenTelemetry and Micrometer for logs, metrics, and traces.
+- **AI Observability.** Pluggable semantic conventions for AI observability, including OpenTelemetry, OpenInference, OpenLit, OpenLLMetry, and LangSmith, with integrations for platforms like Arize Phoenix, Grafana LGTM, and OpenLit.
+- **Docling.** AI-powered document processing, enabling structured content extraction from PDFs, Office files, and HTML documents for use in AI pipelines.
 - **Multitenancy.** Built-in support for multitenant applications, covering web, data, security, and configuration aspects.
-- **Observability.** Unified observability for Spring Boot applications, combining full support for OpenTelemetry and Micrometer, as well as extended instrumentation.
+- **Data.** Extending Spring Data with support for additional databases and data access scenarios not covered out of the box.
 
 > [!NOTE]
 > The Arconia Framework is currently under active development, working towards its first stable release. Many of the core features are already available. We're working hard to improve it and appreciate your patience as we continue to refine the framework. Feel free to try it out and share your feedback!
