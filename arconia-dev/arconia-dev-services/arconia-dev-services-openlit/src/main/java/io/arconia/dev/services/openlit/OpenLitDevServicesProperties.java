@@ -28,7 +28,7 @@ public class OpenLitDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Full name of the container image used for OpenLit.
      */
-    private String imageName = "ghcr.io/openlit/openlit:1.21.1";
+    private String imageName = "ghcr.io/openlit/openlit:1.22.0";
 
     /**
      * Full name of the container image used for the internal ClickHouse instance.
