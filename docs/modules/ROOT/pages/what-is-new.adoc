@@ -17,11 +17,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Generative AI
 
-* The Arconia modules integrating with Spring AI are baselined on Spring AI 2.0.0-RC2, preparing towards its GA release. If you need to migrate your applications from Spring AI 1.x to 2.x, you might find useful https://docs.arconia.io/arconia-migrations/latest/spring/spring-ai/2-0/[our OpenRewrite recipes] to perform the upgrade automatically.
+* The Arconia modules integrating with Spring AI are baselined on Spring AI 2.0.0. If you need to migrate your applications from Spring AI 1.x to 2.x, you might find useful https://docs.arconia.io/arconia-migrations/latest/spring/spring-ai/2-0/[our OpenRewrite recipes] to perform the upgrade automatically.
 
 == Kubernetes
 
 === Kubernetes Service Binding
 
-* The `arconia-kubernetes-service-binding` module has been removed. Its goal was to consolidate support for the https://servicebinding.io[Kubernetes Service Binding API] in the Spring ecosystem. However, the https://github.com/spring-cloud/spring-cloud-bindings[Spring Cloud Binding] library which provided the foundation for such functionality has not been updated in almost 2 years, and it doesn't seem to be actively maintained any longer. Furthermore, the Spring AI module extending support for the Kubernetes Service Binding API to inference services and vector store has been fully removed in Spring AI 2.0 (https://github.com/spring-projects/spring-ai/issues/6079[issue]).
+* The `arconia-kubernetes-service-binding` module has been removed. Its goal was to consolidate support for the https://servicebinding.io[Kubernetes Service Binding API] in the Spring ecosystem. However, the https://github.com/spring-cloud/spring-cloud-bindings[Spring Cloud Binding] library which provided the foundation for such functionality has not been updated in almost 2 years, and it doesn't seem to be actively maintained any longer. Furthermore, the Spring AI module extending support for the Kubernetes Service Binding API to inference services and vector stores has been fully removed in Spring AI 2.0 (see https://github.com/spring-projects/spring-ai/issues/6079[issue]).
 * If you'd like to keep using the Spring Cloud Binding library, you can include the explicit dependency in your project: `org.springframework.cloud:spring-cloud-bindings`.
