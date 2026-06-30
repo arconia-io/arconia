@@ -4,7 +4,6 @@ nav:
   - modules/ROOT/nav.adoc
   - modules/data/nav.adoc
   - modules/dev-services/nav.adoc
-  - modules/kubernetes/nav.adoc
   - modules/multitenancy/nav.adoc
   - modules/observability/nav.adoc
   - modules/generative-ai/nav.adoc
