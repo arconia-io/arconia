@@ -30,7 +30,7 @@ dependencyManagement {
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
     dependencies {
-        dependency "org.postgresql:postgresql:42.7.11"
+        dependency "org.postgresql:postgresql:42.7.12"
     }
 }
 
