@@ -1,5 +1,7 @@
 package io.arconia.boot.bootstrap;
 
+import java.io.File;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -21,6 +23,8 @@ final class BootstrapModeDetector {
         "org.junit.runners.",
         "org.junit.platform.",
         "org.springframework.boot.test.",
+        "org.testng.",
+        "io.cucumber.",
         "cucumber.runtime.");
 
     @Nullable
@@ -36,6 +40,7 @@ final class BootstrapModeDetector {
             synchronized (LOCK) {
                 if (cachedMode == null) {
                     cachedMode = doDetect(stackTraceElements);
+                    logger.debug("Detected bootstrap mode: {}", cachedMode);
                 }
             }
         }
@@ -47,48 +52,60 @@ final class BootstrapModeDetector {
     }
 
     private static BootstrapMode doDetect(StackTraceElement @Nullable [] stackTraceElements) {
-        // 1. Check for environment variable or JVM system property set by the Arconia CLI.
-        String modeProperty = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase().replace(".", "_"));
+        StackTraceElement[] stackTrace = (stackTraceElements == null || stackTraceElements.length == 0)
+                ? Thread.currentThread().getStackTrace() : stackTraceElements;
+
+        // 1. Check for an explicit mode: environment variable or JVM system property.
+        String modeProperty = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_"));
         if (!StringUtils.hasText(modeProperty)) {
             modeProperty = System.getProperty(BootstrapMode.PROPERTY_KEY);
         }
         if (StringUtils.hasText(modeProperty)) {
-            if (BootstrapMode.isValid(modeProperty.toUpperCase())) {
-                return BootstrapMode.valueOf(modeProperty.toUpperCase());
+            String normalizedMode = modeProperty.strip().toUpperCase(Locale.ROOT);
+            if (BootstrapMode.isValid(normalizedMode)) {
+                BootstrapMode mode = BootstrapMode.valueOf(normalizedMode);
+                if (mode != BootstrapMode.PROD && containsAotProcessor(stackTrace)) {
+                    logger.warn("The bootstrap mode is explicitly set to {} while Spring AOT processing is running. "
+                            + "The {} mode behavior will be baked into the AOT artifacts.", mode, mode);
+                }
+                return mode;
             }
             logger.warn("Invalid {} property value: '{}'. Defaulting to PROD mode.", BootstrapMode.PROPERTY_KEY, modeProperty);
             return BootstrapMode.PROD;
         }
 
         // 2. Check the stack trace for known class prefixes that indicate a certain mode.
-        long startTime = System.nanoTime();
-        StackTraceElement[] stackTrace = (stackTraceElements == null || stackTraceElements.length == 0) ? Thread.currentThread().getStackTrace() : stackTraceElements;
+        if (containsAotProcessor(stackTrace)) {
+            return BootstrapMode.PROD;
+        }
         for (StackTraceElement element : stackTrace) {
-            String className = element.getClassName();
-            if (className.startsWith(SpringApplicationAotProcessor.class.getName())) {
-                logger.debug("Prod bootstrap mode detection from stack trace took {} ns", System.nanoTime() - startTime);
-                return BootstrapMode.PROD;
-            }
             for (String prefix : TEST_CLASS_PREFIXES) {
-                if (className.startsWith(prefix)) {
-                    logger.debug("Test bootstrap mode detection from stack trace took {} ns", System.nanoTime() - startTime);
+                if (element.getClassName().startsWith(prefix)) {
                     return BootstrapMode.TEST;
                 }
             }
         }
-        logger.debug("Bootstrap mode detection from stack trace took {} ns", System.nanoTime() - startTime);
 
-        // 3. Check if running in native image context.
+        // 3. Check if running in a native image context.
         if (isNativeContext()) {
             return BootstrapMode.PROD;
         }
 
-        // 4. Check if running in development context.
+        // 4. Check if running in a development context.
         if (isDevelopmentContext()) {
             return BootstrapMode.DEV;
         }
 
         return BootstrapMode.PROD;
+    }
+
+    private static boolean containsAotProcessor(StackTraceElement[] stackTrace) {
+        for (StackTraceElement element : stackTrace) {
+            if (element.getClassName().startsWith(SpringApplicationAotProcessor.class.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean isNativeContext() {
@@ -101,9 +118,29 @@ final class BootstrapModeDetector {
         if (ClassUtils.isPresent("org.springframework.boot.devtools.RemoteSpringApplication", classLoader)) {
             return true;
         }
-        // 2. Check if the class loader is the one used by Java at development time
-        if (classLoader != null && classLoader.getClass().getName().contains("AppClassLoader")) {
-            return true;
+        // 2. Check if the class loader is the one used by Java at development time.
+        // Packaged Spring Boot applications run under LaunchedClassLoader or a container class loader, never AppClassLoader.
+        if (classLoader == null || !classLoader.getClass().getName().contains("AppClassLoader")) {
+            return false;
+        }
+        // 3. Check if the application is running from the output directories of a build tool or IDE,
+        // which only happens at development time. Packaged applications (jar, exploded jar,
+        // container image) run from different locations, so they are not affected.
+        return isDevelopmentClassPath(System.getProperty("java.class.path"));
+    }
+
+    static boolean isDevelopmentClassPath(@Nullable String classPath) {
+        if (!StringUtils.hasText(classPath)) {
+            return false;
+        }
+        for (String entry : classPath.split(File.pathSeparator)) {
+            String path = entry.replace('\\', '/');
+            if (path.contains("/build/classes/")            // Gradle
+                    || path.endsWith("/target/classes")     // Maven
+                    || path.contains("/out/production/")    // IntelliJ IDEA
+                    || path.endsWith("/bin/main")) {        // Eclipse (Buildship)
+                return true;
+            }
         }
         return false;
     }

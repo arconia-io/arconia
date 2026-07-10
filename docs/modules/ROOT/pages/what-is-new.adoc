@@ -5,23 +5,8 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
-== Data
+== Core Features
 
-=== Data JDBC SQLite
+=== Profiles
 
-* A new `arconia-data-jdbc-sqlite` module has been introduced to add https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect and the SQLite JDBC driver, so SQLite can be used as the database backing your Spring Data JDBC repositories. Learn more about this new module in the xref:data:jdbc-sqlite.adoc[dedicated documentation].
-
-== Dev Services
-
-* The Valkey Dev Service module (`arconia-dev-services-valkey`) has been removed as it's currently redundant with respect to the Redis Dev Service. If you were using the Valkey Dev Service, you can switch it with the Redis equivalent (`arconia-dev-services-redis`) and define a Valkey image via the `arconia.dev.services.redis.image-name`.
-
-== Generative AI
-
-* The Arconia modules integrating with Spring AI are baselined on Spring AI 2.0.0. If you need to migrate your applications from Spring AI 1.x to 2.x, you might find useful https://docs.arconia.io/arconia-migrations/latest/spring/spring-ai/2-0/[our OpenRewrite recipes] to perform the upgrade automatically.
-
-== Kubernetes
-
-=== Kubernetes Service Binding
-
-* The `arconia-kubernetes-service-binding` module has been removed. Its goal was to consolidate support for the https://servicebinding.io[Kubernetes Service Binding API] in the Spring ecosystem. However, the https://github.com/spring-cloud/spring-cloud-bindings[Spring Cloud Binding] library which provided the foundation for such functionality has not been updated in almost 2 years, and it doesn't seem to be actively maintained any longer. Furthermore, the Spring AI module extending support for the Kubernetes Service Binding API to inference services and vector stores has been fully removed in Spring AI 2.0 (see https://github.com/spring-projects/spring-ai/issues/6079[issue]).
-* If you'd like to keep using the Spring Cloud Binding library, you can include the explicit dependency in your project: `org.springframework.cloud:spring-cloud-bindings`.
+* The profiles that Arconia activates automatically in dev and test mode can now be customized (or disabled) via the new `META-INF/arconia-bootstrap.properties` file, checked in with your application. For example, you can use it to activate a `local` profile instead of the default `dev` one when running the application in dev mode (`arconia.dev.profiles=local`). The mode-specific profiles are now activated before Spring Boot loads the application configuration, so profile-specific configuration files are processed as part of the standard Spring Boot configuration flow, including when importing configuration from external sources like Spring Cloud Config Server or HashiCorp Vault. As a consequence, the `arconia.dev.profiles`, `arconia.test.profiles`, and `arconia.bootstrap.profiles.enabled` properties are no longer supported in `application.properties`/`application.yml`: you can define them in the new bootstrap configuration file, as JVM system properties, as environment variables, or as command line arguments. Learn more in the xref:core-features/profiles.adoc[Profiles] documentation.

@@ -1,0 +1,28 @@
+{
+  "properties": [
+    {
+      "name": "arconia.bootstrap.mode",
+      "type": "io.arconia.boot.bootstrap.BootstrapMode",
+      "description": "The mode used to bootstrap the application (dev, test, prod). It describes the launch context, so it only takes effect as a JVM system property (-Darconia.bootstrap.mode) or as the ARCONIA_BOOTSTRAP_MODE environment variable. When not set, the mode is auto-detected."
+    },
+    {
+      "name": "arconia.bootstrap.profiles.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the profiles are enabled based on the application mode. Resolved before the application configuration is loaded, so it is only supported in the META-INF/arconia-bootstrap.properties file, as a JVM system property, as an environment variable, or as a command line argument.",
+      "defaultValue": true
+    },
+    {
+      "name": "arconia.dev.profiles",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Name of the profiles to activate in development mode. Resolved before the application configuration is loaded, so it is only supported in the META-INF/arconia-bootstrap.properties file, as a JVM system property, as an environment variable, or as a command line argument.",
+      "defaultValue": ["dev"]
+    },
+    {
+      "name": "arconia.test.profiles",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Name of the profiles to activate in test mode. Resolved before the application configuration is loaded, so it is only supported in the META-INF/arconia-bootstrap.properties file, as a JVM system property, as an environment variable, or as a command line argument.",
+      "defaultValue": ["test"]
+    }
+  ],
+  "hints": []
+}

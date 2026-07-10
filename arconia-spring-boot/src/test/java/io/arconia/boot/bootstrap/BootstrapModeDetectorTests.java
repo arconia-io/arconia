@@ -73,6 +73,21 @@ class BootstrapModeDetectorTests {
     }
 
     @Test
+    void whenArconiaBootstrapModeSetInBootstrapConfigurationFileItIsIgnored() {
+        var stubClassLoader = BootstrapConfigurationFileTests.classLoaderWithBootstrapFile("arconia.bootstrap.mode=prod");
+        Thread currentThread = Thread.currentThread();
+        ClassLoader originalClassLoader = currentThread.getContextClassLoader();
+        try {
+            currentThread.setContextClassLoader(stubClassLoader);
+            // The mode is contextual and cannot be set in the static bootstrap configuration file:
+            // the JUnit frames in the call stack determine the mode.
+            assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.TEST);
+        } finally {
+            currentThread.setContextClassLoader(originalClassLoader);
+        }
+    }
+
+    @Test
     void whenEmptyStackTrace() {
         StackTraceElement[] emptyStackTrace = new StackTraceElement[] {};
         // The test is running in a JUnit context, so we expect TEST mode.
@@ -112,6 +127,22 @@ class BootstrapModeDetectorTests {
     void testModeWhenCucumberInStackTrace() {
         StackTraceElement[] testStackTrace = new StackTraceElement[] {
             new StackTraceElement("cucumber.runtime.Runtime", "run", "Runtime.java", 300)
+        };
+        assertThat(BootstrapModeDetector.detect(testStackTrace)).isEqualTo(BootstrapMode.TEST);
+    }
+
+    @Test
+    void testModeWhenModernCucumberInStackTrace() {
+        StackTraceElement[] testStackTrace = new StackTraceElement[] {
+            new StackTraceElement("io.cucumber.core.runtime.Runtime", "run", "Runtime.java", 100)
+        };
+        assertThat(BootstrapModeDetector.detect(testStackTrace)).isEqualTo(BootstrapMode.TEST);
+    }
+
+    @Test
+    void testModeWhenTestNGInStackTrace() {
+        StackTraceElement[] testStackTrace = new StackTraceElement[] {
+            new StackTraceElement("org.testng.TestRunner", "run", "TestRunner.java", 100)
         };
         assertThat(BootstrapModeDetector.detect(testStackTrace)).isEqualTo(BootstrapMode.TEST);
     }
@@ -230,6 +261,46 @@ class BootstrapModeDetectorTests {
 
         BootstrapMode secondResult = BootstrapModeDetector.detect(testStackTrace);
         assertThat(secondResult).isEqualTo(BootstrapMode.PROD);
+    }
+
+    // DEVELOPMENT CLASS PATH
+
+    @Test
+    void developmentClassPathWhenGradleOutputDirectory() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/home/user/demo/build/classes/java/main")).isTrue();
+    }
+
+    @Test
+    void developmentClassPathWhenMavenOutputDirectory() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/home/user/demo/target/classes")).isTrue();
+    }
+
+    @Test
+    void developmentClassPathWhenIntelliJOutputDirectory() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/home/user/demo/out/production/classes")).isTrue();
+    }
+
+    @Test
+    void developmentClassPathWhenEclipseOutputDirectory() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/home/user/demo/bin/main")).isTrue();
+    }
+
+    @Test
+    void developmentClassPathWhenWindowsPaths() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("D:\\demo\\build\\classes\\java\\main")).isTrue();
+    }
+
+    @Test
+    void notDevelopmentClassPathWhenPackagedApplication() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/app/demo.jar")).isFalse();
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/app/BOOT-INF/classes")).isFalse();
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/opt/app/lib/demo.jar:/opt/app/lib/spring-core.jar")).isFalse();
+    }
+
+    @Test
+    void notDevelopmentClassPathWhenNullOrEmpty() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath(null)).isFalse();
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("")).isFalse();
     }
 
     private void mockNativeContext(boolean isNative) {
