@@ -6,11 +6,15 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-api")
     api project(":arconia-spring-boot")
     api "org.springframework.boot:spring-boot-testcontainers"
 
     optional "org.springframework.boot:spring-boot-actuator"
+    optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
     optional "org.testcontainers:testcontainers-jdbc"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

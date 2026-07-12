@@ -3,7 +3,7 @@
 
 A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes.
 
-It works with Spring Boot libraries that support MongoDB including:
+It works with Spring Boot libraries that support MongoDB, including:
 
 * https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
 * https://spring.io/projects/spring-session[Spring Session for MongoDB]

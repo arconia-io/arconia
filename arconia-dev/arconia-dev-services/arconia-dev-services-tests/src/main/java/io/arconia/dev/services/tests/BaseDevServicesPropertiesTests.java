@@ -1,20 +1,24 @@
 package io.arconia.dev.services.tests;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
-import io.arconia.dev.services.api.config.ResourceMapping;
-import io.arconia.dev.services.api.config.VolumeMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Abstract base test class for testing {@link BaseDevServicesProperties} implementations.
+ * <p>
+ * Values are applied via Spring Boot's {@link Binder} so that the actual configuration
+ * binding path is exercised: a property class missing a setter fails these tests instead
+ * of silently discarding user configuration.
  *
  * @param <T> the specific {@link BaseDevServicesProperties} implementation type
  */
@@ -22,13 +26,7 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
 
     private static final String TEST_IMAGE_NAME = "test-image:latest";
     private static final int TEST_PORT = 9999;
-    private static final Map<String, String> TEST_ENVIRONMENT = Map.of("KEY", "value");
-    private static final List<String> TEST_NETWORK_ALIASES = List.of("network1", "network2");
     private static final Duration TEST_STARTUP_TIMEOUT = Duration.ofMinutes(1);
-    private static final ResourceMapping TEST_RESOURCE =
-            new ResourceMapping("test-resource.txt", "/tmp/test-resource.txt");
-    private static final VolumeMapping TEST_VOLUME =
-            new VolumeMapping("/host/path", "/container/path");
 
     /**
      * Create a new instance of the properties class to test.
@@ -40,6 +38,16 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
      * such as the image name and startup timeout.
      */
     protected abstract DefaultValues getExpectedDefaults();
+
+    /**
+     * Bind the given configuration values (relative to the properties prefix)
+     * onto the given properties instance via Spring Boot's {@link Binder}.
+     */
+    protected static <P> P bind(P properties, Map<String, String> values) {
+        return new Binder(new MapConfigurationPropertySource(values))
+                .bind("", Bindable.ofInstance(properties))
+                .orElse(properties);
+    }
 
     @Test
     void shouldCreateInstanceWithDefaultValues() {
@@ -63,37 +71,36 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
     }
 
     @Test
-    void shouldUpdateCommonProperties() {
+    void shouldBindCommonProperties() {
         T properties = createProperties();
         DefaultValues defaults = getExpectedDefaults();
 
-        properties.setEnabled(false);
+        Map<String, String> values = new HashMap<>();
+        values.put("enabled", "false");
+        values.put("environment.KEY", "value");
+        values.put("image-name", TEST_IMAGE_NAME);
+        values.put("network-aliases[0]", "network1");
+        values.put("network-aliases[1]", "network2");
+        values.put("port", String.valueOf(TEST_PORT));
+        values.put("resources[0].source-path", "test-resource.txt");
+        values.put("resources[0].container-path", "/tmp/test-resource.txt");
+        values.put("shared", String.valueOf(!defaults.shared()));
+        values.put("startup-timeout", TEST_STARTUP_TIMEOUT.toString());
+        values.put("volumes[0].host-path", "/host/path");
+        values.put("volumes[0].container-path", "/container/path");
+
+        bind(properties, values);
+
         assertThat(properties.isEnabled()).isFalse();
-
-        properties.setEnvironment(TEST_ENVIRONMENT);
         assertThat(properties.getEnvironment()).containsEntry("KEY", "value");
-
-        properties.setImageName(TEST_IMAGE_NAME);
         assertThat(properties.getImageName()).isEqualTo(TEST_IMAGE_NAME);
-
-        properties.setNetworkAliases(TEST_NETWORK_ALIASES);
         assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
-
-        properties.setPort(TEST_PORT);
         assertThat(properties.getPort()).isEqualTo(TEST_PORT);
-
-        properties.setResources(List.of(TEST_RESOURCE));
         assertThat(properties.getResources()).hasSize(1);
         assertThat(properties.getResources().getFirst().getSourcePath()).isEqualTo("test-resource.txt");
         assertThat(properties.getResources().getFirst().getContainerPath()).isEqualTo("/tmp/test-resource.txt");
-
-        properties.setShared(!defaults.shared());
         assertThat(properties.isShared()).isEqualTo(!defaults.shared());
-
-        properties.setStartupTimeout(TEST_STARTUP_TIMEOUT);
         assertThat(properties.getStartupTimeout()).isEqualTo(TEST_STARTUP_TIMEOUT);
-
-        properties.setVolumes(List.of(TEST_VOLUME));
         assertThat(properties.getVolumes()).hasSize(1);
         assertThat(properties.getVolumes().getFirst().getHostPath()).isEqualTo("/host/path");
         assertThat(properties.getVolumes().getFirst().getContainerPath()).isEqualTo("/container/path");
@@ -143,31 +150,6 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
 
         }
 
-    }
-
-    /**
-     * Check if a property is actually implemented (not just using interface default).
-     * We do this by checking if the getter's declaring class is the implementation,
-     * not the interface.
-     * <p>
-     * The reason is to be able to add new common properties without forcing
-     * right away all modules to implement them.
-     */
-    private boolean isPropertyImplemented(T properties, String propertyName) {
-        try {
-            String getterName = "get" + propertyName.substring(0, 1).toUpperCase()
-                    + propertyName.substring(1);
-            if (propertyName.equals("enabled") || propertyName.equals("shared")) {
-                getterName = "is" + propertyName.substring(0, 1).toUpperCase()
-                        + propertyName.substring(1);
-            }
-
-            Method getter = properties.getClass().getMethod(getterName);
-            // If the method is declared in the concrete class (not just inherited from interface)
-            return getter.getDeclaringClass() != BaseDevServicesProperties.class;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
     }
 
 }

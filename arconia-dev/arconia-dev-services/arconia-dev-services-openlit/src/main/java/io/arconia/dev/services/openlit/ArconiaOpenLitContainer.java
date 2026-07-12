@@ -16,7 +16,7 @@ final class ArconiaOpenLitContainer extends OpenLitContainer {
     private final OpenLitDevServicesProperties properties;
 
     ArconiaOpenLitContainer(OpenLitDevServicesProperties properties) {
-        super(DockerImageName.parse(properties.getImageName()));
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
         this.withClickHouseImage(properties.getClickhouseImageName());
         ContainerConfigurer.base(this, properties);
@@ -25,13 +25,13 @@ final class ArconiaOpenLitContainer extends OpenLitContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), UI_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getOtlpGrpcPort())) {
+        if (ContainerUtils.isFixedPort(properties.getOtlpGrpcPort())) {
             addFixedExposedPort(properties.getOtlpGrpcPort(), OTLP_GRPC_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getOtlpHttpPort())) {
+        if (ContainerUtils.isFixedPort(properties.getOtlpHttpPort())) {
             addFixedExposedPort(properties.getOtlpHttpPort(), OTLP_HTTP_PORT);
         }
     }

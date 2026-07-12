@@ -77,7 +77,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return enabled;
     }
 
-    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -87,7 +86,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return imageName;
     }
 
-    @Override
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -97,7 +95,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return environment;
     }
 
-    @Override
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -107,7 +104,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return networkAliases;
     }
 
-    @Override
     public void setNetworkAliases(List<String> networkAliases) {
         this.networkAliases = networkAliases;
     }
@@ -117,7 +113,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return port;
     }
 
-    @Override
     public void setPort(int port) {
         this.port = port;
     }
@@ -127,7 +122,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return resources;
     }
 
-    @Override
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
     }
@@ -137,7 +131,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return shared;
     }
 
-    @Override
     public void setShared(boolean shared) {
         this.shared = shared;
     }
@@ -147,7 +140,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return startupTimeout;
     }
 
-    @Override
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
     }
@@ -157,7 +149,6 @@ public class MongoDbAtlasDevServicesProperties implements BaseDevServicesPropert
         return volumes;
     }
 
-    @Override
     public void setVolumes(List<VolumeMapping> volumes) {
         this.volumes = volumes;
     }

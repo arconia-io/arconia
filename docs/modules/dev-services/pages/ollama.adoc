@@ -9,7 +9,7 @@ It works with Spring Boot libraries that support Ollama, including:
 
 [NOTE]
 ====
-If a native Ollama connection is detected, for example, if you're already running the Ollama application on your laptop, the Ollama Dev Service will not be enabled.
+If a native Ollama connection is detected, for example, if you're already running the Ollama application on your laptop, the Ollama Dev Service will not start a container and the native service will be used instead. The detection targets the URL configured via `spring.ai.ollama.base-url`, or `http://localhost:11434` if not set. You can force the use of the container via the `arconia.dev.services.ollama.ignore-native-service` property.
 ====
 
 == Dependencies
@@ -75,3 +75,8 @@ include::partial$disabling-dev-service.adoc[]
 == Spring AI OpenAI Compatibility
 
 When the Spring AI OpenAI module is on the classpath, the Ollama Dev Service automatically configures the OpenAI client to use the Ollama-compatible API endpoint. The `spring.ai.openai.base-url` and `spring.ai.openai.api-key` properties are set dynamically, pointing to the Ollama container when available or to the native Ollama service otherwise.
+
+[NOTE]
+====
+While the Ollama Dev Service is enabled, these properties take precedence over any user-defined configuration, and the API key is set to `ollama`. If you want your application to use a real OpenAI endpoint in dev or test mode, disable the Ollama Dev Service via `arconia.dev.services.ollama.enabled=false`.
+====

@@ -47,7 +47,7 @@ class MySqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigu
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(getContainerClass());
             var container = context.getBean(getContainerClass());
-            assertThat(container.getDockerImageName()).contains("mysql");
+            assertThat(container.getDockerImageName()).contains(ArconiaMySqlContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
             assertThat(container.isShouldBeReused()).isFalse();

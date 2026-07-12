@@ -4,4 +4,16 @@ include::ROOT:partial$app-run.adoc[]
 
 NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
 
-Your integration tests will automatically use the Dev Services without any additional configuration.
+Your integration tests based on `@SpringBootTest` will automatically use the Dev Services without any additional configuration.
+
+Test slices (e.g. `@DataJdbcTest`) load only a subset of the auto-configurations, so they don't pick up Dev Services automatically. You can import the Dev Service explicitly. For example, for the PostgreSQL Dev Service:
+
+[source,java]
+----
+@DataJdbcTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+@Import(PostgresqlDevServicesAutoConfiguration.class)
+class CustomerRepositoryTests {
+    ...
+}
+----

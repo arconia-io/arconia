@@ -35,10 +35,10 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), AMQP_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+        if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
             addFixedExposedPort(properties.getManagementConsolePort(), HTTP_PORT);
         }
     }

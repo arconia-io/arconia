@@ -38,7 +38,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the container.
+| Environment variables to set in the service.
 
 | `arconia.dev.services.{service-name}.network-aliases`
 | `[]`

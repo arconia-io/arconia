@@ -1,5 +1,7 @@
 package io.arconia.dev.services.phoenix;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
@@ -22,6 +24,7 @@ class PhoenixDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<P
         return DefaultValues.builder()
                 .imageName(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME)
                 .shared(true)
+                .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }
 

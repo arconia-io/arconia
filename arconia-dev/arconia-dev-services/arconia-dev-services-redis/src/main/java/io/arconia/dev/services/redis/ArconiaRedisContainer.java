@@ -15,8 +15,6 @@ final class ArconiaRedisContainer extends RedisContainer {
 
     static final String COMPATIBLE_IMAGE_NAME = "redis";
 
-    static final int REDIS_PORT = 6379;
-
     public ArconiaRedisContainer(RedisDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
@@ -27,7 +25,7 @@ final class ArconiaRedisContainer extends RedisContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), REDIS_PORT);
         }
     }

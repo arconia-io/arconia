@@ -44,7 +44,6 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .description("Phoenix Dev Service")
                     .container(container -> container
                             .type(ArconiaPhoenixContainer.class)
-                            .serviceConnectionName("phoenix")
                             .supplier(() -> new ArconiaPhoenixContainer(properties))
                     ));
 

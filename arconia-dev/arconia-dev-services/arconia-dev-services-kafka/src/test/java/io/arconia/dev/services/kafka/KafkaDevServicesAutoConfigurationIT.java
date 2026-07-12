@@ -12,12 +12,12 @@ import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link KafkaDevServicesAutoConfiguration}.
+ * Integration tests for {@link KafkaDevServicesAutoConfiguration}.
  */
 @EnabledIfDockerAvailable
 class KafkaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = defaultContextRunner(KafkaDevServicesAutoConfiguration.class);
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(KafkaDevServicesAutoConfiguration.class);
 
     @Override
     protected ApplicationContextRunner getContextRunner() {

@@ -7,6 +7,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,6 +37,11 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
     @Override
     protected String getServiceName() {
         return "otel-collector";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return OtlpTracingConnectionDetails.class;
     }
 
     @Test

@@ -24,7 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DevServicesEndpointAutoConfigurationTests {
 
 	private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(DevServicesEndpointAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(DevServicesEndpointAutoConfiguration.class))
+			.withPropertyValues("management.endpoints.web.exposure.include=devservices");
 
 	@BeforeEach
 	void setUp() {

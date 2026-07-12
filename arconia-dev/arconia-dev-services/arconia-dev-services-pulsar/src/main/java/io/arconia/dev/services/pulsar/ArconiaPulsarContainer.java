@@ -31,10 +31,10 @@ final class ArconiaPulsarContainer extends PulsarContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), BROKER_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+        if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
             addFixedExposedPort(properties.getManagementConsolePort(), BROKER_HTTP_PORT);
         }
     }

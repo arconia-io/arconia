@@ -15,6 +15,17 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+== Accessing the Management Console
+
+The application logs will show you the URL where you can access the LLDAP Management Console.
+
+[source,logs]
+----
+...o.t.ldap.LLdapContainer                  : LLDAP container is ready! UI available at http://localhost:<port>
+----
+
+By default, you can log in with username `admin` and password `password`. The default base DN is `dc=example,dc=com`.
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.

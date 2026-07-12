@@ -54,22 +54,27 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
 
     /**
      * Get the existing {@link DevServicesRegistry} bean or create a new one if it doesn't exist.
+     * The lookup is local to the given registry, so that each context in a hierarchy gets its
+     * own registry operating on its own bean definitions.
      */
     private DevServicesRegistry getOrCreateDevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry) {
-        // Check if DevServicesRegistry bean already exists.
-        if (beanFactory != null && beanFactory.containsBean(DEV_SERVICES_REGISTRY_BEAN_NAME)) {
-            return beanFactory.getBean(DEV_SERVICES_REGISTRY_BEAN_NAME, DevServicesRegistry.class);
-        }
+        Assert.notNull(environment, "environment has not been initialized");
 
-        // Create a new DevServicesRegistry instance.
-        DevServicesRegistry devServicesRegistry = new DevServicesRegistry(beanDefinitionRegistry);
-
-        // Register the new DevServicesRegistry instance as a singleton bean.
         if (beanDefinitionRegistry instanceof DefaultListableBeanFactory beanFactoryRegistry) {
+            if (beanFactoryRegistry.containsLocalBean(DEV_SERVICES_REGISTRY_BEAN_NAME)) {
+                if (beanFactoryRegistry.isTypeMatch(DEV_SERVICES_REGISTRY_BEAN_NAME, DevServicesRegistry.class)) {
+                    return beanFactoryRegistry.getBean(DEV_SERVICES_REGISTRY_BEAN_NAME, DevServicesRegistry.class);
+                }
+                // The bean name is taken by an unrelated bean: fall back to a non-shared registry.
+                return new DevServicesRegistry(beanDefinitionRegistry, environment);
+            }
+
+            DevServicesRegistry devServicesRegistry = new DevServicesRegistry(beanDefinitionRegistry, environment);
             beanFactoryRegistry.registerSingleton(DEV_SERVICES_REGISTRY_BEAN_NAME, devServicesRegistry);
+            return devServicesRegistry;
         }
 
-        return devServicesRegistry;
+        return new DevServicesRegistry(beanDefinitionRegistry, environment);
     }
 
     @Override
@@ -97,10 +102,9 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      */
     protected void setDefaultProperties(Map<String, Object> defaults) {
         Assert.notNull(environment, "environment has not been initialized");
-
-        if (environment instanceof ConfigurableEnvironment configurableEnvironment) {
-            DefaultPropertiesPropertySource.addOrMerge(defaults, configurableEnvironment.getPropertySources());
-        }
+        Assert.state(environment instanceof ConfigurableEnvironment,
+                "environment must be a ConfigurableEnvironment");
+        DefaultPropertiesPropertySource.addOrMerge(defaults, ((ConfigurableEnvironment) environment).getPropertySources());
     }
 
     /**

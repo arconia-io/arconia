@@ -1,8 +1,8 @@
 package io.arconia.dev.services.core.registration;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
@@ -67,13 +67,13 @@ public final class DevServiceDynamicPropertySource extends MapPropertySource {
      * or create and register a new {@code DevServiceDynamicPropertySource} in the
      * environment.
      */
-    public static DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
+    public static synchronized DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
         MutablePropertySources propertySources = environment.getPropertySources();
         PropertySource<?> existingPropertySource = propertySources.get(PROPERTY_SOURCE_NAME);
         if (existingPropertySource instanceof DevServiceDynamicPropertySource devServicePropertySource) {
             return devServicePropertySource;
         } else if (existingPropertySource == null) {
-            var propertySource = new DevServiceDynamicPropertySource(Collections.synchronizedMap(new LinkedHashMap<>()));
+            var propertySource = new DevServiceDynamicPropertySource(new ConcurrentHashMap<>());
             propertySources.addFirst(propertySource);
             return propertySource;
         } else {

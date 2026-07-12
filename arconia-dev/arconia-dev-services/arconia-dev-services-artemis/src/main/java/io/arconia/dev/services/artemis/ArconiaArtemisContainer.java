@@ -4,7 +4,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -33,17 +32,17 @@ final class ArconiaArtemisContainer extends ArtemisContainer {
 
         ContainerConfigurer.base(this, properties);
 
-        this.withUser(StringUtils.hasText(properties.getUsername()) ? properties.getUsername() : ArtemisDevServicesProperties.DEFAULT_USERNAME);
-        this.withPassword(StringUtils.hasText(properties.getPassword()) ? properties.getPassword() : ArtemisDevServicesProperties.DEFAULT_PASSWORD);
+        this.withUser(properties.getUsername());
+        this.withPassword(properties.getPassword());
     }
 
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), TCP_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getManagementConsolePort())) {
+        if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
             addFixedExposedPort(properties.getManagementConsolePort(), WEB_CONSOLE_PORT);
         }
     }

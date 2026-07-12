@@ -1,5 +1,7 @@
 package io.arconia.dev.services.pulsar;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.testcontainers.pulsar.PulsarContainer;
 
@@ -22,6 +24,7 @@ class PulsarDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Pu
         return DefaultValues.builder()
                 .imageName(ArconiaPulsarContainer.COMPATIBLE_IMAGE_NAME)
                 .shared(true)
+                .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }
 

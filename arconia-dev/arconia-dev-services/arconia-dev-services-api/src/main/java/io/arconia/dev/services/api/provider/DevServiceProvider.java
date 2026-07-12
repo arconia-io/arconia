@@ -1,11 +1,14 @@
 package io.arconia.dev.services.api.provider;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Marker interface for dev service modules that belong to a mutually exclusive category.
  * Each module registers a bean implementing this interface to enable conflict detection at startup.
  *
  * @see DevServiceCategories
  */
+@Incubating
 public interface DevServiceProvider {
 
     /**

@@ -4,15 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint.ServiceInfo;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint.ServiceInfoSummary;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link DevServicesEndpoint}.
@@ -138,7 +138,7 @@ class DevServicesEndpointTests {
     }
 
     @Test
-    void devServiceThrowsExceptionWhenServiceNotFound() {
+    void devServiceReturnsNullWhenServiceNotFound() {
         ContainerInfo containerInfo = createContainerInfo("container-1", "postgres:18", "running");
         DevServiceRegistration registration = new DevServiceRegistration(
                 "postgres",
@@ -147,16 +147,12 @@ class DevServicesEndpointTests {
         );
         registrations.put("postgres", registration);
 
-        assertThatThrownBy(() -> endpoint.devService("docling"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Dev service not found: docling");
+        assertThat(endpoint.devService("docling")).isNull();
     }
 
     @Test
-    void devServiceThrowsExceptionWhenRegistrationsEmpty() {
-        assertThatThrownBy(() -> endpoint.devService("postgres"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Dev service not found: postgres");
+    void devServiceReturnsNullWhenRegistrationsEmpty() {
+        assertThat(endpoint.devService("postgres")).isNull();
     }
 
     private ContainerInfo createContainerInfo(String id, String imageName, String status) {

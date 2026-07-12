@@ -6,8 +6,10 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcess
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.Ordered;
 
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.registration.DevServiceContainerBeanDefinition;
 
 /**
@@ -20,7 +22,7 @@ import io.arconia.dev.services.core.registration.DevServiceContainerBeanDefiniti
  *   <li>Registration beans (identified by bean class {@link DevServiceRegistration})</li>
  * </ul>
  */
-class DevServicesBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
+class DevServicesBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor, Ordered {
 
     @Override
     public @Nullable BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
@@ -35,10 +37,21 @@ class DevServicesBeanFactoryInitializationAotProcessor implements BeanFactoryIni
             } else if (DevServiceRegistration.class.getName().equals(beanDefinition.getBeanClassName())) {
                 // Remove registration beans
                 registry.removeBeanDefinition(beanName);
+            } else if (DevServicesConflictValidator.class.getName().equals(beanDefinition.getBeanClassName())) {
+                // Remove the conflict validator bean (backed by an instance supplier)
+                registry.removeBeanDefinition(beanName);
             }
         }
 
         return null;
+    }
+
+    @Override
+    public int getOrder() {
+        // Run before Spring's BeanRegistrationsAotProcessor so that dev service beans
+        // (backed by instance suppliers, which cannot be code-generated) are removed
+        // before AOT code generation takes place.
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
 }

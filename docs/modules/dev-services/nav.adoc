@@ -23,3 +23,4 @@
 * xref:floci.adoc[Floci]
 * xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
+* xref:custom-dev-services.adoc[Building Your Own Dev Service]

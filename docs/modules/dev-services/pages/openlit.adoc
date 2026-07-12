@@ -1,4 +1,4 @@
-= OpenLit
+= OpenLit Dev Service
 :service-name: openlit
 
 A service providing https://openlit.io[OpenLit], an AI Observability and Evaluation platform based on OpenTelemetry, for development and testing purposes. It consists of:
@@ -50,17 +50,17 @@ You can configure the Dev Service via configuration properties.
 | `true`
 | Whether the dev service is enabled.
 
-|`arconia.dev.services.{service-name}.image-name`
+| `arconia.dev.services.{service-name}.image-name`
 | `ghcr.io/openlit/openlit`
 | Full name of the container image used for OpenLit.
 
-|`arconia.dev.services.{service-name}.clickhouse-image-name`
+| `arconia.dev.services.{service-name}.clickhouse-image-name`
 | `clickhouse/clickhouse-server`
 | Full name of the container image used for the internal ClickHouse instance.
 
-|`arconia.dev.services.{service-name}.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the container.
+| Environment variables to set in the service.
 
 | `arconia.dev.services.{service-name}.network-aliases`
 | `[]`

@@ -1,3 +1,3 @@
 You can enable/disable the Dev Service selectively for a specific application mode (development, test), relying on one of the profiles which are automatically configured by Arconia (see xref:ROOT:core-features/profiles.adoc[Profiles]).
 
-TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestProperty` annotation or equivalent Spring testing utilities.
+TIP: You can enable/disable the Dev Service for a specific test class by using the `@TestPropertySource` annotation or equivalent Spring testing utilities.

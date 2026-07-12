@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.boot.devtools.restart.RestartScope;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -44,6 +45,11 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
     @Override
     protected String getServiceName() {
         return "postgresql";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return JdbcConnectionDetails.class;
     }
 
     @Test

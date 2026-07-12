@@ -7,7 +7,7 @@ It works with Spring Boot libraries that support Kafka, including:
 
 * https://spring.io/projects/spring-kafka[Spring for Apache Kafka]
 * https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
-* https://spring.io/projects/spring-kafka[Spring Modulith]
+* https://spring.io/projects/spring-modulith[Spring Modulith]
 
 == Dependencies
 

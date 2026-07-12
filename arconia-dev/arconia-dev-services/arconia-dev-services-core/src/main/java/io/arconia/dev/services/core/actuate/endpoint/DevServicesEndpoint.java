@@ -27,23 +27,46 @@ public class DevServicesEndpoint {
     @ReadOperation
     public Map<String, ServiceInfoSummary> devServices() {
         return registrations.values().stream()
-                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), ContainerInfoSummary.from(reg.containerInfo().get())))
+                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), resolveContainerInfoSummary(reg)))
                 .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info));
     }
 
     @ReadOperation
+    @Nullable
     public ServiceInfo devService(@Selector String name) {
-        return registrations.values().stream()
-                .filter(reg -> reg.name().equals(name))
-                .findFirst()
-                .map(reg -> new ServiceInfo(reg.name(), reg.description(), reg.containerInfo().get()))
-                .orElseThrow(() -> new IllegalArgumentException("Dev service not found: " + name));
+        DevServiceRegistration registration = registrations.get(name);
+        if (registration == null) {
+            // A null result is mapped to a 404 response.
+            return null;
+        }
+        return new ServiceInfo(registration.name(), registration.description(), resolveContainerInfo(registration));
+    }
+
+    /**
+     * Resolve the container information for the given registration, degrading gracefully
+     * (null container info) when the container cannot be found, for example because it was
+     * removed manually.
+     */
+    @Nullable
+    private static ContainerInfo resolveContainerInfo(DevServiceRegistration registration) {
+        try {
+            return registration.containerInfo().get();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static ContainerInfoSummary resolveContainerInfoSummary(DevServiceRegistration registration) {
+        ContainerInfo containerInfo = resolveContainerInfo(registration);
+        return (containerInfo != null) ? ContainerInfoSummary.from(containerInfo) : null;
     }
 
     public record ServiceInfoSummary(
             String name,
             @Nullable
             String description,
+            @Nullable
             ContainerInfoSummary containerInfo
     ) {}
 
@@ -63,6 +86,7 @@ public class DevServicesEndpoint {
             String name,
             @Nullable
             String description,
+            @Nullable
             ContainerInfo containerInfo
     ) {}
 

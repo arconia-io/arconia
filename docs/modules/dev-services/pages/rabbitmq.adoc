@@ -18,6 +18,15 @@ include::partial$running-application.adoc[]
 
 By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
 
+== Accessing the Management Console
+
+The application logs will show you the URL where you can access the RabbitMQ Management Console.
+
+[source,logs]
+----
+...i.a.d.s.rabbitmq.ArconiaRabbitMqContainer : RabbitMQ Management Console: http://localhost:<port>
+----
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.

@@ -367,7 +367,6 @@ class ContainerConfigurerTests {
             return "test-image:latest";
         }
 
-        @Override
         public void setImageName(String imageName) {
 
         }
@@ -444,7 +443,6 @@ class ContainerConfigurerTests {
             return "test-db:latest";
         }
 
-        @Override
         public void setImageName(String imageName) {}
 
         @Override

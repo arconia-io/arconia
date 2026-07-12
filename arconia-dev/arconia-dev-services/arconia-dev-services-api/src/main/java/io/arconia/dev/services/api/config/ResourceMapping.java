@@ -8,12 +8,12 @@ public final class ResourceMapping {
     /**
      * Path to the resource in the classpath or host filesystem.
      */
-    public String sourcePath;
+    private String sourcePath;
 
     /**
      * Path to the resource inside the container.
      */
-    public String containerPath;
+    private String containerPath;
 
     public ResourceMapping(String sourcePath, String containerPath) {
         this.sourcePath = sourcePath;

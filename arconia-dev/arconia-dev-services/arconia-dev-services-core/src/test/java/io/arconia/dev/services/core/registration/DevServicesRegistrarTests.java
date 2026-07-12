@@ -42,7 +42,7 @@ class DevServicesRegistrarTests {
         assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "docling");
         assertDescriptionBeanDefinition("docling");
-        assertBeanDefinitionCount(2);
+        assertBeanDefinitionCount(3);
     }
 
     @Test
@@ -68,7 +68,7 @@ class DevServicesRegistrarTests {
         assertDescriptionBeanDefinition("docling");
         assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
         assertDescriptionBeanDefinition("postgres");
-        assertBeanDefinitionCount(4);
+        assertBeanDefinitionCount(5);
     }
 
     @Test
@@ -90,7 +90,7 @@ class DevServicesRegistrarTests {
         assertDescriptionBeanDefinition("docling");
         assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
         assertDescriptionBeanDefinition("postgres");
-        assertBeanDefinitionCount(4);
+        assertBeanDefinitionCount(5);
     }
 
     @Test
@@ -112,7 +112,7 @@ class DevServicesRegistrarTests {
         assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "firstdocling");
         assertDescriptionBeanDefinition("docling");
-        assertBeanDefinitionCount(2);
+        assertBeanDefinitionCount(3);
     }
 
     @Test

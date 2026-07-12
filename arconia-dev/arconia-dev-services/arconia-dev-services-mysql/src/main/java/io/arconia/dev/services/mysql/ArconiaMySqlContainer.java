@@ -26,7 +26,7 @@ final class ArconiaMySqlContainer extends MySQLContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), MYSQL_PORT);
         }
     }

@@ -1,8 +1,11 @@
 package io.arconia.dev.services.api.provider;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Category constants for groups of mutually exclusive dev services.
  */
+@Incubating
 public final class DevServiceCategories {
 
     public static final String AWS = "aws";

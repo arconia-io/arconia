@@ -25,10 +25,10 @@ final class ArconiaPhoenixContainer extends PhoenixContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), HTTP_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getOtlpGrpcPort())) {
+        if (ContainerUtils.isFixedPort(properties.getOtlpGrpcPort())) {
             addFixedExposedPort(properties.getOtlpGrpcPort(), GRPC_PORT);
         }
     }

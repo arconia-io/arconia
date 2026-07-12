@@ -1,9 +1,9 @@
 = Artemis Dev Service
 :service-name: artemis
 
-A service providing an https://activemq.apache.org/components/artemis/[ApacheMQ Artemis] event broker for development and testing purposes.
+A service providing an https://activemq.apache.org/components/artemis/[ActiveMQ Artemis] event broker for development and testing purposes.
 
-It works with Spring Boot libraries that support JMS and ApacheMQ Artemis, including:
+It works with Spring Boot libraries that support JMS and ActiveMQ Artemis, including:
 
 * https://docs.spring.io/spring-framework/reference/integration/jms.html[Spring JMS]
 * https://docs.spring.io/spring-boot/reference/messaging/jms.html#messaging.jms.artemis[Spring Boot Artemis]
@@ -17,6 +17,17 @@ include::partial$dependencies.adoc[]
 include::partial$running-application.adoc[]
 
 By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
+
+== Accessing the Management Console
+
+The application logs will show you the URL where you can access the ActiveMQ Artemis Management Console.
+
+[source,logs]
+----
+...i.a.d.s.artemis.ArconiaArtemisContainer  : Artemis Management Console: http://localhost:<port>/console
+----
+
+By default, you can log in with username `arconia` and password `arconia`.
 
 == Configuring the Dev Service
 

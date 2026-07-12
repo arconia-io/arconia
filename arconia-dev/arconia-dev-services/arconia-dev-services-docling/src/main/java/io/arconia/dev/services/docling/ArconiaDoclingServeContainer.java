@@ -20,12 +20,13 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
         super(DoclingServeContainerConfig.builder()
                 .image(properties.getImageName())
                 .enableUi(BootstrapMode.isDev() && properties.isEnableUi())
+                .apiKey(properties.getApiKey())
                 .containerEnv(properties.getEnvironment())
                 .startupTimeout(properties.getStartupTimeout())
                 .build());
         this.properties = properties;
 
-        this.setNetworkAliases(properties.getNetworkAliases());
+        this.withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}));
         this.withReuse(BootstrapMode.isDev() && properties.isShared());
         ContainerConfigurer.resources(this, properties);
         ContainerConfigurer.volumes(this, properties);
@@ -34,7 +35,7 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), DEFAULT_DOCLING_PORT);
         }
     }

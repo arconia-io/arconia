@@ -2,6 +2,7 @@ package io.arconia.dev.services.mongodb;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
@@ -37,6 +38,11 @@ class MongoDbDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     @Override
     protected String getServiceName() {
         return "mongodb";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return MongoConnectionDetails.class;
     }
 
     @Test

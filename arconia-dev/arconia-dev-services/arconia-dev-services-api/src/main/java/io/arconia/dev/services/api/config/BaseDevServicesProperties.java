@@ -8,6 +8,10 @@ import io.arconia.core.support.Incubating;
 
 /**
  * Base properties for dev services.
+ * <p>
+ * This interface defines the read contract for the common dev services properties.
+ * Implementations are expected to declare a field, a getter, and a setter for each
+ * property they support, so that Spring Boot can bind user configuration to them.
  */
 @Incubating
 public interface BaseDevServicesProperties {
@@ -79,25 +83,5 @@ public interface BaseDevServicesProperties {
     default List<VolumeMapping> getVolumes() {
         return List.of();
     }
-
-    // Setters
-
-    default void setEnabled(boolean enabled) {}
-
-    void setImageName(String imageName);
-
-    default void setEnvironment(Map<String, String> environment) {}
-
-    default void setNetworkAliases(List<String> networkAliases) {}
-
-    default void setPort(int port) {}
-
-    default void setResources(List<ResourceMapping> resources) {}
-
-    default void setShared(boolean shared) {}
-
-    default void setStartupTimeout(Duration startupTimeout) {}
-
-    default void setVolumes(List<VolumeMapping> volumes) {}
 
 }

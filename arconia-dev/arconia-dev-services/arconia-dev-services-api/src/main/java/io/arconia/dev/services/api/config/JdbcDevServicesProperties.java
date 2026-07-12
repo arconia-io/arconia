@@ -35,14 +35,4 @@ public interface JdbcDevServicesProperties extends BaseDevServicesProperties {
      */
     List<String> getInitScriptPaths();
 
-    // SETTERS
-
-    default void setUsername(String username) {}
-
-    default void setPassword(String password) {}
-
-    default void setDbName(String dbName) {}
-
-    default void setInitScriptPaths(List<String> initScriptPaths) {}
-
 }

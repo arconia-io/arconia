@@ -15,7 +15,7 @@ public class MultipleDevServicesException extends RuntimeException {
     public MultipleDevServicesException(String category, List<String> serviceNames) {
         super("Multiple " + category + " dev services detected: " + serviceNames);
         this.category = category;
-        this.serviceNames = serviceNames;
+        this.serviceNames = List.copyOf(serviceNames);
     }
 
     public String getCategory() {

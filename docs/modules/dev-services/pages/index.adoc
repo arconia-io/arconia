@@ -8,12 +8,12 @@ Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/s
 
 [NOTE]
 ====
-Dev Services are designed exclusively for development and testing workflows. They are excluded from production builds and have zero impact on your production deployments.
+Dev Services are designed exclusively for development and testing workflows. Declared as development/test-only dependencies, they are excluded from production builds and have zero impact on your production deployments. As an additional safety net against dependency scoping mistakes, Dev Services never activate when the application runs in xref:ROOT:core-features/bootstrap-mode.adoc[prod mode].
 ====
 
 == How It Works
 
-When Arconia Dev Services are detected during development or testing, the framework:
+When Arconia Dev Services are detected while the application is running in xref:ROOT:core-features/bootstrap-mode.adoc[dev or test mode], the framework:
 
 1. Starts the container: Launches an OCI container for the required service using Testcontainers.
 2. Configures the connection: Sets up connection properties (URLs, credentials, ports).
@@ -60,39 +60,14 @@ include::ROOT:partial$app-run.adoc[]
 
 [TIP]
 ====
-Want to verify which Dev Services are running? If Spring Boot Actuator is in your classpath, check the `/actuator/devservices` endpoint.
+Want to verify which Dev Services are running? When running the application in dev mode with Spring Boot Actuator in your classpath, check the `/actuator/devservices` endpoint (see xref:_actuator[Actuator]).
 ====
-
-== Supported Services
-
-* Data Stores
-** JDBC
-*** xref:mariadb.adoc[MariaDB]
-*** xref:mysql.adoc[MySQL]
-*** xref:oracle.adoc[Oracle]
-*** xref:oracle-xe.adoc[Oracle XE]
-*** xref:postgresql.adoc[PostgreSQL]
-** xref:mongodb.adoc[MongoDB]
-** xref:mongodb-atlas.adoc[MongoDB Atlas]
-** xref:redis.adoc[Redis]
-* Event Brokers
-** xref:artemis.adoc[Artemis]
-** xref:kafka.adoc[Kafka]
-** xref:pulsar.adoc[Pulsar]
-** xref:rabbitmq.adoc[RabbitMQ]
-* Observability
-** xref:lgtm.adoc[Grafana LGTM]
-** xref:openlit.adoc[OpenLit]
-** xref:otel-collector.adoc[OpenTelemetry Collector]
-** xref:phoenix.adoc[Phoenix]
-* xref:docling.adoc[Docling]
-* xref:floci.adoc[Floci]
-* xref:lldap.adoc[LLDAP]
-* xref:ollama.adoc[Ollama]
 
 == Using Dev Services
 
 Dev Services are available as separate modules for each supported service. You can find the complete list in the xref:_supported_services[Supported Services] section below.
+
+Dev Services providing the same capability (e.g. JDBC databases) are mutually exclusive: if more than one is active at the same time, the application fails at startup with a clear error message pointing at the conflict.
 
 [NOTE]
 ====
@@ -162,6 +137,32 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 ==== Service-Specific Properties
 
 Individual services provide additional configuration properties. Refer to each service's documentation for all available configuration options.
+
+=== Programmatic Customization
+
+Configuration properties cover the most common scenarios. When you need full control over a container (for example, a custom wait strategy, a startup check strategy, extra labels, or additional commands), you can define a `DevServiceContainerCustomizer<T>` bean. Every customizer is applied to any Dev Service container that is an instance of its generic type `T`, right after the container is created and before it is started.
+
+For example, to customize the wait strategy of the PostgreSQL Dev Service (using `org.testcontainers.postgresql.PostgreSQLContainer`):
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+public class DevServicesConfiguration {
+
+    @Bean
+    DevServiceContainerCustomizer<PostgreSQLContainer> postgresCustomizer() {
+        return container -> container.waitingFor(Wait.forListeningPort());
+    }
+
+}
+----
+
+A customizer typed on a common supertype (e.g. `GenericContainer<?>`) applies to all Dev Service containers. When multiple customizers match the same container, they are applied following the semantics of the `@Order` annotation and `Ordered` interface.
+
+[NOTE]
+====
+Customizers reference classes from the Dev Services and Testcontainers dependencies, which are not present in production builds. Define them in a configuration class that is only included at development and test time, consistently with how you scoped the Dev Service dependency itself.
+====
 
 === Sharing Dev Services
 
@@ -300,9 +301,49 @@ In case you want to disable all Dev Services at once, you can set the `arconia.d
 Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
 ====
 
+== Supported Services
+
+* Data Stores
+** JDBC
+*** xref:mariadb.adoc[MariaDB]
+*** xref:mysql.adoc[MySQL]
+*** xref:oracle.adoc[Oracle]
+*** xref:oracle-xe.adoc[Oracle XE]
+*** xref:postgresql.adoc[PostgreSQL]
+** xref:mongodb.adoc[MongoDB]
+** xref:mongodb-atlas.adoc[MongoDB Atlas]
+** xref:redis.adoc[Redis]
+* Event Brokers
+** xref:artemis.adoc[Artemis]
+** xref:kafka.adoc[Kafka]
+** xref:pulsar.adoc[Pulsar]
+** xref:rabbitmq.adoc[RabbitMQ]
+* Observability
+** xref:lgtm.adoc[Grafana LGTM]
+** xref:openlit.adoc[OpenLit]
+** xref:otel-collector.adoc[OpenTelemetry Collector]
+** xref:phoenix.adoc[Phoenix]
+* xref:docling.adoc[Docling]
+* xref:floci.adoc[Floci]
+* xref:lldap.adoc[LLDAP]
+* xref:ollama.adoc[Ollama]
+
+Is the service you need not in the list? You can xref:custom-dev-services.adoc[build your own Dev Service].
+
 == Actuator
 
 When running the application in dev mode, a `devservices` actuator endpoint is auto-configured if https://docs.spring.io/spring-boot/reference/actuator/enabling.html[Spring Boot Actuator] is present in the classpath. This endpoint exposes information about the running Dev Services containers, helping you inspect and debug your development environment.
+
+By default, Spring Boot exposes only the `health` endpoint over HTTP. To access the `devservices` endpoint, include it in the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.exposing[web exposure configuration]:
+
+[source,yaml]
+----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: devservices
+----
 
 === Usage
 
@@ -442,8 +483,8 @@ public class TestContainersConfiguration {
     @Bean
     @ServiceConnection
     @RestartScope
-    PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>("postgres:latest");
+    PostgreSQLContainer postgresContainer() {
+        return new PostgreSQLContainer("postgres:latest");
     }
 }
 ----
@@ -489,6 +530,11 @@ If your project already uses Spring Boot's Testcontainers support, you can adopt
 3. Gradually migrate more services to Arconia as needed.
 
 Both approaches work alongside each other, allowing smooth transitions without disrupting your workflow.
+
+[NOTE]
+====
+Coexistence is per service: once you adopt the Arconia Dev Service for a given service, remove your own `@ServiceConnection` container definition for that same service. Otherwise, two containers will be started and compete for providing the connection details.
+====
 
 === Feature Comparison
 
@@ -539,7 +585,8 @@ Example: `arconia.dev.services.postgresql.startup-timeout=30s`.
 
 | *Customization*
 | Configuration properties for common scenarios. +
-Example: `image-name`, `port`, `init-script-paths`.
+Example: `image-name`, `port`, `init-script-paths`. +
+Programmatic control via `DevServiceContainerCustomizer` beans for advanced scenarios.
 | Full programmatic control. Direct access to Testcontainers API in bean definitions.
 
 | *Flexibility*

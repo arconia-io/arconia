@@ -1,13 +1,11 @@
 package io.arconia.dev.services.pulsar;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = defaultContextRunner(PulsarDevServicesAutoConfiguration.class);
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(PulsarDevServicesAutoConfiguration.class);
 
     @Override
     protected ApplicationContextRunner getContextRunner() {
@@ -38,11 +36,6 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
     @Override
     protected String getServiceName() {
         return "pulsar";
-    }
-
-    @BeforeEach
-    void setUp() {
-        BootstrapMode.clear();
     }
 
     @Test

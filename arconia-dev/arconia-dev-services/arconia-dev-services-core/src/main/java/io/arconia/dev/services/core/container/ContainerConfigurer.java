@@ -9,6 +9,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.MountableFile;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -16,10 +17,13 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Utility class for configuring Dev Service containers.
  */
+@Incubating
 public final class ContainerConfigurer {
 
     private static final String RESOURCE_PREFIX_CLASSPATH = "classpath:";
     private static final String RESOURCE_PREFIX_FILE = "file:";
+
+    private ContainerConfigurer() {}
 
     /**
      * Configures base container configuration for Dev Services.
@@ -81,6 +85,9 @@ public final class ContainerConfigurer {
      */
     public static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
         for (VolumeMapping mapping : properties.getVolumes()) {
+            Assert.hasText(mapping.getHostPath(), "the host path in a volume mapping cannot be null or empty.");
+            Assert.hasText(mapping.getContainerPath(), "the container path in a volume mapping cannot be null or empty.");
+
             container.withFileSystemBind(mapping.getHostPath(), mapping.getContainerPath(), BindMode.READ_WRITE);
         }
     }

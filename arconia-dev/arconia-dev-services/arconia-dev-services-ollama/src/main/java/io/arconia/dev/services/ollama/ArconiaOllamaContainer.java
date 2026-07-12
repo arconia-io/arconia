@@ -41,7 +41,7 @@ final class ArconiaOllamaContainer extends OllamaContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), OLLAMA_PORT);
         }
     }

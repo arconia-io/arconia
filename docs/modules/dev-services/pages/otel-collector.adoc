@@ -1,4 +1,4 @@
-= OpenTelemetry Collector
+= OpenTelemetry Collector Dev Service
 :service-name: otel-collector
 
 A service providing an https://opentelemetry.io/docs/collector[OpenTelemetry Collector] for development and testing purposes.
@@ -42,17 +42,17 @@ You can configure the Dev Service via configuration properties.
 |===
 |Property |Default |Description
 
-|`arconia.dev.services.{service-name}.enabled`
+| `arconia.dev.services.{service-name}.enabled`
 | `true`
 | Whether the dev service is enabled.
 
-|`arconia.dev.services.{service-name}.image-name`
+| `arconia.dev.services.{service-name}.image-name`
 | `otel/opentelemetry-collector-contrib`
 | Full name of the container image used in the dev service.
 
-|`arconia.dev.services.{service-name}.environment`
+| `arconia.dev.services.{service-name}.environment`
 | `{}`
-| Environment variables to set in the container.
+| Environment variables to set in the service.
 
 | `arconia.dev.services.{service-name}.network-aliases`
 | `[]`
@@ -71,7 +71,7 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is shared among applications. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
-| `120s`
+| `30s`
 | Maximum waiting time for the service to start.
 
 | `arconia.dev.services.{service-name}.volumes`

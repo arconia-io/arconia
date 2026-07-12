@@ -94,7 +94,7 @@ class OnOllamaNativeUnavailableTests {
 
     @Test
     void shouldCheckConnectionWhenIgnoreNativeServiceIsFalse() {
-        environment.setProperty("arconia.dev-services.ollama.ignore-native-service", "false");
+        environment.setProperty("arconia.dev.services.ollama.ignore-native-service", "false");
         OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
         when(spyCondition.isOllamaNativeConnection(anyString())).thenReturn(false);
 

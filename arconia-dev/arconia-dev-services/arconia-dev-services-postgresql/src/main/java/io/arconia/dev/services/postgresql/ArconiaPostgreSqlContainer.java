@@ -36,7 +36,7 @@ final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
     protected void configure() {
         super.configure();
 
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), POSTGRESQL_PORT);
         }
     }

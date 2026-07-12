@@ -3,6 +3,8 @@ package io.arconia.dev.services.tests;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,6 +13,7 @@ import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.support.SimpleThreadScope;
 import org.testcontainers.containers.GenericContainer;
 
@@ -46,6 +49,16 @@ public abstract class BaseDevServicesAutoConfigurationIT {
      */
     protected abstract String getServiceName();
 
+    /**
+     * The {@code ConnectionDetails} type expected to be resolvable for this Dev Service,
+     * or {@code null} when the Dev Service doesn't provide a service connection
+     * (or the corresponding factory is not on the test classpath).
+     */
+    @Nullable
+    protected Class<?> getConnectionDetailsClass() {
+        return null;
+    }
+
     @BeforeEach
     void setUp() {
         BootstrapMode.clear();
@@ -63,6 +76,24 @@ public abstract class BaseDevServicesAutoConfigurationIT {
         getContextRunner()
                 .withPropertyValues("arconia.dev.services.%s.enabled=false".formatted(getServiceName()))
                 .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void autoConfigurationNotActivatedInProdMode() {
+        getContextRunner()
+                .withSystemProperties("arconia.bootstrap.mode=prod")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void connectionDetailsAvailableInTestMode() {
+        Class<?> connectionDetailsClass = getConnectionDetailsClass();
+        Assumptions.assumeTrue(connectionDetailsClass != null,
+                "no connection details expected for this dev service");
+        getContextRunner()
+                .withConfiguration(AutoConfigurations.of(ServiceConnectionAutoConfiguration.class))
+                .withSystemProperties("arconia.bootstrap.mode=test")
+                .run(context -> assertThat(context).hasSingleBean(connectionDetailsClass));
     }
 
     @Test

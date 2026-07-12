@@ -3,9 +3,9 @@
 
 A service providing a https://www.mongodb.com/products/platform[MongoDB Atlas] database for development and testing purposes.
 
-It works with Spring Boot libraries that support MongoDB Atlas including:
+It works with Spring Boot libraries that support MongoDB Atlas, including:
 
-* https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html[Spring AI] (Vector Store)
+* https://spring.io/projects/spring-ai[Spring AI] (Vector Store)
 * https://spring.io/projects/spring-data-mongodb[Spring Data MongoDB]
 * https://spring.io/projects/spring-session[Spring Session for MongoDB]
 

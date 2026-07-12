@@ -38,22 +38,22 @@ final class ArconiaLgtmStackContainer extends LgtmStackContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), GRAFANA_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getOtlpGrpcPort())) {
+        if (ContainerUtils.isFixedPort(properties.getOtlpGrpcPort())) {
             addFixedExposedPort(properties.getOtlpGrpcPort(), OTLP_GRPC_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getOtlpHttpPort())) {
+        if (ContainerUtils.isFixedPort(properties.getOtlpHttpPort())) {
             addFixedExposedPort(properties.getOtlpHttpPort(), OTLP_HTTP_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getLokiPort())) {
+        if (ContainerUtils.isFixedPort(properties.getLokiPort())) {
             addFixedExposedPort(properties.getLokiPort(), LOKI_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getTempoPort())) {
+        if (ContainerUtils.isFixedPort(properties.getTempoPort())) {
             addFixedExposedPort(properties.getTempoPort(), TEMPO_PORT);
         }
-        if (ContainerUtils.isValidPort(properties.getPrometheusPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPrometheusPort())) {
             addFixedExposedPort(properties.getPrometheusPort(), PROMETHEUS_PORT);
         }
     }

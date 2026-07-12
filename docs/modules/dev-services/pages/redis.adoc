@@ -3,7 +3,7 @@
 
 A service providing a https://redis.io[Redis] data store for development and testing purposes.
 
-It works with Spring Boot libraries that support REPL or Redis, including:
+It works with Spring Boot libraries that support RESP or Redis, including:
 
 * https://spring.io/projects/spring-ai[Spring AI] (Memory, Vector Store)
 * https://spring.io/projects/spring-data-redis[Spring Data Redis]

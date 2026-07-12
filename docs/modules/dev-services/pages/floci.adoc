@@ -7,9 +7,16 @@ It works with Spring Boot libraries that support AWS, including:
 
 * https://awspring.io[Spring Cloud AWS]
 
+The Dev Service requires https://awspring.io[Spring Cloud AWS] and the AWS SDK on the classpath to be activated. The AWS endpoint, region, and credentials are configured automatically for all Spring Cloud AWS clients.
+
 [NOTE]
 ====
 Floci exposes a single HTTP endpoint for all emulated AWS services. When using Spring Cloud AWS S3, path-style access is automatically enabled by the Dev Service.
+====
+
+[NOTE]
+====
+This Dev Service is mutually exclusive with other AWS dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
 ====
 
 == Dependencies

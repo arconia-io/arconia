@@ -28,7 +28,7 @@ final class ArconiaMariaDbContainer extends MariaDBContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), MARIADB_PORT);
         }
     }

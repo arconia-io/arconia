@@ -1,8 +1,5 @@
 package io.arconia.dev.services.core.autoconfigure;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -18,16 +15,14 @@ import io.arconia.dev.services.api.provider.DevServiceProvider;
 @EnableConfigurationProperties(DevServicesProperties.class)
 public final class DevServicesAutoConfiguration {
 
+    /**
+     * Backstop validation of mutually exclusive dev services after all singletons are created.
+     * The main validation happens earlier, before any dev service container is created,
+     * via the validator bean registered by the dev services registry.
+     */
     @Bean
     SmartInitializingSingleton devServicesConflictValidator(ObjectProvider<DevServiceProvider> providers) {
-        return () -> providers.orderedStream()
-                .collect(Collectors.groupingBy(DevServiceProvider::category))
-                .forEach((category, group) -> {
-                    if (group.size() > 1) {
-                        List<String> names = group.stream().map(DevServiceProvider::name).sorted().toList();
-                        throw new MultipleDevServicesException(category, names);
-                    }
-                });
+        return () -> new DevServicesConflictValidator().validate(providers.orderedStream().toList());
     }
 
 }

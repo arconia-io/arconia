@@ -2,8 +2,8 @@ package io.arconia.dev.services.core.util;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 /**
  * Unit tests for {@link ContainerUtils}.
@@ -11,16 +11,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ContainerUtilsTests {
 
     @Test
-    void isValidPortWhenPortIsInvalidThenReturnFalse() {
-        assertFalse(ContainerUtils.isValidPort(-1));
-        assertFalse(ContainerUtils.isValidPort(0));
-        assertFalse(ContainerUtils.isValidPort(65536));
+    void isFixedPortWhenPortIsZeroThenReturnFalse() {
+        assertThat(ContainerUtils.isFixedPort(0)).isFalse();
     }
 
     @Test
-    void isValidPortWhenPortIsValidThenReturnTrue() {
-        assertTrue(ContainerUtils.isValidPort(1234));
-        assertTrue(ContainerUtils.isValidPort(65535));
+    void isFixedPortWhenPortIsValidThenReturnTrue() {
+        assertThat(ContainerUtils.isFixedPort(1234)).isTrue();
+        assertThat(ContainerUtils.isFixedPort(65535)).isTrue();
+    }
+
+    @Test
+    void isFixedPortWhenPortIsOutOfRangeThenThrow() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ContainerUtils.isFixedPort(-1))
+                .withMessageContaining("port must be between 0 and 65535");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ContainerUtils.isFixedPort(65536))
+                .withMessageContaining("port must be between 0 and 65535");
     }
 
 }

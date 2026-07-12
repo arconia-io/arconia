@@ -1,6 +1,6 @@
 package io.arconia.dev.services.tests;
 
-import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +29,15 @@ public abstract class BaseJdbcDevServicesPropertiesTests<T extends JdbcDevServic
     }
 
     @Test
-    void shouldUpdateCommonJdbcProperties() {
+    void shouldBindCommonJdbcProperties() {
         T properties = createProperties();
 
-        properties.setUsername("mytest");
-        properties.setPassword("mytest");
-        properties.setDbName("mytest");
-        properties.setInitScriptPaths(List.of("init.sql"));
+        bind(properties, Map.of(
+                "username", "mytest",
+                "password", "mytest",
+                "db-name", "mytest",
+                "init-script-paths[0]", "init.sql"
+        ));
 
         assertThat(properties.getUsername()).isEqualTo("mytest");
         assertThat(properties.getPassword()).isEqualTo("mytest");

@@ -22,7 +22,7 @@ Furthermore, the Dev Service is configured to enable the Docling UI. The applica
 
 [source,logs]
 ----
-... Docling UI: http://localhost:<port>/ui
+... Docling Serve UI: http://localhost:<port>/ui
 ----
 
 == Configuring the Dev Service
@@ -73,7 +73,7 @@ You can configure the Dev Service via configuration properties.
 | Whether to enable the Docling UI when in dev mode.
 
 | `arconia.dev.services.{service-name}.api-key`
-| ``
+|
 | API key to be used for authenticating requests to the Docling Serve API.
 
 |===

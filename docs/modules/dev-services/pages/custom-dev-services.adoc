@@ -1,0 +1,198 @@
+= Building Your Own Dev Service
+
+Arconia provides Dev Services for many popular services out of the box, but you can also build your own Dev Service for any service that can run as an OCI container. This page walks you through the process, using the same infrastructure the built-in Dev Services are based on.
+
+[NOTE]
+====
+The Dev Services APIs are currently marked as `@Incubating` and may change in future releases.
+====
+
+== Module Structure
+
+The Dev Services infrastructure is split into two modules:
+
+* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`) and the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
+* `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `ContainerConfigurer`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
+
+First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
+
+[source,groovy]
+----
+dependencies {
+    api 'io.arconia:arconia-dev-services-core'
+    api 'org.testcontainers:testcontainers'
+}
+----
+
+== Configuration Properties
+
+Define a configuration properties class implementing `BaseDevServicesProperties` (or `JdbcDevServicesProperties` for relational databases), using a prefix under your own namespace. Structure the prefix as `<namespace>.<service-name>` (e.g. `acme.dev.services.fancydb`), mirroring the built-in Dev Services (`arconia.dev.services.<service-name>`): the enablement condition used later in the auto-configuration relies on this structure.
+
+[IMPORTANT]
+====
+Do not use the `arconia.` prefix for your own properties: it's reserved for the framework, and using it may conflict with current or future built-in Dev Services.
+====
+
+[source,java]
+----
+@ConfigurationProperties(prefix = "acme.dev.services.fancydb")
+public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
+
+    /**
+     * Whether the dev service is enabled.
+     */
+    private boolean enabled = true;
+
+    /**
+     * Full name of the container image used in the dev service.
+     */
+    private String imageName = "acme/fancydb:1.0.0";
+
+    // Additional common properties: environment, networkAliases, port,
+    // resources, shared, startupTimeout, volumes...
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    // Additional getters and setters...
+
+}
+----
+
+[NOTE]
+====
+`BaseDevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
+====
+
+== Container Class
+
+Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. Use `ContainerConfigurer` to apply the common configuration properties, and `asCompatibleSubstituteFor()` so users can override the image with a compatible one (e.g. a mirror from an internal registry).
+
+[source,java]
+----
+public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
+
+    static final String COMPATIBLE_IMAGE_NAME = "acme/fancydb";
+
+    static final int FANCYDB_PORT = 8090;
+
+    private final FancyDbDevServicesProperties properties;
+
+    public FancyDbContainer(FancyDbDevServicesProperties properties) {
+        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        this.properties = properties;
+
+        withExposedPorts(FANCYDB_PORT);
+        ContainerConfigurer.base(this, properties);
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), FANCYDB_PORT);
+        }
+    }
+
+}
+----
+
+For relational databases, also apply `ContainerConfigurer.jdbc(this, properties)` to configure credentials, database name, and init scripts.
+
+== Auto-Configuration and Registration
+
+Register the Dev Service through an auto-configuration class guarded by `@ConditionalOnDevServicesEnabled`, importing a registrar that extends `DevServicesRegistrar`. The condition ensures the Dev Service only activates in dev and test mode and honors the global `arconia.dev.services.enabled` kill switch, so users can turn off all Dev Services at once, including yours. By specifying your own `prefix`, the condition also honors the service-specific toggle under your namespace (here, `acme.dev.services.fancydb.enabled`) with the same semantics as the built-in Dev Services: alternative boolean values like `on`/`off` are accepted, and invalid values fail at startup instead of silently disabling the Dev Service.
+
+[source,java]
+----
+@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@ConditionalOnDevServicesEnabled(name = "fancydb", prefix = "acme.dev.services")
+@EnableConfigurationProperties(FancyDbDevServicesProperties.class)
+@Import(FancyDbDevServicesRegistrar.class)
+public final class FancyDbDevServicesAutoConfiguration {
+
+    static class FancyDbDevServicesRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            var properties = bindProperties("acme.dev.services.fancydb", FancyDbDevServicesProperties.class);
+
+            registry.registerDevService(service -> service
+                    .name("fancydb")
+                    .description("FancyDB Dev Service")
+                    .container(container -> container
+                            .type(FancyDbContainer.class)
+                            .supplier(() -> new FancyDbContainer(properties))
+                    ));
+        }
+
+    }
+
+}
+----
+
+Finally, register the auto-configuration in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
+
+[source]
+----
+com.example.acme.FancyDbDevServicesAutoConfiguration
+----
+
+That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts, sharing) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
+
+== Wiring the Application to the Service
+
+The container is registered with Spring Boot's https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Service Connections] mechanism, which resolves a `ConnectionDetailsFactory` for the container. There are three ways to make the connection work, depending on what's available for your service:
+
+* By container type (the default): if a `ContainerConnectionDetailsFactory` exists for your container's type in Spring Boot (as is the case for many containers shipped with Testcontainers modules, like `PostgreSQLContainer`), no further configuration is needed.
+* By connection name: if the factory for your service matches by name rather than type, set it explicitly with `serviceConnectionName("<name>")` on the container spec. The name must match the one the factory requires, which is typically the container image name without registry and tag.
+* By dynamic properties: if no `ConnectionDetails` abstraction exists for your service, disable the service connection by passing `serviceConnectionName(null)` and contribute configuration properties lazily from the registrar instead:
+
+[source,java]
+----
+@Override
+protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+    var properties = bindProperties("acme.dev.services.fancydb", FancyDbDevServicesProperties.class);
+
+    registry.registerDevService(service -> service
+            .name("fancydb")
+            .description("FancyDB Dev Service")
+            .container(container -> container
+                    .type(FancyDbContainer.class)
+                    .serviceConnectionName(null)
+                    .supplier(() -> new FancyDbContainer(properties))
+            ));
+
+    addDynamicProperty("acme.fancydb.url", () ->
+            getBeanFactory().getBean(FancyDbContainer.class).getUrl());
+}
+----
+
+The property value is resolved lazily, only after the container has started, mirroring the semantics of Spring Boot's `@DynamicPropertySource`.
+
+== Mutual Exclusion
+
+If your Dev Service provides the same capability as other Dev Services (for example, another JDBC-compatible database), declare a `DevServiceProvider` bean with the corresponding category. Use one of the `DevServiceCategories` constants when the overlap is with built-in Dev Services, or your own category string when the exclusion is among your own Dev Services. When multiple Dev Services of the same category are active at once, the application fails fast at startup with an actionable error message.
+
+[source,java]
+----
+@Bean
+DevServiceProvider fancyDbDevServiceProvider() {
+    return DevServiceProvider.of("fancydb", DevServiceCategories.JDBC);
+}
+----

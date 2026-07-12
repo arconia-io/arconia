@@ -8,12 +8,12 @@ public final class VolumeMapping {
     /**
      * Path to the file/directory on the host filesystem.
      */
-    public String hostPath;
+    private String hostPath;
 
     /**
      * Path to the file/directory inside the container.
      */
-    public String containerPath;
+    private String containerPath;
 
     public VolumeMapping(String hostPath, String containerPath) {
         this.hostPath = hostPath;

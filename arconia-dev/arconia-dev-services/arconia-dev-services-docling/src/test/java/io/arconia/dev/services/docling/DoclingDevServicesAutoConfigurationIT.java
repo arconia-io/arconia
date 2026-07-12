@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
 
-    private static final ApplicationContextRunner contextRunner = defaultContextRunner(DoclingDevServicesAutoConfiguration.class);
+    private final ApplicationContextRunner contextRunner = defaultContextRunner(DoclingDevServicesAutoConfiguration.class);
 
     @Override
     protected ApplicationContextRunner getContextRunner() {
@@ -49,7 +49,7 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     var container = context.getBean(getContainerClass());
                     assertThat(container.getDockerImageName()).contains(ArconiaDoclingServeContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=true");
-                    assertThat(container.getNetworkAliases()).hasSize(0);
+                    assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isTrue();
                     assertThat(container.getBinds()).isEmpty();
 

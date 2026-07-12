@@ -107,7 +107,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return enabled;
     }
 
-    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -117,7 +116,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return imageName;
     }
 
-    @Override
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -127,7 +125,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return environment;
     }
 
-    @Override
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -137,7 +134,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return networkAliases;
     }
 
-    @Override
     public void setNetworkAliases(List<String> networkAliases) {
         this.networkAliases = networkAliases;
     }
@@ -147,7 +143,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return port;
     }
 
-    @Override
     public void setPort(int port) {
         this.port = port;
     }
@@ -157,7 +152,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return resources;
     }
 
-    @Override
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
     }
@@ -167,7 +161,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return shared;
     }
 
-    @Override
     public void setShared(boolean shared) {
         this.shared = shared;
     }
@@ -177,7 +170,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return startupTimeout;
     }
 
-    @Override
     public void setStartupTimeout(Duration startupTimeout) {
         this.startupTimeout = startupTimeout;
     }
@@ -187,7 +179,6 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
         return volumes;
     }
 
-    @Override
     public void setVolumes(List<VolumeMapping> volumes) {
         this.volumes = volumes;
     }

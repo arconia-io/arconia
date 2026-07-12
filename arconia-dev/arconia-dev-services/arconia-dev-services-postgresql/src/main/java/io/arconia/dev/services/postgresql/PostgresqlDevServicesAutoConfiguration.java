@@ -33,11 +33,11 @@ public final class PostgresqlDevServicesAutoConfiguration {
 
     static class PostgresqlDevServicesRegistrar extends DevServicesRegistrar {
 
-        private static final String PGVECTOR_ENABLED = "org.springframework.ai.vectorstore.pgvector.PgVectorStore";
+        private static final String PGVECTOR_STORE_CLASS = "org.springframework.ai.vectorstore.pgvector.PgVectorStore";
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
-            if (ClassUtils.isPresent(PGVECTOR_ENABLED, null)) {
+            if (ClassUtils.isPresent(PGVECTOR_STORE_CLASS, null)) {
                 setDefaultProperty(PostgresqlDevServicesProperties.CONFIG_PREFIX + ".image-name", "pgvector/pgvector:pg18");
             }
 

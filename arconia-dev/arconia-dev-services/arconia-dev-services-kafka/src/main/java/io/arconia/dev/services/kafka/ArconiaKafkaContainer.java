@@ -27,7 +27,7 @@ final class ArconiaKafkaContainer extends KafkaContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), KAFKA_PORT);
         }
     }

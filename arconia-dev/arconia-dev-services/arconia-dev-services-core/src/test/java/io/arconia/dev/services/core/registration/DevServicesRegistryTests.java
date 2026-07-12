@@ -2,6 +2,7 @@ package io.arconia.dev.services.core.registration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -11,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 class DevServicesRegistryTests {
 
-    private final DevServicesRegistry registry = new DevServicesRegistry(new DefaultListableBeanFactory());
+    private final DevServicesRegistry registry = new DevServicesRegistry(new DefaultListableBeanFactory(), new StandardEnvironment());
 
     @Test
     void whenServiceNameIsNullThenThrow() {
