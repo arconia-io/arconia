@@ -20,10 +20,6 @@ public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCa
         this.properties = properties;
     }
 
-    protected OpenTelemetryAiConventionsProperties getProperties() {
-        return properties;
-    }
-
     @Override
     public String getContextualName(ToolCallingObservationContext context) {
         Assert.notNull(context, "context cannot be null");

@@ -2,12 +2,13 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langsmith;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
@@ -19,6 +20,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
 public final class LangSmithToolCallingObservationConvention extends OpenTelemetryToolCallingObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     public LangSmithToolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);
@@ -67,19 +70,19 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
      * Ensures the value is a JSON object string. LangSmith expects {@code gen_ai.completion}
      * to be a JSON object — non-object values are wrapped as {@code {"output": <value>}}.
      */
-    private static String toJsonObject(String value) {
+    private String toJsonObject(String value) {
         try {
-            Object parsed = JsonParser.fromJson(value, Object.class);
+            Object parsed = jsonHelper.fromJson(value, Object.class);
             if (parsed instanceof Map) {
                 return value;
             }
             Map<String, Object> wrapper = new LinkedHashMap<>();
-            wrapper.put("output", parsed);
-            return JsonParser.toJson(wrapper);
+            wrapper.put("output", Objects.requireNonNullElse(parsed, "{}"));
+            return jsonHelper.toJson(wrapper);
         } catch (Exception e) {
             Map<String, Object> wrapper = new LinkedHashMap<>();
             wrapper.put("output", value);
-            return JsonParser.toJson(wrapper);
+            return jsonHelper.toJson(wrapper);
         }
     }
 

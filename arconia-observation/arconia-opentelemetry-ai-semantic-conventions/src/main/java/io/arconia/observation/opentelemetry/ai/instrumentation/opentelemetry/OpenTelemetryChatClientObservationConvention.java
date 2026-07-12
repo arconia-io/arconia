@@ -11,7 +11,7 @@ import org.springframework.ai.chat.client.observation.DefaultChatClientObservati
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.observation.conventions.SpringAiKind;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +21,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConte
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 public class OpenTelemetryChatClientObservationConvention extends DefaultChatClientObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 
@@ -83,7 +85,7 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
         }
         var inputMessages = GenAiContent.fromMessages(messages);
         if (!inputMessages.isEmpty()) {
-            return keyValues.and(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey(), JsonParser.toJson(inputMessages));
+            return keyValues.and(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey(), jsonHelper.toJson(inputMessages));
         }
         return keyValues;
     }
@@ -95,7 +97,7 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
         }
         var outputMessages = GenAiContent.fromGenerations(context.getResponse().chatResponse().getResults());
         if (!outputMessages.isEmpty()) {
-            return keyValues.and(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey(), JsonParser.toJson(outputMessages));
+            return keyValues.and(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey(), jsonHelper.toJson(outputMessages));
         }
         return keyValues;
     }

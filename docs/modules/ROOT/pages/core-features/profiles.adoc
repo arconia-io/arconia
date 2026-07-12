@@ -11,25 +11,55 @@ By default, the Arconia Spring Boot Starter provides two profiles that are enabl
 * `dev`: Enabled when running the application in dev mode.
 * `test`: Enabled when running the application in test mode.
 
+== How Profiles Are Activated
+
+Arconia activates the mode-specific profiles right before Spring Boot loads the application configuration. As a result, profile-specific configuration files (such as `application-dev.yml`) are loaded as part of the standard Spring Boot configuration flow, including when configuration is imported from external sources (such as Spring Cloud Config Server or HashiCorp Vault via `spring.config.import`).
+
+NOTE: The mode-specific profiles become active profiles. As in standard Spring Boot, activating any profile means the default profiles (`spring.profiles.default`) no longer apply. If you rely on `spring.profiles.default`, list those profiles in `arconia.dev.profiles`/`arconia.test.profiles` or disable the automatic activation.
+
+== Customizing the Profiles
+
+Each organization may have its own set of custom profiles to manage development, test, and production configurations. For example, instead of having a `dev` profile, you may have a `local` profile where you define the configuration to use when running the application in dev mode. That's why Arconia makes these profiles configurable.
+
+Since the profiles must be activated before the application configuration is loaded, the profile settings cannot be defined in regular application configuration files like `application.yml`. They are supported in the following locations, in decreasing order of precedence:
+
+* command line arguments (e.g. `--arconia.dev.profiles=local`);
+* JVM system properties (e.g. `-Darconia.dev.profiles=local`);
+* environment variables (e.g. `ARCONIA_DEV_PROFILES=local`);
+* the `META-INF/arconia-bootstrap.properties` file.
+
+If any of these properties is found in the application configuration, Arconia logs a warning at startup since the value would otherwise be silently ignored.
+
+=== The Bootstrap Configuration File
+
+For team conventions that should be checked in with the application, you can create a `META-INF/arconia-bootstrap.properties` file in your classpath (e.g. `src/main/resources/META-INF/arconia-bootstrap.properties`):
+
+[source,properties]
+----
+arconia.dev.profiles=local
+arconia.test.profiles=integration
+----
+
+The file uses the Java Properties format and supports only the bootstrap settings listed on this page. It is read once, before the application configuration is loaded, so it doesn't support placeholders or profile-specific variants. When multiple files are present, the first one found on the classpath is used: for example, a file in `src/test/resources` takes precedence over the one in `src/main/resources` when running tests. The xref:core-features/bootstrap-mode.adoc[bootstrap mode] itself cannot be set in this file: the file is static and checked in with the application, whereas the mode describes the launch context.
+
 == Enabling/Disabling Profiles
 
-The profiles are enabled by default based on the application bootstrap mode. You can disable them via configuration properties.
+The profiles are enabled by default based on the application bootstrap mode. You can disable the automatic activation via the `arconia.bootstrap.profiles.enabled` property, for example in the bootstrap configuration file:
 
-[source,yaml]
+[source,properties]
 ----
-arconia:
-  bootstrap:
-    profiles:
-      enabled: false
+arconia.bootstrap.profiles.enabled=false
 ----
 
 == Configuration Properties
 
-Each organization may have its own set of custom profiles to manage development, test, and production configurations. For example, instead of having a `dev` profile, you may have a `local` profile where you define the configuration to use when running the application in dev mode. That's why Arconia makes these profiles configurable.
-
 .Profiles Configuration Properties
 |===
 |Property |Default |Description
+|	`arconia.bootstrap.profiles.enabled`
+|	`true`
+|	Whether the profiles are enabled based on the application mode.
+
 |	`arconia.dev.profiles`
 |	`dev`
 |	Names of the profiles to activate in dev mode.
@@ -39,11 +69,9 @@ Each organization may have its own set of custom profiles to manage development,
 |	Names of the profiles to activate in test mode.
 |===
 
-Both properties accept a list of profiles. For example, you can define multiple profiles to be activated when running in dev mode:
+Both profile properties accept a list of profiles. For example, you can define multiple profiles to be activated when running in dev mode:
 
-[source,yaml]
+[source,properties]
 ----
-arconia:
-  dev:
-    profiles: dev, local
+arconia.dev.profiles=dev,local
 ----

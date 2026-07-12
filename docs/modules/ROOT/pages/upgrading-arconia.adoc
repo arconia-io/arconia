@@ -16,7 +16,7 @@ Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgr
 
 [source,shell]
 ----
-arconia update framework --to-version 0.27
+arconia update framework --to-version 0.28
 ----
 
 === Gradle OpenRewrite Plugin
@@ -58,7 +58,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_27
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_28
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -71,5 +71,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_27
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_28
 ----

@@ -75,7 +75,6 @@ Want to verify which Dev Services are running? If Spring Boot Actuator is in you
 ** xref:mongodb.adoc[MongoDB]
 ** xref:mongodb-atlas.adoc[MongoDB Atlas]
 ** xref:redis.adoc[Redis]
-** xref:valkey.adoc[Valkey]
 * Event Brokers
 ** xref:artemis.adoc[Artemis]
 ** xref:kafka.adoc[Kafka]

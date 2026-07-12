@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     api "org.slf4j:slf4j-api"
-    api "org.springframework.boot:spring-boot"
+    api "org.springframework:spring-core"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

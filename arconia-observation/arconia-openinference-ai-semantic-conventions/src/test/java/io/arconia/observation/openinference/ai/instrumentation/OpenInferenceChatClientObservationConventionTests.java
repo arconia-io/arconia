@@ -6,7 +6,6 @@ import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.common.KeyValue;
 
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -58,7 +57,7 @@ class OpenInferenceChatClientObservationConventionTests {
     }
 
     @Test
-    void shouldHaveHighCardinalityKeyValues() throws JSONException {
+    void shouldHaveHighCardinalityKeyValues() {
         var context = ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
                         .prompt(Prompt.builder().content("Hello").build())

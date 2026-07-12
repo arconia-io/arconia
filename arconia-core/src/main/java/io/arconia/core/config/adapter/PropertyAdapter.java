@@ -129,7 +129,7 @@ public class PropertyAdapter {
 
         public Builder mapList(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
-                List<String> propertyList = List.of(value.split(","));
+                List<String> propertyList = List.of(StringUtils.tokenizeToStringArray(value, ","));
                 return CollectionUtils.isEmpty(propertyList) ? null : propertyList;
             });
         }

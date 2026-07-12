@@ -12,11 +12,25 @@ When in dev or test mode, Arconia automatically activates specific Spring profil
 
 == Setting the Bootstrap Mode
 
-Arconia relies on a series of heuristics to determine the current bootstrap mode. However, you can explicitly set the bootstrap mode using the `ARCONIA_BOOTSTRAP_MODE` environment variable or the `arconia.bootstrap.mode` JVM system property. If you use the https://arconia.io/docs/arconia-cli/latest/index.html[Arconia CLI] to work with your Spring Boot application, the CLI automatically sets the bootstrap mode for you when running (`arconia dev`) or testing (`arconia test`) your application.
+Arconia relies on a series of heuristics to determine the current bootstrap mode. However, you can explicitly set the bootstrap mode using the `ARCONIA_BOOTSTRAP_MODE` environment variable or the `arconia.bootstrap.mode` JVM system property (`-Darconia.bootstrap.mode=dev`). If you use the https://arconia.io/docs/arconia-cli/latest/index.html[Arconia CLI] to work with your Spring Boot application, the CLI automatically sets the bootstrap mode for you when running (`arconia dev`) or testing (`arconia test`) your application.
+
+NOTE: The bootstrap mode describes the launch context, so it is not a regular application property: setting it in a configuration file (such as `application.yml` or `META-INF/arconia-bootstrap.properties`) or as a command line argument has no effect, and Arconia logs a warning if it finds it there. Only the environment variable and the JVM system property are supported, since the mode may be needed before the application arguments and configuration are available.
+
+== How the Bootstrap Mode Is Determined
+
+When the bootstrap mode is not set explicitly, Arconia determines it using the following heuristics, in order:
+
+1. `prod` when the application is being processed ahead-of-time (Spring AOT), so that the production behavior is baked into the AOT artifacts.
+2. `test` when a test framework (JUnit, TestNG, Cucumber, Spring Boot Test) is found in the call stack.
+3. `prod` when the application is running as a GraalVM native image.
+4. `dev` when Spring Boot DevTools is on the classpath, or when the application is running from the output directories of a build tool or IDE (Gradle, Maven, IntelliJ IDEA, Eclipse), which only happens at development time.
+5. `prod` in all other cases, including packaged applications (JAR, exploded classpath, container image).
+
+If the heuristics don't recognize your setup (for example, a custom launcher or build tool), the application runs in prod mode, which is the safest default. In that case, you can set the bootstrap mode explicitly.
 
 == Checking the Active Bootstrap Mode
 
-If you need to check programmatically which bootstrap mode is currently active, you can use the `BootstrapMode.detect()` method. This method inspects the current environment and determines the active bootstrap mode.
+If you need to check programmatically which bootstrap mode is currently active, you can use the `BootstrapMode.detect()` method. This method inspects the current environment and determines the active bootstrap mode. The mode is detected once and cached for the lifetime of the JVM.
 
 When in dev or test mode, a log message is printed at startup indicating the active mode. For example, when running in dev mode, you might see a log message like this:
 
@@ -24,3 +38,23 @@ When in dev or test mode, a log message is printed at startup indicating the act
 ----
 The application is running in dev mode
 ----
+
+== Registering Beans Based on the Bootstrap Mode
+
+You can register beans conditionally based on the bootstrap mode using the `@ConditionalOnDevMode` annotation, which only matches when the application is running in dev mode. It can be applied to `@Bean` methods as well as to `@Configuration` and auto-configuration classes, both in applications and in libraries building on top of Arconia.
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+public class GreetingConfiguration {
+
+    @Bean
+    @ConditionalOnDevMode
+    GreetingService devGreetingService() {
+        return new LocalGreetingService();
+    }
+
+}
+----
+
+NOTE: During Spring AOT processing and in GraalVM native images, the application runs in prod mode, so the condition doesn't match and the beans are excluded from the AOT artifacts.

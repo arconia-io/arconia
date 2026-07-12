@@ -6,8 +6,8 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.image.observation.ImageModelObservationContext;
 import org.springframework.util.StringUtils;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLIT flavor of {@link OpenTelemetryImageModelObservationConvention}.
@@ -24,7 +24,7 @@ public final class OpenLitImageModelObservationConvention extends OpenTelemetryI
 
     @Override
     protected KeyValues requestImageSize(KeyValues keyValues, ImageModelObservationContext context) {
-        if (context.getRequest().getOptions().getWidth() != null
+        if (context.getRequest().getOptions() != null && context.getRequest().getOptions().getWidth() != null
                 && context.getRequest().getOptions().getHeight() != null) {
             return keyValues.and(OpenLitAttributes.GEN_AI_REQUEST_IMAGE_SIZE,
                     "%sx%s".formatted(context.getRequest().getOptions().getWidth(),
@@ -35,7 +35,7 @@ public final class OpenLitImageModelObservationConvention extends OpenTelemetryI
 
     @Override
     protected KeyValues requestImageStyle(KeyValues keyValues, ImageModelObservationContext context) {
-        if (StringUtils.hasText(context.getRequest().getOptions().getStyle())) {
+        if (context.getRequest().getOptions() != null && StringUtils.hasText(context.getRequest().getOptions().getStyle())) {
             return keyValues.and(OpenLitAttributes.GEN_AI_REQUEST_IMAGE_STYLE,
                     context.getRequest().getOptions().getStyle());
         }

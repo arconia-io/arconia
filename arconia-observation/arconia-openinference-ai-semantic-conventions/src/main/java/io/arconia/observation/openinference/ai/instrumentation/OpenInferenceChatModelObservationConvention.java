@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.arize.semconv.trace.SemanticConventions;
 
@@ -23,11 +24,10 @@ import org.springframework.ai.content.Media;
 import org.springframework.ai.content.MediaContent;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import tools.jackson.core.type.TypeReference;
 
 /**
  * {@link ChatModelObservationConvention} for OpenInference.
@@ -35,6 +35,8 @@ import tools.jackson.core.type.TypeReference;
 public final class OpenInferenceChatModelObservationConvention extends DefaultChatModelObservationConvention {
 
     private static final KeyValue MODEL_NONE = KeyValue.of(SemanticConventions.LLM_MODEL_NAME, KeyValue.NONE_VALUE);
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenInferenceOptions openInferenceOptions;
 
@@ -186,7 +188,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             invocationParameters.put("top_p", options.getTopP());
         }
 
-        return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS, JsonParser.toJson(invocationParameters));
+        return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS,  jsonHelper.toJson(invocationParameters));
     }
 
     private KeyValues llmTools(KeyValues keyValues, ChatModelObservationContext context) {
@@ -198,33 +200,20 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             return keyValues;
         }
 
-        List<ToolCallback> toolCallbacks = new ArrayList<>(options.getToolCallbacks());
+        List<ToolCallback> toolCallbacks = Objects.requireNonNullElse(options.getToolCallbacks(), List.of());
         for (int i = 0; i < toolCallbacks.size(); i++) {
             Map<String,Object> toolDefinition = new HashMap<>();
             toolDefinition.put("type", "function");
             toolDefinition.put("function", Map.of(
                     "name", toolCallbacks.get(i).getToolDefinition().name(),
                     "description", toolCallbacks.get(i).getToolDefinition().description(),
-                    "parameters", JsonParser.fromJson(toolCallbacks.get(i).getToolDefinition().inputSchema(),
-                            new TypeReference<Map<String, Object>>() {})
+                    "parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallbacks.get(i).getToolDefinition().inputSchema(),
+                            new ParameterizedTypeReference<Map<String, Object>>() {
+                            }), Map.of())
             ));
             keyValues = keyValues.and(
                     SemanticConventions.LLM_TOOLS + "." + i + "." + SemanticConventions.TOOL_JSON_SCHEMA,
-                    JsonParser.toJson(toolDefinition)
-            );
-        }
-
-        List<String> toolNames = new ArrayList<>(options.getToolNames());
-        for (int i = 0; i < toolNames.size(); i ++) {
-            int index = i + toolCallbacks.size();
-            Map<String,Object> toolDefinition = new HashMap<>();
-            toolDefinition.put("type", "function");
-            toolDefinition.put("function", Map.of(
-                    "name", toolNames.get(i)
-            ));
-            keyValues = keyValues.and(
-                    SemanticConventions.LLM_TOOLS + "." + index + "." + SemanticConventions.TOOL_JSON_SCHEMA,
-                    JsonParser.toJson(toolDefinition)
+                    jsonHelper.toJson(toolDefinition)
             );
         }
 

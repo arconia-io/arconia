@@ -1,0 +1,117 @@
+= Data JDBC SQLite
+
+Arconia Data JDBC SQLite adds https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect and the https://github.com/xerial/sqlite-jdbc[SQLite JDBC driver], so you can use SQLite as the database backing your Spring Data JDBC repositories.
+
+== Dependencies
+
+Arconia Data JDBC SQLite is designed to be used alongside the https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.jdbc[Spring Boot Starter for Spring Data JDBC]. Add both dependencies to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'io.arconia:arconia-data-jdbc-sqlite'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jdbc</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-data-jdbc-sqlite</artifactId>
+</dependency>
+----
+======
+
+The Arconia module brings in the `org.xerial:sqlite-jdbc` driver transitively, so no additional SQLite dependency is required.
+
+Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is recommended to use the BOM to ensure that all dependencies are compatible.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencyManagement {
+    imports {
+        mavenBom "io.arconia:arconia-bom:{page-component-version}"
+    }
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-bom</artifactId>
+            <version>{page-component-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+======
+
+== Configuration
+
+Configure the data source to point at an SQLite database. The SQLite JDBC driver supports both file-based and in-memory databases.
+
+[tabs]
+======
+File-based::
++
+[source,yaml]
+----
+spring:
+  datasource:
+    url: "jdbc:sqlite:./data/app.db"
+----
+
+In-memory::
++
+[source,yaml]
+----
+spring:
+  datasource:
+    url: "jdbc:sqlite::memory:"
+----
+======
+
+Spring Boot detects the JDBC URL and configures the data source automatically. Spring Data JDBC discovers the SQLite dialect contributed by this module via Spring's `spring.factories` mechanism, so no further wiring is required.
+
+=== Ahead-of-Time Processing
+
+When using Spring Data JDBC with https://docs.spring.io/spring-boot/reference/packaging/aot.html[ahead-of-time processing] (targeting either the JVM or a https://docs.spring.io/spring-boot/reference/packaging/native-image/index.html[native image]), the default dialect resolution requires a database connection at build time. To avoid that, declare a `JdbcDialect` bean for SQLite so the dialect is known statically.
+
+[source,java]
+----
+import io.arconia.data.jdbc.sqlite.dialect.JdbcSqliteDialect;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration(proxyBeanMethods = false)
+class JdbcConfiguration {
+
+    @Bean
+    JdbcSqliteDialect jdbcDialect() {
+        return JdbcSqliteDialect.INSTANCE;
+    }
+
+}
+----

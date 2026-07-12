@@ -9,7 +9,6 @@
 ** xref:mongodb.adoc[MongoDB]
 ** xref:mongodb-atlas.adoc[MongoDB Atlas]
 ** xref:redis.adoc[Redis]
-** xref:valkey.adoc[Valkey]
 * Event Brokers
 ** xref:artemis.adoc[Artemis]
 ** xref:kafka.adoc[Kafka]

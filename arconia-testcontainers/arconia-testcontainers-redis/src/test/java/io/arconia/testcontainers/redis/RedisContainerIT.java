@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RedisContainerIT {
 
     private static final DockerImageName IMAGE = DockerImageName
-            .parse("redis:8.4-alpine");
+            .parse("redis:8.8-alpine");
 
     @Test
     void containerStartsAndStopsSuccessfully() {

@@ -204,7 +204,6 @@ class OpenInferenceChatModelObservationConventionTests {
         ToolCallingChatOptions options = ToolCallingChatOptions.builder()
                 .model("mistral")
                 .toolCallbacks(new TestToolCallback(weatherTool))
-                .toolNames("search_web")
                 .build();
 
         ChatModelObservationContext context = ChatModelObservationContext.builder()
@@ -228,17 +227,32 @@ class OpenInferenceChatModelObservationConventionTests {
         String toolSchema0 = """
                {"function":{"name":"get_weather","description":"Get the current weather in a location","parameters":{"type":"object","properties":{"location":{"type":"string"}},"required":["location"]}},"type":"function"}""";
 
-        String toolSchema1 = """
-                {"function":{"name":"search_web"},"type":"function"}""";
-
         JSONAssert.assertEquals(toolSchema0, findKeyValue(keyValues, SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_JSON_SCHEMA), JSONCompareMode.LENIENT);
-        JSONAssert.assertEquals(toolSchema1, findKeyValue(keyValues, SemanticConventions.LLM_TOOLS + ".1." + SemanticConventions.TOOL_JSON_SCHEMA), JSONCompareMode.LENIENT);
 
         assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_ID, "call_1"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_FUNCTION_NAME, "get_weather"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON, "{\"location\":\"New York\"}")
         );
+    }
+
+    @Test
+    void shouldNotFailWhenToolCallbacksAreNull() {
+        List<Message> messages = List.of(new UserMessage("Hello"));
+        ToolCallingChatOptions options = ToolCallingChatOptions.builder()
+                .model("mistral")
+                .toolCallbacks((List<ToolCallback>) null)
+                .build();
+
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, options))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).startsWith(SemanticConventions.LLM_TOOLS + "."));
     }
 
     @Test

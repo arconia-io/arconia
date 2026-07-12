@@ -7,7 +7,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -21,6 +21,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
 public final class OpenLLMetryChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     public OpenLLMetryChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);
@@ -65,7 +67,7 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
             return keyValues;
         }
         var inputMessages = GenAiContent.fromMessages(messages);
-        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, JsonParser.toJson(inputMessages));
+        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, jsonHelper.toJson(inputMessages));
     }
 
     @Override
@@ -75,7 +77,7 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
             return keyValues;
         }
         var outputMessages = GenAiContent.fromGenerations(context.getResponse().chatResponse().getResults());
-        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, JsonParser.toJson(outputMessages));
+        return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, jsonHelper.toJson(outputMessages));
     }
 
 }

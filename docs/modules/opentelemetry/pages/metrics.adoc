@@ -273,7 +273,7 @@ Gradle::
 ----
 dependencies {
   implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
+    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-registry-otlp"
   }
   implementation("io.arconia:arconia-opentelemetry-micrometer-metrics-bridge")
 }
@@ -289,7 +289,7 @@ Maven::
   <exclusions>
     <exclusion>
       <groupId>io.arconia</groupId>
-      <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
+      <artifactId>arconia-opentelemetry-micrometer-registry-otlp</artifactId>
     </exclusion>
   </exclusions>
 </dependency>

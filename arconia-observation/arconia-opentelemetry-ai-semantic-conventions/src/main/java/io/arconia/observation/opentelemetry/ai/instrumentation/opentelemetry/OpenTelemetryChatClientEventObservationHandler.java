@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -19,6 +19,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConte
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.MicrometerBridge;
 
 public class OpenTelemetryChatClientEventObservationHandler implements ObservationHandler<ChatClientObservationContext> {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 
@@ -52,8 +54,8 @@ public class OpenTelemetryChatClientEventObservationHandler implements Observati
         }
 
         span.addEvent(GenAiAttributes.GEN_AI_CLIENT_INFERENCE_OPERATION_DETAILS, Attributes.builder()
-                .put(GenAiAttributes.GEN_AI_INPUT_MESSAGES, JsonParser.toJson(inputMessages))
-                .put(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES, JsonParser.toJson(outputMessages))
+                .put(GenAiAttributes.GEN_AI_INPUT_MESSAGES, jsonHelper.toJson(inputMessages))
+                .put(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES, jsonHelper.toJson(outputMessages))
                 .build());
     }
 

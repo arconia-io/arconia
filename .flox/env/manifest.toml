@@ -1,4 +1,4 @@
-schema-version = "1.10.0"
+schema-version = "1.12.0"
 
 [install]
 graalvm-ce.pkg-path = "graalvm-ce"

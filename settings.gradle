@@ -13,6 +13,9 @@ include 'arconia-ai:arconia-ai-docling-document-reader'
 // Core
 include 'arconia-core'
 
+// Data
+include 'arconia-data:arconia-data-jdbc-sqlite'
+
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-api'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
@@ -39,13 +42,9 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-pulsar'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-valkey'
 
 // Integrations
 include 'arconia-integrations:arconia-docling'
-
-// Kubernetes
-include 'arconia-kubernetes:arconia-kubernetes-service-binding'
 
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
@@ -77,4 +76,3 @@ include 'spring-boot-starters:arconia-spring-boot-starter'
 include 'arconia-testcontainers:arconia-testcontainers-openlit'
 include 'arconia-testcontainers:arconia-testcontainers-phoenix'
 include 'arconia-testcontainers:arconia-testcontainers-redis'
-include 'arconia-testcontainers:arconia-testcontainers-valkey'

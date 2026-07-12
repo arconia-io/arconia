@@ -1,5 +1,7 @@
 package io.arconia.boot.bootstrap;
 
+import java.util.Locale;
+
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
@@ -54,7 +56,7 @@ public enum BootstrapMode {
         }
 
         try {
-            BootstrapMode.valueOf(modeProperty.strip().toUpperCase());
+            BootstrapMode.valueOf(modeProperty.strip().toUpperCase(Locale.ROOT));
             return true;
         } catch (IllegalArgumentException e) {
             return false;

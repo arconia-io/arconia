@@ -8,6 +8,7 @@ import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.common.KeyValue;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.Embedding;
@@ -194,11 +195,13 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     static class TestUsage implements Usage {
 
         @Override
+        @NonNull
         public Integer getPromptTokens() {
             return 1000;
         }
 
         @Override
+        @NonNull
         public Integer getCompletionTokens() {
             return 0;
         }

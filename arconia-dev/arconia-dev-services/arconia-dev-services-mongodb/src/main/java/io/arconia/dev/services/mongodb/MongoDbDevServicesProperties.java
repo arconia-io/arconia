@@ -33,7 +33,7 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
     /**
      * Environment variables to set in the service.
      */
-    private Map<String,String> environment = new HashMap<>();
+    private Map<String, String> environment = new HashMap<>();
 
     /**
      * Network aliases to assign to the dev service container.

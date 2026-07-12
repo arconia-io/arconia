@@ -4,23 +4,22 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.content.MediaContent;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import tools.jackson.core.type.TypeReference;
 
 /**
  * Record types representing the OpenTelemetry GenAI semantic convention schemas for input
@@ -30,6 +29,8 @@ import tools.jackson.core.type.TypeReference;
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-output-messages.json">Output Messages Schema</a>
  */
 public final class GenAiContent {
+
+    private static final JsonHelper jsonHelper = new JsonHelper();
 
     private GenAiContent() {}
 
@@ -162,7 +163,7 @@ public final class GenAiContent {
 
     private static Map<String, Object> parseArguments(String arguments) {
         return StringUtils.hasText(arguments)
-                ? JsonParser.fromJson(arguments, new TypeReference<>() {})
+                ? Objects.requireNonNullElse(jsonHelper.fromJson(arguments, new ParameterizedTypeReference<>() {}), Map.of())
                 : Map.of();
     }
 

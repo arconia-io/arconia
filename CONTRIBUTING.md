@@ -34,6 +34,7 @@ Thank you for your interest in contributing! Whether it's reporting bugs, sugges
     ```
 6. **Commit** using [Conventional Commits](#commit-messages) format with a [DCO sign-off](#dco-sign-off):
     ```shell
+    git add .
     git commit -s -m "feat(core): Add new feature"
     ```
 7. **Keep your branch updated** via rebase (never merge):

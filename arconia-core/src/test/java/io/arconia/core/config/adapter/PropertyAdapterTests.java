@@ -418,6 +418,18 @@ class PropertyAdapterTests {
     }
 
     @Test
+    void shouldTrimListEntriesAndSkipEmptyOnes() {
+        when(environment.getProperty("external.list")).thenReturn("value1, value2 ,,value3");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapList("external.list", "arconia.list")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .containsEntry("arconia.list", List.of("value1", "value2", "value3"));
+    }
+
+    @Test
     void shouldHandleNullInputForList() {
         when(environment.getProperty("external.list")).thenReturn(null);
 

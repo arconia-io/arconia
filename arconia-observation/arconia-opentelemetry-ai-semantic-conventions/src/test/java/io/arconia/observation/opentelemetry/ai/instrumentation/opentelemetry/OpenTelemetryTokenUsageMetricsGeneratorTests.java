@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.Usage;
@@ -91,10 +92,13 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
 
     static class TestUsage implements Usage {
         @Override
+        @NonNull
         public Integer getPromptTokens() { return 1000; }
         @Override
+        @NonNull
         public Integer getCompletionTokens() { return 500; }
         @Override
+        @NonNull
         public Integer getTotalTokens() { return 1500; }
         @Override
         public Map<String, Integer> getNativeUsage() {

@@ -15,7 +15,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.content.Media;
-import org.springframework.ai.util.json.JsonParser;
+import org.springframework.ai.util.JsonHelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Unit tests for {@link GenAiContent}.
  */
 class GenAiContentTests {
+
+    private static final JsonHelper jsonHelper = new JsonHelper();
 
     // fromMessages
 
@@ -37,7 +39,7 @@ class GenAiContentTests {
 
         assertThat(result).hasSize(2);
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {"role": "system", "parts": [{"type": "text", "content": "You are a helpful assistant"}]},
@@ -56,7 +58,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromMessages(List.of(assistantMessage));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -64,6 +66,30 @@ class GenAiContentTests {
                     "parts": [
                       {"type": "text", "content": "I'll check the weather"},
                       {"type": "tool_call", "id": "call_1", "name": "get_weather", "arguments": {"location": "Paris"}}
+                    ]
+                  }
+                ]""", json, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void fromMessagesShouldHandleNullJsonArguments() throws JSONException {
+        AssistantMessage assistantMessage = AssistantMessage.builder()
+                .content("calling tool")
+                .toolCalls(List.of(
+                        new AssistantMessage.ToolCall("call_1", "function", "get_weather", "null")
+                ))
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(assistantMessage));
+
+        String json = jsonHelper.toJson(result);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "role": "assistant",
+                    "parts": [
+                      {"type": "text", "content": "calling tool"},
+                      {"type": "tool_call", "id": "call_1", "name": "get_weather", "arguments": {}}
                     ]
                   }
                 ]""", json, JSONCompareMode.STRICT);
@@ -79,7 +105,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromMessages(List.of(toolResponse));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -103,7 +129,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromMessages(List.of(userMessage));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -129,7 +155,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromMessages(List.of(userMessage));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -159,7 +185,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromGenerations(List.of(generation));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -184,7 +210,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromGenerations(List.of(generation));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -205,7 +231,7 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromGenerations(List.of(generation));
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -230,7 +256,7 @@ class GenAiContentTests {
 
         assertThat(result).hasSize(2);
 
-        String json = JsonParser.toJson(result);
+        String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
                   {"role": "assistant", "parts": [{"type": "text", "content": "Answer 1"}], "finish_reason": "stop"},
