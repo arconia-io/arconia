@@ -5,6 +5,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.registration.DevServiceConnectionDetailsBeanDefinition;
 import io.arconia.dev.services.core.registration.DevServiceContainerBeanDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +41,15 @@ class DevServicesBeanFactoryInitializationAotProcessorTests {
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isFalse();
         assertThat(beanFactory.containsBeanDefinition("devService.container.redis")).isFalse();
+    }
+
+    @Test
+    void removesDiscoveredConnectionDetailsBeanDefinitions() {
+        beanFactory.registerBeanDefinition("devService.connectionDetails.rabbitmq", new DevServiceConnectionDetailsBeanDefinition());
+
+        processor.processAheadOfTime(beanFactory);
+
+        assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.rabbitmq")).isFalse();
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.arconia.dev.services.artemis;
 
+import org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
@@ -33,8 +34,14 @@ public final class ArtemisDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaArtemisContainer.class)
                             .supplier(() -> new ArconiaArtemisContainer(properties))
-                    ));
-
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(ArtemisConnectionDetails.class,
+                                    container -> new ArtemisDiscoveredConnectionDetails(container, properties))
+                    )
+            );
         }
 
     }

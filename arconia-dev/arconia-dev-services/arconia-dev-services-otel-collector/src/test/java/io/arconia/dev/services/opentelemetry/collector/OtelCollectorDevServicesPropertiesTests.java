@@ -20,7 +20,6 @@ class OtelCollectorDevServicesPropertiesTests extends BaseDevServicesPropertiesT
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
                 .build();
     }
 

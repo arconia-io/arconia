@@ -1,5 +1,6 @@
 package io.arconia.dev.services.rabbitmq;
 
+import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
@@ -33,6 +34,12 @@ public final class RabbitMqDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaRabbitMqContainer.class)
                             .supplier(() -> new ArconiaRabbitMqContainer(properties))
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(RabbitConnectionDetails.class,
+                                    container -> new RabbitMqDiscoveredConnectionDetails(container, properties))
                     )
             );
         }

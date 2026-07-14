@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
@@ -16,9 +16,13 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Properties for the RabbitMQ Dev Services.
  */
 @ConfigurationProperties(prefix = RabbitMqDevServicesProperties.CONFIG_PREFIX)
-public class RabbitMqDevServicesProperties implements BaseDevServicesProperties {
+public class RabbitMqDevServicesProperties implements SharedDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.rabbitmq";
+
+    static final String DEFAULT_USERNAME = "arconia";
+
+    static final String DEFAULT_PASSWORD = "arconia";
 
     /**
      * Whether the dev service is enabled.
@@ -54,8 +58,21 @@ public class RabbitMqDevServicesProperties implements BaseDevServicesProperties 
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the dev service is shared among applications.
+     * Whether the container used in the dev service is reused across multiple
+     * applications and application restarts, relying on the Testcontainers
+     * reusable containers feature. It requires enabling the feature
+     * in the `~/.testcontainers.properties` file. Reused containers
+     * are not stopped automatically and must be cleaned up manually.
      * Only applicable in dev mode.
+     */
+    private boolean reuse = false;
+
+    /**
+     * Whether the dev service is shared among applications running simultaneously.
+     * A shared dev service is discoverable by other applications, and the application
+     * connects to an existing shared dev service if available instead of starting a new one.
+     * Container reuse takes precedence: when the `reuse` property is enabled,
+     * sharing is disabled. Only applicable in dev mode.
      */
     private boolean shared = true;
 
@@ -77,6 +94,16 @@ public class RabbitMqDevServicesProperties implements BaseDevServicesProperties 
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int managementConsolePort = 0;
+
+    /**
+     * Username for the RabbitMQ administrator user.
+     */
+    private String username = DEFAULT_USERNAME;
+
+    /**
+     * Password for the RabbitMQ administrator user.
+     */
+    private String password = DEFAULT_PASSWORD;
 
     @Override
     public boolean isEnabled() {
@@ -133,6 +160,15 @@ public class RabbitMqDevServicesProperties implements BaseDevServicesProperties 
     }
 
     @Override
+    public boolean isReuse() {
+        return reuse;
+    }
+
+    public void setReuse(boolean reuse) {
+        this.reuse = reuse;
+    }
+
+    @Override
     public boolean isShared() {
         return shared;
     }
@@ -165,6 +201,22 @@ public class RabbitMqDevServicesProperties implements BaseDevServicesProperties 
 
     public void setManagementConsolePort(int managementConsolePort) {
         this.managementConsolePort = managementConsolePort;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }

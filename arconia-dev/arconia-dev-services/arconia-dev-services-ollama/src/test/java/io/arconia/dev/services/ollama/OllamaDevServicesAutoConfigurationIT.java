@@ -50,7 +50,7 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
                     assertThat(container.getDockerImageName()).contains("ollama/ollama");
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.isShouldBeReused()).isFalse();
 
                     assertThatHasSingletonScope(context);
                 });

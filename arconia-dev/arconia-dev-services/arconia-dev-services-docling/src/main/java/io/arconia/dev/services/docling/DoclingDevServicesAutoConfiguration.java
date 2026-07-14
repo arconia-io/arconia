@@ -11,6 +11,7 @@ import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.DoclingDevServicesRegistrar;
+import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
 /**
  * Auto-configuration for Docling Dev Services.
@@ -33,7 +34,14 @@ public final class DoclingDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaDoclingServeContainer.class)
                             .supplier(() -> new ArconiaDoclingServeContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(DoclingServeConnectionDetails.class,
+                                    container -> new DoclingDiscoveredConnectionDetails(container, properties))
+                    )
+            );
         }
 
     }

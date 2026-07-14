@@ -30,6 +30,9 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer {
         this.properties = properties;
 
         ContainerConfigurer.base(this, properties);
+
+        this.withAdminUser(properties.getUsername());
+        this.withAdminPassword(properties.getPassword());
     }
 
     @Override

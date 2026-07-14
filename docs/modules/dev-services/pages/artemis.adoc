@@ -16,7 +16,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in dev mode, the Dev Service will be shared across multiple applications.
+By default, when running the application in dev mode, the Dev Service is shared across multiple applications running simultaneously: the application connects to a running Artemis Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications sharing the Dev Service must use the same credentials.
 
 == Accessing the Management Console
 
@@ -60,9 +60,13 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
+| `arconia.dev.services.{service-name}.reuse`
+| `false`
+| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
+
 | `arconia.dev.services.{service-name}.shared`
 | `true`
-| Whether the dev service is shared among applications. Only applicable in dev mode.
+| Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`

@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
@@ -18,6 +20,8 @@ import io.arconia.dev.services.api.registration.DevServiceRegistration;
 @Endpoint(id = "devservices")
 public class DevServicesEndpoint {
 
+    private static final Logger logger = LoggerFactory.getLogger(DevServicesEndpoint.class);
+
     private final Map<String, DevServiceRegistration> registrations;
 
     public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations) {
@@ -27,7 +31,7 @@ public class DevServicesEndpoint {
     @ReadOperation
     public Map<String, ServiceInfoSummary> devServices() {
         return registrations.values().stream()
-                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), resolveContainerInfoSummary(reg)))
+                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), reg.origin(), resolveContainerInfoSummary(reg)))
                 .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info));
     }
 
@@ -39,7 +43,7 @@ public class DevServicesEndpoint {
             // A null result is mapped to a 404 response.
             return null;
         }
-        return new ServiceInfo(registration.name(), registration.description(), resolveContainerInfo(registration));
+        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), resolveContainerInfo(registration));
     }
 
     /**
@@ -52,6 +56,7 @@ public class DevServicesEndpoint {
         try {
             return registration.containerInfo().get();
         } catch (Exception ex) {
+            logger.debug("Failed to resolve container information for the '{}' dev service", registration.name(), ex);
             return null;
         }
     }
@@ -66,6 +71,7 @@ public class DevServicesEndpoint {
             String name,
             @Nullable
             String description,
+            DevServiceRegistration.Origin origin,
             @Nullable
             ContainerInfoSummary containerInfo
     ) {}
@@ -86,6 +92,7 @@ public class DevServicesEndpoint {
             String name,
             @Nullable
             String description,
+            DevServiceRegistration.Origin origin,
             @Nullable
             ContainerInfo containerInfo
     ) {}

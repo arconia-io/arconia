@@ -11,7 +11,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 
 The Dev Services infrastructure is split into two modules:
 
-* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`) and the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
+* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`, `SharedDevServicesProperties`) and the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
 * `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `ContainerConfigurer`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
@@ -184,6 +184,36 @@ protected void registerDevServices(DevServicesRegistry registry, Environment env
 ----
 
 The property value is resolved lazily, only after the container has started, mirroring the semantics of Spring Boot's `@DynamicPropertySource`.
+
+== Supporting Shared Dev Services
+
+To let multiple applications running simultaneously share one container of your Dev Service (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]), have your properties class implement `SharedDevServicesProperties` (instead of `BaseDevServicesProperties`), which adds the `shared` property to its contract, and declare a sharing specification when registering the service. Pass the values of your `shared` and `reuse` properties and a factory building the `ConnectionDetails` for connecting to a shared container started by another application:
+
+[source,java]
+----
+registry.registerDevService(service -> service
+        .name("fancydb")
+        .description("FancyDB Dev Service")
+        .container(container -> container
+                .type(FancyDbContainer.class)
+                .supplier(() -> new FancyDbContainer(properties))
+        )
+        .sharing(sharing -> sharing
+                .enabled(properties.isShared())
+                .reuse(properties.isReuse())
+                .connectionDetails(FancyDbConnectionDetails.class,
+                        container -> new FancyDbDiscoveredConnectionDetails(
+                                container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT)))
+        ));
+----
+
+Sharing and container reuse are mutually exclusive: when the `reuse` property is enabled, the framework disables sharing for the Dev Service. Passing the `reuse` value lets the framework enforce that precedence.
+
+The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the sharing declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the shared container is still adopted, but the dev service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
+
+Adopt `SharedDevServicesProperties` and the sharing specification together: a Dev Service that declares no sharing specification never participates in discovery, so it should not expose the `shared` property either. The framework still applies the identifying labels to the container, and users can still keep containers across restarts via the `reuse` property.
+
+A discovered container is adopted as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications sharing the Dev Service; if your service is credential-protected, document this constraint for your users.
 
 == Mutual Exclusion
 

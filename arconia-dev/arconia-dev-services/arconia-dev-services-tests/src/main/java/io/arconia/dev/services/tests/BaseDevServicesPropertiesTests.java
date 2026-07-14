@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,7 +66,10 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         assertThat(properties.getNetworkAliases()).isEmpty();
         assertThat(properties.getPort()).isEqualTo(0);
         assertThat(properties.getResources()).isEmpty();
-        assertThat(properties.isShared()).isEqualTo(defaults.shared());
+        assertThat(properties.isReuse()).isFalse();
+        if (properties instanceof SharedDevServicesProperties sharedProperties) {
+            assertThat(sharedProperties.isShared()).isEqualTo(defaults.shared());
+        }
         assertThat(properties.getStartupTimeout()).isEqualTo(defaults.startupTimeout());
         assertThat(properties.getVolumes()).isEmpty();
     }
@@ -84,7 +88,10 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         values.put("port", String.valueOf(TEST_PORT));
         values.put("resources[0].source-path", "test-resource.txt");
         values.put("resources[0].container-path", "/tmp/test-resource.txt");
-        values.put("shared", String.valueOf(!defaults.shared()));
+        values.put("reuse", "true");
+        if (properties instanceof SharedDevServicesProperties) {
+            values.put("shared", String.valueOf(!defaults.shared()));
+        }
         values.put("startup-timeout", TEST_STARTUP_TIMEOUT.toString());
         values.put("volumes[0].host-path", "/host/path");
         values.put("volumes[0].container-path", "/container/path");
@@ -99,7 +106,10 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         assertThat(properties.getResources()).hasSize(1);
         assertThat(properties.getResources().getFirst().getSourcePath()).isEqualTo("test-resource.txt");
         assertThat(properties.getResources().getFirst().getContainerPath()).isEqualTo("/tmp/test-resource.txt");
-        assertThat(properties.isShared()).isEqualTo(!defaults.shared());
+        assertThat(properties.isReuse()).isTrue();
+        if (properties instanceof SharedDevServicesProperties sharedProperties) {
+            assertThat(sharedProperties.isShared()).isEqualTo(!defaults.shared());
+        }
         assertThat(properties.getStartupTimeout()).isEqualTo(TEST_STARTUP_TIMEOUT);
         assertThat(properties.getVolumes()).hasSize(1);
         assertThat(properties.getVolumes().getFirst().getHostPath()).isEqualTo("/host/path");
@@ -110,7 +120,7 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
      * Holds expected default values for a specific implementation.
      *
      * @param imageName the expected image name (or substring for contains check, or empty string)
-     * @param shared the expected default value for the shared property
+     * @param shared the expected default value for the shared property (only asserted for {@link SharedDevServicesProperties} implementations)
      * @param startupTimeout the expected default value for the startupTimeout property
      */
     public record DefaultValues(

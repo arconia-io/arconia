@@ -115,8 +115,6 @@ include::ROOT:partial$app-run.adoc[]
 
 If you have enabled the Grafana LGTM Dev Service, Arconia will automatically start a Grafana instance pre-configured to accept OpenTelemetry logs, metrics, and traces from your application when running in development or test mode.
 
-NOTE: By default, when running the application in development mode, the Grafana LGTM Dev Service will be shared across multiple applications so that you can have a single observability platform for all your applications running in your development environment.
-
 The application logs will show you the URL where you can access the Grafana observability platform and start exploring your application's telemetry data.
 
 [source,logs]

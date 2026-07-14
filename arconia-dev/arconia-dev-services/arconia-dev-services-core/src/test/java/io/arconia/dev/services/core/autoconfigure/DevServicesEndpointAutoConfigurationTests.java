@@ -112,20 +112,22 @@ class DevServicesEndpointAutoConfigurationTests {
 
 		@Bean
 		DevServiceRegistration postgresqlRegistration() {
-			return new DevServiceRegistration(
-					"postgresql",
-					"PostgreSQL Database",
-					mockContainerInfo("postgres:18", "1234")
-			);
+			return DevServiceRegistration.builder()
+					.name("postgresql")
+					.description("PostgreSQL Database")
+					.origin(DevServiceRegistration.Origin.OWNED)
+					.containerInfo(mockContainerInfo("postgres:18", "1234"))
+					.build();
 		}
 
 		@Bean
 		DevServiceRegistration doclingRegistration() {
-			return new DevServiceRegistration(
-					"docling",
-					"Docling Serve",
-					mockContainerInfo("docling:1.10", "5678")
-			);
+			return DevServiceRegistration.builder()
+					.name("docling")
+					.description("Docling Serve")
+					.origin(DevServiceRegistration.Origin.OWNED)
+					.containerInfo(mockContainerInfo("docling:1.10", "5678"))
+					.build();
 		}
 
 		private Supplier<ContainerInfo> mockContainerInfo(String imageName, String containerId) {

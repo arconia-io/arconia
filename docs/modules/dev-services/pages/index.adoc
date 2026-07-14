@@ -124,8 +124,11 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | `arconia.dev.services.<service-name>.resources`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
+| `arconia.dev.services.<service-name>.reuse`
+| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
+
 | `arconia.dev.services.<service-name>.shared`
-| Whether the dev service is shared among applications. Only applicable in dev mode.
+| Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode, and only available for Dev Services that support sharing (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]).
 
 | `arconia.dev.services.<service-name>.startup-timeout`
 | Maximum waiting time for the service to start.
@@ -166,21 +169,32 @@ Customizers reference classes from the Dev Services and Testcontainers dependenc
 
 === Sharing Dev Services
 
-Dev Services can be shared across multiple applications during development, allowing you to reuse the same containerized service for multiple projects running simultaneously. This is particularly useful for:
+Dev Services can be shared across multiple applications running simultaneously during development, allowing them to use the same containerized service instead of starting one container each. This is particularly useful for:
 
 * Distributed systems: Share a message broker (e.g., RabbitMQ, Kafka) or observability platform (e.g. Grafana LGTM) across multiple services.
 * Resource efficiency: Avoid running duplicate containers for the same service, especially for resource-intensive services (e.g., Docling, Ollama).
 
-To enable/disable sharing for a specific Dev Service, you can set the `arconia.dev.services.<service-name>.shared` property. By default, sharing is enabled only for services where it makes sense, such as message brokers, observability platforms, and resource-intensive services.
+Dev Services that support sharing (typically services where it makes sense, such as message brokers, observability platforms, and resource-intensive services) provide the `arconia.dev.services.<service-name>.shared` property to enable/disable it, enabled by default. It works out of the box, with no additional setup required. The property is not available on Dev Services that don't support sharing.
+
+Every Dev Service container is labeled, making it identifiable across applications (e.g. `docker ps --filter label=io.arconia.dev-service.name`). When sharing is enabled, the application first looks for a running container that already provides the same shared Dev Service. If one is found, the application connects to it instead of starting a new container. Otherwise, the application starts its own container, which other applications can discover in turn. A shared container is discoverable as soon as it's running, possibly a few moments before the service inside it is ready to accept connections; client libraries with connection retries (the norm in Spring Boot integrations) absorb that window transparently.
+
+The application that started a shared Dev Service owns its lifecycle: the container is stopped when the owning application stops. Applications that were sharing the container lose access to the service at that point. On the next restart, they start (and own) a fresh container.
+
+A discovered shared Dev Service is adopted as it runs, with the configuration of the application that started it. Application-specific customization (environment variables, resources, image name, `DevServiceContainerCustomizer` beans) doesn't apply to containers started by other applications, and any credentials must be the same across the applications sharing the service. If an application needs its own differently-configured service instance, disable sharing for that service with `arconia.dev.services.<service-name>.shared=false`.
 
 [NOTE]
 ====
 Sharing Dev Services is only supported when running the application in dev mode. When running automated tests, Dev Services are never shared to ensure test isolation, consistency, and reliability.
 ====
 
-==== Pre-Requisites for Container Sharing
+[NOTE]
+====
+Sharing and reuse are mutually exclusive. When the `arconia.dev.services.<service-name>.reuse` property is enabled for a Dev Service, sharing is disabled for it: the container is not discoverable by other applications, and the application doesn't look for shared containers. Applications with identical configuration still converge on the same reusable container through the Testcontainers reusable containers feature.
+====
 
-Container sharing relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. To enable it:
+=== Reusing Dev Services Across Restarts
+
+Independently of sharing, a Dev Service container can be kept running across application restarts and executions by setting the `arconia.dev.services.<service-name>.reuse` property. It relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. To enable it:
 
 1. Create or edit the file `~/.testcontainers.properties` in your home directory
 2. Add the following line:
@@ -190,7 +204,7 @@ Container sharing relies on the https://java.testcontainers.org/features/reuse/[
 testcontainers.reuse.enable=true
 ----
 
-Once enabled, shared Dev Services will persist across application restarts and can be reused by other applications.
+Once enabled, reusable Dev Services will persist across application restarts. Reuse is only applicable in dev mode, and it takes precedence over sharing: a reusable Dev Service never participates in shared container discovery.
 
 [WARNING]
 ====
@@ -364,6 +378,7 @@ Response example:
   "docling": {
     "name": "docling",
     "description": "Docling Dev Service",
+    "origin": "OWNED",
     "containerInfo": {
       "id": "dbbda8272b5dc8d2ccfa48d3723756d767eef727322d9c35e0fd4c44ba60e967",
       "imageName": "ghcr.io/docling-project/docling-serve:latest",
@@ -380,6 +395,7 @@ Response example:
   "postgresql": {
     "name": "postgresql",
     "description": "PostgreSQL Dev Service",
+    "origin": "OWNED",
     "containerInfo": {
       "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
       "imageName": "docker.io/pgvector/pgvector:latest",
@@ -412,6 +428,7 @@ Response example:
 {
   "name": "postgresql",
   "description": "PostgreSQL Dev Service",
+  "origin": "OWNED",
   "containerInfo": {
     "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
     "imageName": "docker.io/pgvector/pgvector:latest",
@@ -436,6 +453,8 @@ Response example:
 ----
 
 The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging.
+
+The `origin` field indicates whether the Dev Service runs in a container started by this application (`OWNED`) or in a shared container discovered from another application (`DISCOVERED`).
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
@@ -580,7 +599,8 @@ Example: `arconia.dev.services.postgresql.startup-timeout=30s`.
 
 | *Service Sharing*
 | Declarative via properties: +
-`arconia.dev.services.<name>.shared=true`.
+`arconia.dev.services.<name>.shared=true`. +
+Running shared containers are discovered automatically across applications.
 | Manual configuration when defining container beans with `withReuse(true)`.
 
 | *Customization*

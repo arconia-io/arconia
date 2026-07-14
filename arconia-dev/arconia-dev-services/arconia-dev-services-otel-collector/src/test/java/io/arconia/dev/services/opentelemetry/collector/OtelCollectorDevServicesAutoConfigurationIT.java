@@ -61,7 +61,7 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
                     assertThat(container.getDockerImageName()).contains(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.isShouldBeReused()).isFalse();
 
                     assertThatHasSingletonScope(context);
                 });

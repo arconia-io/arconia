@@ -15,12 +15,70 @@ public record DevServiceRegistration(
         String name,
         @Nullable
         String description,
+        Origin origin,
         Supplier<ContainerInfo> containerInfo
 ) {
 
     public DevServiceRegistration {
         Assert.hasText(name, "name cannot be null or empty");
+        Assert.notNull(origin, "origin cannot be null");
         Assert.notNull(containerInfo, "containerInfo cannot be null");
+    }
+
+    /**
+     * How the dev service container was made available to the application.
+     */
+    public enum Origin {
+
+        /**
+         * The container was started and is managed by this application.
+         */
+        OWNED,
+
+        /**
+         * The container was started by another application and discovered
+         * as a shared dev service.
+         */
+        DISCOVERED
+
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+
+        private String name;
+        @Nullable
+        private String description;
+        private Origin origin;
+        private Supplier<ContainerInfo> containerInfo;
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder description(@Nullable String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder origin(Origin origin) {
+            this.origin = origin;
+            return this;
+        }
+
+        public Builder containerInfo(Supplier<ContainerInfo> containerInfo) {
+            this.containerInfo = containerInfo;
+            return this;
+        }
+
+        public DevServiceRegistration build() {
+            return new DevServiceRegistration(name, description, origin, containerInfo);
+        }
+
     }
 
 }

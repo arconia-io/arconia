@@ -2,11 +2,16 @@ package io.arconia.dev.services.artemis;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails;
+import org.springframework.boot.artemis.autoconfigure.ArtemisMode;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
+import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +44,11 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
         return "artemis";
     }
 
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return ArtemisConnectionDetails.class;
+    }
+
     @Test
     void containerAvailableInDevMode() {
         getContextRunner()
@@ -49,8 +59,12 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(container.getDockerImageName()).contains(ArconiaArtemisContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
+                    assertThat(container.getLabels())
+                            .containsEntry(DevServiceLabels.NAME, "artemis")
+                            .containsEntry(DevServiceLabels.SHARED, "true")
+                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
                     container.start();
                     assertThat(container.getUser()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_USERNAME);
                     assertThat(container.getPassword()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_PASSWORD);
@@ -58,6 +72,39 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
                     assertThatHasSingletonScope(context);
                 });
+    }
+
+    @Test
+    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
+        ArtemisDevServicesProperties properties = new ArtemisDevServicesProperties();
+        try (ArtemisContainer sharedContainer = new ArtemisContainer(
+                DockerImageName.parse(properties.getImageName()))
+                // Same credentials as the local defaults, like another Arconia application would use.
+                .withUser(properties.getUsername())
+                .withPassword(properties.getPassword())
+                .withLabel(DevServiceLabels.NAME, "artemis")
+                .withLabel(DevServiceLabels.SHARED, "true")
+                .withLabel(DevServiceLabels.OWNER, "another-application")) {
+            sharedContainer.start();
+
+            getContextRunner()
+                    .withSystemProperties("arconia.bootstrap.mode=dev")
+                    .run(context -> {
+                        assertThat(context).doesNotHaveBean(getContainerClass());
+                        assertThat(context).hasSingleBean(ArtemisConnectionDetails.class);
+
+                        ArtemisConnectionDetails connectionDetails = context.getBean(ArtemisConnectionDetails.class);
+                        assertThat(connectionDetails.getMode()).isEqualTo(ArtemisMode.NATIVE);
+                        assertThat(connectionDetails.getBrokerUrl()).endsWith(":" + sharedContainer.getMappedPort(ArconiaArtemisContainer.TCP_PORT));
+                        assertThat(connectionDetails.getUser()).isEqualTo(properties.getUsername());
+                        assertThat(connectionDetails.getPassword()).isEqualTo(properties.getPassword());
+
+                        assertThat(context).hasSingleBean(DevServiceRegistration.class);
+                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
+                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
+                    });
+        }
     }
 
     @Test

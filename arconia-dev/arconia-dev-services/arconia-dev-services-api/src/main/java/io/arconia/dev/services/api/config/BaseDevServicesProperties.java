@@ -60,10 +60,14 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Whether the dev service is shared among applications.
+     * Whether the container used in the dev service is reused across multiple
+     * applications and application restarts, relying on the Testcontainers
+     * reusable containers feature. It requires enabling the feature
+     * in the `~/.testcontainers.properties` file. Reused containers
+     * are not stopped automatically and must be cleaned up manually.
      * Only applicable in dev mode.
      */
-    default boolean isShared() {
+    default boolean isReuse() {
         return false;
     }
 

@@ -2,6 +2,7 @@ package io.arconia.dev.services.kafka;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.kafka.autoconfigure.KafkaConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -33,7 +34,13 @@ public final class KafkaDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaKafkaContainer.class)
                             .supplier(() -> new ArconiaKafkaContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(KafkaConnectionDetails.class, KafkaDiscoveredConnectionDetails::new)
+                    )
+            );
         }
 
     }

@@ -54,7 +54,7 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(context).hasSingleBean(getContainerClass());
                     var container = context.getBean(getContainerClass());
                     assertThat(container.getDockerImageName()).contains(ArconiaOpenLitContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.isShouldBeReused()).isTrue();
+                    assertThat(container.isShouldBeReused()).isFalse();
 
                     assertThatHasSingletonScope(context);
                 });

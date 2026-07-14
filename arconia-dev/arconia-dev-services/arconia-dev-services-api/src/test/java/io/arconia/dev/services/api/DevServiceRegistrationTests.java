@@ -19,25 +19,45 @@ class DevServiceRegistrationTests {
 
     @Test
     void whenNameIsNullThenThrow() {
-        Supplier<ContainerInfo> containerInfoSupplier = this::createContainerInfo;
-
-        assertThatThrownBy(() -> new DevServiceRegistration(null, "A test service", containerInfoSupplier))
+        assertThatThrownBy(() -> DevServiceRegistration.builder()
+                .description("A test service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(this::createContainerInfo)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("name cannot be null or empty");
     }
 
     @Test
     void whenNameIsEmptyThenThrow() {
-        Supplier<ContainerInfo> containerInfoSupplier = this::createContainerInfo;
-
-        assertThatThrownBy(() -> new DevServiceRegistration("", "A test service", containerInfoSupplier))
+        assertThatThrownBy(() -> DevServiceRegistration.builder()
+                .name("")
+                .description("A test service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(this::createContainerInfo)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("name cannot be null or empty");
     }
 
     @Test
+    void whenOriginIsNullThenThrow() {
+        assertThatThrownBy(() -> DevServiceRegistration.builder()
+                .name("test-service")
+                .description("A test service")
+                .containerInfo(this::createContainerInfo)
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("origin cannot be null");
+    }
+
+    @Test
     void whenContainerInfoIsNullThenThrow() {
-        assertThatThrownBy(() -> new DevServiceRegistration("test-service", "A test service", null))
+        assertThatThrownBy(() -> DevServiceRegistration.builder()
+                .name("test-service")
+                .description("A test service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("containerInfo cannot be null");
     }
@@ -45,12 +65,17 @@ class DevServiceRegistrationTests {
     @Test
     void whenAllFieldsAreValidThenCreate() {
         var expectedContainerInfo = createContainerInfo();
-        Supplier<ContainerInfo> containerInfoSupplier = () -> expectedContainerInfo;
 
-        var registration = new DevServiceRegistration("test-service", "A test service", containerInfoSupplier);
+        var registration = DevServiceRegistration.builder()
+                .name("test-service")
+                .description("A test service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(() -> expectedContainerInfo)
+                .build();
 
         assertThat(registration.name()).isEqualTo("test-service");
         assertThat(registration.description()).isEqualTo("A test service");
+        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.OWNED);
         assertThat(registration.containerInfo()).isNotNull();
         assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
     }
@@ -58,12 +83,16 @@ class DevServiceRegistrationTests {
     @Test
     void whenDescriptionIsNullThenCreate() {
         var expectedContainerInfo = createContainerInfo();
-        Supplier<ContainerInfo> containerInfoSupplier = () -> expectedContainerInfo;
 
-        var registration = new DevServiceRegistration("test-service", null, containerInfoSupplier);
+        var registration = DevServiceRegistration.builder()
+                .name("test-service")
+                .origin(DevServiceRegistration.Origin.DISCOVERED)
+                .containerInfo(() -> expectedContainerInfo)
+                .build();
 
         assertThat(registration.name()).isEqualTo("test-service");
         assertThat(registration.description()).isNull();
+        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
         assertThat(registration.containerInfo()).isNotNull();
         assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
     }

@@ -27,14 +27,23 @@ class RabbitMqDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<
     @Test
     void shouldCreateInstanceWithServiceSpecificDefaultValues() {
         RabbitMqDevServicesProperties properties = createProperties();
+
         assertThat(properties.getManagementConsolePort()).isEqualTo(0);
+        assertThat(properties.getUsername()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_USERNAME);
+        assertThat(properties.getPassword()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_PASSWORD);
     }
 
     @Test
     void shouldUpdateServiceSpecificValues() {
         RabbitMqDevServicesProperties properties = createProperties();
+
         properties.setManagementConsolePort(ArconiaRabbitMqContainer.HTTP_PORT);
+        properties.setUsername("myusername");
+        properties.setPassword("mypassword");
+
         assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaRabbitMqContainer.HTTP_PORT);
+        assertThat(properties.getUsername()).isEqualTo("myusername");
+        assertThat(properties.getPassword()).isEqualTo("mypassword");
     }
 
 }

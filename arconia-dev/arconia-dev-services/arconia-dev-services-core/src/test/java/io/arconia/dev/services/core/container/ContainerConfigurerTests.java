@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 import org.testcontainers.containers.GenericContainer;
@@ -12,6 +14,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
+import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
@@ -27,6 +30,49 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @Incubating
 class ContainerConfigurerTests {
+
+    @BeforeEach
+    @AfterEach
+    void resetBootstrapMode() {
+        System.clearProperty(BootstrapMode.PROPERTY_KEY);
+        BootstrapMode.clear();
+    }
+
+    @Test
+    void baseConfigurationShouldNotEnableReuseByDefault() {
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties();
+
+        ContainerConfigurer.base(container, properties);
+
+        assertThat(container.isShouldBeReused()).isFalse();
+    }
+
+    @Test
+    void baseConfigurationShouldEnableReuseInDevMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        BootstrapMode.clear();
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+                .withReuse(true);
+
+        ContainerConfigurer.base(container, properties);
+
+        assertThat(container.isShouldBeReused()).isTrue();
+    }
+
+    @Test
+    void baseConfigurationShouldNotEnableReuseOutsideDevMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
+        BootstrapMode.clear();
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+                .withReuse(true);
+
+        ContainerConfigurer.base(container, properties);
+
+        assertThat(container.isShouldBeReused()).isFalse();
+    }
 
     @Test
     void baseConfigurationShouldApplyEnvironmentVariables() {
@@ -360,7 +406,7 @@ class ContainerConfigurerTests {
         private Duration startupTimeout = Duration.ofSeconds(30);
         private List<ResourceMapping> resources = List.of();
         private List<VolumeMapping> volumes = List.of();
-        private boolean shared = false;
+        private boolean reuse = false;
 
         @Override
         public String getImageName() {
@@ -422,12 +468,12 @@ class ContainerConfigurerTests {
         }
 
         @Override
-        public boolean isShared() {
-            return shared;
+        public boolean isReuse() {
+            return reuse;
         }
 
-        public TestBaseDevServicesProperties withShared(boolean shared) {
-            this.shared = shared;
+        public TestBaseDevServicesProperties withReuse(boolean reuse) {
+            this.reuse = reuse;
             return this;
         }
     }

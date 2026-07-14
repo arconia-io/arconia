@@ -22,7 +22,6 @@ class OllamaDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Ol
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaOllamaContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

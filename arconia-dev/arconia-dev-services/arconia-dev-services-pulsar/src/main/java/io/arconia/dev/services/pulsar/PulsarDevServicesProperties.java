@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
@@ -16,7 +16,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Properties for the Pulsar Dev Services.
  */
 @ConfigurationProperties(prefix = PulsarDevServicesProperties.CONFIG_PREFIX)
-public class PulsarDevServicesProperties implements BaseDevServicesProperties {
+public class PulsarDevServicesProperties implements SharedDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.pulsar";
 
@@ -54,8 +54,21 @@ public class PulsarDevServicesProperties implements BaseDevServicesProperties {
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the dev service is shared among applications.
+     * Whether the container used in the dev service is reused across multiple
+     * applications and application restarts, relying on the Testcontainers
+     * reusable containers feature. It requires enabling the feature
+     * in the `~/.testcontainers.properties` file. Reused containers
+     * are not stopped automatically and must be cleaned up manually.
      * Only applicable in dev mode.
+     */
+    private boolean reuse = false;
+
+    /**
+     * Whether the dev service is shared among applications running simultaneously.
+     * A shared dev service is discoverable by other applications, and the application
+     * connects to an existing shared dev service if available instead of starting a new one.
+     * Container reuse takes precedence: when the `reuse` property is enabled,
+     * sharing is disabled. Only applicable in dev mode.
      */
     private boolean shared = true;
 
@@ -130,6 +143,15 @@ public class PulsarDevServicesProperties implements BaseDevServicesProperties {
 
     public void setResources(List<ResourceMapping> resources) {
         this.resources = resources;
+    }
+
+    @Override
+    public boolean isReuse() {
+        return reuse;
+    }
+
+    public void setReuse(boolean reuse) {
+        this.reuse = reuse;
     }
 
     @Override

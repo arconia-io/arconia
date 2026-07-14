@@ -23,7 +23,6 @@ class PhoenixDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<P
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

@@ -2,6 +2,7 @@ package io.arconia.dev.services.pulsar;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -33,6 +34,11 @@ public final class PulsarDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaPulsarContainer.class)
                             .supplier(() -> new ArconiaPulsarContainer(properties))
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
                     )
             );
         }

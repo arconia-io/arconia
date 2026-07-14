@@ -69,10 +69,14 @@ public class OpenLitDevServicesProperties implements BaseDevServicesProperties {
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the dev service is shared among applications.
+     * Whether the container used in the dev service is reused across multiple
+     * applications and application restarts, relying on the Testcontainers
+     * reusable containers feature. It requires enabling the feature
+     * in the `~/.testcontainers.properties` file. Reused containers
+     * are not stopped automatically and must be cleaned up manually.
      * Only applicable in dev mode.
      */
-    private boolean shared = true;
+    private boolean reuse = false;
 
     /**
      * Maximum waiting time for the service to start.
@@ -164,12 +168,12 @@ public class OpenLitDevServicesProperties implements BaseDevServicesProperties {
     }
 
     @Override
-    public boolean isShared() {
-        return shared;
+    public boolean isReuse() {
+        return reuse;
     }
 
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setReuse(boolean reuse) {
+        this.reuse = reuse;
     }
 
     @Override
