@@ -55,7 +55,7 @@ public final class OtlpMetricsExporterConfiguration {
     @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "http_protobuf", matchIfMissing = true)
     OtlpHttpMetricExporter otlpHttpMetricExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties, OtlpMetricsConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
         OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder()
-                .setEndpoint(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                .setEndpoint(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF))
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
@@ -68,7 +68,7 @@ public final class OtlpMetricsExporterConfiguration {
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
-        logger.info("Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: {}", connectionDetails.getUrl(Protocol.HTTP_PROTOBUF));
+        logger.info("Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: {}", connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF));
         return builder.build();
     }
 
@@ -79,7 +79,7 @@ public final class OtlpMetricsExporterConfiguration {
     @ConditionalOnProperty(prefix = OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp", name = "protocol", havingValue = "grpc")
     OtlpGrpcMetricExporter otlpGrpcMetricExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties, OtlpMetricsConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
         OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder()
-                .setEndpoint(connectionDetails.getUrl(Protocol.GRPC))
+                .setEndpoint(connectionDetails.getMetricsUrl(Protocol.GRPC))
                 .setTimeout(properties.getOtlp().getTimeout() != null ? properties.getOtlp().getTimeout() : commonProperties.getOtlp().getTimeout())
                 .setConnectTimeout(properties.getOtlp().getConnectTimeout() != null ? properties.getOtlp().getConnectTimeout() : commonProperties.getOtlp().getConnectTimeout())
                 .setCompression(properties.getOtlp().getCompression() != null ? properties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT) : commonProperties.getOtlp().getCompression().name().toLowerCase(Locale.ROOT))
@@ -92,7 +92,7 @@ public final class OtlpMetricsExporterConfiguration {
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
         }
-        logger.info("Configuring OpenTelemetry gRPC metric exporter with endpoint: {}", connectionDetails.getUrl(Protocol.GRPC));
+        logger.info("Configuring OpenTelemetry gRPC metric exporter with endpoint: {}", connectionDetails.getMetricsUrl(Protocol.GRPC));
         return builder.build();
     }
 
@@ -132,7 +132,7 @@ public final class OtlpMetricsExporterConfiguration {
         }
 
         @Override
-        public String getUrl(Protocol protocol) {
+        public String getMetricsUrl(Protocol protocol) {
             var protocolProperty = properties.getOtlp().getProtocol() != null ? properties.getOtlp().getProtocol() : commonProperties.getOtlp().getProtocol();
             Assert.state(protocol == protocolProperty, "Requested protocol %s doesn't match configured protocol %s".formatted(protocol, protocolProperty));
 

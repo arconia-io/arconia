@@ -22,6 +22,7 @@ class OpenLitDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<O
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaOpenLitContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

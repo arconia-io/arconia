@@ -25,14 +25,14 @@ class OpenLitOtlpLoggingContainerConnectionDetailsFactoryTests extends OpenLitTe
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
-        String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
+        String url = connectionDetails.getLogsUrl(Protocol.HTTP_PROTOBUF);
         String expectedUrl = "http://localhost:" + openLitContainer.getOtlpHttpPort() + OtlpLoggingConnectionDetails.LOGS_PATH;
         assertThat(url).isEqualTo(expectedUrl);
     }
 
     @Test
     void shouldProvideConnectionDetailsForGrpc() {
-        String url = connectionDetails.getUrl(Protocol.GRPC);
+        String url = connectionDetails.getLogsUrl(Protocol.GRPC);
         String expectedUrl = "http://localhost:" + openLitContainer.getOtlpGrpcPort();
         assertThat(url).isEqualTo(expectedUrl);
     }

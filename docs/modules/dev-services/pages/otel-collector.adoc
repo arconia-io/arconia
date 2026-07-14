@@ -20,6 +20,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+By default, when running the application in dev mode, the Dev Service is shared across multiple applications running simultaneously: the application connects to a running OpenTelemetry Collector Dev Service started by another application if available, or else starts its own that other applications can discover in turn.
+
 == Exploring the Telemetry
 
 The application logs will show you the URLs where the OpenTelemetry Collector is accepting logs, metrics, and traces.
@@ -67,6 +69,10 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.reuse`
 | `false`
 | Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`

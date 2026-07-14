@@ -15,6 +15,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.LgtmDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 
 /**
  * Auto-configuration for Grafana LGTM Dev Services.
@@ -43,7 +44,13 @@ public final class LgtmDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaLgtmStackContainer.class)
                             .supplier(() -> new ArconiaLgtmStackContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
+                    )
+            );
         }
 
     }

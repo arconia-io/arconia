@@ -7,7 +7,14 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +46,11 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
         return "lgtm";
     }
 
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return OtlpTracingConnectionDetails.class;
+    }
+
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         getContextRunner()
@@ -58,9 +70,45 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
                     assertThat(container.getNetworkAliases()).hasSize(1);
                     assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
+                    assertThat(container.getLabels())
+                            .containsEntry(DevServiceLabels.NAME, "lgtm")
+                            .containsEntry(DevServiceLabels.SHARED, "true")
+                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });
+    }
+
+    @Test
+    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
+        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
+        try (LgtmStackContainer sharedContainer = new LgtmStackContainer(properties.getImageName())
+                .withLabel(DevServiceLabels.NAME, "lgtm")
+                .withLabel(DevServiceLabels.SHARED, "true")
+                .withLabel(DevServiceLabels.OWNER, "another-application")) {
+            sharedContainer.start();
+
+            getContextRunner()
+                    .withSystemProperties("arconia.bootstrap.mode=dev")
+                    .run(context -> {
+                        assertThat(context).doesNotHaveBean(getContainerClass());
+                        assertThat(context).hasSingleBean(OtlpTracingConnectionDetails.class);
+                        assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
+                        assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
+
+                        OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
+                        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
+                                ":%d%s".formatted(sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_HTTP_PORT),
+                                        OtlpTracingConnectionDetails.TRACES_PATH));
+                        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
+                                ":" + sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_GRPC_PORT));
+
+                        assertThat(context).hasSingleBean(DevServiceRegistration.class);
+                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
+                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
+                    });
+        }
     }
 
     @Test

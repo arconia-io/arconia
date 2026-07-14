@@ -102,7 +102,7 @@ class OtlpMetricsExporterConfigurationTests {
         contextRunner
             .withBean(OtlpMetricsConnectionDetails.class, () -> new OtlpMetricsConnectionDetails() {
                 @Override
-                public String getUrl(Protocol protocol) {
+                public String getMetricsUrl(Protocol protocol) {
                     return "http://test:4318";
                 }
             })
@@ -161,7 +161,7 @@ class OtlpMetricsExporterConfigurationTests {
             .run(context -> {
                 assertThat(context).hasSingleBean(OtlpHttpMetricExporter.class);
                 OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF)).isEqualTo("http://custom:4318");
+                assertThat(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF)).isEqualTo("http://custom:4318");
             });
     }
 
@@ -221,7 +221,7 @@ class OtlpMetricsExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel")
             .run(context -> {
                 OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://eu.api.smith.langchain.com/otel/v1/metrics");
             });
     }
@@ -232,7 +232,7 @@ class OtlpMetricsExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com/path/")
             .run(context -> {
                 OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://example.com/path/v1/metrics");
             });
     }
@@ -243,7 +243,7 @@ class OtlpMetricsExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com")
             .run(context -> {
                 OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://example.com/v1/metrics");
             });
     }
@@ -257,7 +257,7 @@ class OtlpMetricsExporterConfigurationTests {
             )
             .run(context -> {
                 OtlpMetricsConnectionDetails connectionDetails = context.getBean(OtlpMetricsConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(Protocol.GRPC))
+                assertThat(connectionDetails.getMetricsUrl(Protocol.GRPC))
                     .isEqualTo("https://example.com/otel");
             });
     }

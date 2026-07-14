@@ -25,7 +25,7 @@ class OtelCollectorOtlpLoggingContainerConnectionDetailsFactoryTests extends Ote
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
-        String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
+        String url = connectionDetails.getLogsUrl(Protocol.HTTP_PROTOBUF);
         assertThat(url).isEqualTo("http://" + otelCollectorContainer.getHost() + ":"
                 + otelCollectorContainer.getMappedPort(OtlpLoggingConnectionDetails.DEFAULT_HTTP_PORT)
                 + OtlpLoggingConnectionDetails.LOGS_PATH);
@@ -33,7 +33,7 @@ class OtelCollectorOtlpLoggingContainerConnectionDetailsFactoryTests extends Ote
 
     @Test
     void shouldProvideConnectionDetailsForGrpc() {
-        String url = connectionDetails.getUrl(Protocol.GRPC);
+        String url = connectionDetails.getLogsUrl(Protocol.GRPC);
         assertThat(url).isEqualTo("http://" + otelCollectorContainer.getHost() + ":"
                 + otelCollectorContainer.getMappedPort(OtlpLoggingConnectionDetails.DEFAULT_GRPC_PORT));
     }

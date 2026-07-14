@@ -15,6 +15,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.openlit.OpenLitDevServicesAutoConfiguration.OpenLitDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 
 /**
  * Auto-configuration for OpenLit Dev Services.
@@ -43,7 +44,13 @@ public final class OpenLitDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaOpenLitContainer.class)
                             .supplier(() -> new ArconiaOpenLitContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
+                    )
+            );
         }
 
     }

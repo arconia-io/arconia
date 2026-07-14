@@ -22,6 +22,7 @@ class LgtmDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Lgtm
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME)
+                .shared(true)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

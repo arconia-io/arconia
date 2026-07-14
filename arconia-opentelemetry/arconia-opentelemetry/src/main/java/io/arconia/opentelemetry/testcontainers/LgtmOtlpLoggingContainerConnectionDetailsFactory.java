@@ -28,7 +28,7 @@ class LgtmOtlpLoggingContainerConnectionDetailsFactory
         }
 
         @Override
-        public String getUrl(Protocol protocol) {
+        public String getLogsUrl(Protocol protocol) {
             String url = switch (protocol) {
                 case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl();
                 case GRPC -> getContainer().getOtlpGrpcUrl();

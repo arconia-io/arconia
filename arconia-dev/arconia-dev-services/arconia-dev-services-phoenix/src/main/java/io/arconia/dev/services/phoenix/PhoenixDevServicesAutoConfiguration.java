@@ -17,6 +17,7 @@ import io.arconia.dev.services.phoenix.PhoenixDevServicesAutoConfiguration.Phoen
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 /**
  * Auto-configuration for Arize Phoenix Dev Services.
@@ -45,7 +46,13 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .container(container -> container
                             .type(ArconiaPhoenixContainer.class)
                             .supplier(() -> new ArconiaPhoenixContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
+                    )
+            );
 
             // Phoenix supports only OpenTelemetry Traces, so we disable the export of Logs and Metrics,
             // unless the developer has explicitly enabled them in the configuration.

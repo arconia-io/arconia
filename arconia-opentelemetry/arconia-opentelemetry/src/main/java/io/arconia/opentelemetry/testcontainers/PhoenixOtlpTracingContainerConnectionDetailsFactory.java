@@ -29,7 +29,7 @@ class PhoenixOtlpTracingContainerConnectionDetailsFactory
         }
 
         @Override
-        public String getUrl(Protocol protocol) {
+        public String getTracesUrl(Protocol protocol) {
             return switch (protocol) {
                 case HTTP_PROTOBUF ->
                         "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getHttpPort(), TRACES_PATH);

@@ -30,7 +30,7 @@ class OpenLitOtlpMetricsContainerConnectionDetailsFactory
         }
 
         @Override
-        public String getUrl(Protocol protocol) {
+        public String getMetricsUrl(Protocol protocol) {
             return switch (protocol) {
                 case HTTP_PROTOBUF ->
                         "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getOtlpHttpPort(), METRICS_PATH);

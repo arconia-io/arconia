@@ -15,6 +15,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.opentelemetry.collector.OtelCollectorDevServicesAutoConfiguration.OtelCollectorDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 
 /**
  * Auto-configuration for OpenTelemetry Collector Dev Services.
@@ -44,7 +45,13 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                             .type(ArconiaOtelCollectorContainer.class)
                             .serviceConnectionName("otel/opentelemetry-collector-contrib")
                             .supplier(() -> new ArconiaOtelCollectorContainer(properties))
-                    ));
+                    )
+                    .sharing(sharing -> sharing
+                            .enabled(properties.isShared())
+                            .reuse(properties.isReuse())
+                            .connectionDetails(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
+                    )
+            );
         }
 
     }

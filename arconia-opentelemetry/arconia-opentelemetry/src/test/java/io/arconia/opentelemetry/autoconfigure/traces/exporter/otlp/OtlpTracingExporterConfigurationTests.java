@@ -120,7 +120,7 @@ class OtlpTracingExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel")
             .run(context -> {
                 OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getTracesUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://eu.api.smith.langchain.com/otel/v1/traces");
             });
     }
@@ -131,7 +131,7 @@ class OtlpTracingExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com/path/")
             .run(context -> {
                 OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getTracesUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://example.com/path/v1/traces");
             });
     }
@@ -142,7 +142,7 @@ class OtlpTracingExporterConfigurationTests {
             .withPropertyValues("arconia.otel.exporter.otlp.endpoint=https://example.com")
             .run(context -> {
                 OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
+                assertThat(connectionDetails.getTracesUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.HTTP_PROTOBUF))
                     .isEqualTo("https://example.com/v1/traces");
             });
     }
@@ -156,7 +156,7 @@ class OtlpTracingExporterConfigurationTests {
             )
             .run(context -> {
                 OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                assertThat(connectionDetails.getUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.GRPC))
+                assertThat(connectionDetails.getTracesUrl(io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol.GRPC))
                     .isEqualTo("https://example.com/otel");
             });
     }

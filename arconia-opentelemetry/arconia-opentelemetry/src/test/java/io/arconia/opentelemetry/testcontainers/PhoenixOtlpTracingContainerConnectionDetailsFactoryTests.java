@@ -25,14 +25,14 @@ class PhoenixOtlpTracingContainerConnectionDetailsFactoryTests extends PhoenixTe
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
-        String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
+        String url = connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF);
         String expectedUrl = "http://localhost:" + phoenixContainer.getHttpPort() + OtlpTracingConnectionDetails.TRACES_PATH;
         assertThat(url).isEqualTo(expectedUrl);
     }
 
     @Test
     void shouldProvideConnectionDetailsForGrpc() {
-        String url = connectionDetails.getUrl(Protocol.GRPC);
+        String url = connectionDetails.getTracesUrl(Protocol.GRPC);
         String expectedUrl = "http://localhost:" + phoenixContainer.getMappedPort(OtlpTracingConnectionDetails.DEFAULT_GRPC_PORT);
         assertThat(url).isEqualTo(expectedUrl);
     }

@@ -25,13 +25,13 @@ class LgtmOtlpLoggingContainerConnectionDetailsFactoryTests extends LgtmTestcont
 
     @Test
     void shouldProvideConnectionDetailsForHttpProtobuf() {
-        String url = connectionDetails.getUrl(Protocol.HTTP_PROTOBUF);
+        String url = connectionDetails.getLogsUrl(Protocol.HTTP_PROTOBUF);
         assertThat(url).isEqualTo(lgtmContainer.getOtlpHttpUrl() + "/v1/logs");
     }
 
     @Test
     void shouldProvideConnectionDetailsForGrpc() {
-        String url = connectionDetails.getUrl(Protocol.GRPC);
+        String url = connectionDetails.getLogsUrl(Protocol.GRPC);
         assertThat(url).isEqualTo(lgtmContainer.getOtlpGrpcUrl());
     }
 

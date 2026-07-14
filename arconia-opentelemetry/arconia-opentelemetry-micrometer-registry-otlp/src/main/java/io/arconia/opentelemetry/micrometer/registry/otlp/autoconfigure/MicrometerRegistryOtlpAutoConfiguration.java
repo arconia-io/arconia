@@ -71,7 +71,7 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
     ) {
         Protocol protocol = metricsProperties.getOtlp().getProtocol() != null ? metricsProperties.getOtlp().getProtocol() : commonProperties.getOtlp().getProtocol();
         return MicrometerOtlpConfig.builder()
-                .url(connectionDetails.getUrl(protocol))
+                .url(connectionDetails.getMetricsUrl(protocol))
                 .step(metricsProperties.getInterval())
                 .aggregationTemporality(switch(metricsProperties.getAggregationTemporality()) {
                     case DELTA -> AggregationTemporality.DELTA;
