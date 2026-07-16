@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -26,10 +28,22 @@ class OnOllamaNativeUnavailableTests {
 
     @BeforeEach
     void setup() {
+        OnOllamaNativeUnavailable.clearCache();
         environment = new MockEnvironment();
         context = mock(ConditionContext.class);
         metadata = mock(AnnotatedTypeMetadata.class);
         when(context.getEnvironment()).thenReturn(environment);
+    }
+
+    @Test
+    void shouldCacheProbeResultPerBaseUrl() {
+        OnOllamaNativeUnavailable spyCondition = spy(new OnOllamaNativeUnavailable());
+        when(spyCondition.isOllamaNativeConnection(anyString())).thenReturn(false);
+
+        spyCondition.getMatchOutcome(context, metadata);
+        spyCondition.getMatchOutcome(context, metadata);
+
+        verify(spyCondition, times(1)).isOllamaNativeConnection(anyString());
     }
 
     @Test

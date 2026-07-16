@@ -1,6 +1,7 @@
 package io.arconia.dev.services.ollama;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -52,6 +53,16 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader(RestartScope.class, OpenAiCommonProperties.class))
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
                         .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+    }
+
+    @Test
+    void resolvesFromConnectionDetailsWhenNoContainer() {
+        new ApplicationContextRunner()
+                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
+                .withBean(OllamaConnectionDetails.class, () -> () -> "http://shared-host:12345")
+                .run(context -> assertThat(context.getEnvironment().getProperty("spring.ai.openai.base-url"))
+                        .isEqualTo("http://shared-host:12345"));
     }
 
     @Test

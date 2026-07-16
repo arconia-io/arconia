@@ -5,7 +5,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -21,7 +25,16 @@ import org.springframework.util.StringUtils;
  */
 class OnOllamaNativeUnavailable extends SpringBootCondition {
 
+    private static final Logger logger = LoggerFactory.getLogger(OnOllamaNativeUnavailable.class);
+
     private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+
+    /**
+     * Probe results cached per base URL: the condition can be evaluated multiple times
+     * in the same JVM (context refreshes, cached test contexts), and the availability
+     * of a native Ollama service is not expected to change mid-run.
+     */
+    private static final Map<String, Boolean> nativeConnectionCache = new ConcurrentHashMap<>();
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -38,15 +51,24 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
 
             String ollamaBaseUrl = resolveBaseUrl(environment);
 
-            boolean isNativeConnection = isOllamaNativeConnection(ollamaBaseUrl);
+            boolean isNativeConnection = nativeConnectionCache.computeIfAbsent(ollamaBaseUrl, this::isOllamaNativeConnection);
             if (!isNativeConnection) {
+                logger.debug("No Ollama native service detected at {}. The dev service will provide a container.", ollamaBaseUrl);
                 return ConditionOutcome.match("Ollama native connection is not available");
             }
 
+            logger.debug("Ollama native service detected at {}. The dev service will not provide a container.", ollamaBaseUrl);
             return ConditionOutcome.noMatch(String.format("Ollama native connection detected at %s", ollamaBaseUrl));
         } catch (Exception e) {
             return ConditionOutcome.match("Failed to evaluate Ollama condition: " + e.getMessage());
         }
+    }
+
+    /**
+     * Clears the cached probe results. For testing purposes only.
+     */
+    static void clearCache() {
+        nativeConnectionCache.clear();
     }
 
     /**
@@ -69,7 +91,7 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
      */
     boolean isOllamaNativeConnection(String baseUrl) {
         try (HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
+                .connectTimeout(Duration.ofMillis(500))
                 .build()) {
 
             HttpRequest request = HttpRequest.newBuilder()

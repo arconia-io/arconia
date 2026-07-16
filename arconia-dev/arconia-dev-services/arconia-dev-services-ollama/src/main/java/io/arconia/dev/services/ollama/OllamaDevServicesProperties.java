@@ -8,15 +8,15 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Ollama Dev Services.
  */
 @ConfigurationProperties(prefix = OllamaDevServicesProperties.CONFIG_PREFIX)
-public class OllamaDevServicesProperties implements BaseDevServicesProperties {
+public class OllamaDevServicesProperties implements SharedDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.ollama";
 
@@ -62,6 +62,15 @@ public class OllamaDevServicesProperties implements BaseDevServicesProperties {
      * Only applicable in dev mode.
      */
     private boolean reuse = false;
+
+    /**
+     * Whether the dev service is shared among applications running simultaneously.
+     * A shared dev service is discoverable by other applications, and the application
+     * connects to an existing shared dev service if available instead of starting a new one.
+     * Container reuse takes precedence: when the `reuse` property is enabled,
+     * sharing is disabled. Only applicable in dev mode.
+     */
+    private boolean shared = true;
 
     /**
      * Maximum waiting time for the service to start.
@@ -143,6 +152,15 @@ public class OllamaDevServicesProperties implements BaseDevServicesProperties {
 
     public void setReuse(boolean reuse) {
         this.reuse = reuse;
+    }
+
+    @Override
+    public boolean isShared() {
+        return shared;
+    }
+
+    public void setShared(boolean shared) {
+        this.shared = shared;
     }
 
     @Override
