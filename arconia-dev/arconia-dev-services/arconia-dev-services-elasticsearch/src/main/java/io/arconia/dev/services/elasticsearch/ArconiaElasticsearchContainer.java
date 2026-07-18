@@ -1,17 +1,21 @@
 package io.arconia.dev.services.elasticsearch;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
-
-import io.arconia.dev.services.core.util.ContainerUtils;
-
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class ArconiaElasticsearchContainer extends ElasticsearchContainer {
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+import io.arconia.dev.services.core.util.ContainerUtils;
+
+/**
+ * An {@link ElasticsearchContainer} configured for use with Arconia Dev Services.
+ */
+final class ArconiaElasticsearchContainer extends ElasticsearchContainer {
+
     private final ElasticsearchDevServicesProperties properties;
 
-    public static final String COMPATIBLE_IMAGE_NAME = "elasticsearch";
-    static final int DEFAULT_ES_PORT = 9200;
+    static final String COMPATIBLE_IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch";
+
+    static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
 
     public ArconiaElasticsearchContainer(ElasticsearchDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
@@ -23,8 +27,9 @@ public class ArconiaElasticsearchContainer extends ElasticsearchContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isValidPort(properties.getPort())) {
-            addFixedExposedPort(properties.getPort(), DEFAULT_ES_PORT);
+        if (ContainerUtils.isFixedPort(properties.getPort())) {
+            addFixedExposedPort(properties.getPort(), ELASTICSEARCH_DEFAULT_PORT);
         }
     }
+
 }

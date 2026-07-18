@@ -6,6 +6,7 @@
 *** xref:oracle.adoc[Oracle]
 *** xref:oracle-xe.adoc[Oracle XE]
 *** xref:postgresql.adoc[PostgreSQL]
+** xref:elasticsearch.adoc[Elasticsearch]
 ** xref:mongodb.adoc[MongoDB]
 ** xref:mongodb-atlas.adoc[MongoDB Atlas]
 ** xref:redis.adoc[Redis]

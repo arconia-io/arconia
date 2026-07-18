@@ -4,7 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for {@link ArconiaElasticsearchContainer}.
+ */
 class ArconiaElasticsearchContainerTests {
+
     @Test
     void whenExposedPortsAreNotConfigured() {
         var container = new ArconiaElasticsearchContainer(new ElasticsearchDevServicesProperties());
@@ -25,6 +29,7 @@ class ArconiaElasticsearchContainerTests {
         assertThat(portBindings).isNotNull();
         assertThat(portBindings)
                 .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaElasticsearchContainer.DEFAULT_ES_PORT));
+                        properties.getPort() + ":" + ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT));
     }
+
 }

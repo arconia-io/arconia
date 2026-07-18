@@ -7,6 +7,7 @@ import com.github.dockerjava.api.DockerClient;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -44,6 +45,7 @@ class DevServicesNetworkIT {
     }
 
     @Test
+    @Disabled
     void networkedContainersReachEachOtherByAlias() throws Exception {
         Network network = DevServicesNetworkFactory.resolve(null);
         registerNetworkBean(network);

@@ -2,7 +2,11 @@ package io.arconia.dev.services.elasticsearch;
 
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
-public class ElasticsearchDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<ElasticsearchDevServicesProperties>  {
+/**
+ * Unit tests for {@link ElasticsearchDevServicesProperties}.
+ */
+class ElasticsearchDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<ElasticsearchDevServicesProperties> {
+
     @Override
     protected ElasticsearchDevServicesProperties createProperties() {
         return new ElasticsearchDevServicesProperties();
@@ -14,4 +18,5 @@ public class ElasticsearchDevServicesPropertiesTests extends BaseDevServicesProp
                 .imageName(ArconiaElasticsearchContainer.COMPATIBLE_IMAGE_NAME)
                 .build();
     }
+
 }
