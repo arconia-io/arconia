@@ -8,15 +8,16 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.SharedDevServicesProperties;
+import io.arconia.dev.services.api.config.NetworkedDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Grafana LGTM Dev Services.
  */
 @ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
-public class LgtmDevServicesProperties implements SharedDevServicesProperties {
+public class LgtmDevServicesProperties implements SharedDevServicesProperties, NetworkedDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.lgtm";
 
@@ -71,6 +72,15 @@ public class LgtmDevServicesProperties implements SharedDevServicesProperties {
      * sharing is disabled. Only applicable in dev mode.
      */
     private boolean shared = true;
+
+    /**
+     * Whether the dev service joins the shared dev services network, so its container
+     * can communicate with other dev service containers over an OCI network, for example
+     * so other dev service containers can send telemetry to it. This is distinct from
+     * `shared`, which shares the same container across applications; joining a network
+     * only affects container-to-container connectivity. Only applicable in dev and test mode.
+     */
+    private boolean joinNetwork = false;
 
     /**
      * Maximum waiting time for the service to start.
@@ -185,6 +195,15 @@ public class LgtmDevServicesProperties implements SharedDevServicesProperties {
 
     public void setShared(boolean shared) {
         this.shared = shared;
+    }
+
+    @Override
+    public boolean isJoinNetwork() {
+        return joinNetwork;
+    }
+
+    public void setJoinNetwork(boolean joinNetwork) {
+        this.joinNetwork = joinNetwork;
     }
 
     @Override

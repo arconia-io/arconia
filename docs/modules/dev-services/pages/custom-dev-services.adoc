@@ -215,6 +215,28 @@ Adopt `SharedDevServicesProperties` and the sharing specification together: a De
 
 A discovered container is adopted as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications sharing the Dev Service; if your service is credential-protected, document this constraint for your users.
 
+== Supporting the Shared Network
+
+To let your Dev Service container communicate with other Dev Service containers over an OCI network (see xref:index.adoc#_shared_network[Shared Network]), have your properties class implement `NetworkedDevServicesProperties`, which adds the `join-network` property to its contract, and declare a network specification when registering the service:
+
+[source,java]
+----
+registry.registerDevService(service -> service
+        .name("fancydb")
+        .description("FancyDB Dev Service")
+        .container(container -> container
+                .type(FancyDbContainer.class)
+                .supplier(() -> new FancyDbContainer(properties))
+        )
+        .network(network -> network
+                .enabled(properties.isJoinNetwork())
+        ));
+----
+
+`join-network` is independent of `shared`: it can be combined with a sharing specification (a properties class may implement both `SharedDevServicesProperties` and `NetworkedDevServicesProperties`), or used on its own. Applies in both dev and test mode.
+
+A networked container is reachable by its service name by default, so it always has a stable name other containers can use. Users can override that with the common `network-aliases` property, so make sure your container applies it: using `ContainerConfigurer.base(...)`, which calls `withNetworkAliases(...)`, is enough.
+
 == Mutual Exclusion
 
 If your Dev Service provides the same capability as other Dev Services (for example, another JDBC-compatible database), declare a `DevServiceProvider` bean with the corresponding category. Use one of the `DevServiceCategories` constants when the overlap is with built-in Dev Services, or your own category string when the exclusion is among your own Dev Services. When multiple Dev Services of the same category are active at once, the application fails fast at startup with an actionable error message.

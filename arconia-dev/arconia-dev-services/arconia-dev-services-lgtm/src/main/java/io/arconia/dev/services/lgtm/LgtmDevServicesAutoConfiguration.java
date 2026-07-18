@@ -50,6 +50,9 @@ public final class LgtmDevServicesAutoConfiguration {
                             .reuse(properties.isReuse())
                             .connectionDetails(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
                     )
+                    .network(network -> network
+                            .enabled(properties.isJoinNetwork())
+                    )
             );
         }
 

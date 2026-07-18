@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
@@ -72,6 +73,13 @@ public class DevServicesRegistry {
     private static final String CONNECTION_DETAILS_BEAN_NAME_PREFIX = "devService.connectionDetails.";
 
     private static final String REGISTRATION_BEAN_NAME_PREFIX = "devServiceRegistration.";
+
+    /**
+     * Prefix of the network alias Testcontainers automatically assigns to every
+     * {@link GenericContainer} (e.g. {@code tc-a1b2c3d4}), used to tell auto-generated
+     * aliases apart from user-defined ones.
+     */
+    private static final String GENERATED_NETWORK_ALIAS_PREFIX = "tc-";
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
@@ -308,6 +316,7 @@ public class DevServicesRegistry {
                 Container<?> container = containerSpec.getSupplier().get();
                 applyCustomizers(container, registeredBean.getBeanFactory());
                 applyLabels(container, service);
+                applyNetwork(container, service, registeredBean.getBeanFactory());
                 return container;
             });
         }
@@ -346,6 +355,66 @@ public class DevServicesRegistry {
         genericContainer.withLabel(DevServiceLabels.SHARED, String.valueOf(!reuse && isSharingEnabled(service)));
         if (!(reuse && environmentSupportsReuse())) {
             genericContainer.withLabel(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
+        }
+    }
+
+    /**
+     * Attach the given container to the shared dev services {@link Network} when the service
+     * opts in, so it can communicate with other dev service containers.
+     * <p>
+     * Containers are reachable by the aliases set via the {@code network-aliases} property
+     * (already applied to the container). When none is set, the service name is applied as a
+     * default alias, so other containers always have a stable, predictable name to reach it by;
+     * a pure consumer that is never reached simply leaves that alias unused, which is harmless.
+     * A network already set on the container (e.g. by a customizer for a multi-container service)
+     * is honored. Port mapping is left untouched: the application keeps reaching the container
+     * over the host and mapped ports via its connection details.
+     */
+    private void applyNetwork(Container<?> container, ServiceSpec service, ConfigurableBeanFactory beanFactory) {
+        NetworkSpec networkSpec = service.getNetworkSpec();
+        if (networkSpec == null || !networkSpec.isEnabled()) {
+            return;
+        }
+        if (!(container instanceof GenericContainer<?> genericContainer)) {
+            return;
+        }
+
+        Network network = beanFactory.getBeanProvider(Network.class).getIfUnique();
+        if (network == null) {
+            logger.warn("The '{}' dev service is configured to join a network, but no unique Network bean is available (none or more than one is defined); skipping network attachment", service.getName());
+            return;
+        }
+
+        // Honor a network already set on the container (e.g. by a customizer).
+        if (genericContainer.getNetwork() == null) {
+            genericContainer.withNetwork(network);
+        }
+
+        // Testcontainers always seeds a generated "tc-<random>" alias, so a container is never
+        // fully unreachable; but that alias is unpredictable. Prefer user-defined aliases (set via
+        // the "network-aliases" property); when none is set, default to the service name so other
+        // containers have a stable, predictable name to reach it by. Both are stable across runs,
+        // which keeps the label (recorded below) reuse-safe: container labels and network aliases
+        // are part of the Testcontainers reuse hash (which is why applyLabels omits the per-JVM
+        // owner label under reuse), so a random alias would defeat reuse. Note the reuse hash also
+        // includes the network id: it is stable for a named network but per-JVM for Network.SHARED,
+        // which is what the reuse warning below is about.
+        List<String> userAliases = genericContainer.getNetworkAliases().stream()
+                .filter(alias -> !alias.startsWith(GENERATED_NETWORK_ALIAS_PREFIX))
+                .toList();
+        List<String> aliases;
+        if (userAliases.isEmpty()) {
+            genericContainer.withNetworkAliases(service.getName());
+            aliases = List.of(service.getName());
+        } else {
+            aliases = userAliases;
+        }
+        // Record the stable aliases in a label so discovery and (future) auto-wiring can reach the
+        // container by name without assuming any particular naming convention.
+        genericContainer.withLabel(DevServiceLabels.NETWORK_ALIASES, String.join(",", aliases));
+
+        if (genericContainer.isShouldBeReused() && network == Network.SHARED) {
+            logger.warn("Container reuse is ineffective for the networked '{}' dev service on the default isolated network; set 'arconia.dev.services.network.name' for a stable network", service.getName());
         }
     }
 
@@ -571,6 +640,9 @@ public class DevServicesRegistry {
         @Nullable
         private SharingSpec sharingSpec;
 
+        @Nullable
+        private NetworkSpec networkSpec;
+
         private ServiceSpec() {}
 
         /**
@@ -611,6 +683,18 @@ public class DevServicesRegistry {
             return this;
         }
 
+        /**
+         * Specification for joining the shared dev services network, so the container
+         * can communicate with other dev service containers. A dev service that declares
+         * no network specification never joins a network.
+         */
+        public ServiceSpec network(Consumer<NetworkSpec> networkSpecConsumer) {
+            var networkSpec = new NetworkSpec();
+            networkSpecConsumer.accept(networkSpec);
+            this.networkSpec = networkSpec;
+            return this;
+        }
+
         @Nullable
         String getName() {
             return name;
@@ -629,6 +713,11 @@ public class DevServicesRegistry {
         @Nullable
         SharingSpec getSharingSpec() {
             return sharingSpec;
+        }
+
+        @Nullable
+        NetworkSpec getNetworkSpec() {
+            return networkSpec;
         }
 
     }
@@ -779,6 +868,34 @@ public class DevServicesRegistry {
         @Nullable
         Function<DiscoveredContainer, ? extends ConnectionDetails> getConnectionDetails() {
             return connectionDetails;
+        }
+
+    }
+
+    /**
+     * Specification for joining the shared dev services network.
+     * <p>
+     * When enabled, the dev service container is attached to the injectable {@link Network}
+     * bean, so it can communicate with other dev service containers over an OCI network.
+     * This is distinct from sharing, which shares the same container across applications.
+     */
+    public static final class NetworkSpec {
+
+        private boolean enabled = false;
+
+        private NetworkSpec() {}
+
+        /**
+         * Whether the dev service joins the shared dev services network,
+         * typically bound to the {@code join-network} configuration property.
+         */
+        public NetworkSpec enabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        boolean isEnabled() {
+            return enabled;
         }
 
     }

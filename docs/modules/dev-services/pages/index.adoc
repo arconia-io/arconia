@@ -130,6 +130,9 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | `arconia.dev.services.<service-name>.shared`
 | Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode, and only available for Dev Services that support sharing (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]).
 
+| `arconia.dev.services.<service-name>.join-network`
+| Whether the dev service container joins the shared dev services network, so it can communicate with other dev service containers (see xref:index.adoc#_shared_network[Shared Network]). Only applicable in dev and test mode, and only available for Dev Services that support it.
+
 | `arconia.dev.services.<service-name>.startup-timeout`
 | Maximum waiting time for the service to start.
 
@@ -302,6 +305,53 @@ A common use case for fixed ports is when other tools or services in your develo
 Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary.
 ====
 
+=== Shared Network
+
+This is an advanced, opt-in feature. Most applications never need it: your application always reaches Dev Services over the local host and mapped ports, with no configuration.
+
+Dev Service containers cannot, by default, reach each other by name. When you need container-to-container communication, for example, letting a Docling Dev Service send telemetry to a Grafana LGTM Dev Service, opt in with the `arconia.dev.services.<service-name>.join-network` property (available on Dev Services that support it, disabled by default). To wire two Dev Services together, enable `join-network` on both and point the consumer at the target's service name and internal port. A networked container is reachable by its service name by default, so no alias configuration is needed:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        join-network: true
+      docling:
+        join-network: true
+        environment:
+          OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4317 # <1>
+          DOCLING_SERVE_OTEL_ENABLE_TRACES: "true"
+          DOCLING_SERVE_OTEL_ENABLE_OTLP_METRICS: "true"
+----
+<1> The `lgtm` hostname is the target's service name (its default network alias) and `4317` is the container's internal OTLP/gRPC port, not the host-mapped port. To reach a container by a different hostname, set its `network-aliases` property; those aliases replace the service-name default.
+
+[NOTE]
+====
+`join-network` is distinct from `shared`: `shared` shares the same container across applications (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]), while `join-network` puts a container on a network to reach other containers. They are independent and can be combined. Only applicable in dev and test mode; your application's service connections (host and mapped ports) are unaffected.
+====
+
+==== Advanced Scenarios
+
+* Across applications. By default the network is isolated per application, so containers from different applications don't reach each other. To connect them (for example, several services reporting to one Grafana LGTM instance), set a shared network name with the global `arconia.dev.services.network.name` property: all applications using the same name join the same OCI network, created on demand and removed on a best-effort basis by the application that created it. Also enable `shared` on the participating Dev Services so a single instance is reused; otherwise each application starts its own container and their identical aliases collide. This applies in dev mode only. In test mode, `network.name` is ignored and each application stays isolated.
+
+* Container reuse. Reuse (`reuse`) is only effective on a named network: the Testcontainers reuse hash includes the network id, which is stable for a named network but per-JVM for the default isolated one, so a reused container on the isolated network never matches (a warning is logged). Set `arconia.dev.services.network.name` when combining `join-network` with `reuse`.
+
+* Your own containers. The network is exposed as an injectable Testcontainers `Network` bean. To let a container you manage yourself reach Dev Services, inject it, attach your container, and enable `join-network` on the Dev Services you want reachable:
+
+[source,java]
+----
+@Bean
+GenericContainer<?> daprContainer(Network devServicesNetwork) {
+    return new GenericContainer<>("daprio/daprd:latest")
+            .withNetwork(devServicesNetwork)
+            .withNetworkAliases("dapr");
+}
+----
+
+A user-defined `Network` bean takes precedence over the one Arconia provides (and over `arconia.dev.services.network.name`).
+
 === Startup Sequence
 
 Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
@@ -309,6 +359,8 @@ Control how Dev Services start using the `spring.testcontainers.beans.startup` p
 === Global Configuration
 
 In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
+
+The `arconia.dev.services.network.name` property sets a stable, cross-application OCI network name for Dev Services that opt in via `join-network` (see xref:index.adoc#_shared_network[Shared Network]). When unset (default), each application uses an isolated network.
 
 [NOTE]
 ====

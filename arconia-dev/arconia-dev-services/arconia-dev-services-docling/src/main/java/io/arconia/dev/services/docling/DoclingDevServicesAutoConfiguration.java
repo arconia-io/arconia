@@ -41,6 +41,9 @@ public final class DoclingDevServicesAutoConfiguration {
                             .connectionDetails(DoclingServeConnectionDetails.class,
                                     container -> new DoclingDiscoveredConnectionDetails(container, properties))
                     )
+                    .network(network -> network
+                            .enabled(properties.isJoinNetwork())
+                    )
             );
         }
 

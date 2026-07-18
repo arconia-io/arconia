@@ -31,6 +31,13 @@ public final class DevServiceLabels {
      */
     public static final String OWNER = "io.arconia.dev-service.owner";
 
+    /**
+     * Comma-separated list of network aliases the container is reachable by on the
+     * dev services network (e.g. {@code lgtm}). Set only when the container joins a
+     * network, so other applications can discover the hostname to wire against.
+     */
+    public static final String NETWORK_ALIASES = "io.arconia.dev-service.network-aliases";
+
     private static final String OWNER_ID = UUID.randomUUID().toString();
 
     private DevServiceLabels() {}

@@ -64,6 +64,10 @@ You can configure the Dev Service via configuration properties.
 | `true`
 | Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode.
 
+| `arconia.dev.services.{service-name}.join-network`
+| `false`
+| Whether the container joins the shared dev services network, so it can communicate with other dev service containers, for example to send telemetry to a Grafana LGTM Dev Service (see xref:dev-services:index.adoc#_shared_network[Shared Network]). Only applicable in dev and test mode.
+
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`
 | Maximum waiting time for the service to start.

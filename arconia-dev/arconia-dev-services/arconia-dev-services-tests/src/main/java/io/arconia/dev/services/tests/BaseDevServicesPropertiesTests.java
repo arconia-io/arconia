@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.NetworkedDevServicesProperties;
 import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +71,9 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         if (properties instanceof SharedDevServicesProperties sharedProperties) {
             assertThat(sharedProperties.isShared()).isEqualTo(defaults.shared());
         }
+        if (properties instanceof NetworkedDevServicesProperties networkedProperties) {
+            assertThat(networkedProperties.isJoinNetwork()).isFalse();
+        }
         assertThat(properties.getStartupTimeout()).isEqualTo(defaults.startupTimeout());
         assertThat(properties.getVolumes()).isEmpty();
     }
@@ -92,6 +96,9 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         if (properties instanceof SharedDevServicesProperties) {
             values.put("shared", String.valueOf(!defaults.shared()));
         }
+        if (properties instanceof NetworkedDevServicesProperties) {
+            values.put("join-network", "true");
+        }
         values.put("startup-timeout", TEST_STARTUP_TIMEOUT.toString());
         values.put("volumes[0].host-path", "/host/path");
         values.put("volumes[0].container-path", "/container/path");
@@ -109,6 +116,9 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         assertThat(properties.isReuse()).isTrue();
         if (properties instanceof SharedDevServicesProperties sharedProperties) {
             assertThat(sharedProperties.isShared()).isEqualTo(!defaults.shared());
+        }
+        if (properties instanceof NetworkedDevServicesProperties networkedProperties) {
+            assertThat(networkedProperties.isJoinNetwork()).isTrue();
         }
         assertThat(properties.getStartupTimeout()).isEqualTo(TEST_STARTUP_TIMEOUT);
         assertThat(properties.getVolumes()).hasSize(1);
