@@ -3,9 +3,7 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 import java.util.List;
 
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuMeterConventions;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
@@ -14,12 +12,10 @@ import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvm
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuMeterConventions;
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMeterConventions;
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadMeterConventions;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvmMemoryMeterFilter;
@@ -37,37 +33,38 @@ import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvm
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryConventionsProperties.CONFIG_PREFIX, value = "jvm.enabled", matchIfMissing = true)
 public final class JvmConventionsAutoConfiguration {
 
+    /**
+     * Can't rely on upstream OpenTelemetryJvmMemoryMeterConventions directly,
+     * because some OTel metrics are not registered there.
+     */
     @Bean
     @ConditionalOnMissingBean(JvmMemoryMetrics.class)
     OpenTelemetryJvmMemoryMetrics jvmMemoryMetrics() {
         JvmMemoryMeterConventions conventions = new OpenTelemetryJvmMemoryMeterConventions(Tags.empty());
         return new OpenTelemetryJvmMemoryMetrics(List.of(), conventions);
     }
-    
+
     @Bean
     OpenTelemetryJvmMemoryMeterFilter openTelemetryJvmMemoryMeterFilter() {
         return new OpenTelemetryJvmMemoryMeterFilter();
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    JvmThreadMetrics jvmThreadMetrics() {
-        JvmThreadMeterConventions conventions = new OpenTelemetryJvmThreadMeterConventions(Tags.empty());
-        return new JvmThreadMetrics(List.of(), conventions);
+    @ConditionalOnMissingBean(JvmThreadMeterConventions.class)
+    OpenTelemetryJvmThreadMeterConventions jvmThreadMeterConventions() {
+        return new OpenTelemetryJvmThreadMeterConventions(Tags.empty());
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    ClassLoaderMetrics classLoaderMetrics() {
-        JvmClassLoadingMeterConventions conventions = new OpenTelemetryJvmClassLoadingMeterConventions();
-        return new ClassLoaderMetrics(conventions);
+    @ConditionalOnMissingBean(JvmClassLoadingMeterConventions.class)
+    OpenTelemetryJvmClassLoadingMeterConventions classLoadingMeterConventions() {
+        return new OpenTelemetryJvmClassLoadingMeterConventions();
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    ProcessorMetrics processorMetrics() {
-        JvmCpuMeterConventions conventions = new OpenTelemetryJvmCpuMeterConventions(Tags.empty());
-        return new ProcessorMetrics(List.of(), conventions);
+    @ConditionalOnMissingBean(JvmCpuMeterConventions.class)
+    OpenTelemetryJvmCpuMeterConventions jmcCpuMeterConventions() {
+        return new OpenTelemetryJvmCpuMeterConventions(Tags.empty());
     }
 
 }
