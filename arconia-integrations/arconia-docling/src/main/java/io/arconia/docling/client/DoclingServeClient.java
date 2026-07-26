@@ -15,6 +15,7 @@ import ai.docling.serve.api.chunk.response.ChunkDocumentResponse;
 import ai.docling.serve.api.clear.request.ClearConvertersRequest;
 import ai.docling.serve.api.clear.request.ClearResultsRequest;
 import ai.docling.serve.api.clear.response.ClearResponse;
+import ai.docling.serve.api.convert.request.BatchConvertDocumentRequest;
 import ai.docling.serve.api.convert.request.ConvertDocumentRequest;
 import ai.docling.serve.api.convert.response.ConvertDocumentResponse;
 import ai.docling.serve.api.health.HealthCheckResponse;
@@ -68,6 +69,26 @@ public class DoclingServeClient implements DoclingServeApi {
     public CompletionStage<ConvertDocumentResponse> convertSourceAsync(ConvertDocumentRequest request) {
         return CompletableFuture.supplyAsync(() -> restClient.post()
                         .uri("/v1/convert/source/async")
+                        .body(request)
+                        .retrieve()
+                        .body(ConvertDocumentResponse.class),
+                virtualThreadExecutor
+        );
+    }
+
+    @Override
+    public TaskStatusPollResponse convertSourceBatch(BatchConvertDocumentRequest request) {
+        return restClient.post()
+                .uri("/v1/convert/source/batch")
+                .body(request)
+                .retrieve()
+                .body(TaskStatusPollResponse.class);
+    }
+
+    @Override
+    public CompletionStage<ConvertDocumentResponse> convertSourceBatchAsync(BatchConvertDocumentRequest request) {
+        return CompletableFuture.supplyAsync(() -> restClient.post()
+                        .uri("/v1/convert/source/batch")
                         .body(request)
                         .retrieve()
                         .body(ConvertDocumentResponse.class),
