@@ -79,7 +79,7 @@ class OpenInferenceChatClientObservationConventionTests {
                         .build())
                 .build();
         var chatResponse = ChatResponse.builder()
-                .generations(List.of(new Generation(new AssistantMessage("Hi there!"))))
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hi there!").build())))
                 .build();
         context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
 
@@ -109,7 +109,7 @@ class OpenInferenceChatClientObservationConventionTests {
                         .build())
                 .build();
         var chatResponse = ChatResponse.builder()
-                .generations(List.of(new Generation(new AssistantMessage("Hi there!"))))
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hi there!").build())))
                 .build();
         context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
 

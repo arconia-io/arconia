@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
@@ -332,7 +332,7 @@ class ContainerConfigurerTests {
 
     @Test
     void jdbcConfigurationShouldApplyUsername() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withUsername("testuser");
 
@@ -343,7 +343,7 @@ class ContainerConfigurerTests {
 
     @Test
     void jdbcConfigurationShouldApplyPassword() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withPassword("testpassword");
 
@@ -354,7 +354,7 @@ class ContainerConfigurerTests {
 
     @Test
     void jdbcConfigurationShouldApplyDatabaseName() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withDbName("testdb");
 
@@ -365,7 +365,7 @@ class ContainerConfigurerTests {
 
     @Test
     void jdbcConfigurationShouldApplyInitScripts() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withInitScriptPaths(List.of("init1.sql", "init2.sql"));
 
@@ -377,7 +377,7 @@ class ContainerConfigurerTests {
     }
     @Test
     void jdbcConfigurationShouldHandleEmptyInitScripts() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withInitScriptPaths(List.of());
 
