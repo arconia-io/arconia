@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.micrometer.core.instrument.config.validate.Validated;
 import io.micrometer.registry.otlp.AggregationTemporality;
+import io.micrometer.registry.otlp.CompressionMode;
 import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpConfig;
 
@@ -28,6 +29,7 @@ class MicrometerOtlpConfig implements OtlpConfig {
     private final int maxScale;
     private final int maxBucketCount;
     private final TimeUnit baseTimeUnit;
+    private final CompressionMode compressionMode;
 
     private MicrometerOtlpConfig(Builder builder) {
         Assert.hasText(builder.url, "url cannot be null or empty");
@@ -42,6 +44,7 @@ class MicrometerOtlpConfig implements OtlpConfig {
         this.maxScale = builder.maxScale;
         this.maxBucketCount = builder.maxBucketCount;
         this.baseTimeUnit = builder.baseTimeUnit;
+        this.compressionMode = builder.compressionMode;
     }
 
     /**
@@ -123,6 +126,21 @@ class MicrometerOtlpConfig implements OtlpConfig {
     }
 
     @Override
+    public CompressionMode compressionMode() {
+        return compressionMode;
+    }
+
+    @Override
+    public int exemplarsSize() {
+        return OtlpConfig.super.exemplarsSize();
+    }
+
+    @Override
+    public boolean publishMaxGaugeForHistograms() {
+        return OtlpConfig.super.publishMaxGaugeForHistograms();
+    }
+
+    @Override
     public Validated<?> validate() {
         return Validated.none();
     }
@@ -141,6 +159,7 @@ class MicrometerOtlpConfig implements OtlpConfig {
         private int maxScale = 20;
         private int maxBucketCount = 160;
         private TimeUnit baseTimeUnit = TimeUnit.MILLISECONDS;
+        private CompressionMode compressionMode = CompressionMode.GZIP;
 
         private Builder() {}
 
@@ -199,6 +218,12 @@ class MicrometerOtlpConfig implements OtlpConfig {
         Builder baseTimeUnit(TimeUnit baseTimeUnit) {
             Assert.notNull(baseTimeUnit, "baseTimeUnit cannot be null");
             this.baseTimeUnit = baseTimeUnit;
+            return this;
+        }
+
+        Builder compressionMode(CompressionMode compressionMode) {
+            Assert.notNull(compressionMode, "compressionMode cannot be null");
+            this.compressionMode = compressionMode;
             return this;
         }
 

@@ -7,6 +7,7 @@ import java.util.Set;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.registry.otlp.AggregationTemporality;
+import io.micrometer.registry.otlp.CompressionMode;
 import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
@@ -89,6 +90,13 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
                 .maxScale(registryProperties.getMaxScale())
                 .maxBucketCount(registryProperties.getMaxBucketCount())
                 .baseTimeUnit(registryProperties.getBaseTimeUnit())
+                .compressionMode(metricsProperties.getOtlp().getCompression() != null ? switch (metricsProperties.getOtlp().getCompression()) {
+                    case GZIP -> CompressionMode.GZIP;
+                    case NONE -> CompressionMode.NONE;
+                } : switch (commonProperties.getOtlp().getCompression()) {
+                    case GZIP -> CompressionMode.GZIP;
+                    case NONE -> CompressionMode.NONE;
+                })
                 .build();
     }
 
