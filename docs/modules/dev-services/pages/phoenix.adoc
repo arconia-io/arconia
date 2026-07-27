@@ -33,7 +33,7 @@ The application logs will show you the URL where you can access the Arize Phoeni
 
 [source,logs]
 ----
-...i.a.t.phoenix.PhoenixContainer           : Phoenix UI: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'phoenix' is ready - Phoenix UI: http://localhost:<port>
 ----
 
 By default, traces are exported via OTLP using the HTTP/Protobuf format.

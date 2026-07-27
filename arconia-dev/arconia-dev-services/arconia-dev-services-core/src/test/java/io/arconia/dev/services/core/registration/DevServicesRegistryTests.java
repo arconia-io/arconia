@@ -19,6 +19,8 @@ import org.testcontainers.containers.Network;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.container.DevServiceLabels;
@@ -525,6 +527,33 @@ class DevServicesRegistryTests {
         assertThat(container.getNetwork()).isSameAs(customizerNetwork);
     }
 
+    @Test
+    void whenContainerProvidesLinksThenRegistrationCapturesThem() {
+        registry.registerDevService(service -> service
+                .name("linky")
+                .container(container -> container
+                        .type(TestLinkContainer.class)
+                        .supplier(TestLinkContainer::new)));
+
+        var registration = beanFactory.getBean("devServiceRegistration.linky", DevServiceRegistration.class);
+
+        assertThat(registration.links()).containsExactly(
+                DevServiceLink.builder().id("ui").label("UI").url("http://localhost:1234").build());
+    }
+
+    @Test
+    void whenContainerProvidesNoLinksThenRegistrationLinksAreEmpty() {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .container(container -> container
+                        .type(TestPostgresContainer.class)
+                        .supplier(TestPostgresContainer::new)));
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        assertThat(registration.links()).isEmpty();
+    }
+
     /**
      * Register the given network as a proper bean definition, matching how the auto-configuration
      * exposes it, so it is resolved by {@code getBeanProvider(Network.class).getIfUnique()}.
@@ -609,6 +638,17 @@ class DevServicesRegistryTests {
     private static class TestPostgresContainer extends GenericContainer<TestPostgresContainer> {
         TestPostgresContainer() {
             super("postgres:latest");
+        }
+    }
+
+    private static class TestLinkContainer extends GenericContainer<TestLinkContainer> implements DevServiceLinkProvider {
+        TestLinkContainer() {
+            super("postgres:latest");
+        }
+
+        @Override
+        public List<DevServiceLink> devServiceLinks() {
+            return List.of(DevServiceLink.builder().id("ui").label("UI").url("http://localhost:1234").build());
         }
     }
 

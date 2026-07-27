@@ -34,7 +34,7 @@ The application logs will show you the URL where you can access the Grafana UI.
 
 [source,logs]
 ----
-...o.t.grafana.LgtmStackContainer           : Access to the Grafana dashboard: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready - Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>
 ----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.

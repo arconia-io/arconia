@@ -1,21 +1,19 @@
 package io.arconia.dev.services.pulsar;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link PulsarContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaPulsarContainer extends PulsarContainer {
-
-    private static final Logger logger = LoggerFactory.getLogger(ArconiaPulsarContainer.class);
+final class ArconiaPulsarContainer extends PulsarContainer implements DevServiceLinkProvider {
 
     private final PulsarDevServicesProperties properties;
 
@@ -40,9 +38,12 @@ final class ArconiaPulsarContainer extends PulsarContainer {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        super.containerIsStarted(containerInfo);
-        logger.info("Pulsar Management Console: {}", getHttpServiceUrl());
+    public List<DevServiceLink> devServiceLinks() {
+        return List.of(DevServiceLink.builder()
+                .id("pulsar")
+                .label("Pulsar Management Console")
+                .url(getHttpServiceUrl())
+                .build());
     }
 
 }

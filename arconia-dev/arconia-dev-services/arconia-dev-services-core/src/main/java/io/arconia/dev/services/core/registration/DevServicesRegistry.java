@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.registration;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +30,8 @@ import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.ResolvableType;
@@ -37,21 +40,26 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.core.container.StartupLogWaitStrategy;
 
 /**
  * Registry for managing the definition and lifecycle of dev services.
@@ -317,6 +325,7 @@ public class DevServicesRegistry {
                 applyCustomizers(container, registeredBean.getBeanFactory());
                 applyLabels(container, service);
                 applyNetwork(container, service, registeredBean.getBeanFactory());
+                applyStartupLogging(container, service);
                 return container;
             });
         }
@@ -419,6 +428,64 @@ public class DevServicesRegistry {
     }
 
     /**
+     * Wrap the container's wait strategy so that when the container fails to start, its logs are
+     * written to the application log (at the configured level).
+     */
+    private void applyStartupLogging(Container<?> container, ServiceSpec service) {
+        if (!(container instanceof GenericContainer<?> genericContainer)) {
+            return;
+        }
+        // GenericContainer#getWaitStrategy() is protected, so read the current strategy from the
+        // (protected) field to wrap it. Skip gracefully if it can't be read, so the container still
+        // starts normally, just without the on-failure log dump.
+        WaitStrategy current = currentWaitStrategy(genericContainer);
+        if (current == null) {
+            return;
+        }
+        genericContainer.setWaitStrategy(new StartupLogWaitStrategy(current, service.getName(), resolveStartupLogLevel()));
+    }
+
+    @Nullable
+    private static WaitStrategy currentWaitStrategy(GenericContainer<?> container) {
+        try {
+            Field field = ReflectionUtils.findField(GenericContainer.class, "waitStrategy");
+            if (field == null) {
+                return null;
+            }
+            ReflectionUtils.makeAccessible(field);
+            return (ReflectionUtils.getField(field, container) instanceof WaitStrategy waitStrategy) ? waitStrategy : null;
+        } catch (Exception ex) {
+            logger.debug("Failed to read the wait strategy of the '{}' dev service container; on-failure log capture is disabled for it", container.getDockerImageName(), ex);
+            return null;
+        }
+    }
+
+    /**
+     * The level at which a failing dev service container's logs are written to the application log.
+     */
+    private LogLevel resolveStartupLogLevel() {
+        return Binder.get(environment)
+                .bind("arconia.dev.services.startup.log-level", LogLevel.class)
+                .orElse(LogLevel.INFO);
+    }
+
+    /**
+     * The links a container exposes (management consoles, telemetry endpoints, …) for display in
+     * startup logs and developer tooling, or an empty list when the container declares none.
+     */
+    private static List<DevServiceLink> resolveLinks(Container<?> container) {
+        if (container instanceof DevServiceLinkProvider linkProvider) {
+            try {
+                List<DevServiceLink> links = linkProvider.devServiceLinks();
+                return (links != null) ? links : List.of();
+            } catch (Exception ex) {
+                logger.debug("Failed to resolve links for a dev service container", ex);
+            }
+        }
+        return List.of();
+    }
+
+    /**
      * Whether dev service containers should live in the {@code restart} scope, so that they
      * survive Spring Boot DevTools restarts. That's the case when DevTools is on the classpath
      * and restart support is not disabled via the {@code spring.devtools.restart.enabled} property.
@@ -452,11 +519,17 @@ public class DevServicesRegistry {
             // Create a supplier that fetches container info from the OCI runtime API.
             Supplier<ContainerInfo> containerInfoSupplier = () -> extractContainerInfoById(containerId);
 
+            // Capture the links the container exposes (the container is started at this point,
+            // so mapped ports are available) and log a consistent startup message.
+            List<DevServiceLink> links = resolveLinks(container);
+            DevServicesStartupLogger.owned(service.getName(), links);
+
             return DevServiceRegistration.builder()
                     .name(service.getName())
                     .description(service.getDescription())
                     .origin(DevServiceRegistration.Origin.OWNED)
                     .containerInfo(containerInfoSupplier)
+                    .links(links)
                     .build();
 
         });
@@ -502,12 +575,15 @@ public class DevServicesRegistry {
 
         descriptionBeanDefinition.setDependsOn(CONFLICT_VALIDATOR_BEAN_NAME);
 
-        descriptionBeanDefinition.setInstanceSupplier(() -> DevServiceRegistration.builder()
-                .name(service.getName())
-                .description(service.getDescription())
-                .origin(DevServiceRegistration.Origin.DISCOVERED)
-                .containerInfo(() -> extractContainerInfoById(containerId))
-                .build());
+        descriptionBeanDefinition.setInstanceSupplier(() -> {
+            DevServicesStartupLogger.discovered(service.getName(), List.of());
+            return DevServiceRegistration.builder()
+                    .name(service.getName())
+                    .description(service.getDescription())
+                    .origin(DevServiceRegistration.Origin.DISCOVERED)
+                    .containerInfo(() -> extractContainerInfoById(containerId))
+                    .build();
+        });
 
         return descriptionBeanDefinition;
     }

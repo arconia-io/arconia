@@ -1,21 +1,19 @@
 package io.arconia.dev.services.artemis;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * An {@link ArtemisContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaArtemisContainer extends ArtemisContainer {
-
-    private static final Logger logger = LoggerFactory.getLogger(ArconiaArtemisContainer.class);
+final class ArconiaArtemisContainer extends ArtemisContainer implements DevServiceLinkProvider {
 
     private final ArtemisDevServicesProperties properties;
 
@@ -48,9 +46,12 @@ final class ArconiaArtemisContainer extends ArtemisContainer {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        super.containerIsStarted(containerInfo);
-        logger.info("Artemis Management Console: {}", getManagementConsoleUrl());
+    public List<DevServiceLink> devServiceLinks() {
+        return List.of(DevServiceLink.builder()
+                .id("artemis")
+                .label("Artemis Management Console")
+                .url(getManagementConsoleUrl())
+                .build());
     }
 
     /**

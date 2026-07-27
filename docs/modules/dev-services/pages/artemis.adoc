@@ -24,7 +24,7 @@ The application logs will show you the URL where you can access the ActiveMQ Art
 
 [source,logs]
 ----
-...i.a.d.s.artemis.ArconiaArtemisContainer  : Artemis Management Console: http://localhost:<port>/console
+...i.a.d.s.startup  : Dev Service 'artemis' is ready - Artemis Management Console: http://localhost:<port>/console
 ----
 
 By default, you can log in with username `arconia` and password `arconia`.

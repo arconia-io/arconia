@@ -2,10 +2,6 @@ package io.arconia.testcontainers.openlit;
 
 import java.util.Map;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -26,8 +22,6 @@ import org.testcontainers.utility.DockerImageName;
  * network is created automatically.
  */
 public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
-
-    private static final Logger logger = LoggerFactory.getLogger(OpenLitContainer.class);
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/openlit/openlit");
 
@@ -159,12 +153,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         this.withEnv("DEMO_ACCOUNT_PASSWORD", "openlituser");
 
         this.withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
-    }
-
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        super.containerIsStarted(containerInfo);
-        logger.info("OpenLit UI: {}", getOpenLitUrl());
     }
 
     public String getOpenLitUrl() {

@@ -22,7 +22,7 @@ Furthermore, the Dev Service is configured to enable the Docling UI. The applica
 
 [source,logs]
 ----
-... Docling Serve UI: http://localhost:<port>/ui
+...i.a.d.s.startup  : Dev Service 'docling' is ready - Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs
 ----
 
 == Configuring the Dev Service

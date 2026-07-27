@@ -1,7 +1,11 @@
 package io.arconia.dev.services.phoenix;
 
+import java.util.List;
+
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
@@ -9,7 +13,7 @@ import io.arconia.testcontainers.phoenix.PhoenixContainer;
 /**
  * A {@link PhoenixContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaPhoenixContainer extends PhoenixContainer {
+final class ArconiaPhoenixContainer extends PhoenixContainer implements DevServiceLinkProvider {
 
     private final PhoenixDevServicesProperties properties;
 
@@ -31,6 +35,15 @@ final class ArconiaPhoenixContainer extends PhoenixContainer {
         if (ContainerUtils.isFixedPort(properties.getOtlpGrpcPort())) {
             addFixedExposedPort(properties.getOtlpGrpcPort(), GRPC_PORT);
         }
+    }
+
+    @Override
+    public List<DevServiceLink> devServiceLinks() {
+        return List.of(DevServiceLink.builder()
+                .id("phoenix")
+                .label("Phoenix UI")
+                .url(getPhoenixUrl())
+                .build());
     }
 
 }

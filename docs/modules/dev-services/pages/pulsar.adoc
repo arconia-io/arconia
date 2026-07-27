@@ -24,7 +24,7 @@ The application logs will show you the URL where you can access the Pulsar HTTP 
 
 [source,logs]
 ----
-...i.a.d.s.pulsar.ArconiaPulsarContainer    : Pulsar Management Console: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'pulsar' is ready - Pulsar Management Console: http://localhost:<port>
 ----
 
 == Configuring the Dev Service

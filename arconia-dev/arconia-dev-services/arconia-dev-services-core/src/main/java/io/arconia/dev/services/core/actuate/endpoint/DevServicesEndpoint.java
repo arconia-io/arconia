@@ -12,6 +12,7 @@ import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 
 /**
@@ -31,7 +32,7 @@ public class DevServicesEndpoint {
     @ReadOperation
     public Map<String, ServiceInfoSummary> devServices() {
         return registrations.values().stream()
-                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), reg.origin(), resolveContainerInfoSummary(reg)))
+                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), reg.origin(), reg.links(), resolveContainerInfoSummary(reg)))
                 .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info));
     }
 
@@ -43,7 +44,7 @@ public class DevServicesEndpoint {
             // A null result is mapped to a 404 response.
             return null;
         }
-        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), resolveContainerInfo(registration));
+        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfo(registration));
     }
 
     /**
@@ -72,6 +73,7 @@ public class DevServicesEndpoint {
             @Nullable
             String description,
             DevServiceRegistration.Origin origin,
+            List<DevServiceLink> links,
             @Nullable
             ContainerInfoSummary containerInfo
     ) {}
@@ -93,6 +95,7 @@ public class DevServicesEndpoint {
             @Nullable
             String description,
             DevServiceRegistration.Origin origin,
+            List<DevServiceLink> links,
             @Nullable
             ContainerInfo containerInfo
     ) {}

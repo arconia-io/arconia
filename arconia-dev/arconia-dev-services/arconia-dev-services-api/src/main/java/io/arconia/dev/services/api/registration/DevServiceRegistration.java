@@ -1,5 +1,6 @@
 package io.arconia.dev.services.api.registration;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
@@ -16,13 +17,15 @@ public record DevServiceRegistration(
         @Nullable
         String description,
         Origin origin,
-        Supplier<ContainerInfo> containerInfo
+        Supplier<ContainerInfo> containerInfo,
+        List<DevServiceLink> links
 ) {
 
     public DevServiceRegistration {
         Assert.hasText(name, "name cannot be null or empty");
         Assert.notNull(origin, "origin cannot be null");
         Assert.notNull(containerInfo, "containerInfo cannot be null");
+        Assert.notNull(links, "links cannot be null");
     }
 
     /**
@@ -54,6 +57,7 @@ public record DevServiceRegistration(
         private String description;
         private Origin origin;
         private Supplier<ContainerInfo> containerInfo;
+        private List<DevServiceLink> links = List.of();
 
         public Builder name(String name) {
             this.name = name;
@@ -75,8 +79,13 @@ public record DevServiceRegistration(
             return this;
         }
 
+        public Builder links(List<DevServiceLink> links) {
+            this.links = links;
+            return this;
+        }
+
         public DevServiceRegistration build() {
-            return new DevServiceRegistration(name, description, origin, containerInfo);
+            return new DevServiceRegistration(name, description, origin, containerInfo, links);
         }
 
     }

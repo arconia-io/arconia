@@ -24,7 +24,7 @@ The application logs will show you the URL where you can access the RabbitMQ Man
 
 [source,logs]
 ----
-...i.a.d.s.rabbitmq.ArconiaRabbitMqContainer : RabbitMQ Management Console: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'rabbitmq' is ready - RabbitMQ Management Console: http://localhost:<port>
 ----
 
 By default, you can log in with username `arconia` and password `arconia`.

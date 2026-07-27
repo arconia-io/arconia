@@ -356,11 +356,26 @@ A user-defined `Network` bean takes precedence over the one Arconia provides (an
 
 Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
 
+=== Startup Feedback
+
+When a Dev Service starts, Arconia logs a consistent startup message with its resolved links, such as management consoles and telemetry endpoints:
+
+[source,logs]
+----
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready - Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896
+----
+
+The same information is available programmatically through the `devservices` actuator endpoint (see xref:_actuator[Actuator]), for each service under a `links` list of `id`, `label`, and `url`.
+
+When a container fails to start, Arconia writes the container's logs to the application log, so an otherwise opaque startup failure (for example, a startup timeout) can be diagnosed. The level is controlled by the global `arconia.dev.services.startup.log-level` property (default `info`). Set it to `off` to disable the log dump.
+
 === Global Configuration
 
 In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
 
 The `arconia.dev.services.network.name` property sets a stable, cross-application OCI network name for Dev Services that opt in via `join-network` (see xref:index.adoc#_shared_network[Shared Network]). When unset (default), each application uses an isolated network.
+
+The `arconia.dev.services.startup.log-level` property sets the level at which a failing Dev Service container's logs are written to the application log (see xref:index.adoc#_startup_feedback[Startup Feedback]). It defaults to `info`; `off` disables the log dump.
 
 [NOTE]
 ====

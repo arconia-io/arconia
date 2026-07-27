@@ -86,7 +86,7 @@ The application logs will show you the URL where you can access the OpenLit UI.
 
 [source,logs]
 ----
-...openlit.OpenLitContainer: OpenLit UI: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'openlit' is ready - OpenLit UI: http://localhost:<port>
 ----
 
 The credentials for the pre-configured demo account are: `user@openlit.io` (username) and `openlituser` (password).

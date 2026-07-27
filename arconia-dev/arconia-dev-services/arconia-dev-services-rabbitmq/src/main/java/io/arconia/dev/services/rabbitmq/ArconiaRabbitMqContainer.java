@@ -1,21 +1,19 @@
 package io.arconia.dev.services.rabbitmq;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link RabbitMQContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaRabbitMqContainer extends RabbitMQContainer {
-
-    private static final Logger logger = LoggerFactory.getLogger(ArconiaRabbitMqContainer.class);
+final class ArconiaRabbitMqContainer extends RabbitMQContainer implements DevServiceLinkProvider {
 
     private final RabbitMqDevServicesProperties properties;
 
@@ -47,9 +45,12 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        super.containerIsStarted(containerInfo);
-        logger.info("RabbitMQ Management Console: {}", getHttpUrl());
+    public List<DevServiceLink> devServiceLinks() {
+        return List.of(DevServiceLink.builder()
+                .id("rabbitmq")
+                .label("RabbitMQ Management Console")
+                .url(getHttpUrl())
+                .build());
     }
 
 }
