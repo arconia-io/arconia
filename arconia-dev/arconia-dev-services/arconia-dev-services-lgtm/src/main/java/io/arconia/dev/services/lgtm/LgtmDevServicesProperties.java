@@ -29,7 +29,7 @@ public class LgtmDevServicesProperties implements SharedDevServicesProperties, N
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "grafana/otel-lgtm:0.28.0";
+    private String imageName = "grafana/otel-lgtm:0.29.2";
 
     /**
      * Environment variables to set in the service.
