@@ -5,6 +5,11 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
+[NOTE]
+====
+This release baselines on Spring Boot 4.1. To upgrade your application to Spring Boot 4.1, you can apply the automated https://docs.arconia.io/arconia-migrations/latest/spring/spring-boot/4-1/[OpenRewrite recipes]. If your application is still on Spring Boot 4.0, remain on Arconia `0.28.0`.
+====
+
 == Core Features
 
 === Profiles
