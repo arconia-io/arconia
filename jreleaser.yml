@@ -18,7 +18,9 @@ checksum:
 
 signing:
   active: ALWAYS
-  armored: true
+  pgp:
+    active: ALWAYS
+    armored: true
 
 deploy:
   maven:
@@ -27,6 +29,7 @@ deploy:
         active: RELEASE
         url: "https://central.sonatype.com/api/v1/publisher"
         applyMavenCentralRules: true
+        verifyUrl: "https://repo1.maven.org/maven2/{{path}}/{{filename}}"
         retryDelay: 20
         maxRetries: 100
         stagingRepositories:
@@ -46,7 +49,7 @@ deploy:
 release:
   github:
     releaseName: '{{tagName}}'
-    overwrite: true
+    overwrite: false
     sign: true
     issues:
       enabled: true
