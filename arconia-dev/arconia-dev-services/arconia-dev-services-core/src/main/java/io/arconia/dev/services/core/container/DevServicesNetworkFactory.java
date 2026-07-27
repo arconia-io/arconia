@@ -27,9 +27,12 @@ import io.arconia.core.support.Incubating;
  *     <li>in dev mode with a network name configured, a stable, named OCI network is
  *     found or created, so it can be shared across applications running simultaneously.</li>
  * </ul>
- * When this process creates a named network, a best-effort JVM shutdown hook removes it;
- * container runtimes refuse to remove a network that still has attached containers, which is the
- * natural safety net when other applications (or reused containers) are still using it.
+ * When this process creates a named network, a best-effort JVM shutdown hook attempts to remove it.
+ * The container runtime refuses to remove a network that still has attached containers, so the
+ * network is often left behind and reused, under the same name, on the next run: at JVM exit this
+ * application's own reused or restart-scoped containers may still be attached (and may outlive the
+ * hook), or another application may still be using a shared named network. This is acceptable for a
+ * dev/test-only feature; run {@code docker network prune} to reclaim any left-over networks.
  */
 @Incubating
 public final class DevServicesNetworkFactory {
@@ -116,8 +119,10 @@ public final class DevServicesNetworkFactory {
             try {
                 DockerClientFactory.lazyClient().removeNetworkCmd(networkId).exec();
             } catch (Exception ex) {
-                // Removal fails while containers are still attached (e.g. another application or a
-                // reused container is using it); that is expected and safe to ignore.
+                // The container runtime refuses removal while any container is still attached:
+                // commonly this application's own reused or restart-scoped containers at JVM exit,
+                // or another application still using a shared named network. The network is left
+                // behind and reused on the next run under the same name; safe to ignore here.
                 logger.debug("Could not remove the dev services network '{}' ({}) on shutdown", name, networkId, ex);
             }
         }, "arconia-dev-services-network-cleanup"));

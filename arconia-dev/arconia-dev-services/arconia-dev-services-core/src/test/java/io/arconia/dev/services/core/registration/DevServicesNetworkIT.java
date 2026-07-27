@@ -7,7 +7,6 @@ import com.github.dockerjava.api.DockerClient;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -45,7 +44,6 @@ class DevServicesNetworkIT {
     }
 
     @Test
-    @Disabled
     void networkedContainersReachEachOtherByAlias() throws Exception {
         Network network = DevServicesNetworkFactory.resolve(null);
         registerNetworkBean(network);
@@ -79,8 +77,10 @@ class DevServicesNetworkIT {
             peerA.start();
 
             // Peer A reaches peer B over the shared network by its alias (which only resolves
-            // on a user-defined network, never on the default bridge).
-            var result = peerA.execInContainer("wget", "-q", "-T", "5", "-O", "-", "http://peer-b");
+            // on a user-defined network, never on the default bridge). The probe retries to absorb
+            // the brief window before the peer's server is reachable by its alias.
+            var result = peerA.execInContainer("sh", "-c",
+                    "for i in 1 2 3 4 5; do wget -q -T 5 -O - http://peer-b && exit 0; sleep 1; done; exit 1");
 
             assertThat(result.getExitCode()).isZero();
             assertThat(result.getStdout()).containsIgnoringCase("nginx");
@@ -122,7 +122,8 @@ class DevServicesNetworkIT {
             peerA.start();
 
             // Negative control: peer-b is not on the shared network, so its alias must not resolve
-            // from peer-a. This proves the positive test succeeds because of the joined network.
+            // from peer-a, confirming that alias resolution requires joining the shared network (the
+            // positive counterpart is networkedContainersReachEachOtherByAlias).
             var result = peerA.execInContainer("wget", "-q", "-T", "5", "-O", "-", "http://peer-b");
 
             assertThat(result.getExitCode()).isNotZero();
@@ -184,6 +185,9 @@ class DevServicesNetworkIT {
     static class TestPeerContainer extends GenericContainer<TestPeerContainer> {
         TestPeerContainer() {
             super(NGINX_IMAGE);
+            // Expose the HTTP port so the default wait strategy blocks until the server is
+            // listening, rather than returning as soon as the container is merely running.
+            withExposedPorts(80);
         }
     }
 
