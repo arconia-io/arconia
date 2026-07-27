@@ -28,7 +28,7 @@ public class PulsarDevServicesProperties implements SharedDevServicesProperties 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "apachepulsar/pulsar:4.2.2";
+    private String imageName = "apachepulsar/pulsar:4.2.3";
 
     /**
      * Environment variables to set in the service.
