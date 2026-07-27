@@ -1,6 +1,6 @@
 name: "Other"
 description: "Create a generic issue."
-title: "[Other]: "
+title: "[Other] ISSUE TITLE"
 labels: [triage]
 body:
   - type: textarea
