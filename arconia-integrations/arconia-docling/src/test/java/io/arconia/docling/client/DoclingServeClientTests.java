@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.health.contributor.Status;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.client.HttpClientErrorException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -32,7 +31,6 @@ import io.arconia.docling.Images;
 import io.arconia.docling.actuate.DoclingServeHealthIndicator;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Testcontainers(disabledWithoutDocker = true)
 class DoclingServeClientTests {
@@ -150,10 +148,12 @@ class DoclingServeClientTests {
                 .options(ConvertDocumentOptions.builder().build())
                 .build();
 
-        // Docling returns 404 Not Found when a file doesn't exist or cannot be accessed
-        assertThatThrownBy(() -> doclingServeApi.convertSource(request))
-                .isInstanceOf(HttpClientErrorException.NotFound.class)
-                .hasMessageContaining("404 Not Found");
+        ConvertDocumentResponse response = doclingServeApi.convertSource(request);
+        assertThat(response).isInstanceOf(InBodyConvertDocumentResponse.class);
+
+        InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
+        assertThat(inBodyResponse.getStatus()).isEqualTo("failure");
+        assertThat(inBodyResponse.getErrors()).isNotEmpty();
     }
 
     @Test
