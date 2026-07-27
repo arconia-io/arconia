@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-If you know of a vulnerability in this project, please reach out to security@arconia.io, and we will get back to you as soon as possible.
+If you discover a security vulnerability in this project, please report it privately to security@arconia.io, and we will respond as soon as possible. Please do not disclose the vulnerability publicly until we have addressed it.
