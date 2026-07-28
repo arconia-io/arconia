@@ -70,7 +70,7 @@ Then, run the following command:
 ./gradlew rewriteRun \
     --init-script init.gradle \
     --no-parallel \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_29
+    -DactiveRecipe=io.arconia.rewrite.framework.UpgradeArconia_0_29
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -83,5 +83,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_29
+  -Drewrite.activeRecipes=io.arconia.rewrite.framework.UpgradeArconia_0_29
 ----
