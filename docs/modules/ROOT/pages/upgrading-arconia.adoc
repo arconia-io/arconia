@@ -8,6 +8,12 @@ We maintain an https://docs.openrewrite.org[OpenRewrite] recipe to help you upgr
 
 Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia] page for the latest features and enhancements and the https://github.com/arconia-io/arconia/releases[release notes].
 
+== Prerequisites
+
+Arconia 0.29 baselines on Spring Boot 4.1. Your application must already be on Spring Boot 4.1 before you upgrade Arconia.
+
+If your application is still on Spring Boot 4.0, upgrade it first by applying the automated https://docs.arconia.io/arconia-migrations/latest/spring/spring-boot/4-1/[Spring Boot 4.1 OpenRewrite recipes], or remain on Arconia `0.28.0` until you have migrated.
+
 == Automated Upgrade
 
 === Arconia CLI
@@ -16,7 +22,7 @@ Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgr
 
 [source,shell]
 ----
-arconia update framework --to-version 0.28
+arconia update framework --to-version 0.29
 ----
 
 === Gradle OpenRewrite Plugin
@@ -29,7 +35,7 @@ First, create an `init.gradle` file in your Spring Boot project (root folder) wi
 ----
 initscript {
     repositories {
-        maven { url "https://plugins.gradle.org/m2" }
+        gradlePluginPortal()
     }
     dependencies {
         classpath("org.openrewrite:plugin:latest.release")
@@ -42,12 +48,17 @@ rootProject {
         rewrite("io.arconia.migrations:rewrite-arconia:latest.release")
     }
 
+    // Remove when project repositories are disabled
     afterEvaluate {
         if (repositories.isEmpty()) {
             repositories {
                 mavenCentral()
             }
         }
+    }
+
+    configurations.named("rewrite") {
+        canBeConsumed = false
     }
 }
 ----
@@ -58,7 +69,8 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_28
+    --no-parallel \
+    -DactiveRecipe=io.arconia.rewrite.UpgradeArconia_0_29
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -71,5 +83,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_28
+  -Drewrite.activeRecipes=io.arconia.rewrite.UpgradeArconia_0_29
 ----
