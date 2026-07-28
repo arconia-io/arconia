@@ -1,5 +1,7 @@
 package io.arconia.dev.services.pulsar;
 
+import java.time.Duration;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails;
@@ -73,6 +75,7 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
         PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
         try (PulsarContainer sharedContainer = new PulsarContainer(
                 DockerImageName.parse(properties.getImageName()))
+                .withStartupTimeout(Duration.ofMinutes(2))
                 .withLabel(DevServiceLabels.NAME, "pulsar")
                 .withLabel(DevServiceLabels.SHARED, "true")
                 .withLabel(DevServiceLabels.OWNER, "another-application")) {
