@@ -1,8 +1,7 @@
 schema-version = "1.12.0"
 
 [install]
-graalvm-ce.pkg-path = "graalvm-ce"
-graalvm-ce.version = "25"
+graalvm-ce.pkg-path = "graalvmPackages.graalvm-ce"
 
 [vars]
 FLOX_DISABLE_METRICS = "true"
@@ -18,4 +17,4 @@ FLOX_DISABLE_METRICS = "true"
 [build]
 
 [options]
-systems = ["aarch64-darwin", "aarch64-linux", "x86_64-darwin", "x86_64-linux"]
+systems = ["aarch64-darwin", "aarch64-linux", "x86_64-linux"]

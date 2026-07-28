@@ -4,8 +4,7 @@
     "schema-version": "1.12.0",
     "install": {
       "graalvm-ce": {
-        "pkg-path": "graalvm-ce",
-        "version": "25"
+        "pkg-path": "graalvmPackages.graalvm-ce"
       }
     },
     "vars": {
@@ -17,123 +16,93 @@
       "systems": [
         "aarch64-darwin",
         "aarch64-linux",
-        "x86_64-darwin",
         "x86_64-linux"
       ]
     }
   },
   "packages": [
     {
-      "attr_path": "graalvm-ce",
+      "attr_path": "graalvmPackages.graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/58k50pfavq7hbygkglxp9z5whbwdw1ka-graalvm-ce-25.0.0.drv",
+      "derivation": "/nix/store/9dp8gav82bzpgl8fjrgqbglnx43wbdyi-graalvm-ce-25.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "name": "graalvm-ce-25.0.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=624af665418d3c65d544145b4d34ad696439570e",
+      "name": "graalvm-ce-25.0.2",
       "pname": "graalvm-ce",
-      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "rev_count": 883951,
-      "rev_date": "2025-10-25T06:24:58Z",
-      "scrape_date": "2025-10-27T02:08:16.662334Z",
+      "rev": "624af665418d3c65d544145b4d34ad696439570e",
+      "rev_count": 1042126,
+      "rev_date": "2026-07-26T18:26:09Z",
+      "scrape_date": "2026-07-28T04:53:58.584066Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "25.0.0",
+      "version": "25.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/1qr4pa8sqsskh7nx5wav5vcn0mk4g5jm-graalvm-ce-25.0.0"
+        "out": "/nix/store/fygjq8fpbwlik7rs0jdhv35k67dxcyyf-graalvm-ce-25.0.2"
       },
       "system": "aarch64-darwin",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "graalvm-ce",
+      "attr_path": "graalvmPackages.graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/734dm9dynn855sc6zf54qkzb1npvkxs8-graalvm-ce-25.0.0.drv",
+      "derivation": "/nix/store/w88xy9yh6j22cpvwd1fbxhhyxqcdlppd-graalvm-ce-25.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "name": "graalvm-ce-25.0.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=624af665418d3c65d544145b4d34ad696439570e",
+      "name": "graalvm-ce-25.0.2",
       "pname": "graalvm-ce",
-      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "rev_count": 883951,
-      "rev_date": "2025-10-25T06:24:58Z",
-      "scrape_date": "2025-10-27T02:18:28.065314Z",
+      "rev": "624af665418d3c65d544145b4d34ad696439570e",
+      "rev_count": 1042126,
+      "rev_date": "2026-07-26T18:26:09Z",
+      "scrape_date": "2026-07-28T05:24:07.953539Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "25.0.0",
+      "version": "25.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/gsw2lvnwbjms2b8inrhmlcxi1clcggab-graalvm-ce-25.0.0"
+        "out": "/nix/store/hj36gqxwg9sxmcpv8mw7p3a28al6djb4-graalvm-ce-25.0.2"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "graalvm-ce",
+      "attr_path": "graalvmPackages.graalvm-ce",
       "broken": false,
-      "derivation": "/nix/store/dx9q9i8xcpwr3cnhvkwy5z92fj6j6zl0-graalvm-ce-25.0.0.drv",
+      "derivation": "/nix/store/790si3ld63xld4zsgzk5jjn2h8dvdmy1-graalvm-ce-25.0.2.drv",
       "description": "High-Performance Polyglot VM",
       "install_id": "graalvm-ce",
       "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "name": "graalvm-ce-25.0.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=624af665418d3c65d544145b4d34ad696439570e",
+      "name": "graalvm-ce-25.0.2",
       "pname": "graalvm-ce",
-      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "rev_count": 883951,
-      "rev_date": "2025-10-25T06:24:58Z",
-      "scrape_date": "2025-10-27T02:29:22.550162Z",
+      "rev": "624af665418d3c65d544145b4d34ad696439570e",
+      "rev_count": 1042126,
+      "rev_date": "2026-07-26T18:26:09Z",
+      "scrape_date": "2026-07-28T05:56:53.778055Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "25.0.0",
+      "version": "25.0.2",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/splb0wpi8hn32lmfp5ckb1skrc7j3ff9-graalvm-ce-25.0.0"
-      },
-      "system": "x86_64-darwin",
-      "group": "toplevel",
-      "priority": 5
-    },
-    {
-      "attr_path": "graalvm-ce",
-      "broken": false,
-      "derivation": "/nix/store/mzjqdqzfyj63swjwqjxl98x8ldb68wg4-graalvm-ce-25.0.0.drv",
-      "description": "High-Performance Polyglot VM",
-      "install_id": "graalvm-ce",
-      "license": "[ UPL-1.0, GPL-2.0, Classpath-exception-2.0, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "name": "graalvm-ce-25.0.0",
-      "pname": "graalvm-ce",
-      "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
-      "rev_count": 883951,
-      "rev_date": "2025-10-25T06:24:58Z",
-      "scrape_date": "2025-10-27T03:00:56.472164Z",
-      "stabilities": [
-        "unstable"
-      ],
-      "unfree": false,
-      "version": "25.0.0",
-      "outputs_to_install": [
-        "out"
-      ],
-      "outputs": {
-        "out": "/nix/store/qn2nvfpzcn1fhjpsysg4nr22g09c05qj-graalvm-ce-25.0.0"
+        "out": "/nix/store/9s25z6gqdvq1qfd5p28nz0a7wgz506lj-graalvm-ce-25.0.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
