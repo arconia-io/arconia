@@ -50,13 +50,30 @@ public class DevServicesProperties {
     public static class Network {
 
         /**
+         * Whether dev service containers join a shared network so they can reach each other
+         * by network alias (for example, to send telemetry to an observability dev service).
+         * When disabled (default), each container uses its own isolated network. When enabled,
+         * all dev service containers join the same network. Only applicable in dev mode.
+         */
+        private boolean enabled = false;
+
+        /**
          * Name of the OCI network dev service containers join. When set, containers
          * join a stable, named network that can be shared across applications running
-         * simultaneously; the network is created if it doesn't already exist.
-         * When unset (default), containers join an isolated per-application network.
-         * Only applicable in dev mode.
+         * simultaneously; the network is created if it doesn't already exist. A named
+         * network is required for container reuse to remain effective while networking
+         * is enabled. When unset (default), containers join an isolated per-application
+         * network. Only applicable in dev mode.
          */
         private @Nullable String name;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
 
         @Nullable
         public String getName() {

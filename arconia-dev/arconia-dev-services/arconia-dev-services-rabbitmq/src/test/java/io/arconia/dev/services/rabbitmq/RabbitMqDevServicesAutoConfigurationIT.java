@@ -79,9 +79,8 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     assertThat(container.isShouldBeReused()).isTrue();
-                    // Sharing and reuse are mutually exclusive: a reused container
-                    // is not discoverable by other applications.
-                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "false");
+                    // Sharing and reuse compose: a reused container is still advertised as shared.
+                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "true");
                     // The owner label is omitted for reusable containers (user labels contribute
                     // to the Testcontainers reuse hash), but only when the environment actually
                     // supports reuse; otherwise it's kept to protect against self-discovery.

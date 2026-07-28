@@ -18,6 +18,7 @@ import io.arconia.dev.services.core.container.DevServicesNetworkFactory;
  * Global auto-configuration for Dev Services.
  */
 @AutoConfiguration
+@ConditionalOnDevServicesEnabled
 @EnableConfigurationProperties(DevServicesProperties.class)
 public final class DevServicesAutoConfiguration {
 
@@ -34,7 +35,6 @@ public final class DevServicesAutoConfiguration {
     @Bean
     @Lazy
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    @ConditionalOnDevServicesEnabled
     @ConditionalOnMissingBean(Network.class)
     Network devServicesNetwork(DevServicesProperties properties) {
         return DevServicesNetworkFactory.resolve(properties.getNetwork().getName());

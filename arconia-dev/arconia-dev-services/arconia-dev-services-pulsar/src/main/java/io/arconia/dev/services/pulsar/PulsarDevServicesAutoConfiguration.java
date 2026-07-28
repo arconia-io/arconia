@@ -35,9 +35,8 @@ public final class PulsarDevServicesAutoConfiguration {
                             .type(ArconiaPulsarContainer.class)
                             .supplier(() -> new ArconiaPulsarContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
                     )
             );

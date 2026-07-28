@@ -187,7 +187,7 @@ The property value is resolved lazily, only after the container has started, mir
 
 == Supporting Shared Dev Services
 
-To let multiple applications running simultaneously share one container of your Dev Service (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]), have your properties class implement `SharedDevServicesProperties` (instead of `BaseDevServicesProperties`), which adds the `shared` property to its contract, and declare a sharing specification when registering the service. Pass the values of your `shared` and `reuse` properties and a factory building the `ConnectionDetails` for connecting to a shared container started by another application:
+To let multiple applications running simultaneously share one container of your Dev Service (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]), have your properties class implement `SharedDevServicesProperties` (instead of `BaseDevServicesProperties`), which adds the `shared` property to its contract, and declare a discovery specification when registering the service. Pass the value of your `shared` property and a factory building the `ConnectionDetails` for connecting to a shared container started by another application:
 
 [source,java]
 ----
@@ -198,44 +198,27 @@ registry.registerDevService(service -> service
                 .type(FancyDbContainer.class)
                 .supplier(() -> new FancyDbContainer(properties))
         )
-        .sharing(sharing -> sharing
-                .enabled(properties.isShared())
-                .reuse(properties.isReuse())
+        .discovery(discovery -> discovery
+                .shared(properties.isShared())
                 .connectionDetails(FancyDbConnectionDetails.class,
                         container -> new FancyDbDiscoveredConnectionDetails(
                                 container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT)))
         ));
 ----
 
-Sharing and container reuse are mutually exclusive: when the `reuse` property is enabled, the framework disables sharing for the Dev Service. Passing the `reuse` value lets the framework enforce that precedence.
+The `shared` toggle and the connection details factory are declared together in the discovery specification, so a service can never enable sharing without providing the means to adopt a discovered container. Container reuse is a separate, orthogonal concern: it is applied from the `reuse` property by `ContainerConfigurer` when the container is created (via `ContainerConfigurer.base(...)`), so a reused container can also be shared.
 
-The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the sharing declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the shared container is still adopted, but the dev service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
+The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the shared container is still adopted, but the dev service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
 
-Adopt `SharedDevServicesProperties` and the sharing specification together: a Dev Service that declares no sharing specification never participates in discovery, so it should not expose the `shared` property either. The framework still applies the identifying labels to the container, and users can still keep containers across restarts via the `reuse` property.
+Adopt `SharedDevServicesProperties` and the discovery specification together: a Dev Service that declares no discovery specification never participates in discovery, so it should not expose the `shared` property either. The framework still applies the identifying labels to the container, and users can still keep containers across restarts via the `reuse` property.
 
 A discovered container is adopted as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications sharing the Dev Service; if your service is credential-protected, document this constraint for your users.
 
 == Supporting the Shared Network
 
-To let your Dev Service container communicate with other Dev Service containers over an OCI network (see xref:index.adoc#_shared_network[Shared Network]), have your properties class implement `NetworkedDevServicesProperties`, which adds the `join-network` property to its contract, and declare a network specification when registering the service:
+The shared network (see xref:index.adoc#_shared_network[Shared Network]) is a global feature: when the user sets `arconia.dev.services.network.enabled`, every Dev Service container joins the network automatically. Your Dev Service needs no special declaration to participate.
 
-[source,java]
-----
-registry.registerDevService(service -> service
-        .name("fancydb")
-        .description("FancyDB Dev Service")
-        .container(container -> container
-                .type(FancyDbContainer.class)
-                .supplier(() -> new FancyDbContainer(properties))
-        )
-        .network(network -> network
-                .enabled(properties.isJoinNetwork())
-        ));
-----
-
-`join-network` is independent of `shared`: it can be combined with a sharing specification (a properties class may implement both `SharedDevServicesProperties` and `NetworkedDevServicesProperties`), or used on its own. Applies in both dev and test mode.
-
-A networked container is reachable by its service name by default, so it always has a stable name other containers can use. Users can override that with the common `network-aliases` property, so make sure your container applies it: using `ContainerConfigurer.base(...)`, which calls `withNetworkAliases(...)`, is enough.
+The only requirement is that your container is reachable by a stable name. A networked container is reachable by its service name by default, and users can override that with the common `network-aliases` property, so make sure your container applies it: using `ContainerConfigurer.base(...)`, which calls `withNetworkAliases(...)`, is enough.
 
 == Mutual Exclusion
 

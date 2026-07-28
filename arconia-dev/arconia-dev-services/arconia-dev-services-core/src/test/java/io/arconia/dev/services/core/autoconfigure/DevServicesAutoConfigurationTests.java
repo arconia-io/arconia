@@ -63,6 +63,13 @@ class DevServicesAutoConfigurationTests {
     }
 
     @Test
+    void conflictValidatorBeanIsNotCreatedInProdMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
+        BootstrapMode.clear();
+        contextRunner.run(context -> assertThat(context).doesNotHaveBean("devServicesConflictValidator"));
+    }
+
+    @Test
     void noConflictWithNoProviders() {
         contextRunner.run(context -> assertThat(context).hasNotFailed());
     }

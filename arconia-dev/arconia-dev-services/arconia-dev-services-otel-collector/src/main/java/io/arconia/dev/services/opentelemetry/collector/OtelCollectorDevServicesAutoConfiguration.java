@@ -46,9 +46,8 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                             .serviceConnectionName("otel/opentelemetry-collector-contrib")
                             .supplier(() -> new ArconiaOtelCollectorContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
                     )
             );

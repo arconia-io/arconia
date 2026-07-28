@@ -35,9 +35,8 @@ public final class RabbitMqDevServicesAutoConfiguration {
                             .type(ArconiaRabbitMqContainer.class)
                             .supplier(() -> new ArconiaRabbitMqContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(RabbitConnectionDetails.class,
                                     container -> new RabbitMqDiscoveredConnectionDetails(container, properties))
                     )

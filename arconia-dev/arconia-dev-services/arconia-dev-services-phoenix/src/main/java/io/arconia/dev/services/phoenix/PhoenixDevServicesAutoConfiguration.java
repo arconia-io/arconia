@@ -47,9 +47,8 @@ public final class PhoenixDevServicesAutoConfiguration {
                             .type(ArconiaPhoenixContainer.class)
                             .supplier(() -> new ArconiaPhoenixContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
                     )
             );

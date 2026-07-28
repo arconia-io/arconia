@@ -32,11 +32,24 @@ public final class ContainerConfigurer {
         container
                 .withEnv(properties.getEnvironment())
                 .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(isDevMode() && properties.isReuse());
+                .withStartupTimeout(properties.getStartupTimeout());
 
         resources(container, properties);
         volumes(container, properties);
+        reuse(container, properties);
+    }
+
+    /**
+     * Configures whether the container is reused across application restarts, relying on the
+     * Testcontainers reusable containers feature. Reuse only takes effect in dev mode and
+     * additionally requires enabling the feature in the {@code ~/.testcontainers.properties} file.
+     */
+    public static void reuse(GenericContainer<?> container, BaseDevServicesProperties properties) {
+        container.withReuse(isDevMode() && properties.isReuse());
+    }
+
+    private static boolean isDevMode() {
+        return BootstrapMode.DEV.equals(BootstrapMode.detect());
     }
 
     /**
@@ -101,10 +114,6 @@ public final class ContainerConfigurer {
                 .withPassword(properties.getPassword())
                 .withDatabaseName(properties.getDbName())
                 .withInitScripts(properties.getInitScriptPaths());
-    }
-
-    private static boolean isDevMode() {
-        return BootstrapMode.DEV.equals(BootstrapMode.detect());
     }
 
 }

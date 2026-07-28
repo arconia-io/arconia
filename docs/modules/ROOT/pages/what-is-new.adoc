@@ -25,7 +25,7 @@ This release baselines on Spring Boot 4.1. To upgrade your application to Spring
 
 === Shared Networks
 
-* Dev Service containers can now join a shared network to communicate with each other directly, for scenarios where one containerized service needs to reach another (for example, a Docling Dev Service sending telemetry to a Grafana LGTM Dev Service). Enable it per service with the `arconia.dev.services.<service-name>.join-network` property (disabled by default); on the shared network, a container is reachable by its service name. Containers started by different applications running simultaneously can be connected too, by setting a stable network name via the global `arconia.dev.services.network.name` property. Your application's own connections to Dev Services, over the local host and mapped ports, are unaffected. Learn more about xref:dev-services:index.adoc#_shared_network[Shared Networks].
+* Dev Service containers can now join a shared network to communicate with each other directly, for scenarios where one containerized service needs to reach another (for example, a Docling Dev Service sending telemetry to a Grafana LGTM Dev Service). Enable it with the global `arconia.dev.services.network.enabled` property (disabled by default); when enabled, all Dev Service containers join the network and are reachable by their service name. Containers started by different applications running simultaneously can be connected too, by setting a stable network name via the `arconia.dev.services.network.name` property. Your application's own connections to Dev Services, over the local host and mapped ports, are unaffected. Learn more about xref:dev-services:index.adoc#_shared_network[Shared Networks].
 
 === Troubleshooting
 

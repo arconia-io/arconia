@@ -39,7 +39,7 @@ public class StartupLogWaitStrategy implements WaitStrategy {
     public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
         try {
             delegate.waitUntilReady(waitStrategyTarget);
-        } catch (RuntimeException ex) {
+        } catch (Throwable ex) {
             if (logLevel != LogLevel.OFF) {
                 logLevel.log(logger, "The '%s' dev service container failed to start. Container logs:%n%n%s"
                         .formatted(serviceName, retrieveLogs(waitStrategyTarget)));

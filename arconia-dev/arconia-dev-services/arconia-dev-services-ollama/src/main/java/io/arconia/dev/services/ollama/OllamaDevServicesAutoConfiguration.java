@@ -64,9 +64,8 @@ public final class OllamaDevServicesAutoConfiguration {
          * Kept in a separate method so the Spring AI Ollama types are only loaded when present.
          */
         private static void configureSharing(DevServicesRegistry.ServiceSpec service, OllamaDevServicesProperties properties) {
-            service.sharing(sharing -> sharing
-                    .enabled(properties.isShared())
-                    .reuse(properties.isReuse())
+            service.discovery(discovery -> discovery
+                    .shared(properties.isShared())
                     .connectionDetails(OllamaConnectionDetails.class, OllamaDiscoveredConnectionDetails::new));
         }
 

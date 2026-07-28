@@ -35,9 +35,8 @@ public final class KafkaDevServicesAutoConfiguration {
                             .type(ArconiaKafkaContainer.class)
                             .supplier(() -> new ArconiaKafkaContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(KafkaConnectionDetails.class, KafkaDiscoveredConnectionDetails::new)
                     )
             );

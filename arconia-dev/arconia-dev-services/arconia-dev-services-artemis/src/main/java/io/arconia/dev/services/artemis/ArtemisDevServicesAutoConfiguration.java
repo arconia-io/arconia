@@ -35,9 +35,8 @@ public final class ArtemisDevServicesAutoConfiguration {
                             .type(ArconiaArtemisContainer.class)
                             .supplier(() -> new ArconiaArtemisContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(ArtemisConnectionDetails.class,
                                     container -> new ArtemisDiscoveredConnectionDetails(container, properties))
                     )

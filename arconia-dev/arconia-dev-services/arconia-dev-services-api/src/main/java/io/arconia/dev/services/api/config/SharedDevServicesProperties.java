@@ -13,8 +13,8 @@ public interface SharedDevServicesProperties extends BaseDevServicesProperties {
      * Whether the dev service is shared among applications running simultaneously.
      * A shared dev service is discoverable by other applications, and the application
      * connects to an existing shared dev service if available instead of starting a new one.
-     * Container reuse takes precedence: when the `reuse` property is enabled,
-     * sharing is disabled. Only applicable in dev mode.
+     * Sharing is independent of container reuse: a reused container may also be shared.
+     * Only applicable in dev mode.
      */
     default boolean isShared() {
         return false;

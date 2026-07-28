@@ -19,6 +19,7 @@ import com.github.dockerjava.api.model.ContainerPort;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -57,6 +58,7 @@ import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
+import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.core.container.StartupLogWaitStrategy;
@@ -122,9 +124,9 @@ public class DevServicesRegistry {
         Assert.notNull(service.getContainerSpec(), "service container cannot be null");
         Assert.notNull(service.getContainerSpec().getType(), "service container type cannot be null");
         Assert.notNull(service.getContainerSpec().getSupplier(), "service container supplier cannot be null");
-        if (service.getSharingSpec() != null) {
-            Assert.notNull(service.getSharingSpec().getConnectionDetailsType(), "connectionDetailsType cannot be null");
-            Assert.notNull(service.getSharingSpec().getConnectionDetails(), "connectionDetails cannot be null");
+        if (service.getDiscoverySpec() != null) {
+            Assert.notNull(service.getDiscoverySpec().getConnectionDetailsType(), "connectionDetailsType cannot be null");
+            Assert.notNull(service.getDiscoverySpec().getConnectionDetails(), "connectionDetails cannot be null");
         }
 
         // 1. Register the conflict validator bean that every dev service depends on,
@@ -164,19 +166,20 @@ public class DevServicesRegistry {
      * @return whether a shared container was discovered and the service registered against it
      */
     private boolean registerDiscoveredServiceBeanDefinitions(ServiceSpec service) {
-        SharingSpec sharingSpec = service.getSharingSpec();
-        if (sharingSpec == null || !sharingSpec.isEnabled() || !isDevMode()) {
+        if (!isSharingEnabled(service)) {
             return false;
         }
+        DiscoverySpec discoverySpec = service.getDiscoverySpec();
+        Assert.notNull(discoverySpec, "discoverySpec cannot be null");
 
-        // Sharing and reuse are mutually exclusive: a reused container outlives the application
-        // and follows the Testcontainers reuse semantics, so it never joins the discovery ecosystem.
-        if (sharingSpec.isReuse()) {
-            logger.info("Sharing is disabled for the '{}' dev service because container reuse is enabled", service.getName());
-            return false;
+        // If this shared service is already registered (its description bean exists),
+        // don't re-query the container runtime or emit duplicate discovery logs on a second pass.
+        String descriptionBeanName = REGISTRATION_BEAN_NAME_PREFIX + service.getName();
+        if (beanDefinitionRegistry.containsBeanDefinition(descriptionBeanName)) {
+            return true;
         }
 
-        Class<? extends ConnectionDetails> connectionDetailsType = sharingSpec.getConnectionDetailsType();
+        Class<? extends ConnectionDetails> connectionDetailsType = discoverySpec.getConnectionDetailsType();
         Assert.notNull(connectionDetailsType, "connectionDetailsType cannot be null");
 
         DiscoveredContainer discoveredContainer = findSharedContainer(service.getName());
@@ -192,7 +195,7 @@ public class DevServicesRegistry {
         if (existingBeanNames.length == 0) {
             ConnectionDetails connectionDetails;
             try {
-                connectionDetails = sharingSpec.getConnectionDetails().apply(discoveredContainer);
+                connectionDetails = discoverySpec.getConnectionDetails().apply(discoveredContainer);
                 Assert.notNull(connectionDetails, "connectionDetails cannot be null");
                 Assert.state(connectionDetailsType.isInstance(connectionDetails), "connectionDetails must be an instance of " + connectionDetailsType.getName());
             } catch (Exception ex) {
@@ -213,7 +216,6 @@ public class DevServicesRegistry {
                     service.getName(), Arrays.asList(existingBeanNames));
         }
 
-        String descriptionBeanName = REGISTRATION_BEAN_NAME_PREFIX + service.getName();
         if (!beanDefinitionRegistry.containsBeanDefinition(descriptionBeanName)) {
             beanDefinitionRegistry.registerBeanDefinition(descriptionBeanName,
                     createDiscoveredDescriptionBeanDefinition(service, containerInfo.id()));
@@ -267,7 +269,7 @@ public class DevServicesRegistry {
      */
     private String[] getExistingConnectionDetailsBeanNames(Class<?> connectionDetailsType) {
         if (beanDefinitionRegistry instanceof ListableBeanFactory listableBeanFactory) {
-            return listableBeanFactory.getBeanNamesForType(connectionDetailsType);
+            return listableBeanFactory.getBeanNamesForType(connectionDetailsType, true, false);
         }
         return new String[0];
     }
@@ -350,26 +352,34 @@ public class DevServicesRegistry {
      * Apply the dev service labels to the given container, making it identifiable
      * and, when sharing is enabled, discoverable by other applications.
      * <p>
-     * A container configured for reuse is never advertised as shared (sharing and reuse
-     * are mutually exclusive), and its owner label is omitted when the environment actually
-     * supports reuse, since user labels contribute to the Testcontainers reuse hash, and
-     * a per-JVM value would prevent reusing the container across applications and restarts.
+     * Sharing and reuse are orthogonal: a reused container may still be advertised as shared. The
+     * owner label, however, is omitted when the environment actually supports reuse, since user
+     * labels contribute to the Testcontainers reuse hash, and a per-JVM value would prevent reusing
+     * the container across applications and restarts.
+     * <p>
+     * The owner decision reads the container's actual reuse state ({@code isShouldBeReused()}), which
+     * {@code ContainerConfigurer.reuse} has already set from {@code properties.isReuse()} when the
+     * container was created.
      */
     private void applyLabels(Container<?> container, ServiceSpec service) {
         if (!(container instanceof GenericContainer<?> genericContainer)) {
+            logger.debug("Skipping labels for the '{}' dev service: its container is not a GenericContainer", service.getName());
             return;
         }
         boolean reuse = genericContainer.isShouldBeReused();
         genericContainer.withLabel(DevServiceLabels.NAME, service.getName());
-        genericContainer.withLabel(DevServiceLabels.SHARED, String.valueOf(!reuse && isSharingEnabled(service)));
+        genericContainer.withLabel(DevServiceLabels.SHARED, String.valueOf(isSharingEnabled(service)));
         if (!(reuse && environmentSupportsReuse())) {
             genericContainer.withLabel(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
         }
     }
 
     /**
-     * Attach the given container to the shared dev services {@link Network} when the service
-     * opts in, so it can communicate with other dev service containers.
+     * Attach the given container to the shared dev services {@link Network} when the global
+     * {@code arconia.dev.services.network.enabled} switch is on, so all dev service containers
+     * can communicate with each other. Networking is global rather than per-service: the set of
+     * containers that need to reach each other is defined by the user's topology, not by any
+     * single dev service, so enabling the switch attaches every container.
      * <p>
      * Containers are reachable by the aliases set via the {@code network-aliases} property
      * (already applied to the container). When none is set, the service name is applied as a
@@ -380,11 +390,11 @@ public class DevServicesRegistry {
      * over the host and mapped ports via its connection details.
      */
     private void applyNetwork(Container<?> container, ServiceSpec service, ConfigurableBeanFactory beanFactory) {
-        NetworkSpec networkSpec = service.getNetworkSpec();
-        if (networkSpec == null || !networkSpec.isEnabled()) {
+        if (!isNetworkEnabled()) {
             return;
         }
         if (!(container instanceof GenericContainer<?> genericContainer)) {
+            logger.debug("Skipping network attachment for the '{}' dev service: its container is not a GenericContainer", service.getName());
             return;
         }
 
@@ -430,9 +440,14 @@ public class DevServicesRegistry {
     /**
      * Wrap the container's wait strategy so that when the container fails to start, its logs are
      * written to the application log (at the configured level).
+     * <p>
+     * The wrapping is applied to the wait strategy set on the container at this point. If a
+     * container subclass reassigns its wait strategy later in {@code configure()} (called during
+     * {@code start()}), the wrapper is lost and the on-failure log dump won't apply to it.
      */
     private void applyStartupLogging(Container<?> container, ServiceSpec service) {
         if (!(container instanceof GenericContainer<?> genericContainer)) {
+            logger.debug("Skipping startup logging for the '{}' dev service: its container is not a GenericContainer", service.getName());
             return;
         }
         // GenericContainer#getWaitStrategy() is protected, so read the current strategy from the
@@ -461,12 +476,25 @@ public class DevServicesRegistry {
     }
 
     /**
+     * The global dev services configuration, bound from the environment.
+     */
+    private DevServicesProperties devServicesProperties() {
+        return Binder.get(environment).bindOrCreate(DevServicesProperties.CONFIG_PREFIX, DevServicesProperties.class);
+    }
+
+    /**
+     * Whether dev service containers should join the shared network (global
+     * {@code arconia.dev.services.network.enabled}, default {@code false}).
+     */
+    private boolean isNetworkEnabled() {
+        return devServicesProperties().getNetwork().isEnabled();
+    }
+
+    /**
      * The level at which a failing dev service container's logs are written to the application log.
      */
     private LogLevel resolveStartupLogLevel() {
-        return Binder.get(environment)
-                .bind("arconia.dev.services.startup.log-level", LogLevel.class)
-                .orElse(LogLevel.INFO);
+        return devServicesProperties().getStartup().getLogLevel();
     }
 
     /**
@@ -598,11 +626,14 @@ public class DevServicesRegistry {
     }
 
     /**
-     * Whether the dev service is shared among applications: the service declares
-     * a sharing specification, sharing is enabled for it, and the application runs in dev mode.
+     * Whether the dev service is shared among applications: the service declares a discovery
+     * specification with sharing enabled, and the application runs in dev mode. A declared
+     * discovery specification always carries a connection details contribution (enforced at
+     * registration), so sharing never needs a runtime capability check.
      */
     private static boolean isSharingEnabled(ServiceSpec service) {
-        return service.getSharingSpec() != null && service.getSharingSpec().isEnabled() && isDevMode();
+        DiscoverySpec discoverySpec = service.getDiscoverySpec();
+        return discoverySpec != null && discoverySpec.isShared() && isDevMode();
     }
 
     private static boolean isDevMode() {
@@ -640,8 +671,14 @@ public class DevServicesRegistry {
     private static boolean supportsContainer(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName,
             DevServiceContainerCustomizer<?> customizer, Container<?> container) {
         ResolvableType customizerType = ResolvableType.NONE;
-        if (beanName != null && beanFactory.containsBeanDefinition(beanName)) {
-            customizerType = beanFactory.getMergedBeanDefinition(beanName).getResolvableType();
+        if (beanName != null) {
+            // containsBeanDefinition is local-only, so a customizer registered as a lambda @Bean in a
+            // parent context isn't found here; walk the parent chain to the factory that owns the
+            // definition and read its type before falling back to the customizer's class.
+            ConfigurableListableBeanFactory definingBeanFactory = findDefiningBeanFactory(beanFactory, beanName);
+            if (definingBeanFactory != null) {
+                customizerType = definingBeanFactory.getMergedBeanDefinition(beanName).getResolvableType();
+            }
         }
 
         Class<?> targetType = customizerType.as(DevServiceContainerCustomizer.class).getGeneric(0).resolve();
@@ -650,6 +687,23 @@ public class DevServicesRegistry {
         }
 
         return targetType == null || targetType.isInstance(container);
+    }
+
+    /**
+     * Find the bean factory in the hierarchy that owns the definition of the given bean.
+     * {@code containsBeanDefinition} is local to a single factory, so the parent chain is
+     * walked to locate a customizer registered in a parent context.
+     */
+    @Nullable
+    private static ConfigurableListableBeanFactory findDefiningBeanFactory(ConfigurableListableBeanFactory beanFactory, String beanName) {
+        BeanFactory current = beanFactory;
+        while (current instanceof ConfigurableListableBeanFactory listableBeanFactory) {
+            if (listableBeanFactory.containsBeanDefinition(beanName)) {
+                return listableBeanFactory;
+            }
+            current = listableBeanFactory.getParentBeanFactory();
+        }
+        return null;
     }
 
     /**
@@ -714,10 +768,7 @@ public class DevServicesRegistry {
         private ContainerSpec containerSpec;
 
         @Nullable
-        private SharingSpec sharingSpec;
-
-        @Nullable
-        private NetworkSpec networkSpec;
+        private DiscoverySpec discoverySpec;
 
         private ServiceSpec() {}
 
@@ -748,26 +799,14 @@ public class DevServicesRegistry {
         }
 
         /**
-         * Specification for sharing the dev service among applications.
-         * A dev service that declares no sharing specification never participates
-         * in discovery, even when the {@code shared} property is enabled.
+         * Specification for discovering and adopting a shared dev service running in a container
+         * started by another application. A dev service that declares no discovery specification
+         * never participates in discovery, even when the {@code shared} property is enabled.
          */
-        public ServiceSpec sharing(Consumer<SharingSpec> sharingSpecConsumer) {
-            var sharingSpec = new SharingSpec();
-            sharingSpecConsumer.accept(sharingSpec);
-            this.sharingSpec = sharingSpec;
-            return this;
-        }
-
-        /**
-         * Specification for joining the shared dev services network, so the container
-         * can communicate with other dev service containers. A dev service that declares
-         * no network specification never joins a network.
-         */
-        public ServiceSpec network(Consumer<NetworkSpec> networkSpecConsumer) {
-            var networkSpec = new NetworkSpec();
-            networkSpecConsumer.accept(networkSpec);
-            this.networkSpec = networkSpec;
+        public ServiceSpec discovery(Consumer<DiscoverySpec> discoverySpecConsumer) {
+            var discoverySpec = new DiscoverySpec();
+            discoverySpecConsumer.accept(discoverySpec);
+            this.discoverySpec = discoverySpec;
             return this;
         }
 
@@ -787,13 +826,8 @@ public class DevServicesRegistry {
         }
 
         @Nullable
-        SharingSpec getSharingSpec() {
-            return sharingSpec;
-        }
-
-        @Nullable
-        NetworkSpec getNetworkSpec() {
-            return networkSpec;
+        DiscoverySpec getDiscoverySpec() {
+            return discoverySpec;
         }
 
     }
@@ -871,18 +905,20 @@ public class DevServicesRegistry {
     }
 
     /**
-     * Specification for sharing a dev service among applications.
+     * Specification for discovering and adopting a shared dev service among applications.
      * <p>
      * When sharing is enabled, the dev service container is discoverable by other
      * applications, and the application connects to an existing shared container
      * (adopted as it runs, with the owning application's configuration)
      * if available instead of starting a new one.
+     * <p>
+     * A discovery specification always carries a connection details contribution: the
+     * {@code shared} toggle and the adoption capability are declared together, so a service
+     * cannot enable sharing without providing the means to adopt a discovered container.
      */
-    public static final class SharingSpec {
+    public static final class DiscoverySpec {
 
-        private boolean enabled = false;
-
-        private boolean reuse = false;
+        private boolean shared = false;
 
         @Nullable
         private Class<? extends ConnectionDetails> connectionDetailsType;
@@ -890,25 +926,14 @@ public class DevServicesRegistry {
         @Nullable
         private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetails;
 
-        private SharingSpec() {}
+        private DiscoverySpec() {}
 
         /**
          * Whether sharing is enabled for the dev service,
          * typically bound to the {@code shared} configuration property.
          */
-        public SharingSpec enabled(boolean enabled) {
-            this.enabled = enabled;
-            return this;
-        }
-
-        /**
-         * Whether container reuse is enabled for the dev service,
-         * typically bound to the {@code reuse} configuration property.
-         * Sharing and reuse are mutually exclusive: when reuse is enabled,
-         * sharing is disabled for the dev service.
-         */
-        public SharingSpec reuse(boolean reuse) {
-            this.reuse = reuse;
+        public DiscoverySpec shared(boolean shared) {
+            this.shared = shared;
             return this;
         }
 
@@ -920,20 +945,16 @@ public class DevServicesRegistry {
          * The declared type is used to look up existing user-defined {@code ConnectionDetails}
          * beans: when one is present, it takes precedence over the one provided by the dev service.
          */
-        public <T extends ConnectionDetails> SharingSpec connectionDetails(Class<T> connectionDetailsType,
+        public <T extends ConnectionDetails> DiscoverySpec connectionDetails(Class<T> connectionDetailsType,
                 Function<DiscoveredContainer, ? extends T> connectionDetails) {
-            Assert.state(this.connectionDetails == null, "sharing supports a single connection details contribution");
+            Assert.state(this.connectionDetails == null, "discovery supports a single connection details contribution");
             this.connectionDetailsType = connectionDetailsType;
             this.connectionDetails = connectionDetails;
             return this;
         }
 
-        boolean isEnabled() {
-            return enabled;
-        }
-
-        boolean isReuse() {
-            return reuse;
+        boolean isShared() {
+            return shared;
         }
 
         @Nullable
@@ -944,34 +965,6 @@ public class DevServicesRegistry {
         @Nullable
         Function<DiscoveredContainer, ? extends ConnectionDetails> getConnectionDetails() {
             return connectionDetails;
-        }
-
-    }
-
-    /**
-     * Specification for joining the shared dev services network.
-     * <p>
-     * When enabled, the dev service container is attached to the injectable {@link Network}
-     * bean, so it can communicate with other dev service containers over an OCI network.
-     * This is distinct from sharing, which shares the same container across applications.
-     */
-    public static final class NetworkSpec {
-
-        private boolean enabled = false;
-
-        private NetworkSpec() {}
-
-        /**
-         * Whether the dev service joins the shared dev services network,
-         * typically bound to the {@code join-network} configuration property.
-         */
-        public NetworkSpec enabled(boolean enabled) {
-            this.enabled = enabled;
-            return this;
-        }
-
-        boolean isEnabled() {
-            return enabled;
         }
 
     }

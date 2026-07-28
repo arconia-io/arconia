@@ -35,14 +35,10 @@ public final class DoclingDevServicesAutoConfiguration {
                             .type(ArconiaDoclingServeContainer.class)
                             .supplier(() -> new ArconiaDoclingServeContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(DoclingServeConnectionDetails.class,
                                     container -> new DoclingDiscoveredConnectionDetails(container, properties))
-                    )
-                    .network(network -> network
-                            .enabled(properties.isJoinNetwork())
                     )
             );
         }

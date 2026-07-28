@@ -1,6 +1,7 @@
 package io.arconia.dev.services.core.registration;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.github.dockerjava.api.DockerClient;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -45,6 +47,7 @@ class DevServicesNetworkIT {
 
     @Test
     void networkedContainersReachEachOtherByAlias() throws Exception {
+        DevServicesRegistry registry = registryWithNetworkEnabled();
         Network network = DevServicesNetworkFactory.resolve(null);
         registerNetworkBean(network);
 
@@ -53,15 +56,13 @@ class DevServicesNetworkIT {
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
-                        .serviceConnectionName(null))
-                .network(net -> net.enabled(true)));
+                        .serviceConnectionName(null)));
         registry.registerDevService(service -> service
                 .name("peer-b")
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-b"))
-                        .serviceConnectionName(null))
-                .network(net -> net.enabled(true)));
+                        .serviceConnectionName(null)));
 
         var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
         var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
@@ -92,18 +93,15 @@ class DevServicesNetworkIT {
     }
 
     @Test
-    void whenPeerDoesNotJoinNetworkThenAliasDoesNotResolve() throws Exception {
-        Network network = DevServicesNetworkFactory.resolve(null);
-        registerNetworkBean(network);
-
+    void whenNetworkDisabledThenAliasDoesNotResolve() throws Exception {
+        // The default registry has no network.enabled property, so both containers stay on the
+        // default bridge and cannot reach each other by network alias.
         registry.registerDevService(service -> service
                 .name("peer-a")
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
-                        .serviceConnectionName(null))
-                .network(net -> net.enabled(true)));
-        // peer-b does not join the network (no network spec), so it stays on the default bridge.
+                        .serviceConnectionName(null)));
         registry.registerDevService(service -> service
                 .name("peer-b")
                 .container(container -> container
@@ -114,16 +112,16 @@ class DevServicesNetworkIT {
         var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
         var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
 
-        assertThat(peerA.getNetwork()).isSameAs(network);
+        assertThat(peerA.getNetwork()).isNull();
         assertThat(peerB.getNetwork()).isNull();
 
         try {
             peerB.start();
             peerA.start();
 
-            // Negative control: peer-b is not on the shared network, so its alias must not resolve
-            // from peer-a, confirming that alias resolution requires joining the shared network (the
-            // positive counterpart is networkedContainersReachEachOtherByAlias).
+            // Negative control: with the shared network disabled, peer-b's alias must not resolve
+            // from peer-a, confirming that alias resolution requires the shared network (the positive
+            // counterpart is networkedContainersReachEachOtherByAlias).
             var result = peerA.execInContainer("wget", "-q", "-T", "5", "-O", "-", "http://peer-b");
 
             assertThat(result.getExitCode()).isNotZero();
@@ -173,6 +171,13 @@ class DevServicesNetworkIT {
                 .filter(network -> name.equals(network.getName()))
                 .map(com.github.dockerjava.api.model.Network::getId)
                 .toList();
+    }
+
+    private DevServicesRegistry registryWithNetworkEnabled() {
+        var environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test-network",
+                Map.of("arconia.dev.services.network.enabled", "true")));
+        return new DevServicesRegistry(beanFactory, environment);
     }
 
     private void registerNetworkBean(Network network) {

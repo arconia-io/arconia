@@ -38,41 +38,6 @@ class ContainerConfigurerTests {
         BootstrapMode.clear();
     }
 
-    @Test
-    void baseConfigurationShouldNotEnableReuseByDefault() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties();
-
-        ContainerConfigurer.base(container, properties);
-
-        assertThat(container.isShouldBeReused()).isFalse();
-    }
-
-    @Test
-    void baseConfigurationShouldEnableReuseInDevMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
-        BootstrapMode.clear();
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withReuse(true);
-
-        ContainerConfigurer.base(container, properties);
-
-        assertThat(container.isShouldBeReused()).isTrue();
-    }
-
-    @Test
-    void baseConfigurationShouldNotEnableReuseOutsideDevMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
-        BootstrapMode.clear();
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withReuse(true);
-
-        ContainerConfigurer.base(container, properties);
-
-        assertThat(container.isShouldBeReused()).isFalse();
-    }
 
     @Test
     void baseConfigurationShouldApplyEnvironmentVariables() {
@@ -97,6 +62,30 @@ class ContainerConfigurerTests {
 
         assertThat(container.getNetworkAliases())
                 .contains("alias1", "alias2", "alias3");
+    }
+
+    @Test
+    void reuseShouldBeAppliedInDevMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        BootstrapMode.clear();
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuse(true);
+
+        ContainerConfigurer.reuse(container, properties);
+
+        assertThat(container.isShouldBeReused()).isTrue();
+    }
+
+    @Test
+    void reuseShouldNotBeAppliedOutsideDevMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
+        BootstrapMode.clear();
+        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuse(true);
+
+        ContainerConfigurer.reuse(container, properties);
+
+        assertThat(container.isShouldBeReused()).isFalse();
     }
 
     @Test

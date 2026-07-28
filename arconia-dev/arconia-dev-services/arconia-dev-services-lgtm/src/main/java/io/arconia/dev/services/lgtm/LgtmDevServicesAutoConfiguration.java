@@ -45,13 +45,9 @@ public final class LgtmDevServicesAutoConfiguration {
                             .type(ArconiaLgtmStackContainer.class)
                             .supplier(() -> new ArconiaLgtmStackContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
-                    )
-                    .network(network -> network
-                            .enabled(properties.isJoinNetwork())
                     )
             );
         }

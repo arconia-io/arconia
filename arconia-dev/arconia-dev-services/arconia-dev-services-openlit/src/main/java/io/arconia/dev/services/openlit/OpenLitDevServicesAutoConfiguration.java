@@ -45,9 +45,8 @@ public final class OpenLitDevServicesAutoConfiguration {
                             .type(ArconiaOpenLitContainer.class)
                             .supplier(() -> new ArconiaOpenLitContainer(properties))
                     )
-                    .sharing(sharing -> sharing
-                            .enabled(properties.isShared())
-                            .reuse(properties.isReuse())
+                    .discovery(discovery -> discovery
+                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
                     )
             );
