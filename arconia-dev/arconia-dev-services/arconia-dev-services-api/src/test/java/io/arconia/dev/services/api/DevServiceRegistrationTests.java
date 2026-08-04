@@ -1,5 +1,6 @@
 package io.arconia.dev.services.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -7,6 +8,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,6 +97,41 @@ class DevServiceRegistrationTests {
         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
         assertThat(registration.containerInfo()).isNotNull();
         assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
+    }
+
+    @Test
+    void whenLinksProvidedThenDefensivelyCopiedAndImmutable() {
+        var expectedContainerInfo = createContainerInfo();
+        var links = new ArrayList<>(List.of(
+                new DevServiceLink("grafana", "Grafana", "http://localhost:3000")));
+
+        var registration = DevServiceRegistration.builder()
+                .name("test-service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(() -> expectedContainerInfo)
+                .links(links)
+                .build();
+
+        // Mutating the original list must not affect the registration
+        links.add(new DevServiceLink("otlp", "OTLP/HTTP", "http://localhost:4318"));
+
+        assertThat(registration.links()).hasSize(1);
+        assertThatThrownBy(() -> registration.links().add(
+                new DevServiceLink("otlp", "OTLP/HTTP", "http://localhost:4318")))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    void whenLinksNotProvidedThenEmpty() {
+        var expectedContainerInfo = createContainerInfo();
+
+        var registration = DevServiceRegistration.builder()
+                .name("test-service")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(() -> expectedContainerInfo)
+                .build();
+
+        assertThat(registration.links()).isEmpty();
     }
 
     private ContainerInfo createContainerInfo() {

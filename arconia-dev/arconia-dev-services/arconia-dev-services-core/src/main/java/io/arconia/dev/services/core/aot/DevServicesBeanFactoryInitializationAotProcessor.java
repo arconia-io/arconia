@@ -28,8 +28,11 @@ class DevServicesBeanFactoryInitializationAotProcessor implements BeanFactoryIni
 
     @Override
     public @Nullable BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
+        if (!(beanFactory instanceof BeanDefinitionRegistry registry)) {
+            return null;
+        }
+
         String[] beanNames = beanFactory.getBeanDefinitionNames();
-        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
         for (String beanName : beanNames) {
             BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);

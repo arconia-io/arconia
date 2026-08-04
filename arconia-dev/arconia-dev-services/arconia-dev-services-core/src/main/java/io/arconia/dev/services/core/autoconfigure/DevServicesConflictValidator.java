@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.util.Assert;
+
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.provider.DevServiceProvider;
 
@@ -23,6 +25,9 @@ public final class DevServicesConflictValidator {
      * belongs to the same category.
      */
     public void validate(Collection<DevServiceProvider> providers) {
+        Assert.notNull(providers, "dev service providers cannot be null");
+        Assert.noNullElements(providers, "dev service providers cannot contain null elements");
+
         providers.stream()
                 .collect(Collectors.groupingBy(DevServiceProvider::category))
                 .forEach((category, group) -> {

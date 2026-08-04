@@ -48,6 +48,50 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     }
 
     @Test
+    void propertySourceNotRegisteredWhenOpenAiCompatibilityDisabled() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.ollama.openai-compatibility=false")
+                .run(context -> assertThat(context.getEnvironment().getPropertySources()
+                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+    }
+
+    @Test
+    void userOpenAiConfigurationPreservedWhenOpenAiCompatibilityDisabled() {
+        contextRunner
+                .withPropertyValues(
+                        "arconia.dev.services.ollama.openai-compatibility=false",
+                        "spring.ai.openai.base-url=https://api.openai.com",
+                        "spring.ai.openai.api-key=user-api-key")
+                .run(context -> {
+                    var environment = context.getEnvironment();
+                    assertThat(environment.getProperty("spring.ai.openai.base-url"))
+                            .isEqualTo("https://api.openai.com");
+                    assertThat(environment.getProperty("spring.ai.openai.api-key"))
+                            .isEqualTo("user-api-key");
+                });
+    }
+
+    @Test
+    void userOpenAiConfigurationOverriddenWhenOpenAiCompatibilityEnabled() {
+        new ApplicationContextRunner()
+                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
+                .withPropertyValues(
+                        "spring.ai.ollama.base-url=http://custom-host:8080",
+                        "spring.ai.openai.base-url=https://api.openai.com",
+                        "spring.ai.openai.api-key=user-api-key")
+                .run(context -> {
+                    var environment = context.getEnvironment();
+                    // Precedence over user-provided values is intentional: it mirrors how a
+                    // ConnectionDetails bean supersedes the matching configuration properties.
+                    assertThat(environment.getProperty("spring.ai.openai.base-url"))
+                            .isEqualTo("http://custom-host:8080");
+                    assertThat(environment.getProperty("spring.ai.openai.api-key"))
+                            .isEqualTo("ollama");
+                });
+    }
+
+    @Test
     void propertySourceNotRegisteredWhenOpenAiNotOnClasspath() {
         contextRunner
                 .withClassLoader(new FilteredClassLoader(RestartScope.class, OpenAiCommonProperties.class))

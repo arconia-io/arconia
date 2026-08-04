@@ -26,14 +26,14 @@ public class DevServicesEndpoint {
     private final Map<String, DevServiceRegistration> registrations;
 
     public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations) {
-        this.registrations = registrations;
+        this.registrations = Map.copyOf(registrations);
     }
 
     @ReadOperation
     public Map<String, ServiceInfoSummary> devServices() {
         return registrations.values().stream()
                 .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), reg.origin(), reg.links(), resolveContainerInfoSummary(reg)))
-                .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info));
+                .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info, (first, second) -> first));
     }
 
     @ReadOperation

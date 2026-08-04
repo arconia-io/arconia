@@ -59,6 +59,18 @@ class StartupLogWaitStrategyTests {
         verify(target, never()).getLogs();
     }
 
+    @Test
+    void withStartupTimeoutDelegatesToWrappedStrategyAndReturnsSelf() {
+        WaitStrategy delegate = mock(WaitStrategy.class);
+        var strategy = new StartupLogWaitStrategy(delegate, "lgtm", LogLevel.INFO);
+        Duration timeout = Duration.ofSeconds(42);
+
+        WaitStrategy result = strategy.withStartupTimeout(timeout);
+
+        assertThat(result).isSameAs(strategy);
+        verify(delegate).withStartupTimeout(timeout);
+    }
+
     private static WaitStrategy failingDelegate() {
         return new WaitStrategy() {
             @Override

@@ -1,16 +1,20 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
+import java.util.List;
+
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * An OpenTelemetry Collector {@link Container} configured for use with Arconia Dev Services.
  */
-final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCollectorContainer> {
+final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCollectorContainer> implements DevServiceLinkProvider {
 
     private final OtelCollectorDevServicesProperties properties;
 
@@ -45,6 +49,21 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
 
     public Integer getHttpPort() {
         return getMappedPort(OTLP_HTTP_PORT);
+    }
+
+    public String getOtlpGrpcUrl() {
+        return "http://" + getHost() + ":" + getGrpcPort();
+    }
+
+    public String getOtlpHttpUrl() {
+        return "http://" + getHost() + ":" + getHttpPort();
+    }
+
+    @Override
+    public List<DevServiceLink> devServiceLinks() {
+        return List.of(
+                DevServiceLink.builder().id("otlp-grpc").label("OTLP/gRPC").url(getOtlpGrpcUrl()).build(),
+                DevServiceLink.builder().id("otlp-http").label("OTLP/HTTP").url(getOtlpHttpUrl()).build());
     }
 
 }

@@ -20,19 +20,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DevServicesEndpointTests {
 
     private Map<String, DevServiceRegistration> registrations;
-    private DevServicesEndpoint endpoint;
 
     @BeforeEach
     void setUp() {
         registrations = new HashMap<>();
-        endpoint = new DevServicesEndpoint(registrations);
+    }
+
+    private DevServicesEndpoint endpoint() {
+        return new DevServicesEndpoint(registrations);
     }
 
     @Test
     void devServicesReturnsEmptyMapWhenNoRegistrations() {
-        Map<String, ServiceInfoSummary> result = endpoint.devServices();
+        Map<String, ServiceInfoSummary> result = endpoint().devServices();
 
         assertThat(result).isNotNull().isEmpty();
+    }
+
+    @Test
+    void endpointDefensivelyCopiesRegistrationsAtConstruction() {
+        DevServicesEndpoint endpoint = endpoint();
+        registrations.put("postgres", DevServiceRegistration.builder()
+                .name("postgres")
+                .origin(DevServiceRegistration.Origin.OWNED)
+                .containerInfo(() -> createContainerInfo("container-1", "postgres:18", "running"))
+                .build());
+
+        assertThat(endpoint.devServices()).isEmpty();
     }
 
     @Test
@@ -46,7 +60,7 @@ class DevServicesEndpointTests {
                 .build();
         registrations.put("postgres", registration);
 
-        Map<String, ServiceInfoSummary> result = endpoint.devServices();
+        Map<String, ServiceInfoSummary> result = endpoint().devServices();
 
         assertThat(result)
                 .isNotNull()
@@ -84,7 +98,7 @@ class DevServicesEndpointTests {
         registrations.put("postgres", postgresReg);
         registrations.put("docling", doclingReg);
 
-        Map<String, ServiceInfoSummary> result = endpoint.devServices();
+        Map<String, ServiceInfoSummary> result = endpoint().devServices();
 
         assertThat(result)
                 .isNotNull()
@@ -110,7 +124,7 @@ class DevServicesEndpointTests {
                 .build();
         registrations.put("postgres", registration);
 
-        Map<String, ServiceInfoSummary> result = endpoint.devServices();
+        Map<String, ServiceInfoSummary> result = endpoint().devServices();
 
         assertThat(result).hasSize(1);
         ServiceInfoSummary summary = result.get("postgres");
@@ -128,7 +142,7 @@ class DevServicesEndpointTests {
                 .build();
         registrations.put("postgres", registration);
 
-        ServiceInfo result = endpoint.devService("postgres");
+        ServiceInfo result = endpoint().devService("postgres");
 
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo("postgres");
@@ -154,12 +168,12 @@ class DevServicesEndpointTests {
                 .build();
         registrations.put("postgres", registration);
 
-        assertThat(endpoint.devService("docling")).isNull();
+        assertThat(endpoint().devService("docling")).isNull();
     }
 
     @Test
     void devServiceReturnsNullWhenRegistrationsEmpty() {
-        assertThat(endpoint.devService("postgres")).isNull();
+        assertThat(endpoint().devService("postgres")).isNull();
     }
 
     private ContainerInfo createContainerInfo(String id, String imageName, String status) {

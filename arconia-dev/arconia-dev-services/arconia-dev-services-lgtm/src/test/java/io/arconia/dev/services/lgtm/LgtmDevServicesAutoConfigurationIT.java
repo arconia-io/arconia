@@ -1,13 +1,17 @@
 package io.arconia.dev.services.lgtm;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
@@ -51,6 +55,30 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
         return OtlpTracingConnectionDetails.class;
     }
 
+    @Override
+    protected boolean supportsSharing() {
+        return true;
+    }
+
+    @Override
+    protected GenericContainer<?> createSharedContainer(String ownerId) {
+        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
+        return withSharedLabels(new LgtmStackContainer(properties.getImageName()), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+        assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
+        assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
+
+        OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
+                ":%d%s".formatted(sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_HTTP_PORT),
+                        OtlpTracingConnectionDetails.TRACES_PATH));
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
+                ":" + sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_GRPC_PORT));
+    }
+
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         getContextRunner()
@@ -80,35 +108,16 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
     }
 
     @Test
-    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
-        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
-        try (LgtmStackContainer sharedContainer = new LgtmStackContainer(properties.getImageName())
-                .withLabel(DevServiceLabels.NAME, "lgtm")
-                .withLabel(DevServiceLabels.SHARED, "true")
-                .withLabel(DevServiceLabels.OWNER, "another-application")) {
-            sharedContainer.start();
-
-            getContextRunner()
-                    .withSystemProperties("arconia.bootstrap.mode=dev")
-                    .run(context -> {
-                        assertThat(context).doesNotHaveBean(getContainerClass());
-                        assertThat(context).hasSingleBean(OtlpTracingConnectionDetails.class);
-                        assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
-                        assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
-
-                        OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                                ":%d%s".formatted(sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_HTTP_PORT),
-                                        OtlpTracingConnectionDetails.TRACES_PATH));
-                        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                                ":" + sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_GRPC_PORT));
-
-                        assertThat(context).hasSingleBean(DevServiceRegistration.class);
-                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
-                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
-                    });
-        }
+    void devServiceLinksExposeGrafanaAndOtlpUrls() {
+        getContextRunner().run(context -> {
+            var container = context.getBean(getContainerClass());
+            container.start();
+            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+            assertThat(links).extracting(DevServiceLink::id)
+                    .containsExactly("grafana", "otlp-http", "otlp-grpc");
+            assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://"));
+            container.stop();
+        });
     }
 
     @Test

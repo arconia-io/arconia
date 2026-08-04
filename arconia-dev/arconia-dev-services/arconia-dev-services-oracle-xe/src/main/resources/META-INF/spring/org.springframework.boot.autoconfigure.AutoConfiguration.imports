@@ -1,1 +1,1 @@
-io.arconia.dev.services.oracle.OracleXeDevServicesAutoConfiguration
+io.arconia.dev.services.oracle.xe.OracleXeDevServicesAutoConfiguration

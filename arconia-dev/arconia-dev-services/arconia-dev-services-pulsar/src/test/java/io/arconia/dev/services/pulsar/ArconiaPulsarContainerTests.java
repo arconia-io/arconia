@@ -22,7 +22,7 @@ class ArconiaPulsarContainerTests {
     void whenExposedPortsAreConfigured() {
         var properties = new PulsarDevServicesProperties();
         properties.setPort(1234);
-        properties.setManagementConsolePort(5678);
+        properties.setAdminPort(5678);
 
         var container = new ArconiaPulsarContainer(properties);
         container.configure();
@@ -33,7 +33,7 @@ class ArconiaPulsarContainerTests {
                 .anyMatch(binding -> binding.startsWith(
                         properties.getPort() + ":" + PulsarContainer.BROKER_PORT))
                 .anyMatch(binding -> binding.startsWith(
-                        properties.getManagementConsolePort() + ":" + PulsarContainer.BROKER_HTTP_PORT));
+                        properties.getAdminPort() + ":" + PulsarContainer.BROKER_HTTP_PORT));
     }
 
 }

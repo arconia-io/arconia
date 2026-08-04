@@ -6,6 +6,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
@@ -26,12 +27,20 @@ import io.arconia.dev.services.ollama.OllamaOpenAiDevServicesAutoConfiguration.O
  * The endpoint is resolved from the Ollama container when one is available
  * (either owned by this application or a shared container discovered from
  * another application), or from the native Ollama service otherwise.
+ * <p>
+ * The registered properties take precedence over any user-provided value, mirroring how a
+ * {@code ConnectionDetails} bean supersedes the corresponding configuration properties for
+ * the other dev services. Set
+ * {@code arconia.dev.services.ollama.openai-compatibility=false} to opt out and keep your
+ * own OpenAI configuration, without having to disable the Ollama dev service altogether.
  */
 @AutoConfiguration(after = OllamaDevServicesAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("ollama")
 @ConditionalOnClass(name = "org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties")
+@ConditionalOnProperty(prefix = OllamaDevServicesProperties.CONFIG_PREFIX, name = "openai-compatibility",
+        havingValue = "true", matchIfMissing = true)
 @Import(OllamaOpenAiPropertyRegistrar.class)
-public class OllamaOpenAiDevServicesAutoConfiguration {
+public final class OllamaOpenAiDevServicesAutoConfiguration {
 
     private static final String DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
 
@@ -44,6 +53,10 @@ public class OllamaOpenAiDevServicesAutoConfiguration {
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            // Spring AI's OpenAI module has no ConnectionDetails abstraction to contribute to
+            // (unlike its Ollama module, which ships OllamaConnectionDetails), so the endpoint is
+            // published as a dynamic property instead. That is what gives it precedence over
+            // user-provided values, matching ConnectionDetails semantics.
             addDynamicProperty("spring.ai.openai.base-url",
                     () -> resolveOllamaEndpoint(getBeanFactory(), environment));
             addDynamicProperty("spring.ai.openai.api-key", () -> "ollama");

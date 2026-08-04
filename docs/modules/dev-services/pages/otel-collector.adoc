@@ -35,6 +35,36 @@ The application logs will show you the URLs where the OpenTelemetry Collector is
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
 
+[NOTE]
+====
+The Dev Service runs the image's built-in default configuration, whose pipeline only exports the received telemetry to the collector's own debug exporter, visible in the collector container logs. It is meant for locally inspecting what your application emits, not for forwarding telemetry to another backend. To route telemetry elsewhere, supply a custom collector configuration as described in the next section.
+====
+
+== Customizing the Collector Configuration
+
+To go beyond the built-in default configuration, for example to forward telemetry to another backend, you can supply your own collector configuration file and copy it into the container via the `resources` property (see xref:index.adoc#_resource_mappings[Resource Mappings]). Each mapping requires two values:
+
+* Source path: Location of the resource on the classpath or filesystem;
+* Container path: Destination path inside the container.
+
+The OpenTelemetry Collector reads its configuration from `/etc/otelcol-contrib/config.yaml`, so copying your file to that path replaces the default configuration.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      otel-collector:
+        resources:
+          - source-path: otel-collector-config.yml
+            container-path: /etc/otelcol-contrib/config.yaml
+----
+
+[NOTE]
+====
+Make sure your configuration keeps the OTLP receiver listening on the default ports (`4317` for gRPC and `4318` for HTTP), since those are the ports the Dev Service exposes to the host and wires into your application.
+====
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.

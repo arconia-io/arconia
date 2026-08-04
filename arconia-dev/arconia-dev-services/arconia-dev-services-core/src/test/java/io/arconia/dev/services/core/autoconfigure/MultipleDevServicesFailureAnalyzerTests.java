@@ -22,7 +22,11 @@ class MultipleDevServicesFailureAnalyzerTests {
 
         assertThat(analysis).isNotNull();
         assertThat(analysis.getDescription()).contains("opentelemetry", "lgtm", "openlit");
-        assertThat(analysis.getAction()).contains("arconia.dev.services", "opentelemetry");
+        assertThat(analysis.getAction())
+                .contains("opentelemetry")
+                .contains("lgtm.enabled=false")
+                .contains("<prefix>")
+                .contains("arconia.dev.services by default");
     }
 
 }

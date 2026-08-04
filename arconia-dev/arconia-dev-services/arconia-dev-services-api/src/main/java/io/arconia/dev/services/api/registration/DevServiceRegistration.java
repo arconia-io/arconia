@@ -26,6 +26,8 @@ public record DevServiceRegistration(
         Assert.notNull(origin, "origin cannot be null");
         Assert.notNull(containerInfo, "containerInfo cannot be null");
         Assert.notNull(links, "links cannot be null");
+
+        links = List.copyOf(links);
     }
 
     /**
@@ -52,12 +54,17 @@ public record DevServiceRegistration(
 
     public static final class Builder {
 
+        @Nullable
         private String name;
         @Nullable
         private String description;
+        @Nullable
         private Origin origin;
+        @Nullable
         private Supplier<ContainerInfo> containerInfo;
         private List<DevServiceLink> links = List.of();
+
+        private Builder() {}
 
         public Builder name(String name) {
             this.name = name;

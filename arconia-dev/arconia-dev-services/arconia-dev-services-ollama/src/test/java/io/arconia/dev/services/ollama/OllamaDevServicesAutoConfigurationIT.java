@@ -3,13 +3,12 @@ package io.arconia.dev.services.ollama;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ollama.OllamaContainer;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
-import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
@@ -20,6 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @EnabledIfDockerAvailable
 class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurationIT {
+
+    /**
+     * Two variants of a very small embedding model, keeping the pulls cheap
+     * while still exercising more than one model.
+     */
+    private static final String TEST_MODEL = "all-minilm:22m";
+
+    private static final String OTHER_TEST_MODEL = "all-minilm:33m";
 
     private final ApplicationContextRunner contextRunner = defaultContextRunner(OllamaDevServicesAutoConfiguration.class)
             .withPropertyValues("arconia.dev.services.ollama.ignore-native-service=true");
@@ -49,6 +56,24 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
         return OllamaConnectionDetails.class;
     }
 
+    @Override
+    protected boolean supportsSharing() {
+        return true;
+    }
+
+    @Override
+    protected GenericContainer<?> createSharedContainer(String ownerId) {
+        OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
+        return withSharedLabels(new OllamaContainer(properties.getImageName()), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+        OllamaConnectionDetails connectionDetails = context.getBean(OllamaConnectionDetails.class);
+        assertThat(connectionDetails.getBaseUrl()).isEqualTo("http://%s:%d".formatted(
+                sharedContainer.getHost(), sharedContainer.getMappedPort(ArconiaOllamaContainer.OLLAMA_PORT)));
+    }
+
     @Test
     void containerActivatedWhenEnabled() {
         contextRunner
@@ -70,65 +95,6 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
     }
 
     @Test
-    void containerReusedWhenReuseEnabled() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.services.ollama.reuse=true")
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.isShouldBeReused()).isTrue();
-                    // Sharing and reuse compose: a reused container is still advertised as shared.
-                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "true");
-                    // The owner label is omitted for reusable containers (user labels contribute
-                    // to the Testcontainers reuse hash), but only when the environment actually
-                    // supports reuse; otherwise it's kept to protect against self-discovery.
-                    if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
-                        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.OWNER);
-                    } else {
-                        assertThat(container.getLabels()).containsKey(DevServiceLabels.OWNER);
-                    }
-                });
-    }
-
-    @Test
-    void containerNotSharedWhenSharingDisabled() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.services.ollama.shared=false")
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "false");
-                });
-    }
-
-    @Test
-    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
-        OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
-        try (OllamaContainer sharedContainer = new OllamaContainer(properties.getImageName())
-                .withLabel(DevServiceLabels.NAME, "ollama")
-                .withLabel(DevServiceLabels.SHARED, "true")
-                .withLabel(DevServiceLabels.OWNER, "another-application")) {
-            sharedContainer.start();
-
-            getContextRunner()
-                    .withSystemProperties("arconia.bootstrap.mode=dev")
-                    .run(context -> {
-                        assertThat(context).doesNotHaveBean(getContainerClass());
-                        assertThat(context).hasSingleBean(OllamaConnectionDetails.class);
-
-                        OllamaConnectionDetails connectionDetails = context.getBean(OllamaConnectionDetails.class);
-                        assertThat(connectionDetails.getBaseUrl()).isEqualTo("http://%s:%d".formatted(
-                                sharedContainer.getHost(), sharedContainer.getMappedPort(ArconiaOllamaContainer.OLLAMA_PORT)));
-
-                        assertThat(context).hasSingleBean(DevServiceRegistration.class);
-                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
-                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
-                    });
-        }
-    }
-
-    @Test
     void containerConfigurationApplied() {
         String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
 
@@ -139,6 +105,41 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
                     container.start();
                     assertThatConfigurationIsApplied(container);
                     container.stop();
+                });
+    }
+
+    @Test
+    void modelsPulledWhenConfigured() {
+        contextRunner
+                .withPropertyValues("arconia.dev.services.ollama.models=%s,%s".formatted(TEST_MODEL, OTHER_TEST_MODEL))
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    container.start();
+                    try {
+                        var result = container.execInContainer("ollama", "list");
+                        assertThat(result.getExitCode()).isZero();
+                        assertThat(result.getStdout()).contains(TEST_MODEL, OTHER_TEST_MODEL);
+                    }
+                    finally {
+                        container.stop();
+                    }
+                });
+    }
+
+    @Test
+    void noModelPulledWhenNotConfigured() {
+        contextRunner
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    container.start();
+                    try {
+                        var result = container.execInContainer("ollama", "list");
+                        assertThat(result.getExitCode()).isZero();
+                        assertThat(result.getStdout()).doesNotContain("all-minilm");
+                    }
+                    finally {
+                        container.stop();
+                    }
                 });
     }
 

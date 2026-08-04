@@ -18,6 +18,7 @@ dependencies {
 
     testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-data-redis"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

@@ -1,5 +1,7 @@
 package io.arconia.dev.services.lldap;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -7,6 +9,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ldap.LLdapContainer;
 
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,6 +56,27 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
 
             assertThatHasSingletonScope(context);
         });
+    }
+
+    @Test
+    void devServiceLinksExposeManagementConsoleUrl() {
+        getContextRunner()
+                // LLDAP requires these to boot; otherwise the container exits with code 1.
+                .withPropertyValues(
+                        "arconia.dev.services.%s.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman".formatted(getServiceName()),
+                        "arconia.dev.services.%s.environment.LLDAP_LDAP_USER_PASS=password".formatted(getServiceName()))
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    container.start();
+                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+                    assertThat(links).singleElement().satisfies(link -> {
+                        assertThat(link.id()).isEqualTo("lldap");
+                        assertThat(link.label()).isEqualTo("LLDAP Console");
+                        assertThat(link.url()).isEqualTo(
+                                "http://" + container.getHost() + ":" + container.getMappedPort(ArconiaLldapContainer.UI_PORT));
+                    });
+                    container.stop();
+                });
     }
 
     @Test

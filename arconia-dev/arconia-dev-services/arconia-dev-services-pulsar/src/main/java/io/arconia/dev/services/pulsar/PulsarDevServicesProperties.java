@@ -86,10 +86,10 @@ public class PulsarDevServicesProperties implements SharedDevServicesProperties 
     private List<VolumeMapping> volumes = new ArrayList<>();
 
     /**
-     * Fixed port for exposing the Pulsar Management Console port to the host.
+     * Fixed port for exposing the Pulsar admin API port to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
-    private int managementConsolePort = 0;
+    private int adminPort = 0;
 
     @Override
     public boolean isEnabled() {
@@ -181,12 +181,12 @@ public class PulsarDevServicesProperties implements SharedDevServicesProperties 
         this.volumes = volumes;
     }
 
-    public int getManagementConsolePort() {
-        return managementConsolePort;
+    public int getAdminPort() {
+        return adminPort;
     }
 
-    public void setManagementConsolePort(int managementConsolePort) {
-        this.managementConsolePort = managementConsolePort;
+    public void setAdminPort(int adminPort) {
+        this.adminPort = adminPort;
     }
 
 }

@@ -1,13 +1,17 @@
 package io.arconia.dev.services.phoenix;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
@@ -51,6 +55,27 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
         return OtlpTracingConnectionDetails.class;
     }
 
+    @Override
+    protected boolean supportsSharing() {
+        return true;
+    }
+
+    @Override
+    protected GenericContainer<?> createSharedContainer(String ownerId) {
+        PhoenixDevServicesProperties properties = new PhoenixDevServicesProperties();
+        return withSharedLabels(new PhoenixContainer(DockerImageName.parse(properties.getImageName())), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+        OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
+                ":%d%s".formatted(sharedContainer.getMappedPort(PhoenixContainer.HTTP_PORT),
+                        OtlpTracingConnectionDetails.TRACES_PATH));
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
+                ":" + sharedContainer.getMappedPort(PhoenixContainer.GRPC_PORT));
+    }
+
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
         getContextRunner()
@@ -79,33 +104,19 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
-        PhoenixDevServicesProperties properties = new PhoenixDevServicesProperties();
-        try (PhoenixContainer sharedContainer = new PhoenixContainer(DockerImageName.parse(properties.getImageName()))
-                .withLabel(DevServiceLabels.NAME, "phoenix")
-                .withLabel(DevServiceLabels.SHARED, "true")
-                .withLabel(DevServiceLabels.OWNER, "another-application")) {
-            sharedContainer.start();
-
-            getContextRunner()
-                    .withSystemProperties("arconia.bootstrap.mode=dev")
-                    .run(context -> {
-                        assertThat(context).doesNotHaveBean(getContainerClass());
-                        assertThat(context).hasSingleBean(OtlpTracingConnectionDetails.class);
-
-                        OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-                        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                                ":%d%s".formatted(sharedContainer.getMappedPort(PhoenixContainer.HTTP_PORT),
-                                        OtlpTracingConnectionDetails.TRACES_PATH));
-                        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                                ":" + sharedContainer.getMappedPort(PhoenixContainer.GRPC_PORT));
-
-                        assertThat(context).hasSingleBean(DevServiceRegistration.class);
-                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
-                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
-                    });
-        }
+    void devServiceLinksExposePhoenixUi() {
+        getContextRunner().run(context -> {
+            var container = context.getBean(getContainerClass());
+            container.start();
+            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+            assertThat(links).singleElement().satisfies(link -> {
+                assertThat(link.id()).isEqualTo("phoenix");
+                assertThat(link.label()).isEqualTo("Phoenix UI");
+                assertThat(link.url()).startsWith("http://")
+                        .endsWith(":" + container.getMappedPort(PhoenixContainer.HTTP_PORT));
+            });
+            container.stop();
+        });
     }
 
     @Test

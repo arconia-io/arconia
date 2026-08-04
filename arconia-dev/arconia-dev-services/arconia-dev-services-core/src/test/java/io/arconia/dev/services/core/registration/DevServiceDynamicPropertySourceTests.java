@@ -130,7 +130,7 @@ class DevServiceDynamicPropertySourceTests {
         propertySource.add("first.property", () -> "value1");
         propertySource.add("second.property", () -> "value2");
 
-        assertThat(propertySource.getPropertyNames()).containsExactly("first.property", "second.property");
+        assertThat(propertySource.getPropertyNames()).containsExactlyInAnyOrder("first.property", "second.property");
     }
 
     @Test

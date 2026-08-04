@@ -91,6 +91,18 @@ public class OllamaDevServicesProperties implements SharedDevServicesProperties 
      */
     private boolean ignoreNativeService = false;
 
+    /**
+     * Names of the models to pull into the dev service once the container is ready, such as `ministral-3:3b`.
+     * They are pulled in the order they are declared. When empty (default), no model is pulled.
+     */
+    private List<String> models = new ArrayList<>();
+
+    /**
+     * Whether to configure the Spring AI OpenAI client to use the OpenAI-compatible API exposed by the dev service,
+     * when the Spring AI OpenAI module is on the classpath.
+     */
+    private boolean openaiCompatibility = true;
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -187,6 +199,22 @@ public class OllamaDevServicesProperties implements SharedDevServicesProperties 
 
     public void setIgnoreNativeService(boolean ignoreNativeService) {
         this.ignoreNativeService = ignoreNativeService;
+    }
+
+    public List<String> getModels() {
+        return models;
+    }
+
+    public void setModels(List<String> models) {
+        this.models = models;
+    }
+
+    public boolean isOpenaiCompatibility() {
+        return openaiCompatibility;
+    }
+
+    public void setOpenaiCompatibility(boolean openaiCompatibility) {
+        this.openaiCompatibility = openaiCompatibility;
     }
 
 }

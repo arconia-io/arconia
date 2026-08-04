@@ -2,6 +2,7 @@ package io.arconia.dev.services.elasticsearch;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -37,6 +38,11 @@ class ElasticsearchDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
     @Override
     protected String getServiceName() {
         return "elasticsearch";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return ElasticsearchConnectionDetails.class;
     }
 
     @Test

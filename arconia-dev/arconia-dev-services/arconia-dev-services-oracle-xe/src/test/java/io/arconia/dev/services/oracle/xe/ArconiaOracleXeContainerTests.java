@@ -1,4 +1,4 @@
-package io.arconia.dev.services.oracle;
+package io.arconia.dev.services.oracle.xe;
 
 import org.junit.jupiter.api.Test;
 

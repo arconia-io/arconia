@@ -1,6 +1,7 @@
 package io.arconia.dev.services.ollama;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +32,8 @@ class OllamaDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Ol
     void shouldCreateInstanceWithServiceSpecificDefaultValues() {
         OllamaDevServicesProperties properties = createProperties();
         assertThat(properties.isIgnoreNativeService()).isFalse();
+        assertThat(properties.isOpenaiCompatibility()).isTrue();
+        assertThat(properties.getModels()).isEmpty();
     }
 
     @Test
@@ -38,6 +41,10 @@ class OllamaDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Ol
         OllamaDevServicesProperties properties = createProperties();
         properties.setIgnoreNativeService(true);
         assertThat(properties.isIgnoreNativeService()).isTrue();
+        properties.setOpenaiCompatibility(false);
+        assertThat(properties.isOpenaiCompatibility()).isFalse();
+        properties.setModels(List.of("qwen3:0.6b", "all-minilm"));
+        assertThat(properties.getModels()).containsExactly("qwen3:0.6b", "all-minilm");
     }
 
 }

@@ -2,6 +2,8 @@ package io.arconia.dev.services.core.registration;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -9,10 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.GenericContainer;
@@ -544,6 +548,89 @@ class DevServicesRegistryTests {
         assertThat(registration.links()).isEmpty();
     }
 
+    @Test
+    void whenSharedServiceRegisteredTwiceThenRuntimeIsNotQueriedAgain() {
+        enableDevMode();
+        AtomicInteger lookups = new AtomicInteger();
+        DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment()) {
+            @Override
+            @Nullable
+            DiscoveredContainer findSharedContainer(String serviceName) {
+                lookups.incrementAndGet();
+                return discoveredContainer();
+            }
+        };
+
+        registerSharedDevService(registry);
+        registerSharedDevService(registry);
+
+        // The second registration short-circuits on the existing description bean, so the container
+        // runtime is queried only once (no duplicate discovery lookups or logs).
+        assertThat(lookups.get()).isEqualTo(1);
+        assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.postgres")).isTrue();
+    }
+
+    @Test
+    void whenLinkProviderThrowsThenRegistrationLinksDegradeToEmpty() {
+        registry.registerDevService(service -> service
+                .name("throwy")
+                .container(container -> container
+                        .type(TestThrowingLinkContainer.class)
+                        .supplier(TestThrowingLinkContainer::new)));
+
+        var registration = beanFactory.getBean("devServiceRegistration.throwy", DevServiceRegistration.class);
+
+        assertThat(registration.links()).isEmpty();
+    }
+
+    @Test
+    void whenCustomizerRegisteredInParentContextThenAppliedToMatchingContainer() {
+        AtomicBoolean applied = registerTypedCustomizerInParentContext(TestLinkContainer.class);
+
+        registry.registerDevService(service -> service
+                .name("linky")
+                .container(container -> container
+                        .type(TestLinkContainer.class)
+                        .supplier(TestLinkContainer::new)));
+        beanFactory.getBean("devService.container.linky", GenericContainer.class);
+
+        assertThat(applied).isTrue();
+    }
+
+    @Test
+    void whenCustomizerRegisteredInParentContextThenNotAppliedToOtherContainer() {
+        // The customizer is typed for TestLinkContainer. Its type must be resolved by walking the
+        // parent factory chain; without that walk it would resolve to null and wrongly apply here.
+        AtomicBoolean applied = registerTypedCustomizerInParentContext(TestLinkContainer.class);
+
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .container(container -> container
+                        .type(TestPostgresContainer.class)
+                        .supplier(TestPostgresContainer::new)));
+        beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(applied).isFalse();
+    }
+
+    /**
+     * Register a {@link DevServiceContainerCustomizer} typed for the given container class as a
+     * lambda-backed bean definition in a parent bean factory, and make it the parent of the test
+     * bean factory. Returns a flag set when the customizer is actually applied.
+     */
+    private AtomicBoolean registerTypedCustomizerInParentContext(Class<? extends GenericContainer<?>> containerType) {
+        AtomicBoolean applied = new AtomicBoolean(false);
+        var parent = new DefaultListableBeanFactory();
+        var customizerDefinition = new RootBeanDefinition();
+        customizerDefinition.setTargetType(
+                ResolvableType.forClassWithGenerics(DevServiceContainerCustomizer.class, containerType));
+        customizerDefinition.setInstanceSupplier(() ->
+                (DevServiceContainerCustomizer<GenericContainer<?>>) container -> applied.set(true));
+        parent.registerBeanDefinition("typedContainerCustomizer", customizerDefinition);
+        beanFactory.setParentBeanFactory(parent);
+        return applied;
+    }
+
     /**
      * Register the given network as a proper bean definition, matching how the auto-configuration
      * exposes it, so it is resolved by {@code getBeanProvider(Network.class).getIfUnique()}.
@@ -650,6 +737,17 @@ class DevServicesRegistryTests {
         @Override
         public List<DevServiceLink> devServiceLinks() {
             return List.of(DevServiceLink.builder().id("ui").label("UI").url("http://localhost:1234").build());
+        }
+    }
+
+    private static class TestThrowingLinkContainer extends GenericContainer<TestThrowingLinkContainer> implements DevServiceLinkProvider {
+        TestThrowingLinkContainer() {
+            super("postgres:latest");
+        }
+
+        @Override
+        public List<DevServiceLink> devServiceLinks() {
+            throw new IllegalStateException("link resolution failed");
         }
     }
 

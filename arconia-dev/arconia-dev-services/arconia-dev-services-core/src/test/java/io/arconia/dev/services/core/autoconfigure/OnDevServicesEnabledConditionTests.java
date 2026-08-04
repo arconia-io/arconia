@@ -436,6 +436,23 @@ class OnDevServicesEnabledConditionTests {
     }
 
     @Test
+    void shouldFailWhenCustomPrefixIsSpecifiedWithoutNameEvenInProdMode() {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
+        BootstrapMode.clear();
+        when(context.getEnvironment()).thenReturn(environment);
+
+        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("prefix", "acme.dev.services");
+        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
+                .thenReturn(attributes);
+
+        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("requires a name when a custom prefix is specified");
+    }
+
+    @Test
     void shouldNotMatchWhenCustomPrefixAndProdMode() {
         System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
         BootstrapMode.clear();

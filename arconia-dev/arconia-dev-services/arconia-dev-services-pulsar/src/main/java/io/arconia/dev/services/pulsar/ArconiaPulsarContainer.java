@@ -32,8 +32,8 @@ final class ArconiaPulsarContainer extends PulsarContainer implements DevService
         if (ContainerUtils.isFixedPort(properties.getPort())) {
             addFixedExposedPort(properties.getPort(), BROKER_PORT);
         }
-        if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
-            addFixedExposedPort(properties.getManagementConsolePort(), BROKER_HTTP_PORT);
+        if (ContainerUtils.isFixedPort(properties.getAdminPort())) {
+            addFixedExposedPort(properties.getAdminPort(), BROKER_HTTP_PORT);
         }
     }
 
@@ -41,7 +41,7 @@ final class ArconiaPulsarContainer extends PulsarContainer implements DevService
     public List<DevServiceLink> devServiceLinks() {
         return List.of(DevServiceLink.builder()
                 .id("pulsar")
-                .label("Pulsar Management Console")
+                .label("Pulsar Admin API")
                 .url(getHttpServiceUrl())
                 .build());
     }

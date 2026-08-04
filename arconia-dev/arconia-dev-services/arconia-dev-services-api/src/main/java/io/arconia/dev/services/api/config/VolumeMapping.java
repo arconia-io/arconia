@@ -1,19 +1,22 @@
 package io.arconia.dev.services.api.config;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Mapping of paths to be mounted from the host filesystem into a container.
  */
+@Incubating
 public final class VolumeMapping {
 
     /**
      * Path to the file/directory on the host filesystem.
      */
-    private String hostPath;
+    private final String hostPath;
 
     /**
      * Path to the file/directory inside the container.
      */
-    private String containerPath;
+    private final String containerPath;
 
     public VolumeMapping(String hostPath, String containerPath) {
         this.hostPath = hostPath;
@@ -24,16 +27,8 @@ public final class VolumeMapping {
         return hostPath;
     }
 
-    public void setHostPath(String hostPath) {
-        this.hostPath = hostPath;
-    }
-
     public String getContainerPath() {
         return containerPath;
-    }
-
-    public void setContainerPath(String containerPath) {
-        this.containerPath = containerPath;
     }
 
 }

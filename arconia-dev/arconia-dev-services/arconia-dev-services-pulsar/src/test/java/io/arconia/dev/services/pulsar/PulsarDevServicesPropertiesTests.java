@@ -31,14 +31,14 @@ class PulsarDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Pu
     @Test
     void shouldCreateInstanceWithServiceSpecificDefaultValues() {
         PulsarDevServicesProperties properties = createProperties();
-        assertThat(properties.getManagementConsolePort()).isEqualTo(0);
+        assertThat(properties.getAdminPort()).isEqualTo(0);
     }
 
     @Test
     void shouldUpdateServiceSpecificValues() {
         PulsarDevServicesProperties properties = createProperties();
-        properties.setManagementConsolePort(PulsarContainer.BROKER_HTTP_PORT);
-        assertThat(properties.getManagementConsolePort()).isEqualTo(ArconiaPulsarContainer.BROKER_HTTP_PORT);
+        properties.setAdminPort(PulsarContainer.BROKER_HTTP_PORT);
+        assertThat(properties.getAdminPort()).isEqualTo(ArconiaPulsarContainer.BROKER_HTTP_PORT);
     }
 
 }

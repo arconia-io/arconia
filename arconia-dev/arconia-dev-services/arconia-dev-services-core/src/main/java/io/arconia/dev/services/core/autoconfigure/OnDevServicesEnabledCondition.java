@@ -32,13 +32,13 @@ class OnDevServicesEnabledCondition extends SpringBootCondition {
         String devServicesName = getAttribute(attributes, "name", "value");
         String customPrefix = getAttribute(attributes, "prefix");
 
+        Assert.state(!StringUtils.hasText(customPrefix) || StringUtils.hasText(devServicesName),
+                "@ConditionalOnDevServicesEnabled requires a name when a custom prefix is specified");
+
         if (BootstrapMode.detect() == BootstrapMode.PROD) {
             return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnDevServicesEnabled.class)
                     .because("dev services are only available in dev and test mode, but the application is running in prod mode"));
         }
-
-        Assert.state(!StringUtils.hasText(customPrefix) || StringUtils.hasText(devServicesName),
-                "@ConditionalOnDevServicesEnabled requires a name when a custom prefix is specified");
 
         // Bind boolean properties via the Binder so that invalid values fail loudly
         // instead of being silently interpreted as false.

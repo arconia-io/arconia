@@ -21,6 +21,7 @@ import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
  */
 @AutoConfiguration(after = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevMode
+@ConditionalOnDevServicesEnabled
 @ConditionalOnClass(Endpoint.class)
 public class DevServicesEndpointAutoConfiguration {
 

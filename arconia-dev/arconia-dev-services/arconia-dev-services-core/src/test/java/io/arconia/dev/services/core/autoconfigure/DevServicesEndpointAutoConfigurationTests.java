@@ -60,6 +60,16 @@ class DevServicesEndpointAutoConfigurationTests {
 	}
 
 	@Test
+	void endpointBeanIsNotAvailableWhenDevServicesGloballyDisabled() {
+		contextRunner
+				.withSystemProperties("arconia.bootstrap.mode=dev")
+				.withPropertyValues("arconia.dev.services.enabled=false")
+				.run(context -> {
+					assertThat(context).doesNotHaveBean(DevServicesEndpoint.class);
+				});
+	}
+
+	@Test
 	void endpointBeanUsesCustomBeanWhenProvided() {
 		contextRunner
 				.withSystemProperties("arconia.bootstrap.mode=dev")

@@ -1,19 +1,22 @@
 package io.arconia.dev.services.api.config;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Mapping of resources to be copied into a container.
  */
+@Incubating
 public final class ResourceMapping {
 
     /**
      * Path to the resource in the classpath or host filesystem.
      */
-    private String sourcePath;
+    private final String sourcePath;
 
     /**
      * Path to the resource inside the container.
      */
-    private String containerPath;
+    private final String containerPath;
 
     public ResourceMapping(String sourcePath, String containerPath) {
         this.sourcePath = sourcePath;
@@ -24,16 +27,8 @@ public final class ResourceMapping {
         return sourcePath;
     }
 
-    public void setSourcePath(String sourcePath) {
-        this.sourcePath = sourcePath;
-    }
-
     public String getContainerPath() {
         return containerPath;
-    }
-
-    public void setContainerPath(String containerPath) {
-        this.containerPath = containerPath;
     }
 
 }

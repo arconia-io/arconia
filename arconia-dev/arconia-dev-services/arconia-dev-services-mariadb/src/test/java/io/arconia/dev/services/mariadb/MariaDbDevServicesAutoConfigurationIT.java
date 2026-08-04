@@ -4,12 +4,11 @@ import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.mariadb.MariaDBContainer;
-
-import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_DB_NAME;
 import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_PASSWORD;
@@ -42,6 +41,11 @@ class MariaDbDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfi
     @Override
     protected String getServiceName() {
         return "mariadb";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return JdbcConnectionDetails.class;
     }
 
     @Test

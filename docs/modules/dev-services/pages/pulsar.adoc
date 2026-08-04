@@ -18,13 +18,13 @@ include::partial$running-application.adoc[]
 
 By default, when running the application in dev mode, the Dev Service is shared across multiple applications running simultaneously: the application connects to a running Pulsar Dev Service started by another application if available, or else starts its own that other applications can discover in turn.
 
-== Accessing the Management Console
+== Accessing the Admin API
 
 The application logs will show you the URL where you can access the Pulsar HTTP admin API.
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'pulsar' is ready - Pulsar Management Console: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'pulsar' is ready - Pulsar Admin API: http://localhost:<port>
 ----
 
 == Configuring the Dev Service
@@ -74,9 +74,9 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
 
-| `arconia.dev.services.{service-name}.management-console-port`
+| `arconia.dev.services.{service-name}.admin-port`
 | `0`
-| Fixed port for exposing the Pulsar Management Console to the host. When it's 0 (default), a random available port is assigned dynamically.
+| Fixed port for exposing the Pulsar admin API to the host. When it's 0 (default), a random available port is assigned dynamically.
 |===
 
 include::partial$disabling-dev-service.adoc[]

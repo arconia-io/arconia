@@ -72,7 +72,37 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.ignore-native-service`
 | `false`
 | Whether to ignore an Ollama native service available on the host, but always use the container instead.
+
+| `arconia.dev.services.{service-name}.models`
+| `[]`
+| Names of the models to pull into the dev service once the container is ready, such as `qwen3:0.6b`. They are pulled in the order they are declared. When empty (default), no model is pulled.
+
+| `arconia.dev.services.{service-name}.openai-compatibility`
+| `true`
+| Whether to configure the Spring AI OpenAI client to use the OpenAI-compatible API exposed by the dev service, when the Spring AI OpenAI module is on the classpath.
 |===
+
+== Pulling Models
+
+By default, the Ollama Dev Service starts without any model. You can have one or more models pulled automatically once the container is ready via the `models` property. They are pulled in the order they are declared.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      ollama:
+        models:
+          - ministral-3:3b
+          - nomic-embed-text:v1.5
+----
+
+[NOTE]
+====
+The first pull downloads the entire model and can take a long time. Consider enabling the `reuse` option so that you don't pay that cost at every application restart.
+
+Only containers started by the application are affected. When an existing shared dev service is discovered, its models are left untouched.
+====
 
 include::partial$disabling-dev-service.adoc[]
 
@@ -82,5 +112,7 @@ When the Spring AI OpenAI module is on the classpath, the Ollama Dev Service aut
 
 [NOTE]
 ====
-While the Ollama Dev Service is enabled, these properties take precedence over any user-defined configuration, and the API key is set to `ollama`. If you want your application to use a real OpenAI endpoint in dev or test mode, disable the Ollama Dev Service via `arconia.dev.services.ollama.enabled=false`.
+While the Ollama Dev Service is enabled, these properties take precedence over any user-defined configuration, and the API key is set to `ollama`.
+
+If you want your application to use a real OpenAI endpoint in dev or test mode, opt out of the compatibility layer via `arconia.dev.services.ollama.openai-compatibility=false`. The Ollama Dev Service keeps running and your `spring.ai.openai.*` configuration is left untouched, which is useful when you use Ollama and OpenAI side by side. Disabling the Ollama Dev Service altogether via `arconia.dev.services.ollama.enabled=false` also works.
 ====

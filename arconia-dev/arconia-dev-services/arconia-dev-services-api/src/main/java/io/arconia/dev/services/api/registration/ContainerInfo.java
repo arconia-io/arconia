@@ -54,12 +54,17 @@ public record ContainerInfo(
 
     public static final class Builder {
 
+        @Nullable
         private String id;
+        @Nullable
         private String imageName;
         private List<String> names = List.of();
         private List<ContainerPort> exposedPorts = List.of();
         private Map<String, String> labels = Map.of();
+        @Nullable
         private String status;
+
+        private Builder() {}
 
         public Builder id(String id) {
             this.id = id;
@@ -85,6 +90,7 @@ public record ContainerInfo(
             this.labels = labels;
             return this;
         }
+
         public Builder status(String status) {
             this.status = status;
             return this;

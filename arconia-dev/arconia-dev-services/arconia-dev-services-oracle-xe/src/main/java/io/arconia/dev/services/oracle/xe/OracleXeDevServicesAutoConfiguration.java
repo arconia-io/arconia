@@ -1,4 +1,4 @@
-package io.arconia.dev.services.oracle;
+package io.arconia.dev.services.oracle.xe;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -13,7 +13,7 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
-import io.arconia.dev.services.oracle.OracleXeDevServicesAutoConfiguration.OracleXeDevServicesRegistrar;
+import io.arconia.dev.services.oracle.xe.OracleXeDevServicesAutoConfiguration.OracleXeDevServicesRegistrar;
 
 /**
  * Auto-configuration for Oracle XE Dev Services.

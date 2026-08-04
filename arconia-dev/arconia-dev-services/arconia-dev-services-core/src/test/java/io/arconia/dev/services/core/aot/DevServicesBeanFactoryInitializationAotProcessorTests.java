@@ -5,6 +5,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.registration.DevServiceConnectionDetailsBeanDefinition;
 import io.arconia.dev.services.core.registration.DevServiceContainerBeanDefinition;
 
@@ -61,6 +62,17 @@ class DevServicesBeanFactoryInitializationAotProcessorTests {
 
         assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.postgres")).isFalse();
         assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.redis")).isFalse();
+    }
+
+    @Test
+    void removesConflictValidatorBeanDefinition() {
+        GenericBeanDefinition definition = new GenericBeanDefinition();
+        definition.setBeanClassName(DevServicesConflictValidator.class.getName());
+        beanFactory.registerBeanDefinition("devServicesConflictValidator", definition);
+
+        processor.processAheadOfTime(beanFactory);
+
+        assertThat(beanFactory.containsBeanDefinition("devServicesConflictValidator")).isFalse();
     }
 
     @Test

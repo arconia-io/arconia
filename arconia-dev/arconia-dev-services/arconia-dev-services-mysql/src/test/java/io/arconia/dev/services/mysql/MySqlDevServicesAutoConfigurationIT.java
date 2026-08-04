@@ -2,6 +2,7 @@ package io.arconia.dev.services.mysql;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
@@ -40,6 +41,11 @@ class MySqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigu
     @Override
     protected String getServiceName() {
         return "mysql";
+    }
+
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return JdbcConnectionDetails.class;
     }
 
     @Test

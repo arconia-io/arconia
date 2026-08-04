@@ -31,7 +31,7 @@ public interface BaseDevServicesProperties {
     /**
      * Environment variables to set in the service.
      */
-    default Map<String,String> getEnvironment() {
+    default Map<String, String> getEnvironment() {
         return Map.of();
     }
 
