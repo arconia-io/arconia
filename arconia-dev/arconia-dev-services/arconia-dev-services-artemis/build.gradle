@@ -23,13 +23,6 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
-dependencyManagement {
-    imports {
-        // Handle several CVEs in Netty 4.2.15.Final
-        mavenBom "io.netty:netty-bom:4.2.17.Final"
-    }
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
