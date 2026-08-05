@@ -18,6 +18,8 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+        // Handle several CVEs in Jackson 3.1.4
+        mavenBom "tools.jackson:jackson-bom:3.1.5"
     }
 }
 
