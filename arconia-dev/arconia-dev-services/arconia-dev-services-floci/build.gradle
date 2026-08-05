@@ -31,6 +31,8 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
+        // Handle several CVEs in Netty 4.2.15.Final
+        mavenBom "io.netty:netty-bom:4.2.17.Final"
     }
 }
 
