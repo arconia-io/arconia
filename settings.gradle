@@ -49,6 +49,7 @@ include 'arconia-integrations:arconia-docling'
 // Multitenancy
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
+include 'arconia-multitenancy:arconia-multitenancy-data'
 
 // Observation
 include 'arconia-observation:arconia-observation'
