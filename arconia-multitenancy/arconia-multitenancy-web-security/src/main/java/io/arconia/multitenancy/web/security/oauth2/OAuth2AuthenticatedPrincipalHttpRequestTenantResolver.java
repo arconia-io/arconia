@@ -11,6 +11,8 @@ import org.springframework.util.Assert;
 
 /**
  * Resolves the tenant identifier from a claim attribute in an OAuth token.
+ *
+ * Register an instance of this bean in either an OAuth client or an OAuth resource server.
  */
 public class OAuth2AuthenticatedPrincipalHttpRequestTenantResolver
         implements HttpRequestTenantResolver {
