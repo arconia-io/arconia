@@ -22,6 +22,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Multitenancy
 
+=== Tenant Resolution
+
+* The tenant can now be resolved from a claim in the OAuth2 token that authenticated the request, via the new `oauth2` value for the `arconia.multitenancy.resolution.http.resolution-mode` property. It covers both OAuth2 client applications, where the claim is read from the ID token and the UserInfo response, and OAuth2 resource servers, where it is read from the access token, whether it is a JWT or an opaque token resolved via introspection. Use the new `arconia.multitenancy.resolution.http.oauth2.claim-name` property to configure which claim holds the tenant identifier (`tenant_id` by default). Learn more about xref:multitenancy:web.adoc#_oauth2_based_resolution[OAuth2-Based Resolution].
+* The `TenantContextFilter` can now be positioned relative to the other servlet filters via the new `arconia.multitenancy.resolution.http.filter.order` property. By default the filter still runs after the Spring Security filter chain, which is what the new `oauth2` resolution mode requires. Previously, changing the filter placement meant registering it in a `SecurityFilterChain` by hand. Learn more about xref:multitenancy:web.adoc#_filter_order[Filter Order].
+
 === Tenant Details
 
 * Tenant details can now be stored in a relational database, via the new `arconia-multitenancy-details-jdbc-spring-boot-starter` artifact. Adding the dependency is enough to auto-configure a `JdbcTenantDetailsService` that loads tenants and their attributes from the `DataSource` available in the application, so tenants can be added and disabled without restarting it. Until now, the only built-in source was the application configuration, which requires the full list of tenants to be known upfront. Learn more about xref:multitenancy:tenant-details.adoc#_jdbc_based_tenant_details[JDBC-Based Tenant Details].

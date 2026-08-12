@@ -50,7 +50,6 @@ dependencies {
         api project(":arconia-multitenancy:arconia-multitenancy-details-jdbc")
         api project(":arconia-multitenancy:arconia-multitenancy-jdbc")
         api project(":arconia-multitenancy:arconia-multitenancy-web")
-        api project(":arconia-multitenancy:arconia-multitenancy-web-security")
 
         api project(":arconia-observation:arconia-observation")
         api project(":arconia-observation:arconia-openinference-ai-semantic-conventions")

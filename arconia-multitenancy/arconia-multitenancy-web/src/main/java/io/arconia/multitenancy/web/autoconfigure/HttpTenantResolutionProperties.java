@@ -3,6 +3,7 @@ package io.arconia.multitenancy.web.autoconfigure;
 import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.Ordered;
 
 /**
  * Configuration properties for HTTP tenant resolution.
@@ -33,6 +34,11 @@ public class HttpTenantResolutionProperties {
     private final Cookie cookie = new Cookie();
 
     /**
+     * Configuration for OAuth2 tenant resolution.
+     */
+    private final OAuth2 oauth2 = new OAuth2();
+
+    /**
      * Configuration for HTTP filter resolving the current tenant.
      */
     private final Filter filter = new Filter();
@@ -59,6 +65,10 @@ public class HttpTenantResolutionProperties {
 
     public Cookie getCookie() {
         return cookie;
+    }
+
+    public OAuth2 getOauth2() {
+        return oauth2;
     }
 
     public Filter getFilter() {
@@ -99,12 +109,36 @@ public class HttpTenantResolutionProperties {
 
     }
 
+    public static class OAuth2 {
+
+        /**
+         * Name of the OAuth2 token claim from which to resolve the current tenant.
+         */
+        private String claimName = "tenant_id";
+
+        public String getClaimName() {
+            return claimName;
+        }
+
+        public void setClaimName(String claimName) {
+            this.claimName = claimName;
+        }
+
+    }
+
     public static class Filter {
 
         /**
          * Whether the HTTP filter resolving the current tenant is enabled.
          */
         private boolean enabled = true;
+
+        /**
+         * Order of the HTTP filter resolving the current tenant. By default, the filter
+         * runs after the Spring Security filter chain, which is required when resolving
+         * the tenant from an OAuth2 token.
+         */
+        private int order = Ordered.LOWEST_PRECEDENCE;
 
         /**
          * Comma-separated list of HTTP request paths for which the tenant resolution will
@@ -124,6 +158,14 @@ public class HttpTenantResolutionProperties {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public int getOrder() {
+            return order;
+        }
+
+        public void setOrder(int order) {
+            this.order = order;
         }
 
         public Set<String> getIgnorePaths() {
@@ -147,7 +189,8 @@ public class HttpTenantResolutionProperties {
     public enum HttpResolutionMode {
 
         COOKIE,
-        HEADER;
+        HEADER,
+        OAUTH2;
 
     }
 

@@ -11,6 +11,7 @@ import io.micrometer.common.KeyValue;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -35,9 +36,11 @@ import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
  * Establish a tenant context from an HTTP request, if tenant information is available.
  */
 @Incubating
-public final class TenantContextFilter extends OncePerRequestFilter {
+public final class TenantContextFilter extends OncePerRequestFilter implements Ordered {
 
     private static final String MISSING_TENANT_ERROR_MESSAGE = "A tenant identifier must be specified for HTTP requests to %s";
+
+    private final int order;
 
     private final HttpRequestTenantResolver httpRequestTenantResolver;
 
@@ -53,12 +56,13 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
-    private TenantContextFilter(HttpRequestTenantResolver httpRequestTenantResolver,
+    private TenantContextFilter(int order, HttpRequestTenantResolver httpRequestTenantResolver,
             TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, ApplicationEventPublisher eventPublisher,
             @Nullable TenantVerifier tenantVerifier, @Nullable TenantObservationFilter tenantObservationFilter) {
         Assert.notNull(httpRequestTenantResolver, "httpRequestTenantResolver cannot be null");
         Assert.notNull(tenantContextIgnorePathMatcher, "ignorePathMatcher cannot be null");
         Assert.notNull(eventPublisher, "eventPublisher cannot be null");
+        this.order = order;
         this.httpRequestTenantResolver = httpRequestTenantResolver;
         this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
         this.eventPublisher = eventPublisher;
@@ -122,6 +126,11 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         return tenantContextIgnorePathMatcher.matches(request);
     }
 
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
     private void handleTenantVerificationException(HttpServletResponse response, String exceptionMessage)
             throws IOException {
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exceptionMessage);
@@ -136,6 +145,8 @@ public final class TenantContextFilter extends OncePerRequestFilter {
 
     public static class Builder {
 
+        private int order = Ordered.LOWEST_PRECEDENCE;
+
         private HttpRequestTenantResolver httpRequestTenantResolver;
 
         private TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
@@ -149,6 +160,11 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         private TenantObservationFilter tenantObservationFilter;
 
         private Builder() {}
+
+        public Builder order(int order) {
+            this.order = order;
+            return this;
+        }
 
         public Builder httpRequestTenantResolver(HttpRequestTenantResolver httpRequestTenantResolver) {
             this.httpRequestTenantResolver = httpRequestTenantResolver;
@@ -176,8 +192,8 @@ public final class TenantContextFilter extends OncePerRequestFilter {
         }
 
         public TenantContextFilter build() {
-            return new TenantContextFilter(httpRequestTenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
-                    tenantVerifier, tenantObservationFilter);
+            return new TenantContextFilter(order, httpRequestTenantResolver, tenantContextIgnorePathMatcher,
+                    eventPublisher, tenantVerifier, tenantObservationFilter);
         }
 
     }

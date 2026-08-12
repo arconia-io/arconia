@@ -24,9 +24,13 @@ dependencies {
     implementation "tools.jackson.core:jackson-databind"
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
+    optional "org.springframework.security:spring-security-oauth2-core"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "jakarta.servlet:jakarta.servlet-api"
+    testImplementation "org.springframework.security:spring-security-oauth2-client"
+    testImplementation "org.springframework.security:spring-security-oauth2-jose"
+    testImplementation "org.springframework.security:spring-security-oauth2-resource-server"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

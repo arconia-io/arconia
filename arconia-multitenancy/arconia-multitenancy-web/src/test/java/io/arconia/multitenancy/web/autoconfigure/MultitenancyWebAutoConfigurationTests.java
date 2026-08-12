@@ -1,10 +1,26 @@
 package io.arconia.multitenancy.web.autoconfigure;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.StreamSupport;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletContextInitializerBeans;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
@@ -12,6 +28,7 @@ import io.arconia.multitenancy.web.context.filters.TenantContextIgnorePathMatche
 import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HeaderTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
+import io.arconia.multitenancy.web.context.resolvers.OAuth2TenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,10 +90,93 @@ class MultitenancyWebAutoConfigurationTests {
     }
 
     @Test
+    void httpRequestTenantResolverOauth2() {
+        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=oauth2").run(context -> {
+            assertThat(context).hasSingleBean(OAuth2TenantResolver.class);
+        });
+    }
+
+    @Test
+    void httpRequestTenantResolverOauth2CustomClaim() {
+        contextRunner
+                .withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=oauth2",
+                        "arconia.multitenancy.resolution.http.oauth2.claim-name=tid")
+                .run(context -> {
+                    var oauth2TenantResolver = context.getBean(OAuth2TenantResolver.class);
+                    var idToken = new OidcIdToken("token", Instant.now(), Instant.now().plusSeconds(60),
+                            Map.of("sub", "user", "tid", "myTenant"));
+                    var securityContext = SecurityContextHolder.createEmptyContext();
+                    securityContext.setAuthentication(new OAuth2AuthenticationToken(
+                            new DefaultOidcUser(AuthorityUtils.NO_AUTHORITIES, idToken), List.of(), "keycloak"));
+                    SecurityContextHolder.setContext(securityContext);
+                    try {
+                        assertThat(oauth2TenantResolver.resolveTenantIdentifier(new MockHttpServletRequest()))
+                                .isEqualTo("myTenant");
+                    }
+                    finally {
+                        SecurityContextHolder.clearContext();
+                    }
+                });
+    }
+
+    @Test
+    void httpRequestTenantResolverCustom() {
+        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=oauth2")
+                .withBean(HttpRequestTenantResolver.class, () -> request -> "customTenant")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(HttpRequestTenantResolver.class);
+                    assertThat(context).doesNotHaveBean(OAuth2TenantResolver.class);
+                });
+    }
+
+    @Test
     void tenantContextFilterDefault() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(TenantContextFilter.class);
         });
+    }
+
+    @Test
+    void tenantContextFilterOrderDefault() {
+        contextRunner.run(context -> {
+            assertThat(context.getBean(TenantContextFilter.class).getOrder()).isEqualTo(Ordered.LOWEST_PRECEDENCE);
+        });
+    }
+
+    @Test
+    void tenantContextFilterOrderCustom() {
+        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.order=-101").run(context -> {
+            assertThat(context.getBean(TenantContextFilter.class).getOrder()).isEqualTo(-101);
+        });
+    }
+
+    @Test
+    void tenantContextFilterRegisteredOnceWithConfiguredOrder() {
+        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.order=-101").run(context -> {
+            var registrations = filterRegistrations(context.getBeanFactory());
+            assertThat(registrations).singleElement().satisfies(registration -> {
+                assertThat(registration.getFilter()).isSameAs(context.getBean(TenantContextFilter.class));
+                assertThat(registration.getOrder()).isEqualTo(-101);
+            });
+        });
+    }
+
+    @Test
+    void tenantContextFilterRegistrationCanBeDisabled() {
+        contextRunner.withUserConfiguration(CustomFilterRegistrationConfiguration.class).run(context -> {
+            var registrations = filterRegistrations(context.getBeanFactory());
+            assertThat(registrations).singleElement().satisfies(registration -> {
+                assertThat(registration.getFilter()).isSameAs(context.getBean(TenantContextFilter.class));
+                assertThat(registration.isEnabled()).isFalse();
+            });
+        });
+    }
+
+    private static List<FilterRegistrationBean> filterRegistrations(ListableBeanFactory beanFactory) {
+        return StreamSupport.stream(new ServletContextInitializerBeans(beanFactory).spliterator(), false)
+                .filter(FilterRegistrationBean.class::isInstance)
+                .map(FilterRegistrationBean.class::cast)
+                .toList();
     }
 
     @Test
@@ -102,6 +202,18 @@ class MultitenancyWebAutoConfigurationTests {
     void tenantContextIgnorePathMatcherDisabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(TenantContextIgnorePathMatcher.class));
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomFilterRegistrationConfiguration {
+
+        @Bean
+        FilterRegistrationBean<TenantContextFilter> tenantContextFilterRegistration(TenantContextFilter filter) {
+            var registration = new FilterRegistrationBean<>(filter);
+            registration.setEnabled(false);
+            return registration;
+        }
+
     }
 
 }
