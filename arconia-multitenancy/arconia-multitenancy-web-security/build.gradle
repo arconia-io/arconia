@@ -1,0 +1,43 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-core")
+    api project(":arconia-multitenancy:arconia-multitenancy-web")
+    api "org.springframework.boot:spring-boot-webmvc"
+    api "org.springframework.security:spring-security-oauth2-core"
+
+    compileOnly "jakarta.servlet:jakarta.servlet-api"
+
+    implementation "tools.jackson.core:jackson-databind"
+
+    optional "org.springframework.boot:spring-boot-autoconfigure"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "jakarta.servlet:jakarta.servlet-api"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Multitenancy Web"
+                description = "Arconia Multitenancy Web"
+            }
+        }
+    }
+}
