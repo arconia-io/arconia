@@ -25,6 +25,7 @@ class JdbcTenantDetailsPropertiesTests {
     void defaultValues() {
         var properties = new JdbcTenantDetailsProperties();
 
+        assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getSchema()).isEqualTo(JdbcTenantDetailsProperties.DEFAULT_SCHEMA_LOCATION);
         assertThat(properties.getPlatform()).isNull();
         assertThat(properties.getInitializeSchema()).isEqualTo(DatabaseInitializationMode.EMBEDDED);

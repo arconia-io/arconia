@@ -66,6 +66,7 @@ dependencies {
 
         api project(":spring-boot-starters:arconia-docling-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-core-spring-boot-starter")
+        api project(":spring-boot-starters:arconia-multitenancy-details-jdbc-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-web-spring-boot-starter")
         api project(":spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
         api project(":spring-boot-starters:arconia-spring-boot-starter")

@@ -3,8 +3,8 @@ package io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure;
 import javax.sql.DataSource;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
-import io.arconia.multitenancy.core.autoconfigure.TenantDetailsProperties;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 import io.arconia.multitenancy.tenantdetails.jdbc.JdbcTenantDetailsService;
 
@@ -26,7 +25,7 @@ import io.arconia.multitenancy.tenantdetails.jdbc.JdbcTenantDetailsService;
  */
 @AutoConfiguration(after = DataSourceAutoConfiguration.class, before = MultitenancyCoreAutoConfiguration.class)
 @ConditionalOnSingleCandidate(DataSource.class)
-@ConditionalOnProperty(prefix = TenantDetailsProperties.CONFIG_PREFIX, name = "source", havingValue = "jdbc")
+@ConditionalOnBooleanProperty(prefix = JdbcTenantDetailsProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(JdbcTenantDetailsProperties.class)
 public final class JdbcTenantDetailsAutoConfiguration {
 

@@ -1,0 +1,30 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    api project(":arconia-spring-boot")
+    api project(":arconia-multitenancy:arconia-multitenancy-details-jdbc")
+    api "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-starter-jdbc"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Multitenancy Tenant Details JDBC Spring Boot Starter"
+                description = "Arconia Multitenancy Tenant Details JDBC Spring Boot Starter."
+            }
+        }
+    }
+}

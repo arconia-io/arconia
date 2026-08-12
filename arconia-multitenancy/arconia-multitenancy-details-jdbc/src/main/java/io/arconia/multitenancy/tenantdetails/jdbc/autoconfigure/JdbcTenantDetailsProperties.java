@@ -14,6 +14,19 @@ public class JdbcTenantDetailsProperties extends DatabaseInitializationPropertie
     static final String DEFAULT_SCHEMA_LOCATION = "classpath:io/arconia/"
             + "multitenancy/tenantdetails/jdbc/autoconfigure/schema-@@platform@@.sql";
 
+    /**
+     * Whether tenant details are loaded from a relational database.
+     */
+    private boolean enabled = true;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public String getDefaultSchemaLocation() {
         return DEFAULT_SCHEMA_LOCATION;

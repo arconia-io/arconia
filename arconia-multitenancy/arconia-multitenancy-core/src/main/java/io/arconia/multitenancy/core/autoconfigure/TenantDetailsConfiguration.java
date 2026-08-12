@@ -2,9 +2,9 @@ package io.arconia.multitenancy.core.autoconfigure;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.multitenancy.core.tenantdetails.DefaultTenantVerifier;
@@ -17,7 +17,7 @@ final class TenantDetailsConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(TenantDetailsService.class)
-    @ConditionalOnProperty(prefix = TenantDetailsProperties.CONFIG_PREFIX, name = "source", havingValue = "properties")
+    @Conditional(OnTenantsConfiguredCondition.class)
     PropertiesTenantDetailsService tenantDetailsService(TenantDetailsProperties tenantDetailsProperties) {
         return new PropertiesTenantDetailsService(tenantDetailsProperties);
     }

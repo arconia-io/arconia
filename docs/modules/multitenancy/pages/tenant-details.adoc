@@ -58,13 +58,12 @@ For simple use cases, you can define tenants directly in your application config
 arconia:
   multitenancy:
     details:
-      source: properties
       tenants:
         - identifier: acme
           enabled: true
           attributes:
             plan: premium
-            region: eu-nort-1
+            region: eu-north-1
         - identifier: beans
           enabled: true
         - identifier: pixie
@@ -73,15 +72,11 @@ arconia:
             onboarding: true
 ----
 
-When `source` is set to `properties`, Arconia auto-configures a `PropertiesTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
+As soon as at least one tenant is configured, Arconia auto-configures a `PropertiesTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
 
 .Tenant Details Configuration Properties
 |===
 |Property |Default |Description
-
-|`arconia.multitenancy.details.source`
-|`none`
-|The source of tenant details. Options: `none`, `properties`, `jdbc`.
 
 |`arconia.multitenancy.details.tenants`
 |`[]`
@@ -102,7 +97,7 @@ When `source` is set to `properties`, Arconia auto-configures a `PropertiesTenan
 
 == JDBC-Based Tenant Details
 
-For dynamic tenant management, tenant details can be stored in a relational database and loaded via JDBC. Add the Arconia Multitenancy Tenant Details JDBC dependency to your project.
+For dynamic tenant management, tenant details can be stored in a relational database and loaded via JDBC. Add the Arconia Multitenancy Tenant Details JDBC Spring Boot Starter dependency to your project.
 
 [tabs]
 ======
@@ -111,7 +106,7 @@ Gradle::
 [source,groovy]
 ----
 dependencies {
-    implementation 'io.arconia:arconia-multitenancy-details-jdbc'
+    implementation 'io.arconia:arconia-multitenancy-details-jdbc-spring-boot-starter'
 }
 ----
 
@@ -121,20 +116,14 @@ Maven::
 ----
 <dependency>
     <groupId>io.arconia</groupId>
-    <artifactId>arconia-multitenancy-details-jdbc</artifactId>
+    <artifactId>arconia-multitenancy-details-jdbc-spring-boot-starter</artifactId>
 </dependency>
 ----
 ======
 
-When `source` is set to `jdbc`, Arconia auto-configures a `JdbcTenantDetailsService` that loads tenant details from the `DataSource` available in the application.
+The dependency is all you need: Arconia auto-configures a `JdbcTenantDetailsService` that loads tenant details from the `DataSource` available in the application. No further configuration is required.
 
-[source,yaml]
-----
-arconia:
-  multitenancy:
-    details:
-      source: jdbc
-----
+If tenants are also declared via `arconia.multitenancy.details.tenants`, the JDBC implementation takes precedence. Set `arconia.multitenancy.details.jdbc.enabled` to `false` to use the configured list instead, without removing the dependency.
 
 Tenants are stored in a `tenant_details` table and their attributes in a `tenant_details_attributes` table.
 
@@ -166,6 +155,10 @@ For a database without a bundled script, point `schema` to your own script. The 
 .JDBC Tenant Details Configuration Properties
 |===
 |Property |Default |Description
+
+|`arconia.multitenancy.details.jdbc.enabled`
+|`true`
+|Whether tenant details are loaded from a relational database.
 
 |`arconia.multitenancy.details.jdbc.initialize-schema`
 |`embedded`
@@ -211,7 +204,7 @@ TenantDetailsService tenantDetailsService(TenantRepository tenantRepository) {
 }
 ----
 
-When a custom `TenantDetailsService` is registered, tenant verification is automatically enabled.
+When a custom `TenantDetailsService` is registered, it takes precedence over the built-in implementations, and tenant verification is automatically enabled.
 
 == Tenant Verification
 

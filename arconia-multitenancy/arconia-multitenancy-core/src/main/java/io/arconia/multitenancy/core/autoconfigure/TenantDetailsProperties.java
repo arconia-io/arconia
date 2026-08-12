@@ -16,22 +16,9 @@ public class TenantDetailsProperties {
     public static final String CONFIG_PREFIX = "arconia.multitenancy.details";
 
     /**
-     * The source of tenant details.
-     */
-    private Source source = Source.NONE;
-
-    /**
      * List of tenant details.
      */
     private List<TenantConfig> tenants = new ArrayList<>();
-
-    public Source getSource() {
-        return source;
-    }
-
-    public void setSource(Source source) {
-        this.source = source;
-    }
 
     public List<TenantConfig> getTenants() {
         return tenants;
@@ -39,12 +26,6 @@ public class TenantDetailsProperties {
 
     public void setTenants(List<TenantConfig> tenants) {
         this.tenants = tenants;
-    }
-
-    public enum Source {
-
-        NONE, PROPERTIES, JDBC
-
     }
 
     public static class TenantConfig {
