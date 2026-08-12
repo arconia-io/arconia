@@ -17,9 +17,9 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 
 /**
- * a {@link TenantDetailsService} backed by a JDBC.
+ * A {@link TenantDetailsService} backed by a JDBC data source.
  */
-public class JdbcTenantDetailsService implements TenantDetailsService {
+public final class JdbcTenantDetailsService implements TenantDetailsService {
 
     private final ResultSetExtractor<List<TenantDetails>> resultSetExtractor = rs -> {
         var tenants = new HashMap<String, Tenant.Builder>();
@@ -50,24 +50,25 @@ public class JdbcTenantDetailsService implements TenantDetailsService {
 
     private final JdbcClient jdbcClient;
 
-    public JdbcTenantDetailsService(DataSource jdbcClient) {
-        Assert.notNull(jdbcClient, "db cannot be null");
-        this.jdbcClient = JdbcClient.create(jdbcClient);
+    public JdbcTenantDetailsService(DataSource dataSource) {
+        Assert.notNull(dataSource, "dataSource cannot be null");
+        this.jdbcClient = JdbcClient.create(dataSource);
     }
 
     @Override
     public List<? extends TenantDetails> loadAllTenants() {
-        return this.jdbcClient //
-                .sql(this.sql) //
+        return this.jdbcClient
+                .sql(this.sql)
                 .query(this.resultSetExtractor);
     }
 
     @Override
     public @Nullable TenantDetails loadTenantByIdentifier(String identifier) {
-        var all = this.jdbcClient //
-                .sql(this.sql + " where td.identifier = ?") //
+        var all = this.jdbcClient
+                .sql(this.sql + " where td.identifier = ?")
                 .params(identifier) //
                 .query(this.resultSetExtractor);
         return all.isEmpty() ? null : all.getFirst();
     }
+
 }

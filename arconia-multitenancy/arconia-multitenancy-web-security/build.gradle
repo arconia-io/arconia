@@ -35,8 +35,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Multitenancy Web"
-                description = "Arconia Multitenancy Web"
+                name = "Arconia Multitenancy Web Security"
+                description = "Arconia Multitenancy Web Security"
             }
         }
     }

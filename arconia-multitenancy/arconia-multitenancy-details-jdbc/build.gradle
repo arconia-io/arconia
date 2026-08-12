@@ -17,16 +17,11 @@ dependencies {
 
     api project(":arconia-core")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
-    api "org.springframework.boot:spring-boot-starter-jdbc"
-
-    compileOnly "jakarta.servlet:jakarta.servlet-api"
-
-    implementation "tools.jackson.core:jackson-databind"
+    api "org.springframework.boot:spring-boot-jdbc"
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "jakarta.servlet:jakarta.servlet-api"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
@@ -34,8 +29,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Multitenancy Data"
-                description = "Arconia Multitenancy Data"
+                name = "Arconia Multitenancy TenantDetails JDBC"
+                description = "Arconia Multitenancy TenantDetails JDBC"
             }
         }
     }

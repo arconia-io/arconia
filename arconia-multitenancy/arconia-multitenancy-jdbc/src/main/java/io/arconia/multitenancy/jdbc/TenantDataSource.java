@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.core.jdbc;
+package io.arconia.multitenancy.jdbc;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +20,7 @@ import io.arconia.multitenancy.core.context.TenantContext;
  * selects the appropriate tenant-specific datasource or, if configured,
  * the primary (administrative) datasource.
  */
-public class TenantDataSource extends DelegatingDataSource {
+public final class TenantDataSource extends DelegatingDataSource {
 
     public TenantDataSource(Function <String, DataSource> tenantDataSourceSupplier) {
         var db = this.create(null, tenantDataSourceSupplier);
