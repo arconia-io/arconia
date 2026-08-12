@@ -8,7 +8,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 /**
  * Unit tests for {@link JdbcTenantDetailsService} backed by an H2 database.
  */
-class H2JdbcTenantDetailsServiceTests extends BaseJdbcTenantDetailsServiceTests {
+class H2JdbcTenantDetailsServiceIT extends BaseJdbcTenantDetailsServiceIT {
 
     private final EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
         .generateUniqueName(true)

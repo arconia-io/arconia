@@ -13,7 +13,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  */
 @EnabledIfDockerAvailable
 @Testcontainers
-class PostgresqlJdbcTenantDetailsServiceIT extends BaseJdbcTenantDetailsServiceTests {
+class PostgresqlJdbcTenantDetailsServiceIT extends BaseJdbcTenantDetailsServiceIT {
 
     @Container
     static final PostgreSQLContainer postgresql = new PostgreSQLContainer("postgres:18.4-alpine");

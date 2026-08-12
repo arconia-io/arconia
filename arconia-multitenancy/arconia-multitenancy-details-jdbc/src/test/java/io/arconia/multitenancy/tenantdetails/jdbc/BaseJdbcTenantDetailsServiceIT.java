@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.entry;
  * To cover an additional database, add {@code schema-<platform>.sql} and
  * {@code schema-drop-<platform>.sql} to the module and extend this class.
  */
-abstract class BaseJdbcTenantDetailsServiceTests {
+abstract class BaseJdbcTenantDetailsServiceIT {
 
     private static final String SCRIPTS_LOCATION = "io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/";
 

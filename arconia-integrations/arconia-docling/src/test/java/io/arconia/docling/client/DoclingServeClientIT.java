@@ -33,7 +33,7 @@ import io.arconia.docling.actuate.DoclingServeHealthIndicator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers(disabledWithoutDocker = true)
-class DoclingServeClientTests {
+class DoclingServeClientIT {
 
     @Container
     private static final GenericContainer<?> doclingContainer = new DoclingServeContainer(DoclingServeContainerConfig.builder()
