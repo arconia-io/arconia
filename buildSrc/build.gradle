@@ -9,7 +9,7 @@ repositories {
 }
 
 ext {
-    set("cycloneDxVersion", '3.3.0')
+    set("cycloneDxVersion", '3.4.1')
     set("graalvmToolsVersion", '1.1.6')
     set("springBootVersion", '4.1.0')
     set("dependencyManagementVersion", '1.1.7')
@@ -20,14 +20,6 @@ dependencies {
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
     implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-    constraints {
-        implementation("com.fasterxml.jackson.core:jackson-core:2.22.1") {
-            because "GHSA-72hv-8253-57qq: Upgrade transitive dependency from CycloneDX Gradle plugin"
-        }
-        implementation("org.codehaus.plexus:plexus-utils:3.6.1") {
-            because "CVE-2025-67030: Upgrade transitive dependency from CycloneDX Gradle plugin"
-        }
-    }
 }
 
 gradlePlugin {
