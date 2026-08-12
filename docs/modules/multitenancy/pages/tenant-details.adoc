@@ -81,7 +81,7 @@ When `source` is set to `properties`, Arconia auto-configures a `PropertiesTenan
 
 |`arconia.multitenancy.details.source`
 |`none`
-|The source of tenant details. Options: `none`, `properties`.
+|The source of tenant details. Options: `none`, `properties`, `jdbc`.
 
 |`arconia.multitenancy.details.tenants`
 |`[]`
@@ -100,9 +100,93 @@ When `source` is set to `properties`, Arconia auto-configures a `PropertiesTenan
 |Additional metadata for the tenant as key-value pairs.
 |===
 
+== JDBC-Based Tenant Details
+
+For dynamic tenant management, tenant details can be stored in a relational database and loaded via JDBC. Add the Arconia Multitenancy Tenant Details JDBC dependency to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-multitenancy-details-jdbc'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-multitenancy-details-jdbc</artifactId>
+</dependency>
+----
+======
+
+When `source` is set to `jdbc`, Arconia auto-configures a `JdbcTenantDetailsService` that loads tenant details from the `DataSource` available in the application.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    details:
+      source: jdbc
+----
+
+Tenants are stored in a `tenant_details` table and their attributes in a `tenant_details_attributes` table.
+
+For example, this is how the tables are created in a PostgreSQL database:
+
+[source,sql]
+----
+create table tenant_details
+(
+    id         serial primary key,
+    identifier text default pg_catalog.gen_random_uuid() not null unique,
+    enabled    boolean default true not null,
+    created_at timestamp default now() not null
+);
+
+create table tenant_details_attributes
+(
+    tenant_id       integer not null references tenant_details (id),
+    attribute_name  text not null,
+    attribute_value text not null,
+    primary key (tenant_id, attribute_name)
+);
+----
+
+Schema scripts are bundled for PostgreSQL and H2, together with matching scripts to drop the tables again. By default, the schema is initialized only when the application uses an embedded database. Set `initialize-schema` to `always` to initialize any database, or to `never` when you manage the schema yourself, for example with Flyway or Liquibase.
+
+For a database without a bundled script, point `schema` to your own script. The `@@platform@@` placeholder in the location is replaced with the identifier of the database driver in use.
+
+.JDBC Tenant Details Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.details.jdbc.initialize-schema`
+|`embedded`
+|Database schema initialization mode. Options: `always`, `embedded`, `never`.
+
+|`arconia.multitenancy.details.jdbc.schema`
+|`classpath:io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/schema-@@platform@@.sql`
+|Path to the SQL file to use to initialize the database schema.
+
+|`arconia.multitenancy.details.jdbc.platform`
+|
+|Platform to use in the schema script if the `@@platform@@` placeholder is used. Auto-detected by default.
+
+|`arconia.multitenancy.details.jdbc.continue-on-error`
+|`true`
+|Whether initialization should continue when an error occurs when applying the schema script.
+|===
+
 == Custom TenantDetailsService
 
-For dynamic tenant management (e.g., loading tenants from a database), implement the `TenantDetailsService` interface and register it as a Spring bean:
+For dynamic tenant management from another source, implement the `TenantDetailsService` interface and register it as a Spring bean:
 
 [source,java]
 ----

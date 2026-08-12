@@ -19,3 +19,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Pulsar
 
 * The `arconia.dev.services.pulsar.management-console-port` property has been renamed to `arconia.dev.services.pulsar.admin-port`. The port it configures exposes the Pulsar HTTP admin API, not a management console: unlike the Artemis, LLDAP, and RabbitMQ Dev Services, which keep the `management-console-port` name, Pulsar ships no web console. If you set the old property, rename it; the other Dev Services are unaffected. Learn more about xref:dev-services:pulsar.adoc#_accessing_the_admin_api[Accessing the Admin API].
+
+== Multitenancy
+
+=== Tenant Details
+
+* Tenant details can now be stored in a relational database, via the new `arconia-multitenancy-details-jdbc` artifact. Setting `arconia.multitenancy.details.source` to `jdbc` auto-configures a `JdbcTenantDetailsService` that loads tenants and their attributes from the `DataSource` available in the application, so tenants can be added and disabled without restarting it. Until now, the only built-in source was the application configuration, which requires the full list of tenants to be known upfront. Learn more about xref:multitenancy:tenant-details.adoc#_jdbc_based_tenant_details[JDBC-Based Tenant Details].
+* Schema scripts for the tenant details tables are bundled for PostgreSQL and H2. Following the same convention as the Spring Boot SQL initialization, they are applied only when the application uses an embedded database. Use the new `arconia.multitenancy.details.jdbc.initialize-schema` property to initialize any database or to opt out entirely when you manage the schema yourself, for example with Flyway or Liquibase.

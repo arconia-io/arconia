@@ -1,5 +1,6 @@
 package io.arconia.multitenancy.tenantdetails.jdbc;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
@@ -8,12 +9,11 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
  */
 class JdbcTenantDetailsHints implements RuntimeHintsRegistrar {
 
-    @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    static final String SCHEMA_SCRIPTS_PATTERN = "io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/schema-*.sql";
 
-        for (var sql : new String[]{"io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/schema-postgresql.sql",
-                "io/arconia/multitenancy/data/autoconfigure/schema-drop-postgresql.sql"})
-            hints.resources().registerPattern(sql);
+    @Override
+    public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+        hints.resources().registerPattern(SCHEMA_SCRIPTS_PATTERN);
     }
 
 }

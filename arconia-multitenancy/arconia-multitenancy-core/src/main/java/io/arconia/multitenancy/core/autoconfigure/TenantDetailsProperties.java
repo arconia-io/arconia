@@ -43,7 +43,7 @@ public class TenantDetailsProperties {
 
     public enum Source {
 
-        NONE, PROPERTIES
+        NONE, PROPERTIES, JDBC
 
     }
 

@@ -1,7 +1,6 @@
 package io.arconia.multitenancy.tenantdetails.jdbc;
 
-
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -17,58 +16,96 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 
 /**
- * A {@link TenantDetailsService} backed by a JDBC data source.
+ * An implementation of {@link TenantDetailsService} that uses a relational database as
+ * the source for the tenant details, accessed via JDBC.
+ * <p>
+ * Tenants are read from a {@code tenant_details} table and their attributes from a
+ * {@code tenant_details_attributes} table. Schema scripts for the supported databases are
+ * bundled with this module and can be applied at startup.
  */
 public final class JdbcTenantDetailsService implements TenantDetailsService {
 
-    private final ResultSetExtractor<List<TenantDetails>> resultSetExtractor = rs -> {
-        var tenants = new HashMap<String, Tenant.Builder>();
+    private static final String SELECT_TENANTS = """
+            select td.identifier, td.enabled, tda.attribute_name, tda.attribute_value
+            from tenant_details td
+            left join tenant_details_attributes tda on td.id = tda.tenant_id
+            """;
+
+    private static final String SELECT_TENANT_BY_IDENTIFIER = SELECT_TENANTS + "where td.identifier = ?";
+
+    private static final ResultSetExtractor<List<Tenant>> tenantExtractor = rs -> {
+        var tenants = new LinkedHashMap<String, Tenant.Builder>();
         while (rs.next()) {
             var identifier = rs.getString("identifier");
             var enabled = rs.getBoolean("enabled");
+            var tenant = tenants.computeIfAbsent(identifier,
+                    _ -> Tenant.builder().identifier(identifier).enabled(enabled));
             var attributeName = rs.getString("attribute_name");
             var attributeValue = rs.getString("attribute_value");
-            var tenant = tenants.computeIfAbsent(identifier, _ -> Tenant.builder().identifier(identifier).enabled(enabled));
-            if (StringUtils.hasText(attributeName) && StringUtils.hasText(attributeValue))
+            if (StringUtils.hasText(attributeName) && StringUtils.hasText(attributeValue)) {
                 tenant.addAttribute(attributeName, attributeValue);
+            }
         }
-        return tenants
-                .values()
-                .stream()
-                .map(t -> (TenantDetails) t.build())
-                .toList();
+        return tenants.values().stream().map(Tenant.Builder::build).toList();
     };
-
-    private final String sql = """
-            select
-                *
-            from
-              tenant_details td
-            left join tenant_details_attributes tda on
-                td.id = tda.tenant_id
-            """;
 
     private final JdbcClient jdbcClient;
 
-    public JdbcTenantDetailsService(DataSource dataSource) {
-        Assert.notNull(dataSource, "dataSource cannot be null");
-        this.jdbcClient = JdbcClient.create(dataSource);
+    private JdbcTenantDetailsService(JdbcClient jdbcClient) {
+        Assert.notNull(jdbcClient, "jdbcClient cannot be null");
+        this.jdbcClient = jdbcClient;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
     public List<? extends TenantDetails> loadAllTenants() {
-        return this.jdbcClient
-                .sql(this.sql)
-                .query(this.resultSetExtractor);
+        return query(SELECT_TENANTS);
     }
 
     @Override
     public @Nullable TenantDetails loadTenantByIdentifier(String identifier) {
-        var all = this.jdbcClient
-                .sql(this.sql + " where td.identifier = ?")
-                .params(identifier) //
-                .query(this.resultSetExtractor);
-        return all.isEmpty() ? null : all.getFirst();
+        Assert.hasText(identifier, "identifier cannot be null or empty");
+        var tenants = query(SELECT_TENANT_BY_IDENTIFIER, identifier);
+        return tenants.isEmpty() ? null : tenants.getFirst();
+    }
+
+    private List<Tenant> query(String sql, Object... params) {
+        var tenants = this.jdbcClient.sql(sql).params(params).query(tenantExtractor);
+        return tenants != null ? tenants : List.of();
+    }
+
+    public static final class Builder {
+
+        @Nullable
+        private JdbcClient jdbcClient;
+
+        private Builder() {}
+
+        /**
+         * The client used to access the database holding the tenant details.
+         */
+        public Builder jdbcClient(JdbcClient jdbcClient) {
+            this.jdbcClient = jdbcClient;
+            return this;
+        }
+
+        /**
+         * The data source for the database holding the tenant details. A dedicated
+         * {@link JdbcClient} is created for it.
+         */
+        public Builder dataSource(DataSource dataSource) {
+            Assert.notNull(dataSource, "dataSource cannot be null");
+            this.jdbcClient = JdbcClient.create(dataSource);
+            return this;
+        }
+
+        public JdbcTenantDetailsService build() {
+            return new JdbcTenantDetailsService(jdbcClient);
+        }
+
     }
 
 }
