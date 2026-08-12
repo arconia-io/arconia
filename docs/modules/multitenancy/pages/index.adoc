@@ -188,3 +188,12 @@ The xref:web.adoc[web module] (`arconia-multitenancy-web-spring-boot-starter`) a
 * The `@TenantIdentifier` annotation for injecting the tenant into controller methods.
 
 The web starter includes the core module, so all core features are available automatically.
+
+=== Data JDBC
+
+The xref:data-jdbc.adoc[Data JDBC module] (`arconia-multitenancy-data-jdbc`) adds tenant-aware data access for the database-per-tenant isolation strategy:
+
+* A `TenantDataSource` that routes each connection request to the database belonging to the current tenant.
+* Per-tenant data sources registered upfront or created on demand and cached.
+
+It builds on plain JDBC and works with `JdbcClient`, `JdbcTemplate`, and Spring Data JDBC alike. Unlike the other modules, it ships no auto-configuration, so it has no starter: add the artifact and declare the `TenantDataSource` bean yourself.

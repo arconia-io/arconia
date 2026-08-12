@@ -12,16 +12,12 @@ java {
 }
 
 dependencies {
-    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-
     api project(":arconia-core")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-jdbc"
 
-    optional "org.springframework.boot:spring-boot-autoconfigure"
-
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
@@ -29,8 +25,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Multitenancy JDBC"
-                description = "Arconia Multitenancy JDBC."
+                name = "Arconia Multitenancy Data JDBC"
+                description = "Arconia Multitenancy Data JDBC."
             }
         }
     }

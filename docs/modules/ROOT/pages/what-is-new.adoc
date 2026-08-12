@@ -22,6 +22,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Multitenancy
 
+=== Data Access
+
+* Tenant-aware data access is now available via the new `arconia-multitenancy-data-jdbc` artifact, supporting the database-per-tenant isolation strategy. Declare a `TenantDataSource` bean and each connection request is routed to the database belonging to the current tenant, either from data sources registered upfront or from a factory that creates them on demand and caches the result. It builds on plain JDBC, so it works with `JdbcClient`, `JdbcTemplate`, and Spring Data JDBC alike. An unknown tenant never falls back to the default data source, so a missing registration cannot silently expose another tenant's data. Learn more about xref:multitenancy:data-jdbc.adoc[Data JDBC].
+
 === Tenant Resolution
 
 * The tenant can now be resolved from a claim in the OAuth2 token that authenticated the request, via the new `oauth2` value for the `arconia.multitenancy.resolution.http.resolution-mode` property. It covers both OAuth2 client applications, where the claim is read from the ID token and the UserInfo response, and OAuth2 resource servers, where it is read from the access token, whether it is a JWT or an opaque token resolved via introspection. Use the new `arconia.multitenancy.resolution.http.oauth2.claim-name` property to configure which claim holds the tenant identifier (`tenant_id` by default). Learn more about xref:multitenancy:web.adoc#_oauth2_based_resolution[OAuth2-Based Resolution].

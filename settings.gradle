@@ -50,7 +50,7 @@ include 'arconia-integrations:arconia-docling'
 include 'arconia-multitenancy:arconia-multitenancy-core'
 include 'arconia-multitenancy:arconia-multitenancy-web'
 include 'arconia-multitenancy:arconia-multitenancy-details-jdbc'
-include 'arconia-multitenancy:arconia-multitenancy-jdbc'
+include 'arconia-multitenancy:arconia-multitenancy-data-jdbc'
 
 // Observation
 include 'arconia-observation:arconia-observation'

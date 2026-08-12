@@ -1,0 +1,103 @@
+= Data JDBC
+
+The Arconia Multitenancy Data JDBC module provides a tenant-aware `DataSource` that routes each connection request to the database belonging to the current tenant, supporting the database-per-tenant isolation strategy.
+
+It builds on plain JDBC and does not require Spring Data. Because Spring Data JDBC uses whichever `DataSource` you give it, the same `TenantDataSource` works for `JdbcClient`, `JdbcTemplate`, and Spring Data JDBC repositories without any additional configuration.
+
+== Dependencies
+
+Add the Arconia Multitenancy Data JDBC dependency to your project. This module is a library: it ships no auto-configuration, so there is no starter.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'io.arconia:arconia-multitenancy-data-jdbc'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-multitenancy-data-jdbc</artifactId>
+</dependency>
+----
+======
+
+It requires a xref:tenant-context.adoc[tenant context] to be established, which the xref:web.adoc[web module] does automatically for each HTTP request.
+
+== TenantDataSource
+
+Declare a `TenantDataSource` bean and register the data source for each tenant.
+
+[source,java]
+----
+import javax.sql.DataSource;
+
+import io.arconia.multitenancy.data.jdbc.TenantDataSource;
+
+@Bean
+TenantDataSource tenantDataSource(DataSource acmeDataSource, DataSource beansDataSource) {
+    return TenantDataSource.builder()
+        .dataSource("acme", acmeDataSource)
+        .dataSource("beans", beansDataSource)
+        .build();
+}
+----
+
+Tenants that are not known upfront can be served by a factory, which is invoked at most once per tenant and whose result is cached.
+
+[source,java]
+----
+@Bean
+TenantDataSource tenantDataSource(DataSource adminDataSource) {
+    return TenantDataSource.builder()
+        .defaultDataSource(adminDataSource)
+        .dataSourceFactory(this::createDataSource)
+        .build();
+}
+
+DataSource createDataSource(String tenantIdentifier) {
+    return DataSourceBuilder.create()
+        .url("jdbc:postgresql://localhost:5432/" + tenantIdentifier)
+        .build();
+}
+----
+
+The factory must not obtain its connections through the same `TenantDataSource`, since it is invoked while the cache entry for that tenant is being computed.
+
+=== Routing Behaviour
+
+[cols="2,3"]
+|===
+|Current tenant |Data source used
+
+|Registered via `dataSource()` or `dataSources()`
+|That data source.
+
+|Not registered, with a factory configured
+|The data source created by the factory, cached for subsequent requests.
+
+|Not registered, with no factory, or the factory returns `null`
+|`TenantNotFoundException`.
+
+|No tenant bound, with a default data source configured
+|The default data source.
+
+|No tenant bound, with no default data source
+|`TenantNotFoundException`.
+|===
+
+An unknown tenant never falls back to the default data source, so a missing registration cannot silently expose another tenant's data. The default data source is used only when no tenant is bound at all, such as in a scheduled job or during startup. If you omit it, any database access outside a tenant context fails.
+
+When accessing the database through `JdbcClient` or `JdbcTemplate`, a `TenantNotFoundException` surfaces wrapped in a `CannotGetJdbcConnectionException`, with the original exception available as its cause.
+
+=== Data Source Lifecycle
+
+`TenantDataSource` closes the data sources it created through the factory when the bean is destroyed. Data sources you pass to `dataSource()`, `dataSources()`, or `defaultDataSource()` are left untouched, because your application owns their lifecycle, typically as beans managed by Spring.

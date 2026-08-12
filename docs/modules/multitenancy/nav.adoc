@@ -5,3 +5,4 @@
 ** xref:tenant-details.adoc[Tenant Details]
 ** xref:observability.adoc[Observability]
 * xref:web.adoc[Web]
+* xref:data-jdbc.adoc[Data JDBC]
