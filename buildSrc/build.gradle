@@ -10,7 +10,7 @@ repositories {
 
 ext {
     set("cycloneDxVersion", '3.4.1')
-    set("graalvmToolsVersion", '1.1.6')
+    set("graalvmToolsVersion", '1.1.8')
     set("springBootVersion", '4.1.0')
     set("dependencyManagementVersion", '1.1.7')
 }
