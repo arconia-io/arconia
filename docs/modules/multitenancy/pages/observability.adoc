@@ -54,6 +54,13 @@ arconia:
       cardinality: low
 ----
 
+[WARNING]
+====
+What bounds the number of metric series is not the number of tenants you have, but the number of distinct identifiers that can reach the tenant context. Every value that gets bound becomes a metric series when the cardinality is `low`, including values that are rejected later in the request.
+
+The auto-configured xref:tenant-details.adoc#_tenant_identifier_validation[identifier validator] keeps that set narrow, and a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] narrows it to tenants that actually exist. If you replace the validator with a permissive one, do not use `low`.
+====
+
 === Configuration Properties
 
 .Observation Configuration Properties

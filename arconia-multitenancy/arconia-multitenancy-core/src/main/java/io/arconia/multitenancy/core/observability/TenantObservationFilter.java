@@ -16,17 +16,15 @@ import io.arconia.multitenancy.core.context.TenantContext;
 @Incubating
 public final class TenantObservationFilter implements ObservationFilter {
 
-    static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
+    private static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenant.id";
+
+    private static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
 
     private final String tenantIdentifierKey;
 
     private final Cardinality cardinality;
 
-    public TenantObservationFilter() {
-        this(DEFAULT_TENANT_IDENTIFIER_KEY, Cardinality.HIGH);
-    }
-
-    public TenantObservationFilter(String tenantIdentifierKey, Cardinality cardinality) {
+    private TenantObservationFilter(String tenantIdentifierKey, Cardinality cardinality) {
         Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be null or empty");
         Assert.notNull(cardinality, "cardinality cannot be null");
         this.tenantIdentifierKey = tenantIdentifierKey;
@@ -56,6 +54,49 @@ public final class TenantObservationFilter implements ObservationFilter {
         }
 
         return context;
+    }
+
+    /**
+     * Creates a new builder for {@link TenantObservationFilter}.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link TenantObservationFilter}.
+     */
+    public static final class Builder {
+
+        private String tenantIdentifierKey = DEFAULT_TENANT_IDENTIFIER_KEY;
+
+        private Cardinality cardinality = DEFAULT_CARDINALITY;
+
+        private Builder() {}
+
+        /**
+         * Name of the key to use for the tenant identifier in observations.
+         */
+        public Builder tenantIdentifierKey(String tenantIdentifierKey) {
+            this.tenantIdentifierKey = tenantIdentifierKey;
+            return this;
+        }
+
+        /**
+         * The cardinality of the tenant identifier key value.
+         */
+        public Builder cardinality(Cardinality cardinality) {
+            this.cardinality = cardinality;
+            return this;
+        }
+
+        /**
+         * Builds the {@link TenantObservationFilter} instance.
+         */
+        public TenantObservationFilter build() {
+            return new TenantObservationFilter(tenantIdentifierKey, cardinality);
+        }
+
     }
 
 }

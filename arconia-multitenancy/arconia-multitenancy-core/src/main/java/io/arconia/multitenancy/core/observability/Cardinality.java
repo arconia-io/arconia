@@ -1,13 +1,16 @@
 package io.arconia.multitenancy.core.observability;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * The cardinality of a tenant identifier key value in observations.
  *
  * <ul>
- * <li>{@link #HIGH} — the tenant identifier appears only in traces.
- * <li>{@link #LOW} — the tenant identifier appears in both metrics and traces.
+ * <li>{@link #HIGH} the tenant identifier appears only in traces.
+ * <li>{@link #LOW} the tenant identifier appears in both metrics and traces.
  * </ul>
  */
+@Incubating
 public enum Cardinality {
 
     /**

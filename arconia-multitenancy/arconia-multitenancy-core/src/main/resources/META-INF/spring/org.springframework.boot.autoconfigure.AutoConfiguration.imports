@@ -1,1 +1,2 @@
+io.arconia.multitenancy.core.autoconfigure.actuate.TenantsEndpointAutoConfiguration
 io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration

@@ -22,4 +22,12 @@ class TenantVerificationExceptionTests {
         assertThat(exception).hasMessageContaining(message);
     }
 
+    @Test
+    void whenCauseThenCauseIsRetained() {
+        var cause = new IllegalStateException("root cause");
+        var exception = new TenantVerificationException("Custom tenant exception message", cause);
+
+        assertThat(exception).hasMessageContaining("Custom tenant exception message").hasCause(cause);
+    }
+
 }

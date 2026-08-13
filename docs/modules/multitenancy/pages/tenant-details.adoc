@@ -1,6 +1,11 @@
 = Tenant Details
 
-Arconia Multitenancy provides an optional mechanism for managing tenant metadata and validating tenant identifiers against a known set of tenants.
+Arconia Multitenancy validates the syntax of every tenant identifier that enters the application, and provides an optional mechanism for managing tenant metadata and checking identifiers against a known set of tenants.
+
+Two distinct checks are involved, and they are configured independently:
+
+* Identifier validation inspects the identifier itself and is always applied. See <<_tenant_identifier_validation>>.
+* Tenant verification loads the tenant and checks that it exists and is enabled. It requires a `TenantDetailsService`. See <<_tenant_verification>>.
 
 == TenantDetails
 
@@ -47,7 +52,7 @@ public interface TenantDetailsService {
 }
 ----
 
-When a `TenantDetailsService` bean is available, a `DefaultTenantVerifier` is auto-configured that checks each resolved tenant identifier against the service. See <<_tenant_verification>> for details.
+When a `TenantDetailsService` bean is available, a `DefaultTenantVerifier` is auto-configured that checks each resolved tenant identifier against the service. See <<_tenant_verification>> for details. Identifier syntax is validated separately, whether or not a `TenantDetailsService` is configured.
 
 == Properties-Based Tenant Details
 
@@ -206,9 +211,60 @@ TenantDetailsService tenantDetailsService(TenantRepository tenantRepository) {
 
 When a custom `TenantDetailsService` is registered, it takes precedence over the built-in implementations, and tenant verification is automatically enabled.
 
+== Tenant Identifier Validation
+
+Before a tenant is looked up, the syntax of the resolved identifier is validated. The identifier arrives from an untrusted source such as an HTTP header or a subdomain, and it goes on to select tenant-specific resources, so it is checked at the boundary regardless of how tenant details are configured.
+
+The `TenantIdentifierValidator` interface defines the contract:
+
+[source,java]
+----
+public interface TenantIdentifierValidator {
+
+    void validate(String tenantIdentifier);
+
+}
+----
+
+Arconia always auto-configures a `DefaultTenantIdentifierValidator`. It accepts identifiers made up of alphanumeric characters, dashes, and underscores, up to 64 characters. Anything else is rejected with a `TenantVerificationException`, resulting in an HTTP `400 Bad Request` response.
+
+To accept longer identifiers, register the default implementation with a different limit:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.tenantdetails.DefaultTenantIdentifierValidator;
+import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
+
+@Bean
+TenantIdentifierValidator tenantIdentifierValidator() {
+    return DefaultTenantIdentifierValidator.builder()
+        .maxLength(128)
+        .build();
+}
+----
+
+For a different set of accepted characters, provide your own implementation. It takes precedence over the auto-configured default:
+
+[source,java]
+----
+import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
+import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
+
+@Bean
+TenantIdentifierValidator tenantIdentifierValidator() {
+    return tenantIdentifier -> {
+        if (!tenantIdentifier.matches("[a-z0-9]{8}")) {
+            throw new TenantVerificationException("The tenant identifier must be 8 lowercase alphanumeric characters");
+        }
+    };
+}
+----
+
+Keep a custom validator strict. A tenant identifier that passes validation can be used to select a database, a schema, or a cache partition, and it is recorded in logs and observations.
+
 == Tenant Verification
 
-The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier is valid and allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled.
+The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier belongs to a tenant that exists and is allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled. Unlike identifier validation, verification is only applied when a `TenantDetailsService` is configured.
 
 Entry points such as the xref:web.adoc[`TenantContextFilter`] call the verifier directly before establishing the tenant context. If verification fails, a `TenantVerificationException` is thrown, resulting in an HTTP `400 Bad Request` response.
 
@@ -225,3 +281,90 @@ TenantVerifier tenantVerifier() {
     };
 }
 ----
+
+== Actuator
+
+=== Tenants Endpoint
+
+When https://docs.spring.io/spring-boot/reference/actuator/enabling.html[Spring Boot Actuator] is present in the classpath and a `TenantDetailsService` is available, Arconia auto-configures a `tenants` actuator endpoint. It exposes the tenants known to the application, so you can check at runtime which tenants are registered and which of them are enabled.
+
+By default, Spring Boot exposes only the `health` endpoint over HTTP. To access the `tenants` endpoint, include it in the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.exposing[web exposure configuration]:
+
+[source,yaml]
+----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: tenants
+----
+
+.Tenants Endpoint Configuration Properties
+|===
+|Property |Default |Description
+
+|`management.endpoint.tenants.access`
+|`unrestricted`
+|Permitted level of access for the tenants endpoint. Options: `none`, `read-only`, `unrestricted`.
+
+|`management.endpoint.tenants.cache.time-to-live`
+|`0ms`
+|Maximum time that a response can be cached.
+|===
+
+==== List All Tenants
+
+[source,bash]
+----
+http :8080/actuator/tenants
+----
+
+Response example:
+
+[source,json]
+----
+{
+  "tenants": [
+    {
+      "identifier": "acme",
+      "enabled": true
+    },
+    {
+      "identifier": "beans",
+      "enabled": true
+    },
+    {
+      "identifier": "pixie",
+      "enabled": false
+    }
+  ]
+}
+----
+
+==== Show a Single Tenant
+
+[source,bash]
+----
+http :8080/actuator/tenants/acme
+----
+
+Response example:
+
+[source,json]
+----
+{
+  "identifier": "acme",
+  "enabled": true,
+  "attributeNames": [
+    "plan",
+    "region"
+  ]
+}
+----
+
+An unknown tenant identifier returns HTTP `404 Not Found`.
+
+[NOTE]
+====
+The endpoint reports attribute names but never attribute values. Tenant attributes are defined by the application and may carry credentials or connection details, which should not be readable from an actuator endpoint. Use the `TenantDetailsService` directly when you need the values.
+====

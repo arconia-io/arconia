@@ -18,22 +18,27 @@ public class TenantDetailsProperties {
     /**
      * List of tenant details.
      */
-    private List<TenantConfig> tenants = new ArrayList<>();
+    private final List<TenantConfig> tenants = new ArrayList<>();
 
     public List<TenantConfig> getTenants() {
         return tenants;
     }
 
-    public void setTenants(List<TenantConfig> tenants) {
-        this.tenants = tenants;
-    }
-
     public static class TenantConfig {
 
+        /**
+         * Identifier for the tenant.
+         */
         private String identifier;
 
+        /**
+         * Whether the tenant is enabled.
+         */
         private boolean enabled = true;
 
+        /**
+         * Additional information about the tenant.
+         */
         private Map<String, Object> attributes = Map.of();
 
         public String getIdentifier() {

@@ -22,4 +22,12 @@ class TenantNotFoundExceptionTests {
         assertThat(exception).hasMessageContaining(message);
     }
 
+    @Test
+    void whenCauseThenCauseIsRetained() {
+        var cause = new IllegalArgumentException("root cause");
+        var exception = new TenantNotFoundException("Custom tenant exception message", cause);
+
+        assertThat(exception).hasMessageContaining("Custom tenant exception message").hasCause(cause);
+    }
+
 }

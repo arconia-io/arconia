@@ -2,9 +2,12 @@ package io.arconia.multitenancy.core.tenantdetails;
 
 import java.util.Map;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Provides core tenant information.
  */
+@Incubating
 public interface TenantDetails {
 
     /**

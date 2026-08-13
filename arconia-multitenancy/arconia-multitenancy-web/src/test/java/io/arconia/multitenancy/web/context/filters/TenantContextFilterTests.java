@@ -181,7 +181,8 @@ class TenantContextFilterTests {
             .httpRequestTenantResolver(new HeaderTenantResolver())
             .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher)
-            .tenantObservationFilter(new TenantObservationFilter("tenant.id", Cardinality.HIGH))
+            .tenantObservationFilter(
+                    TenantObservationFilter.builder().tenantIdentifierKey("tenant.id").cardinality(Cardinality.HIGH).build())
             .build();
 
         filter.doFilter(request, response, filterChain);

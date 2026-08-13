@@ -44,6 +44,46 @@ TenantContext.where("acme").run(() -> {
 });
 ----
 
+The tenant identifier must not be null or empty. `TenantContext.where()` rejects both with an `IllegalArgumentException`.
+
+=== Context Propagation Across Threads
+
+A `ScopedValue` binding belongs to the thread that established it. It is not inherited by threads started from within the scope, so the tenant context is not visible in:
+
+* methods annotated with `@Async`
+* tasks submitted to an `Executor` or `ExecutorService`
+* `CompletableFuture` stages that run on another thread
+* methods annotated with `@Scheduled`, which run outside any request
+
+In those threads, `TenantContext.getTenantIdentifier()` returns `null` and `getRequiredTenantIdentifier()` throws a `TenantNotFoundException`. Rebind the tenant explicitly on the other thread:
+
+[source,java]
+----
+String tenantId = TenantContext.getRequiredTenantIdentifier();
+
+executor.submit(() -> TenantContext.where(tenantId).run(() -> {
+    // Business logic with tenant context
+}));
+----
+
+The one case that inherits the binding without any extra work is a `StructuredTaskScope` fork, since its threads are children of the scope that owns the binding:
+
+[source,java]
+----
+TenantContext.where("acme").run(() -> {
+    try (var scope = StructuredTaskScope.open()) {
+        // TenantContext.getTenantIdentifier() returns "acme" inside the fork
+        var task = scope.fork(() -> loadProducts());
+        scope.join();
+    }
+});
+----
+
+[NOTE]
+====
+`StructuredTaskScope` is a preview API in Java 25 and is disabled by default. Compiling and running the example above requires `--enable-preview`.
+====
+
 == Tenant Context Events
 
 Spring application events are published at key points in the tenant context lifecycle, allowing you to react to tenant context changes with custom behavior.
@@ -89,7 +129,7 @@ class CustomTenantListener {
 
 Arconia Multitenancy provides tenant-aware cache key generation through the `TenantKeyGenerator` interface (an extension of Spring's `KeyGenerator`), ensuring cache isolation between tenants.
 
-A `DefaultTenantKeyGenerator` is auto-configured as a bean named `tenantKeyGenerator`. It generates cache keys by combining the current tenant identifier with the method parameters, so the same input for different tenants produces different cache entries. You can use it with Spring's `@Cacheable` annotation:
+A `DefaultTenantKeyGenerator` is auto-configured as a bean named `tenantKeyGenerator`. It generates cache keys by combining the current tenant identifier with the method parameters, so the same input for different tenants produces different cache entries. The target object and the method are not part of the key, which is also how Spring's own `SimpleKeyGenerator` behaves. Keys are therefore unique only within a given cache name. You can use it with Spring's `@Cacheable` annotation:
 
 [source,java]
 ----
@@ -106,6 +146,10 @@ class ProductService {
 
 }
 ----
+
+Key generation requires a tenant context. When no tenant is bound, a `TenantNotFoundException` is thrown rather than falling back to a tenant-independent key. A shared key would let an entry written outside a tenant context, for example by a scheduled task, be read later by a request belonging to a tenant.
+
+If a cache holds data that is genuinely the same for every tenant, give it its own cache name and leave it on Spring's default key generator, or wrap the work in `TenantContext.where()` so a tenant is bound.
 
 === Custom TenantKeyGenerator
 

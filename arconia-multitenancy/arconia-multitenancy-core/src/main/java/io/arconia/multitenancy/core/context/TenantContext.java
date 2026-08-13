@@ -1,6 +1,7 @@
 package io.arconia.multitenancy.core.context;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
@@ -31,8 +32,10 @@ public final class TenantContext {
     /**
      * Creates a {@link ScopedValue.Carrier} that binds the given tenant identifier for
      * the duration of a {@code run()} or {@code call()} scope.
+     * @throws IllegalArgumentException if the tenant identifier is null or empty
      */
     public static ScopedValue.Carrier where(String tenantIdentifier) {
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
         return ScopedValue.where(TENANT_IDENTIFIER, tenantIdentifier);
     }
 

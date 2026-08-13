@@ -13,11 +13,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
-public @interface Incubating {
-
-    /**
-     * The version at which the feature was introduced.
-     */
-    String since() default "";
-
-}
+public @interface Incubating {}

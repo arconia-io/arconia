@@ -39,6 +39,22 @@ class TenantDetailsConfigurationTests {
     }
 
     @Test
+    void tenantDetailsServiceWhenTenantsConfiguredThenTenantsAreBound() {
+        contextRunner
+            .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",
+                    "arconia.multitenancy.details.tenants[1].identifier=beans",
+                    "arconia.multitenancy.details.tenants[1].enabled=false")
+            .run(context -> {
+                var tenantDetailsService = context.getBean(TenantDetailsService.class);
+
+                assertThat(tenantDetailsService.loadAllTenants()).hasSize(2);
+                assertThat(tenantDetailsService.loadTenantByIdentifier("beans")).isNotNull()
+                    .extracting(TenantDetails::enabled)
+                    .isEqualTo(false);
+            });
+    }
+
+    @Test
     void tenantDetailsServiceWhenCustom() {
         contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme")
             .withUserConfiguration(CustomTenantDetailsServiceConfiguration.class)

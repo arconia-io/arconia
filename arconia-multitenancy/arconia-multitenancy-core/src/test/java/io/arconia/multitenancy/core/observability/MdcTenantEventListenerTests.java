@@ -16,21 +16,28 @@ class MdcTenantEventListenerTests {
 
     @Test
     void whenNullCustomValueThenThrow() {
-        assertThatThrownBy(() -> new MdcTenantEventListener(null)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey(null).build())
+            .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomValueThenThrow() {
-        assertThatThrownBy(() -> new MdcTenantEventListener("")).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey("").build())
+            .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
+    void whenDefaultsThenTenantIdKey() {
+        assertThat(MdcTenantEventListener.builder().build().getTenantIdentifierKey()).isEqualTo("tenantId");
+    }
+
+    @Test
     void whenDefaultValueIsUsedAsKey() {
-        var tenantKey = "tenantId";
         var tenantValue = "acme";
-        var listener = new MdcTenantEventListener();
+        var listener = MdcTenantEventListener.builder().build();
+        var tenantKey = listener.getTenantIdentifierKey();
 
         listener.onAttached(new TenantContextAttachedEvent(tenantValue, this));
 
@@ -45,7 +52,7 @@ class MdcTenantEventListenerTests {
     void whenCustomValueIsUsedAsKey() {
         var tenantKey = "tenant_id";
         var tenantValue = "acme";
-        var listener = new MdcTenantEventListener(tenantKey);
+        var listener = MdcTenantEventListener.builder().tenantIdentifierKey(tenantKey).build();
 
         listener.onAttached(new TenantContextAttachedEvent(tenantValue, this));
 

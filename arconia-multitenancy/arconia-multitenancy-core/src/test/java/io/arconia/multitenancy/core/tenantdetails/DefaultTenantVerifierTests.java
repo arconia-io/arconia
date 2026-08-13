@@ -25,17 +25,17 @@ class DefaultTenantVerifierTests {
         var service = Mockito.mock(TenantDetailsService.class);
         var verifier = new DefaultTenantVerifier(service);
 
-        assertThatThrownBy(() -> verifier.verify(null)).isInstanceOf(TenantVerificationException.class)
-            .hasMessageContaining("The tenant identifier must contain only alphanumeric characters, dashes (-), and underscores (_)");
+        assertThatThrownBy(() -> verifier.verify(null)).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
-    void whenTenantIdentifierContainsInvalidCharactersThenThrow() {
+    void whenEmptyTenantIdentifierThenThrow() {
         var service = Mockito.mock(TenantDetailsService.class);
         var verifier = new DefaultTenantVerifier(service);
 
-        assertThatThrownBy(() -> verifier.verify("acme\nmalicious")).isInstanceOf(TenantVerificationException.class)
-            .hasMessageContaining("The tenant identifier must contain only alphanumeric characters, dashes (-), and underscores (_)");
+        assertThatThrownBy(() -> verifier.verify("")).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test

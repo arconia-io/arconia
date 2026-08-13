@@ -46,6 +46,24 @@ class TenantContextTests {
     }
 
     @Test
+    void whenNullTenantIdentifierThenThrow() {
+        assertThatThrownBy(() -> TenantContext.where(null)).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+    }
+
+    @Test
+    void whenEmptyTenantIdentifierThenThrow() {
+        assertThatThrownBy(() -> TenantContext.where("")).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+    }
+
+    @Test
+    void whenBlankTenantIdentifierThenThrow() {
+        assertThatThrownBy(() -> TenantContext.where("   ")).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+    }
+
+    @Test
     void whenNestedScopesThenInnerBindingShadowsOuter() {
         TenantContext.where("acme").run(() -> {
             assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme");

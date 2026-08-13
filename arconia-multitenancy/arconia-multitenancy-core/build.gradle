@@ -16,7 +16,10 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-core")
+    api "org.springframework:spring-context"
 
+    optional "org.springframework.boot:spring-boot-actuator"
+    optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
     optional "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation "io.micrometer:micrometer-observation-test"

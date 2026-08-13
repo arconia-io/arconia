@@ -17,18 +17,32 @@ class DefaultTenantKeyGeneratorTests {
     private final DefaultTenantKeyGenerator keyGenerator = new DefaultTenantKeyGenerator();
 
     @Test
-    void whenTenantContextDefinedThenGenerateCacheKey() {
+    void whenSameTenantAndParametersThenSameCacheKey() {
+        var objectToCache = new Object[] { "something" };
+
+        TenantContext.where("tenant1").run(() -> {
+            assertThat(generateCacheKey(objectToCache)).isEqualTo(generateCacheKey(objectToCache));
+        });
+    }
+
+    @Test
+    void whenDifferentTenantThenDifferentCacheKey() {
         var objectToCache = new Object[] { "something" };
 
         TenantContext.where("tenant1").run(() -> {
             Object key1 = generateCacheKey(objectToCache);
-            Object key2 = generateCacheKey(objectToCache);
-            assertThat(key1.hashCode()).isEqualTo(key2.hashCode());
 
             TenantContext.where("tenant2").run(() -> {
-                Object key3 = generateCacheKey(objectToCache);
-                assertThat(key1.hashCode()).isNotEqualTo(key3.hashCode());
+                assertThat(generateCacheKey(objectToCache)).isNotEqualTo(key1);
             });
+        });
+    }
+
+    @Test
+    void whenDifferentParametersThenDifferentCacheKey() {
+        TenantContext.where("tenant1").run(() -> {
+            assertThat(generateCacheKey(new Object[] { "something" }))
+                .isNotEqualTo(generateCacheKey(new Object[] { "something else" }));
         });
     }
 
@@ -36,7 +50,7 @@ class DefaultTenantKeyGeneratorTests {
     void whenTenantContextNotDefinedThenThrow() {
         assertThatThrownBy(() -> generateCacheKey(new Object[] { "something" }))
             .isInstanceOf(TenantNotFoundException.class)
-            .hasMessageContaining("No tenant found in the current context");
+            .hasMessageContaining("A tenant-aware cache key cannot be generated outside a tenant context");
     }
 
     private Object generateCacheKey(Object[] arguments) {

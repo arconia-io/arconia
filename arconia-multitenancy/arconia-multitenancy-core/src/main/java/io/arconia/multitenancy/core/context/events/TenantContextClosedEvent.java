@@ -9,8 +9,8 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public final class TenantContextClosedEvent extends TenantEvent {
 
-    public TenantContextClosedEvent(String tenantIdentifier, Object object) {
-        super(tenantIdentifier, object);
+    public TenantContextClosedEvent(String tenantIdentifier, Object source) {
+        super(tenantIdentifier, source);
     }
 
 }

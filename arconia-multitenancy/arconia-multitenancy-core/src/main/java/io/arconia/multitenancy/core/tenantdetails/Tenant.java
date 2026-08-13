@@ -20,11 +20,17 @@ public record Tenant(String identifier, boolean enabled, Map<String, Object> att
         attributes = Map.copyOf(attributes);
     }
 
+    /**
+     * Creates a new builder for {@link Tenant}.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
-    public static class Builder {
+    /**
+     * Builder for {@link Tenant}.
+     */
+    public static final class Builder {
 
         private String identifier;
 
@@ -32,26 +38,44 @@ public record Tenant(String identifier, boolean enabled, Map<String, Object> att
 
         private Map<String, Object> attributes = new HashMap<>();
 
+        private Builder() {}
+
+        /**
+         * Identifier for the tenant.
+         */
         public Builder identifier(String identifier) {
             this.identifier = identifier;
             return this;
         }
 
+        /**
+         * Whether the tenant is enabled.
+         */
         public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }
 
+        /**
+         * Additional information about the tenant.
+         */
         public Builder attributes(Map<String, Object> attributes) {
-            this.attributes = attributes;
+            Assert.notNull(attributes, "attributes cannot be null");
+            this.attributes = new HashMap<>(attributes);
             return this;
         }
 
+        /**
+         * Adds a single attribute to the additional information about the tenant.
+         */
         public Builder addAttribute(String key, Object value) {
             attributes.put(key, value);
             return this;
         }
 
+        /**
+         * Builds the {@link Tenant} instance.
+         */
         public Tenant build() {
             return new Tenant(identifier, enabled, attributes);
         }

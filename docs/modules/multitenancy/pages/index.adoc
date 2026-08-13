@@ -112,9 +112,11 @@ import io.arconia.multitenancy.web.context.annotations.TenantIdentifier;
 class GreetingController {
 
     @GetMapping("/greeting")
-    String greeting(@TenantIdentifier String tenantId) {
-        return "Hello, " + tenantId + "!";
+    Greeting greeting(@TenantIdentifier String tenantId) {
+        return new Greeting("Hello", tenantId);
     }
+
+    record Greeting(String message, String tenant) {}
 
 }
 ----
@@ -133,11 +135,12 @@ String tenantId = TenantContext.getRequiredTenantIdentifier();
 When a request arrives, the framework:
 
 1. *Resolves the tenant*. Extracts the tenant identifier from the request source using a configurable xref:tenant-resolution.adoc[`TenantResolver`].
-2. *Verifies the tenant (optional)*. If a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] is configured, checks that the tenant exists and is enabled.
-3. *Binds the context*. Binds the tenant identifier to a xref:tenant-context.adoc[`ScopedValue`] via `TenantContext`, making it available throughout the request scope.
-4. *Publishes a context event*. Fires a `TenantContextAttachedEvent` that triggers registered xref:tenant-context.adoc#_tenant_context_events[listeners] (e.g., MDC enrichment).
-5. *Executes the request*. The request proceeds with the tenant context available. All Micrometer observations are automatically enriched with the tenant identifier.
-6. *Cleans up*. After the request completes, fires a `TenantContextClosedEvent`. The `ScopedValue` binding is automatically removed when the scope exits.
+2. *Validates the identifier*. Checks the syntax of the resolved identifier with a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`]. This always happens, whether or not tenant details are configured.
+3. *Verifies the tenant (optional)*. If a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] is configured, checks that the tenant exists and is enabled.
+4. *Binds the context*. Binds the tenant identifier to a xref:tenant-context.adoc[`ScopedValue`] via `TenantContext`, making it available throughout the request scope.
+5. *Publishes a context event*. Fires a `TenantContextAttachedEvent` that triggers registered xref:tenant-context.adoc#_tenant_context_events[listeners] (e.g., MDC enrichment).
+6. *Executes the request*. The request proceeds with the tenant context available. All Micrometer observations are automatically enriched with the tenant identifier.
+7. *Cleans up*. After the request completes, fires a `TenantContextClosedEvent`. The `ScopedValue` binding is automatically removed when the scope exits.
 
 In xref:web.adoc[web applications], this happens transparently via a servlet filter (`TenantContextFilter`) that is auto-configured when using the web starter.
 
@@ -151,7 +154,7 @@ The core module (`arconia-multitenancy-core-spring-boot-starter`) provides the f
 
 * *xref:tenant-context.adoc[Tenant Context]*: Scoped context propagation via `TenantContext` using Java's `ScopedValue` API.
 * *xref:tenant-resolution.adoc[Tenant Resolution]*: Strategy-based tenant resolution with built-in and custom resolvers.
-* *xref:tenant-details.adoc[Tenant Details]*: Tenant metadata management via `TenantDetailsService` and verification via `TenantVerifier`.
+* *xref:tenant-details.adoc[Tenant Details]*: Tenant identifier validation via `TenantIdentifierValidator`, tenant metadata management via `TenantDetailsService`, and verification via `TenantVerifier`.
 * *xref:observability.adoc[Observability]*: SLF4J MDC logging enrichment and Micrometer observation integration.
 * *Caching*: Tenant-aware cache key generation for cache isolation between tenants.
 
