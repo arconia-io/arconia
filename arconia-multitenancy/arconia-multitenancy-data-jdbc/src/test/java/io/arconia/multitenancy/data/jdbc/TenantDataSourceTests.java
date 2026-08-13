@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Test;
 
 import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
+import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -174,6 +176,129 @@ class TenantDataSourceTests {
 
     private static String connectionName(TenantDataSource tenantDataSource, String tenantIdentifier) throws Exception {
         return TenantContext.where(tenantIdentifier).call(() -> tenantDataSource.getConnection().getSchema());
+    }
+
+    @Test
+    void whenTenantIdentifierIsInvalidThenFactoryIsNotInvoked() {
+        var invocations = new AtomicInteger();
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSourceFactory(identifier -> {
+                invocations.incrementAndGet();
+                return new TestDataSource(identifier);
+            })
+            .build();
+
+        TenantContext.where("acme?socketFactory=evil").run(() -> {
+            assertThatThrownBy(tenantDataSource::getConnection)
+                .isInstanceOf(TenantVerificationException.class)
+                .hasMessageContaining("The tenant identifier must contain only alphanumeric characters");
+        });
+
+        assertThat(invocations).hasValue(0);
+        assertThat(tenantDataSource.getCreatedTenantIdentifiers()).isEmpty();
+    }
+
+    @Test
+    void whenCustomTenantIdentifierValidatorThenApplied() {
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSourceFactory(TestDataSource::new)
+            .tenantIdentifierValidator(identifier -> {
+                throw new TenantVerificationException("Tenants must be onboarded first");
+            })
+            .build();
+
+        TenantContext.where("acme").run(() -> {
+            assertThatThrownBy(tenantDataSource::getConnection)
+                .isInstanceOf(TenantVerificationException.class)
+                .hasMessageContaining("Tenants must be onboarded first");
+        });
+    }
+
+    @Test
+    void whenMaximumNumberOfDataSourcesReachedThenReject() throws Exception {
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSourceFactory(TestDataSource::new)
+            .maxTenantDataSources(2)
+            .build();
+
+        TenantContext.where("one").call(tenantDataSource::getConnection);
+        TenantContext.where("two").call(tenantDataSource::getConnection);
+
+        TenantContext.where("three").run(() -> {
+            assertThatThrownBy(tenantDataSource::getConnection)
+                .isInstanceOf(TenantNotFoundException.class)
+                .hasMessageContaining("the maximum number of tenant data sources (2) has been reached");
+        });
+
+        assertThat(tenantDataSource.getCreatedTenantIdentifiers()).containsExactlyInAnyOrder("one", "two");
+    }
+
+    @Test
+    void whenMaximumNumberOfDataSourcesReachedThenKnownTenantsStillResolve() throws Exception {
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSourceFactory(TestDataSource::new)
+            .maxTenantDataSources(1)
+            .build();
+
+        TenantContext.where("one").call(tenantDataSource::getConnection);
+
+        TenantContext.where("one").run(() -> assertThatNoException().isThrownBy(tenantDataSource::getConnection));
+    }
+
+    @Test
+    void whenMaximumNumberOfDataSourcesIsNotPositiveThenThrow() {
+        assertThatThrownBy(() -> TenantDataSource.builder().maxTenantDataSources(0).build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("maxTenantDataSources must be greater than zero");
+    }
+
+    @Test
+    void whenDataSourcesRegisteredUpfrontThenTheyDoNotCountTowardsTheMaximum() throws Exception {
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSource("acme", acme)
+            .dataSource("beans", beans)
+            .dataSourceFactory(TestDataSource::new)
+            .maxTenantDataSources(1)
+            .build();
+
+        TenantContext.where("acme").call(tenantDataSource::getConnection);
+        TenantContext.where("beans").call(tenantDataSource::getConnection);
+        TenantContext.where("created").call(tenantDataSource::getConnection);
+
+        assertThat(tenantDataSource.getCreatedTenantIdentifiers()).containsExactly("created");
+    }
+
+    @Test
+    void whenClosingOneDataSourceFailsThenTheOthersAreStillClosed() throws Exception {
+        var failing = new TestDataSource("failing") {
+            @Override
+            public void close() {
+                throw new IllegalStateException("cannot close");
+            }
+        };
+        var healthy = new TestDataSource("healthy");
+        var tenantDataSource = TenantDataSource.builder()
+            .dataSourceFactory(identifier -> "failing".equals(identifier) ? failing : healthy)
+            .build();
+
+        TenantContext.where("failing").call(tenantDataSource::getConnection);
+        TenantContext.where("healthy").call(tenantDataSource::getConnection);
+
+        assertThatThrownBy(tenantDataSource::destroy).isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("cannot close");
+
+        assertThat(healthy.closed).isTrue();
+        assertThat(tenantDataSource.getCreatedTenantIdentifiers()).isEmpty();
+    }
+
+    @Test
+    void createdTenantIdentifiersAreNotModifiable() throws Exception {
+        var tenantDataSource = TenantDataSource.builder().dataSourceFactory(TestDataSource::new).build();
+
+        TenantContext.where("acme").call(tenantDataSource::getConnection);
+
+        assertThatThrownBy(() -> tenantDataSource.getCreatedTenantIdentifiers().add("beans"))
+            .isInstanceOf(UnsupportedOperationException.class);
     }
 
     /**

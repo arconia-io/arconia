@@ -153,7 +153,25 @@ create table tenant_details_attributes
 );
 ----
 
-Schema scripts are bundled for PostgreSQL and H2, together with matching scripts to drop the tables again. By default, the schema is initialized only when the application uses an embedded database. Set `initialize-schema` to `always` to initialize any database, or to `never` when you manage the schema yourself, for example with Flyway or Liquibase.
+Schema scripts are bundled for PostgreSQL and H2, together with matching scripts to drop the tables again.
+
+[IMPORTANT]
+====
+The bundled scripts are applied to embedded databases only, following the same convention as the Spring Boot SQL initialization. On PostgreSQL, or any other database that is not embedded, the tables are not created for you. The application still starts, and the first request that resolves a tenant then fails with a message like `relation "tenant_details" does not exist`.
+
+Either let Arconia create them:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    details:
+      jdbc:
+        initialize-schema: always
+----
+
+or create them yourself, with the bundled script as a starting point, and set `initialize-schema` to `never` so that the two do not compete. That is the usual choice when the schema is managed by Flyway or Liquibase.
+====
 
 For a database without a bundled script, point `schema` to your own script. The `@@platform@@` placeholder in the location is replaced with the identifier of the database driver in use.
 

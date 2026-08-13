@@ -53,24 +53,68 @@ TenantDataSource tenantDataSource(DataSource acmeDataSource, DataSource beansDat
 
 Tenants that are not known upfront can be served by a factory, which is invoked at most once per tenant and whose result is cached.
 
+Build the connection details for a tenant from configuration you control, rather than by concatenating the tenant identifier into a JDBC URL. The identifier decides which database is opened, so treating it as a lookup key keeps an unexpected value from selecting an unintended database:
+
 [source,java]
 ----
 @Bean
-TenantDataSource tenantDataSource(DataSource adminDataSource) {
+TenantDataSource tenantDataSource(DataSource adminDataSource, TenantDatabaseProperties databases) {
     return TenantDataSource.builder()
         .defaultDataSource(adminDataSource)
-        .dataSourceFactory(this::createDataSource)
+        .dataSourceFactory(tenantIdentifier -> createDataSource(databases, tenantIdentifier))
         .build();
 }
 
-DataSource createDataSource(String tenantIdentifier) {
+DataSource createDataSource(TenantDatabaseProperties databases, String tenantIdentifier) {
+    TenantDatabase database = databases.get(tenantIdentifier);
+    if (database == null) {
+        throw new TenantNotFoundException("No database is configured for tenant '%s'".formatted(tenantIdentifier));
+    }
     return DataSourceBuilder.create()
-        .url("jdbc:postgresql://localhost:5432/" + tenantIdentifier)
+        .url(database.url())
+        .username(database.username())
+        .password(database.password())
         .build();
 }
 ----
 
+Returning `null` from the factory has the same effect as the exception above: the request is rejected with a `TenantNotFoundException`.
+
+If the databases genuinely follow a naming convention and cannot be enumerated upfront, derive the name rather than interpolating the identifier, and validate it against that convention first. A tenant identifier that reaches the factory has passed a `TenantIdentifierValidator`, but the accepted character set is deliberately broad, so an identifier such as `postgres` or `template1` is valid and would name a real database.
+
 The factory must not obtain its connections through the same `TenantDataSource`, since it is invoked while the cache entry for that tenant is being computed.
+
+=== Validating Tenant Identifiers
+
+Before the factory is invoked, the tenant identifier is checked by a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`]. `TenantDataSource` applies one of its own rather than trusting whatever bound the tenant context, because the context can also be bound programmatically, which bypasses the validation an entry point such as the xref:web.adoc#_tenant_context_filter[`TenantContextFilter`] performs.
+
+The default accepts alphanumeric characters, dashes and underscores, up to 64 characters. Supply a stricter one when the tenant identifiers in your system have a known shape:
+
+[source,java]
+----
+TenantDataSource.builder()
+    .dataSourceFactory(this::createDataSource)
+    .tenantIdentifierValidator(tenantIdentifier -> {
+        if (!tenantIdentifier.matches("[a-z0-9]{8}")) {
+            throw new TenantVerificationException("The tenant identifier must be 8 lowercase alphanumeric characters");
+        }
+    })
+    .build();
+----
+
+=== Limiting Created Data Sources
+
+Each data source the factory creates holds a connection pool, so the number of them is bounded. By default at most 100 are created, after which a request for a further unknown tenant is rejected with a `TenantNotFoundException`. Data sources registered upfront do not count towards the limit.
+
+[source,java]
+----
+TenantDataSource.builder()
+    .dataSourceFactory(this::createDataSource)
+    .maxTenantDataSources(500)
+    .build();
+----
+
+Set it above the number of tenants you expect to serve from one application instance. The limit exists so that a stream of unknown tenant identifiers cannot exhaust connections, file descriptors and heap.
 
 === Routing Behaviour
 
@@ -96,8 +140,23 @@ The factory must not obtain its connections through the same `TenantDataSource`,
 
 An unknown tenant never falls back to the default data source, so a missing registration cannot silently expose another tenant's data. The default data source is used only when no tenant is bound at all, such as in a scheduled job or during startup. If you omit it, any database access outside a tenant context fails.
 
+[WARNING]
+====
+A tenant context is not inherited by threads started from within its scope, so work handed to an `@Async` method, an `Executor`, or a `CompletableFuture` stage runs with no tenant bound. When a default data source is configured, that work reaches it instead of the tenant's database, and it does so without an error. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads] for how to rebind the tenant on the other thread.
+
+The first time the default data source is used, `TenantDataSource` logs a warning, so this shows up in the logs rather than only in the data. Later occurrences are logged at debug level. If your application never intends to access the database outside a tenant context, omit the default data source entirely and the same situation fails loudly instead.
+====
+
 When accessing the database through `JdbcClient` or `JdbcTemplate`, a `TenantNotFoundException` surfaces wrapped in a `CannotGetJdbcConnectionException`, with the original exception available as its cause.
 
 === Data Source Lifecycle
 
 `TenantDataSource` closes the data sources it created through the factory when the bean is destroyed. Data sources you pass to `dataSource()`, `dataSources()`, or `defaultDataSource()` are left untouched, because your application owns their lifecycle, typically as beans managed by Spring.
+
+A data source that fails to close does not prevent the others from being closed. The first failure is rethrown once every data source has been visited, with any further failures attached to it as suppressed exceptions.
+
+=== Observability
+
+Creating and closing a tenant data source is logged at info level, so the pools an application opens over its lifetime are visible without extra configuration.
+
+The identifiers of the tenants whose data sources are currently open are available through `TenantDataSource.getCreatedTenantIdentifiers()`. Data sources registered upfront are not included, since their lifecycle belongs to the application.
