@@ -13,22 +13,22 @@ class HeaderTenantResolverTests {
 
     @Test
     void whenNullCustomHeaderThenThrow() {
-        assertThatThrownBy(() -> new HeaderTenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> HeaderTenantResolver.builder().tenantHeaderName(null).build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantHeaderName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomHeaderThenThrow() {
-        assertThatThrownBy(() -> new HeaderTenantResolver("")).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> HeaderTenantResolver.builder().tenantHeaderName("").build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantHeaderName cannot be null or empty");
     }
 
     @Test
     void whenDefaultHeaderIsUsed() {
         var expectedTenantId = "default";
-        var headerTenantResolver = new HeaderTenantResolver();
+        var headerTenantResolver = HeaderTenantResolver.builder().build();
         var request = new MockHttpServletRequest();
-        request.addHeader(HeaderTenantResolver.DEFAULT_HEADER_NAME, expectedTenantId);
+        request.addHeader("X-TenantId", expectedTenantId);
 
         var actualTenantId = headerTenantResolver.resolveTenantIdentifier(request);
 
@@ -39,7 +39,7 @@ class HeaderTenantResolverTests {
     void whenCustomHeaderIsUsed() {
         var expectedTenantId = "default";
         var headerName = "tenantIdentifier";
-        var headerTenantResolver = new HeaderTenantResolver(headerName);
+        var headerTenantResolver = HeaderTenantResolver.builder().tenantHeaderName(headerName).build();
         var request = new MockHttpServletRequest();
         request.addHeader(headerName, expectedTenantId);
 
@@ -50,7 +50,7 @@ class HeaderTenantResolverTests {
 
     @Test
     void whenHeaderMissingThenReturnNull() {
-        var headerTenantResolver = new HeaderTenantResolver();
+        var headerTenantResolver = HeaderTenantResolver.builder().build();
         var request = new MockHttpServletRequest();
 
         var actualTenantId = headerTenantResolver.resolveTenantIdentifier(request);
@@ -60,7 +60,7 @@ class HeaderTenantResolverTests {
 
     @Test
     void whenNullRequestThenThrow() {
-        var headerTenantResolver = new HeaderTenantResolver();
+        var headerTenantResolver = HeaderTenantResolver.builder().build();
 
         assertThatThrownBy(() -> headerTenantResolver.resolveTenantIdentifier(null))
             .isInstanceOf(IllegalArgumentException.class)

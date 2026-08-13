@@ -8,6 +8,7 @@ import org.springframework.boot.diagnostics.FailureAnalyzer;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 
+import io.arconia.multitenancy.web.autoconfigure.HttpTenantResolutionProperties.HttpResolutionMode;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 
 /**
@@ -33,7 +34,7 @@ public class HttpTenantResolutionFailureAnalyzer extends AbstractFailureAnalyzer
             return null;
         }
         String resolutionMode = environment.getProperty(RESOLUTION_MODE_PROPERTY);
-        if (!"oauth2".equalsIgnoreCase(resolutionMode)) {
+        if (!HttpResolutionMode.OAUTH2.name().equalsIgnoreCase(resolutionMode)) {
             return null;
         }
         return new FailureAnalysis(

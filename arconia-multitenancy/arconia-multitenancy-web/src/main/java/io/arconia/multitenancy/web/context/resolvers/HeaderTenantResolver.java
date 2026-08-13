@@ -13,17 +13,20 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
-    public static final String DEFAULT_HEADER_NAME = "X-TenantId";
+    private static final String DEFAULT_HEADER_NAME = "X-TenantId";
 
     private final String tenantHeaderName;
 
-    public HeaderTenantResolver() {
-        this.tenantHeaderName = DEFAULT_HEADER_NAME;
-    }
-
-    public HeaderTenantResolver(String tenantHeaderName) {
+    private HeaderTenantResolver(String tenantHeaderName) {
         Assert.hasText(tenantHeaderName, "tenantHeaderName cannot be null or empty");
         this.tenantHeaderName = tenantHeaderName;
+    }
+
+    /**
+     * Name of the HTTP header from which the current tenant is resolved.
+     */
+    public String getTenantHeaderName() {
+        return tenantHeaderName;
     }
 
     @Override
@@ -31,6 +34,39 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
     public String resolveTenantIdentifier(HttpServletRequest request) {
         Assert.notNull(request, "request cannot be null");
         return request.getHeader(tenantHeaderName);
+    }
+
+    /**
+     * Creates a new builder for {@link HeaderTenantResolver}.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link HeaderTenantResolver}.
+     */
+    public static final class Builder {
+
+        private String tenantHeaderName = DEFAULT_HEADER_NAME;
+
+        private Builder() {}
+
+        /**
+         * Name of the HTTP header from which to resolve the current tenant.
+         */
+        public Builder tenantHeaderName(String tenantHeaderName) {
+            this.tenantHeaderName = tenantHeaderName;
+            return this;
+        }
+
+        /**
+         * Builds the {@link HeaderTenantResolver} instance.
+         */
+        public HeaderTenantResolver build() {
+            return new HeaderTenantResolver(tenantHeaderName);
+        }
+
     }
 
 }

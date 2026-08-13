@@ -15,22 +15,22 @@ class CookieTenantResolverTests {
 
     @Test
     void whenNullCustomCookieThenThrow() {
-        assertThatThrownBy(() -> new CookieTenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> CookieTenantResolver.builder().tenantCookieName(null).build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantCookieName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomCookieThenThrow() {
-        assertThatThrownBy(() -> new CookieTenantResolver("")).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> CookieTenantResolver.builder().tenantCookieName("").build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantCookieName cannot be null or empty");
     }
 
     @Test
     void whenDefaultCookieIsUsed() {
         var expectedTenantId = "default";
-        var cookieTenantResolver = new CookieTenantResolver();
+        var cookieTenantResolver = CookieTenantResolver.builder().build();
         var request = new MockHttpServletRequest();
-        request.setCookies(new Cookie(CookieTenantResolver.DEFAULT_COOKIE_NAME, expectedTenantId));
+        request.setCookies(new Cookie("TENANT-ID", expectedTenantId));
 
         var actualTenantId = cookieTenantResolver.resolveTenantIdentifier(request);
 
@@ -41,7 +41,7 @@ class CookieTenantResolverTests {
     void whenCustomCookieIsUsed() {
         var expectedTenantId = "default";
         var cookieName = "tenantIdentifier";
-        var cookieTenantResolver = new CookieTenantResolver(cookieName);
+        var cookieTenantResolver = CookieTenantResolver.builder().tenantCookieName(cookieName).build();
         var request = new MockHttpServletRequest();
         request.setCookies(new Cookie(cookieName, expectedTenantId));
 
@@ -52,7 +52,7 @@ class CookieTenantResolverTests {
 
     @Test
     void whenNoCookiesPresentThenReturnNull() {
-        var cookieTenantResolver = new CookieTenantResolver();
+        var cookieTenantResolver = CookieTenantResolver.builder().build();
         var request = new MockHttpServletRequest();
 
         var actualTenantId = cookieTenantResolver.resolveTenantIdentifier(request);
@@ -62,7 +62,7 @@ class CookieTenantResolverTests {
 
     @Test
     void whenNullRequestThenThrow() {
-        var cookieTenantResolver = new CookieTenantResolver();
+        var cookieTenantResolver = CookieTenantResolver.builder().build();
 
         assertThatThrownBy(() -> cookieTenantResolver.resolveTenantIdentifier(null))
             .isInstanceOf(IllegalArgumentException.class)

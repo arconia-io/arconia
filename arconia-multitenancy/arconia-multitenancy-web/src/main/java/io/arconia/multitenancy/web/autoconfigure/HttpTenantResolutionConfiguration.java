@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import io.arconia.multitenancy.core.autoconfigure.FixedTenantResolutionProperties;
 import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
 import io.arconia.multitenancy.core.observability.TenantObservationFilter;
+import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
 import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
 import io.arconia.multitenancy.web.context.filters.TenantContextIgnorePathMatcher;
@@ -46,7 +47,9 @@ public final class HttpTenantResolutionConfiguration {
     @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
             havingValue = "header", matchIfMissing = true)
     HeaderTenantResolver headerTenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
-        return new HeaderTenantResolver(httpTenantResolutionProperties.getHeader().getHeaderName());
+        return HeaderTenantResolver.builder()
+            .tenantHeaderName(httpTenantResolutionProperties.getHeader().getHeaderName())
+            .build();
     }
 
     @Bean
@@ -54,7 +57,9 @@ public final class HttpTenantResolutionConfiguration {
     @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
             havingValue = "cookie")
     CookieTenantResolver cookieTenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
-        return new CookieTenantResolver(httpTenantResolutionProperties.getCookie().getCookieName());
+        return CookieTenantResolver.builder()
+            .tenantCookieName(httpTenantResolutionProperties.getCookie().getCookieName())
+            .build();
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -66,7 +71,9 @@ public final class HttpTenantResolutionConfiguration {
         @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
                 havingValue = "oauth2")
         OAuth2TenantResolver oauth2TenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
-            return new OAuth2TenantResolver(httpTenantResolutionProperties.getOauth2().getClaimName());
+            return OAuth2TenantResolver.builder()
+                .tenantClaimName(httpTenantResolutionProperties.getOauth2().getClaimName())
+                .build();
         }
 
     }
@@ -81,13 +88,15 @@ public final class HttpTenantResolutionConfiguration {
         TenantContextFilter tenantContextFilter(HttpTenantResolutionProperties httpTenantResolutionProperties,
                 HttpRequestTenantResolver httpRequestTenantResolver,
                 TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
-                ApplicationEventPublisher eventPublisher, ObjectProvider<TenantVerifier> tenantVerifier,
+                ApplicationEventPublisher eventPublisher, TenantIdentifierValidator tenantIdentifierValidator,
+                ObjectProvider<TenantVerifier> tenantVerifier,
                 ObjectProvider<TenantObservationFilter> tenantObservationFilter) {
             return TenantContextFilter.builder()
                 .order(httpTenantResolutionProperties.getFilter().getOrder())
                 .httpRequestTenantResolver(httpRequestTenantResolver)
                 .tenantContextIgnorePathMatcher(tenantContextIgnorePathMatcher)
                 .eventPublisher(eventPublisher)
+                .tenantIdentifierValidator(tenantIdentifierValidator)
                 .tenantVerifier(tenantVerifier.getIfAvailable())
                 .tenantObservationFilter(tenantObservationFilter.getIfAvailable())
                 .build();

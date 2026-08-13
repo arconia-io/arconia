@@ -11,7 +11,10 @@
         "\/webjars\/**",
         "\/css\/**",
         "\/js\/**",
-        ".ico"
+        "\/**\/*.ico",
+        "\/login",
+        "\/oauth2\/authorization\/**",
+        "\/login\/oauth2\/code\/**"
       ]
     }
   ]

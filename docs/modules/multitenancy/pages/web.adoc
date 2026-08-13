@@ -157,9 +157,18 @@ This mode requires the request to be authenticated before the tenant is resolved
 
 == Tenant Context Filter
 
-The `TenantContextFilter` is a servlet filter that intercepts incoming HTTP requests, resolves the tenant, optionally verifies it via a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], and establishes the xref:tenant-context.adoc[tenant context] for the duration of the request using a `ScopedValue` binding. It publishes `TenantContextAttachedEvent` on entry and `TenantContextClosedEvent` on completion, triggering all registered xref:tenant-context.adoc#_tenant_context_events[event listeners].
+The `TenantContextFilter` is a servlet filter that intercepts incoming HTTP requests, resolves the tenant, validates the identifier via a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`], optionally verifies it via a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], and establishes the xref:tenant-context.adoc[tenant context] for the duration of the request using a `ScopedValue` binding. It publishes `TenantContextAttachedEvent` on entry and `TenantContextClosedEvent` on completion, triggering all registered xref:tenant-context.adoc#_tenant_context_events[event listeners].
 
-If the tenant identifier cannot be resolved (e.g., the header is missing) or verification fails (e.g., the tenant is not found or disabled), the filter returns an HTTP `400 Bad Request` response with a `ProblemDetail` JSON body describing the error.
+If the tenant identifier cannot be resolved (e.g., the header is missing), fails validation (e.g., it contains characters outside the accepted set), or fails verification (e.g., the tenant is not found or disabled), the filter returns an HTTP `400 Bad Request` response with an `application/problem+json` body describing the error.
+
+If the tenant registry itself is unavailable, for example because the database backing the `TenantDetailsService` cannot be reached, the filter returns an HTTP `503 Service Unavailable` response instead. That distinguishes a caller sending a bad tenant identifier from an outage on the server side, and keeps a registry failure from surfacing as an unhandled error on every request.
+
+The filter also runs on error dispatches, so error handling for a failed request executes with the same tenant bound as the request that failed. On an error dispatch the filter never writes a response of its own: if the tenant cannot be resolved or validated there, the request proceeds without a tenant context rather than replacing the response the container is already producing.
+
+[NOTE]
+====
+Asynchronous request handling is a separate case. A `Callable` or `DeferredResult` runs on another thread, which does not inherit the `ScopedValue` binding, and the response is completed on a dispatch where the filter does not re-bind the tenant. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
+====
 
 === Filter Order
 
@@ -177,7 +186,7 @@ arconia:
           order: -101
 ----
 
-Spring Security registers its own filter chain at order `-100`, so a lower value makes the tenant context available to it. Be aware that the tenant is then resolved for every request reaching the filter, including the login and OAuth2 redirect endpoints, which are not part of the ignored paths by default.
+Spring Security registers its own filter chain at order `-100`, so a lower value makes the tenant context available to it. Be aware that the tenant is then resolved for every request reaching the filter, including the login and OAuth2 redirect endpoints. Those are part of the ignored paths by default, so authentication keeps working, but any other endpoint that must be reachable before a tenant is known has to be added to the ignored paths as well.
 
 === Spring Security Integration
 
@@ -218,7 +227,14 @@ Certain paths can be excluded from tenant resolution. By default, the following 
 * `/webjars/**`
 * `/css/**`
 * `/js/**`
-* `.ico`
+* `/**/*.ico`
+* `/login`
+* `/oauth2/authorization/**`
+* `/login/oauth2/code/**`
+
+The login and OAuth2 endpoints are ignored so that a user can still authenticate when no tenant has been established yet. At the default filter order those endpoints are handled inside the Spring Security filter chain and never reach the tenant filter, but they do reach it when the login page is served by your own controller, or when the filter is ordered ahead of the security chain.
+
+Patterns are matched against the path within the application, so they keep working when the application is deployed under a context path. With `server.servlet.context-path=/app`, the `/actuator/**` pattern still matches a request to `/app/actuator/health`.
 
 You can add additional paths to ignore without replacing the defaults:
 
@@ -277,7 +293,7 @@ arconia:
 |Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain, which is required when resolving the tenant from an OAuth2 token.
 
 |`arconia.multitenancy.resolution.http.filter.ignore-paths`
-|`/actuator/\**, /webjars/**, /css/**, /js/**, .ico`
+|`/actuator/\**, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
 |HTTP request paths for which tenant resolution will not be performed.
 
 |`arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
@@ -304,7 +320,17 @@ class TenantController {
 }
 ----
 
-The annotation resolves the value from the xref:tenant-context.adoc[`TenantContext`] and supports `String` parameters.
+The annotation resolves the value from the xref:tenant-context.adoc[`TenantContext`] and supports `String` and `Optional<String>` parameters.
+
+A `String` parameter is `null` when no tenant is bound, which happens on an xref:_ignoring_paths[ignored path] or when the filter is disabled. This matches how Spring Security's `@AuthenticationPrincipal` behaves for an unauthenticated request. Declare the parameter as `Optional<String>` on handler methods that can be reached both with and without a tenant, so that the absence is visible in the signature:
+
+[source,java]
+----
+@GetMapping("/status")
+String status(@TenantIdentifier Optional<String> tenantId) {
+    return tenantId.map("Serving tenant "::concat).orElse("Serving no particular tenant");
+}
+----
 
 NOTE: You can also use the `TenantContext` directly to access the tenant identifier from any component, not just controllers. The `@TenantIdentifier` annotation is a convenience for Spring MVC handler methods.
 

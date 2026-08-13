@@ -21,20 +21,23 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
 
-    public static final String DEFAULT_CLAIM_NAME = "tenant_id";
+    private static final String DEFAULT_CLAIM_NAME = "tenant_id";
 
     private final String tenantClaimName;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
         .getContextHolderStrategy();
 
-    public OAuth2TenantResolver() {
-        this.tenantClaimName = DEFAULT_CLAIM_NAME;
-    }
-
-    public OAuth2TenantResolver(String tenantClaimName) {
+    private OAuth2TenantResolver(String tenantClaimName) {
         Assert.hasText(tenantClaimName, "tenantClaimName cannot be null or empty");
         this.tenantClaimName = tenantClaimName;
+    }
+
+    /**
+     * Name of the OAuth2 token claim from which the current tenant is resolved.
+     */
+    public String getTenantClaimName() {
+        return tenantClaimName;
     }
 
     @Override
@@ -65,6 +68,39 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
             return value != null ? value.toString() : null;
         }
         return null;
+    }
+
+    /**
+     * Creates a new builder for {@link OAuth2TenantResolver}.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link OAuth2TenantResolver}.
+     */
+    public static final class Builder {
+
+        private String tenantClaimName = DEFAULT_CLAIM_NAME;
+
+        private Builder() {}
+
+        /**
+         * Name of the OAuth2 token claim from which to resolve the current tenant.
+         */
+        public Builder tenantClaimName(String tenantClaimName) {
+            this.tenantClaimName = tenantClaimName;
+            return this;
+        }
+
+        /**
+         * Builds the {@link OAuth2TenantResolver} instance.
+         */
+        public OAuth2TenantResolver build() {
+            return new OAuth2TenantResolver(tenantClaimName);
+        }
+
     }
 
 }

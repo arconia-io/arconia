@@ -31,7 +31,7 @@ class OAuth2TenantResolverTests {
 
     private static final String TENANT_ID = "acme";
 
-    private final OAuth2TenantResolver oauth2TenantResolver = new OAuth2TenantResolver();
+    private final OAuth2TenantResolver oauth2TenantResolver = OAuth2TenantResolver.builder().build();
 
     private final MockHttpServletRequest request = new MockHttpServletRequest();
 
@@ -42,13 +42,13 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenNullCustomClaimThenThrow() {
-        assertThatThrownBy(() -> new OAuth2TenantResolver(null)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> OAuth2TenantResolver.builder().tenantClaimName(null).build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantClaimName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomClaimThenThrow() {
-        assertThatThrownBy(() -> new OAuth2TenantResolver("")).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> OAuth2TenantResolver.builder().tenantClaimName("").build()).isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("tenantClaimName cannot be null or empty");
     }
 
@@ -61,14 +61,14 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenJwtResourceServerThenResolveFromAccessToken() {
-        authenticate(new JwtAuthenticationToken(jwt(Map.of(OAuth2TenantResolver.DEFAULT_CLAIM_NAME, TENANT_ID))));
+        authenticate(new JwtAuthenticationToken(jwt(Map.of("tenant_id", TENANT_ID))));
 
         assertThat(oauth2TenantResolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);
     }
 
     @Test
     void whenOpaqueTokenResourceServerThenResolveFromIntrospectedPrincipal() {
-        var attributes = Map.<String, Object>of("sub", "user", OAuth2TenantResolver.DEFAULT_CLAIM_NAME, TENANT_ID);
+        var attributes = Map.<String, Object>of("sub", "user", "tenant_id", TENANT_ID);
         var principal = new DefaultOAuth2AuthenticatedPrincipal(attributes, AuthorityUtils.NO_AUTHORITIES);
         var accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "token", Instant.now(),
                 Instant.now().plusSeconds(60));
@@ -80,7 +80,7 @@ class OAuth2TenantResolverTests {
     @Test
     void whenOidcClientThenResolveFromIdToken() {
         var idToken = new OidcIdToken("token", Instant.now(), Instant.now().plusSeconds(60),
-                Map.of("sub", "user", OAuth2TenantResolver.DEFAULT_CLAIM_NAME, TENANT_ID));
+                Map.of("sub", "user", "tenant_id", TENANT_ID));
         var oidcUser = new DefaultOidcUser(AuthorityUtils.NO_AUTHORITIES, idToken);
         authenticate(new OAuth2AuthenticationToken(oidcUser, List.of(), "keycloak"));
 
@@ -89,7 +89,7 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenOAuth2ClientThenResolveFromUserAttributes() {
-        var attributes = Map.<String, Object>of("sub", "user", OAuth2TenantResolver.DEFAULT_CLAIM_NAME, TENANT_ID);
+        var attributes = Map.<String, Object>of("sub", "user", "tenant_id", TENANT_ID);
         var oauth2User = new DefaultOAuth2User(AuthorityUtils.NO_AUTHORITIES, attributes, "sub");
         authenticate(new OAuth2AuthenticationToken(oauth2User, List.of(), "github"));
 
@@ -98,7 +98,7 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenCustomClaimIsUsed() {
-        var resolver = new OAuth2TenantResolver("https://arconia.io/tenant");
+        var resolver = OAuth2TenantResolver.builder().tenantClaimName("https://arconia.io/tenant").build();
         authenticate(new JwtAuthenticationToken(jwt(Map.of("https://arconia.io/tenant", TENANT_ID))));
 
         assertThat(resolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);
@@ -106,7 +106,7 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenPrincipalReplacedThenResolveFromCredentials() {
-        var token = jwt(Map.of(OAuth2TenantResolver.DEFAULT_CLAIM_NAME, TENANT_ID));
+        var token = jwt(Map.of("tenant_id", TENANT_ID));
         authenticate(new JwtAuthenticationToken(token, "customPrincipal", AuthorityUtils.NO_AUTHORITIES));
 
         assertThat(oauth2TenantResolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);

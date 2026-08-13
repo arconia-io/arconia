@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.server.PathContainer;
+import org.springframework.http.server.RequestPath;
 import org.springframework.util.Assert;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -32,7 +32,13 @@ public class TenantContextIgnorePathMatcher {
     public boolean matches(HttpServletRequest httpServletRequest) {
         Assert.notNull(httpServletRequest, "httpServletRequest cannot be null");
         var requestUri = httpServletRequest.getRequestURI();
-        var pathContainer = PathContainer.parsePath(requestUri);
+        // Matched against the path within the application, so that the configured
+        // patterns keep working under a non-root context path. The path is left encoded,
+        // since decoding first would let an escaped sequence match a pattern differently
+        // than the container routes it, and a false positive here means no tenant is
+        // bound at all.
+        var pathContainer = RequestPath.parse(requestUri, httpServletRequest.getContextPath())
+            .pathWithinApplication();
         var matchesIgnorePaths = ignorePathPatterns.stream()
             .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
         if (matchesIgnorePaths) {

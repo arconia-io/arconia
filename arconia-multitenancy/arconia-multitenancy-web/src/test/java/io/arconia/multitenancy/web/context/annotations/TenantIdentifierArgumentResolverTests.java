@@ -1,6 +1,7 @@
 package io.arconia.multitenancy.web.context.annotations;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
@@ -48,6 +49,38 @@ class TenantIdentifierArgumentResolverTests {
         assertThat(actualTenantIdentifier).isNull();
     }
 
+    @Test
+    void supportsOptionalStringParameter() {
+        assertThat(argumentResolver.supportsParameter(showTenantIdentifierOptional())).isTrue();
+    }
+
+    @Test
+    void doesNotSupportOptionalOfWrongType() {
+        assertThat(argumentResolver.supportsParameter(showTenantIdentifierOptionalLong())).isFalse();
+    }
+
+    @Test
+    void resolveOptionalTenantIdentifierWhenContextBound() {
+        TenantContext.where("acme").run(() -> {
+            var actual = argumentResolver.resolveArgument(showTenantIdentifierOptional(), null, null, null);
+            assertThat(actual).isEqualTo(Optional.of("acme"));
+        });
+    }
+
+    @Test
+    void resolveOptionalTenantIdentifierWhenNoContextBound() {
+        var actual = argumentResolver.resolveArgument(showTenantIdentifierOptional(), null, null, null);
+        assertThat(actual).isEqualTo(Optional.empty());
+    }
+
+    private MethodParameter showTenantIdentifierOptional() {
+        return getMethodParameter("showTenantIdentifierOptional", Optional.class);
+    }
+
+    private MethodParameter showTenantIdentifierOptionalLong() {
+        return getMethodParameter("showTenantIdentifierOptionalLong", Optional.class);
+    }
+
     private MethodParameter showTenantIdentifierNoAnnotation() {
         return getMethodParameter("showTenantIdentifierNoAnnotation", String.class);
     }
@@ -74,6 +107,12 @@ class TenantIdentifierArgumentResolverTests {
         }
 
         public void showTenantIdentifierErrorOnInvalidType(@TenantIdentifier Long tenantIdentifier) {
+        }
+
+        public void showTenantIdentifierOptional(@TenantIdentifier Optional<String> tenantIdentifier) {
+        }
+
+        public void showTenantIdentifierOptionalLong(@TenantIdentifier Optional<Long> tenantIdentifier) {
         }
 
     }

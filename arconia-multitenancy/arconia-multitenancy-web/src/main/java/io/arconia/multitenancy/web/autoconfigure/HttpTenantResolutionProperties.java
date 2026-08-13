@@ -144,7 +144,8 @@ public class HttpTenantResolutionProperties {
          * Comma-separated list of HTTP request paths for which the tenant resolution will
          * not be performed.
          */
-        private Set<String> ignorePaths = Set.of("/actuator/**", "/webjars/**", "/css/**", "/js/**", ".ico");
+        private Set<String> ignorePaths = Set.of("/actuator/**", "/webjars/**", "/css/**", "/js/**", "/**/*.ico",
+                "/login", "/oauth2/authorization/**", "/login/oauth2/code/**");
 
         /**
          * Additional comma-separated list of HTTP request paths for which the tenant

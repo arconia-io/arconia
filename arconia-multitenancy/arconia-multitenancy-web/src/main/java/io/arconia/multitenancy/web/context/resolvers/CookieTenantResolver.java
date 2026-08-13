@@ -16,17 +16,20 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
-    public static final String DEFAULT_COOKIE_NAME = "TENANT-ID";
+    private static final String DEFAULT_COOKIE_NAME = "TENANT-ID";
 
     private final String tenantCookieName;
 
-    public CookieTenantResolver() {
-        this.tenantCookieName = DEFAULT_COOKIE_NAME;
-    }
-
-    public CookieTenantResolver(String tenantCookieName) {
+    private CookieTenantResolver(String tenantCookieName) {
         Assert.hasText(tenantCookieName, "tenantCookieName cannot be null or empty");
         this.tenantCookieName = tenantCookieName;
+    }
+
+    /**
+     * Name of the HTTP cookie from which the current tenant is resolved.
+     */
+    public String getTenantCookieName() {
+        return tenantCookieName;
     }
 
     @Override
@@ -42,6 +45,39 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
             .map(Cookie::getValue)
             .findFirst()
             .orElse(null);
+    }
+
+    /**
+     * Creates a new builder for {@link CookieTenantResolver}.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link CookieTenantResolver}.
+     */
+    public static final class Builder {
+
+        private String tenantCookieName = DEFAULT_COOKIE_NAME;
+
+        private Builder() {}
+
+        /**
+         * Name of the HTTP cookie from which to resolve the current tenant.
+         */
+        public Builder tenantCookieName(String tenantCookieName) {
+            this.tenantCookieName = tenantCookieName;
+            return this;
+        }
+
+        /**
+         * Builds the {@link CookieTenantResolver} instance.
+         */
+        public CookieTenantResolver build() {
+            return new CookieTenantResolver(tenantCookieName);
+        }
+
     }
 
 }
