@@ -33,7 +33,7 @@ public class OpenLitDevServicesProperties implements SharedDevServicesProperties
     /**
      * Full name of the container image used for the internal ClickHouse instance.
      */
-    private String clickhouseImageName = "clickhouse/clickhouse-server:26.5-distroless";
+    private String clickhouseImageName = "clickhouse/clickhouse-server:26.7-distroless";
 
     /**
      * Environment variables to set in the OpenLit service.

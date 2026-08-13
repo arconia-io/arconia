@@ -5,7 +5,7 @@ package io.arconia.opentelemetry.testcontainers;
  */
 public final class Images {
 
-    public static final String CLICKHOUSE = "clickhouse/clickhouse-server:26.5-distroless";
+    public static final String CLICKHOUSE = "clickhouse/clickhouse-server:26.7-distroless";
 
     public static final String LGTM = "grafana/otel-lgtm:0.30.1";
 
