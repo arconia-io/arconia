@@ -10,7 +10,7 @@ Furthermore, make sure you check the xref:what-is-new.adoc[What's New in Arconia
 
 == Prerequisites
 
-Arconia 0.29 baselines on Spring Boot 4.1. Your application must already be on Spring Boot 4.1 before you upgrade Arconia.
+Arconia 0.30 baselines on Spring Boot 4.1. Your application must already be on Spring Boot 4.1 before you upgrade Arconia.
 
 If your application is still on Spring Boot 4.0, upgrade it first by applying the automated https://docs.arconia.io/arconia-migrations/latest/spring/spring-boot/4-1/[Spring Boot 4.1 OpenRewrite recipes], or remain on Arconia `0.28.0` until you have migrated.
 
@@ -22,7 +22,7 @@ Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can upgr
 
 [source,shell]
 ----
-arconia update framework --to-version 0.29
+arconia update framework --to-version 0.30
 ----
 
 === Gradle OpenRewrite Plugin
@@ -70,7 +70,7 @@ Then, run the following command:
 ./gradlew rewriteRun \
     --init-script init.gradle \
     --no-parallel \
-    -DactiveRecipe=io.arconia.rewrite.framework.UpgradeArconia_0_29
+    -DactiveRecipe=io.arconia.rewrite.framework.UpgradeArconia_0_30
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -83,5 +83,5 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.framework.UpgradeArconia_0_29
+  -Drewrite.activeRecipes=io.arconia.rewrite.framework.UpgradeArconia_0_30
 ----
