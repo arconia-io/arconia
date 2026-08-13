@@ -7,7 +7,7 @@ public final class Images {
 
     public static final String CLICKHOUSE = "clickhouse/clickhouse-server:26.5-distroless";
 
-    public static final String LGTM = "grafana/otel-lgtm:0.29.2";
+    public static final String LGTM = "grafana/otel-lgtm:0.30.1";
 
     public static final String OTEL_COLLECTOR = "otel/opentelemetry-collector-contrib:0.157.0";
 
