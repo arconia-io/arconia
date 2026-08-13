@@ -368,3 +368,35 @@ An unknown tenant identifier returns HTTP `404 Not Found`.
 ====
 The endpoint reports attribute names but never attribute values. Tenant attributes are defined by the application and may carry credentials or connection details, which should not be readable from an actuator endpoint. Use the `TenantDetailsService` directly when you need the values.
 ====
+
+=== Health Indicator
+
+When tenant details are loaded from a relational database and Spring Boot Actuator is present in the classpath, Arconia auto-configures a health indicator for the database holding them. It reports the application as down when that database cannot be reached, which is the condition that would otherwise make every request fail tenant verification.
+
+The check is a bounded count against the tenant details table rather than a full read, so polling it does not scan every tenant. The number of registered tenants is reported as a detail.
+
+[source,json]
+----
+{
+  "status": "UP",
+  "components": {
+    "tenantdetails": {
+      "status": "UP",
+      "details": {
+        "tenants": 3
+      }
+    }
+  }
+}
+----
+
+.Tenant Details Health Configuration Properties
+|===
+|Property |Default |Description
+
+|`management.health.tenantdetails.enabled`
+|`true`
+|Whether the tenant details health indicator should be enabled.
+|===
+
+The health indicator is only auto-configured for the JDBC-based tenant details. A properties-based or custom `TenantDetailsService` has no external dependency to check, so none is registered.
