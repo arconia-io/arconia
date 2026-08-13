@@ -28,7 +28,7 @@ public class OpenLitDevServicesProperties implements SharedDevServicesProperties
     /**
      * Full name of the container image used for OpenLit.
      */
-    private String imageName = "ghcr.io/openlit/openlit:1.24.1";
+    private String imageName = "ghcr.io/openlit/openlit:1.24.2";
 
     /**
      * Full name of the container image used for the internal ClickHouse instance.
