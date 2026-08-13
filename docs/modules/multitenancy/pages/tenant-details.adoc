@@ -170,7 +170,7 @@ For a database without a bundled script, point `schema` to your own script. The 
 |Database schema initialization mode. Options: `always`, `embedded`, `never`.
 
 |`arconia.multitenancy.details.jdbc.schema`
-|`classpath:io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/schema-@@platform@@.sql`
+|`classpath:io/arconia/multitenancy/details/jdbc/autoconfigure/schema-@@platform@@.sql`
 |Path to the SQL file to use to initialize the database schema.
 
 |`arconia.multitenancy.details.jdbc.platform`

@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure;
+package io.arconia.multitenancy.details.jdbc.autoconfigure;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfigurat
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
-import io.arconia.multitenancy.tenantdetails.jdbc.JdbcTenantDetailsService;
+import io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

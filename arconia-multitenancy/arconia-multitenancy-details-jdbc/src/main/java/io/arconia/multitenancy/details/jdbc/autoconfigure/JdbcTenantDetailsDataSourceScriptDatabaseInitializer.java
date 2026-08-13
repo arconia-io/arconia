@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure;
+package io.arconia.multitenancy.details.jdbc.autoconfigure;
 
 import javax.sql.DataSource;
 

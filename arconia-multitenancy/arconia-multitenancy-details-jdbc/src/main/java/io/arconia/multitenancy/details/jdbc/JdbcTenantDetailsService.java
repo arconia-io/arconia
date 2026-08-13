@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc;
+package io.arconia.multitenancy.details.jdbc;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.tenantdetails.Tenant;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
@@ -23,6 +24,7 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
  * {@code tenant_details_attributes} table. Schema scripts for the supported databases are
  * bundled with this module and can be applied at startup.
  */
+@Incubating
 public final class JdbcTenantDetailsService implements TenantDetailsService {
 
     private static final String SELECT_TENANTS = """
@@ -31,9 +33,11 @@ public final class JdbcTenantDetailsService implements TenantDetailsService {
             left join tenant_details_attributes tda on td.id = tda.tenant_id
             """;
 
+    private static final String SELECT_TENANTS_ORDERED = SELECT_TENANTS + "order by td.identifier";
+
     private static final String SELECT_TENANT_BY_IDENTIFIER = SELECT_TENANTS + "where td.identifier = ?";
 
-    private static final ResultSetExtractor<List<Tenant>> tenantExtractor = rs -> {
+    private static final ResultSetExtractor<List<Tenant>> TENANT_EXTRACTOR = rs -> {
         var tenants = new LinkedHashMap<String, Tenant.Builder>();
         while (rs.next()) {
             var identifier = rs.getString("identifier");
@@ -60,9 +64,17 @@ public final class JdbcTenantDetailsService implements TenantDetailsService {
         return new Builder();
     }
 
+    /**
+     * Loads every tenant, ordered by identifier, together with all their attributes.
+     * <p>
+     * The result is not paginated, so the whole tenant table and its attributes are read
+     * into memory on each call. That is appropriate for administrative use, such as an
+     * actuator endpoint, but not for a per-request code path in a deployment with a large
+     * number of tenants. Use {@link #loadTenantByIdentifier(String)} there instead.
+     */
     @Override
     public List<? extends TenantDetails> loadAllTenants() {
-        return query(SELECT_TENANTS);
+        return query(SELECT_TENANTS_ORDERED);
     }
 
     @Override
@@ -73,7 +85,7 @@ public final class JdbcTenantDetailsService implements TenantDetailsService {
     }
 
     private List<Tenant> query(String sql, Object... params) {
-        var tenants = this.jdbcClient.sql(sql).params(params).query(tenantExtractor);
+        var tenants = this.jdbcClient.sql(sql).params(params).query(TENANT_EXTRACTOR);
         return tenants != null ? tenants : List.of();
     }
 

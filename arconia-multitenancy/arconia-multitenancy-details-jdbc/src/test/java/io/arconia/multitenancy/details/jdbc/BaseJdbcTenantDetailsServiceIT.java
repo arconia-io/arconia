@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc;
+package io.arconia.multitenancy.details.jdbc;
 
 import javax.sql.DataSource;
 
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.entry;
  */
 abstract class BaseJdbcTenantDetailsServiceIT {
 
-    private static final String SCRIPTS_LOCATION = "io/arconia/multitenancy/tenantdetails/jdbc/autoconfigure/";
+    private static final String SCRIPTS_LOCATION = "io/arconia/multitenancy/details/jdbc/autoconfigure/";
 
     private JdbcTenantDetailsService tenantDetailsService;
 

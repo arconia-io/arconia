@@ -1,1 +1,2 @@
-io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure.JdbcTenantDetailsAutoConfiguration
+io.arconia.multitenancy.details.jdbc.autoconfigure.JdbcTenantDetailsAutoConfiguration
+io.arconia.multitenancy.details.jdbc.autoconfigure.actuate.JdbcTenantDetailsHealthContributorAutoConfiguration

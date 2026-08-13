@@ -1,2 +1,2 @@
 org.springframework.aot.hint.RuntimeHintsRegistrar=\
-  io.arconia.multitenancy.tenantdetails.jdbc.JdbcTenantDetailsHints
+  io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsHints

@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure;
+package io.arconia.multitenancy.details.jdbc.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.init.DatabaseInitializationProperties;
@@ -12,7 +12,7 @@ public class JdbcTenantDetailsProperties extends DatabaseInitializationPropertie
     public static final String CONFIG_PREFIX = "arconia.multitenancy.details.jdbc";
 
     static final String DEFAULT_SCHEMA_LOCATION = "classpath:io/arconia/"
-            + "multitenancy/tenantdetails/jdbc/autoconfigure/schema-@@platform@@.sql";
+            + "multitenancy/details/jdbc/autoconfigure/schema-@@platform@@.sql";
 
     /**
      * Whether tenant details are loaded from a relational database.

@@ -1,4 +1,4 @@
-package io.arconia.multitenancy.tenantdetails.jdbc.autoconfigure;
+package io.arconia.multitenancy.details.jdbc.autoconfigure;
 
 import javax.sql.DataSource;
 
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Import;
 
 import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
-import io.arconia.multitenancy.tenantdetails.jdbc.JdbcTenantDetailsService;
+import io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsService;
 
 /**
  * Auto-configuration for JDBC-based tenant details.
