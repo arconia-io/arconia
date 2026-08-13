@@ -28,7 +28,7 @@ public class OtelCollectorDevServicesProperties implements SharedDevServicesProp
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "otel/opentelemetry-collector-contrib:0.157.0";
+    private String imageName = "otel/opentelemetry-collector-contrib:0.158.0";
 
     /**
      * Environment variables to set in the service.
