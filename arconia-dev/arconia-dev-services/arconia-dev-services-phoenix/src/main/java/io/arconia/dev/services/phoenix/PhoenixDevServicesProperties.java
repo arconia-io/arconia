@@ -28,7 +28,7 @@ public class PhoenixDevServicesProperties implements SharedDevServicesProperties
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "arizephoenix/phoenix:version-19.7-nonroot";
+    private String imageName = "arizephoenix/phoenix:version-20.1-nonroot";
 
     /**
      * Environment variables to set in the service.
