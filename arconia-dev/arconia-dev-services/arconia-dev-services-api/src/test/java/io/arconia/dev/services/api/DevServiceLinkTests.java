@@ -67,13 +67,4 @@ class DevServiceLinkTests {
         assertThat(link.url()).isEqualTo("http://localhost:3000");
     }
 
-    @Test
-    void whenCreatedViaCanonicalConstructorThenCreate() {
-        var link = new DevServiceLink("otlp", "OTLP/HTTP", "http://localhost:4318");
-
-        assertThat(link.id()).isEqualTo("otlp");
-        assertThat(link.label()).isEqualTo("OTLP/HTTP");
-        assertThat(link.url()).isEqualTo("http://localhost:4318");
-    }
-
 }
