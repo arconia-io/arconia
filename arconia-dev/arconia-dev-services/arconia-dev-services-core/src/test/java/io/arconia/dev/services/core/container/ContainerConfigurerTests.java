@@ -1,6 +1,7 @@
 package io.arconia.dev.services.core.container;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
@@ -91,6 +93,11 @@ class ContainerConfigurerTests {
     @Test
     void baseConfigurationShouldApplyStartupTimeout() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        // Testcontainers uses a shared wait strategy instance across all containers, so the
+        // container must own one before the startup timeout is applied to it. Without this,
+        // the assertion below would pass by reading the shared instance, and the custom
+        // timeout would leak to every other container relying on it.
+        container.waitingFor(Wait.defaultWaitStrategy());
         Duration customTimeout = Duration.ofMinutes(2);
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withStartupTimeout(customTimeout);
@@ -107,10 +114,10 @@ class ContainerConfigurerTests {
      * Helper method to extract the WaitStrategy from a GenericContainer using reflection.
      */
     private WaitStrategy getWaitStrategy(GenericContainer<?> container) {
-        Field waitStrategyField = ReflectionUtils.findField(GenericContainer.class, "waitStrategy");
-        assertThat(waitStrategyField).isNotNull();
-        ReflectionUtils.makeAccessible(waitStrategyField);
-        return (WaitStrategy) ReflectionUtils.getField(waitStrategyField, container);
+        Method waitStrategyMethod = ReflectionUtils.findMethod(GenericContainer.class, "getWaitStrategy");
+        assertThat(waitStrategyMethod).isNotNull();
+        ReflectionUtils.makeAccessible(waitStrategyMethod);
+        return (WaitStrategy) ReflectionUtils.invokeMethod(waitStrategyMethod, container);
     }
 
     /**

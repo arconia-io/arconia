@@ -97,7 +97,9 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
 
-        withExposedPorts(FANCYDB_PORT);
+        this.withExposedPorts(FANCYDB_PORT);
+        this.waitingFor(Wait.defaultWaitStrategy());
+
         ContainerConfigurer.base(this, properties);
     }
 
@@ -111,6 +113,8 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 
 }
 ----
+
+Unless your container class already declares a wait strategy of its own, declare one explicitly before calling `ContainerConfigurer.base()`, as in the example above. Testcontainers shares a single default wait strategy instance across all containers that don't declare one, and `ContainerConfigurer.base()` applies the `startup-timeout` property to whichever wait strategy the container has at that point. Without an explicit wait strategy, the startup timeout you configure for your Dev Service is applied to the shared instance, changing the startup timeout of every other container relying on it as well. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
 
 For relational databases, also apply `ContainerConfigurer.jdbc(this, properties)` to configure credentials, database name, and init scripts.
 

@@ -13,8 +13,7 @@ import io.arconia.core.support.Incubating;
 public interface DevServiceLinkProvider {
 
     /**
-     * The links exposed by this dev service. Resolved after the container has started,
-     * so that mapped ports are available.
+     * The links exposed by this dev service.
      */
     List<DevServiceLink> devServiceLinks();
 

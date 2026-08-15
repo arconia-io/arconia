@@ -66,36 +66,57 @@ public record ContainerInfo(
 
         private Builder() {}
 
+        /**
+         * The container id.
+         */
         public Builder id(String id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * The image name of the container.
+         */
         public Builder imageName(String imageName) {
             this.imageName = imageName;
             return this;
         }
 
+        /**
+         * The names of the container.
+         */
         public Builder names(List<String> names) {
             this.names = names;
             return this;
         }
 
+        /**
+         * The exposed ports of the container.
+         */
         public Builder exposedPorts(List<ContainerPort> exposedPorts) {
             this.exposedPorts = exposedPorts;
             return this;
         }
 
+        /**
+         * The labels of the container.
+         */
         public Builder labels(Map<String, String> labels) {
             this.labels = labels;
             return this;
         }
 
+        /**
+         * The status of the container.
+         */
         public Builder status(String status) {
             this.status = status;
             return this;
         }
 
+        /**
+         * Builds the {@link ContainerInfo} instance.
+         */
         public ContainerInfo build() {
             return new ContainerInfo(id, imageName, names, exposedPorts, labels, status);
         }

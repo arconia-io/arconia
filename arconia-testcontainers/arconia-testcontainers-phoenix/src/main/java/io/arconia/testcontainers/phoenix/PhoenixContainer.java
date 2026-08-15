@@ -20,7 +20,7 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(GRPC_PORT, HTTP_PORT);
-        waitingFor(Wait.forLogMessage(".*Application startup complete.*", 1));
+        this.waitingFor(Wait.forLogMessage(".*Application startup complete.*", 1));
     }
 
     public String getPhoenixUrl() {

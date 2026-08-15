@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -28,6 +29,12 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         addExposedPorts(OTLP_GRPC_PORT, OTLP_HTTP_PORT);
         this.properties = properties;
+
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // GenericContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        this.waitingFor(Wait.defaultWaitStrategy());
 
         ContainerConfigurer.base(this, properties);
     }

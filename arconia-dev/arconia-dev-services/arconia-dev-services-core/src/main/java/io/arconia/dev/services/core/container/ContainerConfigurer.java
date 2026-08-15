@@ -27,6 +27,11 @@ public final class ContainerConfigurer {
 
     /**
      * Configures base container configuration for Dev Services.
+     * <p>
+     * The container must already have a wait strategy of its own when this method is called,
+     * since the configured startup timeout is applied to it. Containers that don't declare one
+     * rely on a wait strategy instance that Testcontainers shares across all containers, which
+     * would make the startup timeout apply to every other container relying on it as well.
      */
     public static void base(GenericContainer<?> container, BaseDevServicesProperties properties) {
         container
@@ -113,7 +118,12 @@ public final class ContainerConfigurer {
                 .withUsername(properties.getUsername())
                 .withPassword(properties.getPassword())
                 .withDatabaseName(properties.getDbName())
-                .withInitScripts(properties.getInitScriptPaths());
+                .withInitScripts(properties.getInitScriptPaths())
+                // The startup timeout is applied again here because JdbcDatabaseContainer does not wait
+                // on the container's wait strategy: it polls the database until it answers a test query,
+                // bounded by its own startupTimeoutSeconds (120 seconds by default). Without this,
+                // the configured startup timeout would have no effect on JDBC dev services.
+                .withStartupTimeoutSeconds((int) properties.getStartupTimeout().toSeconds());
     }
 
 }

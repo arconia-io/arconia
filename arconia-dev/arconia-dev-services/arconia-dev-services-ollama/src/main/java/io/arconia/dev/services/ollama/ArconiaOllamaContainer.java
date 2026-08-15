@@ -8,6 +8,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -29,6 +30,7 @@ final class ArconiaOllamaContainer extends OllamaContainer {
 
     public ArconiaOllamaContainer(OllamaDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        this.properties = properties;
 
         // Workaround for https://github.com/testcontainers/testcontainers-java/issues/9287
         // OllamaContainer assumes the nvidia runtime works if listed in docker info,
@@ -41,7 +43,11 @@ final class ArconiaOllamaContainer extends OllamaContainer {
             });
         }
 
-        this.properties = properties;
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // OllamaContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        this.waitingFor(Wait.defaultWaitStrategy());
 
         ContainerConfigurer.base(this, properties);
     }

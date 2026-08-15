@@ -6,8 +6,7 @@ import org.springframework.util.Assert;
 import io.arconia.core.support.Incubating;
 
 /**
- * A named link exposed by a dev service, such as a management console or a telemetry endpoint,
- * shown in startup logs and developer tooling.
+ * A named link exposed by a dev service, such as a management console or a telemetry endpoint.
  */
 @Incubating
 public record DevServiceLink(

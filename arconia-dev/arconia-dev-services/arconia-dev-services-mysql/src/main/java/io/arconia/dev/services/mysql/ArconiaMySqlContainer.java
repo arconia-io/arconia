@@ -1,5 +1,6 @@
 package io.arconia.dev.services.mysql;
 
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -18,6 +19,12 @@ final class ArconiaMySqlContainer extends MySQLContainer {
     public ArconiaMySqlContainer(MySqlDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // MySQLContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        this.waitingFor(Wait.defaultWaitStrategy());
 
         ContainerConfigurer.base(this, properties);
         ContainerConfigurer.jdbc(this, properties);

@@ -8,10 +8,6 @@ import io.arconia.core.support.Incubating;
 
 /**
  * Base properties for dev services.
- * <p>
- * This interface defines the read contract for the common dev services properties.
- * Implementations are expected to declare a field, a getter, and a setter for each
- * property they support, so that Spring Boot can bind user configuration to them.
  */
 @Incubating
 public interface BaseDevServicesProperties {

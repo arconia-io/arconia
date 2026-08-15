@@ -1,6 +1,5 @@
 package io.arconia.dev.services.core.registration;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,7 +31,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.ResolvableType;
@@ -41,13 +39,11 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
@@ -61,7 +57,6 @@ import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.container.DevServiceLabels;
-import io.arconia.dev.services.core.container.StartupLogWaitStrategy;
 
 /**
  * Registry for managing the definition and lifecycle of dev services.
@@ -327,7 +322,6 @@ public class DevServicesRegistry {
                 applyCustomizers(container, registeredBean.getBeanFactory());
                 applyLabels(container, service);
                 applyNetwork(container, service, registeredBean.getBeanFactory());
-                applyStartupLogging(container, service);
                 return container;
             });
         }
@@ -438,44 +432,6 @@ public class DevServicesRegistry {
     }
 
     /**
-     * Wrap the container's wait strategy so that when the container fails to start, its logs are
-     * written to the application log (at the configured level).
-     * <p>
-     * The wrapping is applied to the wait strategy set on the container at this point. If a
-     * container subclass reassigns its wait strategy later in {@code configure()} (called during
-     * {@code start()}), the wrapper is lost and the on-failure log dump won't apply to it.
-     */
-    private void applyStartupLogging(Container<?> container, ServiceSpec service) {
-        if (!(container instanceof GenericContainer<?> genericContainer)) {
-            logger.debug("Skipping startup logging for the '{}' dev service: its container is not a GenericContainer", service.getName());
-            return;
-        }
-        // GenericContainer#getWaitStrategy() is protected, so read the current strategy from the
-        // (protected) field to wrap it. Skip gracefully if it can't be read, so the container still
-        // starts normally, just without the on-failure log dump.
-        WaitStrategy current = currentWaitStrategy(genericContainer);
-        if (current == null) {
-            return;
-        }
-        genericContainer.setWaitStrategy(new StartupLogWaitStrategy(current, service.getName(), resolveStartupLogLevel()));
-    }
-
-    @Nullable
-    private static WaitStrategy currentWaitStrategy(GenericContainer<?> container) {
-        try {
-            Field field = ReflectionUtils.findField(GenericContainer.class, "waitStrategy");
-            if (field == null) {
-                return null;
-            }
-            ReflectionUtils.makeAccessible(field);
-            return (ReflectionUtils.getField(field, container) instanceof WaitStrategy waitStrategy) ? waitStrategy : null;
-        } catch (Exception ex) {
-            logger.debug("Failed to read the wait strategy of the '{}' dev service container; on-failure log capture is disabled for it", container.getDockerImageName(), ex);
-            return null;
-        }
-    }
-
-    /**
      * The global dev services configuration, bound from the environment.
      */
     private DevServicesProperties devServicesProperties() {
@@ -488,13 +444,6 @@ public class DevServicesRegistry {
      */
     private boolean isNetworkEnabled() {
         return devServicesProperties().getNetwork().isEnabled();
-    }
-
-    /**
-     * The level at which a failing dev service container's logs are written to the application log.
-     */
-    private LogLevel resolveStartupLogLevel() {
-        return devServicesProperties().getStartup().getLogLevel();
     }
 
     /**
