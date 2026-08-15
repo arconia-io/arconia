@@ -20,6 +20,10 @@ public class OracleXeDevServicesProperties implements JdbcDevServicesProperties 
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.oracle-xe";
 
+    static final String DEFAULT_USERNAME = "arconia";
+    static final String DEFAULT_PASSWORD = "arconia";
+    static final String DEFAULT_DB_NAME = "arconia";
+
     /**
      * Whether the dev service is enabled.
      */

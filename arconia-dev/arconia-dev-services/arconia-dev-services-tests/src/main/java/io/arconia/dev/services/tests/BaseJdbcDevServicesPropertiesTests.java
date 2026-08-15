@@ -6,9 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_DB_NAME;
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_PASSWORD;
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -18,13 +15,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public abstract class BaseJdbcDevServicesPropertiesTests<T extends JdbcDevServicesProperties> extends BaseDevServicesPropertiesTests<T> {
 
+    private static final String EXPECTED_USERNAME = "arconia";
+    private static final String EXPECTED_PASSWORD = "arconia";
+    private static final String EXPECTED_DB_NAME = "arconia";
+
     @Test
     void shouldCreateInstanceWithJdbcDefaultValues() {
         T properties = createProperties();
 
-        assertThat(properties.getUsername()).isEqualTo(DEFAULT_USERNAME);
-        assertThat(properties.getPassword()).isEqualTo(DEFAULT_PASSWORD);
-        assertThat(properties.getDbName()).isEqualTo(DEFAULT_DB_NAME);
+        assertThat(properties.getUsername()).isEqualTo(EXPECTED_USERNAME);
+        assertThat(properties.getPassword()).isEqualTo(EXPECTED_PASSWORD);
+        assertThat(properties.getDbName()).isEqualTo(EXPECTED_DB_NAME);
         assertThat(properties.getInitScriptPaths()).isEmpty();
     }
 

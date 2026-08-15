@@ -20,6 +20,10 @@ public class MariaDbDevServicesProperties implements JdbcDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.mariadb";
 
+    static final String DEFAULT_USERNAME = "arconia";
+    static final String DEFAULT_PASSWORD = "arconia";
+    static final String DEFAULT_DB_NAME = "arconia";
+
     /**
      * Whether the dev service is enabled.
      */

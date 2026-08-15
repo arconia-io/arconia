@@ -13,9 +13,9 @@ import org.testcontainers.oracle.OracleContainer;
 
 import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
 
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_DB_NAME;
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_PASSWORD;
-import static io.arconia.dev.services.api.config.JdbcDevServicesProperties.DEFAULT_USERNAME;
+import static io.arconia.dev.services.oracle.OracleDevServicesProperties.DEFAULT_DB_NAME;
+import static io.arconia.dev.services.oracle.OracleDevServicesProperties.DEFAULT_PASSWORD;
+import static io.arconia.dev.services.oracle.OracleDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

@@ -10,10 +10,6 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public interface JdbcDevServicesProperties extends BaseDevServicesProperties {
 
-    String DEFAULT_USERNAME = "arconia";
-    String DEFAULT_PASSWORD = "arconia";
-    String DEFAULT_DB_NAME = "arconia";
-
     /**
      * Username to be used for connecting to the database.
      */
