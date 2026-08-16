@@ -48,6 +48,7 @@ public final class FlociDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("floci")
                     .description("Floci Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaFlociContainer.class)
                             .supplier(() -> new ArconiaFlociContainer(properties))

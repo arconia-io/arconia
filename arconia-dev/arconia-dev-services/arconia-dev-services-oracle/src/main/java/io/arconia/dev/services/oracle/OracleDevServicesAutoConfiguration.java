@@ -38,6 +38,7 @@ public final class OracleDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("oracle")
                     .description("Oracle Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaOracleContainer.class)
                             .supplier(() -> new ArconiaOracleContainer(properties))

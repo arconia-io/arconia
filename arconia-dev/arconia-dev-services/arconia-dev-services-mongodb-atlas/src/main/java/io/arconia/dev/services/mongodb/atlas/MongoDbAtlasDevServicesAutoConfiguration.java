@@ -38,6 +38,7 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mongodb-atlas")
                     .description("MongoDB Atlas Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaMongoDbAtlasLocalContainer.class)
                             .supplier(() -> new ArconiaMongoDbAtlasLocalContainer(properties))

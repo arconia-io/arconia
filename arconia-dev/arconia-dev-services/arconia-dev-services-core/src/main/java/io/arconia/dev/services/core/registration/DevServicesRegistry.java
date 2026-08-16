@@ -40,6 +40,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -117,6 +118,7 @@ public class DevServicesRegistry {
      */
     private void registerBeanDefinition(ServiceSpec service) {
         Assert.hasText(service.getName(), "service name cannot be null or empty");
+        Assert.notNull(service.getProperties(), "service properties cannot be null");
         Assert.notNull(service.getContainerSpec(), "service container cannot be null");
         Assert.notNull(service.getContainerSpec().getType(), "service container type cannot be null");
         Assert.notNull(service.getContainerSpec().getSupplier(), "service container supplier cannot be null");
@@ -538,14 +540,15 @@ public class DevServicesRegistry {
     }
 
     /**
-     * Whether the dev service is shared among applications: the service declares a discovery
-     * specification with sharing enabled, and the application runs in dev mode. A declared
-     * discovery specification always carries a connection details contribution (enforced at
-     * registration), so sharing never needs a runtime capability check.
+     * Whether the dev service is shared with other applications, which requires both the
+     * {@code shared} property to be enabled and a discovery specification to be declared,
+     * since a dev service that cannot be adopted is not worth advertising as shared.
      */
     private static boolean isSharingEnabled(ServiceSpec service) {
-        DiscoverySpec discoverySpec = service.getDiscoverySpec();
-        return discoverySpec != null && discoverySpec.isShared() && isDevMode();
+        return service.getDiscoverySpec() != null
+                && service.getProperties() instanceof SharedDevServicesProperties sharedProperties
+                && sharedProperties.isShared()
+                && isDevMode();
     }
 
     private static boolean isDevMode() {

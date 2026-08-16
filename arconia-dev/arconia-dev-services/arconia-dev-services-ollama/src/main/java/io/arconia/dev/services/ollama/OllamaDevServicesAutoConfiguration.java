@@ -45,6 +45,7 @@ public final class OllamaDevServicesAutoConfiguration {
                 service
                         .name("ollama")
                         .description("Ollama Dev Service")
+                        .properties(properties)
                         .container(container -> {
                             container
                                 .type(ArconiaOllamaContainer.class)
@@ -66,7 +67,6 @@ public final class OllamaDevServicesAutoConfiguration {
          */
         private static void configureSharing(ServiceSpec service, OllamaDevServicesProperties properties) {
             service.discovery(discovery -> discovery
-                    .shared(properties.isShared())
                     .connectionDetails(OllamaConnectionDetails.class, OllamaDiscoveredConnectionDetails::new));
         }
 

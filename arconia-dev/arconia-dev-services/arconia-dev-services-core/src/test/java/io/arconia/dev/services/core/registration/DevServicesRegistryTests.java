@@ -66,6 +66,7 @@ class DevServicesRegistryTests {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("")
+                        .properties(TestDevServicesProperties.DEFAULT)
                         .container(container -> container
                                 .type(TestPostgresContainer.class)
                                 .supplier(TestPostgresContainer::new))))
@@ -76,7 +77,8 @@ class DevServicesRegistryTests {
     void whenContainerSpecIsNullThenThrow() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
-                        .name("postgres")))
+                        .name("postgres")
+                        .properties(TestDevServicesProperties.DEFAULT)))
                 .withMessageContaining("service container cannot be null");
     }
 
@@ -85,6 +87,7 @@ class DevServicesRegistryTests {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
+                        .properties(TestDevServicesProperties.DEFAULT)
                         .container(container -> container
                                 .type(null)
                                 .supplier(TestPostgresContainer::new))))
@@ -96,6 +99,7 @@ class DevServicesRegistryTests {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
+                        .properties(TestDevServicesProperties.DEFAULT)
                         .container(container -> container
                                 .type(TestPostgresContainer.class)
                                 .supplier(null))))
@@ -107,11 +111,11 @@ class DevServicesRegistryTests {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
+                        .properties(TestDevServicesProperties.SHARED)
                         .container(container -> container
                                 .type(TestPostgresContainer.class)
                                 .supplier(TestPostgresContainer::new))
-                        .discovery(discovery -> discovery
-                                .shared(true))))
+                        .discovery(discovery -> {})))
                 .withMessageContaining("connectionDetailsType cannot be null");
     }
 
@@ -119,11 +123,13 @@ class DevServicesRegistryTests {
     void whenServiceRegisteredTwiceThenBeansRegisteredOnce() {
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -136,6 +142,7 @@ class DevServicesRegistryTests {
     void whenServiceRegisteredThenContainerHasLabels() {
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -155,11 +162,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new))
                 .discovery(discovery -> discovery
-                        .shared(true)
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
@@ -174,6 +181,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withReuse(true))));
@@ -192,6 +200,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withReuse(true))));
@@ -208,11 +217,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withReuse(true)))
                 .discovery(discovery -> discovery
-                        .shared(true)
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
@@ -228,11 +237,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withReuse(true)))
                 .discovery(discovery -> discovery
-                        .shared(true)
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
 
         // An existing shared container is adopted.
@@ -287,14 +296,14 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new))
                 .discovery(discovery -> discovery
                         // Raw type to bypass the compile-time check and exercise the runtime net.
                         .connectionDetails((Class) OtherConnectionDetails.class,
-                                container -> new TestConnectionDetails(container.host()))
-                        .shared(true)));
+                                container -> new TestConnectionDetails(container.host()))));
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
@@ -318,11 +327,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new))
                 .discovery(discovery -> discovery
-                        .shared(false)
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
@@ -348,11 +357,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new))
                 .discovery(discovery -> discovery
-                        .shared(true)
                         .connectionDetails(TestConnectionDetails.class, container -> {
                             throw new IllegalStateException("boom");
                         })));
@@ -369,6 +378,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db", "postgres"))));
@@ -386,6 +396,7 @@ class DevServicesRegistryTests {
         // The default registry has no network.enabled property, so the network is off.
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
@@ -401,6 +412,7 @@ class DevServicesRegistryTests {
         DevServicesRegistry registry = registryWithNetworkEnabled();
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
@@ -419,6 +431,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -437,6 +450,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -454,6 +468,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db").withReuse(true))));
@@ -470,6 +485,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         // Simulate the Testcontainers-generated alias alongside a user-defined one.
@@ -491,6 +507,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
@@ -512,6 +529,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
@@ -525,6 +543,7 @@ class DevServicesRegistryTests {
     void whenContainerProvidesLinksThenRegistrationCapturesThem() {
         registry.registerDevService(service -> service
                 .name("linky")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestLinkContainer.class)
                         .supplier(TestLinkContainer::new)));
@@ -539,6 +558,7 @@ class DevServicesRegistryTests {
     void whenContainerProvidesNoLinksThenRegistrationLinksAreEmpty() {
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -570,6 +590,7 @@ class DevServicesRegistryTests {
     void whenLinkProviderThrowsThenRegistrationLinksDegradeToEmpty() {
         registry.registerDevService(service -> service
                 .name("throwy")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestThrowingLinkContainer.class)
                         .supplier(TestThrowingLinkContainer::new)));
@@ -585,6 +606,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("linky")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestLinkContainer.class)
                         .supplier(TestLinkContainer::new)));
@@ -601,6 +623,7 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new)));
@@ -678,12 +701,12 @@ class DevServicesRegistryTests {
     private void registerSharedDevService(DevServicesRegistry registry) {
         registry.registerDevService(service -> service
                 .name("postgres")
+                .properties(TestDevServicesProperties.SHARED)
                 .description("PostgreSQL Dev Service")
                 .container(container -> container
                         .type(TestPostgresContainer.class)
                         .supplier(TestPostgresContainer::new))
                 .discovery(discovery -> discovery
-                        .shared(true)
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
     }
 

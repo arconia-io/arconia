@@ -31,12 +31,12 @@ public final class RabbitMqDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("rabbitmq")
                     .description("RabbitMQ Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaRabbitMqContainer.class)
                             .supplier(() -> new ArconiaRabbitMqContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(RabbitConnectionDetails.class,
                                     container -> new RabbitMqDiscoveredConnectionDetails(container, properties))
                     )

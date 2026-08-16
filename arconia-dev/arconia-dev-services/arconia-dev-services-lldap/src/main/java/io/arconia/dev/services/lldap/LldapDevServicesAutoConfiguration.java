@@ -30,6 +30,7 @@ public final class LldapDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("lldap")
                     .description("LLDAP Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaLldapContainer.class)
                             .supplier(() -> new ArconiaLldapContainer(properties))

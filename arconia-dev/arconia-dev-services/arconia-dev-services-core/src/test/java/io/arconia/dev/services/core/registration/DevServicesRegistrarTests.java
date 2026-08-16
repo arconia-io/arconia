@@ -33,6 +33,7 @@ class DevServicesRegistrarTests {
     void basicRegistration() {
         doRegister(registry -> registry.registerDevService(service ->
                 service.name("docling")
+                .properties(TestDevServicesProperties.DEFAULT)
                         .description("Docling")
                         .container(container -> container
                                 .type(TestDoclingContainer.class)
@@ -50,6 +51,7 @@ class DevServicesRegistrarTests {
         doRegister(registry -> {
             registry.registerDevService(service ->
                     service.name("docling")
+                    .properties(TestDevServicesProperties.DEFAULT)
                             .description("Docling")
                             .container(container -> container
                                     .type(TestDoclingContainer.class)
@@ -57,6 +59,7 @@ class DevServicesRegistrarTests {
 
             registry.registerDevService(service ->
                     service.name("postgres")
+                    .properties(TestDevServicesProperties.DEFAULT)
                             .description("PostgreSQL database")
                             .container(container -> container
                                     .type(TestPostgresContainer.class)
@@ -76,11 +79,13 @@ class DevServicesRegistrarTests {
         doRegister(
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
+                        .properties(TestDevServicesProperties.DEFAULT)
                                 .container(container -> container
                                         .type(TestDoclingContainer.class)
                                         .supplier(TestDoclingContainer::new))),
                 registry -> registry.registerDevService(service ->
                         service.name("postgres")
+                        .properties(TestDevServicesProperties.DEFAULT)
                                 .container(container -> container
                                         .type(TestPostgresContainer.class)
                                         .supplier(TestPostgresContainer::new))));
@@ -98,12 +103,14 @@ class DevServicesRegistrarTests {
         doRegister(
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
+                        .properties(TestDevServicesProperties.DEFAULT)
                                 .container(container -> container
                                         .type(TestDoclingContainer.class)
                                         .serviceConnectionName("firstdocling")
                                         .supplier(TestDoclingContainer::new))),
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
+                        .properties(TestDevServicesProperties.DEFAULT)
                                 .container(container -> container
                                         .type(TestDoclingContainer.class)
                                         .serviceConnectionName("stilldocling")
@@ -177,6 +184,7 @@ class DevServicesRegistrarTests {
     void registryBeanIsReusedAcrossDevServices() {
         doRegister(registry -> registry.registerDevService(service ->
                 service.name("docling")
+                .properties(TestDevServicesProperties.DEFAULT)
                         .container(container -> container
                                 .type(TestDoclingContainer.class)
                                 .supplier(TestDoclingContainer::new))));
@@ -186,6 +194,7 @@ class DevServicesRegistrarTests {
 
         doRegister(registry -> registry.registerDevService(service ->
                 service.name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
                         .container(container -> container
                                 .type(TestPostgresContainer.class)
                                 .supplier(TestPostgresContainer::new))));

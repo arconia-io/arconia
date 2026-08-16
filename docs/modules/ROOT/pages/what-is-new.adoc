@@ -10,3 +10,4 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Core
 
 * The `arconia.dev.services.startup.log-level` has been removed because redundant since Testcontainers already takes care of writing a failed container's logs to the application logs at error level.
+* Registering a Dev Service now requires declaring its configuration properties with `ServiceSpec.properties()`, and `DiscoverySpec.shared()` has been removed. Whether a Dev Service is shared is read from its `shared` property, so the value no longer has to be declared twice, and every configured value the registry needs is read from the same place instead of requiring a new method on the specification. If you build your own Dev Service, add `.properties(properties)` to your registration. The automated upgrade removes the `.shared(...)` call for you. Learn more about xref:dev-services:custom-dev-services.adoc[Building Your Own Dev Service].

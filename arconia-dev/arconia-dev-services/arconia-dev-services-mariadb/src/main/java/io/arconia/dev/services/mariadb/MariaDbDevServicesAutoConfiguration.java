@@ -38,6 +38,7 @@ public final class MariaDbDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mariadb")
                     .description("MariaDB Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaMariaDbContainer.class)
                             .supplier(() -> new ArconiaMariaDbContainer(properties))

@@ -89,6 +89,7 @@ class DevServicesConflictValidationTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("first")
+                    .properties(TestDevServicesProperties.DEFAULT)
                     .container(container -> container
                             .type(TestContainer.class)
                             .supplier(TestContainer::new)));
@@ -102,6 +103,7 @@ class DevServicesConflictValidationTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("second")
+                    .properties(TestDevServicesProperties.DEFAULT)
                     .container(container -> container
                             .type(TestContainer.class)
                             .supplier(TestContainer::new)));

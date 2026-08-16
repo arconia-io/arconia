@@ -38,6 +38,7 @@ public final class MySqlDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mysql")
                     .description("MySQL Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaMySqlContainer.class)
                             .supplier(() -> new ArconiaMySqlContainer(properties))

@@ -41,12 +41,12 @@ public final class OpenLitDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("openlit")
                     .description("OpenLit Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaOpenLitContainer.class)
                             .supplier(() -> new ArconiaOpenLitContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
                     )
             );

@@ -38,6 +38,7 @@ public final class RedisDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("redis")
                     .description("Redis Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaRedisContainer.class)
                             .serviceConnectionName("redis")

@@ -99,6 +99,7 @@ class DevServiceContainerCustomizerTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("postgres")
+                    .properties(TestDevServicesProperties.DEFAULT)
                     .container(container -> container
                             .type(TestPostgresContainer.class)
                             .supplier(TestPostgresContainer::new)));
@@ -182,6 +183,7 @@ class DevServiceContainerCustomizerTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("postgres")
+                    .properties(TestDevServicesProperties.DEFAULT)
                     .container(container -> container
                             .type(TestPostgresSubclassContainer.class)
                             .supplier(TestPostgresSubclassContainer::new)));

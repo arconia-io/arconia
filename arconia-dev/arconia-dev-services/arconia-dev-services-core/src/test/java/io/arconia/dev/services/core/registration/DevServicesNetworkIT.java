@@ -53,12 +53,14 @@ class DevServicesNetworkIT {
 
         registry.registerDevService(service -> service
                 .name("peer-a")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
                         .serviceConnectionName(null)));
         registry.registerDevService(service -> service
                 .name("peer-b")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-b"))
@@ -98,12 +100,14 @@ class DevServicesNetworkIT {
         // default bridge and cannot reach each other by network alias.
         registry.registerDevService(service -> service
                 .name("peer-a")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
                         .serviceConnectionName(null)));
         registry.registerDevService(service -> service
                 .name("peer-b")
+                .properties(TestDevServicesProperties.DEFAULT)
                 .container(container -> container
                         .type(TestPeerContainer.class)
                         .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-b"))

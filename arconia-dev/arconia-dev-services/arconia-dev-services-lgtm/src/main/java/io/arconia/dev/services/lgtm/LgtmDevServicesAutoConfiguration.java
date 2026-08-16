@@ -41,12 +41,12 @@ public final class LgtmDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("lgtm")
                     .description("Grafana LGTM Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaLgtmStackContainer.class)
                             .supplier(() -> new ArconiaLgtmStackContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
                     )
             );

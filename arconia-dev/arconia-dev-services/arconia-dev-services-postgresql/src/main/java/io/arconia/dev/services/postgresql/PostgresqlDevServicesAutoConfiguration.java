@@ -46,6 +46,7 @@ public final class PostgresqlDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("postgresql")
                     .description("PostgreSQL Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaPostgreSqlContainer.class)
                             .supplier(() -> new ArconiaPostgreSqlContainer(properties))

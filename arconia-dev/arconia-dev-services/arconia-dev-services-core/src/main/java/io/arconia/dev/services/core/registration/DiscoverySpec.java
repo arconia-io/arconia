@@ -15,11 +15,12 @@ import io.arconia.core.support.Incubating;
  * applications, and the application connects to an existing shared container
  * (adopted as it runs, with the owning application's configuration)
  * if available instead of starting a new one.
+ * <p>
+ * Declaring no discovery specification opts the dev service out of discovery entirely,
+ * even when the {@code shared} property is enabled.
  */
 @Incubating
 public final class DiscoverySpec {
-
-    private boolean shared = false;
 
     @Nullable
     private Class<? extends ConnectionDetails> connectionDetailsType;
@@ -28,15 +29,6 @@ public final class DiscoverySpec {
     private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetails;
 
     DiscoverySpec() {}
-
-    /**
-     * Whether sharing is enabled for the dev service,
-     * typically bound to the {@code shared} configuration property.
-     */
-    public DiscoverySpec shared(boolean shared) {
-        this.shared = shared;
-        return this;
-    }
 
     /**
      * The type of {@link ConnectionDetails} provided for the dev service and a factory
@@ -52,10 +44,6 @@ public final class DiscoverySpec {
         this.connectionDetailsType = connectionDetailsType;
         this.connectionDetails = connectionDetails;
         return this;
-    }
-
-    boolean isShared() {
-        return shared;
     }
 
     @Nullable

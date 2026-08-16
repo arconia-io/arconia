@@ -31,12 +31,12 @@ public final class DoclingDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("docling")
                     .description("Docling Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaDoclingServeContainer.class)
                             .supplier(() -> new ArconiaDoclingServeContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(DoclingServeConnectionDetails.class,
                                     container -> new DoclingDiscoveredConnectionDetails(container, properties))
                     )

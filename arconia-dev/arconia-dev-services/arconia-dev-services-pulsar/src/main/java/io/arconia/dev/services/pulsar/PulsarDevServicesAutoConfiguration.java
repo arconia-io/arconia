@@ -31,12 +31,12 @@ public final class PulsarDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("pulsar")
                     .description("Pulsar Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaPulsarContainer.class)
                             .supplier(() -> new ArconiaPulsarContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
                     )
             );

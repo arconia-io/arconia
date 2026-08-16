@@ -30,6 +30,7 @@ public final class ElasticsearchDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("elasticsearch")
                     .description("Elasticsearch Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaElasticsearchContainer.class)
                             .supplier(() -> new ArconiaElasticsearchContainer(properties))

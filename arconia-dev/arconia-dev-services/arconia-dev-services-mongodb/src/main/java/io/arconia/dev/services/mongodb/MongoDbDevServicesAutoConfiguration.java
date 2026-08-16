@@ -38,6 +38,7 @@ public final class MongoDbDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mongodb")
                     .description("MongoDB Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaMongoDbContainer.class)
                             .supplier(() -> new ArconiaMongoDbContainer(properties))

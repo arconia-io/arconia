@@ -38,6 +38,7 @@ public final class OracleXeDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("oracle-xe")
                     .description("Oracle XE Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaOracleXeContainer.class)
                             .supplier(() -> new ArconiaOracleXeContainer(properties))

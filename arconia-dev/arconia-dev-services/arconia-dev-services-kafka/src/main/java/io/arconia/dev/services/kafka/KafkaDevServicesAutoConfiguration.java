@@ -31,12 +31,12 @@ public final class KafkaDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("kafka")
                     .description("Kafka Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaKafkaContainer.class)
                             .supplier(() -> new ArconiaKafkaContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(KafkaConnectionDetails.class, KafkaDiscoveredConnectionDetails::new)
                     )
             );

@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
 import io.arconia.core.support.Incubating;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 
 /**
  * Specification for a single dev service.
@@ -17,6 +18,9 @@ public final class ServiceSpec {
 
     @Nullable
     private String description;
+
+    @Nullable
+    private BaseDevServicesProperties properties;
 
     @Nullable
     private ContainerSpec containerSpec;
@@ -39,6 +43,19 @@ public final class ServiceSpec {
      */
     public ServiceSpec description(String description) {
         this.description = description;
+        return this;
+    }
+
+    /**
+     * The configuration properties of the dev service.
+     * <p>
+     * The registry reads from them every configured value it needs, such as whether the
+     * dev service is shared, so that no value has to be declared twice. Values that cannot
+     * be derived from configuration, such as the container type or the connection details
+     * contribution, are declared on this specification instead.
+     */
+    public ServiceSpec properties(BaseDevServicesProperties properties) {
+        this.properties = properties;
         return this;
     }
 
@@ -72,6 +89,11 @@ public final class ServiceSpec {
     @Nullable
     String getDescription() {
         return description;
+    }
+
+    @Nullable
+    BaseDevServicesProperties getProperties() {
+        return properties;
     }
 
     @Nullable

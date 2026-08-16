@@ -41,13 +41,13 @@ public final class OtelCollectorDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("otel-collector")
                     .description("OpenTelemetry Collector Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaOtelCollectorContainer.class)
                             .serviceConnectionName("otel/opentelemetry-collector-contrib")
                             .supplier(() -> new ArconiaOtelCollectorContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
                     )
             );

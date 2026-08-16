@@ -43,12 +43,12 @@ public final class PhoenixDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("phoenix")
                     .description("Phoenix Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaPhoenixContainer.class)
                             .supplier(() -> new ArconiaPhoenixContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
                     )
             );

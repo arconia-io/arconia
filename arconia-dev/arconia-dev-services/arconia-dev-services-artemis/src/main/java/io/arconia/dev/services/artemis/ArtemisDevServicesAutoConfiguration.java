@@ -31,12 +31,12 @@ public final class ArtemisDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("artemis")
                     .description("Artemis Dev Service")
+                    .properties(properties)
                     .container(container -> container
                             .type(ArconiaArtemisContainer.class)
                             .supplier(() -> new ArconiaArtemisContainer(properties))
                     )
                     .discovery(discovery -> discovery
-                            .shared(properties.isShared())
                             .connectionDetails(ArtemisConnectionDetails.class,
                                     container -> new ArtemisDiscoveredConnectionDetails(container, properties))
                     )
