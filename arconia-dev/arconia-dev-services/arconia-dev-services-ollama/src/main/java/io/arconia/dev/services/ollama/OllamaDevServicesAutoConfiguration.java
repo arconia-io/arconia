@@ -12,6 +12,7 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.registration.ServiceSpec;
 import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.OllamaDevServicesRegistrar;
 
 /**
@@ -63,7 +64,7 @@ public final class OllamaDevServicesAutoConfiguration {
          * so it's only available when the Spring AI Ollama module is on the classpath.
          * Kept in a separate method so the Spring AI Ollama types are only loaded when present.
          */
-        private static void configureSharing(DevServicesRegistry.ServiceSpec service, OllamaDevServicesProperties properties) {
+        private static void configureSharing(ServiceSpec service, OllamaDevServicesProperties properties) {
             service.discovery(discovery -> discovery
                     .shared(properties.isShared())
                     .connectionDetails(OllamaConnectionDetails.class, OllamaDiscoveredConnectionDetails::new));

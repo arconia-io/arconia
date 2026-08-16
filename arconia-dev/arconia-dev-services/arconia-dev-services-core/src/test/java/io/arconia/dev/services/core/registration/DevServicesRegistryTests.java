@@ -552,14 +552,10 @@ class DevServicesRegistryTests {
     void whenSharedServiceRegisteredTwiceThenRuntimeIsNotQueriedAgain() {
         enableDevMode();
         AtomicInteger lookups = new AtomicInteger();
-        DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment()) {
-            @Override
-            @Nullable
-            DiscoveredContainer findSharedContainer(String serviceName) {
-                lookups.incrementAndGet();
-                return discoveredContainer();
-            }
-        };
+        DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> {
+            lookups.incrementAndGet();
+            return discoveredContainer();
+        });
 
         registerSharedDevService(registry);
         registerSharedDevService(registry);
@@ -676,13 +672,7 @@ class DevServicesRegistryTests {
      * instead of querying the container runtime.
      */
     private DevServicesRegistry registryDiscovering(@Nullable DiscoveredContainer result) {
-        return new DevServicesRegistry(beanFactory, new StandardEnvironment()) {
-            @Override
-            @Nullable
-            DiscoveredContainer findSharedContainer(String serviceName) {
-                return result;
-            }
-        };
+        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> result);
     }
 
     private void registerSharedDevService(DevServicesRegistry registry) {

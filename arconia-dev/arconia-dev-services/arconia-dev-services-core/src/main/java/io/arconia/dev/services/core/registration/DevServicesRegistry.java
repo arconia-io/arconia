@@ -1,19 +1,12 @@
 package io.arconia.dev.services.core.registration;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.github.dockerjava.api.DockerClient;
-
-import com.github.dockerjava.api.model.ContainerPort;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -40,7 +33,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -90,11 +82,20 @@ public class DevServicesRegistry {
 
     private final Environment environment;
 
+    private final SharedContainerLocator sharedContainerLocator;
+
     public DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment) {
+        this(beanDefinitionRegistry, environment, new DockerSharedContainerLocator());
+    }
+
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment,
+                        SharedContainerLocator sharedContainerLocator) {
         Assert.notNull(beanDefinitionRegistry, "beanDefinitionRegistry cannot be null");
         Assert.notNull(environment, "environment cannot be null");
+        Assert.notNull(sharedContainerLocator, "sharedContainerLocator cannot be null");
         this.beanDefinitionRegistry = beanDefinitionRegistry;
         this.environment = environment;
+        this.sharedContainerLocator = sharedContainerLocator;
     }
 
     /**
@@ -177,7 +178,7 @@ public class DevServicesRegistry {
         Class<? extends ConnectionDetails> connectionDetailsType = discoverySpec.getConnectionDetailsType();
         Assert.notNull(connectionDetailsType, "connectionDetailsType cannot be null");
 
-        DiscoveredContainer discoveredContainer = findSharedContainer(service.getName());
+        DiscoveredContainer discoveredContainer = sharedContainerLocator.locate(service.getName());
         if (discoveredContainer == null) {
             return false;
         }
@@ -219,44 +220,6 @@ public class DevServicesRegistry {
         logger.info("Using shared '{}' dev service from container {} started by another application",
                 service.getName(), containerInfo.id());
         return true;
-    }
-
-    /**
-     * Find a running container providing a shared dev service with the given name,
-     * started by another application. The lookup is label-based and config-agnostic:
-     * the container is adopted as it runs, with the owning application's configuration.
-     *
-     * @return the discovered container, or {@code null} when no shared container
-     * is available or the container runtime cannot be queried
-     */
-    @Nullable
-    DiscoveredContainer findSharedContainer(String serviceName) {
-        try {
-            // Get Docker client from Testcontainers. We don't close the connection as it's handled
-            // globally by the DockerClientFactory.
-            DockerClient dockerClient = DockerClientFactory.lazyClient();
-            return dockerClient.listContainersCmd()
-                    .withLabelFilter(Map.of(DevServiceLabels.NAME, serviceName, DevServiceLabels.SHARED, "true"))
-                    // Paused or restarting containers are never valid candidates.
-                    .withStatusFilter(List.of("running"))
-                    .exec()
-                    .stream()
-                    .filter(dockerContainer -> dockerContainer.getLabels() == null
-                            || !DevServiceLabels.ownerId().equals(dockerContainer.getLabels().get(DevServiceLabels.OWNER)))
-                    // Pick the oldest candidate so that applications starting concurrently
-                    // converge deterministically on the same container. Creation timestamps
-                    // have second granularity, so ties are broken by container ID.
-                    .min(Comparator.<com.github.dockerjava.api.model.Container>comparingLong(dockerContainer ->
-                            dockerContainer.getCreated() != null ? dockerContainer.getCreated() : Long.MAX_VALUE)
-                            .thenComparing(dockerContainer ->
-                                    dockerContainer.getId() != null ? dockerContainer.getId() : ""))
-                    .map(dockerContainer -> new DiscoveredContainer(toContainerInfo(dockerContainer),
-                            DockerClientFactory.instance().dockerHostIpAddress()))
-                    .orElse(null);
-        } catch (Exception ex) {
-            logger.info("Failed to look up shared containers for the '{}' dev service. Starting a dedicated container instead.", serviceName, ex);
-            return null;
-        }
     }
 
     /**
@@ -494,7 +457,7 @@ public class DevServicesRegistry {
             String containerId = container.getContainerId();
 
             // Create a supplier that fetches container info from the OCI runtime API.
-            Supplier<ContainerInfo> containerInfoSupplier = () -> extractContainerInfoById(containerId);
+            Supplier<ContainerInfo> containerInfoSupplier = () -> ContainerRuntimeInfo.extractContainerInfoById(containerId);
 
             // Capture the links the container exposes (the container is started at this point,
             // so mapped ports are available) and log a consistent startup message.
@@ -558,7 +521,7 @@ public class DevServicesRegistry {
                     .name(service.getName())
                     .description(service.getDescription())
                     .origin(DevServiceRegistration.Origin.DISCOVERED)
-                    .containerInfo(() -> extractContainerInfoById(containerId))
+                    .containerInfo(() -> ContainerRuntimeInfo.extractContainerInfoById(containerId))
                     .build();
         });
 
@@ -653,269 +616,6 @@ public class DevServicesRegistry {
             current = listableBeanFactory.getParentBeanFactory();
         }
         return null;
-    }
-
-    /**
-     * Extract container information by querying the OCI runtime using the container ID.
-     */
-    private static ContainerInfo extractContainerInfoById(String containerId) {
-        try {
-            // Get Docker client from Testcontainers. We don't close the connection as it's handled
-            // globally by the DockerClientFactory.
-            DockerClient dockerClient = DockerClientFactory.lazyClient();
-            // Query Docker for the container using its ID
-            com.github.dockerjava.api.model.Container dockerContainer = dockerClient.listContainersCmd()
-                    .withIdFilter(Collections.singleton(containerId))
-                    .withShowAll(true)
-                    .exec()
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Container not found with ID: " + containerId));
-
-            return toContainerInfo(dockerContainer);
-        } catch (Exception ex) {
-            throw new IllegalStateException("Failed to extract container information for ID: " + containerId, ex);
-        }
-    }
-
-    /**
-     * Map container details from the OCI runtime API to a {@link ContainerInfo}.
-     */
-    private static ContainerInfo toContainerInfo(com.github.dockerjava.api.model.Container dockerContainer) {
-        List<String> names = Arrays.stream(dockerContainer.getNames() != null ? dockerContainer.getNames() : new String[0])
-                .map(name -> name.startsWith("/") ? name.substring(1) : name)
-                .toList();
-        String imageName = dockerContainer.getImage();
-        Map<String, String> labels = dockerContainer.getLabels() != null ? dockerContainer.getLabels() : Map.of();
-        String status = dockerContainer.getStatus();
-
-        List<ContainerInfo.ContainerPort> exposedPorts = Arrays.stream(
-                        dockerContainer.getPorts() != null ? dockerContainer.getPorts() : new ContainerPort[0])
-                .map(port -> new ContainerInfo.ContainerPort(
-                        port.getIp(),
-                        port.getPrivatePort(),
-                        port.getPublicPort(),
-                        port.getType()
-                ))
-                .toList();
-
-        return new ContainerInfo(dockerContainer.getId(), imageName, names, exposedPorts, labels, status);
-    }
-
-    /**
-     * Specification for a single dev service.
-     */
-    public static final class ServiceSpec {
-
-        @Nullable
-        private String name;
-
-        @Nullable
-        private String description;
-
-        @Nullable
-        private ContainerSpec containerSpec;
-
-        @Nullable
-        private DiscoverySpec discoverySpec;
-
-        private ServiceSpec() {}
-
-        /**
-         * The logical name of the dev service.
-         */
-        public ServiceSpec name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        /**
-         * The description of the dev service.
-         */
-        public ServiceSpec description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        /**
-         * Specification for the container to register.
-         */
-        public ServiceSpec container(Consumer<ContainerSpec> containerSpecConsumer) {
-            var containerSpec = new ContainerSpec();
-            containerSpecConsumer.accept(containerSpec);
-            this.containerSpec = containerSpec;
-            return this;
-        }
-
-        /**
-         * Specification for discovering and adopting a shared dev service running in a container
-         * started by another application. A dev service that declares no discovery specification
-         * never participates in discovery, even when the {@code shared} property is enabled.
-         */
-        public ServiceSpec discovery(Consumer<DiscoverySpec> discoverySpecConsumer) {
-            var discoverySpec = new DiscoverySpec();
-            discoverySpecConsumer.accept(discoverySpec);
-            this.discoverySpec = discoverySpec;
-            return this;
-        }
-
-        @Nullable
-        String getName() {
-            return name;
-        }
-
-        @Nullable
-        String getDescription() {
-            return description;
-        }
-
-        @Nullable
-        ContainerSpec getContainerSpec() {
-            return containerSpec;
-        }
-
-        @Nullable
-        DiscoverySpec getDiscoverySpec() {
-            return discoverySpec;
-        }
-
-    }
-
-    /**
-     * Specification for a container to register.
-     */
-    public static final class ContainerSpec {
-
-        @Nullable
-        private Class<? extends Container<?>> type;
-
-        @Nullable
-        private Supplier<? extends Container<?>> supplier;
-
-        private boolean serviceConnectionSupported = true;
-
-        @Nullable
-        private String serviceConnectionName;
-
-        private ContainerSpec() {}
-
-        /**
-         * The container type to register.
-         */
-        public ContainerSpec type(Class<? extends Container<?>> type) {
-            this.type = type;
-            return this;
-        }
-
-        /**
-         * A supplier function providing the container instance.
-         */
-        public ContainerSpec supplier(Supplier<? extends Container<?>> supplier) {
-            this.supplier = supplier;
-            return this;
-        }
-
-        /**
-         * The name of the {@link ServiceConnection} annotation to add to the registered container bean.
-         * <p>
-         * By default, {@code @ServiceConnection} is added with no explicit name,
-         * and Spring Boot auto-detects the connection details factory by container type.
-         * <p>
-         * Passing a non-null value sets the {@code @ServiceConnection} name explicitly.
-         * Passing {@code null} disables {@code @ServiceConnection} entirely, for cases where
-         * no {@code ContainerConnectionDetailsFactory} is available and property-based wiring
-         * (via {@link DevServiceDynamicPropertySource}) is used instead.
-         */
-        public ContainerSpec serviceConnectionName(@Nullable String name) {
-            this.serviceConnectionName = name;
-            this.serviceConnectionSupported = (name != null);
-            return this;
-        }
-
-        @Nullable
-        Class<? extends Container<?>> getType() {
-            return type;
-        }
-
-        @Nullable
-        Supplier<? extends Container<?>> getSupplier() {
-            return supplier;
-        }
-
-        boolean isServiceConnectionSupported() {
-            return serviceConnectionSupported;
-        }
-
-        @Nullable
-        String getServiceConnectionName() {
-            return serviceConnectionName;
-        }
-
-    }
-
-    /**
-     * Specification for discovering and adopting a shared dev service among applications.
-     * <p>
-     * When sharing is enabled, the dev service container is discoverable by other
-     * applications, and the application connects to an existing shared container
-     * (adopted as it runs, with the owning application's configuration)
-     * if available instead of starting a new one.
-     * <p>
-     * A discovery specification always carries a connection details contribution: the
-     * {@code shared} toggle and the adoption capability are declared together, so a service
-     * cannot enable sharing without providing the means to adopt a discovered container.
-     */
-    public static final class DiscoverySpec {
-
-        private boolean shared = false;
-
-        @Nullable
-        private Class<? extends ConnectionDetails> connectionDetailsType;
-
-        @Nullable
-        private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetails;
-
-        private DiscoverySpec() {}
-
-        /**
-         * Whether sharing is enabled for the dev service,
-         * typically bound to the {@code shared} configuration property.
-         */
-        public DiscoverySpec shared(boolean shared) {
-            this.shared = shared;
-            return this;
-        }
-
-        /**
-         * The type of {@link ConnectionDetails} provided for the dev service and a factory
-         * function providing the instance for connecting to a shared dev service discovered
-         * in a running container.
-         * <p>
-         * The declared type is used to look up existing user-defined {@code ConnectionDetails}
-         * beans: when one is present, it takes precedence over the one provided by the dev service.
-         */
-        public <T extends ConnectionDetails> DiscoverySpec connectionDetails(Class<T> connectionDetailsType,
-                Function<DiscoveredContainer, ? extends T> connectionDetails) {
-            Assert.state(this.connectionDetails == null, "discovery supports a single connection details contribution");
-            this.connectionDetailsType = connectionDetailsType;
-            this.connectionDetails = connectionDetails;
-            return this;
-        }
-
-        boolean isShared() {
-            return shared;
-        }
-
-        @Nullable
-        Class<? extends ConnectionDetails> getConnectionDetailsType() {
-            return connectionDetailsType;
-        }
-
-        @Nullable
-        Function<DiscoveredContainer, ? extends ConnectionDetails> getConnectionDetails() {
-            return connectionDetails;
-        }
-
     }
 
 }
