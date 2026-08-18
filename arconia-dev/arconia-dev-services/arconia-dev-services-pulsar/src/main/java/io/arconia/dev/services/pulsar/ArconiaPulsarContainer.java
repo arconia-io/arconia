@@ -5,7 +5,7 @@ import java.util.List;
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -38,11 +38,11 @@ final class ArconiaPulsarContainer extends PulsarContainer implements DevService
     }
 
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        return List.of(DevServiceLink.builder()
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        return List.of(DevServiceLinkDefinition.builder()
                 .id("pulsar")
                 .label("Pulsar Admin API")
-                .url(getHttpServiceUrl())
+                .port(BROKER_HTTP_PORT)
                 .build());
     }
 

@@ -1,5 +1,7 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -7,7 +9,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
@@ -61,6 +64,11 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
         GenericContainer<?> container = new GenericContainer<>(properties.getImageName())
                 .withExposedPorts(OtlpConnectionDetails.DEFAULT_GRPC_PORT, OtlpConnectionDetails.DEFAULT_HTTP_PORT);
         return withSharedLabels(container, ownerId);
+    }
+
+    @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

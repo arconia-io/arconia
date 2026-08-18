@@ -9,7 +9,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.kafka.KafkaContainer;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -8,7 +8,7 @@ import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -20,17 +20,27 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer implement
 
     private final DoclingDevServicesProperties properties;
 
+    private final boolean uiEnabled;
+
     static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/docling-project/docling-serve";
+
+    /**
+     * The Docling UI is only served in dev mode, and only when the user asks for it.
+     */
+    private static boolean isUiEnabled(DoclingDevServicesProperties properties) {
+        return BootstrapMode.isDev() && properties.isEnableUi();
+    }
 
     public ArconiaDoclingServeContainer(DoclingDevServicesProperties properties) {
         super(DoclingServeContainerConfig.builder()
                 .image(properties.getImageName())
-                .enableUi(BootstrapMode.isDev() && properties.isEnableUi())
+                .enableUi(isUiEnabled(properties))
                 .apiKey(properties.getApiKey())
                 .containerEnv(properties.getEnvironment())
                 .startupTimeout(properties.getStartupTimeout())
                 .build());
         this.properties = properties;
+        this.uiEnabled = isUiEnabled(properties);
 
         this.withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}));
         ContainerConfigurer.resources(this, properties);
@@ -53,12 +63,14 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer implement
     }
 
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        List<DevServiceLink> links = new ArrayList<>();
-        getUiUrl().ifPresent(url -> links.add(DevServiceLink.builder()
-                .id("docling").label("Docling UI").url(url).build()));
-        links.add(DevServiceLink.builder()
-                .id("docling-api").label("Docling OpenAPI").url("%s/docs".formatted(getApiUrl())).build());
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        List<DevServiceLinkDefinition> links = new ArrayList<>();
+        if (uiEnabled) {
+            links.add(DevServiceLinkDefinition.builder()
+                    .id("docling").label("Docling UI").port(DEFAULT_DOCLING_PORT).path("/ui").build());
+        }
+        links.add(DevServiceLinkDefinition.builder()
+                .id("docling-api").label("Docling OpenAPI").port(DEFAULT_DOCLING_PORT).path("/docs").build());
         return List.copyOf(links);
     }
 

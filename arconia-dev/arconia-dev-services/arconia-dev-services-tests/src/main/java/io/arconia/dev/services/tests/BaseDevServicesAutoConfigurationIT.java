@@ -2,6 +2,8 @@ package io.arconia.dev.services.tests;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assumptions;
@@ -20,8 +22,9 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
-import io.arconia.dev.services.core.container.DevServiceLabels;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,6 +35,11 @@ public abstract class BaseDevServicesAutoConfigurationIT {
 
     @TempDir
     protected static Path testMountDir;
+
+    /**
+     * The link definitions recorded on the shared container by {@link #withSharedLabels}.
+     */
+    private List<DevServiceLinkDefinition> appliedSharedLinks = List.of();
 
     /**
      * The application context runner used to execute tests.
@@ -104,7 +112,29 @@ public abstract class BaseDevServicesAutoConfigurationIT {
         container.withLabel(DevServiceLabels.NAME, getServiceName());
         container.withLabel(DevServiceLabels.SHARED, "true");
         container.withLabel(DevServiceLabels.OWNER, ownerId);
+        // Reading the declarations constructs a dev service container, which detects and caches the
+        // bootstrap mode. Clear it afterwards, or the mode detected here outlives this call and the
+        // application under test never sees the dev mode it asks for. For the same reason the links
+        // are captured rather than read again later: a dev service whose links depend on the mode
+        // would otherwise declare one set here and be expected to report another.
+        appliedSharedLinks = sharedContainerLinkDefinitions();
+        BootstrapMode.clear();
+        for (DevServiceLinkDefinition link : appliedSharedLinks) {
+            DevServiceLabels.linkLabels(link).forEach(container::withLabel);
+        }
         return container;
+    }
+
+    /**
+     * The links a peer application would record on the shared container, so that the discovery
+     * test can check they're reported by the application adopting it.
+     * <p>
+     * Override in a dev service whose container implements {@code DevServiceLinkProvider}, by
+     * returning the definitions that container declares rather than by restating them.
+     * Empty for a dev service that exposes no links.
+     */
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return List.of();
     }
 
     /**
@@ -231,6 +261,15 @@ public abstract class BaseDevServicesAutoConfigurationIT {
                         DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
                         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
                         assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
+
+                        // The links come from the labels the peer application recorded, resolved
+                        // against the ports that container actually exposes.
+                        assertThat(registration.links()).containsExactlyElementsOf(
+                                appliedSharedLinks.stream()
+                                        .sorted(Comparator.comparing(DevServiceLinkDefinition::id))
+                                        .map(link -> link.toLink(sharedContainer.getHost(),
+                                                sharedContainer.getMappedPort(link.port())))
+                                        .toList());
 
                         assertDiscoveredConnectionDetails(context, sharedContainer);
                     });

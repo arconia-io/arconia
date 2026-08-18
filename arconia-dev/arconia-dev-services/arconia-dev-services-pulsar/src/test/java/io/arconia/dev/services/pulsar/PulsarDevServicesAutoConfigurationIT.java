@@ -1,5 +1,7 @@
 package io.arconia.dev.services.pulsar;
 
+import java.util.List;
+
 import java.time.Duration;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -12,7 +14,8 @@ import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +64,11 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
         PulsarContainer container = new PulsarContainer(DockerImageName.parse(properties.getImageName()))
                 .withStartupTimeout(Duration.ofMinutes(2));
         return withSharedLabels(container, ownerId);
+    }
+
+    @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaPulsarContainer(new PulsarDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

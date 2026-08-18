@@ -68,7 +68,9 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     container.start();
-                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
+                            .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
+                            .toList();
                     assertThat(links).singleElement().satisfies(link -> {
                         assertThat(link.id()).isEqualTo("lldap");
                         assertThat(link.label()).isEqualTo("LLDAP Console");

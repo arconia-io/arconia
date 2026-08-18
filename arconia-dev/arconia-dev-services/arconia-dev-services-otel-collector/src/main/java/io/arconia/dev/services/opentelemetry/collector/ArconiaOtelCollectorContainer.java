@@ -7,7 +7,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -58,19 +58,11 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         return getMappedPort(OTLP_HTTP_PORT);
     }
 
-    public String getOtlpGrpcUrl() {
-        return "http://" + getHost() + ":" + getGrpcPort();
-    }
-
-    public String getOtlpHttpUrl() {
-        return "http://" + getHost() + ":" + getHttpPort();
-    }
-
     @Override
-    public List<DevServiceLink> devServiceLinks() {
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
         return List.of(
-                DevServiceLink.builder().id("otlp-grpc").label("OTLP/gRPC").url(getOtlpGrpcUrl()).build(),
-                DevServiceLink.builder().id("otlp-http").label("OTLP/HTTP").url(getOtlpHttpUrl()).build());
+                DevServiceLinkDefinition.builder().id("otlp-grpc").label("OTLP/gRPC").port(OTLP_GRPC_PORT).build(),
+                DevServiceLinkDefinition.builder().id("otlp-http").label("OTLP/HTTP").port(OTLP_HTTP_PORT).build());
     }
 
 }

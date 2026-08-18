@@ -5,7 +5,7 @@ import java.util.List;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -46,19 +46,13 @@ final class ArconiaArtemisContainer extends ArtemisContainer implements DevServi
     }
 
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        return List.of(DevServiceLink.builder()
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        return List.of(DevServiceLinkDefinition.builder()
                 .id("artemis")
                 .label("Artemis Management Console")
-                .url(getManagementConsoleUrl())
+                .port(WEB_CONSOLE_PORT)
+                .path("/console")
                 .build());
-    }
-
-    /**
-     * Retrieve the URL of the Artemis Management Console.
-     */
-    String getManagementConsoleUrl() {
-        return "http://" + getHost() + ":" + getMappedPort(WEB_CONSOLE_PORT) + "/console";
     }
 
 }

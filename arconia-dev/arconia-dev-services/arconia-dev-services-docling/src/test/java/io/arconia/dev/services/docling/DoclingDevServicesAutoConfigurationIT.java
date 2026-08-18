@@ -12,9 +12,10 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
@@ -69,6 +70,11 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaDoclingServeContainer(new DoclingDevServicesProperties()).devServiceLinkDefinitions();
+    }
+
+    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
         DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
         DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
@@ -106,7 +112,9 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     container.start();
-                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
+                            .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
+                            .toList();
                     assertThat(links).extracting(DevServiceLink::id).containsExactly("docling", "docling-api");
                     assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://"));
                     assertThat(links).filteredOn(link -> link.id().equals("docling-api"))

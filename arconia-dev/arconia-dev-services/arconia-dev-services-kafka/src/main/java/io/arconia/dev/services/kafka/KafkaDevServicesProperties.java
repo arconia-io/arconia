@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**

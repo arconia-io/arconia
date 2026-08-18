@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 
 /**
  * Locates shared dev service containers by querying the OCI runtime for the labels

@@ -1,5 +1,7 @@
 package io.arconia.dev.services.rabbitmq;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
@@ -9,7 +11,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +62,11 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
                 .withAdminUser(properties.getUsername())
                 .withAdminPassword(properties.getPassword());
         return withSharedLabels(container, ownerId);
+    }
+
+    @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

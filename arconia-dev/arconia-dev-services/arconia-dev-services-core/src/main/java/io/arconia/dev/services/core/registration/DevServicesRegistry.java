@@ -43,13 +43,13 @@ import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.SharedDevServicesProperties;
 import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
-import io.arconia.dev.services.core.container.DevServiceLabels;
 
 /**
  * Registry for managing the definition and lifecycle of dev services.
@@ -216,7 +216,7 @@ public class DevServicesRegistry {
 
         if (!beanDefinitionRegistry.containsBeanDefinition(descriptionBeanName)) {
             beanDefinitionRegistry.registerBeanDefinition(descriptionBeanName,
-                    createDiscoveredDescriptionBeanDefinition(service, containerInfo.id()));
+                    createDiscoveredDescriptionBeanDefinition(service, discoveredContainer));
         }
 
         logger.info("Using shared '{}' dev service from container {} started by another application",
@@ -328,6 +328,15 @@ public class DevServicesRegistry {
         boolean reuse = genericContainer.isShouldBeReused();
         genericContainer.withLabel(DevServiceLabels.NAME, service.getName());
         genericContainer.withLabel(DevServiceLabels.SHARED, String.valueOf(isSharingEnabled(service)));
+        // Record the links the container exposes so that an application adopting it as a shared
+        // dev service reports the same links, without having to declare them a second time.
+        // Ports are recorded as the container sees them, since no port is mapped yet.
+        // Like every other label, these take part in the Testcontainers reuse hash: they are
+        // stable across runs, so reuse keeps working, but changing a link changes the hash and
+        // the next run starts a new container instead of reusing the previous one.
+        for (DevServiceLinkDefinition link : DevServiceLinks.declaredBy(container)) {
+            DevServiceLabels.linkLabels(link).forEach(genericContainer::withLabel);
+        }
         if (!(reuse && environmentSupportsReuse())) {
             genericContainer.withLabel(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
         }
@@ -412,22 +421,6 @@ public class DevServicesRegistry {
     }
 
     /**
-     * The links a container exposes (management consoles, telemetry endpoints, …) for display in
-     * startup logs and developer tooling, or an empty list when the container declares none.
-     */
-    private static List<DevServiceLink> resolveLinks(Container<?> container) {
-        if (container instanceof DevServiceLinkProvider linkProvider) {
-            try {
-                List<DevServiceLink> links = linkProvider.devServiceLinks();
-                return (links != null) ? links : List.of();
-            } catch (Exception ex) {
-                logger.debug("Failed to resolve links for a dev service container", ex);
-            }
-        }
-        return List.of();
-    }
-
-    /**
      * Whether dev service containers should live in the {@code restart} scope, so that they
      * survive Spring Boot DevTools restarts. That's the case when DevTools is on the classpath
      * and restart support is not disabled via the {@code spring.devtools.restart.enabled} property.
@@ -463,7 +456,7 @@ public class DevServicesRegistry {
 
             // Capture the links the container exposes (the container is started at this point,
             // so mapped ports are available) and log a consistent startup message.
-            List<DevServiceLink> links = resolveLinks(container);
+            List<DevServiceLink> links = DevServiceLinks.resolve(container);
             DevServicesStartupLogger.owned(service.getName(), links);
 
             return DevServiceRegistration.builder()
@@ -508,7 +501,8 @@ public class DevServicesRegistry {
      * Unlike the owned variant, the container ID comes straight from the discovery query,
      * so the bean doesn't depend on any container bean.
      */
-    private RootBeanDefinition createDiscoveredDescriptionBeanDefinition(ServiceSpec service, String containerId) {
+    private RootBeanDefinition createDiscoveredDescriptionBeanDefinition(ServiceSpec service, DiscoveredContainer discoveredContainer) {
+        String containerId = discoveredContainer.containerInfo().id();
         RootBeanDefinition descriptionBeanDefinition = new RootBeanDefinition();
         descriptionBeanDefinition.setBeanClass(DevServiceRegistration.class);
 
@@ -518,12 +512,17 @@ public class DevServicesRegistry {
         descriptionBeanDefinition.setDependsOn(CONFLICT_VALIDATOR_BEAN_NAME);
 
         descriptionBeanDefinition.setInstanceSupplier(() -> {
-            DevServicesStartupLogger.discovered(service.getName(), List.of());
+            // Capture the links the discovered container exposes and log a consistent
+            // startup message, so an adopted dev service reports the same links as an owned one.
+            List<DevServiceLink> links = DevServiceLinks.resolve(discoveredContainer);
+            DevServicesStartupLogger.discovered(service.getName(), links);
+
             return DevServiceRegistration.builder()
                     .name(service.getName())
                     .description(service.getDescription())
                     .origin(DevServiceRegistration.Origin.DISCOVERED)
                     .containerInfo(() -> ContainerRuntimeInfo.extractContainerInfoById(containerId))
+                    .links(links)
                     .build();
         });
 

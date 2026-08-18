@@ -5,7 +5,7 @@ import java.util.List;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -45,11 +45,11 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer implements DevSer
     }
 
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        return List.of(DevServiceLink.builder()
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        return List.of(DevServiceLinkDefinition.builder()
                 .id("rabbitmq")
                 .label("RabbitMQ Management Console")
-                .url(getHttpUrl())
+                .port(HTTP_PORT)
                 .build());
     }
 

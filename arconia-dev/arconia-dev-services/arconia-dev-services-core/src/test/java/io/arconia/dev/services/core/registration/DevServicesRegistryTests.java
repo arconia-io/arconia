@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.registration;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,11 +25,12 @@ import org.testcontainers.containers.Network;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.ContainerInfo;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
-import io.arconia.dev.services.core.container.DevServiceLabels;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -569,6 +571,119 @@ class DevServicesRegistryTests {
     }
 
     @Test
+    void whenContainerDeclaresLinksThenTheyAreRecordedAsLabels() {
+        registry.registerDevService(service -> service
+                .name("linky")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(container -> container
+                        .type(TestLinkContainer.class)
+                        .supplier(TestLinkContainer::new)));
+
+        var container = beanFactory.getBean("devService.container.linky", GenericContainer.class);
+
+        // The labels carry the container port, since no port is mapped when they are applied.
+        assertThat(container.getLabels())
+                .containsEntry(DevServiceLabels.LINK_PREFIX + "ui.label", "UI")
+                .containsEntry(DevServiceLabels.LINK_PREFIX + "ui.scheme", "http")
+                .containsEntry(DevServiceLabels.LINK_PREFIX + "ui.port", "8080")
+                .containsEntry(DevServiceLabels.LINK_PREFIX + "ui.path", "");
+    }
+
+    @Test
+    void whenDiscoveredContainerCarriesLinkLabelsThenRegistrationCapturesThem() {
+        enableDevMode();
+        DevServicesRegistry registry = registryDiscovering(discoveredContainer(
+                linkLabels("ui", "UI", "http", 5432, "/console")));
+
+        registerSharedDevService(registry);
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+        assertThat(registration.links()).containsExactly(
+                DevServiceLink.builder().id("ui").label("UI").url("http://localhost:54321/console").build());
+    }
+
+    @Test
+    void whenLinksAreWrittenAsLabelsThenTheyAreReadBackUnchanged() {
+        // The labels an application writes are the labels another application reads, so the
+        // two sides of the format are pinned against each other rather than against literals.
+        List<DevServiceLinkDefinition> declared = new TestLinkContainer().devServiceLinkDefinitions();
+
+        registry.registerDevService(service -> service
+                .name("linky")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(container -> container
+                        .type(TestLinkContainer.class)
+                        .supplier(TestLinkContainer::new)));
+        var container = beanFactory.getBean("devService.container.linky", GenericContainer.class);
+
+        assertThat(DevServiceLabels.linksFrom(container.getLabels())).isEqualTo(declared);
+    }
+
+    @Test
+    void whenDiscoveredContainerCarriesSeveralLinksThenTheyAreReportedInAStableOrder() {
+        enableDevMode();
+        Map<String, String> labels = new HashMap<>(linkLabels("grafana", "Grafana", "http", 5432, ""));
+        labels.putAll(linkLabels("otlp-http", "OTLP/HTTP", "http", 5432, ""));
+        labels.putAll(linkLabels("console", "Console", "https", 5432, "/ui"));
+        DevServicesRegistry registry = registryDiscovering(discoveredContainer(labels));
+
+        registerSharedDevService(registry);
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        // Container labels carry no order, so links are reported by id to keep the startup
+        // message and the actuator payload stable across restarts.
+        assertThat(registration.links()).extracting(DevServiceLink::id)
+                .containsExactly("console", "grafana", "otlp-http");
+        assertThat(registration.links()).extracting(DevServiceLink::url)
+                .containsExactly("https://localhost:54321/ui", "http://localhost:54321", "http://localhost:54321");
+    }
+
+    @Test
+    void whenDiscoveredContainerCarriesNoLinkLabelsThenRegistrationLinksAreEmpty() {
+        enableDevMode();
+        DevServicesRegistry registry = registryDiscovering(discoveredContainer());
+
+        registerSharedDevService(registry);
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        assertThat(registration.links()).isEmpty();
+    }
+
+    @Test
+    void whenDiscoveredLinkPortIsNotMappedThenOnlyThatLinkIsSkipped() {
+        enableDevMode();
+        // The application that started the container exposed 5432 but not 9999,
+        // which is an expected condition rather than a failure.
+        Map<String, String> labels = new HashMap<>(linkLabels("ui", "UI", "http", 5432, ""));
+        labels.putAll(linkLabels("hidden", "Hidden", "http", 9999, ""));
+        DevServicesRegistry registry = registryDiscovering(discoveredContainer(labels));
+
+        registerSharedDevService(registry);
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        assertThat(registration.links()).containsExactly(
+                DevServiceLink.builder().id("ui").label("UI").url("http://localhost:54321").build());
+    }
+
+    @Test
+    void whenDiscoveredContainerCarriesMalformedLinkLabelThenItIsIgnored() {
+        enableDevMode();
+        DevServicesRegistry registry = registryDiscovering(discoveredContainer(Map.of(
+                DevServiceLabels.LINK_PREFIX + "broken.port", "not-a-number")));
+
+        registerSharedDevService(registry);
+
+        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+
+        assertThat(registration.links()).isEmpty();
+    }
+
+    @Test
     void whenSharedServiceRegisteredTwiceThenRuntimeIsNotQueriedAgain() {
         enableDevMode();
         AtomicInteger lookups = new AtomicInteger();
@@ -710,13 +825,28 @@ class DevServicesRegistryTests {
                         .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
     }
 
+    /**
+     * The labels an application starting a container with the given link would apply to it,
+     * so that the discovery tests read exactly what the owned path writes.
+     */
+    private static Map<String, String> linkLabels(String id, String label, String scheme, int port, String path) {
+        return DevServiceLabels.linkLabels(DevServiceLinkDefinition.builder()
+                .id(id).label(label).scheme(scheme).port(port).path(path).build());
+    }
+
     private static DiscoveredContainer discoveredContainer() {
+        return discoveredContainer(Map.of());
+    }
+
+    private static DiscoveredContainer discoveredContainer(Map<String, String> additionalLabels) {
+        Map<String, String> labels = new HashMap<>(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.SHARED, "true"));
+        labels.putAll(additionalLabels);
         return new DiscoveredContainer(ContainerInfo.builder()
                 .id("abc123")
                 .imageName("postgres:latest")
                 .names(List.of("shared-postgres"))
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 54321, "tcp")))
-                .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.SHARED, "true"))
+                .labels(labels)
                 .status("running")
                 .build(), "localhost");
     }
@@ -742,14 +872,28 @@ class DevServicesRegistryTests {
         }
     }
 
+    /**
+     * A container declaring a link, with the host and port mapping a started container
+     * would report, so that link resolution can be exercised without Docker.
+     */
     private static class TestLinkContainer extends GenericContainer<TestLinkContainer> implements DevServiceLinkProvider {
         TestLinkContainer() {
             super("postgres:latest");
         }
 
         @Override
-        public List<DevServiceLink> devServiceLinks() {
-            return List.of(DevServiceLink.builder().id("ui").label("UI").url("http://localhost:1234").build());
+        public String getHost() {
+            return "localhost";
+        }
+
+        @Override
+        public Integer getMappedPort(int originalPort) {
+            return 1234;
+        }
+
+        @Override
+        public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+            return List.of(DevServiceLinkDefinition.builder().id("ui").label("UI").port(8080).build());
         }
     }
 
@@ -759,7 +903,7 @@ class DevServicesRegistryTests {
         }
 
         @Override
-        public List<DevServiceLink> devServiceLinks() {
+        public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
             throw new IllegalStateException("link resolution failed");
         }
     }

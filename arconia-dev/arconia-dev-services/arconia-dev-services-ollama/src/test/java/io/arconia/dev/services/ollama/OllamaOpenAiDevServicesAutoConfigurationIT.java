@@ -10,7 +10,7 @@ import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ollama.OllamaContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

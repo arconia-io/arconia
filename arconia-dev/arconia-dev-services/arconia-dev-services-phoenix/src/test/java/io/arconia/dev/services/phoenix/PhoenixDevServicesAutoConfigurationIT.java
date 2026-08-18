@@ -10,9 +10,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
@@ -67,6 +68,11 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaPhoenixContainer(new PhoenixDevServicesProperties()).devServiceLinkDefinitions();
+    }
+
+    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
         assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
@@ -108,7 +114,9 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
         getContextRunner().run(context -> {
             var container = context.getBean(getContainerClass());
             container.start();
-            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinks();
+            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
+                    .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
+                    .toList();
             assertThat(links).singleElement().satisfies(link -> {
                 assertThat(link.id()).isEqualTo("phoenix");
                 assertThat(link.label()).isEqualTo("Phoenix UI");

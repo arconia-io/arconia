@@ -364,6 +364,8 @@ When a Dev Service starts, Arconia logs a consistent startup message with its re
 
 The same information is available programmatically through the `devservices` actuator endpoint (see xref:_actuator[Actuator]), for each service under a `links` list of `id`, `label`, and `url`.
 
+A Dev Service adopted from another application (see xref:_sharing_dev_services[Sharing Dev Services]) reports its links too. They're read from the container's labels, so they describe the service as the application that started it configured it, including any link that application chose not to expose.
+
 When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
 
 === Global Configuration

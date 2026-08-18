@@ -11,7 +11,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 
 The Dev Services infrastructure is split into two modules:
 
-* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`, `SharedDevServicesProperties`) and the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
+* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`, `SharedDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
 * `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `ContainerConfigurer`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
@@ -117,6 +117,42 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 Unless your container class already declares a wait strategy of its own, declare one explicitly before calling `ContainerConfigurer.base()`, as in the example above. Testcontainers shares a single default wait strategy instance across all containers that don't declare one, and `ContainerConfigurer.base()` applies the `startup-timeout` property to whichever wait strategy the container has at that point. Without an explicit wait strategy, the startup timeout you configure for your Dev Service is applied to the shared instance, changing the startup timeout of every other container relying on it as well. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
 
 For relational databases, also apply `ContainerConfigurer.jdbc(this, properties)` to configure credentials, database name, and init scripts.
+
+== Exposing Links
+
+If your service has endpoints worth surfacing to developers, such as a management console or a telemetry endpoint, implement `DevServiceLinkProvider` on your container class and declare one `DevServiceLinkDefinition` per link. Declare the container port rather than a URL: Arconia resolves the URL once the port mapping is known.
+
+[source,java]
+----
+@Override
+public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+    return List.of(DevServiceLinkDefinition.builder()
+            .id("fancydb")
+            .label("FancyDB Console")
+            .port(FANCYDB_PORT)
+            .path("/console")
+            .build());
+}
+----
+
+The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]). Arconia also records each definition on the container as one label per field, so an application that adopts your container as a shared Dev Service reports the same links without declaring them again:
+
+[source,text]
+----
+io.arconia.dev-service.link.fancydb.label  = FancyDB Console
+io.arconia.dev-service.link.fancydb.scheme = http
+io.arconia.dev-service.link.fancydb.port   = 8090
+io.arconia.dev-service.link.fancydb.path   = /console
+----
+
+The port is the container port, since no port is mapped when the labels are applied. Tools outside the JVM can read a single value with `docker inspect --format '{{index .Config.Labels "io.arconia.dev-service.link.fancydb.port"}}'`. Because the labels are written by the application that started the container, the links describe the service as that application configured it, including any link it chose not to expose.
+
+Keep these points in mind when declaring links:
+
+* `devServiceLinkDefinitions()` is called before the container starts, so it must not read anything only a running container has, such as a mapped port. Capture whatever the links depend on when the container is constructed.
+* The link id becomes part of the label name, so it's restricted to lowercase letters, digits, and dashes, and each link needs a distinct one.
+* Declare a port your container actually exposes. A link whose port can't be resolved is skipped with a warning, and the remaining links are still reported.
+* Like all container labels, these take part in the Testcontainers reuse hash. They're stable across runs, so reuse keeps working, but changing a link means the next run starts a new container instead of reusing the previous one.
 
 == Auto-Configuration and Registration
 

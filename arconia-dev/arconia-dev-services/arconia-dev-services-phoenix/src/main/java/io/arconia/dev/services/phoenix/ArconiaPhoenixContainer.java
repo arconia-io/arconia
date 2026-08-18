@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -38,11 +38,11 @@ final class ArconiaPhoenixContainer extends PhoenixContainer implements DevServi
     }
 
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        return List.of(DevServiceLink.builder()
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        return List.of(DevServiceLinkDefinition.builder()
                 .id("phoenix")
                 .label("Phoenix UI")
-                .url(getPhoenixUrl())
+                .port(HTTP_PORT)
                 .build());
     }
 

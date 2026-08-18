@@ -5,7 +5,7 @@ import java.util.List;
 import org.testcontainers.ldap.LLdapContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
@@ -41,16 +41,12 @@ final class ArconiaLldapContainer extends LLdapContainer implements DevServiceLi
         }
     }
 
-    public String getManagementConsoleUrl() {
-        return "http://" + getHost() + ":" + getMappedPort(UI_PORT);
-    }
-
     @Override
-    public List<DevServiceLink> devServiceLinks() {
-        return List.of(DevServiceLink.builder()
+    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
+        return List.of(DevServiceLinkDefinition.builder()
                 .id("lldap")
                 .label("LLDAP Console")
-                .url(getManagementConsoleUrl())
+                .port(UI_PORT)
                 .build());
     }
 

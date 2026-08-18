@@ -1,5 +1,7 @@
 package io.arconia.dev.services.artemis;
 
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails;
@@ -11,7 +13,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +64,11 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                 .withUser(properties.getUsername())
                 .withPassword(properties.getPassword());
         return withSharedLabels(container, ownerId);
+    }
+
+    @Override
+    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+        return new ArconiaArtemisContainer(new ArtemisDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
