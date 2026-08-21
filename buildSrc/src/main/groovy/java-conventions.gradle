@@ -18,10 +18,6 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-        // Handle several CVEs in Netty 4.2.15.Final
-        mavenBom "io.netty:netty-bom:4.2.17.Final"
-        // Handle several CVEs in Jackson 3.1.4
-        mavenBom "tools.jackson:jackson-bom:3.1.5"
     }
 }
 
