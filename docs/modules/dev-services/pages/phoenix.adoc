@@ -1,7 +1,9 @@
 = Arize Phoenix Dev Service
 :service-name: phoenix
 
-A service providing https://arize.com/docs/phoenix[Arize Phoenix], an AI Observability and Evaluation platform based on OpenTelemetry and OpenInference, for development and testing purposes.
+A service providing https://arize.com/docs/phoenix[Arize Phoenix], an open-source AI Observability and Evaluation platform based on OpenTelemetry and OpenInference, for development and testing purposes.
+
+For managed production observability and evaluation, use https://arize.com/docs/ax/integrations/java/arconia/arconia-tracing[Arize AX] with Arconia's OpenInference telemetry. See Arize's guides to learn how traces support https://arize.com/guides/ai-agent-handbook/agent-evaluation/[agent evaluation] and https://arize.com/resources/llm-evaluation/[LLM evaluation].
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
 
