@@ -1,0 +1,49 @@
+{
+  "realm": "test-realm",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      {
+        "name": "tester"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "test-client",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "test-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "tessa",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "tessa@arconia.io",
+      "firstName": "Tessa",
+      "lastName": "Fixture",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "tessa",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "tester"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,11 @@
 package io.arconia.dev.services.core.container;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -9,12 +13,17 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ReflectionUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
@@ -273,6 +282,106 @@ class ContainerConfigurerTests {
         ContainerConfigurer.resources(container, properties);
 
         assertThat(container.getCopyToFileContainerPathMap()).isEmpty();
+    }
+
+    @Test
+    void resolveMountableFileShouldResolveClasspathResourceWithExplicitPrefix() {
+        assertThat(ContainerConfigurer.resolveMountableFile("classpath:test-resource.txt"))
+                .isNotNull()
+                .extracting(MountableFile::getFilesystemPath).asString()
+                .endsWith("test-resource.txt");
+    }
+
+    @Test
+    void resolveMountableFileShouldResolveClasspathResourceWithoutPrefix() {
+        assertThat(ContainerConfigurer.resolveMountableFile("test-resource.txt"))
+                .isNotNull()
+                .extracting(MountableFile::getFilesystemPath).asString()
+                .endsWith("test-resource.txt");
+    }
+
+    @Test
+    void resolveMountableFileShouldResolveFilesystemResourceWithExplicitPrefix(@TempDir Path tempDir) throws IOException {
+        Path file = Files.writeString(tempDir.resolve("realm.json"), "{}");
+
+        assertThat(ContainerConfigurer.resolveMountableFile("file:" + file))
+                .isNotNull()
+                .extracting(MountableFile::getFilesystemPath).asString()
+                .endsWith("realm.json");
+    }
+
+    @Test
+    void resolveMountableFileShouldResolveFilesystemResourceWithoutPrefix(@TempDir Path tempDir) throws IOException {
+        Path file = Files.writeString(tempDir.resolve("realm.json"), "{}");
+
+        assertThat(ContainerConfigurer.resolveMountableFile(file.toString()))
+                .isNotNull()
+                .extracting(MountableFile::getFilesystemPath).asString()
+                .endsWith("realm.json");
+    }
+
+    @Test
+    void resolveMountableFileShouldApplyTheGivenFileMode() {
+        // A resource extracted from a jar carries no usable permissions, so the mode override is
+        // what makes a copied file readable by a container process running as a non-root user.
+        MountableFile mountableFile = ContainerConfigurer.resolveMountableFile("test-resource.txt", 0644);
+
+        assertThat(mountableFile).isNotNull();
+        // getFileMode() ORs in the file-type bits, so compare only the permission bits.
+        assertThat(mountableFile.getFileMode() & 0777).isEqualTo(0644);
+    }
+
+    @Test
+    void resolveMountableFileShouldThrowExceptionWhenResourceNotFound() {
+        assertThatThrownBy(() -> ContainerConfigurer.resolveMountableFile("non-existent-resource.txt"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Resource not found");
+    }
+
+    @Test
+    void resolveMountableFileShouldThrowExceptionWhenPrefixedResourceNotFound() {
+        assertThatThrownBy(() -> ContainerConfigurer.resolveMountableFile("classpath:non-existent-resource.txt"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("classpath")
+                .hasMessageContaining("classpath:non-existent-resource.txt");
+
+        assertThatThrownBy(() -> ContainerConfigurer.resolveMountableFile("file:/no/such/realm.json"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("filesystem")
+                .hasMessageContaining("file:/no/such/realm.json");
+    }
+
+    @Test
+    void resolveResourceShouldReadClasspathResource() throws IOException {
+        Resource resource = ContainerConfigurer.resolveResource("classpath:test-resource.txt");
+
+        assertThat(resource).isInstanceOf(ClassPathResource.class);
+        assertThat(resource.exists()).isTrue();
+        assertThat(resource.getContentAsString(StandardCharsets.UTF_8)).isNotEmpty();
+    }
+
+    @Test
+    void resolveResourceShouldReadFilesystemResource(@TempDir Path tempDir) throws IOException {
+        Path file = Files.writeString(tempDir.resolve("realm.json"), "{\"realm\":\"arconia\"}");
+
+        Resource resource = ContainerConfigurer.resolveResource(file.toString());
+
+        assertThat(resource).isInstanceOf(FileSystemResource.class);
+        assertThat(resource.getContentAsString(StandardCharsets.UTF_8)).isEqualTo("{\"realm\":\"arconia\"}");
+    }
+
+    @Test
+    void resolveResourceShouldPreferClasspathOverFilesystem() {
+        // Same lookup order as the resources property: classpath first, filesystem second.
+        assertThat(ContainerConfigurer.resolveResource("test-resource.txt"))
+                .isInstanceOf(ClassPathResource.class);
+    }
+
+    @Test
+    void resolveResourceShouldThrowExceptionWhenResourceNotFound() {
+        assertThatThrownBy(() -> ContainerConfigurer.resolveResource("non-existent-resource.txt"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Resource not found");
     }
 
     @Test

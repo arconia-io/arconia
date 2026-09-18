@@ -404,6 +404,7 @@ Disabling Dev Services globally overrides individual service settings. If global
 ** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]
 * xref:floci.adoc[Floci]
+* xref:keycloak.adoc[Keycloak]
 * xref:lldap.adoc[LLDAP]
 * xref:ollama.adoc[Ollama]
 

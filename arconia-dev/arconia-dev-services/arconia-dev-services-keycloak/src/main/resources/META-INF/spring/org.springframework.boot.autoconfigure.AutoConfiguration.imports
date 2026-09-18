@@ -1,0 +1,3 @@
+io.arconia.dev.services.keycloak.KeycloakDevServicesAutoConfiguration
+io.arconia.dev.services.keycloak.KeycloakOAuth2ClientDevServicesAutoConfiguration
+io.arconia.dev.services.keycloak.KeycloakOAuth2ResourceServerDevServicesAutoConfiguration

@@ -1,0 +1,425 @@
+= Keycloak Dev Service
+:service-name: keycloak
+
+A service providing a https://www.keycloak.org[Keycloak] identity and access management server for development and testing purposes. It's based on the https://github.com/dasniko/testcontainers-keycloak[Testcontainers Keycloak] module.
+
+It works with Spring Boot libraries that support OAuth2 and OpenID Connect, including:
+
+* https://docs.spring.io/spring-security/reference/servlet/oauth2/login/index.html[Spring Security OAuth2 Client] (OpenID Connect login)
+* https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/index.html[Spring Security OAuth2 Resource Server] (JWT validation)
+
+The application is configured automatically depending on which of the two is on the classpath, so an application that is an OAuth2 client, a resource server, or both, needs no OAuth2 configuration at all to get started.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+Out of the box, the Dev Service generates and imports a realm named `arconia` containing a client and two users, so that an application can log users in immediately:
+
+[cols="1,1,2,1"]
+|===
+|Username |Password |Name and Email |Realm Roles
+
+| `isabella`
+| `isabella`
+| Isabella Nordskov, `isabella@arconia.io`
+| `admin`, `user`
+
+| `bjorn`
+| `bjorn`
+| Bjorn Vinterberg, `bjorn@arconia.io`
+| `user`
+|===
+
+The realm registers a confidential client with id `arconia-app` and secret `arconia-secret`, accepting any redirect URI so that it works whichever port your application runs on.
+
+You can change who the users are, what roles they hold, and whether a realm is created at all. See <<Configuring the Realm>>.
+
+== Accessing the Admin Console
+
+The application logs will show you the URL where you can access the Keycloak Admin Console.
+
+[source,logs]
+----
+...i.a.d.s.startup                          : Dev Service 'keycloak' is ready - Keycloak Admin Console: http://localhost:<port>/admin
+----
+
+By default, you can log in with username `arconia` and password `arconia`.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.{service-name}.image-name`
+| `quay.io/keycloak/keycloak:26.7`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.{service-name}.environment`
+| `{}`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Network aliases to assign to the dev service container.
+
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Keycloak HTTP port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.reuse`
+| `false`
+| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.shared`
+| `true`
+| Whether the dev service is shared across multiple applications. When shared, the application connects to a container started by another application if one is available, instead of starting a new one. Only applicable in dev mode.
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `2m`
+| Maximum waiting time for the service to start. Keycloak needs considerably longer than most services, since it boots and imports the configured realms before reporting itself as ready.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+| `arconia.dev.services.{service-name}.admin-username`
+| `arconia`
+| Username of the Keycloak administrator, used to access the Admin Console.
+
+| `arconia.dev.services.{service-name}.admin-password`
+| `arconia`
+| Password of the Keycloak administrator, used to access the Admin Console.
+
+| `arconia.dev.services.{service-name}.realm.name`
+| _derived_
+| Name of the realm the application connects to. When empty, it is derived from the first realm import file, or defaults to `arconia` when no realm file is configured. When realm files are configured, it must name one of the realms they declare.
+
+| `arconia.dev.services.{service-name}.realm.create`
+| `true`
+| Whether a realm is generated from configuration. When disabled and no realm import path is configured, Keycloak starts with only its `master` realm and the dev service contributes no OAuth2 configuration.
+
+| `arconia.dev.services.{service-name}.realm.import-paths`
+| `[]`
+| Paths to Keycloak realm files to import at startup, resolved from the classpath or the host filesystem. When set, the realm files are imported as they are and no realm, client, users or roles are generated.
+
+| `arconia.dev.services.{service-name}.realm.users`
+| _two default users_
+| Users to create in the generated realm, as a map of username to user. A user whose password is all it needs can be given as the password alone.
+
+| `arconia.dev.services.{service-name}.realm.roles`
+| _`admin` and `user`_
+| Roles to create in the generated realm, as a map of role name to the usernames holding it.
+
+| `arconia.dev.services.{service-name}.host-accessible-ports`
+| `[]`
+| Ports on the host that Keycloak can reach from inside its container. See <<Network Considerations>>.
+
+| `arconia.dev.services.{service-name}.client.enabled`
+| `true`
+| Whether the dev service declares a client. When disabled, the client is left out of the generated realm and no Spring Security client registration is registered.
+
+| `arconia.dev.services.{service-name}.client.id`
+| `arconia-app`
+| Identifier of the Keycloak client the application authenticates as — see <<Configuring the Client>>.
+
+| `arconia.dev.services.{service-name}.client.secret`
+| `arconia-secret`
+| Secret of the Keycloak client the application authenticates with. Leave it empty for a public client.
+
+| `arconia.dev.services.{service-name}.client.registration-id`
+| `keycloak`
+| Identifier of the Spring Security client registration the dev service registers. It appears in the login URL, as in `/oauth2/authorization/keycloak`.
+
+| `arconia.dev.services.{service-name}.client.scopes`
+| `openid, profile, email`
+| Scopes the client registration requests. The `openid` scope is what makes the flow an OpenID Connect login rather than a plain OAuth2 authorization.
+
+| `arconia.dev.services.{service-name}.resource-server.enabled`
+| `true`
+| Whether the resource server issuer is configured automatically from the dev service.
+|===
+
+The `resource-server.*` properties only take effect when Spring Security's OAuth2 Resource Server is on the classpath, and the `client.registration-id` and `client.scopes` properties only when its OAuth2 Client is. The rest of `client.*` applies to *every* application, because a realm needs a client for tokens to be issued against whether or not this application is the one performing the login.
+
+include::partial$disabling-dev-service.adoc[]
+
+== Configuring the Client
+
+When Spring Security's OAuth2 Client is on the classpath, the Dev Service registers the whole client registration itself, as a `ClientRegistrationRepository` bean built from the running container's discovery document. It's the same client the Dev Service declares in the generated realm, so the client Keycloak knows and the one Spring Security authenticates as agree by construction.
+
+The registration belongs to the Dev Service, and its own properties are where you customize it:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        client:
+          id: my-own-client
+          secret: my-own-secret
+          registration-id: my-registration
+          scopes:
+            - openid
+            - profile
+----
+
+Configure nothing and you get a client id of `arconia-app`, a secret of `arconia-secret`, and an OpenID Connect login out of the box.
+
+Your `spring.security.oauth2.client` properties take no part in this, on purpose. They describe the providers your application uses in production — real issuers, real client credentials — and none of that is reachable from a laptop, so the Dev Service doesn't try to merge with it, and you don't need a dev-only registration id in your production configuration. Keep those properties exactly as they are; while the Dev Service is active, they're simply not used.
+
+The same goes the other way: the Dev Service's client is customized here and only here, not through `spring.security.oauth2.client` properties.
+
+The client id and secret are also worth setting when an integration test obtains a token by direct access grant and wants a client of its own choosing; otherwise the defaults are perfectly usable.
+
+=== What Wins in Dev
+
+For the *OAuth2 client*, the Dev Service owns the registration outright, and there are two ways to take it back. Define a `ClientRegistrationRepository` bean of your own and the Dev Service backs off entirely. Or set `client.enabled=false` to opt out of the client wiring while leaving the Dev Service running — Spring Boot then builds registrations from your `spring.security.oauth2.client` properties as usual.
+
+For the *resource server*, the issuer URI is a connection detail: it says where Keycloak is listening, on a port assigned when the container started, and only the Dev Service can know it. So it takes precedence over a value your application configured, exactly as a `ConnectionDetails` bean supersedes configuration properties for the other Dev Services. That's what lets a resource server keep its production issuer in `application.yml` and still run against the Dev Service locally, without a profile. Set `resource-server.enabled=false` to keep your own issuer instead.
+
+== Configuring the Realm
+
+The generated realm is built from configuration, so you can replace the default users and roles with your own without writing a realm file.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          name: my-realm
+          users:
+            alice: alice-password
+            bob:
+              password: bob-password
+              first-name: Bjørn
+              last-name: Vinterberg
+              email: bjorn@example.com
+          roles:
+            editor:
+              - alice
+            reader:
+              - alice
+              - bob
+----
+
+Users are a map of username to user. A user that needs nothing but a password can be written as the password alone, like `alice` above; give it the longer form when it needs a real identity, like `bob`.
+
+Roles are a map of role name to the users holding it, which is the way round you usually think about them: you decide who the editors are, not which roles each person collects. The Dev Service inverts it for Keycloak, so `alice` ends up with `editor` and `reader`, and `bob` with `reader`. Roles are configured here and only here, which is why a user has no `roles` of its own.
+
+A role assigned to a user that isn't configured is a typo, and the application fails at startup with a message naming it, rather than leaving you to discover the missing role at runtime. A role that nobody holds is fine: give it an empty list.
+
+Configuring any user replaces both defaults, so `isabella` and `bjorn` are gone as soon as you declare your own. The default `admin` and `user` roles are only created when you configure neither users nor roles, since they name the default users.
+
+Usernames are matched the way Keycloak matches them, without regard to case, so a role can name `alice` for a user configured as `Alice`. For the same reason, two usernames differing only in case are one user to Keycloak, and configuring both fails at startup instead of letting one quietly replace the other.
+
+[NOTE]
+====
+Keycloak's default user profile requires an email address, a first name and a last name, and refuses to issue a token for a user missing any of them, with the less-than-obvious message `Account is not fully set up`. Leaving them out is therefore not an option, so the Dev Service derives them from the username: `alice` gets the email address `alice@arconia.io` and the name `Alice Alice`.
+
+Each field falls back on its own, so you can state an email address without also having to state a name. Only the first letter of the username is uppercased and nothing else about it is interpreted, so `alice.smith` becomes `Alice.smith Alice.smith` — deliberately unglamorous, because a username isn't a name and anything more elaborate would be guesswork. Say what you want instead when it matters.
+
+Deriving an address only works if the username can serve as the local part of one. A username that is itself an email address, like `alice@corp.example`, would produce `alice@corp.example@arconia.io`, so the application fails at startup and asks you to set `email` explicitly instead.
+====
+
+=== Starting Keycloak Without a Realm
+
+Set `realm.create` to `false` to start Keycloak with only its `master` realm. The Dev Service then registers no client registration and contributes no resource server issuer, so your own Spring Security configuration applies untouched.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          create: false
+----
+
+This is the option to reach for when you want the container managed for you but the realm configured by hand, through the Admin Console or your own tooling.
+
+Disabling realm creation doesn't disable realm *import*: configured `realm.import-paths` are still imported, since turning off generation is not the same as wanting no realm.
+
+=== Creating the Realm Without a Client
+
+Setting `client.enabled` to `false` leaves the client out of the generated realm *and* registers no client registration. The two always agree, because a registration pointing at a client that was never created is worse than no registration at all.
+
+== Importing a Realm
+
+Instead of a generated realm, you can import your own, either from the classpath or from the host filesystem.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          import-paths:
+            - classpath:keycloak/my-realm.json
+        client:
+          id: my-app
+          secret: my-secret
+----
+
+Paths are resolved the same way as the `resources` property: prefix a path with `classpath:` or `file:` to select the location explicitly, or leave it unprefixed to search the classpath first and the host filesystem second.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          import-paths:
+            - file:/etc/keycloak/my-realm.json
+----
+
+A few things are worth knowing about realm files.
+
+*Realm files take precedence.* A realm file is a complete description of a realm, so when you configure one, nothing is generated beside it — no realm, no client, no users, no roles. If `realm.users` or `realm.roles` are set anyway, they're ignored and the Dev Service logs a warning saying so; declare those users in the realm file itself.
+
+*The realm name is derived* from the `realm` field of the first file, so you don't have to repeat it. Set `realm.name` explicitly when you import several files and want to connect to something other than the first. If the name doesn't match any realm you're importing, the application fails at startup rather than pointing the issuer at a realm that doesn't exist.
+
+*The client must be configured explicitly* alongside the realm file — see <<Configuring the Client>> — and the application fails at startup with a clear message if it isn't. The clients declared in a realm file are deliberately not inspected: a realm exported from the Admin Console masks client secrets as `+**********+`, and a realm commonly declares several clients with no reliable way to pick between them. Leave the secret empty if your client is public, and the registration is configured with no client authentication instead.
+
+*The file itself can be named anything.* Keycloak requires each imported file to be named after the realm it declares, and the Dev Service takes care of that when copying it into the container. For the same reason, two files declaring the same realm would overwrite each other inside the container, so that fails at startup too.
+
+[TIP]
+====
+Exporting the generated realm from the Admin Console gives you a good starting point for writing your own, already shaped the way this Dev Service expects. Remember that an export masks client secrets as `+**********+`, so you'll need to put the real secret back before importing it.
+====
+
+[WARNING]
+====
+A realm exported from this Dev Service is shaped for a throwaway container on your laptop, and several of those choices are actively unsafe anywhere else. Before such a realm goes near a shared or production environment, at minimum:
+
+* `sslRequired` is `none`, so tokens and credentials travel in clear text. Set it to `external` or `all`.
+* `redirectUris` and `webOrigins` are `+*+`, which accepts a redirect to any address at all. Restrict them to the URLs your application actually serves.
+* Direct access grants are enabled, so anyone holding a username and password can mint tokens without a browser. Turn them off unless you specifically need them.
+* The client secret is one you'll find in this documentation. Replace it, and don't commit the replacement.
+* The users and their passwords are the same for everyone using Arconia. Remove them.
+====
+
+== Sharing the Dev Service
+
+When sharing is enabled, the recommended topology is *one OAuth2 Client application together with any number of resource servers*, all using the same Keycloak. Resource servers need no client configuration at all, since they only consume the issuer.
+
+Sharing the same Keycloak between more than one OAuth2 Client application is not recommended for now. It's not prevented, and each application can declare its own client, but the configuration becomes subtle enough that it's better to give each client application its own Dev Service.
+
+An application joining a shared Dev Service doesn't need the realm file, only the realm name and its own client.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          name: my-realm
+        client:
+          id: my-other-app
+          secret: my-other-secret
+----
+
+[WARNING]
+====
+That configuration depends on startup order. The first application to start owns the container, so if it's the one *without* a realm import path, it imports the realm it generates and the configured `realm.name` won't exist.
+
+To make the setup independent of startup order, give every participating application the same realm configuration: either the same `realm.import-paths`, or the same `realm.users` and `realm.roles`. Whichever starts first puts the realm in place; the others adopt the container and never create anything. Leaving `realm.name` unset everywhere then guarantees they all agree.
+====
+
+== Connecting to the Dev Service Yourself
+
+The Dev Service publishes a `KeycloakConnectionDetails` bean describing how to reach the running service. Inject it whenever you need the server's address in your own code.
+
+[source,java]
+----
+public interface KeycloakConnectionDetails extends ConnectionDetails {
+    String getAuthServerUrl();  // e.g. http://localhost:32768
+    String getRealm();          // e.g. arconia
+    String getIssuerUri();      // e.g. http://localhost:32768/realms/arconia
+}
+----
+
+The bean is always there, whether this application started the container or adopted one shared by another application. It describes how to *reach* the service, not how to authenticate against it: the client id and secret are your application's configuration and stay in `client.*`, which is what lets two applications share one Keycloak with different clients in the same realm.
+
+=== Configuring Keycloak Programmatically
+
+For anything the properties don't cover, the Keycloak Admin API is available at runtime. The container library depends on Keycloak's admin client, so it's on your classpath already.
+
+[source,java]
+----
+@Bean
+ApplicationRunner configureKeycloak(KeycloakConnectionDetails keycloak) {
+    return args -> {
+        try (Keycloak admin = KeycloakBuilder.builder()
+                .serverUrl(keycloak.getAuthServerUrl())
+                .realm("master")
+                .clientId("admin-cli")
+                .username("arconia")   // arconia.dev.services.keycloak.admin-username
+                .password("arconia")   // arconia.dev.services.keycloak.admin-password
+                .build()) {
+            RoleRepresentation role = new RoleRepresentation();
+            role.setName("auditor");
+            admin.realm(keycloak.getRealm()).roles().create(role);
+        }
+    };
+}
+----
+
+Taking the realm from `getRealm()` rather than naming it keeps this working when you rename the realm or point the application at one imported by somebody else.
+
+[NOTE]
+====
+This code references classes from the Dev Services and Testcontainers dependencies, which are not present in production builds. Define it in a configuration class that is only included at development and test time, consistently with how you scoped the Dev Service dependency itself — the same as for a `DevServiceContainerCustomizer`.
+====
+
+If you need the container itself rather than the connection details, inject it as `ObjectProvider<KeycloakContainer>`, using `dasniko.testcontainers.keycloak.KeycloakContainer` from the underlying Testcontainers module.
+
+[CAUTION]
+====
+There is no container bean when the application adopts a container shared by another application, because the container's lifecycle belongs to the application that started it — and since `shared` defaults to `true`, that's a case you'll hit. `ObjectProvider` is what lets your code degrade gracefully instead of failing to start. Prefer `KeycloakConnectionDetails`, which is always present.
+====
+
+[NOTE]
+====
+This is for setup the Dev Service doesn't do for you, not a substitute for it. The realm itself is imported at startup rather than created over the Admin API, so a broken realm makes Keycloak refuse to start with a clear error instead of leaving it half-configured.
+====
+
+== Network Considerations
+
+In the usual setup, where your application runs on the host and Keycloak runs in a container, no special networking is needed. The login redirect is performed by the browser, and your application reaches Keycloak over the mapped port, so the issuer is consistent for everyone.
+
+Two things are worth keeping in mind.
+
+If you import your own realm, its client must register a redirect URI matching the port your application actually runs on, otherwise Keycloak rejects the login with `Invalid parameter: redirect_uri`. The generated realm accepts any redirect URI precisely to avoid this.
+
+If Keycloak has to call back into your application, as it does for https://openid.net/specs/openid-connect-backchannel-1_0.html[OpenID Connect Back-Channel Logout], list the application port under `host-accessible-ports`. Keycloak can then reach your application from inside its container, at the hostname `host.testcontainers.internal` on that port. An application on port 8080 is therefore reachable from Keycloak at `http://host.testcontainers.internal:8080`, which is what your realm's back-channel logout URL should point at — `localhost` there would mean the Keycloak container itself.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        host-accessible-ports:
+          - 8080
+----
