@@ -1,11 +1,14 @@
 = OpenInference Semantic Conventions
 :page-aliases: observation:semantic-conventions/openinference.adoc, observability:generative-ai.adoc, observability:ai.adoc
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://arize.com/docs/phoenix[Arize Phoenix].
+Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://arize.com/docs/phoenix[Arize Phoenix] and https://arize.com/products/ax/[Arize AX].
 
 Arconia provides a Phoenix Dev Service you can use during development and testing. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
 
-For production deployments, https://arize.com/docs/ax/integrations/java/arconia/arconia-tracing[Arize AX] provides a managed path for tracing, monitoring, and evaluating Arconia-based Spring AI applications. Arize Phoenix remains the open-source and self-hosted option for local development or team-managed deployments. The Arize guides for https://arize.com/guides/ai-agent-handbook/agent-evaluation/[agent evaluation] and https://arize.com/resources/llm-evaluation/[LLM evaluation] explain how trace data can be used to inspect agent behavior, evaluate model outputs, and improve reliability over time.
+[NOTE]
+====
+Arize AX provides a managed path for tracing, monitoring, and evaluating Arconia-based Spring AI applications. Check out the Arize AX documentation for the https://arize.com/docs/ax/integrations/java/arconia/arconia-tracing[Arconia integration] for more details.
+====
 
 [WARNING]
 ====
