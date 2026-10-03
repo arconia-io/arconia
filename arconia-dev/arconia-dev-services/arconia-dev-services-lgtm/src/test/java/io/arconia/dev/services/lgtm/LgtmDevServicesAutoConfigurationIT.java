@@ -1,5 +1,9 @@
 package io.arconia.dev.services.lgtm;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -139,6 +143,54 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
                     container.start();
                     assertThatConfigurationIsApplied(container);
                     container.stop();
+                });
+    }
+
+    @Test
+    void springBootDashboardResourceIsConfigured() {
+        getContextRunner()
+                .withPropertyValues(
+                        "arconia.dev.services.lgtm.resources[0].source-path="
+                                + "classpath:grafana/spring-boot.json",
+                        "arconia.dev.services.lgtm.resources[0].container-path="
+                                + "/otel-lgtm/spring-boot-dashboards/spring-boot.json")
+                .run(context -> {
+                    var container = context.getBean(ArconiaLgtmStackContainer.class);
+
+                    assertThat(container.hasSpringBootDashboardResources()).isTrue();
+                });
+    }
+
+    @Test
+    void springBootDashboardIsLoaded() {
+        getContextRunner()
+                .withPropertyValues(
+                        "arconia.dev.services.lgtm.resources[0].source-path="
+                                + "classpath:grafana/spring-boot.json",
+                        "arconia.dev.services.lgtm.resources[0].container-path="
+                                + "/otel-lgtm/spring-boot-dashboards/spring-boot.json")
+                .run(context -> {
+                    var container = context.getBean(ArconiaLgtmStackContainer.class);
+
+                    container.start();
+                    try {
+                        var grafanaUrl = "http://%s:%d"
+                                .formatted(container.getHost(), container.getMappedPort(ArconiaLgtmStackContainer.GRAFANA_PORT));
+
+                        var request = HttpRequest.newBuilder()
+                                .uri(URI.create(grafanaUrl + "/api/search"))
+                                .GET()
+                                .build();
+
+                        var response = HttpClient.newHttpClient()
+                                .send(request, HttpResponse.BodyHandlers.ofString());
+
+                        assertThat(response.statusCode()).isEqualTo(200);
+                        assertThat(response.body())
+                                .contains("Spring Boot Test Dashboard");
+                    } finally {
+                        container.stop();
+                    }
                 });
     }
 

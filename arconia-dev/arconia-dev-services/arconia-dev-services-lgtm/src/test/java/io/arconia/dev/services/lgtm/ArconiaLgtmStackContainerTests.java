@@ -1,6 +1,10 @@
 package io.arconia.dev.services.lgtm;
 
+import io.arconia.dev.services.api.config.ResourceMapping;
+
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Unit tests for {@link ArconiaLgtmStackContainer}.
  */
 class ArconiaLgtmStackContainerTests {
+
+    private static final String SPRING_BOOT_DASHBOARDS_PATH = "/otel-lgtm/spring-boot-dashboards";
 
     @Test
     void whenExposedPortsAreNotConfigured() {
@@ -45,6 +51,43 @@ class ArconiaLgtmStackContainerTests {
                         properties.getTempoPort() + ":" + ArconiaLgtmStackContainer.TEMPO_PORT))
                 .anyMatch(binding -> binding.startsWith(
                         properties.getPrometheusPort() + ":" + ArconiaLgtmStackContainer.PROMETHEUS_PORT));
+    }
+
+    @Test
+    void whenSpringBootDashboardIsNotConfigured() {
+        var properties = new LgtmDevServicesProperties();
+        var container = new ArconiaLgtmStackContainer(properties);
+
+        assertThat(container.getCopyToFileContainerPathMap()).doesNotContainValue(SPRING_BOOT_DASHBOARDS_PATH);
+    }
+
+    @Test
+    void whenSpringBootDashboardIsConfigured() {
+        var properties = springBootDashboardProperties();
+        var container = new ArconiaLgtmStackContainer(properties);
+
+        assertThat(container.getCopyToFileContainerPathMap()).containsValue(SPRING_BOOT_DASHBOARDS_PATH + "/spring-boot.json");
+    }
+
+    @Test
+    void whenSpringBootDashboardIsConfiguredThenProviderIsCorrect() {
+        var container = new ArconiaLgtmStackContainer(
+                springBootDashboardProperties());
+
+        assertThat(container.springBootDashboardsProvider())
+                .contains("apiVersion: 1")
+                .contains("name: Spring Boot")
+                .contains("type: file")
+                .contains("path: " + SPRING_BOOT_DASHBOARDS_PATH)
+                .contains("foldersFromFilesStructure: false");
+    }
+
+    private LgtmDevServicesProperties springBootDashboardProperties() {
+        var properties = new LgtmDevServicesProperties();
+        var resource = new ResourceMapping("classpath:grafana/spring-boot.json", SPRING_BOOT_DASHBOARDS_PATH+"/spring-boot.json");
+        properties.setResources(List.of(resource));
+
+        return properties;
     }
 
 }
