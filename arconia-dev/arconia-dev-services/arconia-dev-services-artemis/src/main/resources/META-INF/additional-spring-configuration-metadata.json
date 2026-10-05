@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.artemis.reuse",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.artemis.reuse-strategy'. Use 'testcontainers' instead of 'true'.",
+        "since": "0.31.0"
+      }
+    },
+    {
+      "name": "arconia.dev.services.artemis.shared",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.artemis.reuse-strategy'. Use 'none' instead of 'false'.",
+        "since": "0.31.0"
+      }
+    }
+  ]
+}

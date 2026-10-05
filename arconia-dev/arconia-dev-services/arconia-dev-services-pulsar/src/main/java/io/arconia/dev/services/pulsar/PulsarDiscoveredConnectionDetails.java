@@ -6,7 +6,7 @@ import org.testcontainers.pulsar.PulsarContainer;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
- * {@link PulsarConnectionDetails} for connecting to a shared Pulsar dev service
+ * {@link PulsarConnectionDetails} for connecting to a Pulsar dev service
  * running in a container discovered from another application.
  */
 final class PulsarDiscoveredConnectionDetails implements PulsarConnectionDetails {

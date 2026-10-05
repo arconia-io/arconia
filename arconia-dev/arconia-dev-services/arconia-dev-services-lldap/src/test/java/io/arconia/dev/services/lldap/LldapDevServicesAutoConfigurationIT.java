@@ -1,15 +1,19 @@
 package io.arconia.dev.services.lldap;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ldap.LLdapContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
@@ -43,6 +47,37 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         return "lldap";
     }
 
+    @Override
+    protected Class<?> getConnectionDetailsClass() {
+        return LdapConnectionDetails.class;
+    }
+
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        // LLDAP requires these to boot; otherwise the container exits with code 1.
+        // The password is the one LLDAP connection details default to.
+        LldapDevServicesProperties properties = new LldapDevServicesProperties();
+        properties.setEnvironment(Map.of(
+                "LLDAP_JWT_SECRET", "letItGoWannaBuildSnowman",
+                "LLDAP_LDAP_USER_PASS", "password"));
+        return withDiscoveryLabels(new ArconiaLldapContainer(properties), ownerId);
+    }
+
+    @Override
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
+        return new ArconiaLldapContainer(new LldapDevServicesProperties()).devServiceLinkDefinitions();
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        LLdapContainer lldapContainer = (LLdapContainer) discoveredContainer;
+        LdapConnectionDetails connectionDetails = context.getBean(LdapConnectionDetails.class);
+        assertThat(connectionDetails.getUrls()).containsExactly(lldapContainer.getLdapUrl());
+        assertThat(connectionDetails.getBase()).isEqualTo(lldapContainer.getBaseDn());
+        assertThat(connectionDetails.getUsername()).isEqualTo(lldapContainer.getUser());
+        assertThat(connectionDetails.getPassword()).isEqualTo(lldapContainer.getPassword());
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner().run(context -> {
@@ -51,7 +86,6 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
             assertThat(container.getDockerImageName()).contains(ArconiaLldapContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.isShouldBeReused()).isFalse();
             assertThat(container.getBinds()).isEmpty();
 
             assertThatHasSingletonScope(context);

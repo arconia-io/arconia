@@ -11,7 +11,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 
 The Dev Services infrastructure is split into two modules:
 
-* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`, `SharedDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
+* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
 * `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `ContainerConfigurer`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
@@ -49,7 +49,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
     private String imageName = "acme/fancydb:1.0.0";
 
     // Additional common properties: environment, networkAliases, port,
-    // resources, shared, startupTimeout, volumes...
+    // resources, reuseStrategy, startupTimeout, volumes...
 
     @Override
     public boolean isEnabled() {
@@ -135,7 +135,7 @@ public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
 }
 ----
 
-The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]). Arconia also records each definition on the container as one label per field, so an application that adopts your container as a shared Dev Service reports the same links without declaring them again:
+The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]). Arconia also records each definition on the container as one label per field, so an application that discovers your container reports the same links without declaring them again:
 
 [source,text]
 ----
@@ -176,10 +176,7 @@ public final class FancyDbDevServicesAutoConfiguration {
                     .name("fancydb")
                     .description("FancyDB Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(FancyDbContainer.class)
-                            .supplier(() -> new FancyDbContainer(properties))
-                    ));
+                    .container(FancyDbContainer.class, () -> new FancyDbContainer(properties)));
         }
 
     }
@@ -194,15 +191,15 @@ Finally, register the auto-configuration in `META-INF/spring/org.springframework
 com.example.acme.FancyDbDevServicesAutoConfiguration
 ----
 
-That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts, sharing) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
+That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
 
 == Wiring the Application to the Service
 
 The container is registered with Spring Boot's https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Service Connections] mechanism, which resolves a `ConnectionDetailsFactory` for the container. There are three ways to make the connection work, depending on what's available for your service:
 
 * By container type (the default): if a `ContainerConnectionDetailsFactory` exists for your container's type in Spring Boot (as is the case for many containers shipped with Testcontainers modules, like `PostgreSQLContainer`), no further configuration is needed.
-* By connection name: if the factory for your service matches by name rather than type, set it explicitly with `serviceConnectionName("<name>")` on the container spec. The name must match the one the factory requires, which is typically the container image name without registry and tag.
-* By dynamic properties: if no `ConnectionDetails` abstraction exists for your service, disable the service connection by passing `serviceConnectionName(null)` and contribute configuration properties lazily from the registrar instead:
+* By connection name: if the factory for your service matches by name rather than type, set it explicitly with `serviceConnectionName("<name>")` when registering the service. The name must match the one the factory requires, which is typically the container image name without registry and tag.
+* By dynamic properties: if no `ConnectionDetails` abstraction exists for your service, disable the service connection with `serviceConnection(false)` and contribute configuration properties lazily from the registrar instead:
 
 [source,java]
 ----
@@ -214,11 +211,8 @@ protected void registerDevServices(DevServicesRegistry registry, Environment env
             .name("fancydb")
             .description("FancyDB Dev Service")
             .properties(properties)
-            .container(container -> container
-                    .type(FancyDbContainer.class)
-                    .serviceConnectionName(null)
-                    .supplier(() -> new FancyDbContainer(properties))
-            ));
+            .container(FancyDbContainer.class, () -> new FancyDbContainer(properties))
+            .serviceConnection(false));
 
     addDynamicProperty("acme.fancydb.url", () ->
             getBeanFactory().getBean(FancyDbContainer.class).getUrl());
@@ -227,9 +221,9 @@ protected void registerDevServices(DevServicesRegistry registry, Environment env
 
 The property value is resolved lazily, only after the container has started, mirroring the semantics of Spring Boot's `@DynamicPropertySource`.
 
-== Supporting Shared Dev Services
+== Supporting Discovery
 
-To let multiple applications running simultaneously share one container of your Dev Service (see xref:index.adoc#_sharing_dev_services[Sharing Dev Services]), have your properties class implement `SharedDevServicesProperties` (instead of `BaseDevServicesProperties`), which adds the `shared` property to its contract, and declare a discovery specification when registering the service, providing a factory that builds the `ConnectionDetails` for connecting to a shared container started by another application:
+To let multiple applications running simultaneously use the same container of your Dev Service through the `framework` reuse strategy (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]), declare how to connect to a container started by another application when registering the service: the `ConnectionDetails` type and a factory that builds it for a discovered container:
 
 [source,java]
 ----
@@ -237,24 +231,21 @@ registry.registerDevService(service -> service
         .name("fancydb")
         .description("FancyDB Dev Service")
         .properties(properties)
-        .container(container -> container
-                .type(FancyDbContainer.class)
-                .supplier(() -> new FancyDbContainer(properties))
-        )
-        .discovery(discovery -> discovery
-                .connectionDetails(FancyDbConnectionDetails.class,
-                        container -> new FancyDbDiscoveredConnectionDetails(
-                                container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT)))
-        ));
+        .container(FancyDbContainer.class, () -> new FancyDbContainer(properties))
+        .discovery(FancyDbConnectionDetails.class,
+                container -> new FancyDbDiscoveredConnectionDetails(
+                        container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT))));
 ----
 
-Declaring the discovery specification is what opts your Dev Service into discovery: a service that declares none never participates, even when the `shared` property is enabled. Container reuse is a separate, orthogonal concern, applied from the `reuse` property by `ContainerConfigurer` when the container is created (via `ContainerConfigurer.base(...)`), so a reused container can also be shared.
+Declaring the discovery is what opts your Dev Service into it: a service that declares none never participates, even when the `reuse-strategy` property is set to `framework`. In that case the strategy is not applied, and the startup message of the Dev Service says so. The `testcontainers` reuse strategy needs no support from your Dev Service: it is applied by `ContainerConfigurer` when the container is created (via `ContainerConfigurer.base(...)`). The two strategies are mutually exclusive, so a container kept running by Testcontainers is never advertised for discovery.
 
-The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the shared container is still adopted, but the dev service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
+The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the container is still discovered, but the Dev Service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
 
-Adopt `SharedDevServicesProperties` and the discovery specification together: a Dev Service that declares no discovery specification never participates in discovery, so it should not expose the `shared` property either. The framework still applies the identifying labels to the container, and users can still keep containers across restarts via the `reuse` property.
+The `reuse-strategy` property is part of the `BaseDevServicesProperties` contract and defaults to `none`. Choose the default for your Dev Service in your properties class: `framework` if it declares discovery and is the kind of service applications typically share, such as a message broker, and `none` otherwise.
 
-A discovered container is adopted as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications sharing the Dev Service; if your service is credential-protected, document this constraint for your users.
+A discovered container is used as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications using the Dev Service; if your service is credential-protected, document this constraint for your users.
+
+For a relational database, declare `JdbcConnectionDetails` as the connection details type and return a `JdbcDiscoveredConnectionDetails` (which requires the `spring-boot-jdbc` module as a dependency of your Dev Service), building the JDBC URL from the discovered container's host and mapped port in the same format your container reports.
 
 == Supporting the Shared Network
 

@@ -2,6 +2,7 @@ package io.arconia.dev.services.mongodb;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -39,10 +40,8 @@ public final class MongoDbDevServicesAutoConfiguration {
                     .name("mongodb")
                     .description("MongoDB Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaMongoDbContainer.class)
-                            .supplier(() -> new ArconiaMongoDbContainer(properties))
-                    ));
+                    .container(ArconiaMongoDbContainer.class, () -> new ArconiaMongoDbContainer(properties))
+                    .discovery(MongoConnectionDetails.class, MongoDbDiscoveredConnectionDetails::new));
         }
 
     }

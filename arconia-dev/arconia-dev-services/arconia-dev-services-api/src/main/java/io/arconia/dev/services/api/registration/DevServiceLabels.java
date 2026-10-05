@@ -17,8 +17,8 @@ import io.arconia.core.support.Incubating;
  * making dev service containers identifiable across applications
  * (e.g. {@code docker ps --filter label=io.arconia.dev-service.name}).
  * <p>
- * Shared dev services rely on these labels to discover running containers
- * started by other applications.
+ * Dev services using the {@code framework} reuse strategy rely on these labels to
+ * discover running containers started by other applications.
  */
 @Incubating
 public final class DevServiceLabels {
@@ -29,13 +29,14 @@ public final class DevServiceLabels {
     public static final String NAME = "io.arconia.dev-service.name";
 
     /**
-     * Whether the container is shared among applications and can be discovered by them (e.g. {@code true}).
+     * Whether the container can be discovered by other applications ({@code true}). Applied
+     * only to the containers of dev services using the {@code framework} reuse strategy.
      */
-    public static final String SHARED = "io.arconia.dev-service.shared";
+    public static final String DISCOVERABLE = "io.arconia.dev-service.discoverable";
 
     /**
-     * Identifier of the application instance that started the container,
-     * used to prevent an application from discovering its own containers.
+     * Identifier of the application instance that started the container, used to prevent an
+     * application from discovering its own containers. Applied only to discoverable containers.
      */
     public static final String OWNER = "io.arconia.dev-service.owner";
 
@@ -91,11 +92,11 @@ public final class DevServiceLabels {
     /**
      * The link definitions described by the given container labels, ordered by link id.
      * <p>
-     * A container is adopted as it runs, so its labels are not necessarily written by the
+     * A discovered container is used as it runs, so its labels are not necessarily written by the
      * version of Arconia reading them. Labels that don't describe a link are ignored, fields
      * a newer version may have added are ignored, and a link missing a field or holding a
      * value this version cannot make sense of is left out rather than failing the lookup.
-     * Ordering by id keeps an adopted dev service reporting its links consistently, since
+     * Ordering by id keeps a dev service in a discovered container reporting its links consistently, since
      * container labels carry no order of their own.
      */
     public static List<DevServiceLinkDefinition> linksFrom(Map<String, String> labels) {

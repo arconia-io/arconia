@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.mariadb.reuse",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.mariadb.reuse-strategy'. Use 'testcontainers' instead of 'true'.",
+        "since": "0.31.0"
+      }
+    }
+  ]
+}

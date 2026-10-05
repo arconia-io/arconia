@@ -55,13 +55,13 @@ class DevServicesBeanFactoryInitializationAotProcessorTests {
 
     @Test
     void removesRegistrationBeanDefinitions() {
-        beanFactory.registerBeanDefinition("devServiceRegistration.postgres", registrationBeanDefinition());
-        beanFactory.registerBeanDefinition("devServiceRegistration.redis", registrationBeanDefinition());
+        beanFactory.registerBeanDefinition("devService.registration.postgres", registrationBeanDefinition());
+        beanFactory.registerBeanDefinition("devService.registration.redis", registrationBeanDefinition());
 
         processor.processAheadOfTime(beanFactory);
 
-        assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.postgres")).isFalse();
-        assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.redis")).isFalse();
+        assertThat(beanFactory.containsBeanDefinition("devService.registration.postgres")).isFalse();
+        assertThat(beanFactory.containsBeanDefinition("devService.registration.redis")).isFalse();
     }
 
     @Test

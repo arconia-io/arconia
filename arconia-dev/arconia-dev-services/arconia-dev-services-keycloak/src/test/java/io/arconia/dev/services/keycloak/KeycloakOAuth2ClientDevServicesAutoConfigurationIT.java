@@ -4,9 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -30,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KeycloakOAuth2ClientDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ClientDevServicesAutoConfiguration.class,

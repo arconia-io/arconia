@@ -45,7 +45,7 @@ The application logs will show you the URL where you can access the Keycloak Adm
 
 [source,logs]
 ----
-...i.a.d.s.startup                          : Dev Service 'keycloak' is ready - Keycloak Admin Console: http://localhost:<port>/admin
+...i.a.d.s.startup                          : Dev Service 'keycloak' is ready in container <container-id> (reuse-strategy: framework) - Keycloak Admin Console: http://localhost:<port>/admin
 ----
 
 By default, you can log in with username `arconia` and password `arconia`.
@@ -81,13 +81,9 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
-| `arconia.dev.services.{service-name}.reuse`
-| `false`
-| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
-
-| `arconia.dev.services.{service-name}.shared`
-| `true`
-| Whether the dev service is shared across multiple applications. When shared, the application connects to a container started by another application if one is available, instead of starting a new one. Only applicable in dev mode.
+| `arconia.dev.services.{service-name}.reuse-strategy`
+| `framework`
+| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `2m`
@@ -318,13 +314,15 @@ A realm exported from this Dev Service is shaped for a throwaway container on yo
 * The users and their passwords are the same for everyone using Arconia. Remove them.
 ====
 
-== Sharing the Dev Service
+== Using the Same Keycloak Across Applications
 
-When sharing is enabled, the recommended topology is *one OAuth2 Client application together with any number of resource servers*, all using the same Keycloak. Resource servers need no client configuration at all, since they only consume the issuer.
+By default, when running in dev mode, an application connects to a running Keycloak Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
-Sharing the same Keycloak between more than one OAuth2 Client application is not recommended for now. It's not prevented, and each application can declare its own client, but the configuration becomes subtle enough that it's better to give each client application its own Dev Service.
+The recommended topology is one OAuth2 Client application together with any number of resource servers, all using the same Keycloak. Resource servers need no client configuration at all, since they only consume the issuer.
 
-An application joining a shared Dev Service doesn't need the realm file, only the realm name and its own client.
+Using the same Keycloak for more than one OAuth2 Client application is not recommended for now. It's not prevented, and each application can declare its own client, but the configuration becomes subtle enough that it's better to give each client application its own Dev Service.
+
+An application connecting to a Keycloak started by another application doesn't need the realm file, only the realm name and its own client.
 
 [source,yaml]
 ----
@@ -343,7 +341,7 @@ arconia:
 ====
 That configuration depends on startup order. The first application to start owns the container, so if it's the one *without* a realm import path, it imports the realm it generates and the configured `realm.name` won't exist.
 
-To make the setup independent of startup order, give every participating application the same realm configuration: either the same `realm.import-paths`, or the same `realm.users` and `realm.roles`. Whichever starts first puts the realm in place; the others adopt the container and never create anything. Leaving `realm.name` unset everywhere then guarantees they all agree.
+To make the setup independent of startup order, give every participating application the same realm configuration: either the same `realm.import-paths`, or the same `realm.users` and `realm.roles`. Whichever starts first puts the realm in place; the others connect to its container and never create anything. Leaving `realm.name` unset everywhere then guarantees they all agree.
 ====
 
 == Connecting to the Dev Service Yourself
@@ -359,7 +357,7 @@ public interface KeycloakConnectionDetails extends ConnectionDetails {
 }
 ----
 
-The bean is always there, whether this application started the container or adopted one shared by another application. It describes how to *reach* the service, not how to authenticate against it: the client id and secret are your application's configuration and stay in `client.*`, which is what lets two applications share one Keycloak with different clients in the same realm.
+The bean is always there, whether this application started the container or connected to one started by another application. It describes how to reach the service, not how to authenticate against it: the client id and secret are your application's configuration and stay in `client.*`, which is what lets two applications use one Keycloak with different clients in the same realm.
 
 === Configuring Keycloak Programmatically
 
@@ -396,7 +394,7 @@ If you need the container itself rather than the connection details, inject it a
 
 [CAUTION]
 ====
-There is no container bean when the application adopts a container shared by another application, because the container's lifecycle belongs to the application that started it — and since `shared` defaults to `true`, that's a case you'll hit. `ObjectProvider` is what lets your code degrade gracefully instead of failing to start. Prefer `KeycloakConnectionDetails`, which is always present.
+There is no container bean when the application connects to a container started by another application, because the container's lifecycle belongs to the application that started it. Since `reuse-strategy` defaults to `framework`, that's a case you'll hit. `ObjectProvider` is what lets your code degrade gracefully instead of failing to start. Prefer `KeycloakConnectionDetails`, which is always present.
 ====
 
 [NOTE]

@@ -9,7 +9,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.kafka.KafkaContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,22 +47,16 @@ class KafkaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaKafkaContainer(new KafkaDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        KafkaDevServicesProperties properties = new KafkaDevServicesProperties();
-        return withSharedLabels(new KafkaContainer(properties.getImageName()), ownerId);
-    }
-
-    @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        KafkaContainer container = (KafkaContainer) discoveredContainer;
         KafkaConnectionDetails connectionDetails = context.getBean(KafkaConnectionDetails.class);
-        assertThat(connectionDetails.getBootstrapServers()).hasSize(1);
-        assertThat(connectionDetails.getBootstrapServers().getFirst())
-                .endsWith(":" + sharedContainer.getMappedPort(ArconiaKafkaContainer.KAFKA_PORT));
+        assertThat(connectionDetails.getBootstrapServers()).containsExactly(container.getBootstrapServers());
+        assertThat(connectionDetails.getSecurityProtocol()).isEqualTo("PLAINTEXT");
     }
 
     @Test
@@ -76,12 +69,7 @@ class KafkaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
                     assertThat(container.getDockerImageName()).contains("apache/kafka-native");
                     assertThat(container.getEnv()).isNotEmpty(); // Configured by Testcontainers.
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "kafka")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

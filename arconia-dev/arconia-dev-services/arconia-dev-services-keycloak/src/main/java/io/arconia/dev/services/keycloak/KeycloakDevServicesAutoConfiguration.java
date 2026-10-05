@@ -31,14 +31,9 @@ public final class KeycloakDevServicesAutoConfiguration {
                     .name("keycloak")
                     .description("Keycloak Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaKeycloakContainer.class)
-                            .supplier(() -> new ArconiaKeycloakContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(KeycloakConnectionDetails.class,
-                                    container -> new KeycloakDiscoveredConnectionDetails(container, properties))
-                    ));
+                    .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))
+                    .discovery(KeycloakConnectionDetails.class,
+                            container -> new KeycloakDiscoveredConnectionDetails(container, properties)));
         }
 
     }

@@ -32,15 +32,9 @@ public final class DoclingDevServicesAutoConfiguration {
                     .name("docling")
                     .description("Docling Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaDoclingServeContainer.class)
-                            .supplier(() -> new ArconiaDoclingServeContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(DoclingServeConnectionDetails.class,
-                                    container -> new DoclingDiscoveredConnectionDetails(container, properties))
-                    )
-            );
+                    .container(ArconiaDoclingServeContainer.class, () -> new ArconiaDoclingServeContainer(properties))
+                    .discovery(DoclingServeConnectionDetails.class,
+                            container -> new DoclingDiscoveredConnectionDetails(container, properties)));
         }
 
     }

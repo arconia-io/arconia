@@ -7,7 +7,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsC
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 /**
- * OTLP connection details for all signals to connect to a shared OpenTelemetry Collector
+ * OTLP connection details for all signals to connect to an OpenTelemetry Collector
  * dev service running in a container discovered from another application.
  */
 final class OtelCollectorDiscoveredConnectionDetails

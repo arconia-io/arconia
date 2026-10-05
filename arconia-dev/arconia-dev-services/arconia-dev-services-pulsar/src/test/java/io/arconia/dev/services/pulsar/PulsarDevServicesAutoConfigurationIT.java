@@ -2,7 +2,6 @@ package io.arconia.dev.services.pulsar;
 
 import java.util.List;
 
-import java.time.Duration;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -12,9 +11,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.pulsar.PulsarContainer;
-import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
@@ -54,32 +51,21 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaPulsarContainer(new PulsarDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        PulsarDevServicesProperties properties = new PulsarDevServicesProperties();
-        PulsarContainer container = new PulsarContainer(DockerImageName.parse(properties.getImageName()))
-                .withStartupTimeout(Duration.ofMinutes(2));
-        return withSharedLabels(container, ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaPulsarContainer(new PulsarDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        PulsarContainer container = (PulsarContainer) discoveredContainer;
         PulsarConnectionDetails connectionDetails = context.getBean(PulsarConnectionDetails.class);
-        assertThat(connectionDetails.getBrokerUrl())
-                .startsWith("pulsar://")
-                .endsWith(":" + sharedContainer.getMappedPort(PulsarContainer.BROKER_PORT));
-        assertThat(connectionDetails.getAdminUrl())
-                .startsWith("http://")
-                .endsWith(":" + sharedContainer.getMappedPort(PulsarContainer.BROKER_HTTP_PORT));
+        assertThat(connectionDetails.getBrokerUrl()).isEqualTo(container.getPulsarBrokerUrl());
+        assertThat(connectionDetails.getAdminUrl()).isEqualTo(container.getHttpServiceUrl());
     }
 
     @Test
@@ -92,11 +78,6 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
                     assertThat(container.getDockerImageName()).contains(ArconiaPulsarContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "pulsar")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

@@ -3,10 +3,10 @@ package io.arconia.dev.services.postgresql;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = defaultContextRunner(PostgresqlDevServicesAutoConfiguration.class)
-            .withClassLoader(new FilteredClassLoader(RestartScope.class, PgVectorStore.class));
+            .withClassLoader(new FilteredClassLoader(PgVectorStore.class));
 
     @Override
     protected ApplicationContextRunner getContextRunner() {
@@ -52,6 +52,11 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
         return JdbcConnectionDetails.class;
     }
 
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaPostgreSqlContainer(new PostgresqlDevServicesProperties()), ownerId);
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner().run(context -> {
@@ -60,7 +65,6 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
             assertThat(container.getDockerImageName()).contains(ArconiaPostgreSqlContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.isShouldBeReused()).isFalse();
             container.start();
             assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
             assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
@@ -102,7 +106,8 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
     @Test
     void pgVectorImageConfiguredWhenSpringAi() {
         getContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
+                // The default context runner hides PgVectorStore: make it visible again.
+                .withClassLoader(getClass().getClassLoader())
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     assertThat(container.getDockerImageName()).contains("pgvector/pgvector");

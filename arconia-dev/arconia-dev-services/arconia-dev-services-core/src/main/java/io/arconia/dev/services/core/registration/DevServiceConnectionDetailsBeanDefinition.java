@@ -7,7 +7,7 @@ import io.arconia.core.support.Internal;
 
 /**
  * A {@link RootBeanDefinition} specialized for registering {@link ConnectionDetails} beans
- * for discovered shared dev services, so they can be identified and excluded
+ * for dev services running in discovered containers, so they can be identified and excluded
  * from AOT processing.
  */
 @Internal

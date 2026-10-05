@@ -22,6 +22,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+By default, each application starts its own PostgreSQL Dev Service. To let multiple applications running simultaneously in dev mode use the same one, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `framework`: the application connects to a running PostgreSQL Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same username, password, and database name. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.
@@ -53,9 +55,9 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
-| `arconia.dev.services.{service-name}.reuse`
-| `false`
-| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
+| `arconia.dev.services.{service-name}.reuse-strategy`
+| `none`
+| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`

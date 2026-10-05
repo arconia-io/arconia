@@ -45,7 +45,7 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer implement
         this.withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}));
         ContainerConfigurer.resources(this, properties);
         ContainerConfigurer.volumes(this, properties);
-        ContainerConfigurer.reuse(this, properties);
+        ContainerConfigurer.testcontainersReuse(this, properties);
     }
 
     @Override

@@ -100,9 +100,7 @@ class DevServiceContainerCustomizerTests {
             registry.registerDevService(service -> service
                     .name("postgres")
                     .properties(TestDevServicesProperties.DEFAULT)
-                    .container(container -> container
-                            .type(TestPostgresContainer.class)
-                            .supplier(TestPostgresContainer::new)));
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }
 
     }
@@ -184,9 +182,7 @@ class DevServiceContainerCustomizerTests {
             registry.registerDevService(service -> service
                     .name("postgres")
                     .properties(TestDevServicesProperties.DEFAULT)
-                    .container(container -> container
-                            .type(TestPostgresSubclassContainer.class)
-                            .supplier(TestPostgresSubclassContainer::new)));
+                    .container(TestPostgresSubclassContainer.class, TestPostgresSubclassContainer::new));
         }
 
     }

@@ -16,7 +16,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-By default, when running the application in dev mode, the Dev Service is shared across multiple applications running simultaneously: the application connects to a running Artemis Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications sharing the Dev Service must use the same credentials.
+By default, when running the application in dev mode, multiple applications running simultaneously use the same Artemis Dev Service: the application connects to a running Artemis Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same credentials. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 == Accessing the Management Console
 
@@ -24,7 +24,7 @@ The application logs will show you the URL where you can access the ActiveMQ Art
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'artemis' is ready - Artemis Management Console: http://localhost:<port>/console
+...i.a.d.s.startup  : Dev Service 'artemis' is ready in container <container-id> (reuse-strategy: framework) - Artemis Management Console: http://localhost:<port>/console
 ----
 
 By default, you can log in with username `arconia` and password `arconia`.
@@ -60,13 +60,9 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
-| `arconia.dev.services.{service-name}.reuse`
-| `false`
-| Whether the container used in the dev service is reused across multiple applications and application restarts, relying on the Testcontainers reusable containers feature. Only applicable in dev mode.
-
-| `arconia.dev.services.{service-name}.shared`
-| `true`
-| Whether the dev service is shared among applications running simultaneously. A shared dev service is discoverable by other applications, and the application connects to an existing shared dev service if available instead of starting a new one. Only applicable in dev mode.
+| `arconia.dev.services.{service-name}.reuse-strategy`
+| `framework`
+| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`

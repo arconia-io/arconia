@@ -20,7 +20,7 @@ import io.arconia.dev.services.core.registration.DevServiceContainerBeanDefiniti
  * included in the AOT-compiled application. This processor removes:
  * <ul>
  *   <li>Container beans (identified by {@link DevServiceContainerBeanDefinition})</li>
- *   <li>Connection details beans for discovered shared dev services (identified by {@link DevServiceConnectionDetailsBeanDefinition})</li>
+ *   <li>Connection details beans for dev services in discovered containers (identified by {@link DevServiceConnectionDetailsBeanDefinition})</li>
  *   <li>Registration beans (identified by bean class {@link DevServiceRegistration})</li>
  * </ul>
  */
@@ -40,7 +40,7 @@ class DevServicesBeanFactoryInitializationAotProcessor implements BeanFactoryIni
                 // Remove container beans
                 registry.removeBeanDefinition(beanName);
             } else if (beanDefinition instanceof DevServiceConnectionDetailsBeanDefinition) {
-                // Remove connection details beans for discovered shared dev services
+                // Remove connection details beans for dev services in discovered containers
                 registry.removeBeanDefinition(beanName);
             } else if (DevServiceRegistration.class.getName().equals(beanDefinition.getBeanClassName())) {
                 // Remove registration beans

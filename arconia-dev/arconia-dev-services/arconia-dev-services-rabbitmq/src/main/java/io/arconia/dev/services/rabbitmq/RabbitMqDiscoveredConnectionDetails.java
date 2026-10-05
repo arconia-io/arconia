@@ -7,11 +7,8 @@ import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
- * {@link RabbitConnectionDetails} for connecting to a shared RabbitMQ dev service
+ * {@link RabbitConnectionDetails} for connecting to a RabbitMQ dev service
  * running in a container discovered from another application.
- * <p>
- * The credentials come from the local configuration properties: they must match
- * the ones used by the application that started the shared container.
  */
 final class RabbitMqDiscoveredConnectionDetails implements RabbitConnectionDetails {
 

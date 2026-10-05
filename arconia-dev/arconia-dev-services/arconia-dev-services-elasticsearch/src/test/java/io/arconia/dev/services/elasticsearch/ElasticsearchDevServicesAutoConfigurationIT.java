@@ -3,6 +3,7 @@ package io.arconia.dev.services.elasticsearch;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -45,6 +46,23 @@ class ElasticsearchDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
         return ElasticsearchConnectionDetails.class;
     }
 
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaElasticsearchContainer(new ElasticsearchDevServicesProperties()), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        ElasticsearchConnectionDetails connectionDetails = context.getBean(ElasticsearchConnectionDetails.class);
+        assertThat(connectionDetails.getNodes()).singleElement().satisfies(node -> {
+            assertThat(node.hostname()).isEqualTo(discoveredContainer.getHost());
+            assertThat(node.port()).isEqualTo(discoveredContainer.getMappedPort(ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT));
+        });
+        assertThat(connectionDetails.getUsername()).isEqualTo("elastic");
+        assertThat(connectionDetails.getPassword())
+                .isEqualTo(discoveredContainer.getEnvMap().get("ELASTIC_PASSWORD"));
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner()
@@ -57,7 +75,6 @@ class ElasticsearchDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
                             "cluster.routing.allocation.disk.threshold_enabled=false",
                             "ELASTIC_PASSWORD=" + ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD);
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
 
                     assertThatHasSingletonScope(context);
             });

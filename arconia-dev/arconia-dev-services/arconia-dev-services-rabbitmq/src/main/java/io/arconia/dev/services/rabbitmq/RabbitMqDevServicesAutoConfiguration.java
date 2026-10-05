@@ -32,15 +32,9 @@ public final class RabbitMqDevServicesAutoConfiguration {
                     .name("rabbitmq")
                     .description("RabbitMQ Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaRabbitMqContainer.class)
-                            .supplier(() -> new ArconiaRabbitMqContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(RabbitConnectionDetails.class,
-                                    container -> new RabbitMqDiscoveredConnectionDetails(container, properties))
-                    )
-            );
+                    .container(ArconiaRabbitMqContainer.class, () -> new ArconiaRabbitMqContainer(properties))
+                    .discovery(RabbitConnectionDetails.class,
+                            container -> new RabbitMqDiscoveredConnectionDetails(container, properties)));
         }
 
     }

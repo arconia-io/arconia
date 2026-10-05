@@ -46,28 +46,22 @@ public final class OllamaDevServicesAutoConfiguration {
                         .name("ollama")
                         .description("Ollama Dev Service")
                         .properties(properties)
-                        .container(container -> {
-                            container
-                                .type(ArconiaOllamaContainer.class)
-                                .supplier(() -> new ArconiaOllamaContainer(properties));
-                            if (!ollamaModulePresent) {
-                                container.serviceConnectionName(null);
-                            }
-                        });
+                        .container(ArconiaOllamaContainer.class, () -> new ArconiaOllamaContainer(properties));
                 if (ollamaModulePresent) {
-                    configureSharing(service, properties);
+                    configureDiscovery(service);
+                } else {
+                    service.serviceConnection(false);
                 }
             });
         }
 
         /**
-         * Sharing builds typed {@code OllamaConnectionDetails} for a discovered container,
+         * Discovery builds typed {@code OllamaConnectionDetails} for a discovered container,
          * so it's only available when the Spring AI Ollama module is on the classpath.
          * Kept in a separate method so the Spring AI Ollama types are only loaded when present.
          */
-        private static void configureSharing(ServiceSpec service, OllamaDevServicesProperties properties) {
-            service.discovery(discovery -> discovery
-                    .connectionDetails(OllamaConnectionDetails.class, OllamaDiscoveredConnectionDetails::new));
+        private static void configureDiscovery(ServiceSpec service) {
+            service.discovery(OllamaConnectionDetails.class, OllamaDiscoveredConnectionDetails::new);
         }
 
     }

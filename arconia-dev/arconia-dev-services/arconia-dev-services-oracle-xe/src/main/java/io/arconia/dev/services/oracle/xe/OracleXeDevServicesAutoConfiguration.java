@@ -2,6 +2,7 @@ package io.arconia.dev.services.oracle.xe;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -13,6 +14,8 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.registration.DiscoveredContainer;
+import io.arconia.dev.services.core.registration.JdbcDiscoveredConnectionDetails;
 import io.arconia.dev.services.oracle.xe.OracleXeDevServicesAutoConfiguration.OracleXeDevServicesRegistrar;
 
 /**
@@ -39,10 +42,15 @@ public final class OracleXeDevServicesAutoConfiguration {
                     .name("oracle-xe")
                     .description("Oracle XE Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaOracleXeContainer.class)
-                            .supplier(() -> new ArconiaOracleXeContainer(properties))
-                    ));
+                    .container(ArconiaOracleXeContainer.class, () -> new ArconiaOracleXeContainer(properties))
+                    .discovery(JdbcConnectionDetails.class,
+                            container -> discoveredConnectionDetails(container, properties)));
+        }
+
+        static JdbcDiscoveredConnectionDetails discoveredConnectionDetails(DiscoveredContainer container, OracleXeDevServicesProperties properties) {
+            String jdbcUrl = "jdbc:oracle:thin:@%s:%d/%s".formatted(container.host(),
+                    container.mappedPort(ArconiaOracleXeContainer.ORACLE_PORT), properties.getDbName());
+            return new JdbcDiscoveredConnectionDetails(jdbcUrl, properties.getUsername(), properties.getPassword());
         }
 
     }

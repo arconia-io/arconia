@@ -49,10 +49,9 @@ public final class FlociDevServicesAutoConfiguration {
                     .name("floci")
                     .description("Floci Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaFlociContainer.class)
-                            .supplier(() -> new ArconiaFlociContainer(properties))
-                    ));
+                    .container(ArconiaFlociContainer.class, () -> new ArconiaFlociContainer(properties))
+                    .discovery(AwsConnectionDetails.class,
+                            container -> new FlociDiscoveredConnectionDetails(container, properties)));
         }
 
     }

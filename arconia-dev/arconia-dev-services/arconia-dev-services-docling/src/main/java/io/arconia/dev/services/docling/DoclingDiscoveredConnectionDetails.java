@@ -8,11 +8,8 @@ import io.arconia.dev.services.core.registration.DiscoveredContainer;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
 /**
- * {@link DoclingServeConnectionDetails} for connecting to a shared Docling dev service
+ * {@link DoclingServeConnectionDetails} for connecting to a Docling dev service
  * running in a container discovered from another application.
- * <p>
- * The API key comes from the local configuration properties: it must match
- * the one used by the application that started the shared container, if any.
  */
 final class DoclingDiscoveredConnectionDetails implements DoclingServeConnectionDetails {
 

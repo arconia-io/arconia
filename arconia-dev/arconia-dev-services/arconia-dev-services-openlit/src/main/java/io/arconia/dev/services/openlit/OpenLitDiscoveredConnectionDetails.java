@@ -8,7 +8,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingCo
 import io.arconia.testcontainers.openlit.OpenLitContainer;
 
 /**
- * OTLP connection details for all signals to connect to a shared OpenLit dev service
+ * OTLP connection details for all signals to connect to an OpenLit dev service
  * running in a container discovered from another application.
  */
 final class OpenLitDiscoveredConnectionDetails

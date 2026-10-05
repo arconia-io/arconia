@@ -17,7 +17,6 @@ dependencies {
         exclude group: "org.jboss.shrinkwrap"
     }
 
-    optional "org.springframework.boot:spring-boot-devtools"
     optional "org.springframework.boot:spring-boot-security-oauth2-client"
     optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"
 

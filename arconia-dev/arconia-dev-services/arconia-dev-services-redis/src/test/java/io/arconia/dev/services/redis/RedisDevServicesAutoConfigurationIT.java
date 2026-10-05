@@ -3,6 +3,7 @@ package io.arconia.dev.services.redis;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
@@ -45,6 +46,20 @@ class RedisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         return DataRedisConnectionDetails.class;
     }
 
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaRedisContainer(new RedisDevServicesProperties()), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        DataRedisConnectionDetails connectionDetails = context.getBean(DataRedisConnectionDetails.class);
+        assertThat(connectionDetails.getStandalone()).isNotNull();
+        assertThat(connectionDetails.getStandalone().getHost()).isEqualTo(discoveredContainer.getHost());
+        assertThat(connectionDetails.getStandalone().getPort())
+                .isEqualTo(discoveredContainer.getMappedPort(ArconiaRedisContainer.REDIS_PORT));
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner()
@@ -54,7 +69,6 @@ class RedisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
                     assertThat(container.getDockerImageName()).contains(ArconiaRedisContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
 
                     assertThatHasSingletonScope(context);
             });

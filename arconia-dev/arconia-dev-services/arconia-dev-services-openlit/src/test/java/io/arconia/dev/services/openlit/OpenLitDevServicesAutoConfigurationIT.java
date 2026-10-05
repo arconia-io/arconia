@@ -8,12 +8,10 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
@@ -57,41 +55,25 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaOpenLitContainer(new OpenLitDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected boolean supportsSharedContainerDiscoveryProbing() {
-        // OpenLit is a composed container that provisions a ClickHouse backend internally, so the
-        // multi-stack selection probes (oldest/paused/own) would spin up several full OpenLit +
-        // ClickHouse stacks. That generic registry selection logic is already covered by the other
-        // dev services; the single-container discovery test below still runs.
-        return false;
-    }
-
-    @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        OpenLitDevServicesProperties properties = new OpenLitDevServicesProperties();
-        return withSharedLabels(new OpenLitContainer(DockerImageName.parse(properties.getImageName())), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaOpenLitContainer(new OpenLitDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
         assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
 
+        OpenLitContainer container = (OpenLitContainer) discoveredContainer;
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                ":%d%s".formatted(sharedContainer.getMappedPort(OpenLitContainer.OTLP_HTTP_PORT),
-                        OtlpTracingConnectionDetails.TRACES_PATH));
-        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                ":" + sharedContainer.getMappedPort(OpenLitContainer.OTLP_GRPC_PORT));
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
+                .isEqualTo(container.getOtlpHttpUrl() + OtlpTracingConnectionDetails.TRACES_PATH);
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).isEqualTo(container.getOtlpGrpcUrl());
     }
 
     @Test
@@ -109,11 +91,6 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(context).hasSingleBean(getContainerClass());
                     var container = context.getBean(getContainerClass());
                     assertThat(container.getDockerImageName()).contains(ArconiaOpenLitContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "openlit")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

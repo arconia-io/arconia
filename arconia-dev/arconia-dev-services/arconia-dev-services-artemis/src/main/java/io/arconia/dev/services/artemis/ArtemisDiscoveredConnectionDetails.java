@@ -6,11 +6,8 @@ import org.springframework.boot.artemis.autoconfigure.ArtemisMode;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
- * {@link ArtemisConnectionDetails} for connecting to a shared ActiveMQ Artemis dev service
+ * {@link ArtemisConnectionDetails} for connecting to an ActiveMQ Artemis dev service
  * running in a container discovered from another application.
- * <p>
- * The credentials come from the local configuration properties: they must match
- * the ones used by the application that started the shared container.
  */
 final class ArtemisDiscoveredConnectionDetails implements ArtemisConnectionDetails {
 

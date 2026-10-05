@@ -47,7 +47,8 @@ final class KeycloakRealmMetadata {
      * The name of the realm to connect to, for a caller that has not read the realm files.
      * <p>
      * Reads at most the first file, and none at all when the realm name is configured: this is
-     * the path taken when joining a shared dev service, where nothing is imported, so reading
+     * the path taken when connecting to a container started by another application, where
+     * nothing is imported, so reading
      * the remaining files would be pure waste. A caller that imports the files reads them all
      * once and passes the result to {@link #resolveRealmName(KeycloakDevServicesProperties,
      * Collection)} instead.

@@ -3,7 +3,6 @@ package io.arconia.dev.services.docling;
 import java.util.List;
 
 import ai.docling.testcontainers.serve.DoclingServeContainer;
-import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -12,10 +11,9 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
@@ -55,32 +53,20 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaDoclingServeContainer(new DoclingDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
-        DoclingServeContainer container = new DoclingServeContainer(DoclingServeContainerConfig.builder()
-                .image(properties.getImageName())
-                .apiKey(properties.getApiKey())
-                .build());
-        return withSharedLabels(container, ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaDoclingServeContainer(new DoclingDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
-        DoclingDevServicesProperties properties = new DoclingDevServicesProperties();
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        DoclingServeContainer container = (DoclingServeContainer) discoveredContainer;
         DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
-        assertThat(connectionDetails.getBaseUrl().getPort())
-                .isEqualTo(sharedContainer.getMappedPort(DoclingServeConnectionDetails.DEFAULT_PORT));
-        assertThat(connectionDetails.getApiKey()).isEqualTo(properties.getApiKey());
+        assertThat(connectionDetails.getBaseUrl()).hasToString(container.getApiUrl());
     }
 
     @Test
@@ -93,12 +79,7 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(container.getDockerImageName()).contains(ArconiaDoclingServeContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=true");
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "docling")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

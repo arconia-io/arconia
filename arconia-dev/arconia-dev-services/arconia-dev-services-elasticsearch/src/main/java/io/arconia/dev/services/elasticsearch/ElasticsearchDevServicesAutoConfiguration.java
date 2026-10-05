@@ -2,6 +2,7 @@ package io.arconia.dev.services.elasticsearch;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -31,10 +32,9 @@ public final class ElasticsearchDevServicesAutoConfiguration {
                     .name("elasticsearch")
                     .description("Elasticsearch Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaElasticsearchContainer.class)
-                            .supplier(() -> new ArconiaElasticsearchContainer(properties))
-                    ));
+                    .container(ArconiaElasticsearchContainer.class, () -> new ArconiaElasticsearchContainer(properties))
+                    .discovery(ElasticsearchConnectionDetails.class,
+                            container -> new ElasticsearchDiscoveredConnectionDetails(container, properties)));
         }
 
     }

@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
@@ -23,7 +24,7 @@ class PhoenixDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<P
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
+                .reuseStrategy(ReuseStrategy.FRAMEWORK)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

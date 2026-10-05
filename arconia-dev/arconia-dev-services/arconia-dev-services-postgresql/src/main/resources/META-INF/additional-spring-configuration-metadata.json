@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.postgresql.reuse",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.postgresql.reuse-strategy'. Use 'testcontainers' instead of 'true'.",
+        "since": "0.31.0"
+      }
+    }
+  ]
+}

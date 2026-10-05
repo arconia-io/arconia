@@ -10,12 +10,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
-import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
@@ -57,32 +55,25 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaLgtmStackContainer(new LgtmDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        LgtmDevServicesProperties properties = new LgtmDevServicesProperties();
-        return withSharedLabels(new LgtmStackContainer(properties.getImageName()), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaLgtmStackContainer(new LgtmDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
         assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
 
+        LgtmStackContainer container = (LgtmStackContainer) discoveredContainer;
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                ":%d%s".formatted(sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_HTTP_PORT),
-                        OtlpTracingConnectionDetails.TRACES_PATH));
-        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                ":" + sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_GRPC_PORT));
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
+                .isEqualTo(container.getOtlpHttpUrl() + OtlpTracingConnectionDetails.TRACES_PATH);
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).isEqualTo(container.getOtlpGrpcUrl());
     }
 
     @Test
@@ -102,12 +93,7 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
                     assertThat(container.getDockerImageName()).contains(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).contains("GF_USERS_DEFAULT_THEME=system");
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "lgtm")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

@@ -7,12 +7,8 @@ import org.springframework.boot.kafka.autoconfigure.KafkaConnectionDetails;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
- * {@link KafkaConnectionDetails} for connecting to a shared Kafka dev service
+ * {@link KafkaConnectionDetails} for connecting to a Kafka dev service
  * running in a container discovered from another application.
- * <p>
- * The container advertises its listener as the Docker host address and mapped port,
- * which resolve to the same values for every application on the host, so the
- * discovered bootstrap server works across applications without coordination.
  */
 final class KafkaDiscoveredConnectionDetails implements KafkaConnectionDetails {
 
@@ -26,6 +22,13 @@ final class KafkaDiscoveredConnectionDetails implements KafkaConnectionDetails {
     @Override
     public List<String> getBootstrapServers() {
         return bootstrapServers;
+    }
+
+    @Override
+    public String getSecurityProtocol() {
+        // The dev service container exposes a plaintext listener, as Spring Boot reports
+        // for a container this application started itself.
+        return "PLAINTEXT";
     }
 
 }

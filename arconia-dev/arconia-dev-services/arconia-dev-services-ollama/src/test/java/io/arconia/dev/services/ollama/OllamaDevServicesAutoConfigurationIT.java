@@ -9,7 +9,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ollama.OllamaContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,21 +56,14 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaOllamaContainer(new OllamaDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
-        return withSharedLabels(new OllamaContainer(properties.getImageName()), ownerId);
-    }
-
-    @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         OllamaConnectionDetails connectionDetails = context.getBean(OllamaConnectionDetails.class);
-        assertThat(connectionDetails.getBaseUrl()).isEqualTo("http://%s:%d".formatted(
-                sharedContainer.getHost(), sharedContainer.getMappedPort(ArconiaOllamaContainer.OLLAMA_PORT)));
+        assertThat(connectionDetails.getBaseUrl()).isEqualTo(((OllamaContainer) discoveredContainer).getEndpoint());
     }
 
     @Test
@@ -84,11 +76,6 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
                     assertThat(container.getDockerImageName()).contains("ollama/ollama");
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "ollama")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

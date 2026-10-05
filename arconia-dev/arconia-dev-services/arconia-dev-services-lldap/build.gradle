@@ -10,11 +10,10 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "org.springframework.boot:spring-boot-ldap"
     api "org.springframework.boot:spring-boot-starter"
     api "org.springframework.boot:spring-boot-testcontainers"
     api "org.testcontainers:testcontainers-ldap"
-
-    optional "org.springframework.boot:spring-boot-devtools"
 
     testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
     testImplementation "org.springframework.boot:spring-boot-starter-test"

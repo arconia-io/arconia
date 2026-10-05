@@ -1,5 +1,6 @@
 package io.arconia.dev.services.kafka;
 
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 /**
@@ -16,7 +17,7 @@ class KafkaDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Kaf
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaKafkaContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
+                .reuseStrategy(ReuseStrategy.FRAMEWORK)
                 .build();
     }
 

@@ -5,7 +5,7 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
- * {@link OllamaConnectionDetails} for connecting to a shared Ollama dev service
+ * {@link OllamaConnectionDetails} for connecting to an Ollama dev service
  * running in a container discovered from another application.
  */
 final class OllamaDiscoveredConnectionDetails implements OllamaConnectionDetails {

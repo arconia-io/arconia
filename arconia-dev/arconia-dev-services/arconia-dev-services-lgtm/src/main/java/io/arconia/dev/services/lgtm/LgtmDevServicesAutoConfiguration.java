@@ -42,14 +42,8 @@ public final class LgtmDevServicesAutoConfiguration {
                     .name("lgtm")
                     .description("Grafana LGTM Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaLgtmStackContainer.class)
-                            .supplier(() -> new ArconiaLgtmStackContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
-                    )
-            );
+                    .container(ArconiaLgtmStackContainer.class, () -> new ArconiaLgtmStackContainer(properties))
+                    .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new));
         }
 
     }

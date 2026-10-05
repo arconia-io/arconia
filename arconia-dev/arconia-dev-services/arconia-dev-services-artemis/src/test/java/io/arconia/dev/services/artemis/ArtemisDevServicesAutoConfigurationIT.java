@@ -11,9 +11,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
@@ -53,32 +51,23 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaArtemisContainer(new ArtemisDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        ArtemisDevServicesProperties properties = new ArtemisDevServicesProperties();
-        ArtemisContainer container = new ArtemisContainer(DockerImageName.parse(properties.getImageName()))
-                .withUser(properties.getUsername())
-                .withPassword(properties.getPassword());
-        return withSharedLabels(container, ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaArtemisContainer(new ArtemisDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
-        ArtemisDevServicesProperties properties = new ArtemisDevServicesProperties();
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        ArtemisContainer container = (ArtemisContainer) discoveredContainer;
         ArtemisConnectionDetails connectionDetails = context.getBean(ArtemisConnectionDetails.class);
         assertThat(connectionDetails.getMode()).isEqualTo(ArtemisMode.NATIVE);
-        assertThat(connectionDetails.getBrokerUrl()).endsWith(":" + sharedContainer.getMappedPort(ArconiaArtemisContainer.TCP_PORT));
-        assertThat(connectionDetails.getUser()).isEqualTo(properties.getUsername());
-        assertThat(connectionDetails.getPassword()).isEqualTo(properties.getPassword());
+        assertThat(connectionDetails.getBrokerUrl()).isEqualTo(container.getBrokerUrl());
+        assertThat(connectionDetails.getUser()).isEqualTo(container.getUser());
+        assertThat(connectionDetails.getPassword()).isEqualTo(container.getPassword());
     }
 
     @Test
@@ -91,12 +80,7 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(container.getDockerImageName()).contains(ArconiaArtemisContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "artemis")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
                     container.start();
                     assertThat(container.getUser()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_USERNAME);
                     assertThat(container.getPassword()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_PASSWORD);

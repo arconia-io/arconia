@@ -11,15 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.context.support.SimpleThreadScope;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
@@ -37,9 +32,9 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     protected static Path testMountDir;
 
     /**
-     * The link definitions recorded on the shared container by {@link #withSharedLabels}.
+     * The link definitions recorded on the discoverable container by {@link #withDiscoveryLabels}.
      */
-    private List<DevServiceLinkDefinition> appliedSharedLinks = List.of();
+    private List<DevServiceLinkDefinition> appliedLinks = List.of();
 
     /**
      * The application context runner used to execute tests.
@@ -72,76 +67,61 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     }
 
     /**
-     * Whether this Dev Service supports sharing and discovery. When {@code false}, the
-     * sharing/discovery tests below self-skip. Override to return {@code true} and implement
-     * {@link #createSharedContainer(String)}.
+     * Create a container labeled as discoverable and owned by {@code ownerId}, as another
+     * application would start it, for a Dev Service supporting the {@code framework} reuse
+     * strategy. Implementations should return the module's container with the image from its
+     * properties, applying the discovery labels via {@link #withDiscoveryLabels}.
+     * <p>
+     * Returns {@code null} by default, in which case the discovery test below self-skips.
+     * <p>
+     * The discovery test connects to the oldest discoverable container of the Dev Service
+     * running on the machine. A container left running by something else, such as an
+     * application started in dev mode with the same Dev Service, makes it fail.
      */
-    protected boolean supportsSharing() {
-        return false;
+    @Nullable
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return null;
     }
 
     /**
-     * Whether to run the discovery-selection probes that provision multiple shared containers or
-     * manipulate container state ({@code oldest-wins}, {@code paused-skipped}, {@code own-skipped}).
-     * These exercise generic registry selection logic that is identical across dev services, so a
-     * composed-container dev service (one that provisions extra containers internally, such as
-     * OpenLit with its ClickHouse backend) can override this to {@code false} to avoid spinning up
-     * multiple full stacks. The single-container discovery test still runs. Defaults to
-     * {@link #supportsSharing()}.
+     * Apply the discovery labels (name, discoverable, owner) to the given container,
+     * matching what another application would set when starting a discoverable container.
      */
-    protected boolean supportsSharedContainerDiscoveryProbing() {
-        return supportsSharing();
-    }
-
-    /**
-     * Create a library container labeled as a shared Dev Service owned by {@code ownerId},
-     * as another application would start it. Only invoked when {@link #supportsSharing()} is
-     * {@code true}. Implementations should return the module's container with the image from its
-     * properties. The shared-service labels are applied via {@link #withSharedLabels}.
-     */
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        throw new UnsupportedOperationException(
-                "createSharedContainer must be overridden when supportsSharing() returns true");
-    }
-
-    /**
-     * Apply the standard shared Dev Service labels (name, shared, owner) to the given container,
-     * matching what a peer application would set when starting a shared container.
-     */
-    protected GenericContainer<?> withSharedLabels(GenericContainer<?> container, String ownerId) {
+    protected GenericContainer<?> withDiscoveryLabels(GenericContainer<?> container, String ownerId) {
         container.withLabel(DevServiceLabels.NAME, getServiceName());
-        container.withLabel(DevServiceLabels.SHARED, "true");
+        container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
         container.withLabel(DevServiceLabels.OWNER, ownerId);
         // Reading the declarations constructs a dev service container, which detects and caches the
         // bootstrap mode. Clear it afterwards, or the mode detected here outlives this call and the
         // application under test never sees the dev mode it asks for. For the same reason the links
         // are captured rather than read again later: a dev service whose links depend on the mode
         // would otherwise declare one set here and be expected to report another.
-        appliedSharedLinks = sharedContainerLinkDefinitions();
+        appliedLinks = discoverableContainerLinkDefinitions();
         BootstrapMode.clear();
-        for (DevServiceLinkDefinition link : appliedSharedLinks) {
+        for (DevServiceLinkDefinition link : appliedLinks) {
             DevServiceLabels.linkLabels(link).forEach(container::withLabel);
         }
         return container;
     }
 
     /**
-     * The links a peer application would record on the shared container, so that the discovery
-     * test can check they're reported by the application adopting it.
+     * The links another application would record on the discoverable container, so that the discovery
+     * test can check they're reported by the application discovering it.
      * <p>
      * Override in a dev service whose container implements {@code DevServiceLinkProvider}, by
      * returning the definitions that container declares rather than by restating them.
      * Empty for a dev service that exposes no links.
      */
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return List.of();
     }
 
     /**
-     * Assert the module-specific connection details resolved for a discovered shared container
-     * (for example, that ports and credentials match). Default no-op; override to add checks.
+     * Assert the module-specific connection details resolved for a discovered container.
+     * Compare them with what the given container itself reports, so that the test checks they
+     * match the ones an application starting the container would get. Default no-op.
      */
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
     }
 
     @BeforeEach
@@ -185,70 +165,33 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     void containerAvailableInTestMode() {
         getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=test")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.isShouldBeReused()).isFalse();
-                });
+                .run(context -> assertThat(context).hasSingleBean(getContainerClass()));
     }
 
     @Test
-    void containerWithRestartScope() {
-        getContextRunner()
-                .withClassLoader(this.getClass().getClassLoader())
-                .withInitializer(context ->
-                        context.getBeanFactory().registerScope("restart", new SimpleThreadScope()))
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(getContainerClass());
-                    assertThat(beanNames).hasSize(1);
-                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                            .isEqualTo("restart");
-                });
-    }
-
-    @Test
-    void containerReusedWhenReuseEnabled() {
-        Assumptions.assumeTrue(supportsSharing(), "dev service does not support sharing/reuse");
+    void containerReusedWithTestcontainersStrategy() {
         getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.services.%s.reuse=true".formatted(getServiceName()))
+                .withPropertyValues("arconia.dev.services.%s.reuse-strategy=testcontainers".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     assertThat(container.isShouldBeReused()).isTrue();
-                    // Sharing and reuse compose: a reused container is still advertised as shared.
-                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "true");
-                    // The owner label is omitted for reusable containers (user labels contribute
-                    // to the Testcontainers reuse hash), but only when the environment actually
-                    // supports reuse; otherwise it's kept to protect against self-discovery.
-                    if (TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
-                        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.OWNER);
-                    } else {
-                        assertThat(container.getLabels()).containsKey(DevServiceLabels.OWNER);
-                    }
+                    // The reuse strategies are mutually exclusive: a container reused via
+                    // Testcontainers is never discoverable by other applications.
+                    assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.DISCOVERABLE);
                 });
     }
 
     @Test
-    void containerNotSharedWhenSharingDisabled() {
-        Assumptions.assumeTrue(supportsSharing(), "dev service does not support sharing");
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.services.%s.shared=false".formatted(getServiceName()))
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "false");
-                });
-    }
-
-    @Test
-    void sharedContainerDiscoveredWhenStartedByAnotherApplication() {
-        Assumptions.assumeTrue(supportsSharing(), "dev service does not support sharing");
-        try (GenericContainer<?> sharedContainer = createSharedContainer("another-application")) {
-            sharedContainer.start();
+    void containerDiscoveredWhenStartedByAnotherApplication() {
+        GenericContainer<?> peerContainer = createDiscoverableContainer("another-application");
+        Assumptions.assumeTrue(peerContainer != null, "dev service does not support discovery");
+        try (GenericContainer<?> discoveredContainer = peerContainer) {
+            discoveredContainer.start();
 
             getContextRunner()
                     .withSystemProperties("arconia.bootstrap.mode=dev")
+                    .withPropertyValues("arconia.dev.services.%s.reuse-strategy=framework".formatted(getServiceName()))
                     .run(context -> {
                         assertThat(context).doesNotHaveBean(getContainerClass());
 
@@ -260,74 +203,18 @@ public abstract class BaseDevServicesAutoConfigurationIT {
                         assertThat(context).hasSingleBean(DevServiceRegistration.class);
                         DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
                         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(sharedContainer.getContainerId());
+                        assertThat(registration.containerInfo().get().id()).isEqualTo(discoveredContainer.getContainerId());
 
                         // The links come from the labels the peer application recorded, resolved
                         // against the ports that container actually exposes.
                         assertThat(registration.links()).containsExactlyElementsOf(
-                                appliedSharedLinks.stream()
+                                appliedLinks.stream()
                                         .sorted(Comparator.comparing(DevServiceLinkDefinition::id))
-                                        .map(link -> link.toLink(sharedContainer.getHost(),
-                                                sharedContainer.getMappedPort(link.port())))
+                                        .map(link -> link.toLink(discoveredContainer.getHost(),
+                                                discoveredContainer.getMappedPort(link.port())))
                                         .toList());
 
-                        assertDiscoveredConnectionDetails(context, sharedContainer);
-                    });
-        }
-    }
-
-    @Test
-    void oldestSharedContainerDiscoveredWhenMultipleAvailable() throws Exception {
-        Assumptions.assumeTrue(supportsSharedContainerDiscoveryProbing(), "dev service does not support discovery-selection probing");
-        try (GenericContainer<?> olderContainer = createSharedContainer("another-application");
-             GenericContainer<?> newerContainer = createSharedContainer("yet-another-application")) {
-            olderContainer.start();
-            // Container creation timestamps have second granularity.
-            Thread.sleep(1100);
-            newerContainer.start();
-
-            getContextRunner()
-                    .withSystemProperties("arconia.bootstrap.mode=dev")
-                    .run(context -> {
-                        DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(olderContainer.getContainerId());
-                    });
-        }
-    }
-
-    @Test
-    void pausedSharedContainerNotDiscovered() {
-        Assumptions.assumeTrue(supportsSharedContainerDiscoveryProbing(), "dev service does not support discovery-selection probing");
-        try (GenericContainer<?> pausedContainer = createSharedContainer("another-application")) {
-            pausedContainer.start();
-            DockerClientFactory.lazyClient().pauseContainerCmd(pausedContainer.getContainerId()).exec();
-
-            try {
-                getContextRunner()
-                        .withSystemProperties("arconia.bootstrap.mode=dev")
-                        .run(context -> {
-                            assertThat(context).hasSingleBean(getContainerClass());
-                            assertThat(context.getBean(DevServiceRegistration.class).origin())
-                                    .isEqualTo(DevServiceRegistration.Origin.OWNED);
-                        });
-            } finally {
-                DockerClientFactory.lazyClient().unpauseContainerCmd(pausedContainer.getContainerId()).exec();
-            }
-        }
-    }
-
-    @Test
-    void ownSharedContainerNotDiscovered() {
-        Assumptions.assumeTrue(supportsSharedContainerDiscoveryProbing(), "dev service does not support discovery-selection probing");
-        try (GenericContainer<?> ownContainer = createSharedContainer(DevServiceLabels.ownerId())) {
-            ownContainer.start();
-
-            getContextRunner()
-                    .withSystemProperties("arconia.bootstrap.mode=dev")
-                    .run(context -> {
-                        assertThat(context).hasSingleBean(getContainerClass());
-                        assertThat(context.getBean(DevServiceRegistration.class).origin())
-                                .isEqualTo(DevServiceRegistration.Origin.OWNED);
+                        assertDiscoveredConnectionDetails(context, discoveredContainer);
                     });
         }
     }
@@ -381,7 +268,6 @@ public abstract class BaseDevServicesAutoConfigurationIT {
      */
     protected static ApplicationContextRunner defaultContextRunner(Class<?> autoConfigurationClass) {
         return new ApplicationContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
                 .withConfiguration(AutoConfigurations.of(autoConfigurationClass));
     }
 

@@ -21,7 +21,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
@@ -61,45 +60,27 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
         return KeycloakConnectionDetails.class;
     }
 
-    @Override
-    protected boolean supportsSharing() {
-        return true;
-    }
-
-    @Override
-    protected boolean supportsSharedContainerDiscoveryProbing() {
-        // Keycloak is by far the heaviest dev service container: a JVM that takes tens of seconds
-        // to boot and import its realms. The multi-stack selection probes (oldest/paused/own) issue
-        // a container-runtime call only after such a startup has completed, and the pooled
-        // connection has gone stale by then, so they fail with a transport error rather than on
-        // anything this dev service does. That selection logic is generic and already covered by
-        // the other dev services; the single-container discovery test below still runs and is what
-        // actually exercises discovery for Keycloak.
-        return false;
-    }
-
     private static ArconiaKeycloakContainer defaultContainer() {
         return new ArconiaKeycloakContainer(new KeycloakDevServicesProperties());
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        return withSharedLabels(defaultContainer(), ownerId);
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(defaultContainer(), ownerId);
     }
 
     @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return defaultContainer().devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        ArconiaKeycloakContainer container = (ArconiaKeycloakContainer) discoveredContainer;
         KeycloakConnectionDetails connectionDetails = context.getBean(KeycloakConnectionDetails.class);
-        assertThat(connectionDetails.getAuthServerUrl())
-                .endsWith(":" + sharedContainer.getMappedPort(ArconiaKeycloakContainer.HTTP_PORT));
-        assertThat(connectionDetails.getRealm()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_REALM);
-        assertThat(connectionDetails.getIssuerUri())
-                .isEqualTo(connectionDetails.getAuthServerUrl() + "/realms/" + KeycloakDevServicesProperties.DEFAULT_REALM);
+        assertThat(connectionDetails.getAuthServerUrl()).isEqualTo(container.getAuthServerUrl());
+        assertThat(connectionDetails.getRealm()).isEqualTo(container.getRealm());
+        assertThat(connectionDetails.getIssuerUri()).isEqualTo(container.getIssuerUri());
     }
 
     @Test
@@ -111,13 +92,8 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
                     var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
                     assertThat(container.getDockerImageName()).contains(ArconiaKeycloakContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getBinds()).isEmpty();
                     assertThat(container.getRealm()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_REALM);
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "keycloak")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

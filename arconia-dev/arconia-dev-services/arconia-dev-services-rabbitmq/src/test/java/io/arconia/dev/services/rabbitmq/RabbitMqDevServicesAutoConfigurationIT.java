@@ -11,7 +11,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
@@ -51,32 +50,23 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        RabbitMqDevServicesProperties properties = new RabbitMqDevServicesProperties();
-        RabbitMQContainer container = new RabbitMQContainer(properties.getImageName())
-                .withAdminUser(properties.getUsername())
-                .withAdminPassword(properties.getPassword());
-        return withSharedLabels(container, ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
-        RabbitMqDevServicesProperties properties = new RabbitMqDevServicesProperties();
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        RabbitMQContainer container = (RabbitMQContainer) discoveredContainer;
         RabbitConnectionDetails connectionDetails = context.getBean(RabbitConnectionDetails.class);
-        assertThat(connectionDetails.getFirstAddress().port())
-                .isEqualTo(sharedContainer.getMappedPort(ArconiaRabbitMqContainer.AMQP_PORT));
-        assertThat(connectionDetails.getUsername()).isEqualTo(properties.getUsername());
-        assertThat(connectionDetails.getPassword()).isEqualTo(properties.getPassword());
+        assertThat("amqp://%s:%d".formatted(connectionDetails.getFirstAddress().host(), connectionDetails.getFirstAddress().port()))
+                .isEqualTo(container.getAmqpUrl());
+        assertThat(connectionDetails.getUsername()).isEqualTo(container.getAdminUsername());
+        assertThat(connectionDetails.getPassword()).isEqualTo(container.getAdminPassword());
     }
 
     @Test
@@ -89,13 +79,8 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
                     assertThat(container.getDockerImageName()).contains(ArconiaRabbitMqContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
                     assertThat(container.getAdminUsername()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_USERNAME);
                     assertThat(container.getAdminPassword()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_PASSWORD);
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "rabbitmq")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

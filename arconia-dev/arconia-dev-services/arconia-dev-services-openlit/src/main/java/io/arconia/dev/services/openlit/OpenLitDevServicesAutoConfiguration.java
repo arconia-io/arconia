@@ -42,14 +42,8 @@ public final class OpenLitDevServicesAutoConfiguration {
                     .name("openlit")
                     .description("OpenLit Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaOpenLitContainer.class)
-                            .supplier(() -> new ArconiaOpenLitContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
-                    )
-            );
+                    .container(ArconiaOpenLitContainer.class, () -> new ArconiaOpenLitContainer(properties))
+                    .discovery(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new));
         }
 
     }

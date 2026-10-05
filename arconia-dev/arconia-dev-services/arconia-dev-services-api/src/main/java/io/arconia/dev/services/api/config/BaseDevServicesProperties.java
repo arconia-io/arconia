@@ -56,15 +56,11 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Whether the container used in the dev service is reused across multiple
-     * applications and application restarts, relying on the Testcontainers
-     * reusable containers feature. It requires enabling the feature
-     * in the `~/.testcontainers.properties` file. Reused containers
-     * are not stopped automatically and must be cleaned up manually.
+     * Strategy for reusing a running container for the dev service across applications.
      * Only applicable in dev mode.
      */
-    default boolean isReuse() {
-        return false;
+    default ReuseStrategy getReuseStrategy() {
+        return ReuseStrategy.NONE;
     }
 
     /**

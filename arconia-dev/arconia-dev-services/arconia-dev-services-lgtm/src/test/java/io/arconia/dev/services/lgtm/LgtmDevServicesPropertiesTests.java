@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +23,7 @@ class LgtmDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<Lgtm
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
+                .reuseStrategy(ReuseStrategy.FRAMEWORK)
                 .startupTimeout(Duration.ofMinutes(2))
                 .build();
     }

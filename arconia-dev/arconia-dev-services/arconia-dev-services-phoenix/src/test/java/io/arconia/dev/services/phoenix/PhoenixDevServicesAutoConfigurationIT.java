@@ -8,12 +8,10 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
+import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
@@ -57,29 +55,23 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaPhoenixContainer(new PhoenixDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        PhoenixDevServicesProperties properties = new PhoenixDevServicesProperties();
-        return withSharedLabels(new PhoenixContainer(DockerImageName.parse(properties.getImageName())), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaPhoenixContainer(new PhoenixDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        PhoenixContainer container = (PhoenixContainer) discoveredContainer;
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                ":%d%s".formatted(sharedContainer.getMappedPort(PhoenixContainer.HTTP_PORT),
-                        OtlpTracingConnectionDetails.TRACES_PATH));
-        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                ":" + sharedContainer.getMappedPort(PhoenixContainer.GRPC_PORT));
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
+                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getHttpPort()) + OtlpTracingConnectionDetails.TRACES_PATH);
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC))
+                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getGrpcPort()));
     }
 
     @Test
@@ -99,11 +91,6 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(container.getDockerImageName()).contains(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "phoenix")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

@@ -54,17 +54,13 @@ class DevServicesNetworkIT {
         registry.registerDevService(service -> service
                 .name("peer-a")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPeerContainer.class)
-                        .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
-                        .serviceConnectionName(null)));
+                .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-a"))
+                        .serviceConnection(false));
         registry.registerDevService(service -> service
                 .name("peer-b")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPeerContainer.class)
-                        .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-b"))
-                        .serviceConnectionName(null)));
+                .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
+                        .serviceConnection(false));
 
         var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
         var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
@@ -101,17 +97,13 @@ class DevServicesNetworkIT {
         registry.registerDevService(service -> service
                 .name("peer-a")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPeerContainer.class)
-                        .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-a"))
-                        .serviceConnectionName(null)));
+                .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-a"))
+                        .serviceConnection(false));
         registry.registerDevService(service -> service
                 .name("peer-b")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPeerContainer.class)
-                        .supplier(() -> new TestPeerContainer().withNetworkAliases("peer-b"))
-                        .serviceConnectionName(null)));
+                .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
+                        .serviceConnection(false));
 
         var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
         var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);

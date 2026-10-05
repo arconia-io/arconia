@@ -3,6 +3,7 @@ package io.arconia.dev.services.mongodb.atlas;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
@@ -45,6 +46,18 @@ class MongoDbAtlasDevServicesAutoConfigurationIT extends BaseDevServicesAutoConf
         return MongoConnectionDetails.class;
     }
 
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaMongoDbAtlasLocalContainer(new MongoDbAtlasDevServicesProperties()), ownerId);
+    }
+
+    @Override
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
+        MongoConnectionDetails connectionDetails = context.getBean(MongoConnectionDetails.class);
+        assertThat(connectionDetails.getConnectionString().getConnectionString())
+                .isEqualTo(((MongoDBAtlasLocalContainer) discoveredContainer).getDatabaseConnectionString());
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner().run(context -> {
@@ -53,7 +66,6 @@ class MongoDbAtlasDevServicesAutoConfigurationIT extends BaseDevServicesAutoConf
             assertThat(container.getDockerImageName()).contains(ArconiaMongoDbAtlasLocalContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.isShouldBeReused()).isFalse();
 
             assertThatHasSingletonScope(context);
         });

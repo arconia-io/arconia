@@ -1,5 +1,6 @@
 package io.arconia.dev.services.mongodb;
 
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -20,6 +21,12 @@ final class ArconiaMongoDbContainer extends MongoDBContainer {
     public ArconiaMongoDbContainer(MongoDbDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // MongoDBContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        this.waitingFor(Wait.defaultWaitStrategy());
 
         ContainerConfigurer.base(this, properties);
     }

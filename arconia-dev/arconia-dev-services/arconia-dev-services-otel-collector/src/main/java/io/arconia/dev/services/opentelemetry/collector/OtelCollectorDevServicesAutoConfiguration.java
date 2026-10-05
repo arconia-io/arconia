@@ -42,15 +42,9 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                     .name("otel-collector")
                     .description("OpenTelemetry Collector Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaOtelCollectorContainer.class)
-                            .serviceConnectionName("otel/opentelemetry-collector-contrib")
-                            .supplier(() -> new ArconiaOtelCollectorContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
-                    )
-            );
+                    .container(ArconiaOtelCollectorContainer.class, () -> new ArconiaOtelCollectorContainer(properties))
+                    .serviceConnectionName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)
+                    .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new));
         }
 
     }

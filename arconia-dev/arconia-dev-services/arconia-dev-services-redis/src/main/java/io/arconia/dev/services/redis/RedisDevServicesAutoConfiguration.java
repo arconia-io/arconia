@@ -2,6 +2,7 @@ package io.arconia.dev.services.redis;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -39,11 +40,9 @@ public final class RedisDevServicesAutoConfiguration {
                     .name("redis")
                     .description("Redis Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaRedisContainer.class)
-                            .serviceConnectionName("redis")
-                            .supplier(() -> new ArconiaRedisContainer(properties))
-                    ));
+                    .container(ArconiaRedisContainer.class, () -> new ArconiaRedisContainer(properties))
+                    .serviceConnectionName(ArconiaRedisContainer.COMPATIBLE_IMAGE_NAME)
+                    .discovery(DataRedisConnectionDetails.class, RedisDiscoveredConnectionDetails::new));
         }
 
     }

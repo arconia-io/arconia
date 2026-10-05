@@ -32,14 +32,8 @@ public final class KafkaDevServicesAutoConfiguration {
                     .name("kafka")
                     .description("Kafka Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaKafkaContainer.class)
-                            .supplier(() -> new ArconiaKafkaContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(KafkaConnectionDetails.class, KafkaDiscoveredConnectionDetails::new)
-                    )
-            );
+                    .container(ArconiaKafkaContainer.class, () -> new ArconiaKafkaContainer(properties))
+                    .discovery(KafkaConnectionDetails.class, KafkaDiscoveredConnectionDetails::new));
         }
 
     }

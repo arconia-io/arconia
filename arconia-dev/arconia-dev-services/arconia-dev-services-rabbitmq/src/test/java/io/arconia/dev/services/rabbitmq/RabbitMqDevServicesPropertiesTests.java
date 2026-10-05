@@ -2,6 +2,7 @@ package io.arconia.dev.services.rabbitmq;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ class RabbitMqDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaRabbitMqContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
+                .reuseStrategy(ReuseStrategy.FRAMEWORK)
                 .build();
     }
 

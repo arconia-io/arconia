@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import org.springframework.util.StringUtils;
+import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
@@ -146,7 +146,14 @@ final class ArconiaKeycloakContainer extends KeycloakContainer implements DevSer
     }
 
     String getIssuerUri() {
-        return "%s/realms/%s".formatted(getAuthServerUrl(), realm);
+        return issuerUri(getAuthServerUrl(), realm);
+    }
+
+    /**
+     * The issuer URI of the given realm on the Keycloak server at the given URL.
+     */
+    static String issuerUri(String authServerUrl, String realm) {
+        return "%s/realms/%s".formatted(authServerUrl, realm);
     }
 
     @Override

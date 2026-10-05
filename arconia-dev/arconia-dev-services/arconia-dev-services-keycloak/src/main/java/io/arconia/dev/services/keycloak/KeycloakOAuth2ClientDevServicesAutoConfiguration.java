@@ -48,7 +48,7 @@ public final class KeycloakOAuth2ClientDevServicesAutoConfiguration {
         Assert.hasText(client.getRegistrationId(), "the client registration identifier cannot be null or empty; set '%s.client.registration-id'"
                 .formatted(KeycloakDevServicesProperties.CONFIG_PREFIX));
 
-        // Resolving the connection details is what starts the container, or adopts a shared one
+        // Resolving the connection details is what starts the container, or connects to one
         // started by another application. Fetching the discovery document from it then resolves
         // the endpoints the same way Spring Boot would from an issuer-uri property.
         var registration = ClientRegistrations

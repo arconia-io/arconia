@@ -32,15 +32,9 @@ public final class ArtemisDevServicesAutoConfiguration {
                     .name("artemis")
                     .description("Artemis Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaArtemisContainer.class)
-                            .supplier(() -> new ArconiaArtemisContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(ArtemisConnectionDetails.class,
-                                    container -> new ArtemisDiscoveredConnectionDetails(container, properties))
-                    )
-            );
+                    .container(ArconiaArtemisContainer.class, () -> new ArconiaArtemisContainer(properties))
+                    .discovery(ArtemisConnectionDetails.class,
+                            container -> new ArtemisDiscoveredConnectionDetails(container, properties)));
         }
 
     }

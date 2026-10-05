@@ -25,8 +25,8 @@ import io.arconia.dev.services.ollama.OllamaOpenAiDevServicesAutoConfiguration.O
  * to Ollama's OpenAI-compatible API endpoint.
  * <p>
  * The endpoint is resolved from the Ollama container when one is available
- * (either owned by this application or a shared container discovered from
- * another application), or from the native Ollama service otherwise.
+ * (either started by this application or discovered from another application),
+ * or from the native Ollama service otherwise.
  * <p>
  * The registered properties take precedence over any user-provided value, mirroring how a
  * {@code ConnectionDetails} bean supersedes the corresponding configuration properties for
@@ -68,7 +68,7 @@ public final class OllamaOpenAiDevServicesAutoConfiguration {
                 return container.getEndpoint();
             }
             catch (NoSuchBeanDefinitionException ex) {
-                // No container bean: the dev service adopted a shared container discovered
+                // No container bean: the dev service runs in a container discovered
                 // from another application, or a native Ollama service is used.
             }
 

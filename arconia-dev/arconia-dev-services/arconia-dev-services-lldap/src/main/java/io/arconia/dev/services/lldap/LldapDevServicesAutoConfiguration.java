@@ -2,6 +2,7 @@ package io.arconia.dev.services.lldap;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -31,10 +32,9 @@ public final class LldapDevServicesAutoConfiguration {
                     .name("lldap")
                     .description("LLDAP Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaLldapContainer.class)
-                            .supplier(() -> new ArconiaLldapContainer(properties))
-                    ));
+                    .container(ArconiaLldapContainer.class, () -> new ArconiaLldapContainer(properties))
+                    .discovery(LdapConnectionDetails.class,
+                            container -> new LldapDiscoveredConnectionDetails(container, properties)));
         }
 
     }

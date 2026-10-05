@@ -4,7 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -30,7 +29,6 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             // Dev Service container beans live in the "restart" scope when DevTools is present,
             // which a plain runner doesn't register.
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ResourceServerDevServicesAutoConfiguration.class));
@@ -60,7 +58,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
         // The module is on the classpath of applications that are only OAuth2 clients, which have
         // no resource server to configure an issuer for.
         contextRunner
-                .withClassLoader(new FilteredClassLoader(RestartScope.class, BearerTokenAuthenticationToken.class))
+                .withClassLoader(new FilteredClassLoader(BearerTokenAuthenticationToken.class))
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     assertThat(contributesIssuerUri(context)).isFalse();

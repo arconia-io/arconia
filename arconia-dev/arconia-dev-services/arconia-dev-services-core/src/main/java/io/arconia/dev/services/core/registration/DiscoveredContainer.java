@@ -9,7 +9,7 @@ import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 
 /**
- * A running shared dev service container discovered from another application,
+ * A running dev service container started by another application and discovered,
  * providing the information needed to build the connection configuration.
  *
  * @param containerInfo information about the discovered container
@@ -28,9 +28,9 @@ public record DiscoveredContainer(
 
     /**
      * The host port to which the given container port is mapped over TCP.
+     * <p>
      * On dual-stack hosts reporting one mapping per IP family, the IPv4 binding wins,
      * matching the address family of {@link #host()}.
-     * @throws IllegalStateException if the given container port is not mapped to any host port
      */
     public int mappedPort(int containerPort) {
         return containerInfo.exposedPorts().stream()

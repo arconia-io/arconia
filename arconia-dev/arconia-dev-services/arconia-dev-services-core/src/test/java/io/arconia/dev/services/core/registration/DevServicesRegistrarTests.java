@@ -35,10 +35,8 @@ class DevServicesRegistrarTests {
                 service.name("docling")
                 .properties(TestDevServicesProperties.DEFAULT)
                         .description("Docling")
-                        .container(container -> container
-                                .type(TestDoclingContainer.class)
-                                .supplier(TestDoclingContainer::new)
-                                .serviceConnectionName("docling"))));
+                        .container(TestDoclingContainer.class, TestDoclingContainer::new)
+                        .serviceConnectionName("docling")));
 
         assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "docling");
@@ -53,17 +51,13 @@ class DevServicesRegistrarTests {
                     service.name("docling")
                     .properties(TestDevServicesProperties.DEFAULT)
                             .description("Docling")
-                            .container(container -> container
-                                    .type(TestDoclingContainer.class)
-                                    .supplier(TestDoclingContainer::new)));
+                            .container(TestDoclingContainer.class, TestDoclingContainer::new));
 
             registry.registerDevService(service ->
                     service.name("postgres")
                     .properties(TestDevServicesProperties.DEFAULT)
                             .description("PostgreSQL database")
-                            .container(container -> container
-                                    .type(TestPostgresContainer.class)
-                                    .supplier(TestPostgresContainer::new)));
+                            .container(TestPostgresContainer.class, TestPostgresContainer::new));
         });
 
         assertRegistryExists();
@@ -80,15 +74,11 @@ class DevServicesRegistrarTests {
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
                         .properties(TestDevServicesProperties.DEFAULT)
-                                .container(container -> container
-                                        .type(TestDoclingContainer.class)
-                                        .supplier(TestDoclingContainer::new))),
+                                .container(TestDoclingContainer.class, TestDoclingContainer::new)),
                 registry -> registry.registerDevService(service ->
                         service.name("postgres")
                         .properties(TestDevServicesProperties.DEFAULT)
-                                .container(container -> container
-                                        .type(TestPostgresContainer.class)
-                                        .supplier(TestPostgresContainer::new))));
+                                .container(TestPostgresContainer.class, TestPostgresContainer::new)));
 
         assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, null);
@@ -104,17 +94,13 @@ class DevServicesRegistrarTests {
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
                         .properties(TestDevServicesProperties.DEFAULT)
-                                .container(container -> container
-                                        .type(TestDoclingContainer.class)
-                                        .serviceConnectionName("firstdocling")
-                                        .supplier(TestDoclingContainer::new))),
+                                .container(TestDoclingContainer.class, TestDoclingContainer::new)
+                                .serviceConnectionName("firstdocling")),
                 registry -> registry.registerDevService(service ->
                         service.name("docling")
                         .properties(TestDevServicesProperties.DEFAULT)
-                                .container(container -> container
-                                        .type(TestDoclingContainer.class)
-                                        .serviceConnectionName("stilldocling")
-                                        .supplier(TestDoclingContainer::new))));
+                                .container(TestDoclingContainer.class, TestDoclingContainer::new)
+                                .serviceConnectionName("stilldocling")));
 
         assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "firstdocling");
@@ -185,9 +171,7 @@ class DevServicesRegistrarTests {
         doRegister(registry -> registry.registerDevService(service ->
                 service.name("docling")
                 .properties(TestDevServicesProperties.DEFAULT)
-                        .container(container -> container
-                                .type(TestDoclingContainer.class)
-                                .supplier(TestDoclingContainer::new))));
+                        .container(TestDoclingContainer.class, TestDoclingContainer::new)));
 
         Map<String, DevServicesRegistry> registryBeansBefore = beanDefinitionRegistry.getBeansOfType(DevServicesRegistry.class);
         assertThat(registryBeansBefore).hasSize(1);
@@ -195,9 +179,7 @@ class DevServicesRegistrarTests {
         doRegister(registry -> registry.registerDevService(service ->
                 service.name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                        .container(container -> container
-                                .type(TestPostgresContainer.class)
-                                .supplier(TestPostgresContainer::new))));
+                        .container(TestPostgresContainer.class, TestPostgresContainer::new)));
 
         Map<String, DevServicesRegistry> registryBeansAfter = beanDefinitionRegistry.getBeansOfType(DevServicesRegistry.class);
         assertThat(registryBeansAfter).hasSize(1);
@@ -233,7 +215,7 @@ class DevServicesRegistrarTests {
     }
 
     private void assertDescriptionBeanDefinition(String serviceName) {
-        String beanName = "devServiceRegistration." + serviceName;
+        String beanName = "devService.registration." + serviceName;
         assertThat(beanDefinitionRegistry.containsBeanDefinition(beanName)).isTrue();
 
         BeanDefinition beanDefinition = beanDefinitionRegistry.getBeanDefinition(beanName);

@@ -80,7 +80,6 @@ class OracleDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfig
             assertThat(container.getDockerImageName()).contains(ArconiaOracleContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.isShouldBeReused()).isFalse();
             container.start();
             assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
             assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);

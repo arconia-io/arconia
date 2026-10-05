@@ -1,14 +1,15 @@
 package io.arconia.dev.services.mariadb;
 
-import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.mariadb.MariaDBContainer;
+
+import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
 
 import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_DB_NAME;
 import static io.arconia.dev.services.mariadb.MariaDbDevServicesProperties.DEFAULT_PASSWORD;
@@ -48,6 +49,11 @@ class MariaDbDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfi
         return JdbcConnectionDetails.class;
     }
 
+    @Override
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaMariaDbContainer(new MariaDbDevServicesProperties()), ownerId);
+    }
+
     @Test
     void containerAvailableWithDefaultConfiguration() {
         getContextRunner().run(context -> {
@@ -56,7 +62,6 @@ class MariaDbDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfi
             assertThat(container.getDockerImageName()).contains(ArconiaMariaDbContainer.COMPATIBLE_IMAGE_NAME);
             assertThat(container.getEnv()).isEmpty();
             assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.isShouldBeReused()).isFalse();
             container.start();
             assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
             assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);

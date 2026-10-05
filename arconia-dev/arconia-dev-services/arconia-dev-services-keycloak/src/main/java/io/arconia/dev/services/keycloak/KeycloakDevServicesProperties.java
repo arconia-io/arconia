@@ -9,15 +9,16 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
-import io.arconia.dev.services.api.config.SharedDevServicesProperties;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Keycloak Dev Services.
  */
 @ConfigurationProperties(prefix = KeycloakDevServicesProperties.CONFIG_PREFIX)
-public class KeycloakDevServicesProperties implements SharedDevServicesProperties {
+public class KeycloakDevServicesProperties implements BaseDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.keycloak";
 
@@ -60,21 +61,10 @@ public class KeycloakDevServicesProperties implements SharedDevServicesPropertie
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the container used in the dev service is reused across multiple
-     * applications and application restarts, relying on the Testcontainers
-     * reusable containers feature. It requires enabling the feature
-     * in the `~/.testcontainers.properties` file. Reused containers
-     * are not stopped automatically and must be cleaned up manually.
+     * Strategy for reusing a running container for the dev service across applications.
      * Only applicable in dev mode.
      */
-    private boolean reuse = false;
-
-    /**
-     * Whether the dev service is shared across multiple applications. When shared, the
-     * application connects to a container started by another application if one is
-     * available, instead of starting a new one. Only applicable in dev mode.
-     */
-    private boolean shared = true;
+    private ReuseStrategy reuseStrategy = ReuseStrategy.FRAMEWORK;
 
     /**
      * Maximum waiting time for the service to start. Keycloak needs considerably longer
@@ -174,21 +164,12 @@ public class KeycloakDevServicesProperties implements SharedDevServicesPropertie
     }
 
     @Override
-    public boolean isReuse() {
-        return reuse;
+    public ReuseStrategy getReuseStrategy() {
+        return reuseStrategy;
     }
 
-    public void setReuse(boolean reuse) {
-        this.reuse = reuse;
-    }
-
-    @Override
-    public boolean isShared() {
-        return shared;
-    }
-
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setReuseStrategy(ReuseStrategy reuseStrategy) {
+        this.reuseStrategy = reuseStrategy;
     }
 
     @Override
@@ -264,7 +245,7 @@ public class KeycloakDevServicesProperties implements SharedDevServicesPropertie
          * Name of the realm the application connects to. When empty, it is derived from the
          * first realm import file, or defaults to `arconia` when no realm file is configured.
          * Set it explicitly to connect to a realm this application does not import itself,
-         * such as one imported by another application sharing the same dev service.
+         * such as one imported by another application using the same dev service.
          */
         private String name = "";
 

@@ -13,6 +13,7 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
@@ -42,20 +43,17 @@ public final class ContainerConfigurer {
 
         resources(container, properties);
         volumes(container, properties);
-        reuse(container, properties);
+        testcontainersReuse(container, properties);
     }
 
     /**
      * Configures whether the container is reused across application restarts, relying on the
-     * Testcontainers reusable containers feature. Reuse only takes effect in dev mode and
+     * Testcontainers reusable containers feature, which is the case with the
+     * {@link ReuseStrategy#TESTCONTAINERS} reuse strategy. Reuse only takes effect in dev mode and
      * additionally requires enabling the feature in the {@code ~/.testcontainers.properties} file.
      */
-    public static void reuse(GenericContainer<?> container, BaseDevServicesProperties properties) {
-        container.withReuse(isDevMode() && properties.isReuse());
-    }
-
-    private static boolean isDevMode() {
-        return BootstrapMode.DEV.equals(BootstrapMode.detect());
+    public static void testcontainersReuse(GenericContainer<?> container, BaseDevServicesProperties properties) {
+        container.withReuse(BootstrapMode.isDev() && ReuseStrategy.TESTCONTAINERS == properties.getReuseStrategy());
     }
 
     /**

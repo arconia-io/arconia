@@ -32,14 +32,8 @@ public final class PulsarDevServicesAutoConfiguration {
                     .name("pulsar")
                     .description("Pulsar Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaPulsarContainer.class)
-                            .supplier(() -> new ArconiaPulsarContainer(properties))
-                    )
-                    .discovery(discovery -> discovery
-                            .connectionDetails(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
-                    )
-            );
+                    .container(ArconiaPulsarContainer.class, () -> new ArconiaPulsarContainer(properties))
+                    .discovery(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new));
         }
 
     }

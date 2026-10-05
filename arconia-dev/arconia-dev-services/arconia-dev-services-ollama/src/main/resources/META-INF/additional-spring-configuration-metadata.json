@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.ollama.reuse",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.ollama.reuse-strategy'. Use 'testcontainers' instead of 'true'.",
+        "since": "0.31.0"
+      }
+    },
+    {
+      "name": "arconia.dev.services.ollama.shared",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.ollama.reuse-strategy'. Use 'none' instead of 'false'.",
+        "since": "0.31.0"
+      }
+    }
+  ]
+}

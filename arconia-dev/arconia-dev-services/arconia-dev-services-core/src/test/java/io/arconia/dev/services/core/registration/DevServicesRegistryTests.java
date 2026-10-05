@@ -17,6 +17,8 @@ import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -24,6 +26,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -45,6 +49,8 @@ class DevServicesRegistryTests {
 
     private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment());
 
+    private final SimpleThreadScope restartScope = new SimpleThreadScope();
+
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
@@ -57,9 +63,7 @@ class DevServicesRegistryTests {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name(null)
-                        .container(container -> container
-                                .type(TestPostgresContainer.class)
-                                .supplier(TestPostgresContainer::new))))
+                        .container(TestPostgresContainer.class, TestPostgresContainer::new)))
                 .withMessageContaining("service name cannot be null or empty");
     }
 
@@ -69,19 +73,17 @@ class DevServicesRegistryTests {
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("")
                         .properties(TestDevServicesProperties.DEFAULT)
-                        .container(container -> container
-                                .type(TestPostgresContainer.class)
-                                .supplier(TestPostgresContainer::new))))
+                        .container(TestPostgresContainer.class, TestPostgresContainer::new)))
                 .withMessageContaining("service name cannot be null or empty");
     }
 
     @Test
-    void whenContainerSpecIsNullThenThrow() {
+    void whenContainerIsMissingThenThrow() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
                         .properties(TestDevServicesProperties.DEFAULT)))
-                .withMessageContaining("service container cannot be null");
+                .withMessageContaining("service container type cannot be null");
     }
 
     @Test
@@ -90,9 +92,7 @@ class DevServicesRegistryTests {
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
                         .properties(TestDevServicesProperties.DEFAULT)
-                        .container(container -> container
-                                .type(null)
-                                .supplier(TestPostgresContainer::new))))
+                        .container(null, TestPostgresContainer::new)))
                 .withMessageContaining("container type cannot be null");
     }
 
@@ -102,23 +102,45 @@ class DevServicesRegistryTests {
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
                         .properties(TestDevServicesProperties.DEFAULT)
-                        .container(container -> container
-                                .type(TestPostgresContainer.class)
-                                .supplier(null))))
+                        .container(TestPostgresContainer.class, null)))
                 .withMessageContaining("container supplier cannot be null");
     }
 
     @Test
-    void whenSharingConnectionDetailsIsMissingThenThrow() {
+    void whenServiceConnectionNameIsEmptyThenThrow() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> registry.registerDevService(service -> service
                         .name("postgres")
-                        .properties(TestDevServicesProperties.SHARED)
-                        .container(container -> container
-                                .type(TestPostgresContainer.class)
-                                .supplier(TestPostgresContainer::new))
-                        .discovery(discovery -> {})))
-                .withMessageContaining("connectionDetailsType cannot be null");
+                        .properties(TestDevServicesProperties.DEFAULT)
+                        .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                        .serviceConnectionName("")))
+                .withMessageContaining("serviceConnectionName cannot be null or empty");
+    }
+
+    @Test
+    void whenServiceConnectionIsEnabledThenContainerHasServiceConnectionAnnotation() {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .serviceConnectionName("postgres"));
+
+        var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition("devService.container.postgres");
+
+        assertThat(beanDefinition.getAnnotations().get(ServiceConnection.class).getString("name")).isEqualTo("postgres");
+    }
+
+    @Test
+    void whenServiceConnectionIsDisabledThenContainerHasNoServiceConnectionAnnotation() {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .serviceConnection(false));
+
+        var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition("devService.container.postgres");
+
+        assertThat(beanDefinition.getAnnotations().isPresent(ServiceConnection.class)).isFalse();
     }
 
     @Test
@@ -126,133 +148,121 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
         assertThat(beanFactory.getBeanNamesForType(TestPostgresContainer.class)).hasSize(1);
         assertThat(beanFactory.getBeanNamesForType(DevServiceRegistration.class)).hasSize(1);
     }
 
     @Test
-    void whenServiceRegisteredThenContainerHasLabels() {
+    void whenServiceRegisteredThenContainerIsIdentifiedButNotDiscoverable() {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
         assertThat(container.getLabels())
                 .containsEntry(DevServiceLabels.NAME, "postgres")
-                .containsEntry(DevServiceLabels.SHARED, "false")
-                .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
-    }
-
-    @Test
-    void whenSharingEnabledInDevModeThenContainerHasSharedLabel() {
-        enableDevMode();
-        DevServicesRegistry registry = registryDiscovering(null);
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "true");
-    }
-
-    @Test
-    void whenReuseEnabledThenOwnerLabelIsOmitted() {
-        enableDevMode();
-        DevServicesRegistry registry = registryWithReuseSupport(true);
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withReuse(true))));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getLabels())
-                .containsEntry(DevServiceLabels.NAME, "postgres")
+                .doesNotContainKey(DevServiceLabels.DISCOVERABLE)
                 .doesNotContainKey(DevServiceLabels.OWNER);
     }
 
     @Test
-    void whenEnvironmentDoesNotSupportReuseThenOwnerLabelIsKept() {
-        enableDevMode();
-        DevServicesRegistry registry = registryWithReuseSupport(false);
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withReuse(true))));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
-    }
-
-    @Test
-    void whenReuseAndSharedEnabledThenSharedLabelIsTrue() {
+    void whenFrameworkStrategyInDevModeThenContainerIsDiscoverable() {
         enableDevMode();
         DevServicesRegistry registry = registryDiscovering(null);
 
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withReuse(true)))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
-        // Reuse and sharing compose: a reused container is still advertised as shared.
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.SHARED, "true");
+        // A discoverable container carries the identifier of the application that started it,
+        // so that the application never discovers its own containers.
+        assertThat(container.getLabels())
+                .containsEntry(DevServiceLabels.DISCOVERABLE, "true")
+                .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
     }
 
     @Test
-    void whenReuseEnabledThenDiscoveryStillHappens() {
+    void whenFrameworkStrategyOutsideDevModeThenContainerIsNotDiscoverable() {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.DISCOVERABLE);
+    }
+
+    @Test
+    void whenFrameworkStrategyWithoutDiscoveryThenContainerIsNotDiscoverable() {
+        enableDevMode();
+
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.DISCOVERABLE);
+    }
+
+    @Test
+    void whenTestcontainersStrategyThenContainerIsNotDiscoverable() {
+        enableDevMode();
+        DevServicesRegistry registry = registryDiscovering(null);
+
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.TESTCONTAINERS)
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withReuse(true))
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        // The reuse strategies are mutually exclusive: a container reused via Testcontainers
+        // is never discoverable. It carries no per-application label either, which would
+        // change the Testcontainers reuse hash at every run.
+        assertThat(container.getLabels())
+                .doesNotContainKey(DevServiceLabels.DISCOVERABLE)
+                .doesNotContainKey(DevServiceLabels.OWNER);
+    }
+
+    @Test
+    void whenReusedViaTestcontainersThenNoDiscoveryHappens() {
         enableDevMode();
         DevServicesRegistry registry = registryDiscovering(discoveredContainer());
 
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withReuse(true)))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
+                .properties(TestDevServicesProperties.TESTCONTAINERS)
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withReuse(true))
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
 
-        // An existing shared container is adopted.
-        assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isFalse();
-        assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isTrue();
+        // A container started by another application is not discovered: reuse is left to Testcontainers.
+        assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
+        assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
     }
 
     @Test
-    void whenSharedContainerDiscoveredThenConnectionDetailsAndRegistrationAreRegistered() {
+    void whenContainerDiscoveredThenConnectionDetailsAndRegistrationAreRegistered() {
         enableDevMode();
         DevServicesRegistry registry = registryDiscovering(discoveredContainer());
 
@@ -269,7 +279,7 @@ class DevServicesRegistryTests {
         assertThat(ContainerImageMetadata.getFrom(beanFactory.getBeanDefinition("devService.connectionDetails.postgres")).imageName())
                 .isEqualTo("postgres:latest");
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
         assertThat(registration.name()).isEqualTo("postgres");
         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
     }
@@ -286,7 +296,7 @@ class DevServicesRegistryTests {
         // over the dev-service-provided connection details.
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isFalse();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
-        assertThat(beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class).origin())
+        assertThat(beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class).origin())
                 .isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
     }
 
@@ -298,14 +308,11 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new))
-                .discovery(discovery -> discovery
-                        // Raw type to bypass the compile-time check and exercise the runtime net.
-                        .connectionDetails((Class) OtherConnectionDetails.class,
-                                container -> new TestConnectionDetails(container.host()))));
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                // Raw type to bypass the compile-time check and exercise the runtime net.
+                .discovery((Class) OtherConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
@@ -323,18 +330,16 @@ class DevServicesRegistryTests {
     }
 
     @Test
-    void whenSharingDisabledThenNoDiscoveryHappens() {
+    void whenNoneStrategyThenNoDiscoveryHappens() {
         enableDevMode();
         DevServicesRegistry registry = registryDiscovering(discoveredContainer());
 
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
@@ -359,14 +364,12 @@ class DevServicesRegistryTests {
 
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> {
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> {
                             throw new IllegalStateException("boom");
-                        })));
+                        }));
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isTrue();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isFalse();
@@ -381,9 +384,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db", "postgres"))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db", "postgres")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -399,9 +400,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -415,9 +414,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -434,9 +431,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -446,24 +441,7 @@ class DevServicesRegistryTests {
     }
 
     @Test
-    void whenNetworkEnabledWithoutAliasesThenDoesNotWarn(CapturedOutput output) {
-        DevServicesRegistry registry = registryWithNetworkEnabled();
-        registerNetworkBean(new TestNetwork("net-1"));
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
-
-        beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(output).doesNotContain("network alias");
-    }
-
-    @Test
-    void whenReuseEnabledOnSharedNetworkThenWarns(CapturedOutput output) {
+    void whenContainerReusedOnDefaultNetworkThenWarns(CapturedOutput output) {
         enableDevMode();
         DevServicesRegistry registry = registryWithNetworkEnabled();
         registerNetworkBean(Network.SHARED);
@@ -471,13 +449,11 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db").withReuse(true))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db").withReuse(true)));
 
         beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
-        assertThat(output).contains("reuse is ineffective").contains("postgres");
+        assertThat(output).contains("reuse strategy is ineffective").contains("postgres");
     }
 
     @Test
@@ -488,10 +464,8 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        // Simulate the Testcontainers-generated alias alongside a user-defined one.
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("tc-deadbeef", "db"))));
+                // Simulate the Testcontainers-generated alias alongside a user-defined one.
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("tc-deadbeef", "db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -510,9 +484,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -532,9 +504,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(() -> new TestPostgresContainer().withNetworkAliases("db"))));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
@@ -546,11 +516,9 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("linky")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestLinkContainer.class)
-                        .supplier(TestLinkContainer::new)));
+                .container(TestLinkContainer.class, TestLinkContainer::new));
 
-        var registration = beanFactory.getBean("devServiceRegistration.linky", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.linky", DevServiceRegistration.class);
 
         assertThat(registration.links()).containsExactly(
                 DevServiceLink.builder().id("ui").label("UI").url("http://localhost:1234").build());
@@ -561,11 +529,9 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         assertThat(registration.links()).isEmpty();
     }
@@ -575,9 +541,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("linky")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestLinkContainer.class)
-                        .supplier(TestLinkContainer::new)));
+                .container(TestLinkContainer.class, TestLinkContainer::new));
 
         var container = beanFactory.getBean("devService.container.linky", GenericContainer.class);
 
@@ -597,7 +561,7 @@ class DevServicesRegistryTests {
 
         registerSharedDevService(registry);
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
         assertThat(registration.links()).containsExactly(
@@ -613,9 +577,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("linky")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestLinkContainer.class)
-                        .supplier(TestLinkContainer::new)));
+                .container(TestLinkContainer.class, TestLinkContainer::new));
         var container = beanFactory.getBean("devService.container.linky", GenericContainer.class);
 
         assertThat(DevServiceLabels.linksFrom(container.getLabels())).isEqualTo(declared);
@@ -631,7 +593,7 @@ class DevServicesRegistryTests {
 
         registerSharedDevService(registry);
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         // Container labels carry no order, so links are reported by id to keep the startup
         // message and the actuator payload stable across restarts.
@@ -648,7 +610,7 @@ class DevServicesRegistryTests {
 
         registerSharedDevService(registry);
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         assertThat(registration.links()).isEmpty();
     }
@@ -664,7 +626,7 @@ class DevServicesRegistryTests {
 
         registerSharedDevService(registry);
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         assertThat(registration.links()).containsExactly(
                 DevServiceLink.builder().id("ui").label("UI").url("http://localhost:54321").build());
@@ -678,18 +640,18 @@ class DevServicesRegistryTests {
 
         registerSharedDevService(registry);
 
-        var registration = beanFactory.getBean("devServiceRegistration.postgres", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.postgres", DevServiceRegistration.class);
 
         assertThat(registration.links()).isEmpty();
     }
 
     @Test
-    void whenSharedServiceRegisteredTwiceThenRuntimeIsNotQueriedAgain() {
+    void whenServiceRegisteredTwiceThenRuntimeIsNotQueriedAgain() {
         enableDevMode();
         AtomicInteger lookups = new AtomicInteger();
         DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> {
             lookups.incrementAndGet();
-            return discoveredContainer();
+            return List.of(discoveredContainer());
         });
 
         registerSharedDevService(registry);
@@ -698,7 +660,7 @@ class DevServicesRegistryTests {
         // The second registration short-circuits on the existing description bean, so the container
         // runtime is queried only once (no duplicate discovery lookups or logs).
         assertThat(lookups.get()).isEqualTo(1);
-        assertThat(beanFactory.containsBeanDefinition("devServiceRegistration.postgres")).isTrue();
+        assertThat(beanFactory.containsBeanDefinition("devService.registration.postgres")).isTrue();
     }
 
     @Test
@@ -706,11 +668,9 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("throwy")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestThrowingLinkContainer.class)
-                        .supplier(TestThrowingLinkContainer::new)));
+                .container(TestThrowingLinkContainer.class, TestThrowingLinkContainer::new));
 
-        var registration = beanFactory.getBean("devServiceRegistration.throwy", DevServiceRegistration.class);
+        var registration = beanFactory.getBean("devService.registration.throwy", DevServiceRegistration.class);
 
         assertThat(registration.links()).isEmpty();
     }
@@ -722,9 +682,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("linky")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestLinkContainer.class)
-                        .supplier(TestLinkContainer::new)));
+                .container(TestLinkContainer.class, TestLinkContainer::new));
         beanFactory.getBean("devService.container.linky", GenericContainer.class);
 
         assertThat(applied).isTrue();
@@ -739,9 +697,7 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new)));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
         beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
         assertThat(applied).isFalse();
@@ -799,7 +755,7 @@ class DevServicesRegistryTests {
     private DevServicesRegistry registryWithReuseSupport(boolean supported) {
         return new DevServicesRegistry(beanFactory, new StandardEnvironment()) {
             @Override
-            boolean environmentSupportsReuse() {
+            boolean environmentSupportsTestcontainersReuse() {
                 return supported;
             }
         };
@@ -810,19 +766,17 @@ class DevServicesRegistryTests {
      * instead of querying the container runtime.
      */
     private DevServicesRegistry registryDiscovering(@Nullable DiscoveredContainer result) {
-        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> result);
+        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> (result != null) ? List.of(result) : List.of());
     }
 
     private void registerSharedDevService(DevServicesRegistry registry) {
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.SHARED)
+                .properties(TestDevServicesProperties.FRAMEWORK)
                 .description("PostgreSQL Dev Service")
-                .container(container -> container
-                        .type(TestPostgresContainer.class)
-                        .supplier(TestPostgresContainer::new))
-                .discovery(discovery -> discovery
-                        .connectionDetails(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
     }
 
     /**
@@ -834,12 +788,222 @@ class DevServicesRegistryTests {
                 .id(id).label(label).scheme(scheme).port(port).path(path).build());
     }
 
+    @Test
+    void whenConfigurationChangedAcrossRestartsThenContainerIsKept() {
+        enableDevMode();
+
+        RestartingContainer first = restart(Map.of("test.dev.services.postgres.image-name", "postgres:17"),
+                TestDevServicesProperties.DEFAULT, List.of());
+        RestartingContainer second = restart(Map.of("test.dev.services.postgres.image-name", "postgres:18"),
+                TestDevServicesProperties.DEFAULT, List.of());
+
+        assertThat(second).isSameAs(first);
+        assertThat(first.stopped).isFalse();
+    }
+
+    @Test
+    void whenKeptContainerIsNoLongerRunningThenANewOneTakesItsPlace(CapturedOutput output) {
+        enableDevMode();
+
+        RestartingContainer first = restart(Map.of(), TestDevServicesProperties.DEFAULT, List.of());
+        // The container was removed outside the application.
+        first.running = false;
+        RestartingContainer second = restart(Map.of(), TestDevServicesProperties.DEFAULT, List.of());
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(first.stopped).isFalse();
+        assertThat(output).contains("is no longer running");
+    }
+
+    @Test
+    void whenKeptContainerIsNoLongerRunningThenDiscoveryHappensAgain() {
+        enableDevMode();
+
+        RestartingContainer first = restart(Map.of(), TestDevServicesProperties.FRAMEWORK, List.of());
+        first.running = false;
+        DefaultListableBeanFactory restarted = restartedBeanFactory(Map.of(),
+                TestDevServicesProperties.FRAMEWORK, List.of(discoveredContainer()));
+
+        assertThat(restarted.containsBeanDefinition("devService.container.postgres")).isFalse();
+        assertThat(restarted.containsBeanDefinition("devService.connectionDetails.postgres")).isTrue();
+    }
+
+    @Test
+    void whenOwnedContainerKeptAcrossRestartsThenNoDiscoveryHappens() {
+        enableDevMode();
+
+        RestartingContainer first = restart(Map.of(), TestDevServicesProperties.FRAMEWORK, List.of());
+        // Another application has started a discoverable container in the meantime.
+        RestartingContainer second = restart(Map.of(), TestDevServicesProperties.FRAMEWORK, List.of(discoveredContainer()));
+
+        assertThat(second).isSameAs(first);
+    }
+
+    @Test
+    void whenOldestDiscoveredContainerIsUnusableThenNextOneIsUsed() {
+        enableDevMode();
+        DiscoveredContainer unusable = new DiscoveredContainer(ContainerInfo.builder()
+                .id("def456")
+                .imageName("postgres:latest")
+                .names(List.of("unusable-postgres"))
+                .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"))
+                .status("running")
+                .build(), "localhost");
+        DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(),
+                serviceName -> List.of(unusable, discoveredContainer()));
+
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.FRAMEWORK)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host() + ":" + container.mappedPort(5432))));
+
+        assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isFalse();
+        assertThat(beanFactory.getBean("devService.connectionDetails.postgres", TestConnectionDetails.class).host())
+                .isEqualTo("localhost:54321");
+    }
+
+    @Test
+    void whenDevToolsRestartScopeRegisteredInDevModeThenContainerIsRestartScoped() {
+        enableDevMode();
+        beanFactory.registerScope("restart", restartScope);
+
+        registerPostgresDevService(registry);
+
+        assertThat(beanFactory.getBeanDefinition("devService.container.postgres").getScope()).isEqualTo("restart");
+    }
+
+    @Test
+    void whenDevToolsRestartIsDisabledThenContainerIsSingleton() {
+        enableDevMode();
+        beanFactory.registerScope("restart", restartScope);
+        var environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test",
+                Map.of("spring.devtools.restart.enabled", "false")));
+
+        registerPostgresDevService(new DevServicesRegistry(beanFactory, environment));
+
+        assertThat(beanFactory.getBeanDefinition("devService.container.postgres").getScope()).isEqualTo("singleton");
+    }
+
+    @Test
+    void whenNotInDevModeThenContainerIsSingleton() {
+        beanFactory.registerScope("restart", restartScope);
+
+        registerPostgresDevService(registry);
+
+        assertThat(beanFactory.getBeanDefinition("devService.container.postgres").getScope()).isEqualTo("singleton");
+    }
+
+    @Test
+    void whenNoRestartScopeRegisteredThenContainerIsSingleton() {
+        enableDevMode();
+
+        registerPostgresDevService(registry);
+
+        assertThat(beanFactory.getBeanDefinition("devService.container.postgres").getScope()).isEqualTo("singleton");
+    }
+
+    @Test
+    void whenReuseStrategyCanBeAppliedThenItIsInEffect() {
+        enableDevMode();
+
+        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, true));
+
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.FRAMEWORK);
+        assertThat(decision.reason()).isNull();
+    }
+
+    @Test
+    void whenNotInDevModeThenNoReuseStrategyApplies() {
+        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, true));
+
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
+        assertThat(decision.reason()).isNull();
+    }
+
+    @Test
+    void whenFrameworkStrategyWithoutDiscoveryThenReuseStrategyIsNotApplied() {
+        enableDevMode();
+
+        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, false));
+
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
+        assertThat(decision.reason()).contains("not supported");
+    }
+
+    @Test
+    void whenTestcontainersReuseIsNotEnabledThenReuseStrategyIsNotApplied() {
+        enableDevMode();
+
+        var decision = registryWithReuseSupport(false).reuseDecision(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false));
+
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
+        assertThat(decision.reason()).contains("testcontainers.reuse.enable");
+    }
+
+    @Test
+    void whenTestcontainersReuseIsEnabledThenReuseStrategyIsInEffect() {
+        enableDevMode();
+
+        var decision = registryWithReuseSupport(true).reuseDecision(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false));
+
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.TESTCONTAINERS);
+        assertThat(decision.reason()).isNull();
+    }
+
+    private void registerPostgresDevService(DevServicesRegistry registry) {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
+    }
+
+    private static ServiceSpec serviceSpec(BaseDevServicesProperties properties, boolean discovery) {
+        ServiceSpec service = new ServiceSpec()
+                .name("postgres")
+                .properties(properties)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new);
+        if (discovery) {
+            service.discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()));
+        }
+        return service;
+    }
+
+    /**
+     * Simulate an application start, or a DevTools restart when called again: a new bean factory
+     * sharing the same restart scope, in which the dev service is registered with the given
+     * configuration, returning the container bean.
+     */
+    private RestartingContainer restart(Map<String, Object> configuration, BaseDevServicesProperties properties,
+            List<DiscoveredContainer> discoveredContainers) {
+        return restartedBeanFactory(configuration, properties, discoveredContainers)
+                .getBean("devService.container.postgres", RestartingContainer.class);
+    }
+
+    private DefaultListableBeanFactory restartedBeanFactory(Map<String, Object> configuration, BaseDevServicesProperties properties,
+            List<DiscoveredContainer> discoveredContainers) {
+        var restartedBeanFactory = new DefaultListableBeanFactory();
+        restartedBeanFactory.registerScope("restart", restartScope);
+        var environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test", configuration));
+        new DevServicesRegistry(restartedBeanFactory, environment, serviceName -> discoveredContainers)
+                .registerDevService(service -> service
+                        .name("postgres")
+                        .properties(properties)
+                        .container(RestartingContainer.class, RestartingContainer::new)
+                        .discovery(TestConnectionDetails.class,
+                        container -> new TestConnectionDetails(container.host())));
+        return restartedBeanFactory;
+    }
+
     private static DiscoveredContainer discoveredContainer() {
         return discoveredContainer(Map.of());
     }
 
     private static DiscoveredContainer discoveredContainer(Map<String, String> additionalLabels) {
-        Map<String, String> labels = new HashMap<>(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.SHARED, "true"));
+        Map<String, String> labels = new HashMap<>(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"));
         labels.putAll(additionalLabels);
         return new DiscoveredContainer(ContainerInfo.builder()
                 .id("abc123")
@@ -865,6 +1029,32 @@ class DevServicesRegistryTests {
     }
 
     private interface OtherConnectionDetails extends ConnectionDetails {}
+
+    /**
+     * A container recording whether it was stopped and reporting whether it is running,
+     * without requiring a container runtime.
+     */
+    private static class RestartingContainer extends GenericContainer<RestartingContainer> {
+
+        private boolean stopped;
+
+        private boolean running = true;
+
+        RestartingContainer() {
+            super("postgres:latest");
+        }
+
+        @Override
+        public void stop() {
+            stopped = true;
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running;
+        }
+
+    }
 
     private static class TestPostgresContainer extends GenericContainer<TestPostgresContainer> {
         TestPostgresContainer() {

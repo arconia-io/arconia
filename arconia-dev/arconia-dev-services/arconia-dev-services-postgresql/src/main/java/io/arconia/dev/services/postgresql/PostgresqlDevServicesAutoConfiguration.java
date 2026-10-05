@@ -2,6 +2,7 @@ package io.arconia.dev.services.postgresql;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -10,11 +11,12 @@ import org.springframework.util.ClassUtils;
 
 import io.arconia.dev.services.api.provider.DevServiceCategories;
 import io.arconia.dev.services.api.provider.DevServiceProvider;
-
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.registration.DiscoveredContainer;
+import io.arconia.dev.services.core.registration.JdbcDiscoveredConnectionDetails;
 import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration.PostgresqlDevServicesRegistrar;
 
 /**
@@ -47,11 +49,15 @@ public final class PostgresqlDevServicesAutoConfiguration {
                     .name("postgresql")
                     .description("PostgreSQL Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaPostgreSqlContainer.class)
-                            .supplier(() -> new ArconiaPostgreSqlContainer(properties))
-                    )
-            );
+                    .container(ArconiaPostgreSqlContainer.class, () -> new ArconiaPostgreSqlContainer(properties))
+                    .discovery(JdbcConnectionDetails.class,
+                            container -> discoveredConnectionDetails(container, properties)));
+        }
+
+        static JdbcDiscoveredConnectionDetails discoveredConnectionDetails(DiscoveredContainer container, PostgresqlDevServicesProperties properties) {
+            String jdbcUrl = "jdbc:postgresql://%s:%d/%s?loggerLevel=OFF".formatted(container.host(),
+                    container.mappedPort(ArconiaPostgreSqlContainer.POSTGRESQL_PORT), properties.getDbName());
+            return new JdbcDiscoveredConnectionDetails(jdbcUrl, properties.getUsername(), properties.getPassword());
         }
 
     }

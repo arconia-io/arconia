@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OllamaOpenAiDevServicesAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(
                     OllamaDevServicesAutoConfiguration.class,
                     OllamaOpenAiDevServicesAutoConfiguration.class))
@@ -74,7 +72,6 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void userOpenAiConfigurationOverriddenWhenOpenAiCompatibilityEnabled() {
         new ApplicationContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
                 .withPropertyValues(
                         "spring.ai.ollama.base-url=http://custom-host:8080",
@@ -94,7 +91,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void propertySourceNotRegisteredWhenOpenAiNotOnClasspath() {
         contextRunner
-                .withClassLoader(new FilteredClassLoader(RestartScope.class, OpenAiCommonProperties.class))
+                .withClassLoader(new FilteredClassLoader(OpenAiCommonProperties.class))
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
                         .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
     }
@@ -102,7 +99,6 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void resolvesFromConnectionDetailsWhenNoContainer() {
         new ApplicationContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
                 .withBean(OllamaConnectionDetails.class, () -> () -> "http://shared-host:12345")
                 .run(context -> assertThat(context.getEnvironment().getProperty("spring.ai.openai.base-url"))
@@ -112,7 +108,6 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void fallsBackToDefaultOllamaUrlWhenNoContainer() {
         new ApplicationContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
                 .run(context -> {
                     var environment = context.getEnvironment();
@@ -126,7 +121,6 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     @Test
     void fallsBackToCustomOllamaUrlWhenNoContainer() {
         new ApplicationContextRunner()
-                .withClassLoader(new FilteredClassLoader(RestartScope.class))
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
                 .withPropertyValues("spring.ai.ollama.base-url=http://custom-host:8080")
                 .run(context -> assertThat(context.getEnvironment().getProperty("spring.ai.openai.base-url"))

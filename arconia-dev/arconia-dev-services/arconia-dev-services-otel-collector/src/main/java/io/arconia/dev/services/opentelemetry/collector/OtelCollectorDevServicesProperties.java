@@ -8,15 +8,16 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
-import io.arconia.dev.services.api.config.SharedDevServicesProperties;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the OpenTelemetry Collector Dev Services.
  */
 @ConfigurationProperties(prefix = OtelCollectorDevServicesProperties.CONFIG_PREFIX)
-public class OtelCollectorDevServicesProperties implements SharedDevServicesProperties {
+public class OtelCollectorDevServicesProperties implements BaseDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.otel-collector";
 
@@ -54,23 +55,10 @@ public class OtelCollectorDevServicesProperties implements SharedDevServicesProp
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the container used in the dev service is reused across multiple
-     * applications and application restarts, relying on the Testcontainers
-     * reusable containers feature. It requires enabling the feature
-     * in the `~/.testcontainers.properties` file. Reused containers
-     * are not stopped automatically and must be cleaned up manually.
+     * Strategy for reusing a running container for the dev service across applications.
      * Only applicable in dev mode.
      */
-    private boolean reuse = false;
-
-    /**
-     * Whether the dev service is shared among applications running simultaneously.
-     * A shared dev service is discoverable by other applications, and the application
-     * connects to an existing shared dev service if available instead of starting a new one.
-     * Container reuse takes precedence: when the `reuse` property is enabled,
-     * sharing is disabled. Only applicable in dev mode.
-     */
-    private boolean shared = true;
+    private ReuseStrategy reuseStrategy = ReuseStrategy.FRAMEWORK;
 
     /**
      * Maximum waiting time for the service to start.
@@ -146,21 +134,12 @@ public class OtelCollectorDevServicesProperties implements SharedDevServicesProp
     }
 
     @Override
-    public boolean isReuse() {
-        return reuse;
+    public ReuseStrategy getReuseStrategy() {
+        return reuseStrategy;
     }
 
-    public void setReuse(boolean reuse) {
-        this.reuse = reuse;
-    }
-
-    @Override
-    public boolean isShared() {
-        return shared;
-    }
-
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setReuseStrategy(ReuseStrategy reuseStrategy) {
+        this.reuseStrategy = reuseStrategy;
     }
 
     @Override

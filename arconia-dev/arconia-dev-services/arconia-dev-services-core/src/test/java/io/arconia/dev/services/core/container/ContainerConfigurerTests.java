@@ -30,6 +30,7 @@ import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,9 +81,9 @@ class ContainerConfigurerTests {
         System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
         BootstrapMode.clear();
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuse(true);
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuseStrategy(ReuseStrategy.TESTCONTAINERS);
 
-        ContainerConfigurer.reuse(container, properties);
+        ContainerConfigurer.testcontainersReuse(container, properties);
 
         assertThat(container.isShouldBeReused()).isTrue();
     }
@@ -92,9 +93,9 @@ class ContainerConfigurerTests {
         System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
         BootstrapMode.clear();
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuse(true);
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuseStrategy(ReuseStrategy.TESTCONTAINERS);
 
-        ContainerConfigurer.reuse(container, properties);
+        ContainerConfigurer.testcontainersReuse(container, properties);
 
         assertThat(container.isShouldBeReused()).isFalse();
     }
@@ -511,15 +512,11 @@ class ContainerConfigurerTests {
         private Duration startupTimeout = Duration.ofSeconds(30);
         private List<ResourceMapping> resources = List.of();
         private List<VolumeMapping> volumes = List.of();
-        private boolean reuse = false;
+        private ReuseStrategy reuseStrategy = ReuseStrategy.NONE;
 
         @Override
         public String getImageName() {
             return "test-image:latest";
-        }
-
-        public void setImageName(String imageName) {
-
         }
 
         @Override
@@ -573,12 +570,12 @@ class ContainerConfigurerTests {
         }
 
         @Override
-        public boolean isReuse() {
-            return reuse;
+        public ReuseStrategy getReuseStrategy() {
+            return reuseStrategy;
         }
 
-        public TestBaseDevServicesProperties withReuse(boolean reuse) {
-            this.reuse = reuse;
+        public TestBaseDevServicesProperties withReuseStrategy(ReuseStrategy reuseStrategy) {
+            this.reuseStrategy = reuseStrategy;
             return this;
         }
     }
@@ -593,8 +590,6 @@ class ContainerConfigurerTests {
         public String getImageName() {
             return "test-db:latest";
         }
-
-        public void setImageName(String imageName) {}
 
         @Override
         public String getUsername() {

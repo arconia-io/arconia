@@ -15,6 +15,7 @@ dependencies {
 
     optional "org.springframework.boot:spring-boot-actuator"
     optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
+    optional "org.springframework.boot:spring-boot-jdbc"
     optional "org.testcontainers:testcontainers-jdbc"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

@@ -9,10 +9,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
-import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
@@ -54,34 +52,25 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
     }
 
     @Override
-    protected boolean supportsSharing() {
-        return true;
+    protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
+        return withDiscoveryLabels(new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()), ownerId);
     }
 
     @Override
-    protected GenericContainer<?> createSharedContainer(String ownerId) {
-        OtelCollectorDevServicesProperties properties = new OtelCollectorDevServicesProperties();
-        GenericContainer<?> container = new GenericContainer<>(properties.getImageName())
-                .withExposedPorts(OtlpConnectionDetails.DEFAULT_GRPC_PORT, OtlpConnectionDetails.DEFAULT_HTTP_PORT);
-        return withSharedLabels(container, ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> sharedContainerLinkDefinitions() {
+    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
         return new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override
-    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> sharedContainer) {
+    protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
         assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
 
+        ArconiaOtelCollectorContainer container = (ArconiaOtelCollectorContainer) discoveredContainer;
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
-        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF)).endsWith(
-                ":%d%s".formatted(sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_HTTP_PORT),
-                        OtlpTracingConnectionDetails.TRACES_PATH));
-        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).endsWith(
-                ":" + sharedContainer.getMappedPort(OtlpConnectionDetails.DEFAULT_GRPC_PORT));
+        assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
+                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getHttpPort()) + OtlpTracingConnectionDetails.TRACES_PATH);
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).isEqualTo("http://%s:%d".formatted(container.getHost(), container.getGrpcPort()));
     }
 
     @Test
@@ -101,11 +90,6 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
                     assertThat(container.getDockerImageName()).contains(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME);
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.isShouldBeReused()).isFalse();
-                    assertThat(container.getLabels())
-                            .containsEntry(DevServiceLabels.NAME, "otel-collector")
-                            .containsEntry(DevServiceLabels.SHARED, "true")
-                            .containsEntry(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
 
                     assertThatHasSingletonScope(context);
                 });

@@ -1,5 +1,6 @@
 package io.arconia.dev.services.kafka;
 
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -17,9 +18,16 @@ final class ArconiaKafkaContainer extends KafkaContainer {
 
     static final int KAFKA_PORT = 9092;
 
+    static final String READY_REGEX = ".*Transitioning from RECOVERY to RUNNING.*";
+
     public ArconiaKafkaContainer(KafkaDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
+
+        // KafkaContainer waits on a wait strategy instance shared across all Kafka containers,
+        // so when we customize the startup timeout, it will be applied to all of them.
+        // Hence, we must provide an equivalent wait strategy of our own.
+        this.waitingFor(Wait.forLogMessage(READY_REGEX, 1));
 
         ContainerConfigurer.base(this, properties);
     }

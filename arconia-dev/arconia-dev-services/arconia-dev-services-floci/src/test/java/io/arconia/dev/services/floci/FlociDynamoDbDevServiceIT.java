@@ -9,8 +9,6 @@ import io.awspring.cloud.autoconfigure.dynamodb.DynamoDbAutoConfiguration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
@@ -30,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FlociDynamoDbDevServiceIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(
                     FlociDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class,

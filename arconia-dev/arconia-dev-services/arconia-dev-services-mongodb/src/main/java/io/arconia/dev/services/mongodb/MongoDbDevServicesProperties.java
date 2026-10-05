@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
@@ -54,14 +55,10 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Whether the container used in the dev service is reused across multiple
-     * applications and application restarts, relying on the Testcontainers
-     * reusable containers feature. It requires enabling the feature
-     * in the `~/.testcontainers.properties` file. Reused containers
-     * are not stopped automatically and must be cleaned up manually.
+     * Strategy for reusing a running container for the dev service across applications.
      * Only applicable in dev mode.
      */
-    private boolean reuse = false;
+    private ReuseStrategy reuseStrategy = ReuseStrategy.NONE;
 
     /**
      * Maximum waiting time for the service to start.
@@ -131,12 +128,12 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
     }
 
     @Override
-    public boolean isReuse() {
-        return reuse;
+    public ReuseStrategy getReuseStrategy() {
+        return reuseStrategy;
     }
 
-    public void setReuse(boolean reuse) {
-        this.reuse = reuse;
+    public void setReuseStrategy(ReuseStrategy reuseStrategy) {
+        this.reuseStrategy = reuseStrategy;
     }
 
     @Override

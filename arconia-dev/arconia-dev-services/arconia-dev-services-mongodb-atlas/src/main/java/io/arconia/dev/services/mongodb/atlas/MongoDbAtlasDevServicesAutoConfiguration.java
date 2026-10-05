@@ -2,6 +2,7 @@ package io.arconia.dev.services.mongodb.atlas;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -39,10 +40,8 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
                     .name("mongodb-atlas")
                     .description("MongoDB Atlas Dev Service")
                     .properties(properties)
-                    .container(container -> container
-                            .type(ArconiaMongoDbAtlasLocalContainer.class)
-                            .supplier(() -> new ArconiaMongoDbAtlasLocalContainer(properties))
-                    ));
+                    .container(ArconiaMongoDbAtlasLocalContainer.class, () -> new ArconiaMongoDbAtlasLocalContainer(properties))
+                    .discovery(MongoConnectionDetails.class, MongoDbAtlasDiscoveredConnectionDetails::new));
         }
 
     }

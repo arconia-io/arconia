@@ -2,6 +2,7 @@ package io.arconia.dev.services.artemis;
 
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.tests.BaseDevServicesPropertiesTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ class ArtemisDevServicesPropertiesTests extends BaseDevServicesPropertiesTests<A
     protected DefaultValues getExpectedDefaults() {
         return DefaultValues.builder()
                 .imageName(ArconiaArtemisContainer.COMPATIBLE_IMAGE_NAME)
-                .shared(true)
+                .reuseStrategy(ReuseStrategy.FRAMEWORK)
                 .build();
     }
 

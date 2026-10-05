@@ -20,9 +20,9 @@ import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
  * URLs reported in startup logs and developer tooling.
  * <p>
  * A dev service declares its links once, in terms of container ports. They are resolved
- * against the port mappings of a container this application started, or of one adopted from
- * another application, in which case the definitions are read back from the container labels
- * the owning application wrote.
+ * against the port mappings of a container this application started, or of one discovered
+ * from another application, in which case the definitions are read back from the container
+ * labels the application that started it wrote.
  */
 final class DevServiceLinks {
 
@@ -54,7 +54,7 @@ final class DevServiceLinks {
                 DevServiceLinkDefinition previous = byId.putIfAbsent(definition.id(), definition);
                 if (previous != null) {
                     // A container label can hold only one link per id, so a duplicate would make an
-                    // adopting application report fewer links than the one that started the container.
+                    // application discovering the container report fewer links than the one that started it.
                     logger.warn("Ignoring a duplicate '{}' link declared by a dev service container", definition.id());
                 }
             }

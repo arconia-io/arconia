@@ -17,7 +17,7 @@ public interface DevServiceLinkProvider {
      * <p>
      * The framework resolves each definition into a {@link DevServiceLink} once the port
      * mapping is known, and publishes the definitions as container labels so that an
-     * application adopting this container as a shared dev service reports the same links
+     * application discovering this container reports the same links
      * without declaring them again.
      * <p>
      * This method is called <em>before the container starts</em>, since the labels are applied

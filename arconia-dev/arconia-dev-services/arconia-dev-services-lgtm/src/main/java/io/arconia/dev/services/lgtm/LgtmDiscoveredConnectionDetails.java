@@ -7,7 +7,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsC
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 
 /**
- * OTLP connection details for all signals to connect to a shared Grafana LGTM dev service
+ * OTLP connection details for all signals to connect to a Grafana LGTM dev service
  * running in a container discovered from another application.
  */
 final class LgtmDiscoveredConnectionDetails

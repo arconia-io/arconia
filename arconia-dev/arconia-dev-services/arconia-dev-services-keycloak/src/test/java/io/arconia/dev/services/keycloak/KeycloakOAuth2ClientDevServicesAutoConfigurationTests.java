@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.mock.env.MockEnvironment;
@@ -26,7 +25,6 @@ class KeycloakOAuth2ClientDevServicesAutoConfigurationTests {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             // Dev Service container beans live in the "restart" scope when DevTools is present,
             // which a plain runner doesn't register.
-            .withClassLoader(new FilteredClassLoader(RestartScope.class))
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ClientDevServicesAutoConfiguration.class));
@@ -42,7 +40,7 @@ class KeycloakOAuth2ClientDevServicesAutoConfigurationTests {
         // The module is on the classpath of applications that are only resource servers, which
         // must not gain a client registration they have no way to use.
         contextRunner
-                .withClassLoader(new FilteredClassLoader(RestartScope.class, ClientRegistration.class))
+                .withClassLoader(new FilteredClassLoader(ClientRegistration.class))
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     assertThat(context).doesNotHaveBean(ClientRegistrationRepository.class);

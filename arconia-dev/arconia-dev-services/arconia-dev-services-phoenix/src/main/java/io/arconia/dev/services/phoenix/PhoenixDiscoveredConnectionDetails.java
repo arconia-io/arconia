@@ -6,7 +6,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingCo
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 /**
- * {@link OtlpTracingConnectionDetails} for connecting to a shared Phoenix dev service
+ * {@link OtlpTracingConnectionDetails} for connecting to a Phoenix dev service
  * running in a container discovered from another application. Phoenix supports
  * OpenTelemetry traces only.
  */

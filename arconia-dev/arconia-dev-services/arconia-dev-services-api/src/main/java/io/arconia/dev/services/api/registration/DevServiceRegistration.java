@@ -36,13 +36,14 @@ public record DevServiceRegistration(
     public enum Origin {
 
         /**
-         * The container was started and is managed by this application.
+         * The container is managed by this application through Testcontainers. The application
+         * started it or attached to it when it is a container reused by Testcontainers.
          */
         OWNED,
 
         /**
          * The container was started by another application and discovered
-         * as a shared dev service.
+         * by this one, which only connects to it.
          */
         DISCOVERED
 
