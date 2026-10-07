@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.mongodb.atlas.MongoDbAtlasDevServicesAutoConfiguration.MongoDbAtlasDevServicesRegistrar;
@@ -25,11 +24,6 @@ import io.arconia.dev.services.mongodb.atlas.MongoDbAtlasDevServicesAutoConfigur
 @Import(MongoDbAtlasDevServicesRegistrar.class)
 public final class MongoDbAtlasDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider mongoDbAtlasDevServiceProvider() {
-        return DevServiceProvider.of("mongodb-atlas", DevServiceCategories.MONGODB);
-    }
-
     static class MongoDbAtlasDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -39,6 +33,7 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mongodb-atlas")
                     .description("MongoDB Atlas Dev Service")
+                    .category(DevServiceCategories.MONGODB)
                     .properties(properties)
                     .container(ArconiaMongoDbAtlasLocalContainer.class, () -> new ArconiaMongoDbAtlasLocalContainer(properties))
                     .discovery(MongoConnectionDetails.class, MongoDbAtlasDiscoveredConnectionDetails::new));

@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.MongoDbDevServicesRegistrar;
@@ -25,11 +24,6 @@ import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.Mongo
 @Import(MongoDbDevServicesRegistrar.class)
 public final class MongoDbDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider mongoDbDevServiceProvider() {
-        return DevServiceProvider.of("mongodb", DevServiceCategories.MONGODB);
-    }
-
     static class MongoDbDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -39,6 +33,7 @@ public final class MongoDbDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mongodb")
                     .description("MongoDB Dev Service")
+                    .category(DevServiceCategories.MONGODB)
                     .properties(properties)
                     .container(ArconiaMongoDbContainer.class, () -> new ArconiaMongoDbContainer(properties))
                     .discovery(MongoConnectionDetails.class, MongoDbDiscoveredConnectionDetails::new));

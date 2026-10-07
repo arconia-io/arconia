@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.openlit.OpenLitDevServicesAutoConfiguration.OpenLitDevServicesRegistrar;
@@ -27,11 +26,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 @Import(OpenLitDevServicesRegistrar.class)
 public final class OpenLitDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider openLitDevServiceProvider() {
-        return DevServiceProvider.of("openlit", DevServiceCategories.OPENTELEMETRY);
-    }
-
     static class OpenLitDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class OpenLitDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("openlit")
                     .description("OpenLit Dev Service")
+                    .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaOpenLitContainer.class, () -> new ArconiaOpenLitContainer(properties))
                     .discovery(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)

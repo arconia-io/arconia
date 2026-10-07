@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
@@ -27,11 +26,6 @@ import io.arconia.dev.services.oracle.xe.OracleXeDevServicesAutoConfiguration.Or
 @Import(OracleXeDevServicesRegistrar.class)
 public final class OracleXeDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider oracleXeDevServiceProvider() {
-        return DevServiceProvider.of("oracle-xe", DevServiceCategories.JDBC);
-    }
-
     static class OracleXeDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class OracleXeDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("oracle-xe")
                     .description("Oracle XE Dev Service")
+                    .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(ArconiaOracleXeContainer.class, () -> new ArconiaOracleXeContainer(properties))
                     .discovery(JdbcConnectionDetails.class,

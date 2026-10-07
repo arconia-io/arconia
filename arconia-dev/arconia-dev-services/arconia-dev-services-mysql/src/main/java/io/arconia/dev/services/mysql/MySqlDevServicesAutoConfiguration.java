@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
@@ -27,11 +26,6 @@ import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.MySqlDevS
 @Import(MySqlDevServicesRegistrar.class)
 public final class MySqlDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider mySqlDevServiceProvider() {
-        return DevServiceProvider.of("mysql", DevServiceCategories.JDBC);
-    }
-
     static class MySqlDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class MySqlDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("mysql")
                     .description("MySQL Dev Service")
+                    .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(ArconiaMySqlContainer.class, () -> new ArconiaMySqlContainer(properties))
                     .discovery(JdbcConnectionDetails.class,

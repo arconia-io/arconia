@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.RedisDevServicesRegistrar;
@@ -25,11 +24,6 @@ import io.arconia.dev.services.redis.RedisDevServicesAutoConfiguration.RedisDevS
 @Import(RedisDevServicesRegistrar.class)
 public final class RedisDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider redisDevServiceProvider() {
-        return DevServiceProvider.of("redis", DevServiceCategories.REDIS);
-    }
-
     static class RedisDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -39,6 +33,7 @@ public final class RedisDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("redis")
                     .description("Redis Dev Service")
+                    .category(DevServiceCategories.REDIS)
                     .properties(properties)
                     .container(ArconiaRedisContainer.class, () -> new ArconiaRedisContainer(properties))
                     .serviceConnectionName(ArconiaRedisContainer.COMPATIBLE_IMAGE_NAME)

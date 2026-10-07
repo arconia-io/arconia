@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.phoenix.PhoenixDevServicesAutoConfiguration.PhoenixDevServicesRegistrar;
@@ -29,11 +28,6 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingCo
 @Import(PhoenixDevServicesRegistrar.class)
 public final class PhoenixDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider phoenixDevServiceProvider() {
-        return DevServiceProvider.of("phoenix", DevServiceCategories.OPENTELEMETRY);
-    }
-
     static class PhoenixDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -43,6 +37,7 @@ public final class PhoenixDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("phoenix")
                     .description("Phoenix Dev Service")
+                    .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaPhoenixContainer.class, () -> new ArconiaPhoenixContainer(properties))
                     .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)

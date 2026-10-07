@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
@@ -27,11 +26,6 @@ import io.arconia.dev.services.oracle.OracleDevServicesAutoConfiguration.OracleD
 @Import(OracleDevServicesRegistrar.class)
 public final class OracleDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider oracleDevServiceProvider() {
-        return DevServiceProvider.of("oracle", DevServiceCategories.JDBC);
-    }
-
     static class OracleDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class OracleDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("oracle")
                     .description("Oracle Dev Service")
+                    .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(ArconiaOracleContainer.class, () -> new ArconiaOracleContainer(properties))
                     .discovery(JdbcConnectionDetails.class,

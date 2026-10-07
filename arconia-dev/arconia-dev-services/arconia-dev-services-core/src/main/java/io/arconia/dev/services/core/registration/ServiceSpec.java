@@ -28,6 +28,9 @@ public final class ServiceSpec {
     private String description;
 
     @Nullable
+    private String category;
+
+    @Nullable
     private BaseDevServicesProperties properties;
 
     @Nullable
@@ -64,6 +67,18 @@ public final class ServiceSpec {
      */
     public ServiceSpec description(String description) {
         this.description = description;
+        return this;
+    }
+
+    /**
+     * The category of mutually exclusive dev services this dev service belongs to, if any.
+     * Only one dev service per category can be active in an application: registering a second
+     * one fails at startup. Use the {@link DevServiceCategories} constants to share a category
+     * with the built-in dev services.
+     */
+    public ServiceSpec category(String category) {
+        Assert.hasText(category, "category cannot be null or empty");
+        this.category = category;
         return this;
     }
 
@@ -160,6 +175,11 @@ public final class ServiceSpec {
     @Nullable
     String getDescription() {
         return description;
+    }
+
+    @Nullable
+    String getCategory() {
+        return category;
     }
 
     @Nullable

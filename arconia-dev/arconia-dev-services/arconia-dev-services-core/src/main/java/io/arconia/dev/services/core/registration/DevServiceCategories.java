@@ -1,9 +1,10 @@
-package io.arconia.dev.services.api.provider;
+package io.arconia.dev.services.core.registration;
 
 import io.arconia.core.support.Incubating;
 
 /**
- * Category constants for groups of mutually exclusive dev services.
+ * The categories of mutually exclusive dev services: only one dev service per category can be
+ * active in an application.
  */
 @Incubating
 public final class DevServiceCategories {

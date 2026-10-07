@@ -9,10 +9,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
@@ -27,11 +26,6 @@ import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration
 @EnableConfigurationProperties(PostgresqlDevServicesProperties.class)
 @Import(PostgresqlDevServicesRegistrar.class)
 public final class PostgresqlDevServicesAutoConfiguration {
-
-    @Bean
-    DevServiceProvider postgresqlDevServiceProvider() {
-        return DevServiceProvider.of("postgresql", DevServiceCategories.JDBC);
-    }
 
     static class PostgresqlDevServicesRegistrar extends DevServicesRegistrar {
 
@@ -48,6 +42,7 @@ public final class PostgresqlDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("postgresql")
                     .description("PostgreSQL Dev Service")
+                    .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(ArconiaPostgreSqlContainer.class, () -> new ArconiaPostgreSqlContainer(properties))
                     .discovery(JdbcConnectionDetails.class,

@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.opentelemetry.collector.OtelCollectorDevServicesAutoConfiguration.OtelCollectorDevServicesRegistrar;
@@ -27,11 +26,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 @Import(OtelCollectorDevServicesRegistrar.class)
 public final class OtelCollectorDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider otelCollectorDevServiceProvider() {
-        return DevServiceProvider.of("otel-collector", DevServiceCategories.OPENTELEMETRY);
-    }
-
     static class OtelCollectorDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class OtelCollectorDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("otel-collector")
                     .description("OpenTelemetry Collector Dev Service")
+                    .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaOtelCollectorContainer.class, () -> new ArconiaOtelCollectorContainer(properties))
                     .serviceConnectionName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)

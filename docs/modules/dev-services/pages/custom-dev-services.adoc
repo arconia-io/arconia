@@ -233,12 +233,12 @@ The only requirement is that your container is reachable by a stable name. A net
 
 == Mutual Exclusion
 
-If your Dev Service provides the same capability as other Dev Services (for example, another JDBC-compatible database), declare a `DevServiceProvider` bean with the corresponding category. Use one of the `DevServiceCategories` constants when the overlap is with built-in Dev Services, or your own category string when the exclusion is among your own Dev Services. When multiple Dev Services of the same category are active at once, the application fails fast at startup with an actionable error message.
+If your Dev Service provides the same capability as other Dev Services (for example, another JDBC-compatible database), declare its category when registering it. Use one of the `DevServiceCategories` constants when the overlap is with built-in Dev Services, or your own category string when the exclusion is among your own Dev Services. When multiple Dev Services of the same category are active at once, the application fails fast at startup with an actionable error message.
 
 [source,java]
 ----
-@Bean
-DevServiceProvider fancyDbDevServiceProvider() {
-    return DevServiceProvider.of("fancydb", DevServiceCategories.JDBC);
-}
+registry.registerDevService(service -> service
+        .name("fancydb")
+        .category(DevServiceCategories.JDBC)
+        // ...
 ----

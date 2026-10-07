@@ -24,10 +24,12 @@ final class DevServicesStartupLogger {
     /**
      * Log that the dev service is ready in the given container
      */
-    static void ready(String name, @Nullable String containerId, String imageName, Origin origin, boolean kept,
+    static void ready(String name, @Nullable String containerId, @Nullable String imageName, Origin origin, boolean kept,
             DevServicesRegistry.@Nullable ReuseDecision reuse, List<DevServiceLink> links) {
         List<String> facts = new ArrayList<>();
-        facts.add(imageName);
+        if (imageName != null) {
+            facts.add(imageName);
+        }
         if (origin == Origin.DISCOVERED) {
             facts.add("started by another application");
         }
@@ -37,7 +39,8 @@ final class DevServicesStartupLogger {
         if (reuse != null) {
             facts.add(formatReuse(reuse));
         }
-        logger.info("Dev Service '{}' is ready in container {} ({})", name, ContainerRuntimeInfo.shortId(containerId), String.join(", ", facts));
+        String details = facts.isEmpty() ? "" : " (" + String.join(", ", facts) + ")";
+        logger.info("Dev Service '{}' is ready in container {}{}", name, ContainerRuntimeInfo.shortId(containerId), details);
         if (!links.isEmpty()) {
             logger.info("Dev Service '{}' links: {}", name, formatLinks(links));
         }

@@ -271,8 +271,6 @@ class DevServicesRegistryTests {
 
         assertThat(beanFactory.containsBeanDefinition("devService.container.postgres")).isFalse();
         assertThat(beanFactory.containsBeanDefinition("devService.connectionDetails.postgres")).isTrue();
-        assertThat(beanFactory.getBeanDefinition("devService.connectionDetails.postgres").getDependsOn())
-                .contains(DevServicesRegistry.CONFLICT_VALIDATOR_BEAN_NAME);
 
         var connectionDetails = beanFactory.getBean("devService.connectionDetails.postgres", TestConnectionDetails.class);
         assertThat(connectionDetails.host()).isEqualTo("localhost");

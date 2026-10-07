@@ -1,7 +1,5 @@
 package io.arconia.dev.services.core.autoconfigure;
 
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -10,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Role;
 import org.testcontainers.containers.Network;
-
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 
 /**
  * Global auto-configuration for Dev Services.
@@ -35,16 +31,6 @@ public final class DevServicesAutoConfiguration {
     @ConditionalOnMissingBean(Network.class)
     Network devServicesNetwork() {
         return Network.SHARED;
-    }
-
-    /**
-     * Backstop validation of mutually exclusive dev services after all singletons are created.
-     * The main validation happens earlier, before any dev service container is created,
-     * via the validator bean registered by the dev services registry.
-     */
-    @Bean
-    SmartInitializingSingleton devServicesConflictValidator(ObjectProvider<DevServiceProvider> providers) {
-        return () -> new DevServicesConflictValidator().validate(providers.orderedStream().toList());
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.InstanceSupplier;
@@ -38,12 +38,11 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.ReuseStrategy;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
-import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
+import io.arconia.dev.services.core.autoconfigure.MultipleDevServicesException;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 
@@ -52,11 +51,6 @@ import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
  */
 @Incubating
 public class DevServicesRegistry {
-
-    /**
-     * The bean name of the {@link DevServicesConflictValidator} that container beans depend on.
-     */
-    public static final String CONFLICT_VALIDATOR_BEAN_NAME = "devService.conflictValidator";
 
     private static final Logger logger = LoggerFactory.getLogger(DevServicesRegistry.class);
 
@@ -72,6 +66,11 @@ public class DevServicesRegistry {
     private static final String CONNECTION_DETAILS_BEAN_NAME_PREFIX = "devService.connectionDetails.";
 
     private static final String REGISTRATION_BEAN_NAME_PREFIX = "devService.registration.";
+
+    /**
+     * The attribute of a registration bean definition holding the category of the dev service.
+     */
+    private static final String CATEGORY_ATTRIBUTE = "devService.category";
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
@@ -129,9 +128,9 @@ public class DevServicesRegistry {
             return;
         }
 
-        // 2. Ensure the conflict validation bean is defined before the container bean is registered,
-        // so that the conflict is detected before the container is created.
-        registerConflictValidatorBeanDefinition();
+        // 2. Ensure no other dev service of the same category is registered, since dev services
+        // providing the same capability are mutually exclusive.
+        ensureCategoryIsFree(service);
 
         // 3. Check whether the application has kept a running container for this dev service across a
         // DevTools restart. If it has, the application keeps using it.
@@ -169,22 +168,22 @@ public class DevServicesRegistry {
         }
     }
 
-    private void registerConflictValidatorBeanDefinition() {
-        if (beanDefinitionRegistry.containsBeanDefinition(CONFLICT_VALIDATOR_BEAN_NAME)) {
+    /**
+     * Fail if a dev service of the same category as the given one is already registered.
+     * The category of a registered dev service is recorded on its registration bean definition.
+     */
+    private void ensureCategoryIsFree(ServiceSpec service) {
+        String category = service.getCategory();
+        if (category == null) {
             return;
         }
-
-        RootBeanDefinition beanDefinition = new RootBeanDefinition();
-        beanDefinition.setBeanClass(DevServicesConflictValidator.class);
-        beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-        beanDefinition.setInstanceSupplier((InstanceSupplier<DevServicesConflictValidator>) registeredBean -> {
-            DevServicesConflictValidator validator = new DevServicesConflictValidator();
-            ConfigurableListableBeanFactory listableBeanFactory = registeredBean.getBeanFactory();
-            validator.validate(listableBeanFactory.getBeansOfType(DevServiceProvider.class).values());
-            return validator;
-        });
-
-        beanDefinitionRegistry.registerBeanDefinition(CONFLICT_VALIDATOR_BEAN_NAME, beanDefinition);
+        for (String beanName : beanDefinitionRegistry.getBeanDefinitionNames()) {
+            if (beanName.startsWith(REGISTRATION_BEAN_NAME_PREFIX)
+                    && category.equals(beanDefinitionRegistry.getBeanDefinition(beanName).getAttribute(CATEGORY_ATTRIBUTE))) {
+                String otherName = beanName.substring(REGISTRATION_BEAN_NAME_PREFIX.length());
+                throw new MultipleDevServicesException(category, Stream.of(otherName, service.getName()).sorted().toList());
+            }
+        }
     }
 
     // REUSE
@@ -284,7 +283,6 @@ public class DevServicesRegistry {
         beanDefinition.setBeanClass(connectionDetails.getClass());
         beanDefinition.setInstanceSupplier(() -> connectionDetails);
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-        beanDefinition.setDependsOn(CONFLICT_VALIDATOR_BEAN_NAME);
 
         // Attach the container image metadata, letting downstream auto-configurations
         // introspect which image backs the connection details bean.
@@ -305,7 +303,7 @@ public class DevServicesRegistry {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(DevServiceRegistration.class);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
-        beanDefinition.setDependsOn(CONFLICT_VALIDATOR_BEAN_NAME);
+        recordCategory(beanDefinition, service);
 
         beanDefinition.setInstanceSupplier(() -> {
             // Capture the links the discovered container exposes and log a consistent startup
@@ -366,9 +364,6 @@ public class DevServicesRegistry {
         // Hint that this bean has an infrastructure role, meaning it has no relevance to the end-user.
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-        // Ensure mutually exclusive dev services are validated before the container is created.
-        beanDefinition.setDependsOn(CONFLICT_VALIDATOR_BEAN_NAME);
-
         return beanDefinition;
     }
 
@@ -387,6 +382,12 @@ public class DevServicesRegistry {
         LambdaSafe.callbacks(DevServiceContainerCustomizer.class, customizers, container)
                 .withLogger(DevServicesRegistry.class)
                 .invoke(customizer -> customizer.customize(container));
+    }
+
+    private static void recordCategory(BeanDefinition beanDefinition, ServiceSpec service) {
+        if (service.getCategory() != null) {
+            beanDefinition.setAttribute(CATEGORY_ATTRIBUTE, service.getCategory());
+        }
     }
 
     private void applyLabels(GenericContainer<?> container, ServiceSpec service) {
@@ -444,6 +445,7 @@ public class DevServicesRegistry {
         beanDefinition.setBeanClass(DevServiceRegistration.class);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
         beanDefinition.setDependsOn(containerBeanName);
+        recordCategory(beanDefinition, service);
 
         beanDefinition.setInstanceSupplier((InstanceSupplier<DevServiceRegistration>) registeredBean -> {
             GenericContainer<?> container = registeredBean.getBeanFactory().getBean(containerBeanName, GenericContainer.class);
@@ -454,7 +456,8 @@ public class DevServicesRegistry {
             // strategy is only part of it in dev mode, the only one where it applies.
             Assert.hasText(service.getName(), "service name cannot be null or empty");
             List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, true);
-            DevServicesStartupLogger.ready(service.getName(), containerId, container.getDockerImageName(),
+            String imageName = (container.getContainerInfo() != null) ? container.getContainerInfo().getConfig().getImage() : null;
+            DevServicesStartupLogger.ready(service.getName(), containerId, imageName,
                     DevServiceRegistration.Origin.OWNED, containerKept, BootstrapMode.isDev() ? reuseDecision(service) : null, links);
 
             return DevServiceRegistration.builder()

@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.LgtmDevServicesRegistrar;
@@ -27,11 +26,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 @Import(LgtmDevServicesRegistrar.class)
 public final class LgtmDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider lgtmDevServiceProvider() {
-        return DevServiceProvider.of("lgtm", DevServiceCategories.OPENTELEMETRY);
-    }
-
     static class LgtmDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -41,6 +35,7 @@ public final class LgtmDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("lgtm")
                     .description("Grafana LGTM Dev Service")
+                    .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaLgtmStackContainer.class, () -> new ArconiaLgtmStackContainer(properties))
                     .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)

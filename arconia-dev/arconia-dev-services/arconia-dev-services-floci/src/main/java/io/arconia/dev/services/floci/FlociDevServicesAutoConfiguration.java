@@ -15,10 +15,9 @@ import org.springframework.core.env.Environment;
 import software.amazon.awssdk.awscore.AwsClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import io.arconia.dev.services.api.provider.DevServiceCategories;
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.floci.FlociDevServicesAutoConfiguration.FlociDevServicesRegistrar;
@@ -34,11 +33,6 @@ import io.arconia.dev.services.floci.FlociDevServicesAutoConfiguration.S3Configu
 @Import({FlociDevServicesRegistrar.class, S3Configuration.class})
 public final class FlociDevServicesAutoConfiguration {
 
-    @Bean
-    DevServiceProvider flociDevServiceProvider() {
-        return DevServiceProvider.of("floci", DevServiceCategories.AWS);
-    }
-
     static class FlociDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -48,6 +42,7 @@ public final class FlociDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("floci")
                     .description("Floci Dev Service")
+                    .category(DevServiceCategories.AWS)
                     .properties(properties)
                     .container(ArconiaFlociContainer.class, () -> new ArconiaFlociContainer(properties))
                     .discovery(AwsConnectionDetails.class,

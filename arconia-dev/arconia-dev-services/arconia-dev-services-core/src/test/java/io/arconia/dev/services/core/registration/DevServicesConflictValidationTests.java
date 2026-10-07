@@ -5,14 +5,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.core.env.Environment;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.core.autoconfigure.MultipleDevServicesException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +36,7 @@ class DevServicesConflictValidationTests {
         contextRunner.withUserConfiguration(ConflictingConfiguration.class)
                 .run(context -> {
                     assertThat(context).hasFailed();
-                    assertThat(context.getStartupFailure()).rootCause()
+                    assertThat(context.getStartupFailure())
                             .isInstanceOf(MultipleDevServicesException.class)
                             .hasMessageContaining("jdbc")
                             .hasMessageContaining("first")
@@ -48,7 +46,7 @@ class DevServicesConflictValidationTests {
     }
 
     @Test
-    void noConflictWithSingleProvider() {
+    void noConflictWithSingleService() {
         contextRunner.withUserConfiguration(SingleServiceConfiguration.class)
                 .run(context -> {
                     assertThat(context).hasNotFailed();
@@ -56,32 +54,26 @@ class DevServicesConflictValidationTests {
                 });
     }
 
+    @Test
+    void noConflictAcrossCategoriesOrWithoutCategory() {
+        contextRunner.withUserConfiguration(CompatibleConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context.getBeanNamesForType(GenericContainer.class)).hasSize(3);
+                });
+    }
+
     @Configuration(proxyBeanMethods = false)
     @Import({FirstDevServiceRegistrar.class, SecondDevServiceRegistrar.class})
-    static class ConflictingConfiguration {
-
-        @Bean
-        DevServiceProvider firstDevServiceProvider() {
-            return DevServiceProvider.of("first", "jdbc");
-        }
-
-        @Bean
-        DevServiceProvider secondDevServiceProvider() {
-            return DevServiceProvider.of("second", "jdbc");
-        }
-
-    }
+    static class ConflictingConfiguration {}
 
     @Configuration(proxyBeanMethods = false)
     @Import(FirstDevServiceRegistrar.class)
-    static class SingleServiceConfiguration {
+    static class SingleServiceConfiguration {}
 
-        @Bean
-        DevServiceProvider firstDevServiceProvider() {
-            return DevServiceProvider.of("first", "jdbc");
-        }
-
-    }
+    @Configuration(proxyBeanMethods = false)
+    @Import({FirstDevServiceRegistrar.class, OtherCategoryDevServiceRegistrar.class, UncategorizedDevServiceRegistrar.class})
+    static class CompatibleConfiguration {}
 
     static class FirstDevServiceRegistrar extends DevServicesRegistrar {
 
@@ -89,6 +81,7 @@ class DevServicesConflictValidationTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("first")
+                    .category("jdbc")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }
@@ -101,6 +94,32 @@ class DevServicesConflictValidationTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("second")
+                    .category("jdbc")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestContainer.class, TestContainer::new));
+        }
+
+    }
+
+    static class OtherCategoryDevServiceRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            registry.registerDevService(service -> service
+                    .name("other")
+                    .category("opentelemetry")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestContainer.class, TestContainer::new));
+        }
+
+    }
+
+    static class UncategorizedDevServiceRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            registry.registerDevService(service -> service
+                    .name("uncategorized")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }
