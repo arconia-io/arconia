@@ -20,6 +20,8 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.util.ReflectionUtils;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,8 +32,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(OutputCaptureExtension.class)
 class ArconiaKeycloakContainerTests {
 
+    /**
+     * The container as the registry creates it, with the common properties applied.
+     */
     private static ArconiaKeycloakContainer container(KeycloakDevServicesProperties properties) {
-        return new ArconiaKeycloakContainer(properties);
+        var container = new ArconiaKeycloakContainer(properties);
+        ContainerConfigurer.apply(container, properties, false);
+        return container;
     }
 
     @Test
@@ -257,7 +264,7 @@ class ArconiaKeycloakContainerTests {
     void shouldApplyTheStartupTimeoutToItsOwnWaitStrategy() {
         // Load-bearing, and entirely dependent on the container library: ExtendableKeycloakContainer
         // overrides withStartupTimeout(Duration) to keep the value for itself. Without that
-        // override, ContainerConfigurer.base would stamp this timeout onto
+        // override, ContainerConfigurer.apply would stamp this timeout onto
         // GenericContainer.DEFAULT_WAIT_STRATEGY — a static instance every container that hasn't
         // declared its own wait strategy shares — and every other dev service in the JVM would
         // silently inherit Keycloak's two-minute timeout.

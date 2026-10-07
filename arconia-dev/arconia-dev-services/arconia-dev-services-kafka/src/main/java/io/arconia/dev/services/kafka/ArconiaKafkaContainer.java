@@ -4,7 +4,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -28,8 +27,6 @@ final class ArconiaKafkaContainer extends KafkaContainer {
         // so when we customize the startup timeout, it will be applied to all of them.
         // Hence, we must provide an equivalent wait strategy of our own.
         this.waitingFor(Wait.forLogMessage(READY_REGEX, 1));
-
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override

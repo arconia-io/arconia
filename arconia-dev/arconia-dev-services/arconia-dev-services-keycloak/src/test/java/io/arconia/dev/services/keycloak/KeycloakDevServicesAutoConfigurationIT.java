@@ -66,7 +66,8 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(defaultContainer(), ownerId);
+        var properties = new KeycloakDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaKeycloakContainer(properties), properties, ownerId);
     }
 
     @Override

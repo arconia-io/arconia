@@ -51,7 +51,8 @@ class MariaDbDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfi
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaMariaDbContainer(new MariaDbDevServicesProperties()), ownerId);
+        var properties = new MariaDbDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaMariaDbContainer(properties), properties, ownerId);
     }
 
     @Test

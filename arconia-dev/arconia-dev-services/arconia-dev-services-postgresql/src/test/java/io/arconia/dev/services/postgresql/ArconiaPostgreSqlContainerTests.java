@@ -9,6 +9,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import io.arconia.dev.services.core.container.ContainerConfigurer;
+
 import static io.arconia.dev.services.postgresql.ArconiaPostgreSqlContainer.READY_REGEX;
 import static io.arconia.dev.services.postgresql.ArconiaPostgreSqlContainer.SKIPPING_INITIALIZATION_REGEX;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +47,7 @@ class ArconiaPostgreSqlContainerTests {
     void withCustomWaitStrategy() {
         var properties = new PostgresqlDevServicesProperties();
         var container = new ArconiaPostgreSqlContainer(properties);
+        ContainerConfigurer.apply(container, properties, false);
         var waitStrategy = getWaitStrategy(container);
 
         Duration actualTimeout = getStartupTimeout(waitStrategy);

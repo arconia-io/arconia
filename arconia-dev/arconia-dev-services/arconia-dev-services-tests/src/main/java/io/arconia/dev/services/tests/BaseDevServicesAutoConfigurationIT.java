@@ -17,8 +17,10 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,7 +66,7 @@ public abstract class BaseDevServicesAutoConfigurationIT {
      * Create a container labeled as discoverable and owned by {@code ownerId}, as another
      * application would start it, for a Dev Service supporting the {@code framework} reuse
      * strategy. Implementations should return the module's container with the image from its
-     * properties, applying the discovery labels via {@link #withDiscoveryLabels}.
+     * properties, configured via {@link #asDiscoverableContainer}.
      * <p>
      * Returns {@code null} by default, in which case the discovery test below self-skips.
      * <p>
@@ -78,10 +80,12 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     }
 
     /**
-     * Apply the discovery labels (name, discoverable, owner) to the given container,
-     * matching what another application would set when starting a discoverable container.
+     * Configure the given container as another application starting it as a discoverable
+     * container would: the common dev service properties, and the discovery labels (name,
+     * discoverable, owner).
      */
-    protected GenericContainer<?> withDiscoveryLabels(GenericContainer<?> container, String ownerId) {
+    protected GenericContainer<?> asDiscoverableContainer(GenericContainer<?> container, BaseDevServicesProperties properties, String ownerId) {
+        ContainerConfigurer.apply(container, properties, false);
         container.withLabel(DevServiceLabels.NAME, getServiceName());
         container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
         container.withLabel(DevServiceLabels.OWNER, ownerId);

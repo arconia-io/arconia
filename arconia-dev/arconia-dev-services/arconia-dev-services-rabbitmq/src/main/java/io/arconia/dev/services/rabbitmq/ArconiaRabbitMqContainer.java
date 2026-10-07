@@ -3,7 +3,6 @@ package io.arconia.dev.services.rabbitmq;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -23,7 +22,6 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
 
-        ContainerConfigurer.base(this, properties);
 
         this.withAdminUser(properties.getUsername());
         this.withAdminPassword(properties.getPassword());

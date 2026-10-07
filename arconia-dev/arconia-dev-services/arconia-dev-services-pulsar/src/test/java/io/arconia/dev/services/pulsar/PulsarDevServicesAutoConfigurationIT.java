@@ -50,7 +50,8 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaPulsarContainer(new PulsarDevServicesProperties()), ownerId);
+        var properties = new PulsarDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaPulsarContainer(properties), properties, ownerId);
     }
 
     @Override

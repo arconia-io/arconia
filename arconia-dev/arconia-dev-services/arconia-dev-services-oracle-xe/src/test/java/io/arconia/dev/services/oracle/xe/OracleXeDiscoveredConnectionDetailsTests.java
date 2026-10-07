@@ -69,7 +69,7 @@ class OracleXeDiscoveredConnectionDetailsTests {
             }
 
         };
-        ContainerConfigurer.jdbc(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
         return container;
     }
 

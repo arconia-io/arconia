@@ -10,8 +10,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.ClassPathResource;
@@ -25,7 +23,6 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
@@ -43,12 +40,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Incubating
 class ContainerConfigurerTests {
 
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
-    }
 
 
     @Test
@@ -57,7 +48,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"));
 
-        ContainerConfigurer.base(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getEnvMap())
                 .containsEntry("KEY1", "VALUE1")
@@ -70,33 +61,21 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withNetworkAliases(List.of("alias1", "alias2", "alias3"));
 
-        ContainerConfigurer.base(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getNetworkAliases())
                 .contains("alias1", "alias2", "alias3");
     }
 
     @Test
-    void reuseShouldBeAppliedInDevMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
-        BootstrapMode.clear();
+    void reuseShouldFollowTheGivenDecision() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuseStrategy(ReuseStrategy.TESTCONTAINERS);
+        BaseDevServicesProperties properties = new TestBaseDevServicesProperties();
 
-        ContainerConfigurer.testcontainersReuse(container, properties);
-
+        ContainerConfigurer.apply(container, properties, true);
         assertThat(container.isShouldBeReused()).isTrue();
-    }
 
-    @Test
-    void reuseShouldNotBeAppliedOutsideDevMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
-        BootstrapMode.clear();
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties().withReuseStrategy(ReuseStrategy.TESTCONTAINERS);
-
-        ContainerConfigurer.testcontainersReuse(container, properties);
-
+        ContainerConfigurer.apply(container, properties, false);
         assertThat(container.isShouldBeReused()).isFalse();
     }
 
@@ -112,7 +91,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withStartupTimeout(customTimeout);
 
-        ContainerConfigurer.base(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         WaitStrategy waitStrategy = getWaitStrategy(container);
         Duration actualTimeout = getStartupTimeout(waitStrategy);
@@ -146,7 +125,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withEnvironment(Map.of());
 
-        ContainerConfigurer.base(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getEnvMap()).isEmpty();
     }
@@ -157,7 +136,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withNetworkAliases(List.of());
 
-        ContainerConfigurer.base(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getNetworkAliases()).hasSize(1); // default alias added by Testcontainers
     }
@@ -170,7 +149,7 @@ class ContainerConfigurerTests {
                         new ResourceMapping("classpath:test-resource.txt", "/etc/config/test.txt")
                 ));
 
-        ContainerConfigurer.resources(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         // Then
         assertThat(container.getCopyToFileContainerPathMap()).isNotEmpty();
@@ -186,7 +165,7 @@ class ContainerConfigurerTests {
                         new ResourceMapping("test-resource.txt", "/etc/config/test.txt")
                 ));
 
-        ContainerConfigurer.resources(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getCopyToFileContainerPathMap()).isNotEmpty();
         assertThat(container.getCopyToFileContainerPathMap().values())
@@ -202,7 +181,7 @@ class ContainerConfigurerTests {
                         new ResourceMapping("test-resource.txt", "/etc/config/test2.txt")
                 ));
 
-        ContainerConfigurer.resources(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getCopyToFileContainerPathMap()).hasSize(2);
         assertThat(container.getCopyToFileContainerPathMap().values())
@@ -217,7 +196,7 @@ class ContainerConfigurerTests {
                         new ResourceMapping("non-existent-resource.txt", "/etc/config/test.txt")
                 ));
 
-        assertThatThrownBy(() -> ContainerConfigurer.resources(container, properties))
+        assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Resource not found");
     }
@@ -228,7 +207,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withResources(List.of());
 
-        ContainerConfigurer.resources(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getCopyToFileContainerPathMap()).isEmpty();
     }
@@ -341,7 +320,7 @@ class ContainerConfigurerTests {
                         new VolumeMapping("/host/path", "/container/path")
                 ));
 
-        ContainerConfigurer.volumes(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getBinds()).hasSize(1);
         assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path");
@@ -359,7 +338,7 @@ class ContainerConfigurerTests {
                         new VolumeMapping("/host/path3", "/container/path3")
                 ));
 
-        ContainerConfigurer.volumes(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getBinds()).hasSize(3);
         assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path1");
@@ -379,7 +358,7 @@ class ContainerConfigurerTests {
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
                 .withVolumes(List.of());
 
-        ContainerConfigurer.volumes(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getBinds()).isEmpty();
     }
@@ -390,7 +369,7 @@ class ContainerConfigurerTests {
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withUsername("testuser");
 
-        ContainerConfigurer.jdbc(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getUsername()).isEqualTo("testuser");
     }
@@ -401,7 +380,7 @@ class ContainerConfigurerTests {
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withPassword("testpassword");
 
-        ContainerConfigurer.jdbc(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getPassword()).isEqualTo("testpassword");
     }
@@ -412,7 +391,7 @@ class ContainerConfigurerTests {
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withDbName("testdb");
 
-        ContainerConfigurer.jdbc(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         assertThat(container.getDatabaseName()).isEqualTo("testdb");
     }
@@ -423,7 +402,7 @@ class ContainerConfigurerTests {
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withInitScriptPaths(List.of("init1.sql", "init2.sql"));
 
-        ContainerConfigurer.jdbc(container, properties);
+        ContainerConfigurer.apply(container, properties, false);
 
         String[] initScripts = getInitScripts(container);
         assertThat(initScripts)
@@ -435,7 +414,7 @@ class ContainerConfigurerTests {
         JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
                 .withInitScriptPaths(List.of());
 
-        assertThatCode(() -> ContainerConfigurer.jdbc(container, properties))
+        assertThatCode(() -> ContainerConfigurer.apply(container, properties, false))
                 .doesNotThrowAnyException();
 
         String[] initScripts = getInitScripts(container);

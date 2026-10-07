@@ -51,7 +51,8 @@ class MySqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoConfigu
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaMySqlContainer(new MySqlDevServicesProperties()), ownerId);
+        var properties = new MySqlDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaMySqlContainer(properties), properties, ownerId);
     }
 
     @Test

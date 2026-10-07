@@ -61,7 +61,6 @@ final class ArconiaKeycloakContainer extends KeycloakContainer {
         validateConfiguredRealmIsImported(importedRealms.values());
         copyRealmImportFiles(importedRealms);
 
-        ContainerConfigurer.base(this, properties);
     }
 
     private void validateConfiguredRealmIsImported(Collection<String> importedRealms) {

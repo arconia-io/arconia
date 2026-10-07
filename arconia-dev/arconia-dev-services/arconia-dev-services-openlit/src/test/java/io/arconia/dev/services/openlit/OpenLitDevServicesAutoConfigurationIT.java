@@ -55,7 +55,8 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaOpenLitContainer(new OpenLitDevServicesProperties()), ownerId);
+        var properties = new OpenLitDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaOpenLitContainer(properties), properties, ownerId);
     }
 
     @Override

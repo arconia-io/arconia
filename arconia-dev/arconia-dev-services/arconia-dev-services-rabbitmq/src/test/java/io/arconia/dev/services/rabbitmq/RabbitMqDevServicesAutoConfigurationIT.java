@@ -49,7 +49,8 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()), ownerId);
+        var properties = new RabbitMqDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaRabbitMqContainer(properties), properties, ownerId);
     }
 
     @Override

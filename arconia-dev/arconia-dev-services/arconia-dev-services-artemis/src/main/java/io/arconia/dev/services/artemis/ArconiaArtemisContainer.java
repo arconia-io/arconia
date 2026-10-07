@@ -3,7 +3,6 @@ package io.arconia.dev.services.artemis;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -24,7 +23,6 @@ final class ArconiaArtemisContainer extends ArtemisContainer {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
 
-        ContainerConfigurer.base(this, properties);
 
         this.withUser(properties.getUsername());
         this.withPassword(properties.getPassword());

@@ -48,7 +48,8 @@ class RedisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaRedisContainer(new RedisDevServicesProperties()), ownerId);
+        var properties = new RedisDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaRedisContainer(properties), properties, ownerId);
     }
 
     @Override

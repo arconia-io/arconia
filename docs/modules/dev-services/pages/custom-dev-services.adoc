@@ -81,7 +81,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
 
 == Container Class
 
-Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. Use `ContainerConfigurer` to apply the common configuration properties, and `asCompatibleSubstituteFor()` so users can override the image with a compatible one (e.g. a mirror from an internal registry).
+Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your class must not apply them itself. What is left to the class is the image, the exposed ports, the wait strategy, and the fixed ports, which Testcontainers only lets a subclass declare.
 
 [source,java]
 ----
@@ -99,8 +99,6 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 
         this.withExposedPorts(FANCYDB_PORT);
         this.waitingFor(Wait.defaultWaitStrategy());
-
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override
@@ -114,9 +112,9 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 }
 ----
 
-Unless your container class already declares a wait strategy of its own, declare one explicitly before calling `ContainerConfigurer.base()`, as in the example above. Testcontainers shares a single default wait strategy instance across all containers that don't declare one, and `ContainerConfigurer.base()` applies the `startup-timeout` property to whichever wait strategy the container has at that point. Without an explicit wait strategy, the startup timeout you configure for your Dev Service is applied to the shared instance, changing the startup timeout of every other container relying on it as well. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
+Declare a wait strategy unless your container class already has one of its own, as in the example above. The `startup-timeout` property is applied to the container's wait strategy, and Testcontainers shares a single default wait strategy instance across all containers that don't declare one: without an explicit strategy, the timeout configured for your Dev Service would change the startup timeout of every other container relying on the shared instance. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
 
-For relational databases, also apply `ContainerConfigurer.jdbc(this, properties)` to configure credentials, database name, and init scripts.
+For relational databases, extend the service's `JdbcDatabaseContainer` and implement `JdbcDevServicesProperties`: credentials, database name, and init scripts are then applied by the framework as well.
 
 == Exposing Links
 
@@ -215,7 +213,7 @@ registry.registerDevService(service -> service
                         container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT))));
 ----
 
-Declaring the discovery is what opts your Dev Service into it: a service that declares none never participates, even when the `reuse-strategy` property is set to `framework`. In that case the strategy is not applied, and the startup message of the Dev Service says so. The `testcontainers` reuse strategy needs no support from your Dev Service: it is applied by `ContainerConfigurer` when the container is created (via `ContainerConfigurer.base(...)`). The two strategies are mutually exclusive, so a container kept running by Testcontainers is never advertised for discovery.
+Declaring the discovery is what opts your Dev Service into it: a service that declares none never participates, even when the `reuse-strategy` property is set to `framework`. In that case the strategy is not applied, and the startup message of the Dev Service says so. The `testcontainers` reuse strategy needs no support from your Dev Service: it is applied by the framework when the container is created. The two strategies are mutually exclusive, so a container kept running by Testcontainers is never advertised for discovery.
 
 The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the container is still discovered, but the Dev Service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
 
@@ -229,7 +227,7 @@ For a relational database, declare `JdbcConnectionDetails` as the connection det
 
 The shared network (see xref:index.adoc#_shared_network[Shared Network]) is a global feature: when the user sets `arconia.dev.services.network.enabled`, every Dev Service container joins the network automatically. Your Dev Service needs no special declaration to participate.
 
-The only requirement is that your container is reachable by a stable name. A networked container is reachable by its service name by default, and users can override that with the common `network-aliases` property, so make sure your container applies it: using `ContainerConfigurer.base(...)`, which calls `withNetworkAliases(...)`, is enough.
+The only requirement is that your container is reachable by a stable name. A networked container is reachable by its service name by default, and users can add aliases with the common `network-aliases` property, which the framework applies to the container.
 
 == Mutual Exclusion
 

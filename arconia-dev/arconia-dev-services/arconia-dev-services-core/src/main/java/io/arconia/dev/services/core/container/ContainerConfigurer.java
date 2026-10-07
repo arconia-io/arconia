@@ -4,66 +4,86 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.MountableFile;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
-import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
- * Utility class for configuring Dev Service containers.
+ * Applies the common dev service properties to a container, and resolves the resources they
+ * refer to. The properties are applied by the dev services registry when it creates the
+ * container, so a dev service must not apply them itself.
  */
 @Incubating
 public final class ContainerConfigurer {
 
     private static final String RESOURCE_PREFIX_CLASSPATH = "classpath:";
+
     private static final String RESOURCE_PREFIX_FILE = "file:";
+
+    private static final String JDBC_DATABASE_CONTAINER_CLASS = "org.testcontainers.containers.JdbcDatabaseContainer";
 
     private ContainerConfigurer() {}
 
     /**
-     * Configures base container configuration for Dev Services.
+     * Apply the common dev service properties to the given container: environment, network
+     * aliases, startup timeout, resources, volumes, and whether Testcontainers reuses the
+     * container. A {@link JdbcDatabaseContainer} configured with {@link JdbcDevServicesProperties}
+     * also gets its credentials, database name, and init scripts.
      * <p>
-     * The container must already have a wait strategy of its own when this method is called,
-     * since the configured startup timeout is applied to it. Containers that don't declare one
-     * rely on a wait strategy instance that Testcontainers shares across all containers, which
-     * would make the startup timeout apply to every other container relying on it as well.
+     * The startup timeout is applied to the wait strategy of the container, which must therefore
+     * be its own. A container that doesn't declare one relies on a wait strategy instance that
+     * Testcontainers shares across all containers, and the timeout would apply to every other
+     * container relying on it as well.
      */
-    public static void base(GenericContainer<?> container, BaseDevServicesProperties properties) {
+    public static void apply(GenericContainer<?> container, BaseDevServicesProperties properties, boolean testcontainersReuse) {
+        Assert.notNull(container, "container cannot be null");
+        Assert.notNull(properties, "properties cannot be null");
+
         container
                 .withEnv(properties.getEnvironment())
                 .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                .withStartupTimeout(properties.getStartupTimeout());
-
-        resources(container, properties);
-        volumes(container, properties);
-        testcontainersReuse(container, properties);
-    }
-
-    /**
-     * Configures whether the container is reused across application restarts, relying on the
-     * Testcontainers reusable containers feature, which is the case with the
-     * {@link ReuseStrategy#TESTCONTAINERS} reuse strategy. Reuse only takes effect in dev mode and
-     * additionally requires enabling the feature in the {@code ~/.testcontainers.properties} file.
-     */
-    public static void testcontainersReuse(GenericContainer<?> container, BaseDevServicesProperties properties) {
-        container.withReuse(BootstrapMode.isDev() && ReuseStrategy.TESTCONTAINERS == properties.getReuseStrategy());
-    }
-
-    /**
-     * Configures mapped resources to be loaded into the container.
-     */
-    public static void resources(GenericContainer<?> container, BaseDevServicesProperties properties) {
+                .withStartupTimeout(properties.getStartupTimeout())
+                .withReuse(testcontainersReuse);
         for (ResourceMapping resource : properties.getResources()) {
             container.withCopyFileToContainer(resolveMountableFile(resource.sourcePath()), resource.containerPath());
         }
+        volumes(container, properties);
+
+        if (properties instanceof JdbcDevServicesProperties jdbcProperties
+                && ClassUtils.isPresent(JDBC_DATABASE_CONTAINER_CLASS, ContainerConfigurer.class.getClassLoader())) {
+            jdbc(container, jdbcProperties);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
+        for (VolumeMapping volume : properties.getVolumes()) {
+            container.withFileSystemBind(volume.hostPath(), volume.containerPath(), BindMode.READ_WRITE);
+        }
+    }
+
+    private static void jdbc(GenericContainer<?> container, JdbcDevServicesProperties properties) {
+        if (!(container instanceof JdbcDatabaseContainer<?> jdbcContainer)) {
+            return;
+        }
+        jdbcContainer
+                .withUsername(properties.getUsername())
+                .withPassword(properties.getPassword())
+                .withDatabaseName(properties.getDbName())
+                .withInitScripts(properties.getInitScriptPaths())
+                // The startup timeout is applied again here because JdbcDatabaseContainer does not wait
+                // on the container's wait strategy: it polls the database until it answers a test query,
+                // bounded by its own startupTimeoutSeconds (120 seconds by default). Without this,
+                // the configured startup timeout would have no effect on JDBC dev services.
+                .withStartupTimeoutSeconds((int) properties.getStartupTimeout().toSeconds());
     }
 
     /**
@@ -161,30 +181,5 @@ public final class ContainerConfigurer {
         return location;
     }
 
-    /**
-     * Configures mapped volumes to be bound with read-write access to the container.
-     */
-    @SuppressWarnings("deprecation")
-    public static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
-        for (VolumeMapping volume : properties.getVolumes()) {
-            container.withFileSystemBind(volume.hostPath(), volume.containerPath(), BindMode.READ_WRITE);
-        }
-    }
-
-    /**
-     * Configures JDBC common settings for Dev Services.
-     */
-    public static void jdbc(JdbcDatabaseContainer<?> container, JdbcDevServicesProperties properties) {
-        container
-                .withUsername(properties.getUsername())
-                .withPassword(properties.getPassword())
-                .withDatabaseName(properties.getDbName())
-                .withInitScripts(properties.getInitScriptPaths())
-                // The startup timeout is applied again here because JdbcDatabaseContainer does not wait
-                // on the container's wait strategy: it polls the database until it answers a test query,
-                // bounded by its own startupTimeoutSeconds (120 seconds by default). Without this,
-                // the configured startup timeout would have no effect on JDBC dev services.
-                .withStartupTimeoutSeconds((int) properties.getStartupTimeout().toSeconds());
-    }
 
 }

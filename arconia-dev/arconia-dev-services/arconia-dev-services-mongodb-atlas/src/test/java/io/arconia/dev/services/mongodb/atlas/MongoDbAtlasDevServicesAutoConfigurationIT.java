@@ -48,7 +48,8 @@ class MongoDbAtlasDevServicesAutoConfigurationIT extends BaseDevServicesAutoConf
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaMongoDbAtlasLocalContainer(new MongoDbAtlasDevServicesProperties()), ownerId);
+        var properties = new MongoDbAtlasDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaMongoDbAtlasLocalContainer(properties), properties, ownerId);
     }
 
     @Override

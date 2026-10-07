@@ -5,7 +5,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -34,7 +33,6 @@ final class ArconiaLgtmStackContainer extends LgtmStackContainer {
         this.properties = properties;
 
         this.withEnv("GF_USERS_DEFAULT_THEME", "system");
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override

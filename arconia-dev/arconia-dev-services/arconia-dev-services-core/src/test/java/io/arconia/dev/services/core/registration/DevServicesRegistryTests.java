@@ -375,6 +375,34 @@ class DevServicesRegistryTests {
     }
 
     @Test
+    void whenContainerCreatedThenCommonPropertiesAreApplied() {
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.WITH_ENVIRONMENT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(container.getEnvMap()).containsEntry("KEY", "value");
+        assertThat(container.getNetworkAliases()).contains("db");
+    }
+
+    @Test
+    void whenTestcontainersStrategyIsEffectiveThenContainerIsReusable() {
+        enableDevMode();
+        DevServicesRegistry registry = registryWithReuseSupport(true);
+
+        registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.TESTCONTAINERS)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(container.isShouldBeReused()).isTrue();
+    }
+
+    @Test
     void whenNetworkEnabledThenContainerJoinsNetworkWithServiceNameAlias() {
         DevServicesRegistry registry = registryWithNetworkEnabled();
         TestNetwork network = new TestNetwork("net-1");
@@ -423,13 +451,21 @@ class DevServicesRegistryTests {
     @Test
     void whenContainerReusedOnDefaultNetworkThenWarns(CapturedOutput output) {
         enableDevMode();
-        DevServicesRegistry registry = registryWithNetworkEnabled();
+        var environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test-network",
+                Map.of("arconia.dev.services.network.enabled", "true")));
+        DevServicesRegistry registry = new DevServicesRegistry(beanFactory, environment) {
+            @Override
+            boolean environmentSupportsTestcontainersReuse() {
+                return true;
+            }
+        };
         registerNetworkBean(Network.SHARED);
 
         registry.registerDevService(service -> service
                 .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db").withReuse(true)));
+                .properties(TestDevServicesProperties.TESTCONTAINERS)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
         beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 

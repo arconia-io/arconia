@@ -48,7 +48,8 @@ class ElasticsearchDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaElasticsearchContainer(new ElasticsearchDevServicesProperties()), ownerId);
+        var properties = new ElasticsearchDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaElasticsearchContainer(properties), properties, ownerId);
     }
 
     @Override

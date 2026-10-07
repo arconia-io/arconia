@@ -53,7 +53,8 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaDoclingServeContainer(new DoclingDevServicesProperties()), ownerId);
+        var properties = new DoclingDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaDoclingServeContainer(properties), properties, ownerId);
     }
 
     @Override

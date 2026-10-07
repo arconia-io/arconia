@@ -57,7 +57,8 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaOllamaContainer(new OllamaDevServicesProperties()), ownerId);
+        var properties = new OllamaDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaOllamaContainer(properties), properties, ownerId);
     }
 
     @Override

@@ -51,7 +51,8 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()), ownerId);
+        var properties = new OtelCollectorDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaOtelCollectorContainer(properties), properties, ownerId);
     }
 
     @Override

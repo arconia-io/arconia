@@ -50,7 +50,8 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaArtemisContainer(new ArtemisDevServicesProperties()), ownerId);
+        var properties = new ArtemisDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaArtemisContainer(properties), properties, ownerId);
     }
 
     @Override

@@ -55,7 +55,8 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaLgtmStackContainer(new LgtmDevServicesProperties()), ownerId);
+        var properties = new LgtmDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaLgtmStackContainer(properties), properties, ownerId);
     }
 
     @Override

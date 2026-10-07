@@ -54,7 +54,8 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaPostgreSqlContainer(new PostgresqlDevServicesProperties()), ownerId);
+        var properties = new PostgresqlDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaPostgreSqlContainer(properties), properties, ownerId);
     }
 
     @Test

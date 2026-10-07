@@ -37,6 +37,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
+import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
@@ -44,6 +45,7 @@ import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.autoconfigure.MultipleDevServicesException;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
+import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 
 /**
@@ -336,6 +338,8 @@ public class DevServicesRegistry {
     private GenericBeanDefinition createContainerBeanDefinition(ServiceSpec service) {
         Supplier<? extends GenericContainer<?>> containerSupplier = service.getContainerSupplier();
         Assert.notNull(containerSupplier, "service container supplier cannot be null");
+        BaseDevServicesProperties properties = service.getProperties();
+        Assert.notNull(properties, "service properties cannot be null");
 
         // Create container bean definition.
         DevServiceContainerBeanDefinition beanDefinition = new DevServiceContainerBeanDefinition();
@@ -360,6 +364,7 @@ public class DevServicesRegistry {
         // Provide a supplier for creating a Container instance.
         beanDefinition.setInstanceSupplier((InstanceSupplier<GenericContainer<?>>) registeredBean -> {
             GenericContainer<?> container = containerSupplier.get();
+            ContainerConfigurer.apply(container, properties, reuseDecision(service).effective() == ReuseStrategy.TESTCONTAINERS);
             applyCustomizers(container, registeredBean.getBeanFactory());
             applyLabels(container, service);
             applyNetwork(container, service, registeredBean.getBeanFactory());

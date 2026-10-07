@@ -3,7 +3,6 @@ package io.arconia.dev.services.elasticsearch;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -20,8 +19,6 @@ final class ArconiaElasticsearchContainer extends ElasticsearchContainer {
     public ArconiaElasticsearchContainer(ElasticsearchDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
-
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override

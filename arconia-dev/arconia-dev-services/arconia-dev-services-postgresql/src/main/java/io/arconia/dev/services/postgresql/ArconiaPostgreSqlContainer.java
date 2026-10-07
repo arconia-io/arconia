@@ -4,7 +4,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -27,9 +26,6 @@ final class ArconiaPostgreSqlContainer extends PostgreSQLContainer {
         this.waitingFor(Wait
                 .forLogMessage("(" + READY_REGEX + "|" + SKIPPING_INITIALIZATION_REGEX + ")", 2)
         );
-
-        ContainerConfigurer.base(this, properties);
-        ContainerConfigurer.jdbc(this, properties);
     }
 
     @Override

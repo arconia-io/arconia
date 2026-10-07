@@ -7,7 +7,6 @@ import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -38,11 +37,6 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer {
                 .build());
         this.properties = properties;
         this.uiEnabled = isUiEnabled(properties);
-
-        this.withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}));
-        ContainerConfigurer.resources(this, properties);
-        ContainerConfigurer.volumes(this, properties);
-        ContainerConfigurer.testcontainersReuse(this, properties);
     }
 
     @Override

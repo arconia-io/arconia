@@ -2,7 +2,6 @@ package io.arconia.dev.services.openlit;
 
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.openlit.OpenLitContainer;
 
@@ -19,7 +18,6 @@ final class ArconiaOpenLitContainer extends OpenLitContainer {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         this.properties = properties;
         this.withClickHouseImage(properties.getClickhouseImageName());
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override

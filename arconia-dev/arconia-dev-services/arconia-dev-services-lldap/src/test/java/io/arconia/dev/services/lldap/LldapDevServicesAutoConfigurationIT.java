@@ -59,7 +59,7 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         properties.setEnvironment(Map.of(
                 "LLDAP_JWT_SECRET", "letItGoWannaBuildSnowman",
                 "LLDAP_LDAP_USER_PASS", "password"));
-        return withDiscoveryLabels(new ArconiaLldapContainer(properties), ownerId);
+        return asDiscoverableContainer(new ArconiaLldapContainer(properties), properties, ownerId);
     }
 
     @Override

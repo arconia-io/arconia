@@ -55,7 +55,8 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaPhoenixContainer(new PhoenixDevServicesProperties()), ownerId);
+        var properties = new PhoenixDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaPhoenixContainer(properties), properties, ownerId);
     }
 
     @Override

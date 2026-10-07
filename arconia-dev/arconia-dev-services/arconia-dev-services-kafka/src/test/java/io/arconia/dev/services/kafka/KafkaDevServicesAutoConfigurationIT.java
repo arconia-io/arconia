@@ -48,7 +48,8 @@ class KafkaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        return withDiscoveryLabels(new ArconiaKafkaContainer(new KafkaDevServicesProperties()), ownerId);
+        var properties = new KafkaDevServicesProperties();
+        return asDiscoverableContainer(new ArconiaKafkaContainer(properties), properties, ownerId);
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
@@ -31,8 +30,6 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         // the startup timeout, it will be applied to all containers. Hence, we must
         // provide an explicit wait strategy.
         this.waitingFor(Wait.defaultWaitStrategy());
-
-        ContainerConfigurer.base(this, properties);
     }
 
     @Override
