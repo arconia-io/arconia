@@ -512,6 +512,20 @@ class DevServicesRegistryTests {
     }
 
     @Test
+    @SuppressWarnings({"unchecked"})
+    void whenCustomizerWithoutBeanDefinitionIsTypedForOtherContainerThenItIsSkipped() {
+        // A lambda registered as a singleton has no bean definition to resolve its type from.
+        beanFactory.registerSingleton("linkContainerCustomizer",
+                (DevServiceContainerCustomizer<TestLinkContainer>) container -> container.withLabel("customized", "true"));
+
+        registerPostgresDevService(registry);
+
+        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
+
+        assertThat(container.getLabels()).doesNotContainKey("customized");
+    }
+
+    @Test
     void whenContainerProvidesLinksThenRegistrationCapturesThem() {
         registry.registerDevService(service -> service
                 .name("linky")
@@ -677,7 +691,7 @@ class DevServicesRegistryTests {
 
     @Test
     void whenCustomizerRegisteredInParentContextThenAppliedToMatchingContainer() {
-        AtomicBoolean applied = registerTypedCustomizerInParentContext(TestLinkContainer.class);
+        AtomicBoolean applied = registerTypedCustomizerInParentContext();
 
         registry.registerDevService(service -> service
                 .name("linky")
@@ -690,9 +704,7 @@ class DevServicesRegistryTests {
 
     @Test
     void whenCustomizerRegisteredInParentContextThenNotAppliedToOtherContainer() {
-        // The customizer is typed for TestLinkContainer. Its type must be resolved by walking the
-        // parent factory chain; without that walk it would resolve to null and wrongly apply here.
-        AtomicBoolean applied = registerTypedCustomizerInParentContext(TestLinkContainer.class);
+        AtomicBoolean applied = registerTypedCustomizerInParentContext();
 
         registry.registerDevService(service -> service
                 .name("postgres")
@@ -704,18 +716,19 @@ class DevServicesRegistryTests {
     }
 
     /**
-     * Register a {@link DevServiceContainerCustomizer} typed for the given container class as a
-     * lambda-backed bean definition in a parent bean factory, and make it the parent of the test
-     * bean factory. Returns a flag set when the customizer is actually applied.
+     * Register a {@link DevServiceContainerCustomizer} lambda typed for {@link TestLinkContainer}
+     * as a bean definition in a parent bean factory, as a {@code @Bean} method in a parent context
+     * would, and make it the parent of the test bean factory. Returns a flag set when the
+     * customizer is actually applied.
      */
-    private AtomicBoolean registerTypedCustomizerInParentContext(Class<? extends GenericContainer<?>> containerType) {
+    private AtomicBoolean registerTypedCustomizerInParentContext() {
         AtomicBoolean applied = new AtomicBoolean(false);
         var parent = new DefaultListableBeanFactory();
         var customizerDefinition = new RootBeanDefinition();
         customizerDefinition.setTargetType(
-                ResolvableType.forClassWithGenerics(DevServiceContainerCustomizer.class, containerType));
+                ResolvableType.forClassWithGenerics(DevServiceContainerCustomizer.class, TestLinkContainer.class));
         customizerDefinition.setInstanceSupplier(() ->
-                (DevServiceContainerCustomizer<GenericContainer<?>>) container -> applied.set(true));
+                (DevServiceContainerCustomizer<TestLinkContainer>) container -> applied.set(true));
         parent.registerBeanDefinition("typedContainerCustomizer", customizerDefinition);
         beanFactory.setParentBeanFactory(parent);
         return applied;

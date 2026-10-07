@@ -2,7 +2,6 @@ package io.arconia.dev.services.core.registration;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -13,8 +12,6 @@ import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -27,8 +24,7 @@ import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.core.GenericTypeResolver;
-import org.springframework.core.ResolvableType;
+import org.springframework.boot.util.LambdaSafe;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
@@ -383,66 +379,21 @@ public class DevServicesRegistry {
         return beanDefinition;
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Apply all matching {@link DevServiceContainerCustomizer} beans to the given container,
+     * in {@code @Order} semantics, before the container is started. A customizer matches when
+     * the container is an instance of its generic type. When that type cannot be resolved, as
+     * for a lambda, the customizer is invoked and skipped if the container doesn't match, the
+     * same way Spring Boot applies its own customizers.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void applyCustomizers(Container<?> container, ConfigurableBeanFactory beanFactory) {
-        if (!(beanFactory instanceof ConfigurableListableBeanFactory listableBeanFactory)) {
-            return;
-        }
-
-        // Map customizer instances to their bean names so their generic type can be resolved
-        // from the bean definition, which works even for lambdas returned from @Bean methods.
-        Map<DevServiceContainerCustomizer<?>, String> beanNamesByCustomizer = new IdentityHashMap<>();
-        for (String beanName : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(listableBeanFactory, DevServiceContainerCustomizer.class)) {
-            beanNamesByCustomizer.put(listableBeanFactory.getBean(beanName, DevServiceContainerCustomizer.class), beanName);
-        }
-
-        listableBeanFactory.getBeanProvider(DevServiceContainerCustomizer.class).orderedStream()
-                .filter(customizer -> supportsContainer(listableBeanFactory, beanNamesByCustomizer.get(customizer), customizer, container))
-                .forEach(customizer -> ((DevServiceContainerCustomizer<Container<?>>) customizer).customize(container));
-    }
-
-    /**
-     * Whether the given customizer applies to the given container, based on the customizer's
-     * generic type. The type is resolved from the bean definition (so that lambdas returned
-     * from {@code @Bean} methods work) with a fallback on the customizer's class. If the type
-     * cannot be resolved, the customizer applies to all containers.
-     */
-    private static boolean supportsContainer(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName,
-                                             DevServiceContainerCustomizer<?> customizer, Container<?> container) {
-        ResolvableType customizerType = ResolvableType.NONE;
-        if (beanName != null) {
-            // containsBeanDefinition is local-only, so a customizer registered as a lambda @Bean in a
-            // parent context isn't found here; walk the parent chain to the factory that owns the
-            // definition and read its type before falling back to the customizer's class.
-            ConfigurableListableBeanFactory definingBeanFactory = findDefiningBeanFactory(beanFactory, beanName);
-            if (definingBeanFactory != null) {
-                customizerType = definingBeanFactory.getMergedBeanDefinition(beanName).getResolvableType();
-            }
-        }
-
-        Class<?> targetType = customizerType.as(DevServiceContainerCustomizer.class).getGeneric(0).resolve();
-        if (targetType == null) {
-            targetType = GenericTypeResolver.resolveTypeArgument(customizer.getClass(), DevServiceContainerCustomizer.class);
-        }
-
-        return targetType == null || targetType.isInstance(container);
-    }
-
-    /**
-     * Find the bean factory in the hierarchy that owns the definition of the given bean.
-     * {@code containsBeanDefinition} is local to a single factory, so the parent chain is
-     * walked to locate a customizer registered in a parent context.
-     */
-    @Nullable
-    private static ConfigurableListableBeanFactory findDefiningBeanFactory(ConfigurableListableBeanFactory beanFactory, String beanName) {
-        BeanFactory current = beanFactory;
-        while (current instanceof ConfigurableListableBeanFactory listableBeanFactory) {
-            if (listableBeanFactory.containsBeanDefinition(beanName)) {
-                return listableBeanFactory;
-            }
-            current = listableBeanFactory.getParentBeanFactory();
-        }
-        return null;
+        List<DevServiceContainerCustomizer> customizers = beanFactory.getBeanProvider(DevServiceContainerCustomizer.class)
+                .orderedStream()
+                .toList();
+        LambdaSafe.callbacks(DevServiceContainerCustomizer.class, customizers, container)
+                .withLogger(DevServicesRegistry.class)
+                .invoke(customizer -> customizer.customize(container));
     }
 
     private void applyLabels(GenericContainer<?> container, ServiceSpec service) {
