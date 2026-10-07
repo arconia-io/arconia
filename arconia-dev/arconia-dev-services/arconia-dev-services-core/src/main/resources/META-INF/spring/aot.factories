@@ -1,2 +1,2 @@
-org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
-io.arconia.dev.services.core.aot.DevServicesBeanFactoryInitializationAotProcessor
+org.springframework.beans.factory.aot.BeanRegistrationExcludeFilter=\
+io.arconia.dev.services.core.registration.DevServicesBeanRegistrationExcludeFilter

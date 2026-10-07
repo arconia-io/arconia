@@ -72,6 +72,11 @@ public class DevServicesRegistry {
      */
     private static final String CATEGORY_ATTRIBUTE = "devService.category";
 
+    /**
+     * The attribute marking a dev service bean definition as excluded from AOT processing.
+     */
+    static final String AOT_EXCLUDED_ATTRIBUTE = "devService.aotExcluded";
+
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
     private final Environment environment;
@@ -280,6 +285,7 @@ public class DevServicesRegistry {
      */
     private RootBeanDefinition createDiscoveredConnectionDetailsBeanDefinition(ConnectionDetails connectionDetails, ContainerInfo containerInfo) {
         RootBeanDefinition beanDefinition = new DevServiceConnectionDetailsBeanDefinition();
+        excludeFromAot(beanDefinition);
         beanDefinition.setBeanClass(connectionDetails.getClass());
         beanDefinition.setInstanceSupplier(() -> connectionDetails);
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -302,6 +308,7 @@ public class DevServicesRegistry {
         String containerId = discoveredContainer.containerInfo().id();
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(DevServiceRegistration.class);
+        excludeFromAot(beanDefinition);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
         recordCategory(beanDefinition, service);
 
@@ -332,6 +339,7 @@ public class DevServicesRegistry {
 
         // Create container bean definition.
         DevServiceContainerBeanDefinition beanDefinition = new DevServiceContainerBeanDefinition();
+        excludeFromAot(beanDefinition);
         beanDefinition.setBeanClass(service.getContainerType());
 
         // Set description if provided.
@@ -382,6 +390,17 @@ public class DevServicesRegistry {
         LambdaSafe.callbacks(DevServiceContainerCustomizer.class, customizers, container)
                 .withLogger(DevServicesRegistry.class)
                 .invoke(customizer -> customizer.customize(container));
+    }
+
+    /**
+     * Mark the given dev service bean definition as excluded from AOT processing: it is created
+     * by an instance supplier and decided at startup from the state of the container runtime,
+     * neither of which can be generated ahead of time.
+     *
+     * @see DevServicesBeanRegistrationExcludeFilter
+     */
+    private static void excludeFromAot(BeanDefinition beanDefinition) {
+        beanDefinition.setAttribute(AOT_EXCLUDED_ATTRIBUTE, true);
     }
 
     private static void recordCategory(BeanDefinition beanDefinition, ServiceSpec service) {
@@ -443,6 +462,7 @@ public class DevServicesRegistry {
     private RootBeanDefinition createRegistrationBeanDefinition(ServiceSpec service, String containerBeanName, boolean containerKept) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(DevServiceRegistration.class);
+        excludeFromAot(beanDefinition);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
         beanDefinition.setDependsOn(containerBeanName);
         recordCategory(beanDefinition, service);

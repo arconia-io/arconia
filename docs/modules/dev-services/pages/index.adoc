@@ -423,6 +423,12 @@ The links are declared by each Dev Service and resolved against the container it
 
 When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
 
+=== Ahead-of-Time Processing and Native Images
+
+Dev Services are a dev and test time feature. Spring AOT processing and native images imply the prod mode, in which Dev Services are not active at all.
+
+In AOT-processed tests (`spring.aot.enabled=true`), Dev Services are excluded from the generated code and are not available: their beans are created at startup from the state of the container runtime, which cannot be decided ahead of time. This is the same limitation Spring Boot has for `@ServiceConnection` on `@Bean` methods, `@ImportTestcontainers`, and Docker Compose in AOT-processed tests. Run tests that rely on Dev Services without AOT.
+
 === Global Configuration
 
 In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
