@@ -13,8 +13,7 @@ import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ldap.LLdapContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,11 +63,6 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
     }
 
     @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaLldapContainer(new LldapDevServicesProperties()).devServiceLinkDefinitions();
-    }
-
-    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         LLdapContainer lldapContainer = (LLdapContainer) discoveredContainer;
         LdapConnectionDetails connectionDetails = context.getBean(LdapConnectionDetails.class);
@@ -94,24 +88,19 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
 
     @Test
     void devServiceLinksExposeManagementConsoleUrl() {
-        getContextRunner()
+        contextRunnerWithContainerLifecycle()
                 // LLDAP requires these to boot; otherwise the container exits with code 1.
                 .withPropertyValues(
                         "arconia.dev.services.%s.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman".formatted(getServiceName()),
                         "arconia.dev.services.%s.environment.LLDAP_LDAP_USER_PASS=password".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    container.start();
-                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
-                            .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
-                            .toList();
+                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
                     assertThat(links).singleElement().satisfies(link -> {
-                        assertThat(link.id()).isEqualTo("lldap");
                         assertThat(link.label()).isEqualTo("LLDAP Console");
                         assertThat(link.url()).isEqualTo(
                                 "http://" + container.getHost() + ":" + container.getMappedPort(ArconiaLldapContainer.UI_PORT));
                     });
-                    container.stop();
                 });
     }
 

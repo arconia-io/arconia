@@ -103,7 +103,7 @@ class DevServiceRegistrationTests {
     void whenLinksProvidedThenDefensivelyCopiedAndImmutable() {
         var expectedContainerInfo = createContainerInfo();
         var links = new ArrayList<>(List.of(
-                new DevServiceLink("grafana", "Grafana", "http://localhost:3000")));
+                new DevServiceLink("Grafana", "http://localhost:3000")));
 
         var registration = DevServiceRegistration.builder()
                 .name("test-service")
@@ -113,11 +113,11 @@ class DevServiceRegistrationTests {
                 .build();
 
         // Mutating the original list must not affect the registration
-        links.add(new DevServiceLink("otlp", "OTLP/HTTP", "http://localhost:4318"));
+        links.add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318"));
 
         assertThat(registration.links()).hasSize(1);
         assertThatThrownBy(() -> registration.links().add(
-                new DevServiceLink("otlp", "OTLP/HTTP", "http://localhost:4318")))
+                new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 

@@ -34,7 +34,8 @@ public final class ArtemisDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaArtemisContainer.class, () -> new ArconiaArtemisContainer(properties))
                     .discovery(ArtemisConnectionDetails.class,
-                            container -> new ArtemisDiscoveredConnectionDetails(container, properties)));
+                            container -> new ArtemisDiscoveredConnectionDetails(container, properties))
+                    .link("Artemis Management Console", ArconiaArtemisContainer.WEB_CONSOLE_PORT, "/console"));
         }
 
     }

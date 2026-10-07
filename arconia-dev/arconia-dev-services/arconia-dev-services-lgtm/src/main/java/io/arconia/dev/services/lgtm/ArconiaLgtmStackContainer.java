@@ -1,21 +1,17 @@
 package io.arconia.dev.services.lgtm;
 
-import java.util.List;
-
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link LgtmStackContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaLgtmStackContainer extends LgtmStackContainer implements DevServiceLinkProvider {
+final class ArconiaLgtmStackContainer extends LgtmStackContainer {
 
     private final LgtmDevServicesProperties properties;
 
@@ -68,14 +64,6 @@ final class ArconiaLgtmStackContainer extends LgtmStackContainer implements DevS
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         // Suppress the superclass's ad-hoc "Access to the Grafana dashboard" log line;
         // Arconia emits a consistent startup message instead.
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(
-                DevServiceLinkDefinition.builder().id("grafana").label("Grafana").port(GRAFANA_PORT).build(),
-                DevServiceLinkDefinition.builder().id("otlp-http").label("OTLP/HTTP").port(OTLP_HTTP_PORT).build(),
-                DevServiceLinkDefinition.builder().id("otlp-grpc").label("OTLP/gRPC").port(OTLP_GRPC_PORT).build());
     }
 
 }

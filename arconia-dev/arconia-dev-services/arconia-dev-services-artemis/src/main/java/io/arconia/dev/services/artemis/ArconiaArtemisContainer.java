@@ -1,19 +1,15 @@
 package io.arconia.dev.services.artemis;
 
-import java.util.List;
-
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * An {@link ArtemisContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaArtemisContainer extends ArtemisContainer implements DevServiceLinkProvider {
+final class ArconiaArtemisContainer extends ArtemisContainer {
 
     private final ArtemisDevServicesProperties properties;
 
@@ -43,16 +39,6 @@ final class ArconiaArtemisContainer extends ArtemisContainer implements DevServi
         if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
             addFixedExposedPort(properties.getManagementConsolePort(), WEB_CONSOLE_PORT);
         }
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(DevServiceLinkDefinition.builder()
-                .id("artemis")
-                .label("Artemis Management Console")
-                .port(WEB_CONSOLE_PORT)
-                .path("/console")
-                .build());
     }
 
 }

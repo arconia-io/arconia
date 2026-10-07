@@ -21,8 +21,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,11 +67,6 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         return withDiscoveryLabels(defaultContainer(), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return defaultContainer().devServiceLinkDefinitions();
     }
 
     @Override
@@ -124,19 +119,10 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
 
     @Test
     void devServiceLinksExposeAdminConsoleUrl() {
-        getContextRunner().run(context -> {
-            var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
-            container.start();
-            try {
-                String adminConsoleUrl = container.devServiceLinkDefinitions().getFirst()
-                        .toLink(container.getHost(), container.getMappedPort(ArconiaKeycloakContainer.HTTP_PORT))
-                        .url();
-                assertThat(adminConsoleUrl).endsWith("/admin");
-                assertThat(get(adminConsoleUrl).statusCode()).isLessThan(400);
-            }
-            finally {
-                container.stop();
-            }
+        contextRunnerWithContainerLifecycle().run(context -> {
+            String adminConsoleUrl = context.getBean(DevServiceRegistration.class).links().getFirst().url();
+            assertThat(adminConsoleUrl).endsWith("/admin");
+            assertThat(get(adminConsoleUrl).statusCode()).isLessThan(400);
         });
     }
 

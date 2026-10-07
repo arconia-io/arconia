@@ -1,6 +1,5 @@
 package io.arconia.dev.services.pulsar;
 
-import java.util.List;
 
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -12,7 +11,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.pulsar.PulsarContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,11 +51,6 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         return withDiscoveryLabels(new ArconiaPulsarContainer(new PulsarDevServicesProperties()), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaPulsarContainer(new PulsarDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

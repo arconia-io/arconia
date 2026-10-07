@@ -42,7 +42,6 @@ import io.arconia.dev.services.api.provider.DevServiceProvider;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.autoconfigure.DevServicesConflictValidator;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
@@ -311,7 +310,7 @@ public class DevServicesRegistry {
         beanDefinition.setInstanceSupplier(() -> {
             // Capture the links the discovered container exposes and log a consistent startup
             // message, so a dev service in a discovered container reports the same links as an owned one.
-            List<DevServiceLink> links = DevServiceLinks.resolve(discoveredContainer);
+            List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort, false);
             DevServicesStartupLogger.discovered(service.getName(), containerId, links);
 
             return DevServiceRegistration.builder()
@@ -391,15 +390,6 @@ public class DevServicesRegistry {
 
     private void applyLabels(GenericContainer<?> container, ServiceSpec service) {
         container.withLabel(DevServiceLabels.NAME, service.getName());
-        // Record the links the container exposes so that an application discovering it
-        // reports the same links, without having to declare them a second time.
-        // Ports are recorded as the container sees them, since no port is mapped yet.
-        // Like every other label, these take part in the Testcontainers reuse hash: they are
-        // stable across runs, so reuse keeps working, but changing a link changes the hash and
-        // the next run starts a new container instead of reusing the previous one.
-        for (DevServiceLinkDefinition link : DevServiceLinks.declaredBy(container)) {
-            DevServiceLabels.linkLabels(link).forEach(container::withLabel);
-        }
         if (reuseDecision(service).effective() == ReuseStrategy.FRAMEWORK) {
             container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
             container.withLabel(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
@@ -462,7 +452,7 @@ public class DevServicesRegistry {
             // so mapped ports are available) and log a consistent startup message. The reuse
             // strategy is only part of it in dev mode, the only one where it applies.
             Assert.hasText(service.getName(), "service name cannot be null or empty");
-            List<DevServiceLink> links = DevServiceLinks.resolve(container);
+            List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, true);
             DevServicesStartupLogger.owned(service.getName(), containerId,
                     BootstrapMode.isDev() ? reuseDecision(service) : null, links);
 

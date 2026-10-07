@@ -1,19 +1,15 @@
 package io.arconia.dev.services.rabbitmq;
 
-import java.util.List;
-
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link RabbitMQContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaRabbitMqContainer extends RabbitMQContainer implements DevServiceLinkProvider {
+final class ArconiaRabbitMqContainer extends RabbitMQContainer {
 
     private final RabbitMqDevServicesProperties properties;
 
@@ -42,15 +38,6 @@ final class ArconiaRabbitMqContainer extends RabbitMQContainer implements DevSer
         if (ContainerUtils.isFixedPort(properties.getManagementConsolePort())) {
             addFixedExposedPort(properties.getManagementConsolePort(), HTTP_PORT);
         }
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(DevServiceLinkDefinition.builder()
-                .id("rabbitmq")
-                .label("RabbitMQ Management Console")
-                .port(HTTP_PORT)
-                .build());
     }
 
 }

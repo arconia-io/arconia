@@ -1,19 +1,15 @@
 package io.arconia.dev.services.pulsar;
 
-import java.util.List;
-
 import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link PulsarContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaPulsarContainer extends PulsarContainer implements DevServiceLinkProvider {
+final class ArconiaPulsarContainer extends PulsarContainer {
 
     private final PulsarDevServicesProperties properties;
 
@@ -35,15 +31,6 @@ final class ArconiaPulsarContainer extends PulsarContainer implements DevService
         if (ContainerUtils.isFixedPort(properties.getAdminPort())) {
             addFixedExposedPort(properties.getAdminPort(), BROKER_HTTP_PORT);
         }
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(DevServiceLinkDefinition.builder()
-                .id("pulsar")
-                .label("Pulsar Admin API")
-                .port(BROKER_HTTP_PORT)
-                .build());
     }
 
 }

@@ -34,7 +34,8 @@ public final class RabbitMqDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaRabbitMqContainer.class, () -> new ArconiaRabbitMqContainer(properties))
                     .discovery(RabbitConnectionDetails.class,
-                            container -> new RabbitMqDiscoveredConnectionDetails(container, properties)));
+                            container -> new RabbitMqDiscoveredConnectionDetails(container, properties))
+                    .link("RabbitMQ Management Console", ArconiaRabbitMqContainer.HTTP_PORT));
         }
 
     }

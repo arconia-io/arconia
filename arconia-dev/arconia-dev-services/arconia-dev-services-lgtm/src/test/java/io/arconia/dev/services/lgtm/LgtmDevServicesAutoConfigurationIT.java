@@ -11,8 +11,7 @@ import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
@@ -60,11 +59,6 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
     }
 
     @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaLgtmStackContainer(new LgtmDevServicesProperties()).devServiceLinkDefinitions();
-    }
-
-    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
         assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
@@ -101,16 +95,12 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
 
     @Test
     void devServiceLinksExposeGrafanaAndOtlpUrls() {
-        getContextRunner().run(context -> {
+        contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
-            container.start();
-            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
-                    .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
-                    .toList();
-            assertThat(links).extracting(DevServiceLink::id)
-                    .containsExactly("grafana", "otlp-http", "otlp-grpc");
-            assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://"));
-            container.stop();
+            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+            assertThat(links).extracting(DevServiceLink::label)
+                    .containsExactly("Grafana", "OTLP/HTTP", "OTLP/gRPC");
+            assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
         });
     }
 

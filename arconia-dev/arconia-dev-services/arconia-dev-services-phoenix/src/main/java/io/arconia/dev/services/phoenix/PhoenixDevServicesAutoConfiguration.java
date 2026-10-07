@@ -45,7 +45,8 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .description("Phoenix Dev Service")
                     .properties(properties)
                     .container(ArconiaPhoenixContainer.class, () -> new ArconiaPhoenixContainer(properties))
-                    .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new));
+                    .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
+                    .link("Phoenix UI", ArconiaPhoenixContainer.HTTP_PORT));
 
             // Phoenix supports only OpenTelemetry Traces, so we disable the export of Logs and Metrics,
             // unless the developer has explicitly enabled them in the configuration.

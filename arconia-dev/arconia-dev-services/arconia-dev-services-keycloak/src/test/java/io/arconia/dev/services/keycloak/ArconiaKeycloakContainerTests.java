@@ -20,7 +20,6 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.util.ReflectionUtils;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -324,20 +323,6 @@ class ArconiaKeycloakContainerTests {
         container.configure();
 
         assertThat(container.getExposedPorts()).contains(ArconiaKeycloakContainer.HTTP_PORT);
-    }
-
-    @Test
-    void shouldExposeTheAdminConsoleLink() {
-        var container = container(new KeycloakDevServicesProperties());
-
-        List<DevServiceLinkDefinition> links = container.devServiceLinkDefinitions();
-
-        assertThat(links).singleElement().satisfies(link -> {
-            assertThat(link.id()).isEqualTo("keycloak");
-            assertThat(link.label()).isEqualTo("Keycloak Admin Console");
-            assertThat(link.port()).isEqualTo(ArconiaKeycloakContainer.HTTP_PORT);
-            assertThat(link.path()).isEqualTo("/admin");
-        });
     }
 
 }

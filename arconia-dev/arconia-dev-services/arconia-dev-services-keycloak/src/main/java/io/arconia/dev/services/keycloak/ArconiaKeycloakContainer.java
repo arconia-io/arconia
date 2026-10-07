@@ -17,15 +17,13 @@ import org.testcontainers.utility.MountableFile;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link KeycloakContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaKeycloakContainer extends KeycloakContainer implements DevServiceLinkProvider {
+final class ArconiaKeycloakContainer extends KeycloakContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(ArconiaKeycloakContainer.class);
 
@@ -154,16 +152,6 @@ final class ArconiaKeycloakContainer extends KeycloakContainer implements DevSer
      */
     static String issuerUri(String authServerUrl, String realm) {
         return "%s/realms/%s".formatted(authServerUrl, realm);
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(DevServiceLinkDefinition.builder()
-                .id("keycloak")
-                .label("Keycloak Admin Console")
-                .port(HTTP_PORT)
-                .path("/admin")
-                .build());
     }
 
 }

@@ -12,8 +12,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 
@@ -58,11 +57,6 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaDoclingServeContainer(new DoclingDevServicesProperties()).devServiceLinkDefinitions();
-    }
-
-    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         DoclingServeContainer container = (DoclingServeContainer) discoveredContainer;
         DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
@@ -88,19 +82,15 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     @Test
     void devServiceLinksExposeDoclingUiAndApiUrls() {
         // In dev mode the UI is enabled by default, so both the UI and OpenAPI links are exposed.
-        getContextRunner()
+        contextRunnerWithContainerLifecycle()
                 .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    container.start();
-                    List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
-                            .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
-                            .toList();
-                    assertThat(links).extracting(DevServiceLink::id).containsExactly("docling", "docling-api");
-                    assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://"));
-                    assertThat(links).filteredOn(link -> link.id().equals("docling-api"))
+                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+                    assertThat(links).extracting(DevServiceLink::label).containsExactly("Docling UI", "Docling OpenAPI");
+                    assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
+                    assertThat(links).filteredOn(link -> link.label().equals("Docling OpenAPI"))
                             .singleElement().satisfies(link -> assertThat(link.url()).endsWith("/docs"));
-                    container.stop();
                 });
     }
 

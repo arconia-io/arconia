@@ -1,6 +1,5 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
-import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -9,7 +8,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
@@ -54,11 +52,6 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         return withDiscoveryLabels(new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

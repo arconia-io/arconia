@@ -43,7 +43,10 @@ public final class LgtmDevServicesAutoConfiguration {
                     .description("Grafana LGTM Dev Service")
                     .properties(properties)
                     .container(ArconiaLgtmStackContainer.class, () -> new ArconiaLgtmStackContainer(properties))
-                    .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new));
+                    .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
+                    .link("Grafana", ArconiaLgtmStackContainer.GRAFANA_PORT)
+                    .link("OTLP/HTTP", ArconiaLgtmStackContainer.OTLP_HTTP_PORT)
+                    .link("OTLP/gRPC", ArconiaLgtmStackContainer.OTLP_GRPC_PORT));
         }
 
     }

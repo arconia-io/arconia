@@ -1,11 +1,7 @@
 package io.arconia.dev.services.openlit;
 
-import java.util.List;
-
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 import io.arconia.testcontainers.openlit.OpenLitContainer;
@@ -13,7 +9,7 @@ import io.arconia.testcontainers.openlit.OpenLitContainer;
 /**
  * An {@link OpenLitContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaOpenLitContainer extends OpenLitContainer implements DevServiceLinkProvider {
+final class ArconiaOpenLitContainer extends OpenLitContainer {
 
     static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/openlit/openlit";
 
@@ -38,15 +34,6 @@ final class ArconiaOpenLitContainer extends OpenLitContainer implements DevServi
         if (ContainerUtils.isFixedPort(properties.getOtlpHttpPort())) {
             addFixedExposedPort(properties.getOtlpHttpPort(), OTLP_HTTP_PORT);
         }
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        return List.of(DevServiceLinkDefinition.builder()
-                .id("openlit")
-                .label("OpenLit UI")
-                .port(UI_PORT)
-                .build());
     }
 
 }

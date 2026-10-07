@@ -33,7 +33,8 @@ public final class PulsarDevServicesAutoConfiguration {
                     .description("Pulsar Dev Service")
                     .properties(properties)
                     .container(ArconiaPulsarContainer.class, () -> new ArconiaPulsarContainer(properties))
-                    .discovery(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new));
+                    .discovery(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
+                    .link("Pulsar Admin API", ArconiaPulsarContainer.BROKER_HTTP_PORT));
         }
 
     }

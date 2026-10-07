@@ -1,5 +1,7 @@
 package io.arconia.dev.services.core.registration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -11,6 +13,7 @@ import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.registration.DevServiceLink;
 
 /**
  * Specification for a single dev service.
@@ -43,6 +46,8 @@ public final class ServiceSpec {
 
     @Nullable
     private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetails;
+
+    private final List<LinkDefinition> links = new ArrayList<>();
 
     ServiceSpec() {}
 
@@ -129,6 +134,24 @@ public final class ServiceSpec {
         return this;
     }
 
+    /**
+     * A link the dev service exposes, such as a management console or a telemetry endpoint,
+     * at the given container port. The link is resolved against the port mapping of the
+     * container the dev service runs in, whether started by this application or discovered,
+     * and shown in the startup message and in developer tooling.
+     */
+    public ServiceSpec link(String label, int port) {
+        return link(label, port, "");
+    }
+
+    /**
+     * A link the dev service exposes at the given container port and path.
+     */
+    public ServiceSpec link(String label, int port, String path) {
+        links.add(new LinkDefinition(label, port, path));
+        return this;
+    }
+
     @Nullable
     String getName() {
         return name;
@@ -173,11 +196,34 @@ public final class ServiceSpec {
         return connectionDetails;
     }
 
+    List<LinkDefinition> getLinks() {
+        return List.copyOf(links);
+    }
+
     /**
      * Whether the dev service declares how to connect to a container started by another application.
      */
     boolean supportsDiscovery() {
         return connectionDetailsType != null && connectionDetails != null;
+    }
+
+    /**
+     * A link declared in terms of the container port it points to, resolved into a
+     * {@link DevServiceLink} once the port mapping is known.
+     */
+    record LinkDefinition(String label, int port, String path) {
+
+        LinkDefinition {
+            Assert.hasText(label, "label cannot be null or empty");
+            Assert.isTrue(port > 0 && port <= 65535, "port must be between 1 and 65535");
+            Assert.notNull(path, "path cannot be null");
+            Assert.isTrue(path.isEmpty() || path.startsWith("/"), "path must be empty or start with '/': " + path);
+        }
+
+        DevServiceLink resolve(String host, int mappedPort) {
+            return new DevServiceLink(label, "http://%s:%d%s".formatted(host, mappedPort, path));
+        }
+
     }
 
 }

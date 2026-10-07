@@ -10,8 +10,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
@@ -60,11 +59,6 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaOpenLitContainer(new OpenLitDevServicesProperties()).devServiceLinkDefinitions();
-    }
-
-    @Override
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
         assertThat(context).hasSingleBean(OtlpLoggingConnectionDetails.class);
@@ -98,18 +92,13 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
 
     @Test
     void devServiceLinksExposeOpenLitUi() {
-        getContextRunner().run(context -> {
+        contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
-            container.start();
-            List<DevServiceLink> links = ((DevServiceLinkProvider) container).devServiceLinkDefinitions().stream()
-                    .map(definition -> definition.toLink(container.getHost(), container.getMappedPort(definition.port())))
-                    .toList();
+            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
             assertThat(links).singleElement().satisfies(link -> {
-                assertThat(link.id()).isEqualTo("openlit");
                 assertThat(link.label()).isEqualTo("OpenLit UI");
                 assertThat(link.url()).startsWith("http://");
             });
-            container.stop();
         });
     }
 

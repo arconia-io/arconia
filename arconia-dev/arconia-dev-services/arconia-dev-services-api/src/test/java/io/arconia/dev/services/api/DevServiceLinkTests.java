@@ -13,56 +13,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class DevServiceLinkTests {
 
     @Test
-    void whenIdIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id(null).label("Grafana").url("http://localhost:3000").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("id cannot be null or empty");
-    }
-
-    @Test
-    void whenIdIsEmptyThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id("").label("Grafana").url("http://localhost:3000").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("id cannot be null or empty");
-    }
-
-    @Test
-    void whenLabelIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id("grafana").label(null).url("http://localhost:3000").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("label cannot be null or empty");
-    }
-
-    @Test
     void whenLabelIsEmptyThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id("grafana").label("").url("http://localhost:3000").build())
+        assertThatThrownBy(() -> new DevServiceLink("", "http://localhost:3000"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("label cannot be null or empty");
-    }
-
-    @Test
-    void whenUrlIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id("grafana").label("Grafana").url(null).build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("url cannot be null or empty");
     }
 
     @Test
     void whenUrlIsEmptyThenThrow() {
-        assertThatThrownBy(() -> DevServiceLink.builder().id("grafana").label("Grafana").url("").build())
+        assertThatThrownBy(() -> new DevServiceLink("Grafana", ""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("url cannot be null or empty");
     }
 
     @Test
     void whenAllFieldsAreValidThenCreate() {
-        var link = DevServiceLink.builder()
-                .id("grafana")
-                .label("Grafana")
-                .url("http://localhost:3000")
-                .build();
+        var link = new DevServiceLink("Grafana", "http://localhost:3000");
 
-        assertThat(link.id()).isEqualTo("grafana");
         assertThat(link.label()).isEqualTo("Grafana");
         assertThat(link.url()).isEqualTo("http://localhost:3000");
     }

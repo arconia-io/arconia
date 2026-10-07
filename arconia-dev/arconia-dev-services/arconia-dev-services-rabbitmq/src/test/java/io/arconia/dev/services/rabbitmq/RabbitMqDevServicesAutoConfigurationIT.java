@@ -1,6 +1,5 @@
 package io.arconia.dev.services.rabbitmq;
 
-import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,11 +50,6 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         return withDiscoveryLabels(new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

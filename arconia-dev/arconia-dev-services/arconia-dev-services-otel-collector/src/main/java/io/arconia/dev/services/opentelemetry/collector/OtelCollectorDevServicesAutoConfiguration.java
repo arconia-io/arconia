@@ -44,7 +44,9 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaOtelCollectorContainer.class, () -> new ArconiaOtelCollectorContainer(properties))
                     .serviceConnectionName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)
-                    .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new));
+                    .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
+                    .link("OTLP/gRPC", ArconiaOtelCollectorContainer.OTLP_GRPC_PORT)
+                    .link("OTLP/HTTP", ArconiaOtelCollectorContainer.OTLP_HTTP_PORT));
         }
 
     }

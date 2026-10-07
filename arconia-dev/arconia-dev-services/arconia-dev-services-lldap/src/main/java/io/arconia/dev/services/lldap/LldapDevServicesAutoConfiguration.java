@@ -34,7 +34,8 @@ public final class LldapDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaLldapContainer.class, () -> new ArconiaLldapContainer(properties))
                     .discovery(LdapConnectionDetails.class,
-                            container -> new LldapDiscoveredConnectionDetails(container, properties)));
+                            container -> new LldapDiscoveredConnectionDetails(container, properties))
+                    .link("LLDAP Console", ArconiaLldapContainer.UI_PORT));
         }
 
     }

@@ -1,6 +1,5 @@
 package io.arconia.dev.services.artemis;
 
-import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,11 +51,6 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         return withDiscoveryLabels(new ArconiaArtemisContainer(new ArtemisDevServicesProperties()), ownerId);
-    }
-
-    @Override
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return new ArconiaArtemisContainer(new ArtemisDevServicesProperties()).devServiceLinkDefinitions();
     }
 
     @Override

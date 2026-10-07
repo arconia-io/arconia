@@ -34,7 +34,9 @@ public final class DoclingDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaDoclingServeContainer.class, () -> new ArconiaDoclingServeContainer(properties))
                     .discovery(DoclingServeConnectionDetails.class,
-                            container -> new DoclingDiscoveredConnectionDetails(container, properties)));
+                            container -> new DoclingDiscoveredConnectionDetails(container, properties))
+                    .link("Docling UI", ArconiaDoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui")
+                    .link("Docling OpenAPI", ArconiaDoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs"));
         }
 
     }

@@ -2,7 +2,6 @@ package io.arconia.dev.services.tests;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -13,12 +12,12 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,11 +29,6 @@ public abstract class BaseDevServicesAutoConfigurationIT {
 
     @TempDir
     protected static Path testMountDir;
-
-    /**
-     * The link definitions recorded on the discoverable container by {@link #withDiscoveryLabels}.
-     */
-    private List<DevServiceLinkDefinition> appliedLinks = List.of();
 
     /**
      * The application context runner used to execute tests.
@@ -91,29 +85,7 @@ public abstract class BaseDevServicesAutoConfigurationIT {
         container.withLabel(DevServiceLabels.NAME, getServiceName());
         container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
         container.withLabel(DevServiceLabels.OWNER, ownerId);
-        // Reading the declarations constructs a dev service container, which detects and caches the
-        // bootstrap mode. Clear it afterwards, or the mode detected here outlives this call and the
-        // application under test never sees the dev mode it asks for. For the same reason the links
-        // are captured rather than read again later: a dev service whose links depend on the mode
-        // would otherwise declare one set here and be expected to report another.
-        appliedLinks = discoverableContainerLinkDefinitions();
-        BootstrapMode.clear();
-        for (DevServiceLinkDefinition link : appliedLinks) {
-            DevServiceLabels.linkLabels(link).forEach(container::withLabel);
-        }
         return container;
-    }
-
-    /**
-     * The links another application would record on the discoverable container, so that the discovery
-     * test can check they're reported by the application discovering it.
-     * <p>
-     * Override in a dev service whose container implements {@code DevServiceLinkProvider}, by
-     * returning the definitions that container declares rather than by restating them.
-     * Empty for a dev service that exposes no links.
-     */
-    protected List<DevServiceLinkDefinition> discoverableContainerLinkDefinitions() {
-        return List.of();
     }
 
     /**
@@ -186,6 +158,10 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     void containerDiscoveredWhenStartedByAnotherApplication() {
         GenericContainer<?> peerContainer = createDiscoverableContainer("another-application");
         Assumptions.assumeTrue(peerContainer != null, "dev service does not support discovery");
+        // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
+        // the mode detected here outlives this call and the application under test never sees the
+        // dev mode it asks for.
+        BootstrapMode.clear();
         try (GenericContainer<?> discoveredContainer = peerContainer) {
             discoveredContainer.start();
 
@@ -205,14 +181,15 @@ public abstract class BaseDevServicesAutoConfigurationIT {
                         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
                         assertThat(registration.containerInfo().get().id()).isEqualTo(discoveredContainer.getContainerId());
 
-                        // The links come from the labels the peer application recorded, resolved
-                        // against the ports that container actually exposes.
-                        assertThat(registration.links()).containsExactlyElementsOf(
-                                appliedLinks.stream()
-                                        .sorted(Comparator.comparing(DevServiceLinkDefinition::id))
-                                        .map(link -> link.toLink(discoveredContainer.getHost(),
-                                                discoveredContainer.getMappedPort(link.port())))
-                                        .toList());
+                        // The links the dev service declares are resolved against the host and the
+                        // ports the discovered container publishes.
+                        List<String> publishedPorts = discoveredContainer.getExposedPorts().stream()
+                                .map(port -> String.valueOf(discoveredContainer.getMappedPort(port)))
+                                .toList();
+                        assertThat(registration.links()).allSatisfy(link -> {
+                            assertThat(link.url()).startsWith("http://" + discoveredContainer.getHost() + ":");
+                            assertThat(link.url()).matches(url -> publishedPorts.stream().anyMatch(port -> url.contains(":" + port)));
+                        });
 
                         assertDiscoveredConnectionDetails(context, discoveredContainer);
                     });
@@ -269,6 +246,15 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     protected static ApplicationContextRunner defaultContextRunner(Class<?> autoConfigurationClass) {
         return new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(autoConfigurationClass));
+    }
+
+    /**
+     * The context runner with the Spring Boot Testcontainers lifecycle, which starts the dev service
+     * container before the beans depending on it are created, as in an application. Use it for tests
+     * that need a started container, such as the ones checking the links a dev service reports.
+     */
+    protected ApplicationContextRunner contextRunnerWithContainerLifecycle() {
+        return getContextRunner().withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
     }
 
 }

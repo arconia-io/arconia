@@ -1,22 +1,19 @@
 package io.arconia.dev.services.docling;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.registration.DevServiceLinkDefinition;
-import io.arconia.dev.services.api.registration.DevServiceLinkProvider;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link DoclingServeContainer} configured for use with Arconia Dev Services.
  */
-final class ArconiaDoclingServeContainer extends DoclingServeContainer implements DevServiceLinkProvider {
+final class ArconiaDoclingServeContainer extends DoclingServeContainer {
 
     private final DoclingDevServicesProperties properties;
 
@@ -60,18 +57,6 @@ final class ArconiaDoclingServeContainer extends DoclingServeContainer implement
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         // Suppress the superclass's ad-hoc "Docling Serve UI" log line;
         // Arconia emits a consistent startup message instead.
-    }
-
-    @Override
-    public List<DevServiceLinkDefinition> devServiceLinkDefinitions() {
-        List<DevServiceLinkDefinition> links = new ArrayList<>();
-        if (uiEnabled) {
-            links.add(DevServiceLinkDefinition.builder()
-                    .id("docling").label("Docling UI").port(DEFAULT_DOCLING_PORT).path("/ui").build());
-        }
-        links.add(DevServiceLinkDefinition.builder()
-                .id("docling-api").label("Docling OpenAPI").port(DEFAULT_DOCLING_PORT).path("/docs").build());
-        return List.copyOf(links);
     }
 
 }
