@@ -13,6 +13,7 @@ import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Abstract base test class for testing {@link BaseDevServicesProperties} implementations.
@@ -98,13 +99,28 @@ public abstract class BaseDevServicesPropertiesTests<T extends BaseDevServicesPr
         assertThat(properties.getNetworkAliases()).containsExactly("network1", "network2");
         assertThat(properties.getPort()).isEqualTo(TEST_PORT);
         assertThat(properties.getResources()).hasSize(1);
-        assertThat(properties.getResources().getFirst().getSourcePath()).isEqualTo("test-resource.txt");
-        assertThat(properties.getResources().getFirst().getContainerPath()).isEqualTo("/tmp/test-resource.txt");
+        assertThat(properties.getResources().getFirst().sourcePath()).isEqualTo("test-resource.txt");
+        assertThat(properties.getResources().getFirst().containerPath()).isEqualTo("/tmp/test-resource.txt");
         assertThat(properties.getReuseStrategy()).isEqualTo(ReuseStrategy.TESTCONTAINERS);
         assertThat(properties.getStartupTimeout()).isEqualTo(TEST_STARTUP_TIMEOUT);
         assertThat(properties.getVolumes()).hasSize(1);
-        assertThat(properties.getVolumes().getFirst().getHostPath()).isEqualTo("/host/path");
-        assertThat(properties.getVolumes().getFirst().getContainerPath()).isEqualTo("/container/path");
+        assertThat(properties.getVolumes().getFirst().hostPath()).isEqualTo("/host/path");
+        assertThat(properties.getVolumes().getFirst().containerPath()).isEqualTo("/container/path");
+    }
+
+    @Test
+    void shouldRejectBlankPathsWhenBinding() {
+        T properties = createProperties();
+
+        // A mapping validates its paths when created, so a blank one fails while binding.
+        assertThatThrownBy(() -> bind(properties, Map.of(
+                "resources[0].source-path", "",
+                "resources[0].container-path", "/tmp/test-resource.txt")))
+                .hasRootCauseMessage("sourcePath cannot be null or empty");
+        assertThatThrownBy(() -> bind(properties, Map.of(
+                "volumes[0].host-path", "/host/path",
+                "volumes[0].container-path", "")))
+                .hasRootCauseMessage("containerPath cannot be null or empty");
     }
 
     /**

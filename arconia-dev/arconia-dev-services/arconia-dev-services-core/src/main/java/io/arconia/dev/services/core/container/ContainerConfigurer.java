@@ -13,6 +13,7 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
+import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
@@ -60,12 +61,8 @@ public final class ContainerConfigurer {
      * Configures mapped resources to be loaded into the container.
      */
     public static void resources(GenericContainer<?> container, BaseDevServicesProperties properties) {
-        for (var resource : properties.getResources()) {
-            Assert.hasText(resource.getSourcePath(), "the source path in a resource mapping cannot be null or empty.");
-            Assert.hasText(resource.getContainerPath(), "the container path in a resource mapping cannot be null or empty.");
-
-            MountableFile mountableFile = resolveMountableFile(resource.getSourcePath());
-            container.withCopyFileToContainer(mountableFile, resource.getContainerPath());
+        for (ResourceMapping resource : properties.getResources()) {
+            container.withCopyFileToContainer(resolveMountableFile(resource.sourcePath()), resource.containerPath());
         }
     }
 
@@ -167,12 +164,10 @@ public final class ContainerConfigurer {
     /**
      * Configures mapped volumes to be bound with read-write access to the container.
      */
+    @SuppressWarnings("deprecation")
     public static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
-        for (VolumeMapping mapping : properties.getVolumes()) {
-            Assert.hasText(mapping.getHostPath(), "the host path in a volume mapping cannot be null or empty.");
-            Assert.hasText(mapping.getContainerPath(), "the container path in a volume mapping cannot be null or empty.");
-
-            container.withFileSystemBind(mapping.getHostPath(), mapping.getContainerPath(), BindMode.READ_WRITE);
+        for (VolumeMapping volume : properties.getVolumes()) {
+            container.withFileSystemBind(volume.hostPath(), volume.containerPath(), BindMode.READ_WRITE);
         }
     }
 

@@ -210,58 +210,6 @@ class ContainerConfigurerTests {
     }
 
     @Test
-    void resourcesConfigurationShouldThrowExceptionWhenSourcePathIsNull() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping(null, "/etc/config/test.txt")
-                ));
-
-        assertThatThrownBy(() -> ContainerConfigurer.resources(container, properties))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("source path");
-    }
-
-    @Test
-    void resourcesConfigurationShouldThrowExceptionWhenSourcePathIsEmpty() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("", "/etc/config/test.txt")
-                ));
-
-        assertThatThrownBy(() -> ContainerConfigurer.resources(container, properties))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("source path");
-    }
-
-    @Test
-    void resourcesConfigurationShouldThrowExceptionWhenContainerPathIsNull() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("test-resource.txt", null)
-                ));
-
-        assertThatThrownBy(() -> ContainerConfigurer.resources(container, properties))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("container path");
-    }
-
-    @Test
-    void resourcesConfigurationShouldThrowExceptionWhenContainerPathIsEmpty() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("test-resource.txt", "")
-                ));
-
-        assertThatThrownBy(() -> ContainerConfigurer.resources(container, properties))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("container path");
-    }
-
-    @Test
     void resourcesConfigurationShouldThrowExceptionWhenResourceNotFound() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()

@@ -1,34 +1,21 @@
 package io.arconia.dev.services.api.config;
 
+import org.springframework.util.Assert;
+
 import io.arconia.core.support.Incubating;
 
 /**
- * Mapping of resources to be copied into a container.
+ * Mapping of a resource to be copied into a container at startup.
+ *
+ * @param sourcePath path to the resource in the classpath or host filesystem
+ * @param containerPath path to the resource inside the container
  */
 @Incubating
-public final class ResourceMapping {
+public record ResourceMapping(String sourcePath, String containerPath) {
 
-    /**
-     * Path to the resource in the classpath or host filesystem.
-     */
-    private final String sourcePath;
-
-    /**
-     * Path to the resource inside the container.
-     */
-    private final String containerPath;
-
-    public ResourceMapping(String sourcePath, String containerPath) {
-        this.sourcePath = sourcePath;
-        this.containerPath = containerPath;
-    }
-
-    public String getSourcePath() {
-        return sourcePath;
-    }
-
-    public String getContainerPath() {
-        return containerPath;
+    public ResourceMapping {
+        Assert.hasText(sourcePath, "sourcePath cannot be null or empty");
+        Assert.hasText(containerPath, "containerPath cannot be null or empty");
     }
 
 }

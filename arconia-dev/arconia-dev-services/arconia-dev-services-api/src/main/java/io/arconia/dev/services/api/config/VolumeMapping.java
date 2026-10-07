@@ -1,34 +1,21 @@
 package io.arconia.dev.services.api.config;
 
+import org.springframework.util.Assert;
+
 import io.arconia.core.support.Incubating;
 
 /**
- * Mapping of paths to be mounted from the host filesystem into a container.
+ * Mapping of a file or directory to be mounted from the host filesystem into a container.
+ *
+ * @param hostPath path to the file or directory on the host filesystem
+ * @param containerPath path to the file or directory inside the container
  */
 @Incubating
-public final class VolumeMapping {
+public record VolumeMapping(String hostPath, String containerPath) {
 
-    /**
-     * Path to the file/directory on the host filesystem.
-     */
-    private final String hostPath;
-
-    /**
-     * Path to the file/directory inside the container.
-     */
-    private final String containerPath;
-
-    public VolumeMapping(String hostPath, String containerPath) {
-        this.hostPath = hostPath;
-        this.containerPath = containerPath;
-    }
-
-    public String getHostPath() {
-        return hostPath;
-    }
-
-    public String getContainerPath() {
-        return containerPath;
+    public VolumeMapping {
+        Assert.hasText(hostPath, "hostPath cannot be null or empty");
+        Assert.hasText(containerPath, "containerPath cannot be null or empty");
     }
 
 }
