@@ -33,7 +33,8 @@ The application logs will show you the URL where you can access the Arize Phoeni
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'phoenix' is ready in container <container-id> (reuse-strategy: framework) - Phoenix UI: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'phoenix' is ready in container <container-id> (arizephoenix/phoenix, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'phoenix' links: Phoenix UI: http://localhost:<port>
 ----
 
 By default, traces are exported via OTLP using the HTTP/Protobuf format.

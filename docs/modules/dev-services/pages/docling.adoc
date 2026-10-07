@@ -22,7 +22,8 @@ Furthermore, the Dev Service is configured to enable the Docling UI. The applica
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'docling' is ready in container <container-id> (reuse-strategy: framework) - Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs
+...i.a.d.s.startup  : Dev Service 'docling' is ready in container <container-id> (ghcr.io/docling-project/docling-serve, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'docling' links: Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs
 ----
 
 == Configuring the Dev Service

@@ -9,6 +9,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
 
+import org.jspecify.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
@@ -19,6 +20,16 @@ import io.arconia.dev.services.api.registration.ContainerInfo;
 final class ContainerRuntimeInfo {
 
     private ContainerRuntimeInfo() {}
+
+    /**
+     * The container id in the short form used by the container runtime CLIs.
+     */
+    static String shortId(@Nullable String containerId) {
+        if (containerId == null) {
+            return "<none>";
+        }
+        return (containerId.length() > 12) ? containerId.substring(0, 12) : containerId;
+    }
 
     /**
      * Extract container information by querying the OCI runtime using the container ID.

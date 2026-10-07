@@ -403,23 +403,23 @@ Control how Dev Services start using the `spring.testcontainers.beans.startup` p
 
 === Startup Feedback
 
-When a Dev Service starts, Arconia logs a consistent startup message with its resolved links, such as management consoles and telemetry endpoints:
+When a Dev Service is ready, Arconia logs a consistent startup message: one line about the container the Dev Service runs in, and one line with its links, such as management consoles and telemetry endpoints, when it has any:
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (reuse-strategy: framework) - Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896, OTLP/gRPC: http://localhost:32897
 ----
 
-The message also reports the container the Dev Service runs in and the reuse strategy in effect. When the configured strategy could not be applied, the message states the reason, for example because the application is not running in dev mode or because the Testcontainers reusable containers feature is not enabled on your machine. When the application connects to a container started by another application, the message says so:
+The first line states the container image, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, and, in dev mode, the reuse strategy in effect. When the configured strategy could not be applied, the reason follows it in parentheses, for example because the Testcontainers reusable containers feature is not enabled on your machine:
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e started by another application (reuse-strategy: framework) - Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm, started by another application, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres, kept across restart, reuse-strategy: none)
 ----
 
-The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `id`, `label`, and `url`.
-
-A Dev Service running in a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) reports its links too. They're read from the container's labels, so they describe the service as the application that started it configured it, including any link that application chose not to expose.
+The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`.
 
 When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
 

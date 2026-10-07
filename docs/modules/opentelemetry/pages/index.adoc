@@ -121,7 +121,8 @@ The application logs will show you the URL where you can access the Grafana obse
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lgtm' is ready - Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container <container-id> (grafana/otel-lgtm)
+...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>
 ----
 
 NOTE: Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service] in the dedicated documentation.

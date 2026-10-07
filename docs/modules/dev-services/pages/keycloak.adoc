@@ -45,7 +45,8 @@ The application logs will show you the URL where you can access the Keycloak Adm
 
 [source,logs]
 ----
-...i.a.d.s.startup                          : Dev Service 'keycloak' is ready in container <container-id> (reuse-strategy: framework) - Keycloak Admin Console: http://localhost:<port>/admin
+...i.a.d.s.startup  : Dev Service 'keycloak' is ready in container <container-id> (quay.io/keycloak/keycloak, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'keycloak' links: Keycloak Admin Console: http://localhost:<port>/admin
 ----
 
 By default, you can log in with username `arconia` and password `arconia`.

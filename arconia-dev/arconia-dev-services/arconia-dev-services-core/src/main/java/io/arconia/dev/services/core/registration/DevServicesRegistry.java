@@ -152,7 +152,7 @@ public class DevServicesRegistry {
         // 6. Register the registration bean definition describing the dev service. It depends on
         // the container bean, so that the container is started before the dev service is reported
         // as ready.
-        beanDefinitionRegistry.registerBeanDefinition(registrationBeanName, createRegistrationBeanDefinition(service, containerBeanName));
+        beanDefinitionRegistry.registerBeanDefinition(registrationBeanName, createRegistrationBeanDefinition(service, containerBeanName, containerKept));
     }
 
     private boolean isRegistrationBeanAlreadyDefined(String registrationBeanName) {
@@ -259,7 +259,7 @@ public class DevServicesRegistry {
                 return true;
             } catch (Exception ex) {
                 logger.warn("Failed to build the connection details for the '{}' dev service in the discovered container {}. Skipping it.",
-                        service.getName(), DevServicesStartupLogger.computeContainerShortId(candidate.containerInfo().id()), ex);
+                        service.getName(), ContainerRuntimeInfo.shortId(candidate.containerInfo().id()), ex);
             }
         }
 
@@ -311,7 +311,8 @@ public class DevServicesRegistry {
             // Capture the links the discovered container exposes and log a consistent startup
             // message, so a dev service in a discovered container reports the same links as an owned one.
             List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort, false);
-            DevServicesStartupLogger.discovered(service.getName(), containerId, links);
+            DevServicesStartupLogger.ready(service.getName(), containerId, discoveredContainer.containerInfo().imageName(),
+                    DevServiceRegistration.Origin.DISCOVERED, false, new ReuseDecision(ReuseStrategy.FRAMEWORK, null), links);
 
             return DevServiceRegistration.builder()
                     .name(service.getName())
@@ -438,7 +439,7 @@ public class DevServicesRegistry {
         return Binder.get(environment).bindOrCreate(DevServicesProperties.CONFIG_PREFIX, DevServicesProperties.class);
     }
 
-    private RootBeanDefinition createRegistrationBeanDefinition(ServiceSpec service, String containerBeanName) {
+    private RootBeanDefinition createRegistrationBeanDefinition(ServiceSpec service, String containerBeanName, boolean containerKept) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(DevServiceRegistration.class);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
@@ -453,8 +454,8 @@ public class DevServicesRegistry {
             // strategy is only part of it in dev mode, the only one where it applies.
             Assert.hasText(service.getName(), "service name cannot be null or empty");
             List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, true);
-            DevServicesStartupLogger.owned(service.getName(), containerId,
-                    BootstrapMode.isDev() ? reuseDecision(service) : null, links);
+            DevServicesStartupLogger.ready(service.getName(), containerId, container.getDockerImageName(),
+                    DevServiceRegistration.Origin.OWNED, containerKept, BootstrapMode.isDev() ? reuseDecision(service) : null, links);
 
             return DevServiceRegistration.builder()
                     .name(service.getName())

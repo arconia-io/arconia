@@ -74,7 +74,7 @@ final class DevServiceRestartSupport {
         }
         if (!keptContainer.isRunning()) {
             logger.info("Dev Service '{}': container {} is no longer running, a new one takes its place",
-                    serviceName, DevServicesStartupLogger.computeContainerShortId(keptContainer.getContainerId()));
+                    serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
             return false;
         }
         restartScope.get(containerBeanName, () -> container);
