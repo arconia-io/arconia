@@ -1,27 +1,16 @@
 package io.arconia.dev.services.core.registration;
 
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import com.github.dockerjava.api.DockerClient;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
-
-import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.registration.DevServiceLabels;
-import io.arconia.dev.services.core.container.DevServicesNetworkFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,17 +27,10 @@ class DevServicesNetworkIT {
 
     private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment());
 
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
-    }
-
     @Test
     void networkedContainersReachEachOtherByAlias() throws Exception {
         DevServicesRegistry registry = registryWithNetworkEnabled();
-        Network network = DevServicesNetworkFactory.resolve(null);
+        Network network = Network.SHARED;
         registerNetworkBean(network);
 
         registry.registerDevService(service -> service
@@ -65,11 +47,9 @@ class DevServicesNetworkIT {
         var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
         var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
 
-        // Both containers joined the same network and recorded their user-defined alias.
+        // Both containers joined the same network.
         assertThat(peerA.getNetwork()).isSameAs(network);
         assertThat(peerB.getNetwork()).isSameAs(network);
-        assertThat(peerA.getLabels()).containsEntry(DevServiceLabels.NETWORK_ALIASES, "peer-a");
-        assertThat(peerB.getLabels()).containsEntry(DevServiceLabels.NETWORK_ALIASES, "peer-b");
 
         try {
             peerB.start();
@@ -126,47 +106,6 @@ class DevServicesNetworkIT {
             peerA.stop();
             peerB.stop();
         }
-    }
-
-    @Test
-    void namedNetworkIsFoundOrCreatedAndReused() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
-        BootstrapMode.clear();
-        String networkName = "arconia-network-it-" + UUID.randomUUID();
-        DockerClient client = DockerClientFactory.lazyClient();
-        String createdId = null;
-        try {
-            Network first = DevServicesNetworkFactory.resolve(networkName);
-            createdId = first.getId();
-            assertThat(createdId).isNotBlank();
-
-            // The Docker network was actually created with the requested name.
-            assertThat(networksNamed(client, networkName))
-                    .singleElement()
-                    .satisfies(id -> assertThat(id).isEqualTo(first.getId()));
-
-            // Resolving again finds the existing network instead of creating a second one.
-            Network second = DevServicesNetworkFactory.resolve(networkName);
-            assertThat(second.getId()).isEqualTo(createdId);
-            assertThat(networksNamed(client, networkName)).hasSize(1);
-        }
-        finally {
-            if (createdId != null) {
-                try {
-                    client.removeNetworkCmd(createdId).exec();
-                }
-                catch (Exception ignored) {
-                    // Best-effort cleanup; the factory's shutdown hook is the backstop.
-                }
-            }
-        }
-    }
-
-    private static List<String> networksNamed(DockerClient client, String name) {
-        return client.listNetworksCmd().withNameFilter(name).exec().stream()
-                .filter(network -> name.equals(network.getName()))
-                .map(com.github.dockerjava.api.model.Network::getId)
-                .toList();
     }
 
     private DevServicesRegistry registryWithNetworkEnabled() {

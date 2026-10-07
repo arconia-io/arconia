@@ -41,13 +41,6 @@ public final class DevServiceLabels {
     public static final String OWNER = "io.arconia.dev-service.owner";
 
     /**
-     * Comma-separated list of network aliases the container is reachable by on the
-     * dev services network (e.g. {@code lgtm}). Set only when the container joins a
-     * network, so other applications can discover the hostname to wire against.
-     */
-    public static final String NETWORK_ALIASES = "io.arconia.dev-service.network-aliases";
-
-    /**
      * Prefix of the labels describing the links the dev service exposes. Each link
      * contributes one label per field, named after the link id and the field
      * (e.g. {@code io.arconia.dev-service.link.grafana.port}), so that a reader can pick

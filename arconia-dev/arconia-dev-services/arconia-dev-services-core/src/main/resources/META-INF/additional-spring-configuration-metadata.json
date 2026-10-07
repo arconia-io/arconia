@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.network.name",
+      "type": "java.lang.String",
+      "deprecation": {
+        "level": "error",
+        "reason": "Cross-application networks are no longer managed by Arconia. Define a Network bean with a stable id instead.",
+        "since": "0.31.0"
+      }
+    }
+  ]
+}

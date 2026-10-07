@@ -1,6 +1,5 @@
 package io.arconia.dev.services.core.autoconfigure;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -17,7 +16,7 @@ public class DevServicesProperties {
     private boolean enabled = true;
 
     /**
-     * Configuration for the shared network that dev service containers can join.
+     * Configuration for the network shared by the dev service containers of the application.
      */
     private final Network network = new Network();
 
@@ -34,28 +33,16 @@ public class DevServicesProperties {
     }
 
     /**
-     * Configuration for the shared network that dev service containers can join to
-     * communicate with each other.
+     * Configuration for the network shared by the dev service containers of the application.
      */
     public static class Network {
 
         /**
-         * Whether dev service containers join a shared network so they can reach each other
-         * by network alias (for example, to send telemetry to an observability dev service).
-         * When disabled (default), each container uses its own isolated network. When enabled,
-         * all dev service containers join the same network. Only applicable in dev mode.
+         * Whether dev service containers join a network shared by all the dev service containers
+         * of the application, so they can reach each other by service name.
+         * When disabled (default), each container uses the default network of the container runtime.
          */
         private boolean enabled = false;
-
-        /**
-         * Name of the OCI network dev service containers join. When set, containers
-         * join a stable, named network that can be shared across applications running
-         * simultaneously; the network is created if it doesn't already exist. A named
-         * network is required for container reuse to remain effective while networking
-         * is enabled. When unset (default), containers join an isolated per-application
-         * network. Only applicable in dev mode.
-         */
-        private @Nullable String name;
 
         public boolean isEnabled() {
             return enabled;
@@ -63,15 +50,6 @@ public class DevServicesProperties {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
-        }
-
-        @Nullable
-        public String getName() {
-            return name;
-        }
-
-        public void setName(@Nullable String name) {
-            this.name = name;
         }
 
     }

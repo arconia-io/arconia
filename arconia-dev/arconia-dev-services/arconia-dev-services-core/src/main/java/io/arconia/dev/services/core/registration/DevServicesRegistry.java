@@ -74,13 +74,6 @@ public class DevServicesRegistry {
 
     private static final String REGISTRATION_BEAN_NAME_PREFIX = "devService.registration.";
 
-    /**
-     * Prefix of the network alias Testcontainers automatically assigns to every
-     * {@link GenericContainer} (e.g. {@code tc-a1b2c3d4}), used to tell auto-generated
-     * aliases apart from user-defined ones.
-     */
-    private static final String GENERATED_NETWORK_ALIAS_PREFIX = "tc-";
-
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
     private final Environment environment;
@@ -414,61 +407,29 @@ public class DevServicesRegistry {
     }
 
     /**
-     * Attach the given container to the shared dev services {@link Network} when the global
-     * {@code arconia.dev.services.network.enabled} switch is on, so all dev service containers
-     * can communicate with each other. Networking is global rather than per-service: the set of
-     * containers that need to reach each other is defined by the user's topology, not by any
-     * single dev service, so enabling the switch attaches every container.
+     * Attach the given container to the {@link Network} shared by the dev service containers of
+     * the application, when enabled.
      * <p>
-     * Containers are reachable by the aliases set via the {@code network-aliases} property
-     * (already applied to the container). When none is set, the service name is applied as a
-     * default alias, so other containers always have a stable, predictable name to reach it by;
-     * a pure consumer that is never reached simply leaves that alias unused, which is harmless.
-     * A network already set on the container (e.g. by a customizer for a multi-container service)
-     * is honored. Port mapping is left untouched: the application keeps reaching the container
-     * over the host and mapped ports via its connection details.
+     * The service name is added as a network alias, so every container is reachable by a stable,
+     * predictable name next to any {@code network-aliases} configured for it. A network already
+     * set on the container (e.g. by a customizer) is honored.
+     * <p>
+     * Port mapping is left untouched: the application keeps reaching the container
+     * over the host and mapped ports.
      */
-    private void applyNetwork(GenericContainer<?> genericContainer, ServiceSpec service, ConfigurableBeanFactory beanFactory) {
+    private void applyNetwork(GenericContainer<?> container, ServiceSpec service, ConfigurableBeanFactory beanFactory) {
         if (!isNetworkEnabled()) {
             return;
         }
 
-        Network network = beanFactory.getBeanProvider(Network.class).getIfUnique();
-        if (network == null) {
-            logger.warn("The '{}' dev service is configured to join a network, but no unique Network bean is available (none or more than one is defined); skipping network attachment", service.getName());
-            return;
+        Network network = beanFactory.getBean(Network.class);
+        if (container.getNetwork() == null) {
+            container.withNetwork(network);
         }
+        container.withNetworkAliases(service.getName());
 
-        // Honor a network already set on the container (e.g. by a customizer).
-        if (genericContainer.getNetwork() == null) {
-            genericContainer.withNetwork(network);
-        }
-
-        // Testcontainers always seeds a generated "tc-<random>" alias, so a container is never
-        // fully unreachable; but that alias is unpredictable. Prefer user-defined aliases (set via
-        // the "network-aliases" property); when none is set, default to the service name so other
-        // containers have a stable, predictable name to reach it by. Both are stable across runs,
-        // which keeps the label (recorded below) reuse-safe: container labels and network aliases
-        // are part of the Testcontainers reuse hash, so a random alias would defeat reuse.
-        // Note the reuse hash also
-        // includes the network id: it is stable for a named network but per-JVM for Network.SHARED,
-        // which is what the reuse warning below is about.
-        List<String> userAliases = genericContainer.getNetworkAliases().stream()
-                .filter(alias -> !alias.startsWith(GENERATED_NETWORK_ALIAS_PREFIX))
-                .toList();
-        List<String> aliases;
-        if (userAliases.isEmpty()) {
-            genericContainer.withNetworkAliases(service.getName());
-            aliases = List.of(service.getName());
-        } else {
-            aliases = userAliases;
-        }
-        // Record the stable aliases in a label, so that the name the container is
-        // reachable by on the network can be read from the container itself.
-        genericContainer.withLabel(DevServiceLabels.NETWORK_ALIASES, String.join(",", aliases));
-
-        if (genericContainer.isShouldBeReused() && network == Network.SHARED) {
-            logger.warn("The 'testcontainers' reuse strategy is ineffective for the '{}' dev service on the default isolated network; set 'arconia.dev.services.network.name' for a stable network", service.getName());
+        if (container.isShouldBeReused() && network == Network.SHARED) {
+            logger.warn("The 'testcontainers' reuse strategy is ineffective for the '{}' dev service on the per-application network. Define a Network bean with a stable id to combine them", service.getName());
         }
     }
 

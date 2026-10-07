@@ -372,7 +372,7 @@ arconia:
           DOCLING_SERVE_OTEL_ENABLE_OTLP_METRICS: "true"
 ----
 <1> A single global switch attaches every Dev Service container to the shared network.
-<2> The `lgtm` hostname is the target's service name (its default network alias) and `4317` is the container's internal OTLP/gRPC port, not the host-mapped port. To reach a container by a different hostname, set its `network-aliases` property; those aliases replace the service-name default.
+<2> The `lgtm` hostname is the target's service name, which every container on the shared network is reachable by, and `4317` is the container's internal OTLP/gRPC port, not the host-mapped port. To reach a container by other hostnames as well, set its `network-aliases` property.
 
 [NOTE]
 ====
@@ -381,9 +381,7 @@ The shared network is distinct from the `framework` reuse strategy: the strategy
 
 ==== Advanced Scenarios
 
-* Across applications. By default the network is isolated per application, so containers from different applications don't reach each other. To connect them (for example, several services reporting to one Grafana LGTM instance), set a shared network name with the `arconia.dev.services.network.name` property: all applications using the same name join the same OCI network, created on demand and removed on a best-effort basis by the application that created it. Also use the `framework` reuse strategy on the participating Dev Services so a single instance is used; otherwise each application starts its own container and their identical aliases collide. This applies in dev mode only.
-
-* Container reuse. The `testcontainers` reuse strategy is only effective on a named network: the Testcontainers reuse hash includes the network id, which is stable for a named network but per-JVM for the default isolated one, so a reused container on the isolated shared network never matches (a warning is logged). Set `arconia.dev.services.network.name` when combining the shared network with the `testcontainers` reuse strategy.
+* Container reuse. The shared network is isolated per application: its id changes with every run, and since the Testcontainers reuse hash includes the network id, a container kept by the `testcontainers` reuse strategy is never matched on it (a warning is logged). To combine the two, define your own `Network` bean backed by a network with a stable id; it takes precedence over the one Arconia provides.
 
 * Your own containers. The network is exposed as an injectable Testcontainers `Network` bean. To let a container you manage yourself reach Dev Services, enable the shared network, inject the bean, and attach your container:
 
@@ -397,7 +395,7 @@ GenericContainer<?> daprContainer(Network devServicesNetwork) {
 }
 ----
 
-A user-defined `Network` bean takes precedence over the one Arconia provides (and over `arconia.dev.services.network.name`).
+A user-defined `Network` bean takes precedence over the one Arconia provides.
 
 === Startup Sequence
 
@@ -429,7 +427,7 @@ When a container fails to start, Testcontainers writes the container's logs to t
 
 In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
 
-The `arconia.dev.services.network.enabled` property (default `false`) turns on the shared network: when enabled, all Dev Service containers join a common OCI network so they can reach each other by name (see xref:index.adoc#_shared_network[Shared Network]). The `arconia.dev.services.network.name` property sets a stable, cross-application OCI network name for it; when unset (default), each application uses an isolated network.
+The `arconia.dev.services.network.enabled` property (default `false`) turns on the shared network: when enabled, all Dev Service containers join a common OCI network so they can reach each other by name (see xref:index.adoc#_shared_network[Shared Network]).
 
 [NOTE]
 ====

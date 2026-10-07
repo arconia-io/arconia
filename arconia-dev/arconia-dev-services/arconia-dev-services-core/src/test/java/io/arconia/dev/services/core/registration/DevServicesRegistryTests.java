@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
@@ -38,6 +39,7 @@ import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link DevServicesRegistry}.
@@ -376,7 +378,7 @@ class DevServicesRegistryTests {
     }
 
     @Test
-    void whenNetworkEnabledWithNetworkBeanThenContainerJoinsNetworkWithAliasLabel() {
+    void whenNetworkEnabledThenContainerJoinsNetworkWithServiceNameAlias() {
         DevServicesRegistry registry = registryWithNetworkEnabled();
         TestNetwork network = new TestNetwork("net-1");
         registerNetworkBean(network);
@@ -384,12 +386,13 @@ class DevServicesRegistryTests {
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
-                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db", "postgres")));
+                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
 
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
         assertThat(container.getNetwork()).isSameAs(network);
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.NETWORK_ALIASES, "db,postgres");
+        // The service name is added next to the user-defined alias.
+        assertThat(container.getNetworkAliases()).contains("db", "postgres");
     }
 
     @Test
@@ -405,39 +408,19 @@ class DevServicesRegistryTests {
         var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
         assertThat(container.getNetwork()).isNull();
-        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.NETWORK_ALIASES);
+        assertThat(container.getNetworkAliases()).doesNotContain("postgres");
     }
 
     @Test
-    void whenNetworkEnabledButNoNetworkBeanThenNetworkIsNotAttached() {
+    void whenNetworkEnabledButNoNetworkBeanThenContainerCreationFails() {
         DevServicesRegistry registry = registryWithNetworkEnabled();
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getNetwork()).isNull();
-        assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.NETWORK_ALIASES);
-    }
-
-    @Test
-    void whenNetworkEnabledWithoutAliasesThenServiceNameIsUsedAsAlias() {
-        DevServicesRegistry registry = registryWithNetworkEnabled();
-        TestNetwork network = new TestNetwork("net-1");
-        registerNetworkBean(network);
-
         registry.registerDevService(service -> service
                 .name("postgres")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getNetwork()).isSameAs(network);
-        assertThat(container.getNetworkAliases()).contains("postgres");
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.NETWORK_ALIASES, "postgres");
+        assertThatThrownBy(() -> beanFactory.getBean("devService.container.postgres", GenericContainer.class))
+                .hasRootCauseInstanceOf(NoSuchBeanDefinitionException.class);
     }
 
     @Test
@@ -454,42 +437,6 @@ class DevServicesRegistryTests {
         beanFactory.getBean("devService.container.postgres", GenericContainer.class);
 
         assertThat(output).contains("reuse strategy is ineffective").contains("postgres");
-    }
-
-    @Test
-    void whenContainerHasGeneratedAliasThenItIsExcludedFromLabel() {
-        DevServicesRegistry registry = registryWithNetworkEnabled();
-        registerNetworkBean(new TestNetwork("net-1"));
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                // Simulate the Testcontainers-generated alias alongside a user-defined one.
-                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("tc-deadbeef", "db")));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getLabels()).containsEntry(DevServiceLabels.NETWORK_ALIASES, "db");
-    }
-
-    @Test
-    void whenMultipleNetworkBeansThenNetworkIsNotAttached(CapturedOutput output) {
-        DevServicesRegistry registry = registryWithNetworkEnabled();
-        registerNetworkBean(new TestNetwork("net-1"));
-        var secondBeanDefinition = new org.springframework.beans.factory.support.RootBeanDefinition();
-        secondBeanDefinition.setBeanClass(TestNetwork.class);
-        secondBeanDefinition.setInstanceSupplier(() -> new TestNetwork("net-2"));
-        beanFactory.registerBeanDefinition("devServicesNetwork2", secondBeanDefinition);
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(TestPostgresContainer.class, () -> new TestPostgresContainer().withNetworkAliases("db")));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.getNetwork()).isNull();
-        assertThat(output).contains("no unique Network bean");
     }
 
     @Test

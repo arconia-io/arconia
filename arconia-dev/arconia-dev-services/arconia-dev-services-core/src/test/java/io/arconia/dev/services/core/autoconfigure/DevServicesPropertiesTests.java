@@ -28,26 +28,19 @@ class DevServicesPropertiesTests {
     }
 
     @Test
-    void shouldHaveNullNetworkNameByDefault() {
+    void shouldHaveNetworkDisabledByDefault() {
         DevServicesProperties properties = new DevServicesProperties();
-        assertThat(properties.getNetwork().getName()).isNull();
+        assertThat(properties.getNetwork().isEnabled()).isFalse();
     }
 
     @Test
-    void shouldUpdateNetworkName() {
-        DevServicesProperties properties = new DevServicesProperties();
-        properties.getNetwork().setName("arconia");
-        assertThat(properties.getNetwork().getName()).isEqualTo("arconia");
-    }
-
-    @Test
-    void shouldBindNetworkName() {
+    void shouldBindNetworkEnabled() {
         DevServicesProperties properties = new Binder(new MapConfigurationPropertySource(
-                Map.of(DevServicesProperties.CONFIG_PREFIX + ".network.name", "arconia")))
+                Map.of(DevServicesProperties.CONFIG_PREFIX + ".network.enabled", "true")))
                 .bind(DevServicesProperties.CONFIG_PREFIX, Bindable.ofInstance(new DevServicesProperties()))
                 .orElseGet(DevServicesProperties::new);
 
-        assertThat(properties.getNetwork().getName()).isEqualTo("arconia");
+        assertThat(properties.getNetwork().isEnabled()).isTrue();
     }
 
 }
