@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
@@ -151,7 +152,8 @@ public abstract class BaseDevServicesAutoConfigurationIT {
                 .withPropertyValues("arconia.dev.services.%s.reuse-strategy=testcontainers".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    assertThat(container.isShouldBeReused()).isTrue();
+                    boolean reuseSupported = TestcontainersConfiguration.getInstance().environmentSupportsReuse();
+                    assertThat(container.isShouldBeReused()).isEqualTo(reuseSupported);
                     // The reuse strategies are mutually exclusive: a container reused via
                     // Testcontainers is never discoverable by other applications.
                     assertThat(container.getLabels()).doesNotContainKey(DevServiceLabels.DISCOVERABLE);
