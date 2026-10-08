@@ -75,7 +75,7 @@ public class DoclingDevServicesProperties implements BaseDevServicesProperties {
     private List<VolumeMapping> volumes = new ArrayList<>();
 
     /**
-     * Whether to enable the Docling UI when in dev mode.
+     * Whether to enable the Docling UI.
      */
     private boolean enableUi = true;
 

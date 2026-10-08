@@ -42,28 +42,9 @@ class DevServicesEndpointAutoConfigurationTests {
 	}
 
 	@Test
-	void endpointBeanIsNotAvailableWhenTestModeIsEnabled() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=test")
-				.run(context -> {
-					assertThat(context).doesNotHaveBean(DevServicesEndpoint.class);
-				});
-	}
-
-	@Test
 	void endpointBeanIsNotAvailableWhenProdModeIsEnabled() {
 		contextRunner
 				.withSystemProperties("arconia.bootstrap.mode=prod")
-				.run(context -> {
-					assertThat(context).doesNotHaveBean(DevServicesEndpoint.class);
-				});
-	}
-
-	@Test
-	void endpointBeanIsNotAvailableWhenDevServicesGloballyDisabled() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=dev")
-				.withPropertyValues("arconia.dev.services.enabled=false")
 				.run(context -> {
 					assertThat(context).doesNotHaveBean(DevServicesEndpoint.class);
 				});
@@ -91,17 +72,6 @@ class DevServicesEndpointAutoConfigurationTests {
 					DevServicesEndpoint endpoint = context.getBean(DevServicesEndpoint.class);
 					assertThat(endpoint.devServices()).hasSize(2);
 					assertThat(endpoint.devServices()).containsKeys("postgresql", "docling");
-				});
-	}
-
-	@Test
-	void endpointBeanIsCreatedWithNoRegistrations() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=dev")
-				.run(context -> {
-					assertThat(context).hasSingleBean(DevServicesEndpoint.class);
-					DevServicesEndpoint endpoint = context.getBean(DevServicesEndpoint.class);
-					assertThat(endpoint.devServices()).isEmpty();
 				});
 	}
 

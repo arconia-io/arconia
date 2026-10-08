@@ -40,31 +40,61 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Incubating
 class ContainerConfigurerTests {
 
-
-
     @Test
-    void baseConfigurationShouldApplyEnvironmentVariables() {
+    void applyShouldConfigureTheContainerFromTheProperties() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
+        // The container must own its wait strategy before the startup timeout is applied to it:
+        // see the Javadoc of ContainerConfigurer.apply.
+        container.waitingFor(Wait.defaultWaitStrategy());
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"));
+                .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"))
+                .withNetworkAliases(List.of("alias1", "alias2"))
+                .withStartupTimeout(Duration.ofMinutes(2))
+                .withResources(List.of(
+                        new ResourceMapping("classpath:test-resource.txt", "/etc/config/test1.txt"),
+                        new ResourceMapping("test-resource.txt", "/etc/config/test2.txt")))
+                .withVolumes(List.of(new VolumeMapping("/host/path", "/container/path")));
 
-        ContainerConfigurer.apply(container, properties, false);
+        ContainerConfigurer.apply(container, properties, true);
 
-        assertThat(container.getEnvMap())
-                .containsEntry("KEY1", "VALUE1")
-                .containsEntry("KEY2", "VALUE2");
+        assertThat(container.getEnvMap()).containsEntry("KEY1", "VALUE1").containsEntry("KEY2", "VALUE2");
+        assertThat(container.getNetworkAliases()).contains("alias1", "alias2");
+        assertThat(getStartupTimeout(getWaitStrategy(container))).isEqualTo(Duration.ofMinutes(2));
+        assertThat(container.getCopyToFileContainerPathMap().values()).contains("/etc/config/test1.txt", "/etc/config/test2.txt");
+        assertThat(container.getBinds()).singleElement().satisfies(bind -> {
+            assertThat(bind.getPath()).isEqualTo("/host/path");
+            assertThat(bind.getVolume().getPath()).isEqualTo("/container/path");
+            assertThat(bind.getAccessMode().toString()).isEqualTo("rw");
+        });
+        assertThat(container.isShouldBeReused()).isTrue();
     }
 
     @Test
-    void baseConfigurationShouldApplyNetworkAliases() {
+    void applyShouldFailWhenAResourceIsNotFound() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
         BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withNetworkAliases(List.of("alias1", "alias2", "alias3"));
+                .withResources(List.of(new ResourceMapping("non-existent-resource.txt", "/etc/config/test.txt")));
+
+        assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Resource not found");
+    }
+
+    @Test
+    void applyShouldConfigureAJdbcContainerFromJdbcProperties() {
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
+        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
+                .withUsername("testuser")
+                .withPassword("testpass")
+                .withDbName("testdb")
+                .withInitScriptPaths(List.of("init1.sql", "init2.sql"));
 
         ContainerConfigurer.apply(container, properties, false);
 
-        assertThat(container.getNetworkAliases())
-                .contains("alias1", "alias2", "alias3");
+        assertThat(container.getUsername()).isEqualTo("testuser");
+        assertThat(container.getPassword()).isEqualTo("testpass");
+        assertThat(container.getDatabaseName()).isEqualTo("testdb");
+        assertThat(getInitScripts(container)).containsExactly("init1.sql", "init2.sql");
     }
 
     @Test
@@ -77,26 +107,6 @@ class ContainerConfigurerTests {
 
         ContainerConfigurer.apply(container, properties, false);
         assertThat(container.isShouldBeReused()).isFalse();
-    }
-
-    @Test
-    void baseConfigurationShouldApplyStartupTimeout() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        // Testcontainers uses a shared wait strategy instance across all containers, so the
-        // container must own one before the startup timeout is applied to it. Without this,
-        // the assertion below would pass by reading the shared instance, and the custom
-        // timeout would leak to every other container relying on it.
-        container.waitingFor(Wait.defaultWaitStrategy());
-        Duration customTimeout = Duration.ofMinutes(2);
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withStartupTimeout(customTimeout);
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        WaitStrategy waitStrategy = getWaitStrategy(container);
-        Duration actualTimeout = getStartupTimeout(waitStrategy);
-
-        assertThat(actualTimeout).isEqualTo(customTimeout);
     }
 
     /**
@@ -117,99 +127,6 @@ class ContainerConfigurerTests {
         assertThat(startupTimeoutField).isNotNull();
         ReflectionUtils.makeAccessible(startupTimeoutField);
         return (Duration) ReflectionUtils.getField(startupTimeoutField, waitStrategy);
-    }
-
-    @Test
-    void baseConfigurationShouldApplyEmptyEnvironmentVariables() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withEnvironment(Map.of());
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getEnvMap()).isEmpty();
-    }
-
-    @Test
-    void baseConfigurationShouldApplyEmptyNetworkAliases() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withNetworkAliases(List.of());
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getNetworkAliases()).hasSize(1); // default alias added by Testcontainers
-    }
-
-    @Test
-    void resourcesConfigurationShouldCopyClasspathResourceWithExplicitPrefix() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("classpath:test-resource.txt", "/etc/config/test.txt")
-                ));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        // Then
-        assertThat(container.getCopyToFileContainerPathMap()).isNotEmpty();
-        assertThat(container.getCopyToFileContainerPathMap().values())
-                .contains("/etc/config/test.txt");
-    }
-
-    @Test
-    void resourcesConfigurationShouldCopyClasspathResourceWithoutPrefix() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("test-resource.txt", "/etc/config/test.txt")
-                ));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getCopyToFileContainerPathMap()).isNotEmpty();
-        assertThat(container.getCopyToFileContainerPathMap().values())
-                .contains("/etc/config/test.txt");
-    }
-
-    @Test
-    void resourcesConfigurationShouldCopyMultipleResources() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("classpath:test-resource.txt", "/etc/config/test1.txt"),
-                        new ResourceMapping("test-resource.txt", "/etc/config/test2.txt")
-                ));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getCopyToFileContainerPathMap()).hasSize(2);
-        assertThat(container.getCopyToFileContainerPathMap().values())
-                .contains("/etc/config/test1.txt", "/etc/config/test2.txt");
-    }
-
-    @Test
-    void resourcesConfigurationShouldThrowExceptionWhenResourceNotFound() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of(
-                        new ResourceMapping("non-existent-resource.txt", "/etc/config/test.txt")
-                ));
-
-        assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties, false))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Resource not found");
-    }
-
-    @Test
-    void resourcesConfigurationShouldHandleEmptyResourcesList() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withResources(List.of());
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getCopyToFileContainerPathMap()).isEmpty();
     }
 
     @Test
@@ -310,115 +227,6 @@ class ContainerConfigurerTests {
         assertThatThrownBy(() -> ContainerConfigurer.resolveResource("non-existent-resource.txt"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Resource not found");
-    }
-
-    @Test
-    void volumesConfigurationShouldBindSingleVolume() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withVolumes(List.of(
-                        new VolumeMapping("/host/path", "/container/path")
-                ));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getBinds()).hasSize(1);
-        assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path");
-        assertThat(container.getBinds().getFirst().getVolume().getPath()).isEqualTo("/container/path");
-        assertThat(container.getBinds().getFirst().getAccessMode().toString()).isEqualTo("rw");
-    }
-
-    @Test
-    void volumesConfigurationShouldBindMultipleVolumes() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withVolumes(List.of(
-                        new VolumeMapping("/host/path1", "/container/path1"),
-                        new VolumeMapping("/host/path2", "/container/path2"),
-                        new VolumeMapping("/host/path3", "/container/path3")
-                ));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getBinds()).hasSize(3);
-        assertThat(container.getBinds().getFirst().getPath()).isEqualTo("/host/path1");
-        assertThat(container.getBinds().getFirst().getVolume().getPath()).isEqualTo("/container/path1");
-        assertThat(container.getBinds().getFirst().getAccessMode().toString()).isEqualTo("rw");
-        assertThat(container.getBinds().get(1).getPath()).isEqualTo("/host/path2");
-        assertThat(container.getBinds().get(1).getVolume().getPath()).isEqualTo("/container/path2");
-        assertThat(container.getBinds().get(1).getAccessMode().toString()).isEqualTo("rw");
-        assertThat(container.getBinds().get(2).getPath()).isEqualTo("/host/path3");
-        assertThat(container.getBinds().get(2).getVolume().getPath()).isEqualTo("/container/path3");
-        assertThat(container.getBinds().get(2).getAccessMode().toString()).isEqualTo("rw");
-    }
-
-    @Test
-    void volumesConfigurationShouldHandleEmptyVolumesList() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
-                .withVolumes(List.of());
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getBinds()).isEmpty();
-    }
-
-    @Test
-    void jdbcConfigurationShouldApplyUsername() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
-        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
-                .withUsername("testuser");
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getUsername()).isEqualTo("testuser");
-    }
-
-    @Test
-    void jdbcConfigurationShouldApplyPassword() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
-        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
-                .withPassword("testpassword");
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getPassword()).isEqualTo("testpassword");
-    }
-
-    @Test
-    void jdbcConfigurationShouldApplyDatabaseName() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
-        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
-                .withDbName("testdb");
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        assertThat(container.getDatabaseName()).isEqualTo("testdb");
-    }
-
-    @Test
-    void jdbcConfigurationShouldApplyInitScripts() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
-        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
-                .withInitScriptPaths(List.of("init1.sql", "init2.sql"));
-
-        ContainerConfigurer.apply(container, properties, false);
-
-        String[] initScripts = getInitScripts(container);
-        assertThat(initScripts)
-                .containsExactly("init1.sql", "init2.sql");
-    }
-    @Test
-    void jdbcConfigurationShouldHandleEmptyInitScripts() {
-        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
-        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
-                .withInitScriptPaths(List.of());
-
-        assertThatCode(() -> ContainerConfigurer.apply(container, properties, false))
-                .doesNotThrowAnyException();
-
-        String[] initScripts = getInitScripts(container);
-        assertThat(initScripts).isEmpty();
     }
 
     /**

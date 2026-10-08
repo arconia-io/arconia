@@ -35,4 +35,13 @@ class ArconiaArtemisContainerTests {
                         properties.getManagementConsolePort() + ":" + ArconiaArtemisContainer.WEB_CONSOLE_PORT));
     }
 
+    @Test
+    void credentialsFollowTheProperties() {
+        var properties = new ArtemisDevServicesProperties();
+        var container = new ArconiaArtemisContainer(properties);
+        container.configure();
+        assertThat(container.getUser()).isEqualTo(properties.getUsername());
+        assertThat(container.getPassword()).isEqualTo(properties.getPassword());
+    }
+
 }

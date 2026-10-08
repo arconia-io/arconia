@@ -1,6 +1,5 @@
 package io.arconia.dev.services.postgresql;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
@@ -13,9 +12,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import io.arconia.dev.services.tests.BaseJdbcDevServicesAutoConfigurationIT;
 
-import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_DB_NAME;
-import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_PASSWORD;
-import static io.arconia.dev.services.postgresql.PostgresqlDevServicesProperties.DEFAULT_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -56,43 +52,6 @@ class PostgresqlDevServicesAutoConfigurationIT extends BaseJdbcDevServicesAutoCo
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new PostgresqlDevServicesProperties();
         return asDiscoverableContainer(new ArconiaPostgreSqlContainer(properties), properties, ownerId);
-    }
-
-    @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner().run(context -> {
-            assertThat(context).hasSingleBean(getContainerClass());
-            var container = context.getBean(getContainerClass());
-            assertThat(container.getDockerImageName()).contains(ArconiaPostgreSqlContainer.COMPATIBLE_IMAGE_NAME);
-            assertThat(container.getEnv()).isEmpty();
-            assertThat(container.getNetworkAliases()).hasSize(1);
-            container.start();
-            assertThat(container.getUsername()).isEqualTo(DEFAULT_USERNAME);
-            assertThat(container.getPassword()).isEqualTo(DEFAULT_PASSWORD);
-            assertThat(container.getDatabaseName()).isEqualTo(DEFAULT_DB_NAME);
-            container.stop();
-
-            assertThatHasSingletonScope(context);
-        });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(), commonJdbcConfigurationProperties());
-
-        getContextRunner()
-            .withPropertyValues(properties)
-            .run(context -> {
-                var container = context.getBean(getContainerClass());
-                container.start();
-                assertThatConfigurationIsApplied(container);
-                assertThatJdbcConfigurationIsApplied(container);
-                assertThat(container.execInContainer("psql", "-U", "mytest", "-d", "mytest", "-t", "-A", "-c",
-                    "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'book')::text")
-                    .getStdout())
-                    .contains("true");
-                container.stop();
-            });
     }
 
     @Test

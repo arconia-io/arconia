@@ -71,7 +71,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.enable-ui`
 | `true`
-| Whether to enable the Docling UI when in dev mode.
+| Whether to enable the Docling UI.
 
 | `arconia.dev.services.{service-name}.api-key`
 |

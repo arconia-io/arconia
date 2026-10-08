@@ -3,7 +3,6 @@ package io.arconia.dev.services.lldap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -73,20 +72,6 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
     }
 
     @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner().run(context -> {
-            assertThat(context).hasSingleBean(getContainerClass());
-            var container = context.getBean(getContainerClass());
-            assertThat(container.getDockerImageName()).contains(ArconiaLldapContainer.COMPATIBLE_IMAGE_NAME);
-            assertThat(container.getEnv()).isEmpty();
-            assertThat(container.getNetworkAliases()).hasSize(1);
-            assertThat(container.getBinds()).isEmpty();
-
-            assertThatHasSingletonScope(context);
-        });
-    }
-
-    @Test
     void devServiceLinksExposeManagementConsoleUrl() {
         contextRunnerWithContainerLifecycle()
                 // LLDAP requires these to boot; otherwise the container exits with code 1.
@@ -101,25 +86,6 @@ class LldapDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
                         assertThat(link.url()).isEqualTo(
                                 "http://" + container.getHost() + ":" + container.getMappedPort(ArconiaLldapContainer.UI_PORT));
                     });
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
-                "arconia.dev.services.%s.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman".formatted(getServiceName()),
-                "arconia.dev.services.%s.environment.LLDAP_LDAP_USER_PASS=password".formatted(getServiceName())
-        );
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    assertThat(container.getEnv()).contains("LLDAP_JWT_SECRET=letItGoWannaBuildSnowman");
-                    assertThat(container.getEnv()).contains("LLDAP_LDAP_USER_PASS=password");
-                    container.stop();
                 });
     }
 

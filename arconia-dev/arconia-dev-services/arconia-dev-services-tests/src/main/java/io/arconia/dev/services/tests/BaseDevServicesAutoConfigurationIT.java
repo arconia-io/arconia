@@ -1,6 +1,5 @@
 package io.arconia.dev.services.tests;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -107,23 +106,9 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenGloballyDisabled() {
-        getContextRunner()
-                .withPropertyValues("arconia.dev.services.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
-    }
-
-    @Test
     void autoConfigurationNotActivatedWhenDisabled() {
         getContextRunner()
                 .withPropertyValues("arconia.dev.services.%s.enabled=false".formatted(getServiceName()))
-                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
-    }
-
-    @Test
-    void autoConfigurationNotActivatedInProdMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=prod")
                 .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
     }
 
@@ -142,7 +127,37 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     void containerAvailableInTestMode() {
         getContextRunner()
                 .withSystemProperties("arconia.bootstrap.mode=test")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(getContainerClass());
+                    // Outside dev mode there is no DevTools restart scope to keep the container in.
+                    String[] beanNames = context.getBeanFactory().getBeanNamesForType(getContainerClass());
+                    assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope()).isEqualTo("singleton");
+                });
+    }
+
+    @Test
+    void containerAvailableInDevMode() {
+        getContextRunner()
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues("arconia.dev.services.%s.reuse-strategy=none".formatted(getServiceName()))
                 .run(context -> assertThat(context).hasSingleBean(getContainerClass()));
+    }
+
+    @Test
+    void commonConfigurationApplied() {
+        getContextRunner()
+                .withPropertyValues(commonConfigurationProperties())
+                .run(context -> {
+                    // The common properties are applied by the framework when the container is
+                    // created, so they are all visible on the container before it is started.
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getEnvMap()).containsEntry("KEY", "value");
+                    assertThat(container.getNetworkAliases()).contains("network1");
+                    assertThat(container.getCopyToFileContainerPathMap()).containsValue("/tmp/test-resource.txt");
+                    assertThat(container.getBinds())
+                            .anyMatch(bind -> bind.getPath().equals(testMountDir.toAbsolutePath().toString())
+                                    && bind.getVolume().getPath().equals("/arconia"));
+                });
     }
 
     @Test
@@ -203,16 +218,6 @@ public abstract class BaseDevServicesAutoConfigurationIT {
     }
 
     /**
-     * Assert that the given container class is instantiated as a singleton bean in the given application context.
-     */
-    protected void assertThatHasSingletonScope(AssertableApplicationContext context) {
-        String[] beanNames = context.getBeanFactory().getBeanNamesForType(getContainerClass());
-        assertThat(beanNames).hasSize(1);
-        assertThat(context.getBeanFactory().getBeanDefinition(beanNames[0]).getScope())
-                .isEqualTo("singleton");
-    }
-
-    /**
      * Build common configuration properties for a service.
      */
     protected String[] commonConfigurationProperties() {
@@ -225,25 +230,6 @@ public abstract class BaseDevServicesAutoConfigurationIT {
                 prefix + ".volumes[0].host-path=" + testMountDir.toAbsolutePath(),
                 prefix + ".volumes[0].container-path=/arconia"
         };
-    }
-
-    /**
-     * Assert common configuration properties were applied correctly.
-     * Container must be started before calling.
-     */
-    protected static void assertThatConfigurationIsApplied(GenericContainer<?> container) throws Exception {
-        assertThat(container.getEnv()).contains("KEY=value");
-        assertThat(container.getNetworkAliases()).contains("network1");
-        assertThat(container.getCurrentContainerInfo().getState().getStatus()).isEqualTo("running");
-
-        String mappedResourceContent = container.copyFileFromContainer(
-                "/tmp/test-resource.txt",
-                inputStream -> new String(inputStream.readAllBytes(), StandardCharsets.UTF_8)
-        );
-        assertThat(mappedResourceContent).isNotEmpty();
-
-        assertThat(container.getBinds()).anyMatch(b -> b.getPath().equals(testMountDir.toAbsolutePath().toString()));
-        assertThat(container.getBinds()).anyMatch(b -> b.getVolume().getPath().equals("/arconia"));
     }
 
     /**

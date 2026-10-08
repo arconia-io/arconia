@@ -1,7 +1,5 @@
 package io.arconia.dev.services.redis;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -59,34 +57,6 @@ class RedisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         assertThat(connectionDetails.getStandalone().getHost()).isEqualTo(discoveredContainer.getHost());
         assertThat(connectionDetails.getStandalone().getPort())
                 .isEqualTo(discoveredContainer.getMappedPort(ArconiaRedisContainer.REDIS_PORT));
-    }
-
-    @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner()
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaRedisContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-            });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

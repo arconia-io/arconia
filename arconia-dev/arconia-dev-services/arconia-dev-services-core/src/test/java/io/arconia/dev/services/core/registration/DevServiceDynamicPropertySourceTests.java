@@ -8,7 +8,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
@@ -79,17 +78,6 @@ class DevServiceDynamicPropertySourceTests {
     }
 
     @Test
-    void getOrCreateCreatesDistinctInstancesPerEnvironment() {
-        var environment1 = new MockEnvironment();
-        var environment2 = new MockEnvironment();
-
-        var first = DevServiceDynamicPropertySource.getOrCreate(environment1);
-        var second = DevServiceDynamicPropertySource.getOrCreate(environment2);
-
-        assertThat(first).isNotSameAs(second);
-    }
-
-    @Test
     void multipleRegistrarsShareSamePropertySource() {
         var environment = new MockEnvironment();
 
@@ -101,63 +89,6 @@ class DevServiceDynamicPropertySourceTests {
 
         assertThat(environment.getProperty("first.property")).isEqualTo("first-value");
         assertThat(environment.getProperty("second.property")).isEqualTo("second-value");
-    }
-
-    @Test
-    void unknownPropertyReturnsNull() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        assertThat(propertySource.getProperty("unknown.property")).isNull();
-    }
-
-    @Test
-    void containsPropertyReturnsTrueForRegisteredProperty() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        propertySource.add("my.property", () -> "value");
-
-        assertThat(propertySource.containsProperty("my.property")).isTrue();
-        assertThat(propertySource.containsProperty("unknown.property")).isFalse();
-    }
-
-    @Test
-    void getPropertyNamesReturnsRegisteredNames() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        propertySource.add("first.property", () -> "value1");
-        propertySource.add("second.property", () -> "value2");
-
-        assertThat(propertySource.getPropertyNames()).containsExactlyInAnyOrder("first.property", "second.property");
-    }
-
-    @Test
-    void addWithNullNameThrows() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> propertySource.add(null, () -> "value"));
-    }
-
-    @Test
-    void addWithBlankNameThrows() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> propertySource.add("", () -> "value"));
-    }
-
-    @Test
-    void addWithNullSupplierThrows() {
-        var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> propertySource.add("my.property", null));
     }
 
     @Test

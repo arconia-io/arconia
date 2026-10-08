@@ -1,7 +1,5 @@
 package io.arconia.dev.services.rabbitmq;
 
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -64,39 +62,16 @@ class RabbitMqDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
     }
 
     @Test
-    void containerAvailableInDevMode() {
+    void credentialsApplied() {
         getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
+                        "arconia.dev.services.%s.password=mypassword".formatted(getServiceName()))
                 .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
                     var container = (RabbitMQContainer) context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaRabbitMqContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getAdminUsername()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_USERNAME);
-                    assertThat(container.getAdminPassword()).isEqualTo(RabbitMqDevServicesProperties.DEFAULT_PASSWORD);
-
-                    assertThatHasSingletonScope(context);
+                    assertThat(container.getAdminUsername()).isEqualTo("myusername");
+                    assertThat(container.getAdminPassword()).isEqualTo("mypassword");
                 });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
-                "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
-                "arconia.dev.services.%s.password=mypassword".formatted(getServiceName())
-        );
-
-        getContextRunner()
-            .withPropertyValues(properties)
-            .run(context -> {
-                var container = (RabbitMQContainer) context.getBean(getContainerClass());
-                container.start();
-                assertThatConfigurationIsApplied(container);
-                assertThat(container.getAdminUsername()).isEqualTo("myusername");
-                assertThat(container.getAdminPassword()).isEqualTo("mypassword");
-                container.stop();
-            });
     }
 
 }

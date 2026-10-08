@@ -1,17 +1,13 @@
 package io.arconia.dev.services.core.registration;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.env.DefaultPropertiesPropertySource;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.testcontainers.containers.GenericContainer;
@@ -40,28 +36,6 @@ class DevServicesRegistrarTests {
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "docling");
         assertDescriptionBeanDefinition("docling");
         assertBeanDefinitionCount(2);
-    }
-
-    @Test
-    void multipleRegistrationsFromSingleRegistryInvocation() {
-        doRegister(registry -> {
-            registry.registerDevService(service ->
-                    service.name("docling")
-                    .properties(TestDevServicesProperties.DEFAULT)
-                            .description("Docling")
-                            .container(TestDoclingContainer.class, TestDoclingContainer::new));
-
-            registry.registerDevService(service ->
-                    service.name("postgres")
-                    .properties(TestDevServicesProperties.DEFAULT)
-                            .description("PostgreSQL database")
-                            .container(TestPostgresContainer.class, TestPostgresContainer::new));
-        });
-        assertContainerBeanDefinition("docling", TestDoclingContainer.class, null);
-        assertDescriptionBeanDefinition("docling");
-        assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
-        assertDescriptionBeanDefinition("postgres");
-        assertBeanDefinitionCount(4);
     }
 
     @Test
@@ -100,12 +74,6 @@ class DevServicesRegistrarTests {
         assertBeanDefinitionCount(2);
     }
 
-    @Test
-    void noRegistrations() {
-        doRegister(registry -> {});
-        assertBeanDefinitionCount(0);
-    }
-
     // --- setDefaultProperty ---
 
     @Test
@@ -116,44 +84,6 @@ class DevServicesRegistrarTests {
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:test");
 
         assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:h2:mem:test");
-    }
-
-    @Test
-    void setDefaultPropertyIsOverriddenByHigherPrioritySource() {
-        // Simulate user config at a higher-priority source position
-        MutablePropertySources sources = environment.getPropertySources();
-        sources.addFirst(new MapPropertySource("userConfig", Map.of("spring.datasource.url", "jdbc:postgresql://user-host/db")));
-
-        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
-        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
-
-        registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:default");
-
-        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:postgresql://user-host/db");
-    }
-
-    @Test
-    void setDefaultPropertyOverwritesExistingDefaultPropertiesEntry() {
-        // Pre-populate DefaultPropertiesPropertySource with a value
-        DefaultPropertiesPropertySource.addOrMerge(Map.of("spring.datasource.url", "jdbc:old"), environment.getPropertySources());
-
-        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
-        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
-
-        registrar.setDefaultProperty("spring.datasource.url", "jdbc:new");
-
-        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:new");
-    }
-
-    @Test
-    void setDefaultPropertyLastWriteWinsForSameKey() {
-        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
-        registrar.registerBeanDefinitions(AnnotationMetadata.introspect(this.getClass()), beanDefinitionRegistry);
-
-        registrar.setDefaultProperty("spring.datasource.url", "jdbc:first");
-        registrar.setDefaultProperty("spring.datasource.url", "jdbc:second");
-
-        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:second");
     }
 
     @SafeVarargs

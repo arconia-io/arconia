@@ -1,7 +1,5 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -72,35 +70,6 @@ class OtelCollectorDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
         getContextRunner()
                 .withPropertyValues("arconia.otel.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(ArconiaOtelCollectorContainer.class));
-    }
-
-    @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

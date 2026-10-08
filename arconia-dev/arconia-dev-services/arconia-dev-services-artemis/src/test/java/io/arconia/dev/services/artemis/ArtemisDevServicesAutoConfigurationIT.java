@@ -1,7 +1,5 @@
 package io.arconia.dev.services.artemis;
 
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails;
 import org.springframework.boot.artemis.autoconfigure.ArtemisMode;
@@ -65,41 +63,16 @@ class ArtemisDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void containerAvailableInDevMode() {
+    void credentialsApplied() {
         getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withPropertyValues(
+                        "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
+                        "arconia.dev.services.%s.password=mypassword".formatted(getServiceName()))
                 .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = (ArtemisContainer) context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaArtemisContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getBinds()).isEmpty();
-                    container.start();
-                    assertThat(container.getUser()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_USERNAME);
-                    assertThat(container.getPassword()).isEqualTo(ArtemisDevServicesProperties.DEFAULT_PASSWORD);
-                    container.stop();
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
-                "arconia.dev.services.%s.username=myusername".formatted(getServiceName()),
-                "arconia.dev.services.%s.password=mypassword".formatted(getServiceName())
-        );
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = (ArtemisContainer) context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
+                    var container = (ArconiaArtemisContainer) context.getBean(getContainerClass());
+                    container.configure();
                     assertThat(container.getUser()).isEqualTo("myusername");
                     assertThat(container.getPassword()).isEqualTo("mypassword");
-                    container.stop();
                 });
     }
 

@@ -12,7 +12,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.json.JsonParserFactory;
@@ -20,7 +19,6 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-
 
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationIT;
@@ -80,41 +78,15 @@ class KeycloakDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigur
     }
 
     @Test
-    void containerAvailableWithDefaultConfiguration() {
+    void adminCredentialsApplied() {
         getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaKeycloakContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getBinds()).isEmpty();
-                    assertThat(container.getRealm()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_REALM);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
-                "arconia.dev.services.%s.admin-username=keycloak".formatted(getServiceName()),
-                "arconia.dev.services.%s.admin-password=s3cret".formatted(getServiceName())
-        );
-
-        getContextRunner()
-                .withPropertyValues(properties)
+                .withPropertyValues(
+                        "arconia.dev.services.%s.admin-username=keycloak".formatted(getServiceName()),
+                        "arconia.dev.services.%s.admin-password=s3cret".formatted(getServiceName()))
                 .run(context -> {
                     var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
-                    container.start();
-                    try {
-                        assertThatConfigurationIsApplied(container);
-                        assertThat(container.getAdminUsername()).isEqualTo("keycloak");
-                        assertThat(container.getAdminPassword()).isEqualTo("s3cret");
-                    }
-                    finally {
-                        container.stop();
-                    }
+                    assertThat(container.getAdminUsername()).isEqualTo("keycloak");
+                    assertThat(container.getAdminPassword()).isEqualTo("s3cret");
                 });
     }
 

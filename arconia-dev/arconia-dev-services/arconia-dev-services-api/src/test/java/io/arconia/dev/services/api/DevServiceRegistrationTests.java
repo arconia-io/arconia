@@ -2,14 +2,21 @@ package io.arconia.dev.services.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
+
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,49 +26,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class DevServiceRegistrationTests {
 
-    @Test
-    void whenNameIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceRegistration.builder()
-                .description("A test service")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(this::createContainerInfo)
-                .build())
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("invalidRegistrations")
+    void whenAComponentIsMissingThenThrow(String component, ThrowingCallable creation) {
+        assertThatThrownBy(creation)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("name cannot be null or empty");
+                .hasMessageContaining(component + " cannot be null");
     }
 
-    @Test
-    void whenNameIsEmptyThenThrow() {
-        assertThatThrownBy(() -> DevServiceRegistration.builder()
-                .name("")
-                .description("A test service")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(this::createContainerInfo)
-                .build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("name cannot be null or empty");
-    }
-
-    @Test
-    void whenOriginIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceRegistration.builder()
-                .name("test-service")
-                .description("A test service")
-                .containerInfo(this::createContainerInfo)
-                .build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("origin cannot be null");
-    }
-
-    @Test
-    void whenContainerInfoIsNullThenThrow() {
-        assertThatThrownBy(() -> DevServiceRegistration.builder()
-                .name("test-service")
-                .description("A test service")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("containerInfo cannot be null");
+    static Stream<Arguments> invalidRegistrations() {
+        Supplier<ContainerInfo> containerInfo = DevServiceRegistrationTests::createContainerInfo;
+        return Stream.of(
+                Arguments.of("name", (ThrowingCallable) () -> new DevServiceRegistration("", null, DevServiceRegistration.Origin.OWNED, containerInfo, List.of())),
+                Arguments.of("origin", (ThrowingCallable) () -> new DevServiceRegistration("test-service", null, null, containerInfo, List.of())),
+                Arguments.of("containerInfo", (ThrowingCallable) () -> new DevServiceRegistration("test-service", null, DevServiceRegistration.Origin.OWNED, null, List.of())));
     }
 
     @Test
@@ -78,23 +56,6 @@ class DevServiceRegistrationTests {
         assertThat(registration.name()).isEqualTo("test-service");
         assertThat(registration.description()).isEqualTo("A test service");
         assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.OWNED);
-        assertThat(registration.containerInfo()).isNotNull();
-        assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
-    }
-
-    @Test
-    void whenDescriptionIsNullThenCreate() {
-        var expectedContainerInfo = createContainerInfo();
-
-        var registration = DevServiceRegistration.builder()
-                .name("test-service")
-                .origin(DevServiceRegistration.Origin.DISCOVERED)
-                .containerInfo(() -> expectedContainerInfo)
-                .build();
-
-        assertThat(registration.name()).isEqualTo("test-service");
-        assertThat(registration.description()).isNull();
-        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
         assertThat(registration.containerInfo()).isNotNull();
         assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
     }
@@ -121,20 +82,7 @@ class DevServiceRegistrationTests {
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
-    @Test
-    void whenLinksNotProvidedThenEmpty() {
-        var expectedContainerInfo = createContainerInfo();
-
-        var registration = DevServiceRegistration.builder()
-                .name("test-service")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> expectedContainerInfo)
-                .build();
-
-        assertThat(registration.links()).isEmpty();
-    }
-
-    private ContainerInfo createContainerInfo() {
+    private static ContainerInfo createContainerInfo() {
         return ContainerInfo.builder()
                 .id("container123")
                 .imageName("docling")

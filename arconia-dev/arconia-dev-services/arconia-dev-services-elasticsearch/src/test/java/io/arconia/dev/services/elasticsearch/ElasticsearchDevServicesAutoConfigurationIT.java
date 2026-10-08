@@ -1,7 +1,5 @@
 package io.arconia.dev.services.elasticsearch;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -62,37 +60,6 @@ class ElasticsearchDevServicesAutoConfigurationIT extends BaseDevServicesAutoCon
         assertThat(connectionDetails.getUsername()).isEqualTo("elastic");
         assertThat(connectionDetails.getPassword())
                 .isEqualTo(discoveredContainer.getEnvMap().get("ELASTIC_PASSWORD"));
-    }
-
-    @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner()
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaElasticsearchContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).contains(
-                            "discovery.type=single-node",
-                            "cluster.routing.allocation.disk.threshold_enabled=false",
-                            "ELASTIC_PASSWORD=" + ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD);
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-            });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

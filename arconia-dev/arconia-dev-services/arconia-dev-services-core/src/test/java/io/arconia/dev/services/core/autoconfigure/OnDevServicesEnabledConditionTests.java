@@ -3,10 +3,13 @@ package io.arconia.dev.services.core.autoconfigure;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -36,6 +39,7 @@ class OnDevServicesEnabledConditionTests {
 
     @BeforeEach
     void setUp() {
+        when(context.getEnvironment()).thenReturn(environment);
         BootstrapMode.clear();
     }
 
@@ -45,437 +49,94 @@ class OnDevServicesEnabledConditionTests {
         BootstrapMode.clear();
     }
 
-    @Test
-    void shouldNotMatchWhenApplicationIsRunningInProdMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
+    /**
+     * The decision table of the condition: the bootstrap mode, the global switch, the toggle
+     * of the dev service (under the default or a custom prefix), and the outcome. A blank
+     * value means the property is not set.
+     */
+    @ParameterizedTest(name = "mode={0} global={1} service={2} prefix={3} name={4} -> match={5}")
+    @CsvSource(nullValues = "-", textBlock = """
+            # mode, global, service, prefix,            name,         match, message
+            prod,   true,   true,    -,                 test-service, false, dev services are only available in dev and test mode
+            prod,   -,      -,       -,                 -,            false, dev services are only available in dev and test mode
+            prod,   -,      -,       acme.dev.services, keycloak,     false, dev services are only available in dev and test mode
+            test,   -,      -,       -,                 test-service, true,  enabled by default
+            test,   -,      -,       -,                 -,            true,  no specific dev services name is specified
+            test,   true,   -,       -,                 -,            true,  no specific dev services name is specified
+            test,   false,  -,       -,                 -,            false, arconia.dev.services.enabled is set to false
+            test,   true,   true,    -,                 test-service, true,  arconia.dev.services.test-service.enabled is set to true
+            test,   true,   false,   -,                 test-service, false, arconia.dev.services.test-service.enabled is set to false
+            test,   false,  true,    -,                 test-service, false, arconia.dev.services.enabled is set to false
+            test,   false,  false,   -,                 test-service, false, arconia.dev.services.enabled is set to false
+            test,   -,      true,    -,                 test-service, true,  arconia.dev.services.test-service.enabled is set to true
+            test,   on,     -,       -,                 test-service, true,  enabled by default
+            test,   -,      true,    acme.dev.services, keycloak,     true,  acme.dev.services.keycloak.enabled is set to true
+            test,   -,      false,   acme.dev.services, keycloak,     false, acme.dev.services.keycloak.enabled is set to false
+            test,   -,      -,       acme.dev.services, keycloak,     true,  enabled by default
+            test,   false,  true,    acme.dev.services, keycloak,     false, arconia.dev.services.enabled is set to false
+            """)
+    void decidesFromModeAndProperties(String mode, @Nullable String global, @Nullable String service, @Nullable String prefix,
+            @Nullable String name, boolean match, String message) {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, mode);
         BootstrapMode.clear();
-        environment.setProperty("arconia.dev.services.enabled", "true");
-        environment.setProperty("arconia.dev.services.test-service.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
+        if (global != null) {
+            environment.setProperty("arconia.dev.services.enabled", global);
+        }
+        if (service != null) {
+            environment.setProperty("%s.%s.enabled".formatted(prefix != null ? prefix : "arconia.dev.services", name), service);
+        }
 
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
+        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata(name, prefix));
 
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("dev services are only available in dev and test mode");
+        assertThat(outcome.isMatch()).isEqualTo(match);
+        assertThat(outcome.getMessage()).contains(message);
     }
 
     @Test
-    void shouldMatchWhenGlobalPropertyUsesAlternativeBooleanFormat() {
-        environment.setProperty("arconia.dev.services.enabled", "on");
-        when(context.getEnvironment()).thenReturn(environment);
+    void failsWhenGlobalPropertyIsInvalid() {
+        environment.setProperty("arconia.dev.services.enabled", "not-a-boolean");
 
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-    }
-
-    @Test
-    void shouldFailWhenGlobalPropertyValueIsInvalid() {
-        environment.setProperty("arconia.dev.services.enabled", "not a boolean");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata))
+        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata("test-service", null)))
                 .isInstanceOf(BindException.class);
     }
 
     @Test
-    void shouldFailWhenSpecificPropertyValueIsInvalid() {
-        environment.setProperty("arconia.dev.services.test-service.enabled", "yes please");
-        when(context.getEnvironment()).thenReturn(environment);
+    void failsWhenServicePropertyIsInvalid() {
+        environment.setProperty("acme.dev.services.keycloak.enabled", "not-a-boolean");
 
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata))
+        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata("keycloak", "acme.dev.services")))
                 .isInstanceOf(BindException.class);
     }
 
     @Test
-    void shouldMatchWhenGloballyEnabledAndSpecificDevServiceEnabled() {
-        environment.setProperty("arconia.dev.services.enabled", "true");
-        environment.setProperty("arconia.dev.services.test-service.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.test-service.enabled is set to true");
-    }
-
-    @Test
-    void shouldNotMatchWhenGloballyEnabledButSpecificDevServiceDisabled() {
-        environment.setProperty("arconia.dev.services.enabled", "true");
-        environment.setProperty("arconia.dev.services.test-service.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.test-service.enabled is set to false");
-    }
-
-    @Test
-    void shouldNotMatchWhenGloballyDisabledAndSpecificDevServiceEnabled() {
-        environment.setProperty("arconia.dev.services.enabled", "false");
-        environment.setProperty("arconia.dev.services.test-service.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.enabled is set to false");
-    }
-
-    @Test
-    void shouldNotMatchWhenGloballyDisabledAndSpecificDevServiceDisabled() {
-        environment.setProperty("arconia.dev.services.enabled", "false");
-        environment.setProperty("arconia.dev.services.test-service.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.enabled is set to false");
-    }
-
-    @Test
-    void shouldMatchByDefaultWhenPropertiesAreNotSet() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("enabled by default (arconia.dev.services.test-service.enabled is not set)");
-    }
-
-    @Test
-    void shouldMatchWhenDevServicesNameIsEmptyAndGloballyEnabled() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("dev services are globally enabled and no specific dev services name is specified");
-    }
-
-    @Test
-    void shouldNotMatchWhenDevServicesNameIsEmptyAndGloballyDisabled() {
-        environment.setProperty("arconia.dev.services.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.enabled is set to false");
-    }
-
-    @Test
-    void shouldMatchWhenDevServicesNameIsBlankAndGloballyEnabled() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "   ");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("dev services are globally enabled and no specific dev services name is specified");
-    }
-
-    @Test
-    void shouldMatchWhenAnnotationAttributesAreNullAndGloballyEnabled() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(null);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("dev services are globally enabled and no specific dev services name is specified");
-    }
-
-    @Test
-    void shouldNotMatchWhenDevServicesNameIsEmptyAndProdMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
-        BootstrapMode.clear();
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("dev services are only available in dev and test mode");
-    }
-
-    @Test
-    void shouldMatchWhenOnlyGlobalPropertyIsSetToTrue() {
-        environment.setProperty("arconia.dev.services.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("enabled by default (arconia.dev.services.test-service.enabled is not set)");
-    }
-
-    @Test
-    void shouldMatchWhenOnlyGlobalPropertyIsSetToFalse() {
-        environment.setProperty("arconia.dev.services.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.enabled is set to false");
-    }
-
-    @Test
-    void shouldMatchWhenOnlySpecificPropertyIsSetToTrue() {
-        environment.setProperty("arconia.dev.services.test-service.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.test-service.enabled is set to true");
-    }
-
-    @Test
-    void shouldResolveDevServicesNameFromNameAttribute() {
-        environment.setProperty("arconia.dev.services.test-service.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("name", "test-service");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.test-service.enabled is set to false");
-    }
-
-    @Test
-    void shouldMatchWhenCustomPrefixDevServiceEnabled() {
-        environment.setProperty("acme.dev.services.keycloak.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, customPrefixMetadata());
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("acme.dev.services.keycloak.enabled is set to true");
-    }
-
-    @Test
-    void shouldNotMatchWhenCustomPrefixDevServiceDisabled() {
-        environment.setProperty("acme.dev.services.keycloak.enabled", "false");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, customPrefixMetadata());
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("acme.dev.services.keycloak.enabled is set to false");
-    }
-
-    @Test
-    void shouldMatchByDefaultWhenCustomPrefixPropertyIsNotSet() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, customPrefixMetadata());
-
-        assertThat(outcome.isMatch()).isTrue();
-        assertThat(outcome.getMessage())
-                .contains("enabled by default (acme.dev.services.keycloak.enabled is not set)");
-    }
-
-    @Test
-    void shouldNotMatchWhenGloballyDisabledAndCustomPrefixDevServiceEnabled() {
-        environment.setProperty("arconia.dev.services.enabled", "false");
-        environment.setProperty("acme.dev.services.keycloak.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, customPrefixMetadata());
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("arconia.dev.services.enabled is set to false");
-    }
-
-    @Test
-    void shouldFailWhenCustomPrefixPropertyValueIsInvalid() {
-        environment.setProperty("acme.dev.services.keycloak.enabled", "not a boolean");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        assertThatThrownBy(() -> condition.getMatchOutcome(context, customPrefixMetadata()))
-                .isInstanceOf(BindException.class);
-    }
-
-    @Test
-    void shouldFailWhenCustomPrefixIsSpecifiedWithoutName() {
-        when(context.getEnvironment()).thenReturn(environment);
-
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("prefix", "acme.dev.services");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
-
-        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata))
+    void failsWhenPrefixIsSpecifiedWithoutName() {
+        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata(null, "acme.dev.services")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("requires a name when a custom prefix is specified");
     }
 
     @Test
-    void shouldFailWhenCustomPrefixIsSpecifiedWithoutNameEvenInProdMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
-        BootstrapMode.clear();
-        when(context.getEnvironment()).thenReturn(environment);
-
+    void matchesWhenAnnotationAttributesAreNotAvailable() {
         AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("prefix", "acme.dev.services");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
+        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName())).thenReturn(null);
 
-        assertThatThrownBy(() -> condition.getMatchOutcome(context, metadata))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("requires a name when a custom prefix is specified");
+        assertThat(condition.getMatchOutcome(context, metadata).isMatch()).isTrue();
     }
 
-    @Test
-    void shouldNotMatchWhenCustomPrefixAndProdMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
-        BootstrapMode.clear();
-        environment.setProperty("acme.dev.services.keycloak.enabled", "true");
-        when(context.getEnvironment()).thenReturn(environment);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, customPrefixMetadata());
-
-        assertThat(outcome.isMatch()).isFalse();
-        assertThat(outcome.getMessage())
-                .contains("dev services are only available in dev and test mode");
-    }
-
-    private AnnotatedTypeMetadata customPrefixMetadata() {
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+    private static AnnotatedTypeMetadata metadata(@Nullable String name, @Nullable String prefix) {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("name", "keycloak");
-        attributes.put("prefix", "acme.dev.services");
-        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName()))
-                .thenReturn(attributes);
+        attributes.put("value", name != null ? name : "");
+        attributes.put("name", name != null ? name : "");
+        attributes.put("prefix", prefix != null ? prefix : "");
+        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+        when(metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName())).thenReturn(attributes);
         return metadata;
     }
 
+    /**
+     * The condition through the real annotation, so that attribute aliasing and the prefix
+     * are exercised as Spring resolves them.
+     */
     @Nested
     class RealAnnotationMetadataTests {
 
@@ -495,13 +156,6 @@ class OnDevServicesEnabledConditionTests {
                     .withUserConfiguration(CustomPrefixDevServiceConfiguration.class)
                     .withPropertyValues("acme.dev.services.keycloak.enabled=false")
                     .run(context -> assertThat(context).doesNotHaveBean("customPrefixDevServiceBean"));
-        }
-
-        @Test
-        void shouldMatchByDefaultWithCustomPrefix() {
-            contextRunner
-                    .withUserConfiguration(CustomPrefixDevServiceConfiguration.class)
-                    .run(context -> assertThat(context).hasBean("customPrefixDevServiceBean"));
         }
 
         @Test

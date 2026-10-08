@@ -35,4 +35,12 @@ class ArconiaRabbitMqContainerTests {
                         properties.getManagementConsolePort() + ":" + ArconiaRabbitMqContainer.HTTP_PORT));
     }
 
+    @Test
+    void credentialsFollowTheProperties() {
+        var properties = new RabbitMqDevServicesProperties();
+        var container = new ArconiaRabbitMqContainer(properties);
+        assertThat(container.getAdminUsername()).isEqualTo(properties.getUsername());
+        assertThat(container.getAdminPassword()).isEqualTo(properties.getPassword());
+    }
+
 }

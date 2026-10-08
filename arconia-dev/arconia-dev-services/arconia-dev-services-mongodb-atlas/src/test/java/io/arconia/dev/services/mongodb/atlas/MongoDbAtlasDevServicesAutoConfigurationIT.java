@@ -1,7 +1,5 @@
 package io.arconia.dev.services.mongodb.atlas;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -57,33 +55,6 @@ class MongoDbAtlasDevServicesAutoConfigurationIT extends BaseDevServicesAutoConf
         MongoConnectionDetails connectionDetails = context.getBean(MongoConnectionDetails.class);
         assertThat(connectionDetails.getConnectionString().getConnectionString())
                 .isEqualTo(((MongoDBAtlasLocalContainer) discoveredContainer).getDatabaseConnectionString());
-    }
-
-    @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner().run(context -> {
-            assertThat(context).hasSingleBean(getContainerClass());
-            var container = context.getBean(getContainerClass());
-            assertThat(container.getDockerImageName()).contains(ArconiaMongoDbAtlasLocalContainer.COMPATIBLE_IMAGE_NAME);
-            assertThat(container.getEnv()).isEmpty();
-            assertThat(container.getNetworkAliases()).hasSize(1);
-
-            assertThatHasSingletonScope(context);
-        });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

@@ -2,7 +2,6 @@ package io.arconia.dev.services.openlit;
 
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -79,19 +78,6 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaOpenLitContainer.COMPATIBLE_IMAGE_NAME);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
     void devServiceLinksExposeOpenLitUi() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
@@ -101,20 +87,6 @@ class OpenLitDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                 assertThat(link.url()).startsWith("http://");
             });
         });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

@@ -1,6 +1,5 @@
 package io.arconia.dev.services.ollama;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -77,22 +76,6 @@ class OllamaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
                     assertThat(container.getDockerImageName()).contains("ollama/ollama");
                     assertThat(container.getEnv()).isEmpty();
                     assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        contextRunner
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
                 });
     }
 

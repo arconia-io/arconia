@@ -4,10 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
+
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,67 +23,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ContainerInfoTests {
 
-    @Test
-    void whenIdIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id(null).imageName("image").status("running").build())
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("invalidContainerInfos")
+    void whenAComponentIsMissingThenThrow(String component, ThrowingCallable creation) {
+        assertThatThrownBy(creation)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("id cannot be null or empty");
+                .hasMessageContaining(component + " cannot be null");
     }
 
-    @Test
-    void whenIdIsEmptyThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("").imageName("image").status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("id cannot be null or empty");
-    }
-
-    @Test
-    void whenImageNameIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName(null).status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("imageName cannot be null or empty");
-    }
-
-    @Test
-    void whenImageNameIsEmptyThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("").status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("imageName cannot be null or empty");
-    }
-
-    @Test
-    void whenNamesIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("image").names(null).status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("names cannot be null");
-    }
-
-    @Test
-    void whenExposedPortsIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("image").exposedPorts(null).status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("exposedPorts cannot be null");
-    }
-
-    @Test
-    void whenLabelsIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("image").labels(null).status("running").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("labels cannot be null");
-    }
-
-    @Test
-    void whenStatusIsNullThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("image").status(null).build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("status cannot be null or empty");
-    }
-
-    @Test
-    void whenStatusIsEmptyThenThrow() {
-        assertThatThrownBy(() -> ContainerInfo.builder().id("id123").imageName("image").status("").build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("status cannot be null or empty");
+    static Stream<Arguments> invalidContainerInfos() {
+        var port = new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp");
+        return Stream.of(
+                Arguments.of("id", (ThrowingCallable) () -> new ContainerInfo("", "image", List.of(), List.of(port), Map.of(), "running")),
+                Arguments.of("imageName", (ThrowingCallable) () -> new ContainerInfo("id", "", List.of(), List.of(port), Map.of(), "running")),
+                Arguments.of("names", (ThrowingCallable) () -> new ContainerInfo("id", "image", null, List.of(port), Map.of(), "running")),
+                Arguments.of("exposedPorts", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), null, Map.of(), "running")),
+                Arguments.of("labels", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), null, "running")),
+                Arguments.of("status", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "")));
     }
 
     @Test
@@ -137,16 +99,6 @@ class ContainerInfoTests {
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() -> containerInfo.labels().put("key2", "value2"))
                 .isInstanceOf(UnsupportedOperationException.class);
-    }
-
-    @Test
-    void whenContainerPortCreatedWithNullFieldsThenCreate() {
-        var containerPort = new ContainerInfo.ContainerPort(null, null, null, null);
-
-        assertThat(containerPort.ip()).isNull();
-        assertThat(containerPort.privatePort()).isNull();
-        assertThat(containerPort.publicPort()).isNull();
-        assertThat(containerPort.type()).isNull();
     }
 
 }

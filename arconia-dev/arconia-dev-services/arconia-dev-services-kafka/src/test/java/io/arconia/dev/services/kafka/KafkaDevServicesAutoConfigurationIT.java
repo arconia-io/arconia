@@ -1,7 +1,5 @@
 package io.arconia.dev.services.kafka;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.kafka.autoconfigure.KafkaConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -58,36 +56,6 @@ class KafkaDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         KafkaConnectionDetails connectionDetails = context.getBean(KafkaConnectionDetails.class);
         assertThat(connectionDetails.getBootstrapServers()).containsExactly(container.getBootstrapServers());
         assertThat(connectionDetails.getSecurityProtocol()).isEqualTo("PLAINTEXT");
-    }
-
-    @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(KafkaContainer.class);
-                    KafkaContainer container = context.getBean(KafkaContainer.class);
-                    assertThat(container.getDockerImageName()).contains("apache/kafka-native");
-                    assertThat(container.getEnv()).isNotEmpty(); // Configured by Testcontainers.
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getBinds()).isEmpty();
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

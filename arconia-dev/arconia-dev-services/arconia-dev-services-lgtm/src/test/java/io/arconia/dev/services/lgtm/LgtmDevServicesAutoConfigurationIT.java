@@ -2,7 +2,6 @@ package io.arconia.dev.services.lgtm;
 
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -79,22 +78,6 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
     }
 
     @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaLgtmStackContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).contains("GF_USERS_DEFAULT_THEME=system");
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getBinds()).isEmpty();
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
     void devServiceLinksExposeGrafanaAndOtlpUrls() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
@@ -103,20 +86,6 @@ class LgtmDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfiguratio
                     .containsExactly("Grafana", "OTLP/HTTP", "OTLP/gRPC");
             assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
         });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

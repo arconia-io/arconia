@@ -1,9 +1,5 @@
 package io.arconia.dev.services.pulsar;
 
-
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -60,35 +56,6 @@ class PulsarDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurat
         PulsarConnectionDetails connectionDetails = context.getBean(PulsarConnectionDetails.class);
         assertThat(connectionDetails.getBrokerUrl()).isEqualTo(container.getPulsarBrokerUrl());
         assertThat(connectionDetails.getAdminUrl()).isEqualTo(container.getHttpServiceUrl());
-    }
-
-    @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaPulsarContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

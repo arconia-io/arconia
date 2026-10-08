@@ -2,7 +2,6 @@ package io.arconia.dev.services.phoenix;
 
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -77,21 +76,6 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaPhoenixContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).isEmpty();
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
     void devServiceLinksExposePhoenixUi() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
@@ -102,20 +86,6 @@ class PhoenixDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                         .endsWith(":" + container.getMappedPort(PhoenixContainer.HTTP_PORT));
             });
         });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        contextRunner
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
     @Test

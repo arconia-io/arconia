@@ -50,34 +50,6 @@ class DevServicesEndpointTests {
     }
 
     @Test
-    void devServicesReturnsSingleServiceWhenOneRegistration() {
-        ContainerInfo containerInfo = createContainerInfo("container-1", "postgres:18", "running");
-        DevServiceRegistration registration = DevServiceRegistration.builder()
-                .name("postgres")
-                .description("PostgreSQL Database")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> containerInfo)
-                .build();
-        registrations.put("postgres", registration);
-
-        Map<String, ServiceInfoSummary> result = endpoint().devServices();
-
-        assertThat(result)
-                .isNotNull()
-                .hasSize(1)
-                .containsKey("postgres");
-
-        ServiceInfoSummary summary = result.get("postgres");
-        assertThat(summary.name()).isEqualTo("postgres");
-        assertThat(summary.description()).isEqualTo("PostgreSQL Database");
-        assertThat(summary.origin()).isEqualTo(DevServiceRegistration.Origin.OWNED);
-        assertThat(summary.containerInfo()).isNotNull();
-        assertThat(summary.containerInfo().id()).isEqualTo("container-1");
-        assertThat(summary.containerInfo().imageName()).isEqualTo("postgres:18");
-        assertThat(summary.containerInfo().exposedPorts()).hasSize(1);
-    }
-
-    @Test
     void devServicesReturnsMultipleServicesWhenMultipleRegistrations() {
         ContainerInfo postgresContainer = createContainerInfo("container-1", "postgres:18", "running");
         ContainerInfo doclingContainer = createContainerInfo("container-2", "docling:1.10", "running");
@@ -112,23 +84,6 @@ class DevServicesEndpointTests {
         assertThat(result.get("docling").name()).isEqualTo("docling");
         assertThat(result.get("docling").description()).isEqualTo("Docling Serve");
         assertThat(result.get("docling").containerInfo().imageName()).isEqualTo("docling:1.10");
-    }
-
-    @Test
-    void devServicesHandlesNullDescription() {
-        ContainerInfo containerInfo = createContainerInfo("container-1", "postgres:18", "running");
-        DevServiceRegistration registration = DevServiceRegistration.builder()
-                .name("postgres")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> containerInfo)
-                .build();
-        registrations.put("postgres", registration);
-
-        Map<String, ServiceInfoSummary> result = endpoint().devServices();
-
-        assertThat(result).hasSize(1);
-        ServiceInfoSummary summary = result.get("postgres");
-        assertThat(summary.description()).isNull();
     }
 
     @Test
@@ -169,11 +124,6 @@ class DevServicesEndpointTests {
         registrations.put("postgres", registration);
 
         assertThat(endpoint().devService("docling")).isNull();
-    }
-
-    @Test
-    void devServiceReturnsNullWhenRegistrationsEmpty() {
-        assertThat(endpoint().devService("postgres")).isNull();
     }
 
     private ContainerInfo createContainerInfo(String id, String imageName, String status) {

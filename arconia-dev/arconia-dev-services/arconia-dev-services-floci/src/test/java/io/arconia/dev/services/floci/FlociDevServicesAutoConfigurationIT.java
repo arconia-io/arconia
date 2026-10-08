@@ -4,8 +4,6 @@ import java.net.URI;
 
 import io.awspring.cloud.autoconfigure.core.AwsConnectionDetails;
 import io.floci.testcontainers.FlociContainer;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
@@ -62,34 +60,6 @@ class FlociDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigurati
         assertThat(connectionDetails.getRegion()).isEqualTo(flociContainer.getRegion());
         assertThat(connectionDetails.getAccessKey()).isEqualTo(flociContainer.getAccessKey());
         assertThat(connectionDetails.getSecretKey()).isEqualTo(flociContainer.getSecretKey());
-    }
-
-    @Test
-    void containerAvailableWithDefaultConfiguration() {
-        getContextRunner()
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaFlociContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).noneMatch(e -> e.startsWith("KEY="));
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties());
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
-                });
     }
 
 }

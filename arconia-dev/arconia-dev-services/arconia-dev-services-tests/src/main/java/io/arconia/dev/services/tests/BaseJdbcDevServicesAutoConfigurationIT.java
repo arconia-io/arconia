@@ -1,5 +1,6 @@
 package io.arconia.dev.services.tests;
 
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.testcontainers.containers.GenericContainer;
@@ -31,14 +32,16 @@ public abstract class BaseJdbcDevServicesAutoConfigurationIT extends BaseDevServ
         };
     }
 
-    /**
-     * Assert common JDBC configuration properties were applied correctly.
-     * Container must be started before calling.
-     */
-    protected void assertThatJdbcConfigurationIsApplied(JdbcDatabaseContainer<?> container) {
-        assertThat(container.getUsername()).isEqualTo("mytest");
-        assertThat(container.getPassword()).isEqualTo("mytest");
-        assertThat(container.getDatabaseName()).isEqualTo("mytest");
+    @Test
+    void jdbcConfigurationApplied() {
+        getContextRunner()
+                .withPropertyValues(commonJdbcConfigurationProperties())
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    assertThat(container.getUsername()).isEqualTo("mytest");
+                    assertThat(container.getPassword()).isEqualTo("mytest");
+                    assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                });
     }
 
     /**

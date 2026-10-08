@@ -47,4 +47,10 @@ class ArconiaLgtmStackContainerTests {
                         properties.getPrometheusPort() + ":" + ArconiaLgtmStackContainer.PROMETHEUS_PORT));
     }
 
+    @Test
+    void grafanaThemeFollowsTheSystem() {
+        var container = new ArconiaLgtmStackContainer(new LgtmDevServicesProperties());
+        assertThat(container.getEnvMap()).containsEntry("GF_USERS_DEFAULT_THEME", "system");
+    }
+
 }

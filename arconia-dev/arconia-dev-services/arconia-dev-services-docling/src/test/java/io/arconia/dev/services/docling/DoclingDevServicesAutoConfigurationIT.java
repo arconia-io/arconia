@@ -4,7 +4,6 @@ import java.util.List;
 
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -65,26 +64,8 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void containerAvailableInDevMode() {
-        getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(getContainerClass());
-                    var container = context.getBean(getContainerClass());
-                    assertThat(container.getDockerImageName()).contains(ArconiaDoclingServeContainer.COMPATIBLE_IMAGE_NAME);
-                    assertThat(container.getEnv()).contains("DOCLING_SERVE_ENABLE_UI=true");
-                    assertThat(container.getNetworkAliases()).hasSize(1);
-                    assertThat(container.getBinds()).isEmpty();
-
-                    assertThatHasSingletonScope(context);
-                });
-    }
-
-    @Test
     void devServiceLinksExposeDoclingUiAndApiUrls() {
-        // In dev mode the UI is enabled by default, so both the UI and OpenAPI links are exposed.
         contextRunnerWithContainerLifecycle()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
@@ -92,22 +73,6 @@ class DoclingDevServicesAutoConfigurationIT extends BaseDevServicesAutoConfigura
                     assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
                     assertThat(links).filteredOn(link -> link.label().equals("Docling OpenAPI"))
                             .singleElement().satisfies(link -> assertThat(link.url()).endsWith("/docs"));
-                });
-    }
-
-    @Test
-    void containerConfigurationApplied() {
-        String[] properties = ArrayUtils.addAll(commonConfigurationProperties(),
-                "arconia.dev.services.%s.enable-ui=false".formatted(getServiceName())
-        );
-
-        getContextRunner()
-                .withPropertyValues(properties)
-                .run(context -> {
-                    var container = context.getBean(getContainerClass());
-                    container.start();
-                    assertThatConfigurationIsApplied(container);
-                    container.stop();
                 });
     }
 

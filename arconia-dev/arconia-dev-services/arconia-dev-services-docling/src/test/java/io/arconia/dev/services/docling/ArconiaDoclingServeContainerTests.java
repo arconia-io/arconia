@@ -34,4 +34,11 @@ class ArconiaDoclingServeContainerTests {
                         properties.getPort() + ":" + DoclingServeContainer.DEFAULT_DOCLING_PORT));
     }
 
+    @Test
+    void uiEnabledByDefault() {
+        var container = new ArconiaDoclingServeContainer(new DoclingDevServicesProperties());
+        container.configure();
+        assertThat(container.getEnvMap()).containsEntry("DOCLING_SERVE_ENABLE_UI", "true");
+    }
+
 }
