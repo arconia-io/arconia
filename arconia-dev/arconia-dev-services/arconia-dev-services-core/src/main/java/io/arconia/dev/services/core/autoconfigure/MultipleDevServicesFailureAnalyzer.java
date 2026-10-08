@@ -4,6 +4,8 @@ import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 import org.springframework.boot.diagnostics.FailureAnalyzer;
 
+import io.arconia.dev.services.core.registration.MultipleDevServicesException;
+
 /**
  * A {@link FailureAnalyzer} that provides actionable feedback
  * when multiple dev services in the same category are detected.

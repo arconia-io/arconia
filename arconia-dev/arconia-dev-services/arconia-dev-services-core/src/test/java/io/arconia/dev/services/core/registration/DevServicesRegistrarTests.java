@@ -37,8 +37,6 @@ class DevServicesRegistrarTests {
                         .description("Docling")
                         .container(TestDoclingContainer.class, TestDoclingContainer::new)
                         .serviceConnectionName("docling")));
-
-        assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "docling");
         assertDescriptionBeanDefinition("docling");
         assertBeanDefinitionCount(2);
@@ -59,8 +57,6 @@ class DevServicesRegistrarTests {
                             .description("PostgreSQL database")
                             .container(TestPostgresContainer.class, TestPostgresContainer::new));
         });
-
-        assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, null);
         assertDescriptionBeanDefinition("docling");
         assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
@@ -79,8 +75,6 @@ class DevServicesRegistrarTests {
                         service.name("postgres")
                         .properties(TestDevServicesProperties.DEFAULT)
                                 .container(TestPostgresContainer.class, TestPostgresContainer::new)));
-
-        assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, null);
         assertDescriptionBeanDefinition("docling");
         assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
@@ -101,8 +95,6 @@ class DevServicesRegistrarTests {
                         .properties(TestDevServicesProperties.DEFAULT)
                                 .container(TestDoclingContainer.class, TestDoclingContainer::new)
                                 .serviceConnectionName("stilldocling")));
-
-        assertRegistryExists();
         assertContainerBeanDefinition("docling", TestDoclingContainer.class, "firstdocling");
         assertDescriptionBeanDefinition("docling");
         assertBeanDefinitionCount(2);
@@ -111,8 +103,6 @@ class DevServicesRegistrarTests {
     @Test
     void noRegistrations() {
         doRegister(registry -> {});
-
-        assertRegistryExists();
         assertBeanDefinitionCount(0);
     }
 
@@ -166,27 +156,6 @@ class DevServicesRegistrarTests {
         assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:second");
     }
 
-    @Test
-    void registryBeanIsReusedAcrossDevServices() {
-        doRegister(registry -> registry.registerDevService(service ->
-                service.name("docling")
-                .properties(TestDevServicesProperties.DEFAULT)
-                        .container(TestDoclingContainer.class, TestDoclingContainer::new)));
-
-        Map<String, DevServicesRegistry> registryBeansBefore = beanDefinitionRegistry.getBeansOfType(DevServicesRegistry.class);
-        assertThat(registryBeansBefore).hasSize(1);
-
-        doRegister(registry -> registry.registerDevService(service ->
-                service.name("postgres")
-                .properties(TestDevServicesProperties.DEFAULT)
-                        .container(TestPostgresContainer.class, TestPostgresContainer::new)));
-
-        Map<String, DevServicesRegistry> registryBeansAfter = beanDefinitionRegistry.getBeansOfType(DevServicesRegistry.class);
-        assertThat(registryBeansAfter).hasSize(1);
-
-        assertThat(registryBeansAfter.values().iterator().next()).isSameAs(registryBeansBefore.values().iterator().next());
-    }
-
     @SafeVarargs
     private void doRegister(Consumer<DevServicesRegistry>... registrars) {
         for (Consumer<DevServicesRegistry> consumer : registrars) {
@@ -229,10 +198,6 @@ class DevServicesRegistrarTests {
 
     private void assertBeanDefinitionCount(int count) {
         assertThat(beanDefinitionRegistry.getBeanDefinitionCount()).isEqualTo(count);
-    }
-
-    private void assertRegistryExists() {
-        assertThat(beanDefinitionRegistry.containsSingleton(DevServicesRegistrar.DEV_SERVICES_REGISTRY_BEAN_NAME)).isTrue();
     }
 
     private static class TestRegistrar extends DevServicesRegistrar {

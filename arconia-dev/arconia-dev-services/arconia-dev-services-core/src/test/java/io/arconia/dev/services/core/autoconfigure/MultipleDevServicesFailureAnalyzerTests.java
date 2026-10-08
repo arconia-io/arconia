@@ -5,6 +5,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 
+import io.arconia.dev.services.core.registration.MultipleDevServicesException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

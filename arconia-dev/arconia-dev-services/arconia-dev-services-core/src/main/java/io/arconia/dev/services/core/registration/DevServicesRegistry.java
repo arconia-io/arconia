@@ -43,7 +43,6 @@ import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
-import io.arconia.dev.services.core.autoconfigure.MultipleDevServicesException;
 import io.arconia.dev.services.core.autoconfigure.DevServicesProperties;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
@@ -286,7 +285,7 @@ public class DevServicesRegistry {
      * that Spring Boot would produce for an owned container via the {@code @ServiceConnection} mechanism.
      */
     private RootBeanDefinition createDiscoveredConnectionDetailsBeanDefinition(ConnectionDetails connectionDetails, ContainerInfo containerInfo) {
-        RootBeanDefinition beanDefinition = new DevServiceConnectionDetailsBeanDefinition();
+        RootBeanDefinition beanDefinition = new RootBeanDefinition();
         excludeFromAot(beanDefinition);
         beanDefinition.setBeanClass(connectionDetails.getClass());
         beanDefinition.setInstanceSupplier(() -> connectionDetails);

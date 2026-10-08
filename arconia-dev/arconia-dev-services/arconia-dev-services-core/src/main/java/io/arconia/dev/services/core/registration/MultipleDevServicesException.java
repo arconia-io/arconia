@@ -1,4 +1,4 @@
-package io.arconia.dev.services.core.autoconfigure;
+package io.arconia.dev.services.core.registration;
 
 import java.util.List;
 

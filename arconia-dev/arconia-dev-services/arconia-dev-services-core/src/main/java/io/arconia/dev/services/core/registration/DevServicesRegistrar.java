@@ -8,7 +8,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.env.DefaultPropertiesPropertySource;
 import org.springframework.context.EnvironmentAware;
@@ -31,11 +30,6 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
 
-    /**
-     * The bean name of the {@link DevServicesRegistry}.
-     */
-    public static final String DEV_SERVICES_REGISTRY_BEAN_NAME = "devServicesRegistry";
-
     @Nullable
     private BeanFactory beanFactory;
 
@@ -47,34 +41,7 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
         Assert.notNull(beanFactory, "beanFactory has not been initialized");
         Assert.notNull(environment, "environment has not been initialized");
 
-        DevServicesRegistry devServicesRegistry = getOrCreateDevServicesRegistry(registry);
-
-        registerDevServices(devServicesRegistry, environment);
-    }
-
-    /**
-     * Get the existing {@link DevServicesRegistry} bean or create a new one if it doesn't exist.
-     * The lookup is local to the given registry, so that each context in a hierarchy gets its
-     * own registry operating on its own bean definitions.
-     */
-    private DevServicesRegistry getOrCreateDevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry) {
-        Assert.notNull(environment, "environment has not been initialized");
-
-        if (beanDefinitionRegistry instanceof DefaultListableBeanFactory beanFactoryRegistry) {
-            if (beanFactoryRegistry.containsLocalBean(DEV_SERVICES_REGISTRY_BEAN_NAME)) {
-                if (beanFactoryRegistry.isTypeMatch(DEV_SERVICES_REGISTRY_BEAN_NAME, DevServicesRegistry.class)) {
-                    return beanFactoryRegistry.getBean(DEV_SERVICES_REGISTRY_BEAN_NAME, DevServicesRegistry.class);
-                }
-                // The bean name is taken by an unrelated bean: fall back to a non-shared registry.
-                return new DevServicesRegistry(beanDefinitionRegistry, environment);
-            }
-
-            DevServicesRegistry devServicesRegistry = new DevServicesRegistry(beanDefinitionRegistry, environment);
-            beanFactoryRegistry.registerSingleton(DEV_SERVICES_REGISTRY_BEAN_NAME, devServicesRegistry);
-            return devServicesRegistry;
-        }
-
-        return new DevServicesRegistry(beanDefinitionRegistry, environment);
+        registerDevServices(new DevServicesRegistry(registry, environment), environment);
     }
 
     @Override
