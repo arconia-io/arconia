@@ -8,8 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.core.env.Environment;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;

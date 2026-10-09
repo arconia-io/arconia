@@ -11,7 +11,6 @@ import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.core.env.Environment;
 import org.testcontainers.containers.GenericContainer;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

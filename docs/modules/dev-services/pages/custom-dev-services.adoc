@@ -81,7 +81,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
 
 == Container Class
 
-Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your class must not apply them itself. What is left to the class is the image, the exposed ports, the wait strategy, and the fixed ports, which Testcontainers only lets a subclass declare.
+Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your class must not apply them itself. What is left to the class is the image, the exposed ports, the wait strategy, and the fixed ports, which the container class declares.
 
 [source,java]
 ----

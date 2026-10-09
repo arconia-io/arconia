@@ -1,8 +1,8 @@
 package io.arconia.dev.services.core.actuate.endpoint;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -31,9 +31,10 @@ public class DevServicesEndpoint {
 
     @ReadOperation
     public Map<String, ServiceInfoSummary> devServices() {
-        return registrations.values().stream()
-                .map(reg -> new ServiceInfoSummary(reg.name(), reg.description(), reg.origin(), reg.links(), resolveContainerInfoSummary(reg)))
-                .collect(Collectors.toMap(ServiceInfoSummary::name, info -> info, (first, second) -> first));
+        Map<String, ServiceInfoSummary> summaries = new LinkedHashMap<>();
+        registrations.forEach((name, registration) -> summaries.put(name,
+                new ServiceInfoSummary(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfoSummary(registration))));
+        return summaries;
     }
 
     @ReadOperation

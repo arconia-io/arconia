@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
+import org.springframework.core.env.Environment;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;

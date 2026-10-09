@@ -15,11 +15,11 @@ import io.arconia.dev.services.api.registration.DevServiceRegistration.Origin;
 /**
  * Logs startup messages for each dev service once its container is ready.
  */
-final class DevServicesStartupLogger {
+final class DevServiceStartupLogger {
 
     private static final Logger logger = LoggerFactory.getLogger("io.arconia.dev.services.startup");
 
-    private DevServicesStartupLogger() {}
+    private DevServiceStartupLogger() {}
 
     /**
      * Log that the dev service is ready in the given container

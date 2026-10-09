@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
@@ -20,6 +21,13 @@ import io.arconia.dev.services.api.registration.DevServiceLink;
  */
 @Incubating
 public final class ServiceSpec {
+
+    /**
+     * The names a dev service can be given. The name becomes part of bean names, container
+     * labels, and the default network alias of the container, so it is kept to the character
+     * set valid in all of them.
+     */
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]([a-z0-9-]*[a-z0-9])?");
 
     @Nullable
     private String name;
@@ -48,7 +56,7 @@ public final class ServiceSpec {
     private Class<? extends ConnectionDetails> connectionDetailsType;
 
     @Nullable
-    private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetails;
+    private Function<DiscoveredContainer, ? extends ConnectionDetails> connectionDetailsFactory;
 
     private final List<LinkDefinition> links = new ArrayList<>();
 
@@ -143,9 +151,9 @@ public final class ServiceSpec {
      * beans: when one is present, it takes precedence over the one provided by the dev service.
      */
     public <D extends ConnectionDetails> ServiceSpec discovery(Class<D> connectionDetailsType, Function<DiscoveredContainer, ? extends D> connectionDetails) {
-        Assert.state(this.connectionDetails == null, "discovery supports a single connection details contribution");
+        Assert.state(this.connectionDetailsFactory == null, "discovery can be declared only once");
         this.connectionDetailsType = connectionDetailsType;
-        this.connectionDetails = connectionDetails;
+        this.connectionDetailsFactory = connectionDetails;
         return this;
     }
 
@@ -167,9 +175,23 @@ public final class ServiceSpec {
         return this;
     }
 
-    @Nullable
+    /**
+     * Check that the specification is complete and consistent, so that the required values
+     * can be read without further checks.
+     */
+    void validate() {
+        Assert.hasText(name, "service name cannot be null or empty");
+        Assert.isTrue(NAME_PATTERN.matcher(name).matches(),
+                () -> "service name must contain only lowercase letters, digits, and dashes: " + name);
+        Assert.notNull(properties, "service properties cannot be null");
+        Assert.notNull(containerType, "service container type cannot be null");
+        Assert.notNull(containerSupplier, "service container supplier cannot be null");
+        Assert.state(serviceConnection || serviceConnectionName == null,
+                "a service connection name has no effect when the service connection is disabled");
+    }
+
     String getName() {
-        return name;
+        return required(name, "name");
     }
 
     @Nullable
@@ -182,19 +204,16 @@ public final class ServiceSpec {
         return category;
     }
 
-    @Nullable
     BaseDevServicesProperties getProperties() {
-        return properties;
+        return required(properties, "properties");
     }
 
-    @Nullable
     Class<? extends GenericContainer<?>> getContainerType() {
-        return containerType;
+        return required(containerType, "container type");
     }
 
-    @Nullable
     Supplier<? extends GenericContainer<?>> getContainerSupplier() {
-        return containerSupplier;
+        return required(containerSupplier, "container supplier");
     }
 
     boolean isServiceConnection() {
@@ -212,8 +231,8 @@ public final class ServiceSpec {
     }
 
     @Nullable
-    Function<DiscoveredContainer, ? extends ConnectionDetails> getConnectionDetails() {
-        return connectionDetails;
+    Function<DiscoveredContainer, ? extends ConnectionDetails> getConnectionDetailsFactory() {
+        return connectionDetailsFactory;
     }
 
     List<LinkDefinition> getLinks() {
@@ -224,7 +243,12 @@ public final class ServiceSpec {
      * Whether the dev service declares how to connect to a container started by another application.
      */
     boolean supportsDiscovery() {
-        return connectionDetailsType != null && connectionDetails != null;
+        return connectionDetailsType != null && connectionDetailsFactory != null;
+    }
+
+    private static <T> T required(@Nullable T value, String what) {
+        Assert.state(value != null, () -> "the service " + what + " has not been set");
+        return value;
     }
 
     /**

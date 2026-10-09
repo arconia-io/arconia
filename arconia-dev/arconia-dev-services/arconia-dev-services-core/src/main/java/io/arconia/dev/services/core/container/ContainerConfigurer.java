@@ -126,17 +126,20 @@ public final class ContainerConfigurer {
      * @throws IllegalArgumentException if the resource exists in neither location.
      */
     public static Resource resolveResource(String sourcePath) {
-        ResourceLocation location = resolveLocation(sourcePath);
-        return location.classpath()
-                ? new ClassPathResource(location.path())
-                : new FileSystemResource(location.path());
+        return resolveLocation(sourcePath).toResource();
     }
 
     /**
      * Where a source path resolves to, with the prefix (if any) stripped. Shared by every
      * {@code resolve*} method so the lookup rules cannot drift between them.
      */
-    private record ResourceLocation(boolean classpath, String path) {}
+    private record ResourceLocation(boolean classpath, String path) {
+
+        Resource toResource() {
+            return classpath ? new ClassPathResource(path) : new FileSystemResource(path);
+        }
+
+    }
 
     private static ResourceLocation resolveLocation(String resourcePath) {
         Assert.hasText(resourcePath, "resourcePath cannot be null or empty");
@@ -171,10 +174,7 @@ public final class ContainerConfigurer {
      * not the location was stated explicitly, and names the path as the user wrote it.
      */
     private static ResourceLocation requireExisting(ResourceLocation location, String resourcePath) {
-        Resource resource = location.classpath()
-                ? new ClassPathResource(location.path())
-                : new FileSystemResource(location.path());
-        if (!resource.exists()) {
+        if (!location.toResource().exists()) {
             throw new IllegalArgumentException("Resource not found in %s: %s"
                     .formatted(location.classpath() ? "classpath" : "filesystem", resourcePath));
         }

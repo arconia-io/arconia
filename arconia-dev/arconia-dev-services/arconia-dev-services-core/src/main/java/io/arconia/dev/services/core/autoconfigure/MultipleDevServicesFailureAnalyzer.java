@@ -10,7 +10,7 @@ import io.arconia.dev.services.core.registration.MultipleDevServicesException;
  * A {@link FailureAnalyzer} that provides actionable feedback
  * when multiple dev services in the same category are detected.
  */
-public class MultipleDevServicesFailureAnalyzer extends AbstractFailureAnalyzer<MultipleDevServicesException> {
+class MultipleDevServicesFailureAnalyzer extends AbstractFailureAnalyzer<MultipleDevServicesException> {
 
     @Override
     protected FailureAnalysis analyze(Throwable rootFailure, MultipleDevServicesException cause) {

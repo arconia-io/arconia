@@ -55,7 +55,7 @@ public class LldapDevServicesProperties implements BaseDevServicesProperties {
     private List<ResourceMapping> resources = new ArrayList<>();
 
     /**
-     * Strategy for reusing a running container for the dev service across applications.
+     * Strategy for reusing a running container for the dev service across applications or restarts.
      * Only applicable in dev mode.
      */
     private ReuseStrategy reuseStrategy = ReuseStrategy.NONE;

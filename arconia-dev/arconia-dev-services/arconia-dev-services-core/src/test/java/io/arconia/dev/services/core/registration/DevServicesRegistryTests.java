@@ -38,6 +38,7 @@ import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -116,6 +117,17 @@ class DevServicesRegistryTests {
                         .container(TestPostgresContainer.class, TestPostgresContainer::new)
                         .serviceConnectionName("")))
                 .withMessageContaining("serviceConnectionName cannot be null or empty");
+    }
+
+    @Test
+    void whenServiceConnectionIsDisabledWithANameThenThrow() {
+        assertThatIllegalStateException().isThrownBy(() -> registry.registerDevService(service -> service
+                .name("postgres")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                .serviceConnection(false)
+                .serviceConnectionName("postgres")))
+                .withMessageContaining("service connection name has no effect");
     }
 
     @Test

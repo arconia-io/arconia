@@ -23,14 +23,13 @@ import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
 @ConditionalOnDevMode
 @ConditionalOnDevServicesEnabled
 @ConditionalOnClass(Endpoint.class)
-public class DevServicesEndpointAutoConfiguration {
+public final class DevServicesEndpointAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
     DevServicesEndpoint devServicesEndpoint(ObjectProvider<DevServiceRegistration> registrations) {
-        return new DevServicesEndpoint(registrations.orderedStream().collect(Collectors.toMap(
-                DevServiceRegistration::name, Function.identity(), (first, second) -> first)));
+        return new DevServicesEndpoint(registrations.orderedStream().collect(Collectors.toMap(DevServiceRegistration::name, Function.identity())));
     }
 
 }

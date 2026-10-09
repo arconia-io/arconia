@@ -56,7 +56,7 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Strategy for reusing a running container for the dev service across applications.
+     * Strategy for reusing a running container for the dev service across applications or restarts.
      * Only applicable in dev mode.
      */
     default ReuseStrategy getReuseStrategy() {

@@ -49,7 +49,7 @@ public final class DevServiceDynamicPropertySource extends MapPropertySource {
     /**
      * Add a {@link Supplier} providing the value for the given property name.
      */
-    public void add(String name, Supplier<Object> valueSupplier) {
+    void add(String name, Supplier<Object> valueSupplier) {
         Assert.hasText(name, "name cannot be null or empty");
         Assert.notNull(valueSupplier, "valueSupplier cannot be null");
         this.valueSuppliers.put(name, valueSupplier);
@@ -67,7 +67,7 @@ public final class DevServiceDynamicPropertySource extends MapPropertySource {
      * or create and register a new {@code DevServiceDynamicPropertySource} in the
      * environment.
      */
-    public static synchronized DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
+    static synchronized DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
         MutablePropertySources propertySources = environment.getPropertySources();
         PropertySource<?> existingPropertySource = propertySources.get(PROPERTY_SOURCE_NAME);
         if (existingPropertySource instanceof DevServiceDynamicPropertySource devServicePropertySource) {

@@ -3,8 +3,8 @@ package io.arconia.dev.services.api.config;
 import io.arconia.core.support.Incubating;
 
 /**
- * Strategies for reusing a running container for a dev service
- * across applications instead of starting a new one.
+ * Strategies for reusing a running container for a dev service, across applications
+ * or restarts, instead of starting a new one.
  */
 @Incubating
 public enum ReuseStrategy {
