@@ -16,16 +16,16 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link KeycloakOAuth2ResourceServerDevServicesAutoConfiguration}.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationIT {
 
     private static final String ISSUER_URI_PROPERTY = "spring.security.oauth2.resourceserver.jwt.issuer-uri";

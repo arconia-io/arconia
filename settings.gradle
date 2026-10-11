@@ -19,7 +19,6 @@ include 'arconia-data:arconia-data-jdbc-sqlite'
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-api'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-tests'
 
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-artemis'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-docling'

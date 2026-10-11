@@ -1,38 +1,32 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaOtelCollectorContainer}.
  */
-class ArconiaOtelCollectorContainerTests {
+class ArconiaOtelCollectorContainerTests extends BaseDevServiceContainerTests<OtelCollectorDevServicesProperties, ArconiaOtelCollectorContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaOtelCollectorContainer(new OtelCollectorDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected OtelCollectorDevServicesProperties createProperties() {
+        return new OtelCollectorDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new OtelCollectorDevServicesProperties();
+    @Override
+    protected ArconiaOtelCollectorContainer createContainer(OtelCollectorDevServicesProperties properties) {
+        return new ArconiaOtelCollectorContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(OtelCollectorDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setOtlpGrpcPort(5678);
-
-        var container = new ArconiaOtelCollectorContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaOtelCollectorContainer.OTLP_HTTP_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getOtlpGrpcPort() + ":" + ArconiaOtelCollectorContainer.OTLP_GRPC_PORT));
+        return Map.of(
+                1234, ArconiaOtelCollectorContainer.OTLP_HTTP_PORT,
+                5678, ArconiaOtelCollectorContainer.OTLP_GRPC_PORT);
     }
 
 }

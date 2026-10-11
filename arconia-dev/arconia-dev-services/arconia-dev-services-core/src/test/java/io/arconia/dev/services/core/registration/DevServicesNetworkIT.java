@@ -9,8 +9,11 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
+
+import io.arconia.dev.services.core.TestDevServicesProperties;
+
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for the shared network support: two dev service containers that opt in
  * to the network can reach each other by their network alias.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class DevServicesNetworkIT {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:alpine3.24");
@@ -35,11 +38,13 @@ class DevServicesNetworkIT {
 
         registry.registerDevService(service -> service
                 .name("peer-a")
+                .description("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-a"))
                         .serviceConnection(false));
         registry.registerDevService(service -> service
                 .name("peer-b")
+                .description("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
                         .serviceConnection(false));
@@ -76,11 +81,13 @@ class DevServicesNetworkIT {
         // default bridge and cannot reach each other by network alias.
         registry.registerDevService(service -> service
                 .name("peer-a")
+                .description("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-a"))
                         .serviceConnection(false));
         registry.registerDevService(service -> service
                 .name("peer-b")
+                .description("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
                         .serviceConnection(false));

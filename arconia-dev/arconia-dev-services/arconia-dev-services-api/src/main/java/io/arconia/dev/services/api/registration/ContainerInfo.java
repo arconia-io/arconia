@@ -12,6 +12,13 @@ import io.arconia.core.support.Incubating;
  * Holds information about a container.
  * <p>
  * Used to map details from <a href="https://github.com/docker-java/docker-java/blob/main/docker-java-api/src/main/java/com/github/dockerjava/api/model/Container.java">docker-java</a>.
+ *
+ * @param id the container id
+ * @param imageName the name of the container image
+ * @param names the names of the container
+ * @param exposedPorts the ports the container exposes
+ * @param labels the labels of the container
+ * @param status the status of the container as the container runtime reports it
  */
 @Incubating
 public record ContainerInfo(
@@ -52,6 +59,9 @@ public record ContainerInfo(
         return new Builder();
     }
 
+    /**
+     * Builder for {@link ContainerInfo}, with empty names, ports, and labels by default.
+     */
     public static final class Builder {
 
         @Nullable

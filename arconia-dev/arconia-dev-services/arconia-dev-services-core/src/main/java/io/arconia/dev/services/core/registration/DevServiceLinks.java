@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
-import io.arconia.dev.services.core.registration.ServiceSpec.LinkDefinition;
+import io.arconia.dev.services.core.registration.DevServiceSpec.LinkDefinition;
 
 /**
  * Resolves the links a dev service declares, in terms of container ports, into the URLs
@@ -28,7 +28,7 @@ final class DevServiceLinks {
      * a port its container doesn't expose, and at debug level for a discovered container, which
      * the application that started it may not have published that port of.
      */
-    static List<DevServiceLink> resolve(ServiceSpec service, String host, IntUnaryOperator portMapper, boolean owned) {
+    static List<DevServiceLink> resolve(DevServiceSpec service, String host, IntUnaryOperator portMapper, boolean owned) {
         List<DevServiceLink> links = new ArrayList<>();
         for (LinkDefinition link : service.getLinks()) {
             try {

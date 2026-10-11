@@ -1,37 +1,29 @@
 package io.arconia.dev.services.redis;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 import io.arconia.testcontainers.redis.RedisContainer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link ArconiaRedisContainer}.
  */
-class ArconiaRedisContainerTests {
+class ArconiaRedisContainerTests extends BaseDevServiceContainerTests<RedisDevServicesProperties, ArconiaRedisContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaRedisContainer(new RedisDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected RedisDevServicesProperties createProperties() {
+        return new RedisDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new RedisDevServicesProperties();
+    @Override
+    protected ArconiaRedisContainer createContainer(RedisDevServicesProperties properties) {
+        return new ArconiaRedisContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(RedisDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaRedisContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + RedisContainer.REDIS_PORT));
+        return Map.of(1234, RedisContainer.REDIS_PORT);
     }
 
 }

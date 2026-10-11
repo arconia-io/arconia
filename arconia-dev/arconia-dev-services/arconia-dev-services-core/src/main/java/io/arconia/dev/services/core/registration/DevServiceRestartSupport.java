@@ -17,7 +17,9 @@ import io.arconia.boot.bootstrap.BootstrapMode;
  * DevTools {@code restart} scope, where they stay until the application process exits.
  * <p>
  * A kept container is never reconfigured: configuration changes take effect once the
- * application is stopped and started again.
+ * application is stopped and started again. The scope registers no destruction callback,
+ * so a kept container is not stopped by Spring when a context closes: Testcontainers
+ * removes it when the process exits.
  */
 final class DevServiceRestartSupport {
 
@@ -54,13 +56,15 @@ final class DevServiceRestartSupport {
 
     /**
      * Retain the container the {@code restart} scope holds for the dev service, if it is still
-     * running, and return whether one was retained. A container that is no longer running is
-     * removed from the scope, so that a new one takes its place. Nothing is retained when the
-     * scope is not active.
+     * running and of the given type, and return whether one was retained. A container that is
+     * no longer running, or whose class DevTools has reloaded (the kept instance belongs to the
+     * previous class loader and cannot be injected as the new type), is stopped and removed from
+     * the scope, so that a new one takes its place. Nothing is retained when the scope is not active.
      */
-    boolean retainKeptContainer(String serviceName, String containerBeanName) {
+    boolean retainKeptContainer(String serviceName, String containerBeanName, Class<? extends GenericContainer<?>> containerType) {
         Assert.hasText(serviceName, "serviceName cannot be null or empty");
         Assert.hasText(containerBeanName, "containerBeanName cannot be null or empty");
+        Assert.notNull(containerType, "containerType cannot be null");
 
         Scope restartScope = restartScope();
         if (restartScope == null || !isRestartScopeActive()) {
@@ -75,6 +79,13 @@ final class DevServiceRestartSupport {
         if (!keptContainer.isRunning()) {
             logger.info("Dev Service '{}': container {} is no longer running, a new one takes its place",
                     serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
+            keptContainer.stop();
+            return false;
+        }
+        if (!containerType.isInstance(keptContainer)) {
+            logger.info("Dev Service '{}': the container class was reloaded, a new container takes the place of {}",
+                    serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
+            keptContainer.stop();
             return false;
         }
         restartScope.get(containerBeanName, () -> container);

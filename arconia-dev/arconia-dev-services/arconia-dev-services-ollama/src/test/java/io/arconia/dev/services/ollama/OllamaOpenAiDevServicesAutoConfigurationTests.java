@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-import io.arconia.dev.services.core.registration.DevServiceDynamicPropertySource;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,7 +26,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     void propertySourceRegistered() {
         contextRunner
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
-                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isTrue());
+                        .contains(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)).isTrue());
     }
 
     @Test
@@ -34,7 +34,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("arconia.dev.services.enabled=false")
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
-                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+                        .contains(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)).isFalse());
     }
 
     @Test
@@ -42,7 +42,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("arconia.dev.services.ollama.enabled=false")
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
-                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+                        .contains(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)).isFalse());
     }
 
     @Test
@@ -50,7 +50,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("arconia.dev.services.ollama.openai-compatibility=false")
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
-                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+                        .contains(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)).isFalse());
     }
 
     @Test
@@ -93,7 +93,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
         contextRunner
                 .withClassLoader(new FilteredClassLoader(OpenAiCommonProperties.class))
                 .run(context -> assertThat(context.getEnvironment().getPropertySources()
-                        .contains(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)).isFalse());
+                        .contains(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)).isFalse());
     }
 
     @Test

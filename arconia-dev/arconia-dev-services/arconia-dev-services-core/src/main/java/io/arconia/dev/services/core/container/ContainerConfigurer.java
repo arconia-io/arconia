@@ -34,24 +34,23 @@ public final class ContainerConfigurer {
 
     /**
      * Apply the common dev service properties to the given container: environment, network
-     * aliases, startup timeout, resources, volumes, and whether Testcontainers reuses the
-     * container. A {@link JdbcDatabaseContainer} configured with {@link JdbcDevServicesProperties}
-     * also gets its credentials, database name, and init scripts.
+     * aliases, startup timeout, resources, and volumes. A {@link JdbcDatabaseContainer}
+     * configured with {@link JdbcDevServicesProperties} also gets its credentials, database
+     * name, and init scripts.
      * <p>
      * The startup timeout is applied to the wait strategy of the container, which must therefore
      * be its own. A container that doesn't declare one relies on a wait strategy instance that
      * Testcontainers shares across all containers, and the timeout would apply to every other
      * container relying on it as well.
      */
-    public static void apply(GenericContainer<?> container, BaseDevServicesProperties properties, boolean testcontainersReuse) {
+    public static void apply(GenericContainer<?> container, BaseDevServicesProperties properties) {
         Assert.notNull(container, "container cannot be null");
         Assert.notNull(properties, "properties cannot be null");
 
         container
                 .withEnv(properties.getEnvironment())
                 .withNetworkAliases(properties.getNetworkAliases().toArray(new String[]{}))
-                .withStartupTimeout(properties.getStartupTimeout())
-                .withReuse(testcontainersReuse);
+                .withStartupTimeout(properties.getStartupTimeout());
         for (ResourceMapping resource : properties.getResources()) {
             container.withCopyFileToContainer(resolveMountableFile(resource.sourcePath()), resource.containerPath());
         }
@@ -94,7 +93,7 @@ public final class ContainerConfigurer {
      *
      * @throws IllegalArgumentException if the resource exists in neither location.
      */
-    public static MountableFile resolveMountableFile(String sourcePath) {
+    static MountableFile resolveMountableFile(String sourcePath) {
         ResourceLocation location = resolveLocation(sourcePath);
         return location.classpath()
                 ? MountableFile.forClasspathResource(location.path())
@@ -102,8 +101,10 @@ public final class ContainerConfigurer {
     }
 
     /**
-     * Resolve a source path into a mountable file with the given POSIX file mode, applying the
-     * same rules as {@link #resolveMountableFile(String)}.
+     * Resolve a source path from the classpath or the host filesystem into a mountable file
+     * with the given POSIX file mode, applying the same rules as the {@code resources} property:
+     * an explicit {@code classpath:} or {@code file:} prefix selects the location, otherwise the
+     * classpath is tried first and the host filesystem second.
      * <p>
      * A mode is needed whenever the container process reads the copied file as a non-root user:
      * a resource extracted from a jar does not carry usable permissions of its own.
@@ -119,7 +120,7 @@ public final class ContainerConfigurer {
 
     /**
      * Resolve a source path into a {@link Resource}, applying the same rules as
-     * {@link #resolveMountableFile(String)}, so that a dev service can read a mapped resource
+     * {@link #resolveMountableFile(String, int)}, so that a dev service can read a mapped resource
      * (for example to derive configuration from it) using the very lookup that will later copy
      * it into the container.
      *

@@ -20,7 +20,7 @@ dependencies {
     optional "org.springframework.boot:spring-boot-security-oauth2-client"
     optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"
 
-    testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
+    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

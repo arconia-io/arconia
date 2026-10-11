@@ -95,7 +95,7 @@ class DevServiceDynamicPropertySourceTests {
     void getOrCreateThrowsWhenConflictingPropertySourceExists() {
         var environment = new MockEnvironment();
         environment.getPropertySources().addFirst(
-                new MapPropertySource(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME, Map.of()));
+                new MapPropertySource(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME, Map.of()));
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> DevServiceDynamicPropertySource.getOrCreate(environment));

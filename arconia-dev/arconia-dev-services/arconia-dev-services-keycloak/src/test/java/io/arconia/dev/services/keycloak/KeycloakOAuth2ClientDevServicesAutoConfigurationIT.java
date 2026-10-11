@@ -10,9 +10,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * registered early enough for Spring Boot's own to back off, and the resulting registration
  * actually matches the realm the dev service imported.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class KeycloakOAuth2ClientDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()

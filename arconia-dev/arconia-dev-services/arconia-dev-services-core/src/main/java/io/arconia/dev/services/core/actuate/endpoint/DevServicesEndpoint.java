@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.actuate.endpoint;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.endpoint.OperationResponseBody;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
@@ -25,16 +27,18 @@ public class DevServicesEndpoint {
 
     private final Map<String, DevServiceRegistration> registrations;
 
+    /**
+     * Create the endpoint for the given registrations, reported in the order of the given map.
+     */
     public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations) {
-        this.registrations = Map.copyOf(registrations);
+        this.registrations = Collections.unmodifiableMap(new LinkedHashMap<>(registrations));
     }
 
     @ReadOperation
-    public Map<String, ServiceInfoSummary> devServices() {
-        Map<String, ServiceInfoSummary> summaries = new LinkedHashMap<>();
-        registrations.forEach((name, registration) -> summaries.put(name,
-                new ServiceInfoSummary(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfoSummary(registration))));
-        return summaries;
+    public Map<String, ServiceInfo> devServices() {
+        Map<String, ServiceInfo> services = new LinkedHashMap<>();
+        registrations.forEach((name, registration) -> services.put(name, toServiceInfo(registration)));
+        return OperationResponseBody.of(services);
     }
 
     @ReadOperation
@@ -45,6 +49,10 @@ public class DevServicesEndpoint {
             // A null result is mapped to a 404 response.
             return null;
         }
+        return toServiceInfo(registration);
+    }
+
+    private static ServiceInfo toServiceInfo(DevServiceRegistration registration) {
         return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfo(registration));
     }
 
@@ -63,42 +71,17 @@ public class DevServicesEndpoint {
         }
     }
 
-    @Nullable
-    private static ContainerInfoSummary resolveContainerInfoSummary(DevServiceRegistration registration) {
-        ContainerInfo containerInfo = resolveContainerInfo(registration);
-        return (containerInfo != null) ? ContainerInfoSummary.from(containerInfo) : null;
-    }
-
-    public record ServiceInfoSummary(
-            String name,
-            @Nullable
-            String description,
-            DevServiceRegistration.Origin origin,
-            List<DevServiceLink> links,
-            @Nullable
-            ContainerInfoSummary containerInfo
-    ) {}
-
-    public record ContainerInfoSummary(
-            String id,
-            String imageName,
-            List<ContainerInfo.ContainerPort> exposedPorts
-    ) {
-
-        public static ContainerInfoSummary from(ContainerInfo containerInfo) {
-            return new ContainerInfoSummary(containerInfo.id(), containerInfo.imageName(), containerInfo.exposedPorts());
-        }
-
-    }
-
+    /**
+     * Description of a dev service: the container information is {@code null} when the
+     * container can no longer be inspected.
+     */
     public record ServiceInfo(
             String name,
-            @Nullable
             String description,
             DevServiceRegistration.Origin origin,
             List<DevServiceLink> links,
             @Nullable
             ContainerInfo containerInfo
-    ) {}
+    ) implements OperationResponseBody {}
 
 }

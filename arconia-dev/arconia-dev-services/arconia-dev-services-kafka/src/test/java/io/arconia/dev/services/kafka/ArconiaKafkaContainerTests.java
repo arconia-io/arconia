@@ -1,35 +1,29 @@
 package io.arconia.dev.services.kafka;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaKafkaContainer}.
  */
-class ArconiaKafkaContainerTests {
+class ArconiaKafkaContainerTests extends BaseDevServiceContainerTests<KafkaDevServicesProperties, ArconiaKafkaContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaKafkaContainer(new KafkaDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected KafkaDevServicesProperties createProperties() {
+        return new KafkaDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new KafkaDevServicesProperties();
+    @Override
+    protected ArconiaKafkaContainer createContainer(KafkaDevServicesProperties properties) {
+        return new ArconiaKafkaContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(KafkaDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaKafkaContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaKafkaContainer.KAFKA_PORT));
+        return Map.of(1234, ArconiaKafkaContainer.KAFKA_PORT);
     }
 
 }

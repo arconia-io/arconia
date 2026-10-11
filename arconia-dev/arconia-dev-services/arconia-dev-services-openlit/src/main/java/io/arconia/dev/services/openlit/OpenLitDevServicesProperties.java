@@ -42,7 +42,8 @@ public class OpenLitDevServicesProperties implements BaseDevServicesProperties {
     private Map<String, String> environment = new HashMap<>();
 
     /**
-     * Network aliases to assign to the OpenLit container.
+     * Additional hostnames the dev service container is reachable by on the shared network,
+     * next to the name of the dev service. Only applicable when the shared network is enabled.
      */
     private List<String> networkAliases = new ArrayList<>();
 
@@ -76,7 +77,7 @@ public class OpenLitDevServicesProperties implements BaseDevServicesProperties {
     private ReuseStrategy reuseStrategy = ReuseStrategy.FRAMEWORK;
 
     /**
-     * Maximum waiting time for the service to start.
+     * Maximum waiting time for the service to start, counted from the container start.
      * Generous default to account for ClickHouse initialization time.
      */
     private Duration startupTimeout = Duration.ofMinutes(2);

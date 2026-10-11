@@ -1,35 +1,29 @@
 package io.arconia.dev.services.ollama;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaOllamaContainer}.
  */
-class ArconiaOllamaContainerTests {
+class ArconiaOllamaContainerTests extends BaseDevServiceContainerTests<OllamaDevServicesProperties, ArconiaOllamaContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaOllamaContainer(new OllamaDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected OllamaDevServicesProperties createProperties() {
+        return new OllamaDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new OllamaDevServicesProperties();
+    @Override
+    protected ArconiaOllamaContainer createContainer(OllamaDevServicesProperties properties) {
+        return new ArconiaOllamaContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(OllamaDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaOllamaContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaOllamaContainer.OLLAMA_PORT));
+        return Map.of(1234, ArconiaOllamaContainer.OLLAMA_PORT);
     }
 
 }

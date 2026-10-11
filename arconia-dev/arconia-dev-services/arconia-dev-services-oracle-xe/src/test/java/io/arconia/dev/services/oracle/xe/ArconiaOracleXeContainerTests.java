@@ -1,35 +1,29 @@
 package io.arconia.dev.services.oracle.xe;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaOracleXeContainer}.
  */
-class ArconiaOracleXeContainerTests {
+class ArconiaOracleXeContainerTests extends BaseDevServiceContainerTests<OracleXeDevServicesProperties, ArconiaOracleXeContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaOracleXeContainer(new OracleXeDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected OracleXeDevServicesProperties createProperties() {
+        return new OracleXeDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new OracleXeDevServicesProperties();
+    @Override
+    protected ArconiaOracleXeContainer createContainer(OracleXeDevServicesProperties properties) {
+        return new ArconiaOracleXeContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(OracleXeDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaOracleXeContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaOracleXeContainer.ORACLE_PORT));
+        return Map.of(1234, ArconiaOracleXeContainer.ORACLE_PORT);
     }
 
 }

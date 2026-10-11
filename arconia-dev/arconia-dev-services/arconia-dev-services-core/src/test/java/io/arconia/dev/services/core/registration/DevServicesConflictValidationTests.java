@@ -11,6 +11,8 @@ import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.core.env.Environment;
 import org.testcontainers.containers.GenericContainer;
 
+import io.arconia.dev.services.core.TestDevServicesProperties;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -80,6 +82,7 @@ class DevServicesConflictValidationTests {
             registry.registerDevService(service -> service
                     .name("first")
                     .category("jdbc")
+                    .description("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }
@@ -93,6 +96,7 @@ class DevServicesConflictValidationTests {
             registry.registerDevService(service -> service
                     .name("second")
                     .category("jdbc")
+                    .description("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }
@@ -106,6 +110,7 @@ class DevServicesConflictValidationTests {
             registry.registerDevService(service -> service
                     .name("other")
                     .category("opentelemetry")
+                    .description("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }
@@ -118,6 +123,7 @@ class DevServicesConflictValidationTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("uncategorized")
+                    .description("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestContainer.class, TestContainer::new));
         }

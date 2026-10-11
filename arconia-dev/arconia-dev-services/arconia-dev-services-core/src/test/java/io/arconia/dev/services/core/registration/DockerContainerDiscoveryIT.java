@@ -5,17 +5,18 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.api.registration.DevServiceLabels;
+
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link DockerContainerDiscovery}.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class DockerContainerDiscoveryIT {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:alpine3.24");

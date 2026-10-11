@@ -1,39 +1,34 @@
 package io.arconia.dev.services.pulsar;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
+
 import org.testcontainers.pulsar.PulsarContainer;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaPulsarContainer}.
  */
-class ArconiaPulsarContainerTests {
+class ArconiaPulsarContainerTests extends BaseDevServiceContainerTests<PulsarDevServicesProperties, ArconiaPulsarContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaPulsarContainer(new PulsarDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected PulsarDevServicesProperties createProperties() {
+        return new PulsarDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new PulsarDevServicesProperties();
+    @Override
+    protected ArconiaPulsarContainer createContainer(PulsarDevServicesProperties properties) {
+        return new ArconiaPulsarContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(PulsarDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setAdminPort(5678);
-
-        var container = new ArconiaPulsarContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + PulsarContainer.BROKER_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getAdminPort() + ":" + PulsarContainer.BROKER_HTTP_PORT));
+        return Map.of(
+                1234, PulsarContainer.BROKER_PORT,
+                5678, PulsarContainer.BROKER_HTTP_PORT);
     }
 
 }

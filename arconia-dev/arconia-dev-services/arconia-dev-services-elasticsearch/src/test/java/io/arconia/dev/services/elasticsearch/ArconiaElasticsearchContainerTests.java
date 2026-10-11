@@ -1,35 +1,29 @@
 package io.arconia.dev.services.elasticsearch;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaElasticsearchContainer}.
  */
-class ArconiaElasticsearchContainerTests {
+class ArconiaElasticsearchContainerTests extends BaseDevServiceContainerTests<ElasticsearchDevServicesProperties, ArconiaElasticsearchContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaElasticsearchContainer(new ElasticsearchDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected ElasticsearchDevServicesProperties createProperties() {
+        return new ElasticsearchDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new ElasticsearchDevServicesProperties();
+    @Override
+    protected ArconiaElasticsearchContainer createContainer(ElasticsearchDevServicesProperties properties) {
+        return new ArconiaElasticsearchContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(ElasticsearchDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaElasticsearchContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT));
+        return Map.of(1234, ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT);
     }
 
 }

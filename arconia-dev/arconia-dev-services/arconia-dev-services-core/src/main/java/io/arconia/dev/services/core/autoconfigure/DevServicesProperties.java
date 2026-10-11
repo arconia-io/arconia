@@ -6,9 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Global configuration properties for Dev Services.
  */
 @ConfigurationProperties(prefix = DevServicesProperties.CONFIG_PREFIX)
-public class DevServicesProperties {
+class DevServicesProperties {
 
-    public static final String CONFIG_PREFIX = "arconia.dev.services";
+    static final String CONFIG_PREFIX = "arconia.dev.services";
 
     /**
      * Whether to enable the Dev Services feature.

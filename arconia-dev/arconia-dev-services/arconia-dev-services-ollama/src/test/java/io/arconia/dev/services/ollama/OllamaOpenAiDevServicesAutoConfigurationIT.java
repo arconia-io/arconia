@@ -4,18 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.ollama.OllamaContainer;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.tests.DevServiceContainers;
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link OllamaOpenAiDevServicesAutoConfiguration}.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class OllamaOpenAiDevServicesAutoConfigurationIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -51,10 +51,8 @@ class OllamaOpenAiDevServicesAutoConfigurationIT {
     @Test
     void openAiBaseUrlResolvedFromDiscoveredContainer() {
         OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
-        try (OllamaContainer discoveredContainer = new OllamaContainer(properties.getImageName())
-                .withLabel(DevServiceLabels.NAME, "ollama")
-                .withLabel(DevServiceLabels.DISCOVERABLE, "true")
-                .withLabel(DevServiceLabels.OWNER, "another-application")) {
+        try (OllamaContainer discoveredContainer = DevServiceContainers.discoverable(
+                new ArconiaOllamaContainer(properties), properties, "ollama", "another-application")) {
             discoveredContainer.start();
 
             contextRunner

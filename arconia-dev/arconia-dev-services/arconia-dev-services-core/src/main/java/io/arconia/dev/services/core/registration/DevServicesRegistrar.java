@@ -30,6 +30,12 @@ import io.arconia.core.support.Incubating;
 @Incubating
 public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
 
+    /**
+     * The name of the property source holding the properties added via
+     * {@link #addDynamicProperty(String, Supplier)}.
+     */
+    public static final String DYNAMIC_PROPERTY_SOURCE_NAME = "Arconia Dev Services Dynamic Properties";
+
     @Nullable
     private BeanFactory beanFactory;
 
@@ -63,22 +69,15 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     }
 
     /**
-     * Set default properties for dev/test mode. These are added to the lowest-priority property source,
+     * Set a default property for dev/test mode. It is added to the lowest-priority property source,
      * so any user-defined configuration (application.yml, environment variables, etc.) takes
      * precedence naturally via the property source hierarchy without requiring explicit checks.
      */
-    protected void setDefaultProperties(Map<String, Object> defaults) {
+    protected void setDefaultProperty(String key, Object value) {
         Assert.notNull(environment, "environment has not been initialized");
         Assert.state(environment instanceof ConfigurableEnvironment,
                 "environment must be a ConfigurableEnvironment");
-        DefaultPropertiesPropertySource.addOrMerge(defaults, ((ConfigurableEnvironment) environment).getPropertySources());
-    }
-
-    /**
-     * Set a default property that will only be used if not already defined.
-     */
-    protected void setDefaultProperty(String key, Object value) {
-        setDefaultProperties(Map.of(key, value));
+        DefaultPropertiesPropertySource.addOrMerge(Map.of(key, value), ((ConfigurableEnvironment) environment).getPropertySources());
     }
 
     /**
@@ -86,9 +85,8 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * <p>
      * This is useful when there is no Spring Boot {@code ConnectionDetails} interface available
      * for a given integration, providing an alternative mechanism for dev services to contribute
-     * dynamic properties.
-     *
-     * @see DevServiceDynamicPropertySource
+     * dynamic properties. The property takes precedence over any other property source, the
+     * same way the connection details of a service connection replace the configured ones.
      */
     protected void addDynamicProperty(String name, Supplier<Object> valueSupplier) {
         Assert.notNull(environment, "environment has not been initialized");

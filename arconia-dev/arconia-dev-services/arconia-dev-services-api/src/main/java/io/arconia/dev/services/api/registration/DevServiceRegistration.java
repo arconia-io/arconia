@@ -10,11 +10,16 @@ import io.arconia.core.support.Incubating;
 
 /**
  * Describes a registered dev service.
+ *
+ * @param name the logical name of the dev service
+ * @param description the description of the dev service
+ * @param origin how the dev service container was made available to the application
+ * @param containerInfo supplies the information about the container, inspected on each call
+ * @param links the links the dev service exposes
  */
 @Incubating
 public record DevServiceRegistration(
         String name,
-        @Nullable
         String description,
         Origin origin,
         Supplier<ContainerInfo> containerInfo,
@@ -23,6 +28,7 @@ public record DevServiceRegistration(
 
     public DevServiceRegistration {
         Assert.hasText(name, "name cannot be null or empty");
+        Assert.hasText(description, "description cannot be null or empty");
         Assert.notNull(origin, "origin cannot be null");
         Assert.notNull(containerInfo, "containerInfo cannot be null");
         Assert.notNull(links, "links cannot be null");
@@ -39,7 +45,7 @@ public record DevServiceRegistration(
          * The container is managed by this application through Testcontainers. The application
          * started it or attached to it when it is a container reused by Testcontainers.
          */
-        OWNED,
+        MANAGED,
 
         /**
          * The container was started by another application and discovered
@@ -53,6 +59,9 @@ public record DevServiceRegistration(
         return new Builder();
     }
 
+    /**
+     * Builder for {@link DevServiceRegistration}, with no links by default.
+     */
     public static final class Builder {
 
         @Nullable
@@ -67,31 +76,49 @@ public record DevServiceRegistration(
 
         private Builder() {}
 
+        /**
+         * The logical name of the dev service.
+         */
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder description(@Nullable String description) {
+        /**
+         * The description of the dev service.
+         */
+        public Builder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * How the dev service container was made available to the application.
+         */
         public Builder origin(Origin origin) {
             this.origin = origin;
             return this;
         }
 
+        /**
+         * The supplier of the information about the container, inspected on each call.
+         */
         public Builder containerInfo(Supplier<ContainerInfo> containerInfo) {
             this.containerInfo = containerInfo;
             return this;
         }
 
+        /**
+         * The links the dev service exposes.
+         */
         public Builder links(List<DevServiceLink> links) {
             this.links = links;
             return this;
         }
 
+        /**
+         * Builds the {@link DevServiceRegistration} instance.
+         */
         public DevServiceRegistration build() {
             return new DevServiceRegistration(name, description, origin, containerInfo, links);
         }

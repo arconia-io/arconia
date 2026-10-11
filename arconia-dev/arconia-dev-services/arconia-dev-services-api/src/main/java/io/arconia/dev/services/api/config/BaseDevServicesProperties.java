@@ -32,7 +32,8 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Network aliases to assign to the dev service container.
+     * Additional hostnames the dev service container is reachable by on the shared network,
+     * next to the name of the dev service. Only applicable when the shared network is enabled.
      */
     default List<String> getNetworkAliases() {
         return List.of();
@@ -64,7 +65,7 @@ public interface BaseDevServicesProperties {
     }
 
     /**
-     * Maximum waiting time for the service to start.
+     * Maximum waiting time for the service to start, counted from the container start.
      */
     default Duration getStartupTimeout() {
         return Duration.ofSeconds(30);

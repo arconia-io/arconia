@@ -24,10 +24,11 @@ public enum ReuseStrategy {
     FRAMEWORK,
 
     /**
-     * The container is kept running across application restarts, relying on the
-     * Testcontainers reusable containers feature, which must be enabled in the
-     * {@code ~/.testcontainers.properties} file. Such containers are not stopped
-     * automatically and must be cleaned up manually.
+     * The container is kept running across application runs, relying on the Testcontainers
+     * reusable containers feature. It is up to you to enable the feature, via
+     * {@code testcontainers.reuse.enable=true} in the {@code ~/.testcontainers.properties}
+     * file or the {@code TESTCONTAINERS_REUSE_ENABLE=true} environment variable, and to
+     * clean up afterwards: such containers are never stopped automatically.
      */
     TESTCONTAINERS
 

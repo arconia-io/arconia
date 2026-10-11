@@ -1,35 +1,29 @@
 package io.arconia.dev.services.mariadb;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaMariaDbContainer}.
  */
-class ArconiaMariaDbContainerTests {
+class ArconiaMariaDbContainerTests extends BaseDevServiceContainerTests<MariaDbDevServicesProperties, ArconiaMariaDbContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaMariaDbContainer(new MariaDbDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected MariaDbDevServicesProperties createProperties() {
+        return new MariaDbDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new MariaDbDevServicesProperties();
+    @Override
+    protected ArconiaMariaDbContainer createContainer(MariaDbDevServicesProperties properties) {
+        return new ArconiaMariaDbContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(MariaDbDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaMariaDbContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaMariaDbContainer.MARIADB_PORT));
+        return Map.of(1234, ArconiaMariaDbContainer.MARIADB_PORT);
     }
 
 }

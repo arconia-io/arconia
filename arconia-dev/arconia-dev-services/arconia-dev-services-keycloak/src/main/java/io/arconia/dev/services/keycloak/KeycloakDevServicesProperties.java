@@ -43,7 +43,8 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * Network aliases to assign to the dev service container.
+     * Additional hostnames the dev service container is reachable by on the shared network,
+     * next to the name of the dev service. Only applicable when the shared network is enabled.
      */
     private List<String> networkAliases = new ArrayList<>();
 

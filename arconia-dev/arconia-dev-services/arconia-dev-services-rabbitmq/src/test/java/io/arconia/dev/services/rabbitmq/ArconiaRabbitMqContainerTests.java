@@ -1,46 +1,31 @@
 package io.arconia.dev.services.rabbitmq;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaRabbitMqContainer}.
  */
-class ArconiaRabbitMqContainerTests {
+class ArconiaRabbitMqContainerTests extends BaseDevServiceContainerTests<RabbitMqDevServicesProperties, ArconiaRabbitMqContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaRabbitMqContainer(new RabbitMqDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected RabbitMqDevServicesProperties createProperties() {
+        return new RabbitMqDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new RabbitMqDevServicesProperties();
+    @Override
+    protected ArconiaRabbitMqContainer createContainer(RabbitMqDevServicesProperties properties) {
+        return new ArconiaRabbitMqContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(RabbitMqDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setManagementConsolePort(5678);
-
-        var container = new ArconiaRabbitMqContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaRabbitMqContainer.AMQP_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getManagementConsolePort() + ":" + ArconiaRabbitMqContainer.HTTP_PORT));
-    }
-
-    @Test
-    void credentialsFollowTheProperties() {
-        var properties = new RabbitMqDevServicesProperties();
-        var container = new ArconiaRabbitMqContainer(properties);
-        assertThat(container.getAdminUsername()).isEqualTo(properties.getUsername());
-        assertThat(container.getAdminPassword()).isEqualTo(properties.getPassword());
+        return Map.of(
+                1234, ArconiaRabbitMqContainer.AMQP_PORT,
+                5678, ArconiaRabbitMqContainer.HTTP_PORT);
     }
 
 }

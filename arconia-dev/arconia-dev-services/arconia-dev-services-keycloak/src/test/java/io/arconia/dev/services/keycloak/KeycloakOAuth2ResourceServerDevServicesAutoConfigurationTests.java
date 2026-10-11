@@ -11,7 +11,7 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.core.registration.DevServiceDynamicPropertySource;
+import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +41,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
 
     private static boolean contributesIssuerUri(AssertableApplicationContext context) {
         PropertySource<?> propertySource = context.getEnvironment().getPropertySources()
-                .get(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME);
+                .get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME);
         return propertySource != null && propertySource.containsProperty(ISSUER_URI_PROPERTY);
     }
 
@@ -118,7 +118,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
                     var propertySources = context.getEnvironment().getPropertySources();
                     PropertySource<?> userProvided = null;
                     for (PropertySource<?> propertySource : propertySources) {
-                        if (!DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME.equals(propertySource.getName())
+                        if (!DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME.equals(propertySource.getName())
                                 && propertySource.containsProperty(ISSUER_URI_PROPERTY)) {
                             userProvided = propertySource;
                             break;
@@ -128,7 +128,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
                             .withFailMessage("the user-provided issuer URI never reached the environment")
                             .isNotNull();
                     assertThat(propertySources.precedenceOf(
-                            propertySources.get(DevServiceDynamicPropertySource.PROPERTY_SOURCE_NAME)))
+                            propertySources.get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)))
                             .isLessThan(propertySources.precedenceOf(userProvided));
                 });
     }

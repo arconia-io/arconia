@@ -1,37 +1,32 @@
 package io.arconia.dev.services.floci;
 
-import io.floci.testcontainers.FlociContainer;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.floci.testcontainers.FlociContainer;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 /**
  * Unit tests for {@link ArconiaFlociContainer}.
  */
-@EnabledIfDockerAvailable
-class ArconiaFlociContainerTests {
+@DisabledIfDockerUnavailable
+class ArconiaFlociContainerTests extends BaseDevServiceContainerTests<FlociDevServicesProperties, ArconiaFlociContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaFlociContainer(new FlociDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected FlociDevServicesProperties createProperties() {
+        return new FlociDevServicesProperties();
     }
 
-    @Test
-    void whenExposedPortsAreConfigured() {
-        var properties = new FlociDevServicesProperties();
+    @Override
+    protected ArconiaFlociContainer createContainer(FlociDevServicesProperties properties) {
+        return new ArconiaFlociContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(FlociDevServicesProperties properties) {
         properties.setPort(14566);
-
-        var container = new ArconiaFlociContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + FlociContainer.PORT));
+        return Map.of(14566, FlociContainer.PORT);
     }
 
 }

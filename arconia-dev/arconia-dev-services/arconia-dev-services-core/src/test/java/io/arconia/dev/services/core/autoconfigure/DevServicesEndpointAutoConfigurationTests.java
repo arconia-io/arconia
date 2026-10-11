@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -23,104 +24,106 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DevServicesEndpointAutoConfigurationTests {
 
-	private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(DevServicesEndpointAutoConfiguration.class))
-			.withPropertyValues("management.endpoints.web.exposure.include=devservices");
+    private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(DevServicesEndpointAutoConfiguration.class))
+            .withPropertyValues("management.endpoints.web.exposure.include=devservices");
 
-	@BeforeEach
-	void setUp() {
-		BootstrapMode.clear();
-	}
+    @BeforeEach
+    @AfterEach
+    void resetBootstrapMode() {
+        BootstrapMode.clear();
+    }
 
-	@Test
-	void endpointBeanIsAvailableWhenDevModeIsEnabled() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=dev")
-				.run(context -> {
-					assertThat(context).hasSingleBean(DevServicesEndpoint.class);
-				});
-	}
+    @Test
+    void endpointBeanIsAvailableWhenDevModeIsEnabled() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .run(context -> assertThat(context).hasSingleBean(DevServicesEndpoint.class));
+    }
 
-	@Test
-	void endpointBeanIsNotAvailableWhenProdModeIsEnabled() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=prod")
-				.run(context -> {
-					assertThat(context).doesNotHaveBean(DevServicesEndpoint.class);
-				});
-	}
+    @Test
+    void endpointBeanIsNotAvailableWhenProdModeIsEnabled() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=prod")
+                .run(context -> assertThat(context).doesNotHaveBean(DevServicesEndpoint.class));
+    }
 
-	@Test
-	void endpointBeanUsesCustomBeanWhenProvided() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=dev")
-				.withUserConfiguration(CustomEndpointConfiguration.class)
-				.run(context -> {
-					assertThat(context).hasSingleBean(DevServicesEndpoint.class);
-					assertThat(context.getBean(DevServicesEndpoint.class))
-							.isSameAs(CustomEndpointConfiguration.customEndpoint);
-				});
-	}
+    @Test
+    void endpointBeanUsesCustomBeanWhenProvided() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withUserConfiguration(CustomEndpointConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(DevServicesEndpoint.class);
+                    assertThat(context.getBean(DevServicesEndpoint.class))
+                            .isSameAs(CustomEndpointConfiguration.customEndpoint);
+                });
+    }
 
-	@Test
-	void endpointBeanIsCreatedWithRegistrations() {
-		contextRunner
-				.withSystemProperties("arconia.bootstrap.mode=dev")
-				.withUserConfiguration(RegistrationsConfiguration.class)
-				.run(context -> {
-					assertThat(context).hasSingleBean(DevServicesEndpoint.class);
-					DevServicesEndpoint endpoint = context.getBean(DevServicesEndpoint.class);
-					assertThat(endpoint.devServices()).hasSize(2);
-					assertThat(endpoint.devServices()).containsKeys("postgresql", "docling");
-				});
-	}
+    @Test
+    void endpointBeanIsCreatedWithRegistrations() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withUserConfiguration(RegistrationsConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(DevServicesEndpoint.class);
+                    DevServicesEndpoint endpoint = context.getBean(DevServicesEndpoint.class);
+                    assertThat(endpoint.devServices()).containsOnlyKeys("postgresql", "docling");
+                });
+    }
 
-	@Configuration(proxyBeanMethods = false)
-	static class CustomEndpointConfiguration {
+    @Test
+    void endpointBeanIsCreatedWhenRegistrationsShareAName() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withUserConfiguration(RegistrationsConfiguration.class, DuplicateRegistrationConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context.getBean(DevServicesEndpoint.class).devServices()).containsOnlyKeys("postgresql", "docling");
+                });
+    }
 
-		static final DevServicesEndpoint customEndpoint = new DevServicesEndpoint(Map.of());
+    @Configuration(proxyBeanMethods = false)
+    static class CustomEndpointConfiguration {
 
-		@Bean
-		DevServicesEndpoint devServicesEndpoint() {
-			return customEndpoint;
-		}
+        static final DevServicesEndpoint customEndpoint = new DevServicesEndpoint(Map.of());
 
-	}
+        @Bean
+        DevServicesEndpoint devServicesEndpoint() {
+            return customEndpoint;
+        }
 
-	@Configuration(proxyBeanMethods = false)
-	static class RegistrationsConfiguration {
+    }
 
-		@Bean
-		DevServiceRegistration postgresqlRegistration() {
-			return DevServiceRegistration.builder()
-					.name("postgresql")
-					.description("PostgreSQL Database")
-					.origin(DevServiceRegistration.Origin.OWNED)
-					.containerInfo(mockContainerInfo("postgres:18", "1234"))
-					.build();
-		}
+    @Configuration(proxyBeanMethods = false)
+    static class RegistrationsConfiguration {
 
-		@Bean
-		DevServiceRegistration doclingRegistration() {
-			return DevServiceRegistration.builder()
-					.name("docling")
-					.description("Docling Serve")
-					.origin(DevServiceRegistration.Origin.OWNED)
-					.containerInfo(mockContainerInfo("docling:1.10", "5678"))
-					.build();
-		}
+        @Bean
+        DevServiceRegistration postgresqlRegistration() {
+            return registration("postgresql", "PostgreSQL Database", "postgres:18", "1234");
+        }
 
-		private Supplier<ContainerInfo> mockContainerInfo(String imageName, String containerId) {
-			return () -> new ContainerInfo(
-					containerId,
-					imageName,
-					List.of("/" + imageName.split(":")[0]),
-					List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")),
-					java.util.Map.of("test", "label"),
-					"running"
-			);
-		}
+        @Bean
+        DevServiceRegistration doclingRegistration() {
+            return registration("docling", "Docling Serve", "docling:1.10", "5678");
+        }
 
-	}
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class DuplicateRegistrationConfiguration {
+
+        @Bean
+        DevServiceRegistration anotherPostgresqlRegistration() {
+            return registration("postgresql", "Another PostgreSQL Database", "postgres:17", "9999");
+        }
+
+    }
+
+    private static DevServiceRegistration registration(String name, String description, String imageName, String containerId) {
+        Supplier<ContainerInfo> containerInfo = () -> new ContainerInfo(containerId, imageName, List.of("/" + imageName.split(":")[0]),
+                List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("test", "label"), "running");
+        return new DevServiceRegistration(name, description, DevServiceRegistration.Origin.MANAGED, containerInfo, List.of());
+    }
 
 }

@@ -17,7 +17,7 @@ dependencies {
     optional "io.awspring.cloud:spring-cloud-aws-autoconfigure"
     optional "io.awspring.cloud:spring-cloud-aws-s3"
 
-    testImplementation project(":arconia-dev:arconia-dev-services:arconia-dev-services-tests")
+    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
     testImplementation "io.awspring.cloud:spring-cloud-aws-starter-dynamodb"
     testImplementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
     testImplementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"

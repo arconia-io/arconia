@@ -40,7 +40,8 @@ public class ArtemisDevServicesProperties implements BaseDevServicesProperties {
     private Map<String,String> environment = new HashMap<>();
 
     /**
-     * Network aliases to assign to the dev service container.
+     * Additional hostnames the dev service container is reachable by on the shared network,
+     * next to the name of the dev service. Only applicable when the shared network is enabled.
      */
     private List<String> networkAliases = new ArrayList<>();
 
@@ -64,7 +65,7 @@ public class ArtemisDevServicesProperties implements BaseDevServicesProperties {
     private ReuseStrategy reuseStrategy = ReuseStrategy.FRAMEWORK;
 
     /**
-     * Maximum waiting time for the service to start.
+     * Maximum waiting time for the service to start, counted from the container start.
      */
     private Duration startupTimeout = Duration.ofSeconds(30);
 

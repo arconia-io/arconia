@@ -1,35 +1,29 @@
 package io.arconia.dev.services.mongodb.atlas;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaMongoDbAtlasLocalContainer}.
  */
-class ArconiaMongoDbAtlasLocalContainerTests {
+class ArconiaMongoDbAtlasLocalContainerTests extends BaseDevServiceContainerTests<MongoDbAtlasDevServicesProperties, ArconiaMongoDbAtlasLocalContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaMongoDbAtlasLocalContainer(new MongoDbAtlasDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected MongoDbAtlasDevServicesProperties createProperties() {
+        return new MongoDbAtlasDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new MongoDbAtlasDevServicesProperties();
+    @Override
+    protected ArconiaMongoDbAtlasLocalContainer createContainer(MongoDbAtlasDevServicesProperties properties) {
+        return new ArconiaMongoDbAtlasLocalContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(MongoDbAtlasDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaMongoDbAtlasLocalContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaMongoDbAtlasLocalContainer.MONGODB_PORT));
+        return Map.of(1234, ArconiaMongoDbAtlasLocalContainer.MONGODB_PORT);
     }
 
 }

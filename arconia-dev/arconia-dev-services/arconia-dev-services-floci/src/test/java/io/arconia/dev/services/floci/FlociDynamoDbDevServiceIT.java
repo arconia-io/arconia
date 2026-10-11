@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -19,12 +18,14 @@ import software.amazon.awssdk.services.dynamodb.model.BillingMode;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
+import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for the Floci Dev Service with Spring Cloud AWS DynamoDB.
  */
-@EnabledIfDockerAvailable
+@DisabledIfDockerUnavailable
 class FlociDynamoDbDevServiceIT {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()

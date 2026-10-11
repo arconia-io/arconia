@@ -6,7 +6,7 @@ import java.util.List;
  * Exception thrown when multiple dev services in the same category are active simultaneously.
  * Only one dev service per category may be enabled at a time.
  */
-public class MultipleDevServicesException extends RuntimeException {
+public final class MultipleDevServicesException extends RuntimeException {
 
     private final String category;
 

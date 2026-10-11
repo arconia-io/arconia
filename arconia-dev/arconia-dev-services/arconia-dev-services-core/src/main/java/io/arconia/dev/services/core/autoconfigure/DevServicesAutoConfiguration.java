@@ -21,7 +21,7 @@ public final class DevServicesAutoConfiguration {
      * The network dev service containers join when the shared network is enabled, so they can
      * reach each other. It is the per-application network Testcontainers provides, created on
      * first use and removed when the JVM exits. A user-defined {@link Network} bean takes
-     * precedence, which is the way to supply a network with a stable id.
+     * precedence.
      * <p>
      * The bean is lazy, so the network is only created when a dev service joins it.
      */

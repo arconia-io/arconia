@@ -13,15 +13,14 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.images.builder.Transferable;
-
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.util.ReflectionUtils;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.builder.Transferable;
 
 import io.arconia.dev.services.core.container.ContainerConfigurer;
-
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,35 +29,31 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for {@link ArconiaKeycloakContainer}.
  */
 @ExtendWith(OutputCaptureExtension.class)
-class ArconiaKeycloakContainerTests {
+class ArconiaKeycloakContainerTests extends BaseDevServiceContainerTests<KeycloakDevServicesProperties, ArconiaKeycloakContainer> {
+
+    @Override
+    protected KeycloakDevServicesProperties createProperties() {
+        return new KeycloakDevServicesProperties();
+    }
+
+    @Override
+    protected ArconiaKeycloakContainer createContainer(KeycloakDevServicesProperties properties) {
+        return container(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(KeycloakDevServicesProperties properties) {
+        properties.setPort(1234);
+        return Map.of(1234, ArconiaKeycloakContainer.HTTP_PORT);
+    }
 
     /**
      * The container as the registry creates it, with the common properties applied.
      */
     private static ArconiaKeycloakContainer container(KeycloakDevServicesProperties properties) {
         var container = new ArconiaKeycloakContainer(properties);
-        ContainerConfigurer.apply(container, properties, false);
+        ContainerConfigurer.apply(container, properties);
         return container;
-    }
-
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = container(new KeycloakDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
-    }
-
-    @Test
-    void whenExposedPortsAreConfigured() {
-        var properties = new KeycloakDevServicesProperties();
-        properties.setPort(1234);
-
-        var container = container(properties);
-        container.configure();
-
-        assertThat(container.getPortBindings())
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaKeycloakContainer.HTTP_PORT));
     }
 
     @Test
@@ -254,13 +249,6 @@ class ArconiaKeycloakContainerTests {
     }
 
     @Test
-    void shouldUseTheDefaultImage() {
-        var container = container(new KeycloakDevServicesProperties());
-
-        assertThat(container.getDockerImageName()).isEqualTo("quay.io/keycloak/keycloak:26.7");
-    }
-
-    @Test
     void shouldApplyTheStartupTimeoutToItsOwnWaitStrategy() {
         // Load-bearing, and entirely dependent on the container library: ExtendableKeycloakContainer
         // overrides withStartupTimeout(Duration) to keep the value for itself. Without that
@@ -312,19 +300,7 @@ class ArconiaKeycloakContainerTests {
     }
 
     @Test
-    void shouldApplyAdminCredentials() {
-        var properties = new KeycloakDevServicesProperties();
-        properties.setAdminUsername("keycloak");
-        properties.setAdminPassword("s3cret");
-
-        var container = container(properties);
-
-        assertThat(container.getAdminUsername()).isEqualTo("keycloak");
-        assertThat(container.getAdminPassword()).isEqualTo("s3cret");
-    }
-
-    @Test
-    void shouldNotExposeHostPortsWhenNoneAreConfigured() {
+    void exposesTheHttpPort() {
         var container = container(new KeycloakDevServicesProperties());
 
         container.configure();

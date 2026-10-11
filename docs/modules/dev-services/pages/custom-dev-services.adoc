@@ -160,6 +160,17 @@ public final class FancyDbDevServicesAutoConfiguration {
 }
 ----
 
+[IMPORTANT]
+====
+A few constraints apply to the registration, enforced at startup:
+
+* The name of the Dev Service must contain only lowercase letters, digits, and dashes (`[a-z0-9]([a-z0-9-]*[a-z0-9])?`), since it becomes part of bean names, container labels, and the network alias of the container. It must be unique in the application: registering a second Dev Service with the same name fails.
+* The description is required: it's shown in developer tooling, such as the `devservices` actuator endpoint.
+* The auto-configuration must declare `before = ServiceConnectionAutoConfiguration.class`, as in the example above: the container bean definition must exist by the time Spring Boot looks for the `@ServiceConnection` beans to provide the connection details for. Without it, the container starts, but the application is not connected to it.
+* `serviceConnectionName(...)` can't be combined with `serviceConnection(false)` (see xref:custom-dev-services.adoc#_wiring_the_application_to_the_service[Wiring the Application to the Service]).
+* Links (see xref:custom-dev-services.adoc#_exposing_links[Exposing Links]) are resolved as `http://` URLs.
+====
+
 Finally, register the auto-configuration in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
 
 [source]
@@ -215,7 +226,7 @@ registry.registerDevService(service -> service
 
 Declaring the discovery is what opts your Dev Service into it: a service that declares none never participates, even when the `reuse-strategy` property is set to `framework`. In that case the strategy is not applied, and the startup message of the Dev Service says so. The `testcontainers` reuse strategy needs no support from your Dev Service: it is applied by the framework when the container is created. The two strategies are mutually exclusive, so a container kept running by Testcontainers is never advertised for discovery.
 
-The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. If the application already defines a `ConnectionDetails` bean of the declared type, it takes precedence: the container is still discovered, but the Dev Service doesn't register its own connection details, mirroring Spring Boot's service connections behavior.
+The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. The declared type also tells the framework which `ConnectionDetails` the application may define on its own: when the application defines a bean of that type, the Dev Service is neither started nor discovered, mirroring Spring Boot's service connections behavior (see xref:index.adoc#_service_connections[Service Connections]).
 
 The `reuse-strategy` property is part of the `BaseDevServicesProperties` contract and defaults to `none`. Choose the default for your Dev Service in your properties class: `framework` if it declares discovery and is the kind of service applications typically share, such as a message broker, and `none` otherwise.
 
@@ -227,7 +238,7 @@ For a relational database, declare `JdbcConnectionDetails` as the connection det
 
 The shared network (see xref:index.adoc#_shared_network[Shared Network]) is a global feature: when the user sets `arconia.dev.services.network.enabled`, every Dev Service container joins the network automatically. Your Dev Service needs no special declaration to participate.
 
-The only requirement is that your container is reachable by a stable name. A networked container is reachable by its service name by default, and users can add aliases with the common `network-aliases` property, which the framework applies to the container.
+The only requirement is that your container is reachable by a stable name. A networked container is reachable by its service name by default, and users can add aliases with the common `network-aliases` property, which the framework applies to the container. Aliases only resolve on the shared network: without it, containers sit on the default network of the container runtime, where they can't reach each other by name.
 
 == Mutual Exclusion
 

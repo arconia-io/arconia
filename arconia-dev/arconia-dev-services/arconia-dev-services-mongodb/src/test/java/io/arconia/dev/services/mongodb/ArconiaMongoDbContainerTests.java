@@ -1,35 +1,29 @@
 package io.arconia.dev.services.mongodb;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaMongoDbContainer}.
  */
-class ArconiaMongoDbContainerTests {
+class ArconiaMongoDbContainerTests extends BaseDevServiceContainerTests<MongoDbDevServicesProperties, ArconiaMongoDbContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaMongoDbContainer(new MongoDbDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected MongoDbDevServicesProperties createProperties() {
+        return new MongoDbDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new MongoDbDevServicesProperties();
+    @Override
+    protected ArconiaMongoDbContainer createContainer(MongoDbDevServicesProperties properties) {
+        return new ArconiaMongoDbContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(MongoDbDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaMongoDbContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaMongoDbContainer.MONGODB_PORT));
+        return Map.of(1234, ArconiaMongoDbContainer.MONGODB_PORT);
     }
 
 }

@@ -1,16 +1,15 @@
 package io.arconia.dev.services.core.actuate.endpoint;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint.ServiceInfo;
-import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint.ServiceInfoSummary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,12 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DevServicesEndpointTests {
 
-    private Map<String, DevServiceRegistration> registrations;
-
-    @BeforeEach
-    void setUp() {
-        registrations = new HashMap<>();
-    }
+    private final Map<String, DevServiceRegistration> registrations = new LinkedHashMap<>();
 
     private DevServicesEndpoint endpoint() {
         return new DevServicesEndpoint(registrations);
@@ -32,7 +26,7 @@ class DevServicesEndpointTests {
 
     @Test
     void devServicesReturnsEmptyMapWhenNoRegistrations() {
-        Map<String, ServiceInfoSummary> result = endpoint().devServices();
+        Map<String, ServiceInfo> result = endpoint().devServices();
 
         assertThat(result).isNotNull().isEmpty();
     }
@@ -40,69 +34,36 @@ class DevServicesEndpointTests {
     @Test
     void endpointDefensivelyCopiesRegistrationsAtConstruction() {
         DevServicesEndpoint endpoint = endpoint();
-        registrations.put("postgres", DevServiceRegistration.builder()
-                .name("postgres")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> createContainerInfo("container-1", "postgres:18", "running"))
-                .build());
+        registrations.put("postgres", registration("postgres", "PostgreSQL Database", () -> containerInfo("container-1", "postgres:18")));
 
         assertThat(endpoint.devServices()).isEmpty();
     }
 
     @Test
-    void devServicesReturnsMultipleServicesWhenMultipleRegistrations() {
-        ContainerInfo postgresContainer = createContainerInfo("container-1", "postgres:18", "running");
-        ContainerInfo doclingContainer = createContainerInfo("container-2", "docling:1.10", "running");
+    void devServicesReturnsMultipleServicesInRegistrationOrder() {
+        registrations.put("postgres", registration("postgres", "PostgreSQL Database", () -> containerInfo("container-1", "postgres:18")));
+        registrations.put("docling", registration("docling", "Docling Serve", () -> containerInfo("container-2", "docling:1.10")));
+        registrations.put("artemis", registration("artemis", "Artemis Broker", () -> containerInfo("container-3", "artemis:2.40")));
 
-        DevServiceRegistration postgresReg = DevServiceRegistration.builder()
-                .name("postgres")
-                .description("PostgreSQL Database")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> postgresContainer)
-                .build();
-        DevServiceRegistration doclingReg = DevServiceRegistration.builder()
-                .name("docling")
-                .description("Docling Serve")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> doclingContainer)
-                .build();
+        Map<String, ServiceInfo> result = endpoint().devServices();
 
-        registrations.put("postgres", postgresReg);
-        registrations.put("docling", doclingReg);
-
-        Map<String, ServiceInfoSummary> result = endpoint().devServices();
-
-        assertThat(result)
-                .isNotNull()
-                .hasSize(2)
-                .containsKeys("postgres", "docling");
-
-        assertThat(result.get("postgres").name()).isEqualTo("postgres");
+        assertThat(result.keySet()).containsExactly("postgres", "docling", "artemis");
         assertThat(result.get("postgres").description()).isEqualTo("PostgreSQL Database");
         assertThat(result.get("postgres").containerInfo().imageName()).isEqualTo("postgres:18");
-
-        assertThat(result.get("docling").name()).isEqualTo("docling");
         assertThat(result.get("docling").description()).isEqualTo("Docling Serve");
         assertThat(result.get("docling").containerInfo().imageName()).isEqualTo("docling:1.10");
     }
 
     @Test
     void devServiceReturnsServiceInfoWhenServiceExists() {
-        ContainerInfo containerInfo = createContainerInfo("container-1", "postgres:18", "running");
-        DevServiceRegistration registration = DevServiceRegistration.builder()
-                .name("postgres")
-                .description("PostgreSQL Database")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> containerInfo)
-                .build();
-        registrations.put("postgres", registration);
+        registrations.put("postgres", registration("postgres", "PostgreSQL Database", () -> containerInfo("container-1", "postgres:18")));
 
         ServiceInfo result = endpoint().devService("postgres");
 
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo("postgres");
         assertThat(result.description()).isEqualTo("PostgreSQL Database");
-        assertThat(result.origin()).isEqualTo(DevServiceRegistration.Origin.OWNED);
+        assertThat(result.origin()).isEqualTo(DevServiceRegistration.Origin.MANAGED);
         assertThat(result.containerInfo()).isNotNull();
         assertThat(result.containerInfo().id()).isEqualTo("container-1");
         assertThat(result.containerInfo().imageName()).isEqualTo("postgres:18");
@@ -114,30 +75,29 @@ class DevServicesEndpointTests {
 
     @Test
     void devServiceReturnsNullWhenServiceNotFound() {
-        ContainerInfo containerInfo = createContainerInfo("container-1", "postgres:18", "running");
-        DevServiceRegistration registration = DevServiceRegistration.builder()
-                .name("postgres")
-                .description("PostgreSQL Database")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> containerInfo)
-                .build();
-        registrations.put("postgres", registration);
+        registrations.put("postgres", registration("postgres", "PostgreSQL Database", () -> containerInfo("container-1", "postgres:18")));
 
         assertThat(endpoint().devService("docling")).isNull();
     }
 
-    private ContainerInfo createContainerInfo(String id, String imageName, String status) {
-        List<ContainerInfo.ContainerPort> ports = List.of(
-                new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")
-        );
-        return new ContainerInfo(
-                id,
-                imageName,
-                List.of("postgres-container"),
-                ports,
-                Map.of("app", "test"),
-                status
-        );
+    @Test
+    void containerInfoIsNullWhenContainerCannotBeInspected() {
+        registrations.put("postgres", registration("postgres", "PostgreSQL Database", () -> {
+            throw new IllegalStateException("Container not found");
+        }));
+
+        // The dev service is still reported, without the container information.
+        assertThat(endpoint().devServices().get("postgres").containerInfo()).isNull();
+        assertThat(endpoint().devService("postgres").containerInfo()).isNull();
+    }
+
+    private static DevServiceRegistration registration(String name, String description, Supplier<ContainerInfo> containerInfo) {
+        return new DevServiceRegistration(name, description, DevServiceRegistration.Origin.MANAGED, containerInfo, List.of());
+    }
+
+    private static ContainerInfo containerInfo(String id, String imageName) {
+        return new ContainerInfo(id, imageName, List.of("postgres-container"),
+                List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("app", "test"), "running");
     }
 
 }

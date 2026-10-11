@@ -1,47 +1,31 @@
 package io.arconia.dev.services.artemis;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaArtemisContainer}.
  */
-class ArconiaArtemisContainerTests {
+class ArconiaArtemisContainerTests extends BaseDevServiceContainerTests<ArtemisDevServicesProperties, ArconiaArtemisContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaArtemisContainer(new ArtemisDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected ArtemisDevServicesProperties createProperties() {
+        return new ArtemisDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new ArtemisDevServicesProperties();
+    @Override
+    protected ArconiaArtemisContainer createContainer(ArtemisDevServicesProperties properties) {
+        return new ArconiaArtemisContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(ArtemisDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setManagementConsolePort(5678);
-
-        var container = new ArconiaArtemisContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaArtemisContainer.TCP_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getManagementConsolePort() + ":" + ArconiaArtemisContainer.WEB_CONSOLE_PORT));
-    }
-
-    @Test
-    void credentialsFollowTheProperties() {
-        var properties = new ArtemisDevServicesProperties();
-        var container = new ArconiaArtemisContainer(properties);
-        container.configure();
-        assertThat(container.getUser()).isEqualTo(properties.getUsername());
-        assertThat(container.getPassword()).isEqualTo(properties.getPassword());
+        return Map.of(
+                1234, ArconiaArtemisContainer.TCP_PORT,
+                5678, ArconiaArtemisContainer.WEB_CONSOLE_PORT);
     }
 
 }

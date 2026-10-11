@@ -13,8 +13,6 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
-
 /**
  * A {@link MapPropertySource} backed by a map with dynamically supplied values, inspired by
  * Spring Framework's {@code DynamicValuesPropertySource}.
@@ -26,23 +24,16 @@ import io.arconia.core.support.Incubating;
  * <p>
  * Use the {@link #getOrCreate(ConfigurableEnvironment)} method to get a shared instance
  * per environment. Multiple dev service registrars can contribute properties to the same
- * property source.
- * <p>
- * This is designed for use when there is no Spring Boot {@code ConnectionDetails}
- * interface available for a given integration, providing an alternative mechanism for
- * dev services to contribute dynamic properties.
+ * property source, which has the highest precedence in the environment.
  *
- * @see DevServicesRegistrar
+ * @see DevServicesRegistrar#addDynamicProperty(String, Supplier)
  */
-@Incubating
-public final class DevServiceDynamicPropertySource extends MapPropertySource {
-
-    public static final String PROPERTY_SOURCE_NAME = "Arconia Dev Services Dynamic Properties";
+final class DevServiceDynamicPropertySource extends MapPropertySource {
 
     private final Map<String, Supplier<Object>> valueSuppliers;
 
     DevServiceDynamicPropertySource(Map<String, Supplier<Object>> valueSuppliers) {
-        super(PROPERTY_SOURCE_NAME, Collections.unmodifiableMap(valueSuppliers));
+        super(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME, Collections.unmodifiableMap(valueSuppliers));
         this.valueSuppliers = valueSuppliers;
     }
 
@@ -69,7 +60,7 @@ public final class DevServiceDynamicPropertySource extends MapPropertySource {
      */
     static synchronized DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
         MutablePropertySources propertySources = environment.getPropertySources();
-        PropertySource<?> existingPropertySource = propertySources.get(PROPERTY_SOURCE_NAME);
+        PropertySource<?> existingPropertySource = propertySources.get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME);
         if (existingPropertySource instanceof DevServiceDynamicPropertySource devServicePropertySource) {
             return devServicePropertySource;
         } else if (existingPropertySource == null) {
@@ -78,7 +69,7 @@ public final class DevServiceDynamicPropertySource extends MapPropertySource {
             return propertySource;
         } else {
             throw new IllegalStateException(
-                    "PropertySource with name '%s' must be a DevServiceDynamicPropertySource".formatted(PROPERTY_SOURCE_NAME));
+                    "PropertySource with name '%s' must be a DevServiceDynamicPropertySource".formatted(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME));
         }
     }
 

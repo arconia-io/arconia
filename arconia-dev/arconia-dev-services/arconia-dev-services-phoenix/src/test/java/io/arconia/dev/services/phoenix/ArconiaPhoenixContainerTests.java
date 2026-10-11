@@ -1,40 +1,32 @@
 package io.arconia.dev.services.phoenix;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link ArconiaPhoenixContainer}.
  */
-class ArconiaPhoenixContainerTests {
+class ArconiaPhoenixContainerTests extends BaseDevServiceContainerTests<PhoenixDevServicesProperties, ArconiaPhoenixContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaPhoenixContainer(new PhoenixDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected PhoenixDevServicesProperties createProperties() {
+        return new PhoenixDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new PhoenixDevServicesProperties();
+    @Override
+    protected ArconiaPhoenixContainer createContainer(PhoenixDevServicesProperties properties) {
+        return new ArconiaPhoenixContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(PhoenixDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setOtlpGrpcPort(5678);
-
-        var container = new ArconiaPhoenixContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + PhoenixContainer.HTTP_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getOtlpGrpcPort() + ":" + PhoenixContainer.GRPC_PORT));
+        return Map.of(
+                1234, PhoenixContainer.HTTP_PORT,
+                5678, PhoenixContainer.GRPC_PORT);
     }
 
 }

@@ -2,10 +2,9 @@ package io.arconia.dev.services.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class DevServiceRegistrationTests {
 
+    private static final DevServiceRegistration.Origin MANAGED = DevServiceRegistration.Origin.MANAGED;
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidRegistrations")
     void whenAComponentIsMissingThenThrow(String component, ThrowingCallable creation) {
@@ -37,9 +38,11 @@ class DevServiceRegistrationTests {
     static Stream<Arguments> invalidRegistrations() {
         Supplier<ContainerInfo> containerInfo = DevServiceRegistrationTests::createContainerInfo;
         return Stream.of(
-                Arguments.of("name", (ThrowingCallable) () -> new DevServiceRegistration("", null, DevServiceRegistration.Origin.OWNED, containerInfo, List.of())),
-                Arguments.of("origin", (ThrowingCallable) () -> new DevServiceRegistration("test-service", null, null, containerInfo, List.of())),
-                Arguments.of("containerInfo", (ThrowingCallable) () -> new DevServiceRegistration("test-service", null, DevServiceRegistration.Origin.OWNED, null, List.of())));
+                Arguments.of("name", (ThrowingCallable) () -> new DevServiceRegistration("", "A test service", MANAGED, containerInfo, List.of())),
+                Arguments.of("description", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "", MANAGED, containerInfo, List.of())),
+                Arguments.of("origin", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", null, containerInfo, List.of())),
+                Arguments.of("containerInfo", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", MANAGED, null, List.of())),
+                Arguments.of("links", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", MANAGED, containerInfo, null)));
     }
 
     @Test
@@ -49,27 +52,27 @@ class DevServiceRegistrationTests {
         var registration = DevServiceRegistration.builder()
                 .name("test-service")
                 .description("A test service")
-                .origin(DevServiceRegistration.Origin.OWNED)
+                .origin(MANAGED)
                 .containerInfo(() -> expectedContainerInfo)
                 .build();
 
         assertThat(registration.name()).isEqualTo("test-service");
         assertThat(registration.description()).isEqualTo("A test service");
-        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.OWNED);
-        assertThat(registration.containerInfo()).isNotNull();
+        assertThat(registration.origin()).isEqualTo(MANAGED);
         assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
+        // No links by default.
+        assertThat(registration.links()).isEmpty();
     }
 
     @Test
     void whenLinksProvidedThenDefensivelyCopiedAndImmutable() {
-        var expectedContainerInfo = createContainerInfo();
-        var links = new ArrayList<>(List.of(
-                new DevServiceLink("Grafana", "http://localhost:3000")));
+        var links = new ArrayList<>(List.of(new DevServiceLink("Grafana", "http://localhost:3000")));
 
         var registration = DevServiceRegistration.builder()
                 .name("test-service")
-                .origin(DevServiceRegistration.Origin.OWNED)
-                .containerInfo(() -> expectedContainerInfo)
+                .description("A test service")
+                .origin(MANAGED)
+                .containerInfo(DevServiceRegistrationTests::createContainerInfo)
                 .links(links)
                 .build();
 
@@ -77,8 +80,7 @@ class DevServiceRegistrationTests {
         links.add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318"));
 
         assertThat(registration.links()).hasSize(1);
-        assertThatThrownBy(() -> registration.links().add(
-                new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
+        assertThatThrownBy(() -> registration.links().add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 

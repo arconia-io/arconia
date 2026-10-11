@@ -1,43 +1,40 @@
 package io.arconia.dev.services.docling;
 
-import ai.docling.testcontainers.serve.DoclingServeContainer;
+import java.util.Map;
 
+import ai.docling.testcontainers.serve.DoclingServeContainer;
 import org.junit.jupiter.api.Test;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link ArconiaDoclingServeContainer}.
  */
-class ArconiaDoclingServeContainerTests {
+class ArconiaDoclingServeContainerTests extends BaseDevServiceContainerTests<DoclingDevServicesProperties, ArconiaDoclingServeContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaDoclingServeContainer(new DoclingDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected DoclingDevServicesProperties createProperties() {
+        return new DoclingDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new DoclingDevServicesProperties();
+    @Override
+    protected ArconiaDoclingServeContainer createContainer(DoclingDevServicesProperties properties) {
+        return new ArconiaDoclingServeContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(DoclingDevServicesProperties properties) {
         properties.setPort(1234);
-
-        var container = new ArconiaDoclingServeContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + DoclingServeContainer.DEFAULT_DOCLING_PORT));
+        return Map.of(1234, DoclingServeContainer.DEFAULT_DOCLING_PORT);
     }
 
     @Test
     void uiEnabledByDefault() {
         var container = new ArconiaDoclingServeContainer(new DoclingDevServicesProperties());
-        container.configure();
+        configure(container);
+
         assertThat(container.getEnvMap()).containsEntry("DOCLING_SERVE_ENABLE_UI", "true");
     }
 

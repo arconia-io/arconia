@@ -80,6 +80,8 @@ Your application is automatically configured to connect to Dev Services, which t
 
 The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
+If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean, or a `@ServiceConnection` container of your own in a test), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup. To use a service you configure through properties instead, disable the Dev Service with its `enabled` property.
+
 === Lifecycle Management
 
 Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans in the application context:
@@ -93,6 +95,12 @@ When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spri
 Since the container is kept, changes to the configuration of a Dev Service (its `arconia.dev.services.<service-name>.*` properties, the `arconia.dev.services.network.*` properties, or a `DevServiceContainerCustomizer` bean) take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example because it was removed manually.
 
 A Dev Service can also use a container that is already running instead of starting a new one, which changes when the container is stopped. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+
+=== Dev Services in Test Mode
+
+In test mode, every test application context starts its own containers and stops them when it closes, to ensure test isolation, consistency, and reliability. The features that keep or share containers are only available in dev mode: the reuse strategies, the persistence across Spring Boot DevTools restarts, and the `devservices` actuator endpoint.
+
+A few consequences are worth knowing when a test suite creates several application contexts in the same JVM: a fixed `port` makes the second context fail to start, since the first one still holds the port, and the shared network, when enabled, is the same for all the contexts, so their containers can reach each other.
 
 === Configuration Options
 
@@ -120,7 +128,7 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | Environment variables to set in the service.
 
 | `arconia.dev.services.<service-name>.network-aliases`
-| Network aliases to assign to the dev service container.
+| Additional hostnames the dev service container is reachable by on the shared network, next to the name of the dev service. Only applicable when the shared network is enabled.
 
 | `arconia.dev.services.<service-name>.port`
 | Fixed port for exposing the primary service port to the host. When it's 0 (default), a random available port is assigned dynamically.
@@ -129,10 +137,10 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
 | `arconia.dev.services.<service-name>.reuse-strategy`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application runs, relying on the Testcontainers reusable containers feature, which you enable yourself; such containers are never stopped automatically, so you are in charge of cleaning them up. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.<service-name>.startup-timeout`
-| Maximum waiting time for the service to start.
+| Maximum waiting time for the service to start, counted from the container start.
 
 | `arconia.dev.services.<service-name>.volumes`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
@@ -185,9 +193,9 @@ An application can start its own container for a Dev Service and stop it on shut
 | None.
 
 | `testcontainers`
-| The container is kept running across application restarts, relying on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers. The application connects to an existing container only if it was created with the same configuration.
-| Never stopped automatically.
-| The feature must be enabled on your machine.
+| The container is kept running across application runs, relying on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers. The application connects to an existing container only if it was created with the same configuration.
+| Never stopped automatically: you are in charge of cleaning up.
+| You enable the feature on your machine.
 
 | `none`
 | A new container is always started.
@@ -201,7 +209,7 @@ The two reuse strategies are mutually exclusive. A container kept running by Tes
 
 [NOTE]
 ====
-Reuse is only applicable in dev mode. When running automated tests, each test application context always starts its own containers to ensure test isolation, consistency, and reliability.
+Reuse is only applicable in dev mode (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
 ====
 
 ==== Framework Strategy
@@ -225,23 +233,22 @@ The `framework` strategy is supported by all the Dev Services, whether or not it
 
 ==== Testcontainers Strategy
 
-The `testcontainers` strategy keeps a Dev Service container running across application restarts and executions. It relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default. To enable it:
-
-1. Create or edit the file `~/.testcontainers.properties` in your home directory
-2. Add the following line:
+The `testcontainers` strategy keeps a Dev Service container running across application runs. It relies on the https://java.testcontainers.org/features/reuse/[Reusable Containers] feature of Testcontainers, which is disabled by default: with this strategy, you explicitly opt into the feature and take charge of the containers it keeps. To enable it, create or edit the file `~/.testcontainers.properties` in your home directory and add the following line:
 
 [source,properties]
 ----
 testcontainers.reuse.enable=true
 ----
 
-Once enabled, Dev Services using this strategy persist across application restarts. When the feature is not enabled, the container is started and stopped with the application as usual, and the startup message says so.
+Alternatively, set the `TESTCONTAINERS_REUSE_ENABLE` environment variable to `true`, which is convenient on CI machines.
+
+Once enabled, Dev Services using this strategy persist across application runs. When the feature is not enabled, the container is started and stopped with the application as usual, and the startup message says so.
 
 Testcontainers identifies a reusable container by its configuration. Changing the configuration of the Dev Service (for example, its image, environment variables, or credentials) results in a new container being started, while the previous one keeps running. Arconia never stops a container kept by this strategy.
 
 [WARNING]
 ====
-Reusable containers will not be automatically removed when no longer needed. You must stop and remove them manually using your container runtime (Docker/Podman) when they are no longer required.
+Reusable containers are never removed automatically. You are in charge of stopping and removing them with your container runtime (Docker/Podman) when they are no longer required (see xref:index.adoc#_finding_and_cleaning_up_containers[Finding and Cleaning Up Containers]).
 ====
 
 ==== Finding and Cleaning Up Containers
@@ -337,7 +344,7 @@ arconia:
 
 === Networks and Ports
 
-Dev Service containers are connected to the default Docker/Podman network and are accessible from your application via the local host and dynamically assigned ports.
+By default, Dev Service containers are connected to the default network of your container runtime (Docker/Podman) and are accessible from your application via the local host and dynamically assigned ports.
 
 ==== Fixed Ports
 
@@ -381,7 +388,7 @@ The shared network is distinct from the `framework` reuse strategy: the strategy
 
 ==== Advanced Scenarios
 
-* Container reuse. The shared network is isolated per application: its id changes with every run, and since the Testcontainers reuse hash includes the network id, a container kept by the `testcontainers` reuse strategy is never matched on it (a warning is logged). To combine the two, define your own `Network` bean backed by a network with a stable id; it takes precedence over the one Arconia provides.
+* Container reuse. The shared network doesn't combine with the `testcontainers` reuse strategy: the network is created anew with every run, and since the Testcontainers reuse hash includes it, a container kept by that strategy is never matched on it (a warning is logged). Use one or the other.
 
 * Your own containers. The network is exposed as an injectable Testcontainers `Network` bean. To let a container you manage yourself reach Dev Services, enable the shared network, inject the bean, and attach your container:
 
@@ -419,7 +426,9 @@ The first line states the container image, whether the container was started by 
 ...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres, kept across restart, reuse-strategy: none)
 ----
 
-The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`.
+The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`. For services with no HTTP interface, the endpoint also reports the host ports the container publishes, which is what you need to connect to them from a tool on your machine.
+
+The messages are written by the `io.arconia.dev.services.startup` logger. Testcontainers logs its own progress (connecting to the container runtime, pulling images, starting containers) at info level as well; to keep only the Arconia messages, set `logging.level.org.testcontainers=WARN` and `logging.level.tc=WARN`.
 
 When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
 
@@ -505,15 +514,13 @@ Response example:
   "docling": {
     "name": "docling",
     "description": "Docling Dev Service",
-    "origin": "OWNED",
+    "origin": "MANAGED",
     "links": [
       {
-        "id": "docling",
         "label": "Docling UI",
         "url": "http://localhost:45525/ui"
       },
       {
-        "id": "docling-api",
         "label": "Docling OpenAPI",
         "url": "http://localhost:45525/docs"
       }
@@ -521,6 +528,9 @@ Response example:
     "containerInfo": {
       "id": "dbbda8272b5dc8d2ccfa48d3723756d767eef727322d9c35e0fd4c44ba60e967",
       "imageName": "ghcr.io/docling-project/docling-serve:latest",
+      "names": [
+        "vigilant_hopper"
+      ],
       "exposedPorts": [
         {
           "ip": "0.0.0.0",
@@ -528,17 +538,28 @@ Response example:
           "publicPort": 45525,
           "type": "tcp"
         }
-      ]
+      ],
+      "labels": {
+        "io.arconia.dev-service.name": "docling",
+        "io.arconia.dev-service.discoverable": "true",
+        "io.arconia.dev-service.owner": "6f1c2a0e-3b8d-4c5e-9a7f-2d1e0c9b8a76",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers": "true"
+      },
+      "status": "Up About 67 minutes"
     }
   },
   "postgresql": {
     "name": "postgresql",
     "description": "PostgreSQL Dev Service",
-    "origin": "OWNED",
+    "origin": "MANAGED",
     "links": [],
     "containerInfo": {
       "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
       "imageName": "docker.io/pgvector/pgvector:latest",
+      "names": [
+        "unwritten_mithrandir"
+      ],
       "exposedPorts": [
         {
           "ip": "0.0.0.0",
@@ -546,11 +567,19 @@ Response example:
           "publicPort": 36803,
           "type": "tcp"
         }
-      ]
+      ],
+      "labels": {
+        "io.arconia.dev-service.name": "postgresql",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers": "true"
+      },
+      "status": "Up About 67 minutes"
     }
   }
 }
 ----
+
+Dev Services are listed in the order they were registered.
 
 ==== Get Details for a Specific Dev Service
 
@@ -568,7 +597,7 @@ Response example:
 {
   "name": "postgresql",
   "description": "PostgreSQL Dev Service",
-  "origin": "OWNED",
+  "origin": "MANAGED",
   "links": [],
   "containerInfo": {
     "id": "cbf5a15cf5420eddd2daf0e912256b140c0ad067f9329f425a2ecdaa01008bc5",
@@ -594,11 +623,11 @@ Response example:
 }
 ----
 
-The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging.
+The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging. The `containerInfo` field is `null` when the container can no longer be inspected, for example because it was removed manually or the container runtime is not reachable.
 
 The `links` field lists the links the Dev Service exposes, such as management consoles (see xref:index.adoc#_startup_feedback[Startup Feedback]). A Dev Service that other applications can discover also carries the `io.arconia.dev-service.discoverable` and `io.arconia.dev-service.owner` labels.
 
-The `origin` field indicates whether the Dev Service runs in a container managed by this application (`OWNED`) or in a container started by another application and discovered by this one (`DISCOVERED`).
+The `origin` field indicates whether the Dev Service runs in a container managed by this application (`MANAGED`) or in a container started by another application and discovered by this one (`DISCOVERED`).
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
@@ -696,7 +725,7 @@ Both approaches work alongside each other, allowing smooth transitions without d
 
 [NOTE]
 ====
-Coexistence is per service: once you adopt the Arconia Dev Service for a given service, remove your own `@ServiceConnection` container definition for that same service. Otherwise, two containers will be started and compete for providing the connection details.
+Coexistence is per service. When your application defines its own `ConnectionDetails` bean for a service, including through a `@ServiceConnection` container of your own, the corresponding Arconia Dev Service is not started (see xref:index.adoc#_service_connections[Service Connections]). Once you adopt the Arconia Dev Service for a given service, remove your own container definition for that same service.
 ====
 
 === Feature Comparison

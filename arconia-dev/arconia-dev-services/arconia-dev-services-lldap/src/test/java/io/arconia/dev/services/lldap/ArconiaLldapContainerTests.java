@@ -1,38 +1,32 @@
 package io.arconia.dev.services.lldap;
 
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 /**
  * Unit tests for {@link ArconiaLldapContainer}.
  */
-class ArconiaLldapContainerTests {
+class ArconiaLldapContainerTests extends BaseDevServiceContainerTests<LldapDevServicesProperties, ArconiaLldapContainer> {
 
-    @Test
-    void whenExposedPortsAreNotConfigured() {
-        var container = new ArconiaLldapContainer(new LldapDevServicesProperties());
-        container.configure();
-        assertThat(container.getPortBindings()).isEmpty();
+    @Override
+    protected LldapDevServicesProperties createProperties() {
+        return new LldapDevServicesProperties();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void whenExposedPortsAreConfigured() {
-        var properties = new LldapDevServicesProperties();
+    @Override
+    protected ArconiaLldapContainer createContainer(LldapDevServicesProperties properties) {
+        return new ArconiaLldapContainer(properties);
+    }
+
+    @Override
+    protected Map<Integer, Integer> configureFixedPorts(LldapDevServicesProperties properties) {
         properties.setPort(1234);
         properties.setManagementConsolePort(5678);
-
-        var container = new ArconiaLldapContainer(properties);
-        container.configure();
-
-        var portBindings = container.getPortBindings();
-        assertThat(portBindings).isNotNull();
-        assertThat(portBindings)
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getPort() + ":" + ArconiaLldapContainer.LDAP_PORT))
-                .anyMatch(binding -> binding.startsWith(
-                        properties.getManagementConsolePort() + ":" + ArconiaLldapContainer.UI_PORT));
+        return Map.of(
+                1234, ArconiaLldapContainer.LDAP_PORT,
+                5678, ArconiaLldapContainer.UI_PORT);
     }
 
 }

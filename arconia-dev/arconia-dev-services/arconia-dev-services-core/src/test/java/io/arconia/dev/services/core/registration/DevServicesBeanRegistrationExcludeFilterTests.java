@@ -16,6 +16,7 @@ import org.testcontainers.containers.GenericContainer;
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
+import io.arconia.dev.services.core.TestDevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +40,7 @@ class DevServicesBeanRegistrationExcludeFilterTests {
     void ownedDevServiceBeansAreExcluded() {
         new DevServicesRegistry(beanFactory, new StandardEnvironment()).registerDevService(service -> service
                 .name("postgres")
+                .description("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestContainer.class, TestContainer::new));
 
@@ -53,6 +55,7 @@ class DevServicesBeanRegistrationExcludeFilterTests {
         new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> List.of(discoveredContainer()))
                 .registerDevService(service -> service
                         .name("postgres")
+                        .description("Test Dev Service")
                         .properties(TestDevServicesProperties.FRAMEWORK)
                         .container(TestContainer.class, TestContainer::new)
                         .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));

@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.autoconfigure;
 
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,8 @@ public final class DevServicesEndpointAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
     DevServicesEndpoint devServicesEndpoint(ObjectProvider<DevServiceRegistration> registrations) {
-        return new DevServicesEndpoint(registrations.orderedStream().collect(Collectors.toMap(DevServiceRegistration::name, Function.identity())));
+        return new DevServicesEndpoint(registrations.orderedStream()
+                .collect(Collectors.toMap(DevServiceRegistration::name, Function.identity(), (first, second) -> first, LinkedHashMap::new)));
     }
 
 }

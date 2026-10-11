@@ -1,8 +1,6 @@
 package io.arconia.dev.services.core.container;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,12 +8,13 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -23,21 +22,19 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
-import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
+import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.TestJdbcDevServicesProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link ContainerConfigurer}.
  */
-@Incubating
 class ContainerConfigurerTests {
 
     @Test
@@ -46,7 +43,7 @@ class ContainerConfigurerTests {
         // The container must own its wait strategy before the startup timeout is applied to it:
         // see the Javadoc of ContainerConfigurer.apply.
         container.waitingFor(Wait.defaultWaitStrategy());
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+        BaseDevServicesProperties properties = new TestDevServicesProperties()
                 .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"))
                 .withNetworkAliases(List.of("alias1", "alias2"))
                 .withStartupTimeout(Duration.ofMinutes(2))
@@ -55,27 +52,26 @@ class ContainerConfigurerTests {
                         new ResourceMapping("test-resource.txt", "/etc/config/test2.txt")))
                 .withVolumes(List.of(new VolumeMapping("/host/path", "/container/path")));
 
-        ContainerConfigurer.apply(container, properties, true);
+        ContainerConfigurer.apply(container, properties);
 
         assertThat(container.getEnvMap()).containsEntry("KEY1", "VALUE1").containsEntry("KEY2", "VALUE2");
         assertThat(container.getNetworkAliases()).contains("alias1", "alias2");
-        assertThat(getStartupTimeout(getWaitStrategy(container))).isEqualTo(Duration.ofMinutes(2));
+        assertThat(getStartupTimeout(container)).isEqualTo(Duration.ofMinutes(2));
         assertThat(container.getCopyToFileContainerPathMap().values()).contains("/etc/config/test1.txt", "/etc/config/test2.txt");
         assertThat(container.getBinds()).singleElement().satisfies(bind -> {
             assertThat(bind.getPath()).isEqualTo("/host/path");
             assertThat(bind.getVolume().getPath()).isEqualTo("/container/path");
             assertThat(bind.getAccessMode().toString()).isEqualTo("rw");
         });
-        assertThat(container.isShouldBeReused()).isTrue();
     }
 
     @Test
     void applyShouldFailWhenAResourceIsNotFound() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties()
+        BaseDevServicesProperties properties = new TestDevServicesProperties()
                 .withResources(List.of(new ResourceMapping("non-existent-resource.txt", "/etc/config/test.txt")));
 
-        assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties, false))
+        assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Resource not found");
     }
@@ -89,44 +85,37 @@ class ContainerConfigurerTests {
                 .withDbName("testdb")
                 .withInitScriptPaths(List.of("init1.sql", "init2.sql"));
 
-        ContainerConfigurer.apply(container, properties, false);
+        ContainerConfigurer.apply(container, properties);
 
         assertThat(container.getUsername()).isEqualTo("testuser");
         assertThat(container.getPassword()).isEqualTo("testpass");
         assertThat(container.getDatabaseName()).isEqualTo("testdb");
-        assertThat(getInitScripts(container)).containsExactly("init1.sql", "init2.sql");
+        assertThat(ReflectionTestUtils.getField(container, "initScriptPaths")).asInstanceOf(InstanceOfAssertFactories.LIST)
+                .containsExactly("init1.sql", "init2.sql");
     }
 
     @Test
-    void reuseShouldFollowTheGivenDecision() {
-        GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestBaseDevServicesProperties();
+    void applyShouldPropagateTheStartupTimeoutToTheJdbcConnectionPolling() {
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
+        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
+                .withUsername("testuser")
+                .withStartupTimeout(Duration.ofSeconds(45));
 
-        ContainerConfigurer.apply(container, properties, true);
-        assertThat(container.isShouldBeReused()).isTrue();
+        ContainerConfigurer.apply(container, properties);
 
-        ContainerConfigurer.apply(container, properties, false);
-        assertThat(container.isShouldBeReused()).isFalse();
+        // JdbcDatabaseContainer polls the database for its own startup timeout, in seconds,
+        // which must follow the configured one for the property to have any effect.
+        assertThat(ReflectionTestUtils.getField(container, "startupTimeoutSeconds")).isEqualTo(45);
+        assertThat(getStartupTimeout(container)).isEqualTo(Duration.ofSeconds(45));
     }
 
     /**
-     * Helper method to extract the WaitStrategy from a GenericContainer using reflection.
+     * The startup timeout of the wait strategy of the given container.
      */
-    private WaitStrategy getWaitStrategy(GenericContainer<?> container) {
-        Method waitStrategyMethod = ReflectionUtils.findMethod(GenericContainer.class, "getWaitStrategy");
-        assertThat(waitStrategyMethod).isNotNull();
-        ReflectionUtils.makeAccessible(waitStrategyMethod);
-        return (WaitStrategy) ReflectionUtils.invokeMethod(waitStrategyMethod, container);
-    }
-
-    /**
-     * Helper method to extract the startup timeout from a WaitStrategy using reflection.
-     */
-    private Duration getStartupTimeout(WaitStrategy waitStrategy) {
-        Field startupTimeoutField = ReflectionUtils.findField(waitStrategy.getClass(), "startupTimeout");
-        assertThat(startupTimeoutField).isNotNull();
-        ReflectionUtils.makeAccessible(startupTimeoutField);
-        return (Duration) ReflectionUtils.getField(startupTimeoutField, waitStrategy);
+    private static Duration getStartupTimeout(GenericContainer<?> container) {
+        WaitStrategy waitStrategy = ReflectionTestUtils.invokeMethod(container, "getWaitStrategy");
+        assertThat(waitStrategy).isNotNull();
+        return (Duration) ReflectionTestUtils.getField(waitStrategy, "startupTimeout");
     }
 
     @Test
@@ -227,144 +216,6 @@ class ContainerConfigurerTests {
         assertThatThrownBy(() -> ContainerConfigurer.resolveResource("non-existent-resource.txt"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Resource not found");
-    }
-
-    /**
-     * Helper method to extract the init scripts from a JdbcDatabaseContainer using reflection.
-     */
-    private String[] getInitScripts(JdbcDatabaseContainer<?> container) {
-        Field initScriptsField = ReflectionUtils.findField(JdbcDatabaseContainer.class, "initScriptPaths");
-        assertThat(initScriptsField).isNotNull();
-        ReflectionUtils.makeAccessible(initScriptsField);
-        @SuppressWarnings("unchecked")
-        List<String> scripts = (List<String>) ReflectionUtils.getField(initScriptsField, container);
-        return scripts != null ? scripts.toArray(new String[0]) : new String[0];
-    }
-
-    private static class TestBaseDevServicesProperties implements BaseDevServicesProperties {
-        private Map<String, String> environment = Map.of();
-        private List<String> networkAliases = List.of();
-        private Duration startupTimeout = Duration.ofSeconds(30);
-        private List<ResourceMapping> resources = List.of();
-        private List<VolumeMapping> volumes = List.of();
-        private ReuseStrategy reuseStrategy = ReuseStrategy.NONE;
-
-        @Override
-        public String getImageName() {
-            return "test-image:latest";
-        }
-
-        @Override
-        public Map<String, String> getEnvironment() {
-            return environment;
-        }
-
-        public TestBaseDevServicesProperties withEnvironment(Map<String, String> environment) {
-            this.environment = environment;
-            return this;
-        }
-
-        @Override
-        public List<String> getNetworkAliases() {
-            return networkAliases;
-        }
-
-        public TestBaseDevServicesProperties withNetworkAliases(List<String> networkAliases) {
-            this.networkAliases = networkAliases;
-            return this;
-        }
-
-        @Override
-        public Duration getStartupTimeout() {
-            return startupTimeout;
-        }
-
-        public TestBaseDevServicesProperties withStartupTimeout(Duration startupTimeout) {
-            this.startupTimeout = startupTimeout;
-            return this;
-        }
-
-        @Override
-        public List<ResourceMapping> getResources() {
-            return resources;
-        }
-
-        public TestBaseDevServicesProperties withResources(List<ResourceMapping> resources) {
-            this.resources = resources;
-            return this;
-        }
-
-        @Override
-        public List<VolumeMapping> getVolumes() {
-            return volumes;
-        }
-
-        public TestBaseDevServicesProperties withVolumes(List<VolumeMapping> volumes) {
-            this.volumes = volumes;
-            return this;
-        }
-
-        @Override
-        public ReuseStrategy getReuseStrategy() {
-            return reuseStrategy;
-        }
-
-        public TestBaseDevServicesProperties withReuseStrategy(ReuseStrategy reuseStrategy) {
-            this.reuseStrategy = reuseStrategy;
-            return this;
-        }
-    }
-
-    private static class TestJdbcDevServicesProperties implements JdbcDevServicesProperties {
-        private String username = "user";
-        private String password = "password";
-        private String dbName = "testdb";
-        private List<String> initScriptPaths = List.of();
-
-        @Override
-        public String getImageName() {
-            return "test-db:latest";
-        }
-
-        @Override
-        public String getUsername() {
-            return username;
-        }
-
-        public TestJdbcDevServicesProperties withUsername(String username) {
-            this.username = username;
-            return this;
-        }
-
-        @Override
-        public String getPassword() {
-            return password;
-        }
-
-        public TestJdbcDevServicesProperties withPassword(String password) {
-            this.password = password;
-            return this;
-        }
-
-        @Override
-        public String getDbName() {
-            return dbName;
-        }
-
-        public TestJdbcDevServicesProperties withDbName(String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        @Override
-        public List<String> getInitScriptPaths() {
-            return initScriptPaths;
-        }
-
-        public TestJdbcDevServicesProperties withInitScriptPaths(List<String> initScriptPaths) {
-            this.initScriptPaths = initScriptPaths;
-            return this;
-        }
     }
 
 }

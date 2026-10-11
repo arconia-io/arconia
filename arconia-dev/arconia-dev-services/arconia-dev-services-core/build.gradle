@@ -1,6 +1,7 @@
 plugins {
     id "code-quality-conventions"
     id "java-conventions"
+    id "java-test-fixtures"
     id "sbom-conventions"
     id "release-conventions"
 }
@@ -18,11 +19,21 @@ dependencies {
     optional "org.springframework.boot:spring-boot-jdbc"
     optional "org.testcontainers:testcontainers-jdbc"
 
+    testFixturesApi "org.springframework.boot:spring-boot-starter-test"
+    testFixturesImplementation "org.springframework.boot:spring-boot-jdbc"
+    testFixturesImplementation "org.testcontainers:testcontainers-jdbc"
+
+    testImplementation "org.springframework:spring-core-test"
+    testImplementation "org.springframework.boot:spring-boot-jackson"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.testcontainers:testcontainers-postgresql"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
+
+// The test fixtures are for the dev service modules of this build only.
+components.java.withVariantsFromConfiguration(configurations.testFixturesApiElements) { skip() }
+components.java.withVariantsFromConfiguration(configurations.testFixturesRuntimeElements) { skip() }
 
 publishing {
     publications {

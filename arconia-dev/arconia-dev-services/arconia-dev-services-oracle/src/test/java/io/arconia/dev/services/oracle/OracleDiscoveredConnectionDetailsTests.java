@@ -69,7 +69,7 @@ class OracleDiscoveredConnectionDetailsTests {
             }
 
         };
-        ContainerConfigurer.apply(container, properties, false);
+        ContainerConfigurer.apply(container, properties);
         return container;
     }
 
