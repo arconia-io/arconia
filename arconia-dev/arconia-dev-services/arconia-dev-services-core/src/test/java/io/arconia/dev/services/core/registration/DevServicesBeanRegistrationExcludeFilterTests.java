@@ -86,6 +86,7 @@ class DevServicesBeanRegistrationExcludeFilterTests {
                 .names(List.of("shared-postgres"))
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 54321, "tcp")))
                 .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"))
+                .state("running")
                 .status("running")
                 .build(), "localhost");
     }

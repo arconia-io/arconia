@@ -91,6 +91,7 @@ class DevServiceRegistrationTests {
                 .names(List.of("docling-container"))
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp")))
                 .labels(Map.of("env", "dev"))
+                .state("running")
                 .status("running")
                 .build();
     }

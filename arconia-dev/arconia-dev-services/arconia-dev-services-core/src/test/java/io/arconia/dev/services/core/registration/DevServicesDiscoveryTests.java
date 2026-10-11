@@ -273,6 +273,7 @@ class DevServicesDiscoveryTests {
                 .imageName("postgres:latest")
                 .names(List.of("unusable-postgres"))
                 .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"))
+                .state("running")
                 .status("running")
                 .build(), "localhost");
         DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(),

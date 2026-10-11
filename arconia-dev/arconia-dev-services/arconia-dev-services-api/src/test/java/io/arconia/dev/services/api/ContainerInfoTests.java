@@ -34,12 +34,13 @@ class ContainerInfoTests {
     static Stream<Arguments> invalidContainerInfos() {
         var port = new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp");
         return Stream.of(
-                Arguments.of("id", (ThrowingCallable) () -> new ContainerInfo("", "image", List.of(), List.of(port), Map.of(), "running")),
-                Arguments.of("imageName", (ThrowingCallable) () -> new ContainerInfo("id", "", List.of(), List.of(port), Map.of(), "running")),
-                Arguments.of("names", (ThrowingCallable) () -> new ContainerInfo("id", "image", null, List.of(port), Map.of(), "running")),
-                Arguments.of("exposedPorts", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), null, Map.of(), "running")),
-                Arguments.of("labels", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), null, "running")),
-                Arguments.of("status", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "")));
+                Arguments.of("id", (ThrowingCallable) () -> new ContainerInfo("", "image", List.of(), List.of(port), Map.of(), "running", "Up 5 minutes")),
+                Arguments.of("imageName", (ThrowingCallable) () -> new ContainerInfo("id", "", List.of(), List.of(port), Map.of(), "running", "Up 5 minutes")),
+                Arguments.of("names", (ThrowingCallable) () -> new ContainerInfo("id", "image", null, List.of(port), Map.of(), "running", "Up 5 minutes")),
+                Arguments.of("exposedPorts", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), null, Map.of(), "running", "Up 5 minutes")),
+                Arguments.of("labels", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), null, "running", "Up 5 minutes")),
+                Arguments.of("state", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "", "Up 5 minutes")),
+                Arguments.of("status", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "running", "")));
     }
 
     @Test
@@ -55,7 +56,8 @@ class ContainerInfoTests {
                 .names(names)
                 .exposedPorts(exposedPorts)
                 .labels(labels)
-                .status("running")
+                .state("running")
+                .status("Up 5 minutes")
                 .build();
 
         assertThat(containerInfo.id()).isEqualTo("id123");
@@ -63,7 +65,8 @@ class ContainerInfoTests {
         assertThat(containerInfo.names()).containsExactly("container1", "container2");
         assertThat(containerInfo.exposedPorts()).containsExactly(port);
         assertThat(containerInfo.labels()).containsEntry("key1", "value1").containsEntry("key2", "value2");
-        assertThat(containerInfo.status()).isEqualTo("running");
+        assertThat(containerInfo.state()).isEqualTo("running");
+        assertThat(containerInfo.status()).isEqualTo("Up 5 minutes");
     }
 
     @Test
@@ -79,7 +82,8 @@ class ContainerInfoTests {
                 .names(names)
                 .exposedPorts(exposedPorts)
                 .labels(labels)
-                .status("running")
+                .state("running")
+                .status("Up 5 minutes")
                 .build();
 
         // Modify the original collections

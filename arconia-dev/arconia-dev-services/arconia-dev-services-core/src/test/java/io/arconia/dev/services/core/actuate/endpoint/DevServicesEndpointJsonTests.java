@@ -30,6 +30,7 @@ class DevServicesEndpointJsonTests {
                 .names(List.of("unwritten_mithrandir"))
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 36803, "tcp")))
                 .labels(Map.of("io.arconia.dev-service.name", "postgresql"))
+                .state("running")
                 .status("Up About 67 minutes")
                 .build();
         ServiceInfo serviceInfo = new ServiceInfo("postgresql", "PostgreSQL Dev Service", DevServiceRegistration.Origin.MANAGED,
@@ -42,9 +43,10 @@ class DevServicesEndpointJsonTests {
         assertThat((List<Map<String, Object>>) json.get("links")).singleElement().satisfies(link ->
                 assertThat(link).containsOnly(Map.entry("label", "Console"), Map.entry("url", "http://localhost:36803/console")));
         Map<String, Object> container = (Map<String, Object>) json.get("containerInfo");
-        assertThat(container).containsOnlyKeys("id", "imageName", "names", "exposedPorts", "labels", "status");
+        assertThat(container).containsOnlyKeys("id", "imageName", "names", "exposedPorts", "labels", "state", "status");
         assertThat(container).containsEntry("id", "cbf5a15cf542").containsEntry("imageName", "postgres:18")
-                .containsEntry("names", List.of("unwritten_mithrandir")).containsEntry("status", "Up About 67 minutes");
+                .containsEntry("names", List.of("unwritten_mithrandir"))
+                .containsEntry("state", "running").containsEntry("status", "Up About 67 minutes");
         assertThat((List<Map<String, Object>>) container.get("exposedPorts")).singleElement().satisfies(port ->
                 assertThat(port).containsOnly(Map.entry("ip", "0.0.0.0"), Map.entry("privatePort", 5432),
                         Map.entry("publicPort", 36803), Map.entry("type", "tcp")));

@@ -142,6 +142,7 @@ final class DevServicesTestSupport {
                 .names(List.of("shared-postgres"))
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 54321, "tcp")))
                 .labels(labels)
+                .state("running")
                 .status("running")
                 .build(), "localhost");
     }

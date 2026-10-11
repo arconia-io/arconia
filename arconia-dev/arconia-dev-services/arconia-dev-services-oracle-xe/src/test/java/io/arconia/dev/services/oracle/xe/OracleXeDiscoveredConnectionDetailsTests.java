@@ -78,6 +78,7 @@ class OracleXeDiscoveredConnectionDetailsTests {
                 .id("abc123")
                 .imageName("oracle:latest")
                 .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", ArconiaOracleXeContainer.ORACLE_PORT, MAPPED_PORT, "tcp")))
+                .state("running")
                 .status("running")
                 .build(), HOST);
     }

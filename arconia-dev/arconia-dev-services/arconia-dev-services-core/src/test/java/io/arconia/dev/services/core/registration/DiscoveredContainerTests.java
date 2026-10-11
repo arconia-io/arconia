@@ -87,6 +87,7 @@ class DiscoveredContainerTests {
                 .names(List.of("shared-postgres"))
                 .exposedPorts(exposedPorts)
                 .labels(Map.of())
+                .state("running")
                 .status("running")
                 .build();
     }

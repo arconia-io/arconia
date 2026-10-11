@@ -45,6 +45,7 @@ class DockerContainerDiscoveryIT {
                         .singleElement()
                         .satisfies(candidate -> {
                             assertThat(candidate.containerInfo().id()).isEqualTo(discoverable.getContainerId());
+                            assertThat(candidate.containerInfo().state()).isEqualTo("running");
                             assertThat(candidate.host()).isEqualTo(discoverable.getHost());
                             assertThat(candidate.mappedPort(80)).isEqualTo(discoverable.getMappedPort(80));
                         });

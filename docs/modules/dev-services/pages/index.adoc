@@ -546,6 +546,7 @@ Response example:
         "org.testcontainers.lang": "java",
         "org.testcontainers": "true"
       },
+      "state": "running",
       "status": "Up About 67 minutes"
     }
   },
@@ -573,6 +574,7 @@ Response example:
         "org.testcontainers.lang": "java",
         "org.testcontainers": "true"
       },
+      "state": "running",
       "status": "Up About 67 minutes"
     }
   }
@@ -618,12 +620,15 @@ Response example:
       "org.testcontainers.lang": "java",
       "org.testcontainers": "true"
     },
+    "state": "running",
     "status": "Up About 67 minutes"
   }
 }
 ----
 
 The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging. The `containerInfo` field is `null` when the container can no longer be inspected, for example because it was removed manually or the container runtime is not reachable.
+
+The `state` field is the lifecycle state of the container as defined by the Docker Engine API (`created`, `running`, `paused`, `restarting`, `removing`, `exited`, or `dead`), suitable for programmatic checks. The `status` field is the human-readable description the container runtime provides for that state, such as `Up About 67 minutes` or `Exited (0) 2 minutes ago`.
 
 The `links` field lists the links the Dev Service exposes, such as management consoles (see xref:index.adoc#_startup_feedback[Startup Feedback]). A Dev Service that other applications can discover also carries the `io.arconia.dev-service.discoverable` and `io.arconia.dev-service.owner` labels.
 

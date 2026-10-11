@@ -62,6 +62,7 @@ final class ContainerRuntimeInfo {
                 .toList();
         String imageName = dockerContainer.getImage();
         Map<String, String> labels = dockerContainer.getLabels() != null ? dockerContainer.getLabels() : Map.of();
+        String state = dockerContainer.getState();
         String status = dockerContainer.getStatus();
 
         List<ContainerInfo.ContainerPort> exposedPorts = Arrays.stream(
@@ -73,7 +74,7 @@ final class ContainerRuntimeInfo {
                         port.getType()
                 ))
                 .toList();
-        return new ContainerInfo(dockerContainer.getId(), imageName, names, exposedPorts, labels, status);
+        return new ContainerInfo(dockerContainer.getId(), imageName, names, exposedPorts, labels, state, status);
     }
 
 }

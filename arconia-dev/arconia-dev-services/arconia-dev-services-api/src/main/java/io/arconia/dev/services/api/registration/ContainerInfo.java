@@ -18,7 +18,11 @@ import io.arconia.core.support.Incubating;
  * @param names the names of the container
  * @param exposedPorts the ports the container exposes
  * @param labels the labels of the container
- * @param status the status of the container as the container runtime reports it
+ * @param state the state of the container as the container runtime reports it, one of the values
+ *              defined by the Docker Engine API ({@code created}, {@code running}, {@code paused},
+ *              {@code restarting}, {@code removing}, {@code exited}, {@code dead})
+ * @param status the human-readable status of the container as the container runtime reports it,
+ *               such as {@code Up 5 minutes}
  */
 @Incubating
 public record ContainerInfo(
@@ -27,6 +31,7 @@ public record ContainerInfo(
         List<String> names,
         List<ContainerPort> exposedPorts,
         Map<String, String> labels,
+        String state,
         String status
 ) {
 
@@ -36,6 +41,7 @@ public record ContainerInfo(
         Assert.notNull(names, "names cannot be null");
         Assert.notNull(exposedPorts, "exposedPorts cannot be null");
         Assert.notNull(labels, "labels cannot be null");
+        Assert.hasText(state, "state cannot be null or empty");
         Assert.hasText(status, "status cannot be null or empty");
 
         names = List.copyOf(names);
@@ -59,9 +65,6 @@ public record ContainerInfo(
         return new Builder();
     }
 
-    /**
-     * Builder for {@link ContainerInfo}, with empty names, ports, and labels by default.
-     */
     public static final class Builder {
 
         @Nullable
@@ -71,6 +74,8 @@ public record ContainerInfo(
         private List<String> names = List.of();
         private List<ContainerPort> exposedPorts = List.of();
         private Map<String, String> labels = Map.of();
+        @Nullable
+        private String state;
         @Nullable
         private String status;
 
@@ -117,7 +122,15 @@ public record ContainerInfo(
         }
 
         /**
-         * The status of the container.
+         * The state of the container, such as {@code running} or {@code exited}.
+         */
+        public Builder state(String state) {
+            this.state = state;
+            return this;
+        }
+
+        /**
+         * The human-readable status of the container, such as {@code Up 5 minutes}.
          */
         public Builder status(String status) {
             this.status = status;
@@ -128,7 +141,7 @@ public record ContainerInfo(
          * Builds the {@link ContainerInfo} instance.
          */
         public ContainerInfo build() {
-            return new ContainerInfo(id, imageName, names, exposedPorts, labels, status);
+            return new ContainerInfo(id, imageName, names, exposedPorts, labels, state, status);
         }
 
     }

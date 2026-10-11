@@ -67,7 +67,8 @@ class DevServicesEndpointTests {
         assertThat(result.containerInfo()).isNotNull();
         assertThat(result.containerInfo().id()).isEqualTo("container-1");
         assertThat(result.containerInfo().imageName()).isEqualTo("postgres:18");
-        assertThat(result.containerInfo().status()).isEqualTo("running");
+        assertThat(result.containerInfo().state()).isEqualTo("running");
+        assertThat(result.containerInfo().status()).isEqualTo("Up 5 minutes");
         assertThat(result.containerInfo().names()).containsExactly("postgres-container");
         assertThat(result.containerInfo().labels()).containsEntry("app", "test");
         assertThat(result.containerInfo().exposedPorts()).hasSize(1);
@@ -97,7 +98,7 @@ class DevServicesEndpointTests {
 
     private static ContainerInfo containerInfo(String id, String imageName) {
         return new ContainerInfo(id, imageName, List.of("postgres-container"),
-                List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("app", "test"), "running");
+                List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("app", "test"), "running", "Up 5 minutes");
     }
 
 }

@@ -92,6 +92,7 @@ class DockerContainerDiscoveryTests {
         when(container.getId()).thenReturn(id);
         when(container.getCreated()).thenReturn(created);
         when(container.getImage()).thenReturn("postgres:latest");
+        when(container.getState()).thenReturn("running");
         when(container.getStatus()).thenReturn("Up 2 seconds");
         when(container.getLabels()).thenReturn(ownerId != null
                 ? Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true", DevServiceLabels.OWNER, ownerId)
