@@ -246,7 +246,7 @@ public final class DevServiceSpec {
     }
 
     private static <T> T required(@Nullable T value, String what) {
-        Assert.state(value != null, () -> "the service " + what + " has not been set");
+        Assert.notNull(value, () -> "the service " + what + " has not been set");
         return value;
     }
 

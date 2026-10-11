@@ -3,7 +3,6 @@ package io.arconia.dev.services.core.registration;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -36,17 +35,14 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      */
     public static final String DYNAMIC_PROPERTY_SOURCE_NAME = "Arconia Dev Services Dynamic Properties";
 
-    @Nullable
+    @SuppressWarnings("NullAway.Init")
     private BeanFactory beanFactory;
 
-    @Nullable
+    @SuppressWarnings("NullAway.Init")
     private Environment environment;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        Assert.notNull(beanFactory, "beanFactory has not been initialized");
-        Assert.notNull(environment, "environment has not been initialized");
-
         registerDevServices(new DevServicesRegistry(registry, environment), environment);
     }
 
@@ -64,7 +60,6 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * Bind configuration properties from the environment for the given prefix and target type.
      */
     protected <T> T bindProperties(String prefix, Class<T> type) {
-        Assert.notNull(environment, "environment has not been initialized");
         return Binder.get(environment).bindOrCreate(prefix, type);
     }
 
@@ -75,7 +70,6 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * property already has a value.
      */
     protected void setDefaultProperty(String key, Object value) {
-        Assert.notNull(environment, "environment has not been initialized");
         Assert.state(environment instanceof ConfigurableEnvironment,
                 "environment must be a ConfigurableEnvironment");
         if (environment.containsProperty(key)) {
@@ -100,7 +94,6 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * and are safe to look up from the supplier.
      */
     protected void addDynamicProperty(String name, Supplier<Object> valueSupplier) {
-        Assert.notNull(environment, "environment has not been initialized");
         Assert.state(environment instanceof ConfigurableEnvironment, "environment must be a ConfigurableEnvironment");
         DevServiceDynamicPropertySource.getOrCreate((ConfigurableEnvironment) environment)
                 .add(name, valueSupplier);
@@ -110,7 +103,6 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * Get the {@link BeanFactory} associated with this registrar.
      */
     protected BeanFactory getBeanFactory() {
-        Assert.notNull(beanFactory, "beanFactory has not been initialized");
         return beanFactory;
     }
 

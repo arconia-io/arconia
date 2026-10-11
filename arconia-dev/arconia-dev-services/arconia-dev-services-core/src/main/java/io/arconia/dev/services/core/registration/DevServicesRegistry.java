@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -393,7 +392,10 @@ public final class DevServicesRegistry {
                 .name(service.getName())
                 .description(service.getDescription())
                 .origin(origin)
-                .containerInfo(() -> ContainerRuntimeInfo.extractContainerInfoById(Objects.requireNonNull(containerId, "containerId")))
+                .containerInfo(() -> {
+                    Assert.notNull(containerId, "containerId cannot be null");
+                    return ContainerRuntimeInfo.extractContainerInfoById(containerId);
+                })
                 .links(links)
                 .build();
     }

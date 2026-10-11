@@ -28,7 +28,7 @@ class OnDevServicesEnabledCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName());
+        Map<String, @Nullable Object> attributes = metadata.getAnnotationAttributes(ConditionalOnDevServicesEnabled.class.getName());
         String devServicesName = getAttribute(attributes, "name", "value");
         String customPrefix = getAttribute(attributes, "prefix");
 
@@ -40,8 +40,6 @@ class OnDevServicesEnabledCondition extends SpringBootCondition {
                     .because("dev services are only available in dev and test mode, but the application is running in prod mode"));
         }
 
-        // Bind boolean properties via the Binder so that invalid values fail loudly
-        // instead of being silently interpreted as false.
         Binder binder = Binder.get(context.getEnvironment());
 
         boolean areDevServicesGloballyEnabled = binder.bind(GLOBAL_PROPERTY, Boolean.class).orElse(true);
@@ -82,7 +80,7 @@ class OnDevServicesEnabledCondition extends SpringBootCondition {
      * the attributes come from sources that don't resolve aliases.
      */
     @Nullable
-    private static String getAttribute(@Nullable Map<String, Object> attributes, String... names) {
+    private static String getAttribute(@Nullable Map<String, @Nullable Object> attributes, String... names) {
         if (attributes == null) {
             return null;
         }
