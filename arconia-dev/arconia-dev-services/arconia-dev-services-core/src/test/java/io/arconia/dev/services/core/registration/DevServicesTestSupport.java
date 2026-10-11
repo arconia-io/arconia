@@ -20,7 +20,7 @@ import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.core.TestDevServicesProperties;
 
 /**
- * Fixtures shared by the {@link DevServicesRegistry} tests: registries wired for a given
+ * Fixtures shared by the dev service registration tests: registries wired for a given
  * scenario, dev service registrations, discovered containers, and the container types
  * used in place of real ones, none of which needs a container runtime.
  */
@@ -171,6 +171,32 @@ final class DevServicesTestSupport {
         TestPostgresContainer() {
             super("postgres:latest");
         }
+    }
+
+    /**
+     * A container recording whether it was stopped and reporting whether it is running,
+     * as a container kept across DevTools restarts, without requiring a container runtime.
+     */
+    static class RestartingContainer extends GenericContainer<RestartingContainer> {
+
+        boolean stopped;
+
+        boolean running = true;
+
+        RestartingContainer() {
+            super("postgres:latest");
+        }
+
+        @Override
+        public void stop() {
+            stopped = true;
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running;
+        }
+
     }
 
     /**

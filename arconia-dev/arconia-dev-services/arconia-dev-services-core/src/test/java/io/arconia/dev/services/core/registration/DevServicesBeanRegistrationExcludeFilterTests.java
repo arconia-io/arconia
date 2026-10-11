@@ -1,23 +1,22 @@
 package io.arconia.dev.services.core.registration;
 
-import java.util.List;
-import java.util.Map;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.core.env.StandardEnvironment;
-import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.registration.ContainerInfo;
-import io.arconia.dev.services.api.registration.DevServiceLabels;
-import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
+import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.discoveredContainer;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.enableDevMode;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registerPostgresDevService;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registerSharedDevService;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registryDiscovering;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.resetBootstrapMode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -31,42 +30,30 @@ class DevServicesBeanRegistrationExcludeFilterTests {
 
     @BeforeEach
     @AfterEach
-    void resetBootstrapMode() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
+    void reset() {
+        resetBootstrapMode();
     }
 
     @Test
-    void ownedDevServiceBeansAreExcluded() {
-        new DevServicesRegistry(beanFactory, new StandardEnvironment()).registerDevService(service -> service
-                .name("postgres")
-                .description("Test Dev Service")
-                .properties(TestDevServicesProperties.DEFAULT)
-                .container(TestContainer.class, TestContainer::new));
+    void managedDevServiceBeansAreExcluded() {
+        registerPostgresDevService(new DevServicesRegistry(beanFactory, new StandardEnvironment()));
 
-        assertThat(isExcluded("devService.container.postgres")).isTrue();
-        assertThat(isExcluded("devService.registration.postgres")).isTrue();
+        assertThat(isExcluded(BeanName.CONTAINER.of("postgres"))).isTrue();
+        assertThat(isExcluded(BeanName.REGISTRATION.of("postgres"))).isTrue();
     }
 
     @Test
     void discoveredDevServiceBeansAreExcluded() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
-        BootstrapMode.clear();
-        new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> List.of(discoveredContainer()))
-                .registerDevService(service -> service
-                        .name("postgres")
-                        .description("Test Dev Service")
-                        .properties(TestDevServicesProperties.FRAMEWORK)
-                        .container(TestContainer.class, TestContainer::new)
-                        .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));
+        enableDevMode();
+        registerSharedDevService(registryDiscovering(beanFactory, discoveredContainer()));
 
-        assertThat(isExcluded("devService.connectionDetails.postgres")).isTrue();
-        assertThat(isExcluded("devService.registration.postgres")).isTrue();
+        assertThat(isExcluded(BeanName.CONNECTION_DETAILS.of("postgres"))).isTrue();
+        assertThat(isExcluded(BeanName.REGISTRATION.of("postgres"))).isTrue();
     }
 
     @Test
     void otherBeansAreNotExcluded() {
-        beanFactory.registerBeanDefinition("other", new RootBeanDefinition(TestContainer.class));
+        beanFactory.registerBeanDefinition("other", new RootBeanDefinition(TestPostgresContainer.class));
 
         assertThat(isExcluded("other")).isFalse();
     }
@@ -77,26 +64,6 @@ class DevServicesBeanRegistrationExcludeFilterTests {
      */
     private boolean isExcluded(String beanName) {
         return filter.isExcludedFromAotProcessing(RegisteredBean.of(beanFactory, beanName));
-    }
-
-    private static DiscoveredContainer discoveredContainer() {
-        return new DiscoveredContainer(ContainerInfo.builder()
-                .id("abc123")
-                .imageName("postgres:latest")
-                .names(List.of("shared-postgres"))
-                .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 54321, "tcp")))
-                .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"))
-                .state("running")
-                .status("running")
-                .build(), "localhost");
-    }
-
-    private record TestConnectionDetails(String host) implements ConnectionDetails {}
-
-    private static class TestContainer extends GenericContainer<TestContainer> {
-        TestContainer() {
-            super("postgres:latest");
-        }
     }
 
 }

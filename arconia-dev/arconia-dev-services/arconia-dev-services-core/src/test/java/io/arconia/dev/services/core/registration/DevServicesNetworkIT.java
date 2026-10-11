@@ -1,20 +1,19 @@
 package io.arconia.dev.services.core.registration;
 
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
 
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registerNetworkBean;
+import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registryWithNetworkEnabled;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -32,9 +31,9 @@ class DevServicesNetworkIT {
 
     @Test
     void networkedContainersReachEachOtherByAlias() throws Exception {
-        DevServicesRegistry registry = registryWithNetworkEnabled();
+        DevServicesRegistry registry = registryWithNetworkEnabled(beanFactory);
         Network network = Network.SHARED;
-        registerNetworkBean(network);
+        registerNetworkBean(beanFactory, network);
 
         registry.registerDevService(service -> service
                 .name("peer-a")
@@ -49,8 +48,8 @@ class DevServicesNetworkIT {
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
                         .serviceConnection(false));
 
-        var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
-        var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
+        var peerA = beanFactory.getBean(BeanName.CONTAINER.of("peer-a"), TestPeerContainer.class);
+        var peerB = beanFactory.getBean(BeanName.CONTAINER.of("peer-b"), TestPeerContainer.class);
 
         // Both containers joined the same network.
         assertThat(peerA.getNetwork()).isSameAs(network);
@@ -92,8 +91,8 @@ class DevServicesNetworkIT {
                 .container(TestPeerContainer.class, () -> new TestPeerContainer().withNetworkAliases("peer-b"))
                         .serviceConnection(false));
 
-        var peerA = beanFactory.getBean("devService.container.peer-a", TestPeerContainer.class);
-        var peerB = beanFactory.getBean("devService.container.peer-b", TestPeerContainer.class);
+        var peerA = beanFactory.getBean(BeanName.CONTAINER.of("peer-a"), TestPeerContainer.class);
+        var peerB = beanFactory.getBean(BeanName.CONTAINER.of("peer-b"), TestPeerContainer.class);
 
         assertThat(peerA.getNetwork()).isNull();
         assertThat(peerB.getNetwork()).isNull();
@@ -113,20 +112,6 @@ class DevServicesNetworkIT {
             peerA.stop();
             peerB.stop();
         }
-    }
-
-    private DevServicesRegistry registryWithNetworkEnabled() {
-        var environment = new StandardEnvironment();
-        environment.getPropertySources().addFirst(new MapPropertySource("test-network",
-                Map.of("arconia.dev.services.network.enabled", "true")));
-        return new DevServicesRegistry(beanFactory, environment);
-    }
-
-    private void registerNetworkBean(Network network) {
-        var beanDefinition = new RootBeanDefinition();
-        beanDefinition.setBeanClass(network.getClass());
-        beanDefinition.setInstanceSupplier(() -> network);
-        beanFactory.registerBeanDefinition("devServicesNetwork", beanDefinition);
     }
 
     static class TestPeerContainer extends GenericContainer<TestPeerContainer> {

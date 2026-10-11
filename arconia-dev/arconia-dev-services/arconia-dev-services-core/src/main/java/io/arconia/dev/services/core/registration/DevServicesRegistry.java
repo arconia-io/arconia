@@ -25,7 +25,6 @@ import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
-import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.util.LambdaSafe;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -35,7 +34,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
@@ -56,36 +54,15 @@ public final class DevServicesRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(DevServicesRegistry.class);
 
-    private static final String CONTAINER_BEAN_NAME_PREFIX = "devService.container.";
-
-    private static final String CONNECTION_DETAILS_BEAN_NAME_PREFIX = "devService.connectionDetails.";
-
-    private static final String REGISTRATION_BEAN_NAME_PREFIX = "devService.registration.";
-
-    /**
-     * The global property enabling the network shared by the dev service containers of the application.
-     */
-    private static final String NETWORK_ENABLED_PROPERTY = "arconia.dev.services.network.enabled";
-
-    /**
-     * The attribute of a registration bean definition holding the category of the dev service.
-     */
-    private static final String CATEGORY_ATTRIBUTE = "devService.category";
-
-    /**
-     * The attribute marking a dev service bean definition as excluded from AOT processing.
-     */
-    static final String AOT_EXCLUDED_ATTRIBUTE = "devService.aotExcluded";
-
     private final BeanDefinitionRegistry beanDefinitionRegistry;
-
-    private final Environment environment;
 
     private final ContainerDiscovery containerDiscovery;
 
     private final BooleanSupplier testcontainersReuseSupport;
 
     private final DevServiceRestartSupport restartSupport;
+
+    private final DevServiceNetworkSupport networkSupport;
 
     DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment) {
         this(beanDefinitionRegistry, environment, new DockerContainerDiscovery());
@@ -96,20 +73,18 @@ public final class DevServicesRegistry {
     }
 
     /**
-     * Create a registry whose Testcontainers reuse support check is the given one instead
-     * of reading the local Testcontainers configuration.
+     * Create a registry whose Testcontainers reuse support check is the given one instead of reading the local Testcontainers configuration.
      */
-    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ContainerDiscovery containerDiscovery,
-            BooleanSupplier testcontainersReuseSupport) {
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ContainerDiscovery containerDiscovery, BooleanSupplier testcontainersReuseSupport) {
         Assert.notNull(beanDefinitionRegistry, "beanDefinitionRegistry cannot be null");
         Assert.notNull(environment, "environment cannot be null");
         Assert.notNull(containerDiscovery, "containerDiscovery cannot be null");
         Assert.notNull(testcontainersReuseSupport, "testcontainersReuseSupport cannot be null");
         this.beanDefinitionRegistry = beanDefinitionRegistry;
-        this.environment = environment;
         this.containerDiscovery = containerDiscovery;
         this.testcontainersReuseSupport = testcontainersReuseSupport;
         this.restartSupport = new DevServiceRestartSupport(beanDefinitionRegistry, environment);
+        this.networkSupport = new DevServiceNetworkSupport(environment);
     }
 
     /**
@@ -128,13 +103,13 @@ public final class DevServicesRegistry {
      */
     private void registerBeanDefinitions(DevServiceSpec service) {
         service.validate();
-        ReuseDecision reuse = reuseDecision(service);
+        ReuseDecision reuse = ReuseDecision.decide(service, testcontainersReuseSupport);
 
-        String containerBeanName = CONTAINER_BEAN_NAME_PREFIX + service.getName();
-        String registrationBeanName = REGISTRATION_BEAN_NAME_PREFIX + service.getName();
+        String containerBeanName = BeanName.CONTAINER.of(service.getName());
+        String registrationBeanName = BeanName.REGISTRATION.of(service.getName());
 
-        // 1. A dev service is registered once per application: registering another one with the
-        // same name is an error, so that no specification is silently discarded.
+        // 1. A dev service is registered once per application:
+        // registering another one with the same name is an error.
         Assert.state(!beanDefinitionRegistry.containsBeanDefinition(registrationBeanName),
                 () -> "A dev service named '%s' is already registered".formatted(service.getName()));
 
@@ -182,9 +157,9 @@ public final class DevServicesRegistry {
             return;
         }
         for (String beanName : beanDefinitionRegistry.getBeanDefinitionNames()) {
-            if (beanName.startsWith(REGISTRATION_BEAN_NAME_PREFIX)
-                    && category.equals(beanDefinitionRegistry.getBeanDefinition(beanName).getAttribute(CATEGORY_ATTRIBUTE))) {
-                String otherName = beanName.substring(REGISTRATION_BEAN_NAME_PREFIX.length());
+            if (BeanName.REGISTRATION.matches(beanName)
+                    && category.equals(BeanAttribute.CATEGORY.get(beanDefinitionRegistry.getBeanDefinition(beanName)))) {
+                String otherName = BeanName.REGISTRATION.serviceName(beanName);
                 throw new MultipleDevServicesException(category, Stream.of(otherName, service.getName()).sorted().toList());
             }
         }
@@ -206,25 +181,6 @@ public final class DevServicesRegistry {
         logger.info("Dev Service '{}' is not started: the application defines its own {} in {}",
                 service.getName(), connectionDetailsType.getSimpleName(), Arrays.asList(existingBeanNames));
         return true;
-    }
-
-    // REUSE
-
-    record ReuseDecision(ReuseStrategy effective, @Nullable String reason) {}
-
-    ReuseDecision reuseDecision(DevServiceSpec service) {
-        ReuseStrategy configured = service.getProperties().getReuseStrategy();
-        if (configured == ReuseStrategy.NONE || !BootstrapMode.isDev()) {
-            return new ReuseDecision(ReuseStrategy.NONE, null);
-        }
-        if (configured == ReuseStrategy.FRAMEWORK && !service.supportsDiscovery()) {
-            return new ReuseDecision(ReuseStrategy.NONE, "'framework' is not supported by this dev service");
-        }
-        if (configured == ReuseStrategy.TESTCONTAINERS && !testcontainersReuseSupport.getAsBoolean()) {
-            return new ReuseDecision(ReuseStrategy.NONE,
-                    "'testcontainers' requires reuse to be enabled in the Testcontainers configuration (testcontainers.reuse.enable=true in ~/.testcontainers.properties or TESTCONTAINERS_REUSE_ENABLE=true)");
-        }
-        return new ReuseDecision(configured, null);
     }
 
     // DISCOVERED
@@ -255,7 +211,7 @@ public final class DevServicesRegistry {
             try {
                 ConnectionDetails connectionDetails = connectionDetailsFactory.apply(candidate);
                 Assert.state(connectionDetailsType.isInstance(connectionDetails), "connectionDetails must be an instance of " + connectionDetailsType.getName());
-                beanDefinitionRegistry.registerBeanDefinition(CONNECTION_DETAILS_BEAN_NAME_PREFIX + service.getName(),
+                beanDefinitionRegistry.registerBeanDefinition(BeanName.CONNECTION_DETAILS.of(service.getName()),
                         createDiscoveredConnectionDetailsBeanDefinition(connectionDetails, candidate.containerInfo()));
                 beanDefinitionRegistry.registerBeanDefinition(registrationBeanName,
                         createDiscoveredRegistrationBeanDefinition(service, candidate));
@@ -275,9 +231,9 @@ public final class DevServicesRegistry {
      * discovered container. The bean takes the place of the container-based connection details
      * that Spring Boot would produce for a managed container via the {@code @ServiceConnection} mechanism.
      */
-    private RootBeanDefinition createDiscoveredConnectionDetailsBeanDefinition(ConnectionDetails connectionDetails, ContainerInfo containerInfo) {
+    private static RootBeanDefinition createDiscoveredConnectionDetailsBeanDefinition(ConnectionDetails connectionDetails, ContainerInfo containerInfo) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
-        excludeFromAot(beanDefinition);
+        BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
         beanDefinition.setBeanClass(connectionDetails.getClass());
         beanDefinition.setInstanceSupplier(() -> connectionDetails);
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -294,38 +250,24 @@ public final class DevServicesRegistry {
      * Unlike the managed variant, the container ID comes straight from the discovery,
      * so the bean doesn't depend on any container bean.
      */
-    private RootBeanDefinition createDiscoveredRegistrationBeanDefinition(DevServiceSpec service, DiscoveredContainer discoveredContainer) {
+    private static RootBeanDefinition createDiscoveredRegistrationBeanDefinition(DevServiceSpec service, DiscoveredContainer discoveredContainer) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(DevServiceRegistration.class);
-        excludeFromAot(beanDefinition);
+        BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
         beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
         recordCategory(beanDefinition, service);
 
         ContainerInfo containerInfo = discoveredContainer.containerInfo();
         beanDefinition.setInstanceSupplier(() -> {
             // The links are resolved against the ports the discovered container publishes.
-            List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort, false);
-            return ready(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.id(), containerInfo.imageName(), links, false,
-                    new ReuseDecision(ReuseStrategy.FRAMEWORK, null));
+            List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort,
+                    DevServiceRegistration.Origin.DISCOVERED);
+            DevServiceStartupLogger.ready(service.getName(), containerInfo.id(), containerInfo.imageName(),
+                    DevServiceRegistration.Origin.DISCOVERED, false, new ReuseDecision(ReuseStrategy.FRAMEWORK, null), links);
+            return createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.id(), links);
         });
 
         return beanDefinition;
-    }
-
-    /**
-     * Log that the dev service is ready and describe it for the application. Called once the
-     * container is known to be running, so the startup message and the description agree.
-     */
-    private static DevServiceRegistration ready(DevServiceSpec service, DevServiceRegistration.Origin origin, @Nullable String containerId,
-            @Nullable String imageName, List<DevServiceLink> links, boolean kept, @Nullable ReuseDecision reuse) {
-        DevServiceStartupLogger.ready(service.getName(), containerId, imageName, origin, kept, reuse, links);
-        return DevServiceRegistration.builder()
-                .name(service.getName())
-                .description(service.getDescription())
-                .origin(origin)
-                .containerInfo(() -> ContainerRuntimeInfo.extractContainerInfoById(Objects.requireNonNull(containerId, "containerId")))
-                .links(links)
-                .build();
     }
 
     // MANAGED
@@ -335,7 +277,7 @@ public final class DevServicesRegistry {
 
         // Create container bean definition.
         DevServiceContainerBeanDefinition beanDefinition = new DevServiceContainerBeanDefinition();
-        excludeFromAot(beanDefinition);
+        BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
         beanDefinition.setBeanClass(service.getContainerType());
         beanDefinition.setDescription(service.getDescription());
 
@@ -356,7 +298,7 @@ public final class DevServicesRegistry {
             container.withReuse(reuse.effective() == ReuseStrategy.TESTCONTAINERS);
             applyCustomizers(container, registeredBean.getBeanFactory());
             applyLabels(container, service, reuse);
-            applyNetwork(container, service, registeredBean.getBeanFactory());
+            networkSupport.join(container, service.getName(), registeredBean.getBeanFactory());
             return container;
         });
 
@@ -365,6 +307,28 @@ public final class DevServicesRegistry {
 
         // Hint that this bean has an infrastructure role, meaning it has no relevance to the end-user.
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+
+        return beanDefinition;
+    }
+
+    private RootBeanDefinition createRegistrationBeanDefinition(DevServiceSpec service, ReuseDecision reuse, String containerBeanName, boolean containerKept) {
+        RootBeanDefinition beanDefinition = new RootBeanDefinition();
+        beanDefinition.setBeanClass(DevServiceRegistration.class);
+        BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
+        beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
+        beanDefinition.setDependsOn(containerBeanName);
+        recordCategory(beanDefinition, service);
+
+        beanDefinition.setInstanceSupplier((InstanceSupplier<DevServiceRegistration>) registeredBean -> {
+            // The container is started at this point, so the links can be resolved against its mapped ports.
+            GenericContainer<?> container = registeredBean.getBeanFactory().getBean(containerBeanName, GenericContainer.class);
+            List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort,
+                    DevServiceRegistration.Origin.MANAGED);
+            // The reuse strategy is only reported in dev mode, the only one where it applies.
+            DevServiceStartupLogger.ready(service.getName(), container.getContainerId(), imageNameOf(container),
+                    DevServiceRegistration.Origin.MANAGED, containerKept, BootstrapMode.isDev() ? reuse : null, links);
+            return createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links);
+        });
 
         return beanDefinition;
     }
@@ -387,32 +351,9 @@ public final class DevServicesRegistry {
     }
 
     /**
-     * Mark the given dev service bean definition as excluded from AOT processing: it is created
-     * by an instance supplier and decided at startup from the state of the container runtime,
-     * neither of which can be generated ahead of time.
-     *
-     * @see DevServicesBeanRegistrationExcludeFilter
+     * Label the container with the name of its dev service and, when it is reusable via the
+     * framework, mark it as discoverable by other applications on behalf of this one.
      */
-    private static void excludeFromAot(BeanDefinition beanDefinition) {
-        beanDefinition.setAttribute(AOT_EXCLUDED_ATTRIBUTE, true);
-    }
-
-    /**
-     * The image of a started container as the container runtime reports it, which Testcontainers
-     * caches; the image reference is not used, since resolving it may pull the image.
-     */
-    @Nullable
-    private static String imageNameOf(GenericContainer<?> container) {
-        InspectContainerResponse containerInfo = container.getContainerInfo();
-        return (containerInfo != null && containerInfo.getConfig() != null) ? containerInfo.getConfig().getImage() : null;
-    }
-
-    private static void recordCategory(BeanDefinition beanDefinition, DevServiceSpec service) {
-        if (service.getCategory() != null) {
-            beanDefinition.setAttribute(CATEGORY_ATTRIBUTE, service.getCategory());
-        }
-    }
-
     private static void applyLabels(GenericContainer<?> container, DevServiceSpec service, ReuseDecision reuse) {
         container.withLabel(DevServiceLabels.NAME, service.getName());
         if (reuse.effective() == ReuseStrategy.FRAMEWORK) {
@@ -422,62 +363,125 @@ public final class DevServicesRegistry {
     }
 
     /**
-     * Attach the given container to the {@link Network} shared by the dev service containers of
-     * the application, when enabled.
-     * <p>
-     * The service name is added as a network alias, so every container is reachable by a stable,
-     * predictable name next to any {@code network-aliases} configured for it. A network already
-     * set on the container (e.g. by a customizer) is honored, and so is a user-defined
-     * {@link Network} bean; otherwise, the containers join the network Testcontainers
-     * provides for the application.
-     * <p>
-     * Port mapping is left untouched: the application keeps reaching the container
-     * over the host and mapped ports.
+     * Record the category of the dev service on its registration bean definition, so that
+     * another dev service of the same category is detected at registration time.
      */
-    private void applyNetwork(GenericContainer<?> container, DevServiceSpec service, ConfigurableBeanFactory beanFactory) {
-        if (!isNetworkEnabled()) {
-            return;
-        }
-
-        Network network = beanFactory.getBeanProvider(Network.class).getIfAvailable(() -> Network.SHARED);
-        if (container.getNetwork() == null) {
-            container.withNetwork(network);
-        }
-        container.withNetworkAliases(service.getName());
-
-        // The network is created anew with every run, and the Testcontainers reuse hash includes it,
-        // so a reusable container on the shared network is never found again.
-        if (container.isShouldBeReused()) {
-            logger.warn("The 'testcontainers' reuse strategy doesn't combine with the shared network: the '{}' dev service container is not reused across runs", service.getName());
+    private static void recordCategory(BeanDefinition beanDefinition, DevServiceSpec service) {
+        if (service.getCategory() != null) {
+            BeanAttribute.CATEGORY.set(beanDefinition, service.getCategory());
         }
     }
 
     /**
-     * Whether dev service containers should join the shared network (global
-     * {@code arconia.dev.services.network.enabled}, default {@code false}).
+     * The image of a started container as the container runtime reports it, which Testcontainers
+     * caches. The image reference is not used, since resolving it may pull the image.
      */
-    private boolean isNetworkEnabled() {
-        return Binder.get(environment).bind(NETWORK_ENABLED_PROPERTY, Boolean.class).orElse(false);
+    @Nullable
+    private static String imageNameOf(GenericContainer<?> container) {
+        InspectContainerResponse containerInfo = container.getContainerInfo();
+        return (containerInfo != null && containerInfo.getConfig() != null) ? containerInfo.getConfig().getImage() : null;
     }
 
-    private RootBeanDefinition createRegistrationBeanDefinition(DevServiceSpec service, ReuseDecision reuse, String containerBeanName, boolean containerKept) {
-        RootBeanDefinition beanDefinition = new RootBeanDefinition();
-        beanDefinition.setBeanClass(DevServiceRegistration.class);
-        excludeFromAot(beanDefinition);
-        beanDefinition.setRole(BeanDefinition.ROLE_SUPPORT);
-        beanDefinition.setDependsOn(containerBeanName);
-        recordCategory(beanDefinition, service);
+    /**
+     * Create the registration describing the dev service for the application, running in the
+     * container with the given ID. The container information is resolved from the container
+     * runtime on demand, so that the current state of the container is reported.
+     */
+    private static DevServiceRegistration createRegistration(DevServiceSpec service, DevServiceRegistration.Origin origin,
+            @Nullable String containerId, List<DevServiceLink> links) {
+        return DevServiceRegistration.builder()
+                .name(service.getName())
+                .description(service.getDescription())
+                .origin(origin)
+                .containerInfo(() -> ContainerRuntimeInfo.extractContainerInfoById(Objects.requireNonNull(containerId, "containerId")))
+                .links(links)
+                .build();
+    }
 
-        beanDefinition.setInstanceSupplier((InstanceSupplier<DevServiceRegistration>) registeredBean -> {
-            // The container is started at this point, so the links can be resolved against its
-            // mapped ports. The reuse strategy is only reported in dev mode, the only one where it applies.
-            GenericContainer<?> container = registeredBean.getBeanFactory().getBean(containerBeanName, GenericContainer.class);
-            List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, true);
-            return ready(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), imageNameOf(container), links,
-                    containerKept, BootstrapMode.isDev() ? reuse : null);
-        });
+    /**
+     * The beans registered for a dev service, named after it.
+     */
+    enum BeanName {
 
-        return beanDefinition;
+        CONTAINER("container"),
+
+        CONNECTION_DETAILS("connectionDetails"),
+
+        REGISTRATION("registration");
+
+        /**
+         * The prefix shared by the names of all dev service beans.
+         */
+        static final String PREFIX = "devService.";
+
+        private final String prefix;
+
+        BeanName(String kind) {
+            this.prefix = PREFIX + kind + ".";
+        }
+
+        /**
+         * The name of this bean for the dev service with the given name.
+         */
+        String of(String serviceName) {
+            return prefix + serviceName;
+        }
+
+        /**
+         * Whether the given bean name is the name of this bean for some dev service.
+         */
+        boolean matches(String beanName) {
+            return beanName.startsWith(prefix);
+        }
+
+        /**
+         * The name of the dev service this bean name belongs to.
+         */
+        String serviceName(String beanName) {
+            Assert.isTrue(matches(beanName), () -> "'%s' is not a %s bean name".formatted(beanName, name()));
+            return beanName.substring(prefix.length());
+        }
+
+    }
+
+    /**
+     * The attributes recorded on dev service bean definitions.
+     */
+    enum BeanAttribute {
+
+        /**
+         * The category of the dev service, recorded on its registration bean definition.
+         */
+        CATEGORY("devService.category"),
+
+        /**
+         * Marks a dev service bean definition as excluded from AOT processing: the bean is
+         * created by an instance supplier and decided at startup from the state of the
+         * container runtime, neither of which can be generated ahead of time.
+         *
+         * @see DevServicesBeanRegistrationExcludeFilter
+         */
+        AOT_EXCLUDED("devService.aotExcluded");
+
+        private final String key;
+
+        BeanAttribute(String key) {
+            this.key = key;
+        }
+
+        void set(BeanDefinition beanDefinition, Object value) {
+            beanDefinition.setAttribute(key, value);
+        }
+
+        @Nullable
+        Object get(BeanDefinition beanDefinition) {
+            return beanDefinition.getAttribute(key);
+        }
+
+        boolean isPresent(BeanDefinition beanDefinition) {
+            return beanDefinition.hasAttribute(key);
+        }
+
     }
 
 }

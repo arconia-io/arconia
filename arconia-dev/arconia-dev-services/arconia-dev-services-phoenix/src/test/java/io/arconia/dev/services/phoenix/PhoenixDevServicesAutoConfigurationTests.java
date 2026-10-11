@@ -2,17 +2,24 @@ package io.arconia.dev.services.phoenix;
 
 import java.util.List;
 
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
@@ -65,33 +72,38 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Test
-    void customDefaultPropertiesConfiguredWhenNotOverridden() {
-        getContextRunner()
+    void logsAndMetricsNotExportedWhileActive() {
+        contextRunnerWithOpenTelemetryExporters()
+                .withPropertyValues(
+                        "arconia.otel.logs.exporter.type=otlp",
+                        "arconia.otel.metrics.exporter.type=otlp"
+                )
                 .run(context -> {
-                    var loggingExporterType = context.getEnvironment().getProperty(
-                            OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type");
-                    var metricsExporterType = context.getEnvironment().getProperty(
-                            OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type");
-                    assertThat(loggingExporterType).isEqualTo("none");
-                    assertThat(metricsExporterType).isEqualTo("none");
+                    assertThat(context).doesNotHaveBean(OtlpHttpLogRecordExporter.class);
+                    assertThat(context).doesNotHaveBean(OtlpHttpMetricExporter.class);
                 });
     }
 
     @Test
-    void customDefaultPropertiesNotConfiguredWhenOverridden() {
-        getContextRunner()
-                .withPropertyValues(
-                        "arconia.otel.logs.exporter.type=console",
-                        "arconia.otel.metrics.exporter.type=console"
-                )
+    void logsAndMetricsExportedWhenDisabled() {
+        contextRunnerWithOpenTelemetryExporters()
+                .withPropertyValues("arconia.dev.services.phoenix.enabled=false")
                 .run(context -> {
-                    var loggingExporterType = context.getEnvironment().getProperty(
-                            OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type");
-                    var metricsExporterType = context.getEnvironment().getProperty(
-                            OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type");
-                    assertThat(loggingExporterType).isEqualTo("console");
-                    assertThat(metricsExporterType).isEqualTo("console");
+                    assertThat(context).hasSingleBean(OtlpHttpLogRecordExporter.class);
+                    assertThat(context).hasSingleBean(OtlpHttpMetricExporter.class);
                 });
+    }
+
+    /**
+     * The context runner with the OpenTelemetry exporter auto-configurations, which decide
+     * from the exporter type properties whether to create the OTLP exporters.
+     */
+    private ApplicationContextRunner contextRunnerWithOpenTelemetryExporters() {
+        return getContextRunner()
+                .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class,
+                        OpenTelemetryLoggingExporterAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
+                .withBean(CardinalityLimitSelector.class, CardinalityLimitSelector::defaultCardinalityLimitSelector)
+                .withBean(OpenTelemetryMetricsProperties.class, OpenTelemetryMetricsProperties::new);
     }
 
 }

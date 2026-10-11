@@ -21,6 +21,7 @@ import org.springframework.boot.micrometer.metrics.autoconfigure.export.simple.S
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
@@ -30,7 +31,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
  * Auto-configuration for Micrometer metrics bridge to OpenTelemetry.
  */
 @AutoConfiguration(
-    after = { MetricsAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class },
+    after = { MetricsAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class },
     before = { CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class }
 )
 @ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)

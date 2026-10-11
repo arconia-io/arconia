@@ -27,9 +27,9 @@ import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Abstract base test class for the auto-configuration of a dev service: its activation, the
- * configuration properties it binds, and the reuse strategies. Only the discovery test needs a
- * container runtime; the others create the container bean without starting it.
+ * Abstract base test class for the auto-configuration of a dev service.
+ * Only the discovery test needs a container runtime.
+ * The others create the container bean without starting it.
  */
 public abstract class BaseDevServicesAutoConfigurationTests {
 

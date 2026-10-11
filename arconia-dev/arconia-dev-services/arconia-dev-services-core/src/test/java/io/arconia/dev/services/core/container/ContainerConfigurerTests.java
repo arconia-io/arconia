@@ -40,8 +40,6 @@ class ContainerConfigurerTests {
     @Test
     void applyShouldConfigureTheContainerFromTheProperties() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        // The container must own its wait strategy before the startup timeout is applied to it:
-        // see the Javadoc of ContainerConfigurer.apply.
         container.waitingFor(Wait.defaultWaitStrategy());
         BaseDevServicesProperties properties = new TestDevServicesProperties()
                 .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"))
@@ -103,15 +101,10 @@ class ContainerConfigurerTests {
 
         ContainerConfigurer.apply(container, properties);
 
-        // JdbcDatabaseContainer polls the database for its own startup timeout, in seconds,
-        // which must follow the configured one for the property to have any effect.
         assertThat(ReflectionTestUtils.getField(container, "startupTimeoutSeconds")).isEqualTo(45);
         assertThat(getStartupTimeout(container)).isEqualTo(Duration.ofSeconds(45));
     }
 
-    /**
-     * The startup timeout of the wait strategy of the given container.
-     */
     private static Duration getStartupTimeout(GenericContainer<?> container) {
         WaitStrategy waitStrategy = ReflectionTestUtils.invokeMethod(container, "getWaitStrategy");
         assertThat(waitStrategy).isNotNull();
@@ -156,12 +149,9 @@ class ContainerConfigurerTests {
 
     @Test
     void resolveMountableFileShouldApplyTheGivenFileMode() {
-        // A resource extracted from a jar carries no usable permissions, so the mode override is
-        // what makes a copied file readable by a container process running as a non-root user.
         MountableFile mountableFile = ContainerConfigurer.resolveMountableFile("test-resource.txt", 0644);
 
         assertThat(mountableFile).isNotNull();
-        // getFileMode() ORs in the file-type bits, so compare only the permission bits.
         assertThat(mountableFile.getFileMode() & 0777).isEqualTo(0644);
     }
 
@@ -196,17 +186,20 @@ class ContainerConfigurerTests {
 
     @Test
     void resolveResourceShouldReadFilesystemResource(@TempDir Path tempDir) throws IOException {
-        Path file = Files.writeString(tempDir.resolve("realm.json"), "{\"realm\":\"arconia\"}");
+        Path file = Files.writeString(tempDir.resolve("realm.json"), """
+                {"realm":"arconia"}
+                """);
 
         Resource resource = ContainerConfigurer.resolveResource(file.toString());
 
         assertThat(resource).isInstanceOf(FileSystemResource.class);
-        assertThat(resource.getContentAsString(StandardCharsets.UTF_8)).isEqualTo("{\"realm\":\"arconia\"}");
+        assertThat(resource.getContentAsString(StandardCharsets.UTF_8)).isEqualTo("""
+                {"realm":"arconia"}
+                """);
     }
 
     @Test
     void resolveResourceShouldPreferClasspathOverFilesystem() {
-        // Same lookup order as the resources property: classpath first, filesystem second.
         assertThat(ContainerConfigurer.resolveResource("test-resource.txt"))
                 .isInstanceOf(ClassPathResource.class);
     }

@@ -69,14 +69,18 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     }
 
     /**
-     * Set a default property for dev/test mode. It is added to the lowest-priority property source,
-     * so any user-defined configuration (application.yml, environment variables, etc.) takes
-     * precedence naturally via the property source hierarchy without requiring explicit checks.
+     * Set a default value for a property. It goes to the lowest-precedence property source,
+     * so a value configured anywhere else (application.yml, environment variables, the defaults
+     * of the {@code SpringApplication}, etc.) wins, and the default isn't added at all when the
+     * property already has a value.
      */
     protected void setDefaultProperty(String key, Object value) {
         Assert.notNull(environment, "environment has not been initialized");
         Assert.state(environment instanceof ConfigurableEnvironment,
                 "environment must be a ConfigurableEnvironment");
+        if (environment.containsProperty(key)) {
+            return;
+        }
         DefaultPropertiesPropertySource.addOrMerge(Map.of(key, value), ((ConfigurableEnvironment) environment).getPropertySources());
     }
 
@@ -87,11 +91,17 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      * for a given integration, providing an alternative mechanism for dev services to contribute
      * dynamic properties. The property takes precedence over any other property source, the
      * same way the connection details of a service connection replace the configured ones.
+     * <p>
+     * The property exists only once this registrar has run. When the auto-configuration consuming
+     * the property reads it from a condition, order the auto-configuration importing this registrar
+     * before the consuming one. Otherwise, the condition finds no value and silently backs off.
+     * The supplier may be called at that point, before the context is refreshed, so any bean it relies on
+     * must already be defined; container connection details start their container on demand
+     * and are safe to look up from the supplier.
      */
     protected void addDynamicProperty(String name, Supplier<Object> valueSupplier) {
         Assert.notNull(environment, "environment has not been initialized");
-        Assert.state(environment instanceof ConfigurableEnvironment,
-                "environment must be a ConfigurableEnvironment");
+        Assert.state(environment instanceof ConfigurableEnvironment, "environment must be a ConfigurableEnvironment");
         DevServiceDynamicPropertySource.getOrCreate((ConfigurableEnvironment) environment)
                 .add(name, valueSupplier);
     }

@@ -160,8 +160,7 @@ public final class DevServiceSpec {
     /**
      * A link the dev service exposes, such as a management console or a telemetry endpoint,
      * at the given container port. The link is resolved against the port mapping of the
-     * container the dev service runs in, whether started by this application or discovered,
-     * and shown in the startup message and in developer tooling.
+     * container the dev service runs in, whether started by this application or discovered.
      */
     public DevServiceSpec link(String label, int port) {
         return link(label, port, "");
@@ -176,7 +175,7 @@ public final class DevServiceSpec {
     }
 
     /**
-     * Check that the specification is complete and consistent, so that the required values
+     * Check that the specification is complete and consistent so that the required values
      * can be read without further checks.
      */
     void validate() {

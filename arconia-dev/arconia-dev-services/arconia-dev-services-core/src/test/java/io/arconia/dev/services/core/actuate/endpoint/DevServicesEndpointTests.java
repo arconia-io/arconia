@@ -20,10 +20,6 @@ class DevServicesEndpointTests {
 
     private final Map<String, DevServiceRegistration> registrations = new LinkedHashMap<>();
 
-    private DevServicesEndpoint endpoint() {
-        return new DevServicesEndpoint(registrations);
-    }
-
     @Test
     void devServicesReturnsEmptyMapWhenNoRegistrations() {
         Map<String, ServiceInfo> result = endpoint().devServices();
@@ -87,9 +83,12 @@ class DevServicesEndpointTests {
             throw new IllegalStateException("Container not found");
         }));
 
-        // The dev service is still reported, without the container information.
         assertThat(endpoint().devServices().get("postgres").containerInfo()).isNull();
         assertThat(endpoint().devService("postgres").containerInfo()).isNull();
+    }
+
+    private DevServicesEndpoint endpoint() {
+        return new DevServicesEndpoint(registrations);
     }
 
     private static DevServiceRegistration registration(String name, String description, Supplier<ContainerInfo> containerInfo) {

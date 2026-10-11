@@ -17,9 +17,7 @@ import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
- * Applies the common dev service properties to a container, and resolves the resources they
- * refer to. The properties are applied by the dev services registry when it creates the
- * container, so a dev service must not apply them itself.
+ * Applies the common dev service properties to a container and resolves the resources they refer to.
  */
 @Incubating
 public final class ContainerConfigurer {
@@ -33,15 +31,10 @@ public final class ContainerConfigurer {
     private ContainerConfigurer() {}
 
     /**
-     * Apply the common dev service properties to the given container: environment, network
-     * aliases, startup timeout, resources, and volumes. A {@link JdbcDatabaseContainer}
-     * configured with {@link JdbcDevServicesProperties} also gets its credentials, database
-     * name, and init scripts.
+     * Apply the common dev service properties to the given container.
      * <p>
-     * The startup timeout is applied to the wait strategy of the container, which must therefore
-     * be its own. A container that doesn't declare one relies on a wait strategy instance that
-     * Testcontainers shares across all containers, and the timeout would apply to every other
-     * container relying on it as well.
+     * A {@link JdbcDatabaseContainer} configured with {@link JdbcDevServicesProperties}
+     * also gets its common properties applied.
      */
     public static void apply(GenericContainer<?> container, BaseDevServicesProperties properties) {
         Assert.notNull(container, "container cannot be null");
@@ -62,7 +55,6 @@ public final class ContainerConfigurer {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
         for (VolumeMapping volume : properties.getVolumes()) {
             container.withFileSystemBind(volume.hostPath(), volume.containerPath(), BindMode.READ_WRITE);
@@ -121,7 +113,7 @@ public final class ContainerConfigurer {
     /**
      * Resolve a source path into a {@link Resource}, applying the same rules as
      * {@link #resolveMountableFile(String, int)}, so that a dev service can read a mapped resource
-     * (for example to derive configuration from it) using the very lookup that will later copy
+     * (for example, to derive configuration from it) using the very lookup that will later copy
      * it into the container.
      *
      * @throws IllegalArgumentException if the resource exists in neither location.
@@ -131,8 +123,7 @@ public final class ContainerConfigurer {
     }
 
     /**
-     * Where a source path resolves to, with the prefix (if any) stripped. Shared by every
-     * {@code resolve*} method so the lookup rules cannot drift between them.
+     * Where a source path resolves to, with the prefix (if any) stripped.
      */
     private record ResourceLocation(boolean classpath, String path) {
 
@@ -166,7 +157,7 @@ public final class ContainerConfigurer {
             return new ResourceLocation(false, resourcePath);
         }
 
-        // 4. If still not found, throw exception.
+        // 4. If still not found, throw an exception.
         throw new IllegalArgumentException("Resource not found in classpath or filesystem: " + resourcePath);
     }
 

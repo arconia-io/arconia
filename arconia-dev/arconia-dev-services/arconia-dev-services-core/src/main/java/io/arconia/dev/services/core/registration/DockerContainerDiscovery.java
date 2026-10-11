@@ -32,7 +32,9 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
             // globally by the DockerClientFactory.
             DockerClient dockerClient = DockerClientFactory.lazyClient();
             List<Container> containers = dockerClient.listContainersCmd()
-                    .withLabelFilter(Map.of(DevServiceLabels.NAME, serviceName, DevServiceLabels.DISCOVERABLE, "true"))
+                    .withLabelFilter(Map.of(
+                            DevServiceLabels.NAME, serviceName,
+                            DevServiceLabels.DISCOVERABLE, "true"))
                     // Paused or restarting containers are never valid candidates.
                     .withStatusFilter(List.of(STATUS_RUNNING))
                     .exec();

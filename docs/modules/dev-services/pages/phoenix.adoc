@@ -9,7 +9,7 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 [NOTE]
 ====
-Since Phoenix only supports OpenTelemetry traces, when the Dev Service is enabled, the export of OpenTelemetry logs and metrics is disabled unless explicitly configured.
+Phoenix accepts OpenTelemetry traces only. While the Dev Service is active, logs and metrics are not exported.
 ====
 
 [NOTE]

@@ -18,7 +18,7 @@ import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 
 /**
- * Endpoint for exposing development services information.
+ * Endpoint for exposing dev services information.
  */
 @Endpoint(id = "devservices")
 public class DevServicesEndpoint {
@@ -27,9 +27,6 @@ public class DevServicesEndpoint {
 
     private final Map<String, DevServiceRegistration> registrations;
 
-    /**
-     * Create the endpoint for the given registrations, reported in the order of the given map.
-     */
     public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations) {
         this.registrations = Collections.unmodifiableMap(new LinkedHashMap<>(registrations));
     }
@@ -56,25 +53,17 @@ public class DevServicesEndpoint {
         return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfo(registration));
     }
 
-    /**
-     * Resolve the container information for the given registration, degrading gracefully
-     * (null container info) when the container cannot be found, for example because it was
-     * removed manually.
-     */
     @Nullable
     private static ContainerInfo resolveContainerInfo(DevServiceRegistration registration) {
         try {
             return registration.containerInfo().get();
         } catch (Exception ex) {
+            // For example, the container may have been removed manually.
             logger.debug("Failed to resolve container information for the '{}' dev service", registration.name(), ex);
             return null;
         }
     }
 
-    /**
-     * Description of a dev service: the container information is {@code null} when the
-     * container can no longer be inspected.
-     */
     public record ServiceInfo(
             String name,
             String description,

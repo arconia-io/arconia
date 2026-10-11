@@ -5,18 +5,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.boot.env.DefaultPropertiesPropertySource;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
-import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
+import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestLinkContainer;
+import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -31,52 +33,49 @@ class DevServicesRegistrarTests {
     private final StandardEnvironment environment = new StandardEnvironment();
 
     @Test
-    void basicRegistration() {
-        doRegister(registry -> registry.registerDevService(service ->
-                service.name("docling")
-                        .description("Docling")
-                        .properties(TestDevServicesProperties.DEFAULT)
-                        .container(TestDoclingContainer.class, TestDoclingContainer::new)
-                        .serviceConnectionName("docling")));
-        assertContainerBeanDefinition("docling", TestDoclingContainer.class, "docling");
-        assertDescriptionBeanDefinition("docling");
-        assertBeanDefinitionCount(2);
+    void whenRegistrarRunsThenDevServicesAreRegistered() {
+        doRegister(DevServicesTestSupport::registerPostgresDevService);
+
+        assertThat(beanDefinitionRegistry.getBeanDefinitionNames())
+                .containsExactlyInAnyOrder(BeanName.CONTAINER.of("postgres"), BeanName.REGISTRATION.of("postgres"));
     }
 
     @Test
-    void multipleRegistrationsFromMultipleRegistryInvocations() {
+    void whenMultipleRegistrarsRunThenTheyRegisterInTheSameBeanFactory() {
         doRegister(
-                registry -> registry.registerDevService(service ->
-                        service.name("docling")
+                DevServicesTestSupport::registerPostgresDevService,
+                registry -> registry.registerDevService(service -> service
+                        .name("linky")
                         .description("Test Dev Service")
                         .properties(TestDevServicesProperties.DEFAULT)
-                                .container(TestDoclingContainer.class, TestDoclingContainer::new)),
-                registry -> registry.registerDevService(service ->
-                        service.name("postgres")
-                        .description("Test Dev Service")
-                        .properties(TestDevServicesProperties.DEFAULT)
-                                .container(TestPostgresContainer.class, TestPostgresContainer::new)));
-        assertContainerBeanDefinition("docling", TestDoclingContainer.class, null);
-        assertDescriptionBeanDefinition("docling");
-        assertContainerBeanDefinition("postgres", TestPostgresContainer.class, null);
-        assertDescriptionBeanDefinition("postgres");
-        assertBeanDefinitionCount(4);
+                        .container(TestLinkContainer.class, TestLinkContainer::new)));
+
+        assertThat(beanDefinitionRegistry.getBeanDefinitionNames()).containsExactlyInAnyOrder(
+                BeanName.CONTAINER.of("postgres"), BeanName.REGISTRATION.of("postgres"),
+                BeanName.CONTAINER.of("linky"), BeanName.REGISTRATION.of("linky"));
     }
 
     @Test
     void whenDuplicateRegistrationFromAnotherRegistrarThenThrow() {
-        assertThatIllegalStateException().isThrownBy(() -> doRegister(
-                registry -> registry.registerDevService(service ->
-                        service.name("docling")
-                                .description("Test Dev Service")
-                                .properties(TestDevServicesProperties.DEFAULT)
-                                .container(TestDoclingContainer.class, TestDoclingContainer::new)),
-                registry -> registry.registerDevService(service ->
-                        service.name("docling")
-                                .description("Test Dev Service")
-                                .properties(TestDevServicesProperties.DEFAULT)
-                                .container(TestDoclingContainer.class, TestDoclingContainer::new))))
-                .withMessageContaining("A dev service named 'docling' is already registered");
+        assertThatIllegalStateException()
+                .isThrownBy(() -> doRegister(
+                        DevServicesTestSupport::registerPostgresDevService,
+                        DevServicesTestSupport::registerPostgresDevService))
+                .withMessageContaining("A dev service named 'postgres' is already registered");
+    }
+
+    @Test
+    void whenRegistrarsRegisterConflictingDevServicesThenStartupFails() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(ConflictingConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    assertThat(context.getStartupFailure())
+                            .isInstanceOf(MultipleDevServicesException.class)
+                            .hasMessageContaining("jdbc")
+                            .hasMessageContaining("first")
+                            .hasMessageContaining("second");
+                });
     }
 
     // --- setDefaultProperty ---
@@ -89,6 +88,16 @@ class DevServicesRegistrarTests {
         registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:test");
 
         assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:h2:mem:test");
+    }
+
+    @Test
+    void setDefaultPropertyKeepsAnExistingValue() {
+        DefaultPropertiesPropertySource.addOrMerge(Map.of("spring.datasource.url", "jdbc:h2:mem:app"), environment.getPropertySources());
+        TestRegistrar registrar = new TestRegistrar(registry -> {}, environment, beanDefinitionRegistry);
+
+        registrar.setDefaultProperty("spring.datasource.url", "jdbc:h2:mem:test");
+
+        assertThat(environment.getProperty("spring.datasource.url")).isEqualTo("jdbc:h2:mem:app");
     }
 
     // --- addDynamicProperty ---
@@ -116,42 +125,6 @@ class DevServicesRegistrarTests {
         }
     }
 
-    private void assertContainerBeanDefinition(String serviceName, Class<?> containerType, String serviceConnectionName) {
-        String beanName = "devService.container." + serviceName;
-        assertThat(beanDefinitionRegistry.containsBeanDefinition(beanName)).isTrue();
-
-        BeanDefinition beanDefinition = beanDefinitionRegistry.getBeanDefinition(beanName);
-        assertThat(beanDefinition.getBeanClassName()).isEqualTo(containerType.getName());
-        assertThat(beanDefinition.getRole()).isEqualTo(BeanDefinition.ROLE_INFRASTRUCTURE);
-
-        if (beanDefinition instanceof DevServiceContainerBeanDefinition devServiceBeanDefinition) {
-            MergedAnnotations mergedAnnotations = devServiceBeanDefinition.getAnnotations();
-            assertThat(mergedAnnotations.isPresent(ServiceConnection.class)).isTrue();
-
-            if (serviceConnectionName != null) {
-                ServiceConnection annotation = mergedAnnotations.get(ServiceConnection.class).synthesize();
-                assertThat(annotation.value()).isEqualTo(serviceConnectionName);
-            }
-        }
-    }
-
-    private void assertDescriptionBeanDefinition(String serviceName) {
-        String beanName = "devService.registration." + serviceName;
-        assertThat(beanDefinitionRegistry.containsBeanDefinition(beanName)).isTrue();
-
-        BeanDefinition beanDefinition = beanDefinitionRegistry.getBeanDefinition(beanName);
-        assertThat(beanDefinition.getBeanClassName()).isEqualTo(DevServiceRegistration.class.getName());
-        assertThat(beanDefinition.getRole()).isEqualTo(BeanDefinition.ROLE_SUPPORT);
-
-        String[] dependsOn = beanDefinition.getDependsOn();
-        assertThat(dependsOn).isNotNull();
-        assertThat(dependsOn).contains("devService.container." + serviceName);
-    }
-
-    private void assertBeanDefinitionCount(int count) {
-        assertThat(beanDefinitionRegistry.getBeanDefinitionCount()).isEqualTo(count);
-    }
-
     private static class TestRegistrar extends DevServicesRegistrar {
 
         private final Consumer<DevServicesRegistry> registrar;
@@ -168,16 +141,36 @@ class DevServicesRegistrarTests {
         }
     }
 
-    private static class TestDoclingContainer extends GenericContainer<TestDoclingContainer> {
-        TestDoclingContainer() {
-            super("docling");
+    @Configuration(proxyBeanMethods = false)
+    @Import({FirstJdbcDevServiceRegistrar.class, SecondJdbcDevServiceRegistrar.class})
+    static class ConflictingConfiguration {}
+
+    static class FirstJdbcDevServiceRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            registry.registerDevService(service -> service
+                    .name("first")
+                    .category("jdbc")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }
+
     }
 
-    private static class TestPostgresContainer extends GenericContainer<TestPostgresContainer> {
-        TestPostgresContainer() {
-            super("postgres");
+    static class SecondJdbcDevServiceRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            registry.registerDevService(service -> service
+                    .name("second")
+                    .category("jdbc")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }
+
     }
 
 }

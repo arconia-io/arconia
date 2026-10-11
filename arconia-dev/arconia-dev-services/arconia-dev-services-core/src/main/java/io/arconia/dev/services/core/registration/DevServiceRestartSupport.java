@@ -15,11 +15,6 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 /**
  * Keeps dev service containers across Spring Boot DevTools restarts by placing them in the
  * DevTools {@code restart} scope, where they stay until the application process exits.
- * <p>
- * A kept container is never reconfigured: configuration changes take effect once the
- * application is stopped and started again. The scope registers no destruction callback,
- * so a kept container is not stopped by Spring when a context closes: Testcontainers
- * removes it when the process exits.
  */
 final class DevServiceRestartSupport {
 
@@ -44,9 +39,8 @@ final class DevServiceRestartSupport {
     }
 
     /**
-     * Whether dev service containers are placed in the {@code restart} scope. That requires
-     * dev mode, the scope registered by DevTools, and DevTools restarts not being disabled
-     * via {@code spring.devtools.restart.enabled}. Otherwise, containers are singletons.
+     * Whether dev service containers are placed in the {@code restart} scope.
+     * Otherwise, containers are singletons.
      */
     boolean isRestartScopeActive() {
         return BootstrapMode.isDev()

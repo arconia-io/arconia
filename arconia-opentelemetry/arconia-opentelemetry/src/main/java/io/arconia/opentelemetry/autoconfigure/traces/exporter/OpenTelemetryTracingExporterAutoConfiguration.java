@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.traces.ConditionalOnOpenTelemetryTracing;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.console.ConsoleTracingExporterConfiguration;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingExporterConfiguration;
@@ -11,7 +12,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingEx
 /**
  * Auto-configuration for exporting OpenTelemetry traces.
  */
-@AutoConfiguration
+@AutoConfiguration(after = OpenTelemetryExporterAutoConfiguration.class)
 @ConditionalOnOpenTelemetryTracing
 @Import({ ConsoleTracingExporterConfiguration.class, OtlpTracingExporterConfiguration.class })
 @EnableConfigurationProperties(OpenTelemetryTracingExporterProperties.class)

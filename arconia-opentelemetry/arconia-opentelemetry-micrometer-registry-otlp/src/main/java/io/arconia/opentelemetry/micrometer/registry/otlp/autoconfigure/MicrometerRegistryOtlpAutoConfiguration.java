@@ -28,6 +28,7 @@ import org.springframework.boot.thread.Threading;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
@@ -45,7 +46,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAuto
  * If you want to use a single exporter for both, use the Micrometer Metrics Bridge.
  */
 @AutoConfiguration(
-    after = {MetricsAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class, OpenTelemetryResourceAutoConfiguration.class},
+    after = {MetricsAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class, OpenTelemetryResourceAutoConfiguration.class},
     before = {OtlpMetricsExportAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class}
 )
 // Mutually exclusive with the Micrometer Metrics OpenTelemetry Bridge.

@@ -3,9 +3,6 @@ package io.arconia.dev.services.core.registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.core.env.StandardEnvironment;
-import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -14,20 +11,13 @@ import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConn
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
 import static io.arconia.dev.services.core.registration.DevServicesTestSupport.enableDevMode;
-import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registerPostgresDevService;
-import static io.arconia.dev.services.core.registration.DevServicesTestSupport.registryWithReuseSupport;
 import static io.arconia.dev.services.core.registration.DevServicesTestSupport.resetBootstrapMode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link DevServicesRegistry}: the reuse strategy in effect for a dev service,
- * and its application to the container.
+ * Unit tests for {@link ReuseDecision}.
  */
-class DevServicesReuseTests {
-
-    private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-
-    private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment());
+class ReuseDecisionTests {
 
     @BeforeEach
     @AfterEach
@@ -36,37 +26,20 @@ class DevServicesReuseTests {
     }
 
     @Test
-    void whenNoneStrategyThenContainerIsNotReusable() {
+    void whenNoneStrategyThenNoReuseStrategyApplies() {
         enableDevMode();
 
-        registerPostgresDevService(registry);
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.DEFAULT, true), () -> true);
 
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.isShouldBeReused()).isFalse();
-    }
-
-    @Test
-    void whenTestcontainersStrategyIsEffectiveThenContainerIsReusable() {
-        enableDevMode();
-        DevServicesRegistry registry = registryWithReuseSupport(beanFactory, true);
-
-        registry.registerDevService(service -> service
-                .name("postgres")
-                .description("Test Dev Service")
-                .properties(TestDevServicesProperties.TESTCONTAINERS)
-                .container(TestPostgresContainer.class, TestPostgresContainer::new));
-
-        var container = beanFactory.getBean("devService.container.postgres", GenericContainer.class);
-
-        assertThat(container.isShouldBeReused()).isTrue();
+        assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
+        assertThat(decision.reason()).isNull();
     }
 
     @Test
     void whenReuseStrategyCanBeAppliedThenItIsInEffect() {
         enableDevMode();
 
-        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, true));
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.FRAMEWORK, true), () -> false);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.FRAMEWORK);
         assertThat(decision.reason()).isNull();
@@ -74,7 +47,7 @@ class DevServicesReuseTests {
 
     @Test
     void whenNotInDevModeThenNoReuseStrategyApplies() {
-        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, true));
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.FRAMEWORK, true), () -> true);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
         assertThat(decision.reason()).isNull();
@@ -84,7 +57,7 @@ class DevServicesReuseTests {
     void whenFrameworkStrategyWithoutDiscoveryThenReuseStrategyIsNotApplied() {
         enableDevMode();
 
-        var decision = registry.reuseDecision(serviceSpec(TestDevServicesProperties.FRAMEWORK, false));
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.FRAMEWORK, false), () -> false);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
         assertThat(decision.reason()).contains("not supported");
@@ -94,7 +67,7 @@ class DevServicesReuseTests {
     void whenTestcontainersReuseIsNotEnabledThenReuseStrategyIsNotApplied() {
         enableDevMode();
 
-        var decision = registryWithReuseSupport(beanFactory, false).reuseDecision(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false));
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false), () -> false);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
         assertThat(decision.reason()).contains("testcontainers.reuse.enable").contains("TESTCONTAINERS_REUSE_ENABLE");
@@ -104,7 +77,7 @@ class DevServicesReuseTests {
     void whenTestcontainersReuseIsEnabledThenReuseStrategyIsInEffect() {
         enableDevMode();
 
-        var decision = registryWithReuseSupport(beanFactory, true).reuseDecision(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false));
+        var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.TESTCONTAINERS, false), () -> true);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.TESTCONTAINERS);
         assertThat(decision.reason()).isNull();

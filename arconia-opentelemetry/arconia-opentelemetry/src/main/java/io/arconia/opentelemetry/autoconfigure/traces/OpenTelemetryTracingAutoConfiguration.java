@@ -32,12 +32,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import io.arconia.opentelemetry.autoconfigure.traces.bridge.MicrometerTracingOpenTelemetryBridgeConfiguration;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.traces.propagation.OpenTelemetryPropagationConfiguration;
 
 /**
  * Auto-configuration for OpenTelemetry tracing.
  */
-@AutoConfiguration(before = { MicrometerTracingAutoConfiguration.class, NoopTracerAutoConfiguration.class })
+@AutoConfiguration(after = OpenTelemetryExporterAutoConfiguration.class,
+        before = { MicrometerTracingAutoConfiguration.class, NoopTracerAutoConfiguration.class })
 @ConditionalOnOpenTelemetryTracing
 @EnableConfigurationProperties({OpenTelemetryTracingProperties.class, TracingProperties.class})
 @Import({

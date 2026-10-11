@@ -4,7 +4,7 @@ import io.arconia.core.support.Incubating;
 
 /**
  * The categories of mutually exclusive dev services: only one dev service per category can be
- * active in an application.
+ * active in an application at any given time.
  */
 @Incubating
 public final class DevServiceCategories {

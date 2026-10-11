@@ -16,12 +16,13 @@ import org.springframework.context.annotation.Bean;
 import ch.qos.logback.core.Appender;
 
 import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.ConditionalOnOpenTelemetryLoggingExporter;
 
 /**
  * Auto-configuration for Logback OpenTelemetry Bridge.
  */
-@AutoConfiguration(after = OpenTelemetryAutoConfiguration.class)
+@AutoConfiguration(after = { OpenTelemetryAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class })
 @ConditionalOnClass(Appender.class)
 @ConditionalOnProperty(prefix = LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnOpenTelemetryLoggingExporter("otlp")

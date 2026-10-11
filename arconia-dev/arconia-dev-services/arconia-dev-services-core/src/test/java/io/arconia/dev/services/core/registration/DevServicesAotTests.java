@@ -17,7 +17,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamSource;
 
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
-import io.arconia.dev.services.core.TestDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
 import static io.arconia.dev.services.core.registration.DevServicesTestSupport.resetBootstrapMode;
@@ -60,8 +59,7 @@ class DevServicesAotTests {
     private static String read(InputStreamSource source) {
         try (var input = source.getInputStream()) {
             return new String(input.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
     }

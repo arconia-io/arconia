@@ -12,6 +12,10 @@ import io.arconia.opentelemetry.autoconfigure.logs.ConditionalOnOpenTelemetryLog
 
 /**
  * Whether OpenTelemetry logs should be exported using the specified exporter type.
+ * <p>
+ * An auto-configuration using this condition is ordered after {@code OpenTelemetryExporterAutoConfiguration},
+ * so that the exporter properties contributed by auto-configurations ordered before it,
+ * such as dev services, are taken into account.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })

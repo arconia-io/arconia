@@ -13,7 +13,7 @@ class DevServicesBeanRegistrationExcludeFilter implements BeanRegistrationExclud
 
     @Override
     public boolean isExcludedFromAotProcessing(RegisteredBean registeredBean) {
-        return registeredBean.getMergedBeanDefinition().getAttribute(DevServicesRegistry.AOT_EXCLUDED_ATTRIBUTE) != null;
+        return DevServicesRegistry.BeanAttribute.AOT_EXCLUDED.isPresent(registeredBean.getMergedBeanDefinition());
     }
 
 }

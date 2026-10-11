@@ -25,7 +25,7 @@ final class DevServiceStartupLogger {
      * Log that the dev service is ready in the given container
      */
     static void ready(String name, @Nullable String containerId, @Nullable String imageName, Origin origin, boolean kept,
-            DevServicesRegistry.@Nullable ReuseDecision reuse, List<DevServiceLink> links) {
+            @Nullable ReuseDecision reuse, List<DevServiceLink> links) {
         List<String> facts = new ArrayList<>();
         if (imageName != null) {
             facts.add(imageName);
@@ -50,7 +50,7 @@ final class DevServiceStartupLogger {
      * Render the reuse strategy in effect and, when the configured strategy could not be
      * applied, the reason why.
      */
-    private static String formatReuse(DevServicesRegistry.ReuseDecision reuse) {
+    private static String formatReuse(ReuseDecision reuse) {
         String effective = "reuse-strategy: " + reuse.effective().name().toLowerCase(Locale.ROOT);
         return (reuse.reason() != null) ? effective + " (" + reuse.reason() + ")" : effective;
     }

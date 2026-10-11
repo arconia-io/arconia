@@ -13,6 +13,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.phoenix.PhoenixDevServicesAutoConfiguration.PhoenixDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
@@ -20,7 +21,8 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingCo
 /**
  * Auto-configuration for Arize Phoenix Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(after = DevServicesAutoConfiguration.class,
+        before = { OpenTelemetryExporterAutoConfiguration.class, ServiceConnectionAutoConfiguration.class })
 @ConditionalOnDevServicesEnabled("phoenix")
 @ConditionalOnOpenTelemetry
 @EnableConfigurationProperties(PhoenixDevServicesProperties.class)
@@ -42,10 +44,9 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
                     .link("Phoenix UI", ArconiaPhoenixContainer.HTTP_PORT));
 
-            // Phoenix supports only OpenTelemetry Traces, so we disable the export of Logs and Metrics,
-            // unless the developer has explicitly enabled them in the configuration.
-            setDefaultProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type", "none");
-            setDefaultProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type", "none");
+            // Phoenix accepts traces only. Logs and metrics are not exported while the dev service is active.
+            addDynamicProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type", () -> "none");
+            addDynamicProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type", () -> "none");
         }
 
     }

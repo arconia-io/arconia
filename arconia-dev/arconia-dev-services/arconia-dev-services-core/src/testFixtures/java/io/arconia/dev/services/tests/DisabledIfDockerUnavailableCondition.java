@@ -11,15 +11,14 @@ import org.testcontainers.DockerClientFactory;
  */
 class DisabledIfDockerUnavailableCondition implements ExecutionCondition {
 
-    private static final ConditionEvaluationResult ENABLED = ConditionEvaluationResult.enabled("Docker available");
+    private static final ConditionEvaluationResult ENABLED = ConditionEvaluationResult.enabled("Docker is available");
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         try {
             DockerClientFactory.instance().client();
             return ENABLED;
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             return ConditionEvaluationResult.disabled("Docker unavailable", ex.getMessage());
         }
     }
