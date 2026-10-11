@@ -1,5 +1,7 @@
 package io.arconia.dev.services.pulsar;
 
+import java.util.Map;
+
 import org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.testcontainers.containers.GenericContainer;
@@ -21,7 +23,12 @@ class PulsarDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigu
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new PulsarDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaPulsarContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(PulsarDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of("admin-port", PulsarContainer.BROKER_HTTP_PORT);
     }
 
     @Override

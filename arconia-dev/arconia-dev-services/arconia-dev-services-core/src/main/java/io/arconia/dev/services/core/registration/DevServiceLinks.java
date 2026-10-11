@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration.Origin;
-import io.arconia.dev.services.core.registration.DevServiceSpec.LinkDefinition;
+import io.arconia.dev.services.core.registration.DevServiceDefinition.LinkDefinition;
 
 /**
  * Resolves the links a dev service declares, in terms of container ports,
@@ -27,18 +27,18 @@ final class DevServiceLinks {
      * For a managed container, an unresolved port points at a container that does not expose it
      * and is reported as a warning; a discovered container is not under the application's control.
      */
-    static List<DevServiceLink> resolve(DevServiceSpec service, String host, IntUnaryOperator portMapper, Origin origin) {
+    static List<DevServiceLink> resolve(DevServiceDefinition service, String host, IntUnaryOperator portMapper, Origin origin) {
         List<DevServiceLink> links = new ArrayList<>();
-        for (LinkDefinition link : service.getLinks()) {
+        for (LinkDefinition link : service.links()) {
             try {
                 links.add(link.resolve(host, portMapper.applyAsInt(link.port())));
             } catch (Exception ex) {
                 if (origin == Origin.MANAGED) {
-                    logger.warn("Skipping the '{}' link of the '{}' dev service: port {} could not be resolved. Make sure the container exposes it.",
-                            link.label(), service.getName(), link.port(), ex);
+                    logger.warn("Dev Service '{}': skipping the '{}' link, port {} could not be resolved. Make sure the container exposes it.",
+                            service.name(), link.label(), link.port(), ex);
                 } else {
-                    logger.debug("Skipping the '{}' link of the '{}' dev service: port {} is not published by the discovered container",
-                            link.label(), service.getName(), link.port(), ex);
+                    logger.debug("Dev Service '{}': skipping the '{}' link, port {} is not published by the discovered container",
+                            service.name(), link.label(), link.port(), ex);
                 }
             }
         }

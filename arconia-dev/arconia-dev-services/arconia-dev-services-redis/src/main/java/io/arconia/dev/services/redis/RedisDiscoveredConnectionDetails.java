@@ -3,6 +3,7 @@ package io.arconia.dev.services.redis;
 import org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails;
 
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
+import io.arconia.testcontainers.redis.RedisContainer;
 
 /**
  * {@link DataRedisConnectionDetails} for connecting to a Redis dev service
@@ -13,7 +14,7 @@ final class RedisDiscoveredConnectionDetails implements DataRedisConnectionDetai
     private final Standalone standalone;
 
     RedisDiscoveredConnectionDetails(DiscoveredContainer container) {
-        this.standalone = Standalone.of(container.host(), container.mappedPort(ArconiaRedisContainer.REDIS_PORT));
+        this.standalone = Standalone.of(container.host(), container.mappedPort(RedisContainer.REDIS_PORT));
     }
 
     @Override

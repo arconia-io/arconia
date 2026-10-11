@@ -1,6 +1,7 @@
 package io.arconia.dev.services.openlit;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -30,7 +31,14 @@ class OpenLitDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new OpenLitDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaOpenLitContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(OpenLitDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of(
+                "otlp-grpc-port", OpenLitContainer.OTLP_GRPC_PORT,
+                "otlp-http-port", OpenLitContainer.OTLP_HTTP_PORT);
     }
 
     @Override

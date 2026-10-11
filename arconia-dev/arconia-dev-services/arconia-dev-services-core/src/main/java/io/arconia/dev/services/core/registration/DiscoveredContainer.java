@@ -33,7 +33,7 @@ public record DiscoveredContainer(
      * matching the address family of {@link #host()}.
      */
     public int mappedPort(int containerPort) {
-        return containerInfo.exposedPorts().stream()
+        return containerInfo.ports().stream()
                 .filter(port -> port.privatePort() != null && port.privatePort() == containerPort)
                 // A UDP mapping on the same port number is a different endpoint.
                 .filter(port -> port.type() == null || "tcp".equalsIgnoreCase(port.type()))

@@ -1,5 +1,7 @@
 package io.arconia.dev.services.opentelemetry.collector;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.testcontainers.containers.GenericContainer;
@@ -25,6 +27,11 @@ class OtelCollectorDevServicesAutoConfigurationTests extends BaseDevServicesAuto
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new OtelCollectorDevServicesProperties();
         return asDiscoverableContainer(new ArconiaOtelCollectorContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of("otlp-grpc-port", ArconiaOtelCollectorContainer.OTLP_GRPC_PORT);
     }
 
     @Override

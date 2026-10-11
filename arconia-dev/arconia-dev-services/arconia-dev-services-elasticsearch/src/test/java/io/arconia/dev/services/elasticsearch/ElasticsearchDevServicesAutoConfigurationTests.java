@@ -21,7 +21,7 @@ class ElasticsearchDevServicesAutoConfigurationTests extends BaseDevServicesAuto
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new ElasticsearchDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaElasticsearchContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(ElasticsearchDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
     @Override
@@ -29,7 +29,7 @@ class ElasticsearchDevServicesAutoConfigurationTests extends BaseDevServicesAuto
         ElasticsearchConnectionDetails connectionDetails = context.getBean(ElasticsearchConnectionDetails.class);
         assertThat(connectionDetails.getNodes()).singleElement().satisfies(node -> {
             assertThat(node.hostname()).isEqualTo(discoveredContainer.getHost());
-            assertThat(node.port()).isEqualTo(discoveredContainer.getMappedPort(ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT));
+            assertThat(node.port()).isEqualTo(discoveredContainer.getMappedPort(ElasticsearchDevServicesAutoConfiguration.ELASTICSEARCH_DEFAULT_PORT));
         });
         assertThat(connectionDetails.getUsername()).isEqualTo("elastic");
         assertThat(connectionDetails.getPassword())

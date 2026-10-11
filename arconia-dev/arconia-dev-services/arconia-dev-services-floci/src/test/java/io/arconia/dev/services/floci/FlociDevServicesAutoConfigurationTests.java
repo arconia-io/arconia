@@ -25,7 +25,7 @@ class FlociDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new FlociDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaFlociContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(FlociDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
     @Override

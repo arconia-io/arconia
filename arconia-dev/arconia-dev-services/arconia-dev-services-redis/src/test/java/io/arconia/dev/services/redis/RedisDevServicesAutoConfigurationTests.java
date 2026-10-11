@@ -21,7 +21,7 @@ class RedisDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new RedisDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaRedisContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(RedisDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
     @Override
@@ -30,7 +30,7 @@ class RedisDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
         assertThat(connectionDetails.getStandalone()).isNotNull();
         assertThat(connectionDetails.getStandalone().getHost()).isEqualTo(discoveredContainer.getHost());
         assertThat(connectionDetails.getStandalone().getPort())
-                .isEqualTo(discoveredContainer.getMappedPort(ArconiaRedisContainer.REDIS_PORT));
+                .isEqualTo(discoveredContainer.getMappedPort(RedisContainer.REDIS_PORT));
     }
 
 }

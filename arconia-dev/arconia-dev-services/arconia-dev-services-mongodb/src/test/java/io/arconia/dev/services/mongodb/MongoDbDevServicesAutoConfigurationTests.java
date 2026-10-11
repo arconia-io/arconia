@@ -21,7 +21,7 @@ class MongoDbDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new MongoDbDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaMongoDbContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(MongoDbDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
     @Override

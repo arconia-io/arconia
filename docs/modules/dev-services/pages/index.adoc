@@ -80,7 +80,7 @@ Your application is automatically configured to connect to Dev Services, which t
 
 The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
-If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean, or a `@ServiceConnection` container of your own in a test), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup. To use a service you configure through properties instead, disable the Dev Service with its `enabled` property.
+If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean, or a static `@ServiceConnection` container field in a test class), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup. A `@ServiceConnection` container declared as a `@Bean` doesn't take precedence, because Spring Boot derives its connection details only after the Dev Services are registered: in that case, or to use a service you configure through properties, disable the Dev Service with its `enabled` property.
 
 === Lifecycle Management
 
@@ -92,7 +92,7 @@ Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans i
 
 When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] in dev mode, Dev Services are not recreated on restart. They remain running in the background until the application process exits, ensuring a smooth development experience without wait times or state loss.
 
-Since the container is kept, changes to the configuration of a Dev Service (its `arconia.dev.services.<service-name>.*` properties, the `arconia.dev.services.network.*` properties, or a `DevServiceContainerCustomizer` bean) take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example because it was removed manually.
+Since the container is kept, changes to the configuration of a Dev Service (its `arconia.dev.services.<service-name>.*` properties, the `arconia.dev.services.network.*` properties, or a `DevServiceContainerCustomizer` bean) take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example because it was removed manually. A kept container is stopped on restart when the Dev Service is no longer used, for example because the application now defines its own `ConnectionDetails` bean for the service. Disabling the Dev Service with its `enabled` property is different: its auto-configuration backs off entirely, so the kept container stays running until the application process exits.
 
 A Dev Service can also use a container that is already running instead of starting a new one, which changes when the container is stopped. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
@@ -388,7 +388,7 @@ The shared network is distinct from the `framework` reuse strategy: the strategy
 
 ==== Advanced Scenarios
 
-* Container reuse. The shared network doesn't combine with the `testcontainers` reuse strategy: the network is created anew with every run, and since the Testcontainers reuse hash includes it, a container kept by that strategy is never matched on it (a warning is logged). Use one or the other.
+* Container reuse. The shared network doesn't combine with the `testcontainers` reuse strategy: the network is created anew with every run, and since the Testcontainers reuse hash includes it, a container kept by that strategy would never be matched again and would be left running after every run. When the shared network is enabled, the strategy is therefore not applied, and the startup message of the Dev Service says so. Use one or the other.
 
 * Your own containers. The network is exposed as an injectable Testcontainers `Network` bean. To let a container you manage yourself reach Dev Services, enable the shared network, inject the bean, and attach your container:
 
@@ -422,8 +422,8 @@ The first line states the container image, whether the container was started by 
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm, started by another application, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres, kept across restart, reuse-strategy: none)
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm:0.30.1, started by another application, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres:18.4-alpine, kept across restart, reuse-strategy: none)
 ----
 
 The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`. For services with no HTTP interface, the endpoint also reports the host ports the container publishes, which is what you need to connect to them from a tool on your machine.
@@ -531,7 +531,7 @@ Response example:
       "names": [
         "vigilant_hopper"
       ],
-      "exposedPorts": [
+      "ports": [
         {
           "ip": "0.0.0.0",
           "privatePort": 5001,
@@ -561,7 +561,7 @@ Response example:
       "names": [
         "unwritten_mithrandir"
       ],
-      "exposedPorts": [
+      "ports": [
         {
           "ip": "0.0.0.0",
           "privatePort": 5432,
@@ -607,7 +607,7 @@ Response example:
     "names": [
       "unwritten_mithrandir"
     ],
-    "exposedPorts": [
+    "ports": [
       {
         "ip": "0.0.0.0",
         "privatePort": 5432,
@@ -730,7 +730,7 @@ Both approaches work alongside each other, allowing smooth transitions without d
 
 [NOTE]
 ====
-Coexistence is per service. When your application defines its own `ConnectionDetails` bean for a service, including through a `@ServiceConnection` container of your own, the corresponding Arconia Dev Service is not started (see xref:index.adoc#_service_connections[Service Connections]). Once you adopt the Arconia Dev Service for a given service, remove your own container definition for that same service.
+Coexistence is per service. When your application defines its own `ConnectionDetails` bean for a service, the corresponding Arconia Dev Service is not started (see xref:index.adoc#_service_connections[Service Connections]). A `@ServiceConnection` container declared as a `@Bean`, as in the example above, doesn't count as such a bean: while you keep it, disable the corresponding Arconia Dev Service with its `enabled` property. Once you adopt the Arconia Dev Service for a given service, remove your own container definition for that same service.
 ====
 
 === Feature Comparison

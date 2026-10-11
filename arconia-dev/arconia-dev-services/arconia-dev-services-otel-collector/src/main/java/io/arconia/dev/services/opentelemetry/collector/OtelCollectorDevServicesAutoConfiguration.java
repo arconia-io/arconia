@@ -37,6 +37,8 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaOtelCollectorContainer.class, () -> new ArconiaOtelCollectorContainer(properties))
+                    .port(ArconiaOtelCollectorContainer.OTLP_HTTP_PORT)
+                    .additionalPort(ArconiaOtelCollectorContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .serviceConnectionName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)
                     .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
                     .link("OTLP/gRPC", ArconiaOtelCollectorContainer.OTLP_GRPC_PORT)

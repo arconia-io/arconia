@@ -16,7 +16,7 @@ final class MongoDbDiscoveredConnectionDetails implements MongoConnectionDetails
 
     MongoDbDiscoveredConnectionDetails(DiscoveredContainer container) {
         this.connectionString = new ConnectionString("mongodb://%s:%d/test"
-                .formatted(container.host(), container.mappedPort(ArconiaMongoDbContainer.MONGODB_PORT)));
+                .formatted(container.host(), container.mappedPort(MongoDbDevServicesAutoConfiguration.MONGODB_PORT)));
     }
 
     @Override

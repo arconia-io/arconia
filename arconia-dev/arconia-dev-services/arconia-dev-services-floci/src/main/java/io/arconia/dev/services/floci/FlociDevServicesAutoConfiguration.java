@@ -2,6 +2,7 @@ package io.arconia.dev.services.floci;
 
 import io.awspring.cloud.autoconfigure.core.AwsConnectionDetails;
 import io.awspring.cloud.autoconfigure.s3.S3ClientCustomizer;
+import io.floci.testcontainers.FlociContainer;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.utility.DockerImageName;
 
 import software.amazon.awssdk.awscore.AwsClient;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -33,6 +35,12 @@ import io.arconia.dev.services.floci.FlociDevServicesAutoConfiguration.S3Configu
 @Import({FlociDevServicesRegistrar.class, S3Configuration.class})
 public final class FlociDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "floci/floci";
+
+    static FlociContainer createContainer(FlociDevServicesProperties properties) {
+        return new FlociContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class FlociDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -44,7 +52,8 @@ public final class FlociDevServicesAutoConfiguration {
                     .description("Floci Dev Service")
                     .category(DevServiceCategories.AWS)
                     .properties(properties)
-                    .container(ArconiaFlociContainer.class, () -> new ArconiaFlociContainer(properties))
+                    .container(FlociContainer.class, () -> createContainer(properties))
+                    .port(FlociContainer.PORT)
                     .discovery(AwsConnectionDetails.class,
                             container -> new FlociDiscoveredConnectionDetails(container, properties)));
         }

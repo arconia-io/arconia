@@ -1,5 +1,8 @@
 package io.arconia.dev.services.core.container;
 
+import java.time.Duration;
+
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -74,22 +77,25 @@ public final class ContainerConfigurer {
                 // on the container's wait strategy: it polls the database until it answers a test query,
                 // bounded by its own startupTimeoutSeconds (120 seconds by default). Without this,
                 // the configured startup timeout would have no effect on JDBC dev services.
-                .withStartupTimeoutSeconds((int) properties.getStartupTimeout().toSeconds());
+                .withStartupTimeoutSeconds(wholeSeconds(properties.getStartupTimeout()));
     }
 
     /**
-     * Resolve a source path from the classpath or the host filesystem into a mountable file,
-     * applying the same rules as the {@code resources} property: an explicit
-     * {@code classpath:} or {@code file:} prefix selects the location, otherwise the classpath
-     * is tried first and the host filesystem second.
+     * The given timeout in whole seconds, rounded up so that a sub-second timeout still gives the
+     * database one poll instead of none.
+     */
+    private static int wholeSeconds(Duration timeout) {
+        return (int) Math.max(1, Math.ceil(timeout.toMillis() / 1000.0));
+    }
+
+    /**
+     * Resolve a source path into a mountable file with the permissions of the source, applying
+     * the same rules as {@link #resolveMountableFile(String, int)}.
      *
      * @throws IllegalArgumentException if the resource exists in neither location.
      */
     static MountableFile resolveMountableFile(String sourcePath) {
-        ResourceLocation location = resolveLocation(sourcePath);
-        return location.classpath()
-                ? MountableFile.forClasspathResource(location.path())
-                : MountableFile.forHostPath(location.path());
+        return resolveLocation(sourcePath).toMountableFile(null);
     }
 
     /**
@@ -104,10 +110,7 @@ public final class ContainerConfigurer {
      * @throws IllegalArgumentException if the resource exists in neither location.
      */
     public static MountableFile resolveMountableFile(String sourcePath, int mode) {
-        ResourceLocation location = resolveLocation(sourcePath);
-        return location.classpath()
-                ? MountableFile.forClasspathResource(location.path(), mode)
-                : MountableFile.forHostPath(location.path(), mode);
+        return resolveLocation(sourcePath).toMountableFile(mode);
     }
 
     /**
@@ -129,6 +132,14 @@ public final class ContainerConfigurer {
 
         Resource toResource() {
             return classpath ? new ClassPathResource(path) : new FileSystemResource(path);
+        }
+
+        /**
+         * The resource as a mountable file, with the given POSIX file mode or, when null, the
+         * permissions of the source.
+         */
+        MountableFile toMountableFile(@Nullable Integer mode) {
+            return classpath ? MountableFile.forClasspathResource(path, mode) : MountableFile.forHostPath(path, mode);
         }
 
     }

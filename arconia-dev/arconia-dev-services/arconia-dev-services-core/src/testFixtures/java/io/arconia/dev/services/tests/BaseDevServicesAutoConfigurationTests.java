@@ -1,7 +1,10 @@
 package io.arconia.dev.services.tests;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -14,7 +17,6 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -181,9 +183,28 @@ public abstract class BaseDevServicesAutoConfigurationTests {
                     assertThat(container.getBinds())
                             .anyMatch(bind -> bind.getPath().equals(testMountDir.toAbsolutePath().toString())
                                     && bind.getVolume().getPath().equals("/arconia"));
-                    // The fixed port is declared by the container when it is configured, right before starting.
-                    ReflectionTestUtils.invokeMethod(container, "configure");
+                    // The main port is bound to the host from the port the dev service declares when registering.
                     assertThat(container.getPortBindings()).anyMatch(binding -> binding.startsWith("1234:"));
+                });
+    }
+
+    @Test
+    void additionalFixedPortsApplied() {
+        String prefix = "arconia.dev.services." + getServiceName();
+        List<String> propertyValues = new ArrayList<>();
+        Map<Integer, Integer> expectedBindings = new HashMap<>();
+        int hostPort = 20000;
+        for (Map.Entry<String, Integer> property : additionalFixedPortProperties().entrySet()) {
+            propertyValues.add(prefix + "." + property.getKey() + "=" + hostPort);
+            expectedBindings.put(hostPort++, property.getValue());
+        }
+        getContextRunner()
+                .withPropertyValues(propertyValues.toArray(String[]::new))
+                .run(context -> {
+                    // Each module-specific fixed-port property binds its container port when it is set.
+                    var container = context.getBean(getContainerClass());
+                    expectedBindings.forEach((host, containerPort) ->
+                            assertThat(container.getPortBindings()).contains(host + ":" + containerPort + "/tcp"));
                 });
     }
 
@@ -243,6 +264,15 @@ public abstract class BaseDevServicesAutoConfigurationTests {
                         assertDiscoveredConnectionDetails(context, discoveredContainer);
                     });
         }
+    }
+
+    /**
+     * The module-specific properties binding additional container ports to fixed host ports,
+     * as property name (relative to the prefix of the dev service) to container port.
+     * Empty by default, for a dev service exposing its main port only.
+     */
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of();
     }
 
     /**

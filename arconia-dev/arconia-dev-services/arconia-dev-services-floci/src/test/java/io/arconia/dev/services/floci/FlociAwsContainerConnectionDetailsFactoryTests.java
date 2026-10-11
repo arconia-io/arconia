@@ -3,6 +3,8 @@ package io.arconia.dev.services.floci;
 import java.net.URI;
 
 import io.awspring.cloud.autoconfigure.core.AwsConnectionDetails;
+import io.floci.testcontainers.FlociContainer;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -22,7 +24,7 @@ class FlociAwsContainerConnectionDetailsFactoryTests {
 
     @Container
     @ServiceConnection
-    static ArconiaFlociContainer flociContainer = new ArconiaFlociContainer(new FlociDevServicesProperties());
+    static FlociContainer flociContainer = FlociDevServicesAutoConfiguration.createContainer(new FlociDevServicesProperties());
 
     @Autowired
     AwsConnectionDetails connectionDetails;

@@ -52,38 +52,82 @@ final class DevServiceRestartSupport {
      * Retain the container the {@code restart} scope holds for the dev service, if it is still
      * running and of the given type, and return whether one was retained. A container that is
      * no longer running, or whose class DevTools has reloaded (the kept instance belongs to the
-     * previous class loader and cannot be injected as the new type), is stopped and removed from
-     * the scope, so that a new one takes its place. Nothing is retained when the scope is not active.
+     * previous class loader and cannot be injected as the new type), is removed from the scope
+     * and released, so that a new one takes its place. Nothing is retained when the scope is not active.
      */
     boolean retainKeptContainer(String serviceName, String containerBeanName, Class<? extends GenericContainer<?>> containerType) {
         Assert.hasText(serviceName, "serviceName cannot be null or empty");
         Assert.hasText(containerBeanName, "containerBeanName cannot be null or empty");
         Assert.notNull(containerType, "containerType cannot be null");
 
-        Scope restartScope = restartScope();
-        if (restartScope == null || !isRestartScopeActive()) {
-            return false;
-        }
-        // The scope offers no way to look at an object without creating it,
-        // so the container is taken out and put back when it is kept.
-        Object container = restartScope.remove(containerBeanName);
-        if (!(container instanceof GenericContainer<?> keptContainer)) {
+        GenericContainer<?> keptContainer = takeKeptContainer(containerBeanName);
+        if (keptContainer == null) {
             return false;
         }
         if (!keptContainer.isRunning()) {
             logger.info("Dev Service '{}': container {} is no longer running, a new one takes its place",
                     serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
-            keptContainer.stop();
+            release(keptContainer);
             return false;
         }
         if (!containerType.isInstance(keptContainer)) {
             logger.info("Dev Service '{}': the container class was reloaded, a new container takes the place of {}",
                     serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
-            keptContainer.stop();
+            release(keptContainer);
             return false;
         }
-        restartScope.get(containerBeanName, () -> container);
+        // The scope offers no way to look at an object without creating it,
+        // so the container taken out is put back when it is kept.
+        requireRestartScope().get(containerBeanName, () -> keptContainer);
         return true;
+    }
+
+    /**
+     * Discard the container the {@code restart} scope holds for the dev service, if any, when
+     * the dev service is not registered after a restart (for example, because the application now
+     * defines its own connection details): the container is removed from the scope and released,
+     * so that whatever it holds, such as a fixed port, is available again.
+     */
+    void discardKeptContainer(String serviceName, String containerBeanName) {
+        Assert.hasText(serviceName, "serviceName cannot be null or empty");
+        Assert.hasText(containerBeanName, "containerBeanName cannot be null or empty");
+
+        GenericContainer<?> keptContainer = takeKeptContainer(containerBeanName);
+        if (keptContainer == null) {
+            return;
+        }
+        logger.info("Dev Service '{}': container {} is no longer needed", serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
+        release(keptContainer);
+    }
+
+    /**
+     * Take the container the {@code restart} scope holds under the given bean name out of the
+     * scope, or {@code null} when the scope is not active or holds none.
+     */
+    @Nullable
+    private GenericContainer<?> takeKeptContainer(String containerBeanName) {
+        Scope restartScope = restartScope();
+        if (restartScope == null || !isRestartScopeActive()) {
+            return null;
+        }
+        return (restartScope.remove(containerBeanName) instanceof GenericContainer<?> keptContainer) ? keptContainer : null;
+    }
+
+    /**
+     * Stop a container the application no longer uses. A container reused via Testcontainers
+     * is left alone: it outlives the application by design, and Testcontainers reattaches to
+     * it as long as it runs.
+     */
+    private static void release(GenericContainer<?> container) {
+        if (!container.isShouldBeReused()) {
+            container.stop();
+        }
+    }
+
+    private Scope requireRestartScope() {
+        Scope restartScope = restartScope();
+        Assert.notNull(restartScope, "restartScope cannot be null");
+        return restartScope;
     }
 
     /**

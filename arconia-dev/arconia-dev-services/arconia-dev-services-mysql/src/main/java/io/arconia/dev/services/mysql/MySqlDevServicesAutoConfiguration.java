@@ -6,6 +6,9 @@ import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -25,6 +28,18 @@ import io.arconia.dev.services.mysql.MySqlDevServicesAutoConfiguration.MySqlDevS
 @Import(MySqlDevServicesRegistrar.class)
 public final class MySqlDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "mysql";
+
+    static MySQLContainer createContainer(MySqlDevServicesProperties properties) {
+        var container = new MySQLContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // MySQLContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        container.waitingFor(Wait.defaultWaitStrategy());
+        return container;
+    }
+
     static class MySqlDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -36,14 +51,15 @@ public final class MySqlDevServicesAutoConfiguration {
                     .description("MySQL Dev Service")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
-                    .container(ArconiaMySqlContainer.class, () -> new ArconiaMySqlContainer(properties))
+                    .container(MySQLContainer.class, () -> createContainer(properties))
+                    .port(MySQLContainer.MYSQL_PORT)
                     .discovery(JdbcConnectionDetails.class,
                             container -> discoveredConnectionDetails(container, properties)));
         }
 
         static JdbcDiscoveredConnectionDetails discoveredConnectionDetails(DiscoveredContainer container, MySqlDevServicesProperties properties) {
             String jdbcUrl = "jdbc:mysql://%s:%d/%s".formatted(container.host(),
-                    container.mappedPort(ArconiaMySqlContainer.MYSQL_PORT), properties.getDbName());
+                    container.mappedPort(MySQLContainer.MYSQL_PORT), properties.getDbName());
             return new JdbcDiscoveredConnectionDetails(jdbcUrl, properties.getUsername(), properties.getPassword());
         }
 

@@ -6,6 +6,8 @@ import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnect
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -22,6 +24,14 @@ import io.arconia.dev.services.elasticsearch.ElasticsearchDevServicesAutoConfigu
 @Import(ElasticsearchDevServicesRegistrar.class)
 public final class ElasticsearchDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch";
+
+    static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
+
+    static ElasticsearchContainer createContainer(ElasticsearchDevServicesProperties properties) {
+        return new ElasticsearchContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class ElasticsearchDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -32,7 +42,8 @@ public final class ElasticsearchDevServicesAutoConfiguration {
                     .name("elasticsearch")
                     .description("Elasticsearch Dev Service")
                     .properties(properties)
-                    .container(ArconiaElasticsearchContainer.class, () -> new ArconiaElasticsearchContainer(properties))
+                    .container(ElasticsearchContainer.class, () -> createContainer(properties))
+                    .port(ELASTICSEARCH_DEFAULT_PORT)
                     .discovery(ElasticsearchConnectionDetails.class,
                             container -> new ElasticsearchDiscoveredConnectionDetails(container, properties)));
         }

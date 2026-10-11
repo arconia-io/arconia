@@ -33,7 +33,12 @@ class LldapDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
         properties.setEnvironment(Map.of(
                 "LLDAP_JWT_SECRET", "letItGoWannaBuildSnowman",
                 "LLDAP_LDAP_USER_PASS", "password"));
-        return asDiscoverableContainer(new ArconiaLldapContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(LldapDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of("management-console-port", LldapDevServicesAutoConfiguration.UI_PORT);
     }
 
     @Override
@@ -60,7 +65,7 @@ class LldapDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
                     assertThat(links).singleElement().satisfies(link -> {
                         assertThat(link.label()).isEqualTo("LLDAP Console");
                         assertThat(link.url()).isEqualTo(
-                                "http://" + container.getHost() + ":" + container.getMappedPort(ArconiaLldapContainer.UI_PORT));
+                                "http://" + container.getHost() + ":" + container.getMappedPort(LldapDevServicesAutoConfiguration.UI_PORT));
                     });
                 });
     }

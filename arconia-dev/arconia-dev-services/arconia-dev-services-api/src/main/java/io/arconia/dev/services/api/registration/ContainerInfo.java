@@ -16,7 +16,7 @@ import io.arconia.core.support.Incubating;
  * @param id the container id
  * @param imageName the name of the container image
  * @param names the names of the container
- * @param exposedPorts the ports the container exposes
+ * @param ports the port mappings of the container, as the container runtime reports them
  * @param labels the labels of the container
  * @param state the state of the container as the container runtime reports it, one of the values
  *              defined by the Docker Engine API ({@code created}, {@code running}, {@code paused},
@@ -29,7 +29,7 @@ public record ContainerInfo(
         String id,
         String imageName,
         List<String> names,
-        List<ContainerPort> exposedPorts,
+        List<ContainerPort> ports,
         Map<String, String> labels,
         String state,
         String status
@@ -39,21 +39,27 @@ public record ContainerInfo(
         Assert.hasText(id, "id cannot be null or empty");
         Assert.hasText(imageName, "imageName cannot be null or empty");
         Assert.notNull(names, "names cannot be null");
-        Assert.notNull(exposedPorts, "exposedPorts cannot be null");
+        Assert.notNull(ports, "ports cannot be null");
         Assert.notNull(labels, "labels cannot be null");
         Assert.hasText(state, "state cannot be null or empty");
         Assert.hasText(status, "status cannot be null or empty");
 
         names = List.copyOf(names);
-        exposedPorts = List.copyOf(exposedPorts);
+        ports = List.copyOf(ports);
         labels = Map.copyOf(labels);
     }
 
     /**
-     * Holds information about a container port.
+     * Holds information about a port mapping of a container.
      * <p>
      * Used to map details from <a href="https://github.com/docker-java/docker-java/blob/main/docker-java-api/src/main/java/com/github/dockerjava/api/model/ContainerPort.java">docker-java</a>.
+     *
+     * @param ip the host IP address the port is published on, if published
+     * @param privatePort the port inside the container
+     * @param publicPort the port on the host the container port is published to, if published
+     * @param type the protocol of the port, such as {@code tcp} or {@code udp}
      */
+    @Incubating
     public record ContainerPort(
             @Nullable String ip,
             @Nullable Integer privatePort,
@@ -72,7 +78,7 @@ public record ContainerInfo(
         @Nullable
         private String imageName;
         private List<String> names = List.of();
-        private List<ContainerPort> exposedPorts = List.of();
+        private List<ContainerPort> ports = List.of();
         private Map<String, String> labels = Map.of();
         @Nullable
         private String state;
@@ -106,10 +112,10 @@ public record ContainerInfo(
         }
 
         /**
-         * The exposed ports of the container.
+         * The port mappings of the container.
          */
-        public Builder exposedPorts(List<ContainerPort> exposedPorts) {
-            this.exposedPorts = exposedPorts;
+        public Builder ports(List<ContainerPort> ports) {
+            this.ports = ports;
             return this;
         }
 
@@ -145,7 +151,7 @@ public record ContainerInfo(
             Assert.notNull(imageName, "imageName cannot be null");
             Assert.notNull(state, "state cannot be null");
             Assert.notNull(status, "status cannot be null");
-            return new ContainerInfo(id, imageName, names, exposedPorts, labels, state, status);
+            return new ContainerInfo(id, imageName, names, ports, labels, state, status);
         }
 
     }

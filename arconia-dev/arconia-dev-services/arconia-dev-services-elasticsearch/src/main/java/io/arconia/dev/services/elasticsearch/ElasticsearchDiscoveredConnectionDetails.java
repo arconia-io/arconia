@@ -3,6 +3,7 @@ package io.arconia.dev.services.elasticsearch;
 import java.util.List;
 
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
@@ -23,8 +24,8 @@ final class ElasticsearchDiscoveredConnectionDetails implements ElasticsearchCon
 
     ElasticsearchDiscoveredConnectionDetails(DiscoveredContainer container, ElasticsearchDevServicesProperties properties) {
         // The container is only asked how it would be configured, it is never started.
-        ArconiaElasticsearchContainer configuration = new ArconiaElasticsearchContainer(properties);
-        this.node = new Node(container.host(), container.mappedPort(ArconiaElasticsearchContainer.ELASTICSEARCH_DEFAULT_PORT),
+        ElasticsearchContainer configuration = ElasticsearchDevServicesAutoConfiguration.createContainer(properties);
+        this.node = new Node(container.host(), container.mappedPort(ElasticsearchDevServicesAutoConfiguration.ELASTICSEARCH_DEFAULT_PORT),
                 Node.Protocol.HTTP, USERNAME, configuration.getEnvMap().get(PASSWORD_ENVIRONMENT_VARIABLE));
     }
 

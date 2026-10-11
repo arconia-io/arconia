@@ -5,6 +5,7 @@ import java.util.List;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -27,7 +28,7 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new DoclingDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaDoclingServeContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(DoclingDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
     @Override
@@ -48,6 +49,17 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
                     assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
                     assertThat(links).filteredOn(link -> link.label().equals("Docling OpenAPI"))
                             .singleElement().satisfies(link -> assertThat(link.url()).endsWith("/docs"));
+                });
+    }
+
+    @Test
+    void uiEnabledByDefault() {
+        getContextRunner()
+                .run(context -> {
+                    var container = context.getBean(getContainerClass());
+                    // DoclingServeContainer applies its configuration to the environment when configured, right before starting.
+                    ReflectionTestUtils.invokeMethod(container, "configure");
+                    assertThat(container.getEnvMap()).containsEntry("DOCLING_SERVE_ENABLE_UI", "true");
                 });
     }
 

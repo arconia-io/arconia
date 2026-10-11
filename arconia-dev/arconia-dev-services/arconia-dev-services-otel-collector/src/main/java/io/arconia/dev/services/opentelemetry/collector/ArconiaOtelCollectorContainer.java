@@ -5,14 +5,11 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * An OpenTelemetry Collector {@link Container} configured for use with Arconia Dev Services.
  */
 final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCollectorContainer> {
-
-    private final OtelCollectorDevServicesProperties properties;
 
     static final String COMPATIBLE_IMAGE_NAME = "otel/opentelemetry-collector-contrib";
 
@@ -23,24 +20,12 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
     public ArconiaOtelCollectorContainer(OtelCollectorDevServicesProperties properties) {
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         addExposedPorts(OTLP_GRPC_PORT, OTLP_HTTP_PORT);
-        this.properties = properties;
 
         // Testcontainers uses a shared wait strategy instance across all containers.
         // GenericContainer doesn't set a wait strategy of its own, so when we customize
         // the startup timeout, it will be applied to all containers. Hence, we must
         // provide an explicit wait strategy.
         this.waitingFor(Wait.defaultWaitStrategy());
-    }
-
-    @Override
-    protected void configure() {
-        super.configure();
-        if (ContainerUtils.isFixedPort(properties.getPort())) {
-            addFixedExposedPort(properties.getPort(), OTLP_HTTP_PORT);
-        }
-        if (ContainerUtils.isFixedPort(properties.getOtlpGrpcPort())) {
-            addFixedExposedPort(properties.getOtlpGrpcPort(), OTLP_GRPC_PORT);
-        }
     }
 
     public Integer getGrpcPort() {

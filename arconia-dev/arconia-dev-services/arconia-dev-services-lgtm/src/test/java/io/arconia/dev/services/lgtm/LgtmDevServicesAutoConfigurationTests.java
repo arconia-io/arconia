@@ -1,6 +1,7 @@
 package io.arconia.dev.services.lgtm;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -30,7 +31,17 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new LgtmDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaLgtmStackContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(LgtmDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of(
+                "otlp-grpc-port", LgtmDevServicesAutoConfiguration.OTLP_GRPC_PORT,
+                "otlp-http-port", LgtmDevServicesAutoConfiguration.OTLP_HTTP_PORT,
+                "loki-port", LgtmDevServicesAutoConfiguration.LOKI_PORT,
+                "tempo-port", LgtmDevServicesAutoConfiguration.TEMPO_PORT,
+                "prometheus-port", LgtmDevServicesAutoConfiguration.PROMETHEUS_PORT);
     }
 
     @Override

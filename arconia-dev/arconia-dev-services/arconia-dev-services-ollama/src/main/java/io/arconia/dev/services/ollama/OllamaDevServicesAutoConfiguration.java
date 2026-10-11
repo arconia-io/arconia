@@ -5,14 +5,14 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.util.ClassUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.util.ClassUtils;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceSpec;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
-import io.arconia.dev.services.core.registration.DevServiceSpec;
 import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.OllamaDevServicesRegistrar;
 
 /**
@@ -46,7 +46,8 @@ public final class OllamaDevServicesAutoConfiguration {
                         .name("ollama")
                         .description("Ollama Dev Service")
                         .properties(properties)
-                        .container(ArconiaOllamaContainer.class, () -> new ArconiaOllamaContainer(properties));
+                        .container(ArconiaOllamaContainer.class, () -> new ArconiaOllamaContainer(properties))
+                        .port(ArconiaOllamaContainer.OLLAMA_PORT);
                 if (ollamaModulePresent) {
                     configureDiscovery(service);
                 } else {

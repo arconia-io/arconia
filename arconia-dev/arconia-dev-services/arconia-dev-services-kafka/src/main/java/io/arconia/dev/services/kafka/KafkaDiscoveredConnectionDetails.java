@@ -16,7 +16,7 @@ final class KafkaDiscoveredConnectionDetails implements KafkaConnectionDetails {
 
     KafkaDiscoveredConnectionDetails(DiscoveredContainer container) {
         this.bootstrapServers = List.of("%s:%d".formatted(container.host(),
-                container.mappedPort(ArconiaKafkaContainer.KAFKA_PORT)));
+                container.mappedPort(KafkaDevServicesAutoConfiguration.KAFKA_PORT)));
     }
 
     @Override

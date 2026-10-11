@@ -40,8 +40,8 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
                     .exec();
             return select(containers, DockerClientFactory.instance().dockerHostIpAddress(), serviceName);
         } catch (Exception ex) {
-            logger.info("Failed to discover running containers for the '{}' dev service. Starting its own container instead.", serviceName);
-            logger.debug("Container discovery failure for the '{}' dev service", serviceName, ex);
+            logger.info("Dev Service '{}': failed to discover running containers ({}). Starting its own container instead.", serviceName, ex.getMessage());
+            logger.debug("Dev Service '{}': container discovery failure", serviceName, ex);
             return List.of();
         }
     }
@@ -80,7 +80,7 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
         try {
             return new DiscoveredContainer(ContainerRuntimeInfo.toContainerInfo(dockerContainer), host);
         } catch (Exception ex) {
-            logger.debug("Skipping container {} discovered for the '{}' dev service", dockerContainer.getId(), serviceName, ex);
+            logger.debug("Dev Service '{}': skipping the discovered container {}", serviceName, dockerContainer.getId(), ex);
             return null;
         }
     }

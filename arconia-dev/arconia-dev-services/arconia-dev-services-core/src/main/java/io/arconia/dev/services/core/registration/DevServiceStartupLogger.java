@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.api.registration.DevServiceRegistration.Origin;
 
 /**
@@ -22,15 +23,17 @@ final class DevServiceStartupLogger {
     private DevServiceStartupLogger() {}
 
     /**
-     * Log that the dev service is ready in the given container
+     * Log that the registered dev service is ready in the given container, with the image it
+     * runs, whether it was kept across a DevTools restart, and the reuse strategy in effect
+     * when it applies.
      */
-    static void ready(String name, @Nullable String containerId, @Nullable String imageName, Origin origin, boolean kept,
-            @Nullable ReuseDecision reuse, List<DevServiceLink> links) {
+    static void ready(DevServiceRegistration registration, @Nullable String containerId, @Nullable String imageName,
+            boolean kept, @Nullable ReuseDecision reuse) {
         List<String> facts = new ArrayList<>();
         if (imageName != null) {
             facts.add(imageName);
         }
-        if (origin == Origin.DISCOVERED) {
+        if (registration.origin() == Origin.DISCOVERED) {
             facts.add("started by another application");
         }
         if (kept) {
@@ -40,9 +43,9 @@ final class DevServiceStartupLogger {
             facts.add(formatReuse(reuse));
         }
         String details = facts.isEmpty() ? "" : " (" + String.join(", ", facts) + ")";
-        logger.info("Dev Service '{}' is ready in container {}{}", name, ContainerRuntimeInfo.shortId(containerId), details);
-        if (!links.isEmpty()) {
-            logger.info("Dev Service '{}' links: {}", name, formatLinks(links));
+        logger.info("Dev Service '{}' is ready in container {}{}", registration.name(), ContainerRuntimeInfo.shortId(containerId), details);
+        if (!registration.links().isEmpty()) {
+            logger.info("Dev Service '{}' links: {}", registration.name(), formatLinks(registration.links()));
         }
     }
 

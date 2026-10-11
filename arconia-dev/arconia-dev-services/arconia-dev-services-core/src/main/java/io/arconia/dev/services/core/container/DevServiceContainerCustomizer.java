@@ -17,7 +17,7 @@ import io.arconia.core.support.Incubating;
  * <pre>{@code
  * @Bean
  * DevServiceContainerCustomizer<PostgreSQLContainer> postgresCustomizer() {
- *     return container -> container.waitingFor(Wait.forListeningPort());
+ *     return container -> container.withEnv("POSTGRES_INITDB_ARGS", "--data-checksums");
  * }
  * }</pre>
  *

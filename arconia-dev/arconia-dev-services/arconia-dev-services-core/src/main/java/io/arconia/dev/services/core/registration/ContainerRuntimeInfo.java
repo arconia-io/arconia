@@ -60,12 +60,7 @@ final class ContainerRuntimeInfo {
         List<String> names = Arrays.stream(dockerContainer.getNames() != null ? dockerContainer.getNames() : new String[0])
                 .map(name -> name.startsWith("/") ? name.substring(1) : name)
                 .toList();
-        String imageName = dockerContainer.getImage();
-        Map<String, String> labels = dockerContainer.getLabels() != null ? dockerContainer.getLabels() : Map.of();
-        String state = dockerContainer.getState();
-        String status = dockerContainer.getStatus();
-
-        List<ContainerInfo.ContainerPort> exposedPorts = Arrays.stream(
+        List<ContainerInfo.ContainerPort> ports = Arrays.stream(
                         dockerContainer.getPorts() != null ? dockerContainer.getPorts() : new ContainerPort[0])
                 .map(port -> new ContainerInfo.ContainerPort(
                         port.getIp(),
@@ -74,7 +69,15 @@ final class ContainerRuntimeInfo {
                         port.getType()
                 ))
                 .toList();
-        return new ContainerInfo(dockerContainer.getId(), imageName, names, exposedPorts, labels, state, status);
+        return ContainerInfo.builder()
+                .id(dockerContainer.getId())
+                .imageName(dockerContainer.getImage())
+                .names(names)
+                .ports(ports)
+                .labels(dockerContainer.getLabels() != null ? dockerContainer.getLabels() : Map.of())
+                .state(dockerContainer.getState())
+                .status(dockerContainer.getStatus())
+                .build();
     }
 
 }

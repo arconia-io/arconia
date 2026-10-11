@@ -1,6 +1,7 @@
 package io.arconia.dev.services.phoenix;
 
 import java.util.List;
+import java.util.Map;
 
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -37,7 +38,12 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new PhoenixDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaPhoenixContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(PhoenixDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of("otlp-grpc-port", PhoenixContainer.GRPC_PORT);
     }
 
     @Override

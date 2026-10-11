@@ -6,6 +6,8 @@ import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.oracle.OracleContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -25,6 +27,14 @@ import io.arconia.dev.services.oracle.OracleDevServicesAutoConfiguration.OracleD
 @Import(OracleDevServicesRegistrar.class)
 public final class OracleDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "gvenzl/oracle-free";
+
+    static final int ORACLE_PORT = 1521;
+
+    static OracleContainer createContainer(OracleDevServicesProperties properties) {
+        return new OracleContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class OracleDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -36,14 +46,15 @@ public final class OracleDevServicesAutoConfiguration {
                     .description("Oracle Dev Service")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
-                    .container(ArconiaOracleContainer.class, () -> new ArconiaOracleContainer(properties))
+                    .container(OracleContainer.class, () -> createContainer(properties))
+                    .port(ORACLE_PORT)
                     .discovery(JdbcConnectionDetails.class,
                             container -> discoveredConnectionDetails(container, properties)));
         }
 
         static JdbcDiscoveredConnectionDetails discoveredConnectionDetails(DiscoveredContainer container, OracleDevServicesProperties properties) {
             String jdbcUrl = "jdbc:oracle:thin:@%s:%d/%s".formatted(container.host(),
-                    container.mappedPort(ArconiaOracleContainer.ORACLE_PORT), properties.getDbName());
+                    container.mappedPort(ORACLE_PORT), properties.getDbName());
             return new JdbcDiscoveredConnectionDetails(jdbcUrl, properties.getUsername(), properties.getPassword());
         }
 

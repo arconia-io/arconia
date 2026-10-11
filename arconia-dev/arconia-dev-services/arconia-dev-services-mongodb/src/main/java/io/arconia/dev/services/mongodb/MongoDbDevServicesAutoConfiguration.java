@@ -6,6 +6,9 @@ import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.mongodb.MongoDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -23,6 +26,20 @@ import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.Mongo
 @Import(MongoDbDevServicesRegistrar.class)
 public final class MongoDbDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "mongo";
+
+    static final int MONGODB_PORT = 27017;
+
+    static MongoDBContainer createContainer(MongoDbDevServicesProperties properties) {
+        var container = new MongoDBContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        // Testcontainers uses a shared wait strategy instance across all containers.
+        // MongoDBContainer doesn't set a wait strategy of its own, so when we customize
+        // the startup timeout, it will be applied to all containers. Hence, we must
+        // provide an explicit wait strategy.
+        container.waitingFor(Wait.defaultWaitStrategy());
+        return container;
+    }
+
     static class MongoDbDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -34,7 +51,8 @@ public final class MongoDbDevServicesAutoConfiguration {
                     .description("MongoDB Dev Service")
                     .category(DevServiceCategories.MONGODB)
                     .properties(properties)
-                    .container(ArconiaMongoDbContainer.class, () -> new ArconiaMongoDbContainer(properties))
+                    .container(MongoDBContainer.class, () -> createContainer(properties))
+                    .port(MONGODB_PORT)
                     .discovery(MongoConnectionDetails.class, MongoDbDiscoveredConnectionDetails::new));
         }
 

@@ -67,7 +67,7 @@ class DevServicesEndpointTests {
         assertThat(result.containerInfo().status()).isEqualTo("Up 5 minutes");
         assertThat(result.containerInfo().names()).containsExactly("postgres-container");
         assertThat(result.containerInfo().labels()).containsEntry("app", "test");
-        assertThat(result.containerInfo().exposedPorts()).hasSize(1);
+        assertThat(result.containerInfo().ports()).hasSize(1);
     }
 
     @Test

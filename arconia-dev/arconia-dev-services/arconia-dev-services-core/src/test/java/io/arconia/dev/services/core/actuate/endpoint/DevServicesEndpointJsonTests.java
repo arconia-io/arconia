@@ -26,7 +26,7 @@ class DevServicesEndpointJsonTests {
                 .id("cbf5a15cf542")
                 .imageName("postgres:18")
                 .names(List.of("unwritten_mithrandir"))
-                .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 36803, "tcp")))
+                .ports(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 36803, "tcp")))
                 .labels(Map.of("io.arconia.dev-service.name", "postgresql"))
                 .state("running")
                 .status("Up About 67 minutes")
@@ -51,7 +51,7 @@ class DevServicesEndpointJsonTests {
                     "names": [
                       "unwritten_mithrandir"
                     ],
-                    "exposedPorts": [
+                    "ports": [
                       {
                         "ip": "0.0.0.0",
                         "privatePort": 5432,

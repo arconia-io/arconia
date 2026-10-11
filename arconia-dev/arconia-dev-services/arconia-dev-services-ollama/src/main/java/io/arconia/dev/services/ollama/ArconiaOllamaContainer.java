@@ -12,8 +12,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.core.util.ContainerUtils;
-
 /**
  * An {@link OllamaContainer} configured for use with Arconia Dev Services.
  */
@@ -47,14 +45,6 @@ final class ArconiaOllamaContainer extends OllamaContainer {
         // the startup timeout, it will be applied to all containers. Hence, we must
         // provide an explicit wait strategy.
         this.waitingFor(Wait.defaultWaitStrategy());
-    }
-
-    @Override
-    protected void configure() {
-        super.configure();
-        if (ContainerUtils.isFixedPort(properties.getPort())) {
-            addFixedExposedPort(properties.getPort(), OLLAMA_PORT);
-        }
     }
 
     @Override

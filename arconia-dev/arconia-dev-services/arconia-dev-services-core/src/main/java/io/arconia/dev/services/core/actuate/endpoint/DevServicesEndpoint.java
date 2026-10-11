@@ -13,6 +13,7 @@ import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
@@ -20,6 +21,7 @@ import io.arconia.dev.services.api.registration.DevServiceRegistration;
 /**
  * Endpoint for exposing dev services information.
  */
+@Incubating
 @Endpoint(id = "devservices")
 public class DevServicesEndpoint {
 
@@ -59,7 +61,7 @@ public class DevServicesEndpoint {
             return registration.containerInfo().get();
         } catch (Exception ex) {
             // For example, the container may have been removed manually.
-            logger.debug("Failed to resolve container information for the '{}' dev service", registration.name(), ex);
+            logger.debug("Dev Service '{}': failed to resolve container information", registration.name(), ex);
             return null;
         }
     }

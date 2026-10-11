@@ -16,16 +16,23 @@ record ReuseDecision(ReuseStrategy effective, @Nullable String reason) {
     /**
      * Decide the reuse strategy in effect for the given dev service. Reuse only applies in
      * dev mode. The {@code framework} strategy requires the dev service to declare its
-     * discovery, and the {@code testcontainers} strategy requires reuse to be enabled in the
-     * Testcontainers configuration, which the given check reports.
+     * discovery. The {@code testcontainers} strategy requires reuse to be enabled in the
+     * Testcontainers configuration, which the given check reports, and doesn't combine with
+     * the shared network: the network is created anew with every run and the Testcontainers
+     * reuse hash includes it, so a reusable container on the shared network would never be
+     * found again and would be left running after every run.
      */
-    static ReuseDecision decide(DevServiceSpec service, BooleanSupplier testcontainersReuseSupport) {
-        ReuseStrategy configured = service.getProperties().getReuseStrategy();
+    static ReuseDecision decide(DevServiceDefinition service, BooleanSupplier testcontainersReuseSupport, boolean networkEnabled) {
+        ReuseStrategy configured = service.properties().getReuseStrategy();
         if (configured == ReuseStrategy.NONE || !BootstrapMode.isDev()) {
             return new ReuseDecision(ReuseStrategy.NONE, null);
         }
-        if (configured == ReuseStrategy.FRAMEWORK && !service.supportsDiscovery()) {
+        if (configured == ReuseStrategy.FRAMEWORK && service.discovery() == null) {
             return new ReuseDecision(ReuseStrategy.NONE, "'framework' is not supported by this dev service");
+        }
+        if (configured == ReuseStrategy.TESTCONTAINERS && networkEnabled) {
+            return new ReuseDecision(ReuseStrategy.NONE,
+                    "'testcontainers' doesn't combine with the shared network (" + DevServiceNetworkSupport.NETWORK_ENABLED_PROPERTY + "=true)");
         }
         if (configured == ReuseStrategy.TESTCONTAINERS && !testcontainersReuseSupport.getAsBoolean()) {
             return new ReuseDecision(ReuseStrategy.NONE,

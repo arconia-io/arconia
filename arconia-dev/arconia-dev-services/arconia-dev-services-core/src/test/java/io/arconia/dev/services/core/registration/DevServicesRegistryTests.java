@@ -81,7 +81,7 @@ class DevServicesRegistryTests {
                             .name("postgres")
                             .properties(TestDevServicesProperties.DEFAULT)
                             .container(TestPostgresContainer.class, TestPostgresContainer::new)))
-                    .withMessageContaining("service description cannot be null or empty");
+                    .withMessageContaining("Dev Service 'postgres': description cannot be null or empty");
             assertThat(beanFactory.getBeanDefinitionCount()).isZero();
         }
 
@@ -196,6 +196,20 @@ class DevServicesRegistryTests {
         }
 
         @Test
+        void whenDevServiceIsDisabledThenNothingIsRegistered(CapturedOutput output) {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withEnabled(false))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+            // The auto-configuration condition normally backs off earlier. The registry honors the
+            // properties contract for a dev service whose condition doesn't read the property.
+            assertThat(beanFactory.getBeanDefinitionNames()).noneMatch(name -> name.startsWith(BeanName.PREFIX));
+            assertThat(output).contains("Dev Service 'postgres' is disabled");
+        }
+
+        @Test
         void whenApplicationDefinesConnectionDetailsThenNoDiscoveryHappens() {
             enableDevMode();
             AtomicInteger lookups = new AtomicInteger();
@@ -250,6 +264,69 @@ class DevServicesRegistryTests {
 
             assertThat(container.getEnvMap()).containsEntry("KEY", "value");
             assertThat(container.getNetworkAliases()).contains("db");
+        }
+
+        @Test
+        void whenPortDeclaredAndConfiguredThenContainerBindsItToTheHost() {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                    .port(5432));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
+
+            assertThat(container.getPortBindings()).containsExactly("1234:5432/tcp");
+        }
+
+        @Test
+        void whenAdditionalPortsDeclaredThenContainerBindsTheConfiguredOnes() {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                    .port(5432)
+                    .additionalPort(8080, 5678)
+                    // A host port of 0 is a fixed-port property left unset: nothing is bound.
+                    .additionalPort(9090, 0));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
+
+            assertThat(container.getPortBindings()).containsExactlyInAnyOrder("1234:5432/tcp", "5678:8080/tcp");
+        }
+
+        @Test
+        void whenContainerDeclaresBindingsThenTheyAreKept() {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
+                    .container(TestPostgresContainer.class, () -> {
+                        var container = new TestPostgresContainer();
+                        container.setPortBindings(List.of("4321:2345"));
+                        return container;
+                    })
+                    .port(5432));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
+
+            assertThat(container.getPortBindings()).containsExactlyInAnyOrder("4321:2345/tcp", "1234:5432/tcp");
+        }
+
+        @Test
+        void whenPortDeclaredButNotConfiguredThenContainerHasNoFixedPort() {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                    .port(5432));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
+
+            assertThat(container.getPortBindings()).isEmpty();
         }
 
         @Test
@@ -341,6 +418,26 @@ class DevServicesRegistryTests {
             var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
 
             assertThat(container.isShouldBeReused()).isFalse();
+        }
+
+        @Test
+        void whenTestcontainersStrategyWithSharedNetworkThenContainerIsNotReusable() {
+            enableDevMode();
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, DevServicesTestSupport.networkEnabledEnvironment(),
+                    serviceName -> List.of(), () -> true);
+
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.TESTCONTAINERS)
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("postgres"), GenericContainer.class);
+
+            // A reusable container on the shared network would be left running after every run,
+            // since the Testcontainers reuse hash includes the network, created anew with every run.
+            assertThat(container.isShouldBeReused()).isFalse();
+            assertThat(container.getNetwork()).isNotNull();
         }
 
         @Test
@@ -673,6 +770,28 @@ class DevServicesRegistryTests {
 
             assertThat(restarted.containsBeanDefinition(BeanName.CONTAINER.of("postgres"))).isFalse();
             assertThat(restarted.containsBeanDefinition(BeanName.CONNECTION_DETAILS.of("postgres"))).isTrue();
+        }
+
+        @Test
+        void whenDevServiceIsSkippedAfterRestartThenKeptContainerIsStopped() {
+            RestartingContainer first = restart(Map.of(), TestDevServicesProperties.DEFAULT, List.of());
+            // The application now defines its own connection details, so the dev service is not registered.
+            var restarted = new DefaultListableBeanFactory();
+            restarted.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+            restarted.registerSingleton("userConnectionDetails", new TestConnectionDetails("user-defined"));
+
+            new DevServicesRegistry(restarted, new StandardEnvironment(), serviceName -> List.of())
+                    .registerDevService(service -> service
+                            .name("postgres")
+                            .description("Test Dev Service")
+                            .properties(TestDevServicesProperties.DEFAULT)
+                            .container(RestartingContainer.class, RestartingContainer::new)
+                            .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));
+
+            // The kept container would otherwise run until the JVM exits, holding e.g. its fixed port.
+            assertThat(restarted.getBeanDefinitionNames()).noneMatch(name -> name.startsWith(BeanName.PREFIX));
+            assertThat(first.stopped).isTrue();
+            assertThat(restartScope.remove(BeanName.CONTAINER.of("postgres"))).isNull();
         }
 
         @Test

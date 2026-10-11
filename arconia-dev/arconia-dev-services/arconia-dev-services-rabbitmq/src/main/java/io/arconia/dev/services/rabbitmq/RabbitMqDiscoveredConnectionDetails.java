@@ -19,7 +19,7 @@ final class RabbitMqDiscoveredConnectionDetails implements RabbitConnectionDetai
     private final String password;
 
     RabbitMqDiscoveredConnectionDetails(DiscoveredContainer container, RabbitMqDevServicesProperties properties) {
-        this.address = new Address(container.host(), container.mappedPort(ArconiaRabbitMqContainer.AMQP_PORT));
+        this.address = new Address(container.host(), container.mappedPort(RabbitMqDevServicesAutoConfiguration.AMQP_PORT));
         this.username = properties.getUsername();
         this.password = properties.getPassword();
     }

@@ -6,6 +6,8 @@ import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -23,6 +25,14 @@ import io.arconia.dev.services.mongodb.atlas.MongoDbAtlasDevServicesAutoConfigur
 @Import(MongoDbAtlasDevServicesRegistrar.class)
 public final class MongoDbAtlasDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "mongodb/mongodb-atlas-local";
+
+    static final int MONGODB_PORT = 27017;
+
+    static MongoDBAtlasLocalContainer createContainer(MongoDbAtlasDevServicesProperties properties) {
+        return new MongoDBAtlasLocalContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class MongoDbAtlasDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -34,7 +44,8 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
                     .description("MongoDB Atlas Dev Service")
                     .category(DevServiceCategories.MONGODB)
                     .properties(properties)
-                    .container(ArconiaMongoDbAtlasLocalContainer.class, () -> new ArconiaMongoDbAtlasLocalContainer(properties))
+                    .container(MongoDBAtlasLocalContainer.class, () -> createContainer(properties))
+                    .port(MONGODB_PORT)
                     .discovery(MongoConnectionDetails.class, MongoDbAtlasDiscoveredConnectionDetails::new));
         }
 

@@ -20,7 +20,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 
 import io.arconia.dev.services.core.container.ContainerConfigurer;
-import io.arconia.dev.services.tests.BaseDevServiceContainerTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,23 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for {@link ArconiaKeycloakContainer}.
  */
 @ExtendWith(OutputCaptureExtension.class)
-class ArconiaKeycloakContainerTests extends BaseDevServiceContainerTests<KeycloakDevServicesProperties, ArconiaKeycloakContainer> {
-
-    @Override
-    protected KeycloakDevServicesProperties createProperties() {
-        return new KeycloakDevServicesProperties();
-    }
-
-    @Override
-    protected ArconiaKeycloakContainer createContainer(KeycloakDevServicesProperties properties) {
-        return container(properties);
-    }
-
-    @Override
-    protected Map<Integer, Integer> configureFixedPorts(KeycloakDevServicesProperties properties) {
-        properties.setPort(1234);
-        return Map.of(1234, ArconiaKeycloakContainer.HTTP_PORT);
-    }
+class ArconiaKeycloakContainerTests {
 
     /**
      * The container as the registry creates it, with the common properties applied.

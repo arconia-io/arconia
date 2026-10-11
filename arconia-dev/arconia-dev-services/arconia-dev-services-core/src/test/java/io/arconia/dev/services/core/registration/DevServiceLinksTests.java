@@ -22,9 +22,10 @@ class DevServiceLinksTests {
 
     @Test
     void whenLinksDeclaredThenResolvedInOrder() {
-        DevServiceSpec service = linkyService()
+        DevServiceDefinition service = linkyService()
                 .link("UI", 8080)
-                .link("Docs", 8080, "/docs");
+                .link("Docs", 8080, "/docs")
+                .build();
 
         List<DevServiceLink> links = DevServiceLinks.resolve(service, "localhost", DevServiceLinksTests::mappedPort, Origin.MANAGED);
 
@@ -35,34 +36,36 @@ class DevServiceLinksTests {
 
     @Test
     void whenNoLinksDeclaredThenEmpty() {
-        assertThat(DevServiceLinks.resolve(linkyService(), "localhost", DevServiceLinksTests::mappedPort, Origin.MANAGED)).isEmpty();
+        assertThat(DevServiceLinks.resolve(linkyService().build(), "localhost", DevServiceLinksTests::mappedPort, Origin.MANAGED)).isEmpty();
     }
 
     @Test
     void whenManagedLinkPortCannotBeResolvedThenOnlyThatLinkIsSkippedWithAWarning(CapturedOutput output) {
-        DevServiceSpec service = linkyService()
+        DevServiceDefinition service = linkyService()
                 .link("UI", 8080)
-                .link("Hidden", 9999);
+                .link("Hidden", 9999)
+                .build();
 
         List<DevServiceLink> links = DevServiceLinks.resolve(service, "localhost", DevServiceLinksTests::mappedPort, Origin.MANAGED);
 
         // The dev service declares a port its container doesn't expose, which it can fix.
         assertThat(links).containsExactly(new DevServiceLink("UI", "http://localhost:1234"));
-        assertThat(output).contains("WARN").contains("Skipping the 'Hidden' link of the 'linky' dev service");
+        assertThat(output).contains("WARN").contains("Dev Service 'linky': skipping the 'Hidden' link");
     }
 
     @Test
     void whenDiscoveredLinkPortCannotBeResolvedThenOnlyThatLinkIsSkippedQuietly(CapturedOutput output) {
-        DevServiceSpec service = linkyService()
+        DevServiceDefinition service = linkyService()
                 .link("UI", 8080)
-                .link("Hidden", 9999);
+                .link("Hidden", 9999)
+                .build();
 
         List<DevServiceLink> links = DevServiceLinks.resolve(service, "localhost", DevServiceLinksTests::mappedPort, Origin.DISCOVERED);
 
         // The application that started the container published 8080 but not 9999,
         // which is an expected condition rather than a failure.
         assertThat(links).containsExactly(new DevServiceLink("UI", "http://localhost:1234"));
-        assertThat(output).doesNotContain("Skipping the 'Hidden' link");
+        assertThat(output).doesNotContain("skipping the 'Hidden' link");
     }
 
     /**

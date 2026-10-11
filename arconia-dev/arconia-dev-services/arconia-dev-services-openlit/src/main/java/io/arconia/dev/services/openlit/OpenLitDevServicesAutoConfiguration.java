@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -14,6 +15,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.openlit.OpenLitDevServicesAutoConfiguration.OpenLitDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
+import io.arconia.testcontainers.openlit.OpenLitContainer;
 
 /**
  * Auto-configuration for OpenLit Dev Services.
@@ -24,6 +26,14 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 @EnableConfigurationProperties(OpenLitDevServicesProperties.class)
 @Import(OpenLitDevServicesRegistrar.class)
 public final class OpenLitDevServicesAutoConfiguration {
+
+    static final String COMPATIBLE_IMAGE_NAME = "ghcr.io/openlit/openlit";
+
+    static OpenLitContainer createContainer(OpenLitDevServicesProperties properties) {
+        var container = new OpenLitContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        container.withClickHouseImage(properties.getClickhouseImageName());
+        return container;
+    }
 
     static class OpenLitDevServicesRegistrar extends DevServicesRegistrar {
 
@@ -36,9 +46,12 @@ public final class OpenLitDevServicesAutoConfiguration {
                     .description("OpenLit Dev Service")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
-                    .container(ArconiaOpenLitContainer.class, () -> new ArconiaOpenLitContainer(properties))
+                    .container(OpenLitContainer.class, () -> createContainer(properties))
+                    .port(OpenLitContainer.UI_PORT)
+                    .additionalPort(OpenLitContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
+                    .additionalPort(OpenLitContainer.OTLP_HTTP_PORT, properties.getOtlpHttpPort())
                     .discovery(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
-                    .link("OpenLit UI", ArconiaOpenLitContainer.UI_PORT));
+                    .link("OpenLit UI", OpenLitContainer.UI_PORT));
         }
 
     }

@@ -18,7 +18,6 @@ import org.testcontainers.utility.MountableFile;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 import io.arconia.dev.services.core.container.ContainerConfigurer;
-import io.arconia.dev.services.core.util.ContainerUtils;
 
 /**
  * A {@link KeycloakContainer} configured for use with Arconia Dev Services.
@@ -127,9 +126,6 @@ final class ArconiaKeycloakContainer extends KeycloakContainer {
     @Override
     protected void configure() {
         super.configure();
-        if (ContainerUtils.isFixedPort(properties.getPort())) {
-            addFixedExposedPort(properties.getPort(), HTTP_PORT);
-        }
         // Publishes host ports into the container's network namespace, so Keycloak can call
         // back into the application (for example for Back-Channel Logout). Must happen before
         // the container starts, which is why it lives here rather than in the registrar.

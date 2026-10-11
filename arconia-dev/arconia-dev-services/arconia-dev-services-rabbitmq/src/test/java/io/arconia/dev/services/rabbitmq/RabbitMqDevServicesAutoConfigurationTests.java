@@ -1,5 +1,7 @@
 package io.arconia.dev.services.rabbitmq;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -22,7 +24,12 @@ class RabbitMqDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new RabbitMqDevServicesProperties();
-        return asDiscoverableContainer(new ArconiaRabbitMqContainer(properties), properties, ownerId);
+        return asDiscoverableContainer(RabbitMqDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
+    }
+
+    @Override
+    protected Map<String, Integer> additionalFixedPortProperties() {
+        return Map.of("management-console-port", RabbitMqDevServicesAutoConfiguration.HTTP_PORT);
     }
 
     @Override

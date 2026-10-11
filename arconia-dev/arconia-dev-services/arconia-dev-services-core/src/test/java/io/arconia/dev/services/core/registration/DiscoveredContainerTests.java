@@ -80,12 +80,12 @@ class DiscoveredContainerTests {
                 new ContainerInfo.ContainerPort(null, 9090, null, "tcp")));
     }
 
-    private static ContainerInfo containerInfo(List<ContainerInfo.ContainerPort> exposedPorts) {
+    private static ContainerInfo containerInfo(List<ContainerInfo.ContainerPort> ports) {
         return ContainerInfo.builder()
                 .id("abc123")
                 .imageName("postgres:latest")
                 .names(List.of("shared-postgres"))
-                .exposedPorts(exposedPorts)
+                .ports(ports)
                 .labels(Map.of())
                 .state("running")
                 .status("running")

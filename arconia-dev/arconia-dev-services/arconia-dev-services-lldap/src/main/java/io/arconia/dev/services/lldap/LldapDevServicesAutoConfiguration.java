@@ -6,6 +6,8 @@ import org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.ldap.LLdapContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -22,6 +24,16 @@ import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.LldapDevS
 @Import(LldapDevServicesRegistrar.class)
 public final class LldapDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "lldap/lldap";
+
+    static final int LDAP_PORT = 3890;
+
+    static final int UI_PORT = 17170;
+
+    static LLdapContainer createContainer(LldapDevServicesProperties properties) {
+        return new LLdapContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class LldapDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -32,10 +44,12 @@ public final class LldapDevServicesAutoConfiguration {
                     .name("lldap")
                     .description("LLDAP Dev Service")
                     .properties(properties)
-                    .container(ArconiaLldapContainer.class, () -> new ArconiaLldapContainer(properties))
+                    .container(LLdapContainer.class, () -> createContainer(properties))
+                    .port(LDAP_PORT)
+                    .additionalPort(UI_PORT, properties.getManagementConsolePort())
                     .discovery(LdapConnectionDetails.class,
                             container -> new LldapDiscoveredConnectionDetails(container, properties))
-                    .link("LLDAP Console", ArconiaLldapContainer.UI_PORT));
+                    .link("LLDAP Console", UI_PORT));
         }
 
     }

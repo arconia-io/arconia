@@ -124,6 +124,70 @@ class DevServiceRestartSupportTests {
     }
 
     @Test
+    void whenKeptReusableContainerIsNoLongerRunningThenItIsRemovedButNotStopped() {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = keep(new RestartingContainer().withReuse(true));
+        kept.running = false;
+
+        boolean retained = support.retainKeptContainer("postgres", CONTAINER_BEAN_NAME, RestartingContainer.class);
+
+        // A container reused via Testcontainers is never stopped by the framework.
+        assertThat(retained).isFalse();
+        assertThat(kept.stopped).isFalse();
+        assertThat(restartScope.remove(CONTAINER_BEAN_NAME)).isNull();
+    }
+
+    @Test
+    void whenKeptReusableContainerClassWasReloadedThenItIsRemovedButNotStopped() {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = keep(new RestartingContainer().withReuse(true));
+
+        boolean retained = support.retainKeptContainer("postgres", CONTAINER_BEAN_NAME, TestPostgresContainer.class);
+
+        // Testcontainers reattaches the new container instance to the running one through the reuse hash.
+        assertThat(retained).isFalse();
+        assertThat(kept.stopped).isFalse();
+        assertThat(restartScope.remove(CONTAINER_BEAN_NAME)).isNull();
+    }
+
+    @Test
+    void whenKeptContainerIsDiscardedThenItIsStoppedAndRemoved(CapturedOutput output) {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = keep(new RestartingContainer());
+
+        support.discardKeptContainer("postgres", CONTAINER_BEAN_NAME);
+
+        assertThat(kept.stopped).isTrue();
+        assertThat(restartScope.remove(CONTAINER_BEAN_NAME)).isNull();
+        assertThat(output).contains("Dev Service 'postgres': container").contains("is no longer needed");
+    }
+
+    @Test
+    void whenKeptReusableContainerIsDiscardedThenItIsRemovedButNotStopped() {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = keep(new RestartingContainer().withReuse(true));
+
+        support.discardKeptContainer("postgres", CONTAINER_BEAN_NAME);
+
+        assertThat(kept.stopped).isFalse();
+        assertThat(restartScope.remove(CONTAINER_BEAN_NAME)).isNull();
+    }
+
+    @Test
+    void whenNoContainerIsKeptThenDiscardingDoesNothing(CapturedOutput output) {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+
+        support.discardKeptContainer("postgres", CONTAINER_BEAN_NAME);
+
+        assertThat(output).doesNotContain("no longer needed");
+    }
+
+    @Test
     void whenRestartScopeIsNotActiveThenNothingIsRetained() {
         // Outside dev mode the scope is not active, even if registered and holding a container.
         beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);

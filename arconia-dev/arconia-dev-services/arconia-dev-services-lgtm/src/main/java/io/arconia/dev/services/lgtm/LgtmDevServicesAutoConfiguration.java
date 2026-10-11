@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.grafana.LgtmStackContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -25,6 +27,26 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 @Import(LgtmDevServicesRegistrar.class)
 public final class LgtmDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "grafana/otel-lgtm";
+
+    static final int GRAFANA_PORT = 3000;
+
+    static final int OTLP_GRPC_PORT = 4317;
+
+    static final int OTLP_HTTP_PORT = 4318;
+
+    static final int LOKI_PORT = 3100;
+
+    static final int TEMPO_PORT = 3200;
+
+    static final int PROMETHEUS_PORT = 9090;
+
+    static LgtmStackContainer createContainer(LgtmDevServicesProperties properties) {
+        var container = new LgtmStackContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        container.withEnv("GF_USERS_DEFAULT_THEME", "system");
+        return container;
+    }
+
     static class LgtmDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -36,11 +58,17 @@ public final class LgtmDevServicesAutoConfiguration {
                     .description("Grafana LGTM Dev Service")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
-                    .container(ArconiaLgtmStackContainer.class, () -> new ArconiaLgtmStackContainer(properties))
+                    .container(LgtmStackContainer.class, () -> createContainer(properties))
+                    .port(GRAFANA_PORT)
+                    .additionalPort(OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
+                    .additionalPort(OTLP_HTTP_PORT, properties.getOtlpHttpPort())
+                    .additionalPort(LOKI_PORT, properties.getLokiPort())
+                    .additionalPort(TEMPO_PORT, properties.getTempoPort())
+                    .additionalPort(PROMETHEUS_PORT, properties.getPrometheusPort())
                     .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
-                    .link("Grafana", ArconiaLgtmStackContainer.GRAFANA_PORT)
-                    .link("OTLP/HTTP", ArconiaLgtmStackContainer.OTLP_HTTP_PORT)
-                    .link("OTLP/gRPC", ArconiaLgtmStackContainer.OTLP_GRPC_PORT));
+                    .link("Grafana", GRAFANA_PORT)
+                    .link("OTLP/HTTP", OTLP_HTTP_PORT)
+                    .link("OTLP/gRPC", OTLP_GRPC_PORT));
         }
 
     }

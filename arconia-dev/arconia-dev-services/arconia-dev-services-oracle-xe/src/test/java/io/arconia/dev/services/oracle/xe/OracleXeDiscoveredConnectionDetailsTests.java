@@ -56,7 +56,7 @@ class OracleXeDiscoveredConnectionDetailsTests {
      */
     private static OracleContainer reachableContainer(OracleXeDevServicesProperties properties) {
         var container = new OracleContainer(DockerImageName.parse(properties.getImageName())
-                .asCompatibleSubstituteFor(ArconiaOracleXeContainer.COMPATIBLE_IMAGE_NAME)) {
+                .asCompatibleSubstituteFor(OracleXeDevServicesAutoConfiguration.COMPATIBLE_IMAGE_NAME)) {
 
             @Override
             public String getHost() {
@@ -77,7 +77,7 @@ class OracleXeDiscoveredConnectionDetailsTests {
         return new DiscoveredContainer(ContainerInfo.builder()
                 .id("abc123")
                 .imageName("oracle:latest")
-                .exposedPorts(List.of(new ContainerInfo.ContainerPort("0.0.0.0", ArconiaOracleXeContainer.ORACLE_PORT, MAPPED_PORT, "tcp")))
+                .ports(List.of(new ContainerInfo.ContainerPort("0.0.0.0", OracleXeDevServicesAutoConfiguration.ORACLE_PORT, MAPPED_PORT, "tcp")))
                 .state("running")
                 .status("running")
                 .build(), HOST);

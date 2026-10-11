@@ -18,7 +18,7 @@ final class ArtemisDiscoveredConnectionDetails implements ArtemisConnectionDetai
     private final String password;
 
     ArtemisDiscoveredConnectionDetails(DiscoveredContainer container, ArtemisDevServicesProperties properties) {
-        this.brokerUrl = "tcp://%s:%d".formatted(container.host(), container.mappedPort(ArconiaArtemisContainer.TCP_PORT));
+        this.brokerUrl = "tcp://%s:%d".formatted(container.host(), container.mappedPort(ArtemisDevServicesAutoConfiguration.TCP_PORT));
         this.user = properties.getUsername();
         this.password = properties.getPassword();
     }

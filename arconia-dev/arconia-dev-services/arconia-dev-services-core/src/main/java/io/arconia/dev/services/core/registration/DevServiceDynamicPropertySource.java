@@ -32,7 +32,7 @@ final class DevServiceDynamicPropertySource extends MapPropertySource {
 
     private final Map<String, Supplier<Object>> valueSuppliers;
 
-    DevServiceDynamicPropertySource(Map<String, Supplier<Object>> valueSuppliers) {
+    private DevServiceDynamicPropertySource(Map<String, Supplier<Object>> valueSuppliers) {
         super(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME, Collections.unmodifiableMap(valueSuppliers));
         this.valueSuppliers = valueSuppliers;
     }

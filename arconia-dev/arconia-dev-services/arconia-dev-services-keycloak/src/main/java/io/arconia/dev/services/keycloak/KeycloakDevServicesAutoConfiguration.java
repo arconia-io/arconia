@@ -32,6 +32,7 @@ public final class KeycloakDevServicesAutoConfiguration {
                     .description("Keycloak Dev Service")
                     .properties(properties)
                     .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))
+                    .port(ArconiaKeycloakContainer.HTTP_PORT)
                     .discovery(KeycloakConnectionDetails.class,
                             container -> new KeycloakDiscoveredConnectionDetails(container, properties))
                     .link("Keycloak Admin Console", ArconiaKeycloakContainer.HTTP_PORT, "/admin"));

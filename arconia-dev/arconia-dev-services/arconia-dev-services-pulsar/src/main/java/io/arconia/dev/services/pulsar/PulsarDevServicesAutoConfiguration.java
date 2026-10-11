@@ -6,6 +6,8 @@ import org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.pulsar.PulsarContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
@@ -22,6 +24,12 @@ import io.arconia.dev.services.pulsar.PulsarDevServicesAutoConfiguration.PulsarD
 @Import(PulsarDevServicesRegistrar.class)
 public final class PulsarDevServicesAutoConfiguration {
 
+    static final String COMPATIBLE_IMAGE_NAME = "apachepulsar/pulsar";
+
+    static PulsarContainer createContainer(PulsarDevServicesProperties properties) {
+        return new PulsarContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
     static class PulsarDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -32,9 +40,11 @@ public final class PulsarDevServicesAutoConfiguration {
                     .name("pulsar")
                     .description("Pulsar Dev Service")
                     .properties(properties)
-                    .container(ArconiaPulsarContainer.class, () -> new ArconiaPulsarContainer(properties))
+                    .container(PulsarContainer.class, () -> createContainer(properties))
+                    .port(PulsarContainer.BROKER_PORT)
+                    .additionalPort(PulsarContainer.BROKER_HTTP_PORT, properties.getAdminPort())
                     .discovery(PulsarConnectionDetails.class, PulsarDiscoveredConnectionDetails::new)
-                    .link("Pulsar Admin API", ArconiaPulsarContainer.BROKER_HTTP_PORT));
+                    .link("Pulsar Admin API", PulsarContainer.BROKER_HTTP_PORT));
         }
 
     }

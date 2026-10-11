@@ -105,6 +105,18 @@ class ContainerConfigurerTests {
         assertThat(getStartupTimeout(container)).isEqualTo(Duration.ofSeconds(45));
     }
 
+    @Test
+    void applyShouldRoundTheJdbcConnectionPollingTimeoutUpToWholeSeconds() {
+        JdbcDatabaseContainer<?> container = new PostgreSQLContainer("postgres:latest");
+        JdbcDevServicesProperties properties = new TestJdbcDevServicesProperties()
+                .withStartupTimeout(Duration.ofMillis(500));
+
+        ContainerConfigurer.apply(container, properties);
+
+        // Truncating to 0 seconds would skip the connection polling altogether.
+        assertThat(ReflectionTestUtils.getField(container, "startupTimeoutSeconds")).isEqualTo(1);
+    }
+
     private static Duration getStartupTimeout(GenericContainer<?> container) {
         WaitStrategy waitStrategy = ReflectionTestUtils.invokeMethod(container, "getWaitStrategy");
         assertThat(waitStrategy).isNotNull();

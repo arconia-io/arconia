@@ -1,7 +1,5 @@
 package io.arconia.dev.services.core.registration;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
@@ -19,8 +17,6 @@ final class DevServiceNetworkSupport {
      * The global property enabling the network shared by the dev service containers of the application.
      */
     static final String NETWORK_ENABLED_PROPERTY = "arconia.dev.services.network.enabled";
-
-    private static final Logger logger = LoggerFactory.getLogger(DevServiceNetworkSupport.class);
 
     private final Environment environment;
 
@@ -63,12 +59,6 @@ final class DevServiceNetworkSupport {
             container.withNetwork(network);
         }
         container.withNetworkAliases(serviceName);
-
-        // The network is created anew with every run, and the Testcontainers reuse hash includes it,
-        // so a reusable container on the shared network is never found again.
-        if (container.isShouldBeReused()) {
-            logger.warn("The 'testcontainers' reuse strategy doesn't combine with the shared network: the '{}' dev service container is not reused across runs", serviceName);
-        }
     }
 
 }

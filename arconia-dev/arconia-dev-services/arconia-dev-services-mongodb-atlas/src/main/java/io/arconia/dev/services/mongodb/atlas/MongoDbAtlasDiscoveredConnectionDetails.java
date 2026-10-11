@@ -16,7 +16,7 @@ final class MongoDbAtlasDiscoveredConnectionDetails implements MongoConnectionDe
 
     MongoDbAtlasDiscoveredConnectionDetails(DiscoveredContainer container) {
         this.connectionString = new ConnectionString("mongodb://%s:%d/test?directConnection=true"
-                .formatted(container.host(), container.mappedPort(ArconiaMongoDbAtlasLocalContainer.MONGODB_PORT)));
+                .formatted(container.host(), container.mappedPort(MongoDbAtlasDevServicesAutoConfiguration.MONGODB_PORT)));
     }
 
     @Override

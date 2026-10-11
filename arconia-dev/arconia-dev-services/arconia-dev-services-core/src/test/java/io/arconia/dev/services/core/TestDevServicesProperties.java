@@ -25,11 +25,15 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
             .withEnvironment(Map.of("KEY", "value"))
             .withNetworkAliases(List.of("db"));
 
+    private boolean enabled = true;
+
     private String imageName = "test-image:latest";
 
     private Map<String, String> environment = Map.of();
 
     private List<String> networkAliases = List.of();
+
+    private int port = 0;
 
     private List<ResourceMapping> resources = List.of();
 
@@ -38,6 +42,12 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
     private Duration startupTimeout = Duration.ofSeconds(30);
 
     private List<VolumeMapping> volumes = List.of();
+
+    public TestDevServicesProperties withEnabled(boolean enabled) {
+        TestDevServicesProperties copy = copy();
+        copy.enabled = enabled;
+        return copy;
+    }
 
     public TestDevServicesProperties withImageName(String imageName) {
         TestDevServicesProperties copy = copy();
@@ -54,6 +64,12 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
     public TestDevServicesProperties withNetworkAliases(List<String> networkAliases) {
         TestDevServicesProperties copy = copy();
         copy.networkAliases = networkAliases;
+        return copy;
+    }
+
+    public TestDevServicesProperties withPort(int port) {
+        TestDevServicesProperties copy = copy();
+        copy.port = port;
         return copy;
     }
 
@@ -82,6 +98,11 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public String getImageName() {
         return imageName;
     }
@@ -94,6 +115,11 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
     @Override
     public List<String> getNetworkAliases() {
         return networkAliases;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
     }
 
     @Override
@@ -129,9 +155,11 @@ public class TestDevServicesProperties implements BaseDevServicesProperties {
      * Copy the common values into the given instance.
      */
     protected void copyInto(TestDevServicesProperties target) {
+        target.enabled = enabled;
         target.imageName = imageName;
         target.environment = environment;
         target.networkAliases = networkAliases;
+        target.port = port;
         target.resources = resources;
         target.reuseStrategy = reuseStrategy;
         target.startupTimeout = startupTimeout;

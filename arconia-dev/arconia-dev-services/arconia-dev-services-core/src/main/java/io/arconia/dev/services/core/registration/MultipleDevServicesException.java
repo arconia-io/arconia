@@ -2,10 +2,13 @@ package io.arconia.dev.services.core.registration;
 
 import java.util.List;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Exception thrown when multiple dev services in the same category are active simultaneously.
  * Only one dev service per category may be enabled at a time.
  */
+@Incubating
 public final class MultipleDevServicesException extends RuntimeException {
 
     private final String category;

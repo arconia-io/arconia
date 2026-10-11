@@ -1,10 +1,7 @@
 package io.arconia.dev.services.core.registration;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.test.system.CapturedOutput;
-import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.Network;
 
@@ -18,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link DevServiceNetworkSupport}.
  */
-@ExtendWith(OutputCaptureExtension.class)
 class DevServiceNetworkSupportTests {
 
     private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
@@ -83,15 +79,6 @@ class DevServiceNetworkSupportTests {
 
         assertThat(container.getNetwork()).isSameAs(ownNetwork);
         assertThat(container.getNetworkAliases()).contains("postgres");
-    }
-
-    @Test
-    void whenContainerIsReusableThenWarns(CapturedOutput output) {
-        var container = new TestPostgresContainer().withReuse(true);
-
-        enabledSupport.join(container, "postgres", beanFactory);
-
-        assertThat(output).contains("doesn't combine with the shared network").contains("postgres");
     }
 
 }

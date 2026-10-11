@@ -1,6 +1,7 @@
 package io.arconia.dev.services.lldap;
 
 import org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails;
+import org.testcontainers.ldap.LLdapContainer;
 
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
@@ -20,8 +21,8 @@ final class LldapDiscoveredConnectionDetails implements LdapConnectionDetails {
 
     LldapDiscoveredConnectionDetails(DiscoveredContainer container, LldapDevServicesProperties properties) {
         // The container is only asked how it would be configured, it is never started.
-        ArconiaLldapContainer configuration = new ArconiaLldapContainer(properties);
-        this.url = "ldap://%s:%d".formatted(container.host(), container.mappedPort(ArconiaLldapContainer.LDAP_PORT));
+        LLdapContainer configuration = LldapDevServicesAutoConfiguration.createContainer(properties);
+        this.url = "ldap://%s:%d".formatted(container.host(), container.mappedPort(LldapDevServicesAutoConfiguration.LDAP_PORT));
         this.baseDn = configuration.getBaseDn();
         this.username = configuration.getUser();
         this.password = configuration.getPassword();

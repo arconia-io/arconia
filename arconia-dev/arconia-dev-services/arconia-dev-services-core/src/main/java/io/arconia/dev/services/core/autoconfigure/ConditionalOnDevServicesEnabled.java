@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.annotation.AliasFor;
 
+import io.arconia.core.support.Incubating;
+
 /**
  * Whether the specified dev services module should be enabled.
  * <p>
@@ -22,6 +24,7 @@ import org.springframework.core.annotation.AliasFor;
  * it via {@link #prefix()} so that their {@code <prefix>.<name>.enabled} toggle is
  * honored with the same semantics as the built-in dev services.
  */
+@Incubating
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented

@@ -1,5 +1,8 @@
 package io.arconia.dev.services.docling;
 
+import ai.docling.testcontainers.serve.DoclingServeContainer;
+import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
@@ -22,6 +25,16 @@ import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 @Import(DoclingDevServicesRegistrar.class)
 public final class DoclingDevServicesAutoConfiguration {
 
+    static DoclingServeContainer createContainer(DoclingDevServicesProperties properties) {
+        return new DoclingServeContainer(DoclingServeContainerConfig.builder()
+                .image(properties.getImageName())
+                .enableUi(properties.isEnableUi())
+                .apiKey(properties.getApiKey())
+                .containerEnv(properties.getEnvironment())
+                .startupTimeout(properties.getStartupTimeout())
+                .build());
+    }
+
     static class DoclingDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -32,11 +45,12 @@ public final class DoclingDevServicesAutoConfiguration {
                     .name("docling")
                     .description("Docling Dev Service")
                     .properties(properties)
-                    .container(ArconiaDoclingServeContainer.class, () -> new ArconiaDoclingServeContainer(properties))
+                    .container(DoclingServeContainer.class, () -> createContainer(properties))
+                    .port(DoclingServeContainer.DEFAULT_DOCLING_PORT)
                     .discovery(DoclingServeConnectionDetails.class,
                             container -> new DoclingDiscoveredConnectionDetails(container, properties))
-                    .link("Docling UI", ArconiaDoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui")
-                    .link("Docling OpenAPI", ArconiaDoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs"));
+                    .link("Docling UI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui")
+                    .link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs"));
         }
 
     }

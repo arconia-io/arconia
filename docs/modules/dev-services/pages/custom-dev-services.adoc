@@ -12,7 +12,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 The Dev Services infrastructure is split into two modules:
 
 * `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
-* `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `ContainerConfigurer`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
+* `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `@ConditionalOnDevServicesEnabled`, and the `ContainerConfigurer` helpers for resolving resources. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
 
@@ -51,6 +51,9 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
     // Additional common properties: environment, networkAliases, port,
     // resources, reuseStrategy, startupTimeout, volumes...
 
+    // Properties of your own, such as a fixed port for the management console:
+    // consolePort...
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -79,42 +82,47 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
 `BaseDevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
 ====
 
-== Container Class
+== Container
 
-Define a container class for your service. Extend the service's Testcontainers class if one exists, or `GenericContainer` otherwise. The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your class must not apply them itself. What is left to the class is the image, the exposed ports, the wait strategy, and the fixed ports, which the container class declares.
+The Dev Service runs in a Testcontainers container, which you create when registering the Dev Service (see xref:custom-dev-services.adoc#_auto_configuration_and_registration[Auto-Configuration and Registration]). The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `port`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your code must not apply them itself. What is left to you is the image, the exposed ports, and the wait strategy.
+
+If a Testcontainers module exists for your service, use its container class directly, with the image parsed from your properties. For example, for a service compatible with PostgreSQL:
+
+[source,java]
+----
+static PostgreSQLContainer createContainer(FancyDbDevServicesProperties properties) {
+    return new PostgreSQLContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor("postgres"));
+}
+----
+
+The `asCompatibleSubstituteFor(...)` call names the image the module expects, so that a user configuring an alternative image passes the compatibility check of the module. No subclass is needed: whatever the module class doesn't set, such as credentials or a wait strategy, is set on the instance before returning it.
+
+If no Testcontainers module exists, as for FancyDB, define a small `GenericContainer` subclass declaring the image, the exposed ports, and the wait strategy:
 
 [source,java]
 ----
 public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 
-    static final String COMPATIBLE_IMAGE_NAME = "acme/fancydb";
-
     static final int FANCYDB_PORT = 8090;
 
-    private final FancyDbDevServicesProperties properties;
+    static final int CONSOLE_PORT = 8091;
 
-    public FancyDbContainer(FancyDbDevServicesProperties properties) {
-        super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
-        this.properties = properties;
-
-        this.withExposedPorts(FANCYDB_PORT);
+    public FancyDbContainer(DockerImageName image) {
+        super(image);
+        this.withExposedPorts(FANCYDB_PORT, CONSOLE_PORT);
         this.waitingFor(Wait.defaultWaitStrategy());
-    }
-
-    @Override
-    protected void configure() {
-        super.configure();
-        if (ContainerUtils.isFixedPort(properties.getPort())) {
-            addFixedExposedPort(properties.getPort(), FANCYDB_PORT);
-        }
     }
 
 }
 ----
 
-Declare a wait strategy unless your container class already has one of its own, as in the example above. The `startup-timeout` property is applied to the container's wait strategy, and Testcontainers shares a single default wait strategy instance across all containers that don't declare one: without an explicit strategy, the timeout configured for your Dev Service would change the startup timeout of every other container relying on the shared instance. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
+A subclass is also the place for behavior a module class doesn't offer, such as running a command once the container has started, by overriding the protected hooks of `GenericContainer`.
 
-For relational databases, extend the service's `JdbcDatabaseContainer` and implement `JdbcDevServicesProperties`: credentials, database name, and init scripts are then applied by the framework as well.
+Declare a wait strategy unless the container class already has one of its own, as in the example above. The `startup-timeout` property is applied to the container's wait strategy, and Testcontainers shares a single default wait strategy instance across all containers that don't declare one: without an explicit strategy, the timeout configured for your Dev Service would change the startup timeout of every other container relying on the shared instance. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
+
+For relational databases, use the service's `JdbcDatabaseContainer` and implement `JdbcDevServicesProperties`: credentials, database name, and init scripts are then applied by the framework as well.
+
+The common `port` property binds the main port of your service to a fixed port on the host. If your service exposes more ports worth binding, such as a management console, declare a property of your own for each of them. Both the main port and the additional ones are declared when registering the Dev Service (see the next sections); the framework applies the bindings.
 
 == Exposing Links
 
@@ -125,7 +133,7 @@ If your service has endpoints worth surfacing to developers, such as a managemen
 registry.registerDevService(service -> service
         .name("fancydb")
         // ...
-        .link("FancyDB Console", FancyDbContainer.FANCYDB_PORT, "/console"));
+        .link("FancyDB Console", FancyDbContainer.CONSOLE_PORT, "/console"));
 ----
 
 The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]), both for a container the application started and for one it discovered from another application. Declare a port your container actually exposes: a link whose port can't be resolved is skipped with a warning, and the remaining links are still reported.
@@ -152,13 +160,21 @@ public final class FancyDbDevServicesAutoConfiguration {
                     .name("fancydb")
                     .description("FancyDB Dev Service")
                     .properties(properties)
-                    .container(FancyDbContainer.class, () -> new FancyDbContainer(properties)));
+                    .container(FancyDbContainer.class, () -> createContainer(properties))
+                    .port(FancyDbContainer.FANCYDB_PORT)
+                    .additionalPort(FancyDbContainer.CONSOLE_PORT, properties.getConsolePort()));
         }
 
     }
 
+    static FancyDbContainer createContainer(FancyDbDevServicesProperties properties) {
+        return new FancyDbContainer(DockerImageName.parse(properties.getImageName()));
+    }
+
 }
 ----
+
+The `container(...)` call declares the container type and how to create an instance, which the framework then configures and starts. The `port(...)` call declares the container port of the main service, which the common `port` property binds to a fixed port on the host when a user sets it. Each `additionalPort(...)` call declares another container port together with the host port a property of your own binds it to; a value of `0`, the default of such a property, binds nothing and the port is published on a random available port.
 
 [IMPORTANT]
 ====
@@ -166,6 +182,8 @@ A few constraints apply to the registration, enforced at startup:
 
 * The name of the Dev Service must contain only lowercase letters, digits, and dashes (`[a-z0-9]([a-z0-9-]*[a-z0-9])?`), since it becomes part of bean names, container labels, and the network alias of the container. It must be unique in the application: registering a second Dev Service with the same name fails.
 * The description is required: it's shown in developer tooling, such as the `devservices` actuator endpoint.
+* The `port` property can only be set for a Dev Service declaring its container port with `port(...)`. Otherwise, the property would be silently ignored, so the application fails to start instead.
+* The common properties must return a value: a properties class returning `null` for one of them is reported by property name at startup.
 * The auto-configuration must declare `before = ServiceConnectionAutoConfiguration.class`, as in the example above: the container bean definition must exist by the time Spring Boot looks for the `@ServiceConnection` beans to provide the connection details for. Without it, the container starts, but the application is not connected to it.
 * `serviceConnectionName(...)` can't be combined with `serviceConnection(false)` (see xref:custom-dev-services.adoc#_wiring_the_application_to_the_service[Wiring the Application to the Service]).
 * Links (see xref:custom-dev-services.adoc#_exposing_links[Exposing Links]) are resolved as `http://` URLs.
@@ -206,7 +224,7 @@ protected void registerDevServices(DevServicesRegistry registry, Environment env
 }
 ----
 
-The property value is resolved lazily, only after the container has started, mirroring the semantics of Spring Boot's `@DynamicPropertySource`.
+The property value is resolved lazily, every time the property is read, mirroring the semantics of Spring Boot's `@DynamicPropertySource`. Looking up the container bean from the supplier starts the container on demand if it isn't running yet, so the value is always the one of the running container.
 
 == Supporting Discovery
 

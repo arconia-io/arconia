@@ -4,6 +4,8 @@ import java.net.URI;
 
 import io.awspring.cloud.autoconfigure.core.AwsConnectionDetails;
 
+import io.floci.testcontainers.FlociContainer;
+
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
 /**
@@ -22,8 +24,8 @@ final class FlociDiscoveredConnectionDetails implements AwsConnectionDetails {
 
     FlociDiscoveredConnectionDetails(DiscoveredContainer container, FlociDevServicesProperties properties) {
         // The container is only asked how it would be configured, it is never started.
-        ArconiaFlociContainer configuration = new ArconiaFlociContainer(properties);
-        this.endpoint = URI.create("http://%s:%d".formatted(container.host(), container.mappedPort(ArconiaFlociContainer.PORT)));
+        FlociContainer configuration = FlociDevServicesAutoConfiguration.createContainer(properties);
+        this.endpoint = URI.create("http://%s:%d".formatted(container.host(), container.mappedPort(FlociContainer.PORT)));
         this.region = configuration.getRegion();
         this.accessKey = configuration.getAccessKey();
         this.secretKey = configuration.getSecretKey();
