@@ -5,10 +5,8 @@ plugins {
     id "release-conventions"
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
 }
 
 dependencies {

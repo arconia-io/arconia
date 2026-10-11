@@ -141,6 +141,10 @@ public record ContainerInfo(
          * Builds the {@link ContainerInfo} instance.
          */
         public ContainerInfo build() {
+            Assert.notNull(id, "id cannot be null");
+            Assert.notNull(imageName, "imageName cannot be null");
+            Assert.notNull(state, "state cannot be null");
+            Assert.notNull(status, "status cannot be null");
             return new ContainerInfo(id, imageName, names, exposedPorts, labels, state, status);
         }
 

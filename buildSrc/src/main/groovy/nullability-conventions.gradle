@@ -1,0 +1,39 @@
+plugins {
+    id 'net.ltgt.errorprone'
+    id 'net.ltgt.nullaway'
+}
+
+ext {
+    set("errorProneVersion", '2.50.0')
+    set("nullAwayVersion", '0.14.2')
+}
+
+dependencies {
+    errorprone "com.google.errorprone:error_prone_core:${errorProneVersion}"
+    errorprone "com.uber.nullaway:nullaway:${nullAwayVersion}"
+}
+
+nullaway {
+    // Only @NullMarked code is checked, so unannotated dependencies produce no noise.
+    onlyNullMarked = true
+    // Full JSpecify semantics: nullness of type arguments, array components and varargs.
+    jspecifyMode = true
+}
+
+tasks.withType(JavaCompile).configureEach { task ->
+    task.options.errorprone {
+        // Error Prone is only used as the NullAway host; its own checks stay off.
+        disableAllChecks = true
+        // Every package must declare @NullMarked (or @NullUnmarked) explicitly.
+        error('RequireExplicitNullMarking')
+        nullaway {
+            error()
+            // Honor the @Contract annotations on Spring's Assert, StringUtils, ObjectUtils and
+            // CollectionUtils, so that e.g. Assert.notNull(value, ...) narrows the value.
+            checkContracts = true
+            customContractAnnotations.add('org.springframework.lang.Contract')
+        }
+        // Null-safety enforcement applies to production code only, not tests.
+        enabled = task.name == 'compileJava'
+    }
+}

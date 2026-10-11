@@ -120,6 +120,10 @@ public record DevServiceRegistration(
          * Builds the {@link DevServiceRegistration} instance.
          */
         public DevServiceRegistration build() {
+            Assert.notNull(name, "name cannot be null");
+            Assert.notNull(description, "description cannot be null");
+            Assert.notNull(origin, "origin cannot be null");
+            Assert.notNull(containerInfo, "containerInfo cannot be null");
             return new DevServiceRegistration(name, description, origin, containerInfo, links);
         }
 
