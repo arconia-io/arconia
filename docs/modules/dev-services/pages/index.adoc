@@ -8,7 +8,7 @@ Built on https://testcontainers.com[Testcontainers] and https://docs.spring.io/s
 
 [NOTE]
 ====
-Dev Services are designed exclusively for development and testing workflows. Declared as development/test-only dependencies, they are excluded from production builds and have zero impact on your production deployments. As an additional safety net against dependency scoping mistakes, Dev Services never activate when the application runs in xref:ROOT:core-features/bootstrap-mode.adoc[prod mode].
+Dev Services are designed exclusively for development and testing workflows. Declared as development/test-only dependencies, they are excluded from production builds and have zero impact on your production deployments.
 ====
 
 == How It Works
@@ -56,7 +56,7 @@ Maven::
 +
 include::ROOT:partial$app-run.adoc[]
 
-3. That's it! The PostgreSQL container starts automatically and your application connects to it. No configuration files, no code changes needed.
+3. That's it! The PostgreSQL container starts automatically, and your application connects to it. No configuration files, no code changes needed.
 
 [TIP]
 ====
@@ -80,7 +80,7 @@ Your application is automatically configured to connect to Dev Services, which t
 
 The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
-If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean, or a static `@ServiceConnection` container field in a test class), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup. A `@ServiceConnection` container declared as a `@Bean` doesn't take precedence, because Spring Boot derives its connection details only after the Dev Services are registered: in that case, or to use a service you configure through properties, disable the Dev Service with its `enabled` property.
+If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup.
 
 === Lifecycle Management
 
@@ -92,15 +92,13 @@ Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans i
 
 When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] in dev mode, Dev Services are not recreated on restart. They remain running in the background until the application process exits, ensuring a smooth development experience without wait times or state loss.
 
-Since the container is kept, changes to the configuration of a Dev Service (its `arconia.dev.services.<service-name>.*` properties, the `arconia.dev.services.network.*` properties, or a `DevServiceContainerCustomizer` bean) take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example because it was removed manually. A kept container is stopped on restart when the Dev Service is no longer used, for example because the application now defines its own `ConnectionDetails` bean for the service. Disabling the Dev Service with its `enabled` property is different: its auto-configuration backs off entirely, so the kept container stays running until the application process exits.
+Since the container is kept, changes to the configuration of a Dev Service take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example, because it was removed manually.
 
 A Dev Service can also use a container that is already running instead of starting a new one, which changes when the container is stopped. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 === Dev Services in Test Mode
 
 In test mode, every test application context starts its own containers and stops them when it closes, to ensure test isolation, consistency, and reliability. The features that keep or share containers are only available in dev mode: the reuse strategies, the persistence across Spring Boot DevTools restarts, and the `devservices` actuator endpoint.
-
-A few consequences are worth knowing when a test suite creates several application contexts in the same JVM: a fixed `port` makes the second context fail to start, since the first one still holds the port, and the shared network, when enabled, is the same for all the contexts, so their containers can reach each other.
 
 === Configuration Options
 
@@ -137,7 +135,7 @@ All Dev Services are enabled by default. Other properties have sensible defaults
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
 | `arconia.dev.services.<service-name>.reuse-strategy`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application runs, relying on the Testcontainers reusable containers feature, which you enable yourself; such containers are never stopped automatically, so you are in charge of cleaning them up. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode.
 
 | `arconia.dev.services.<service-name>.startup-timeout`
 | Maximum waiting time for the service to start, counted from the container start.
@@ -219,13 +217,11 @@ The `framework` strategy lets multiple applications running simultaneously durin
 * Distributed systems: Share a message broker (e.g., RabbitMQ, Kafka) or observability platform (e.g. Grafana LGTM) across multiple services.
 * Resource efficiency: Avoid running duplicate containers for the same service, especially for resource-intensive services (e.g., Docling, Ollama).
 
-It works out of the box, with no additional setup required. Every Dev Service container is labeled, and the application first looks for a running container that already provides the same Dev Service. If one is found, the application connects to it instead of starting a new container. Otherwise, the application starts its own container, which other applications can discover in turn. A container is discoverable as soon as it's running, possibly a few moments before the service inside it is ready to accept connections; client libraries with connection retries (the norm in Spring Boot integrations) absorb that window transparently.
+It works out of the box, with no additional setup required. Every Dev Service container is labeled, and the application first looks for a running container that already provides the same Dev Service. If one is found, the application connects to it instead of starting a new container. Otherwise, the application starts its own container, which other applications can discover in turn.
 
 The application that started the container owns its lifecycle: the container is stopped when that application stops. Applications that were connected to it lose access to the service at that point. The next time they start, they look for a running container again and start their own if none is found.
 
 A discovered container is used as it runs, with the configuration of the application that started it. Application-specific customization (environment variables, resources, image name, `DevServiceContainerCustomizer` beans) doesn't apply to containers started by other applications. The application connects with its own configured settings, so any credentials must be the same across the applications using the service. For databases, that includes the username, the password, and the database name. If an application needs its own differently-configured service instance, set `arconia.dev.services.<service-name>.reuse-strategy=none` for that service.
-
-For databases, two more things are worth knowing. A database container is discoverable a few moments before the database accepts connections, and tools that connect at startup, such as Flyway and Liquibase, don't retry: if an application starts in that window, start it again. Also, Flyway and Liquibase run their migrations on the application's `DataSource`, which points at the discovered container; if you set `spring.flyway.url` or `spring.liquibase.url` explicitly, that URL is used instead.
 
 When using Spring Boot DevTools, an application that started a container keeps using it across restarts, even if another application has started a container for the same Dev Service in the meantime.
 
@@ -253,7 +249,7 @@ Reusable containers are never removed automatically. You are in charge of stoppi
 
 ==== Finding and Cleaning Up Containers
 
-The startup message of each Dev Service reports the container it runs in and the reuse strategy in effect (see xref:index.adoc#_startup_feedback[Startup Feedback]). Every Dev Service container also carries the `io.arconia.dev-service.name` label, holding the name of the Dev Service, so you can list the containers with your container runtime:
+The startup message of each Dev Service reports the container it runs in, and the reuse strategy in effect (see xref:index.adoc#_startup_feedback[Startup Feedback]). Every Dev Service container also carries the `io.arconia.dev-service.name` label, holding the name of the Dev Service, so you can list the containers with your container runtime:
 
 [source,shell]
 ----
@@ -381,11 +377,6 @@ arconia:
 <1> A single global switch attaches every Dev Service container to the shared network.
 <2> The `lgtm` hostname is the target's service name, which every container on the shared network is reachable by, and `4317` is the container's internal OTLP/gRPC port, not the host-mapped port. To reach a container by other hostnames as well, set its `network-aliases` property.
 
-[NOTE]
-====
-The shared network is distinct from the `framework` reuse strategy: the strategy lets applications use the same container (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]), while the shared network puts containers on a common OCI network so they can reach each other. They are independent and can be combined. Your application's service connections (host and mapped ports) are unaffected.
-====
-
 ==== Advanced Scenarios
 
 * Container reuse. The shared network doesn't combine with the `testcontainers` reuse strategy: the network is created anew with every run, and since the Testcontainers reuse hash includes it, a container kept by that strategy would never be matched again and would be left running after every run. When the shared network is enabled, the strategy is therefore not applied, and the startup message of the Dev Service says so. Use one or the other.
@@ -418,7 +409,7 @@ When a Dev Service is ready, Arconia logs a consistent startup message: one line
 ...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896, OTLP/gRPC: http://localhost:32897
 ----
 
-The first line states the container image, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, and, in dev mode, the reuse strategy in effect. When the configured strategy could not be applied, the reason follows it in parentheses, for example because the Testcontainers reusable containers feature is not enabled on your machine:
+The first line states the container image, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, and, in dev mode, the reuse strategy in effect. When the configured strategy could not be applied, the reason follows it in parentheses, for example, because the Testcontainers reusable containers feature is not enabled on your machine:
 
 [source,logs]
 ----
@@ -428,7 +419,7 @@ The first line states the container image, whether the container was started by 
 
 The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`. For services with no HTTP interface, the endpoint also reports the host ports the container publishes, which is what you need to connect to them from a tool on your machine.
 
-The messages are written by the `io.arconia.dev.services.startup` logger. Testcontainers logs its own progress (connecting to the container runtime, pulling images, starting containers) at info level as well; to keep only the Arconia messages, set `logging.level.org.testcontainers=WARN` and `logging.level.tc=WARN`.
+The messages are written by the `io.arconia.dev.services.startup` logger. Testcontainers logs its own progress (connecting to the container runtime, pulling images, starting containers) at info level as well. To keep only the Arconia messages, set `logging.level.org.testcontainers=WARN` and `logging.level.tc=WARN`.
 
 When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
 
@@ -626,7 +617,7 @@ Response example:
 }
 ----
 
-The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging. The `containerInfo` field is `null` when the container can no longer be inspected, for example because it was removed manually or the container runtime is not reachable.
+The endpoint provides visibility into container IDs, image names, port mappings, and other runtime information useful for troubleshooting and debugging. The `containerInfo` field is `null` when the container can no longer be inspected, for example, because it was removed manually or the container runtime is not reachable.
 
 The `state` field is the lifecycle state of the container as defined by the Docker Engine API (`created`, `running`, `paused`, `restarting`, `removing`, `exited`, or `dead`), suitable for programmatic checks. The `status` field is the human-readable description the container runtime provides for that state, such as `Up About 67 minutes` or `Exited (0) 2 minutes ago`.
 
@@ -798,6 +789,6 @@ Add dependency → Run application
 Requires understanding of Testcontainers API, Spring Boot integration patterns, and test classpath execution.
 
 | Best For
-| Rapid development, standard use cases, teams seeking simplicity.
+| Rapid development, standard use cases, cloud native and microservices, teams seeking simplicity.
 | Advanced scenarios requiring custom container configuration or specialized setups
 |===

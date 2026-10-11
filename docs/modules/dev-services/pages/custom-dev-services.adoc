@@ -48,11 +48,9 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
      */
     private String imageName = "acme/fancydb:1.0.0";
 
-    // Additional common properties: environment, networkAliases, port,
-    // resources, reuseStrategy, startupTimeout, volumes...
+    // Additional common properties...
 
-    // Properties of your own, such as a fixed port for the management console:
-    // consolePort...
+    // More properties of your own...
 
     @Override
     public boolean isEnabled() {
@@ -84,20 +82,18 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
 
 == Container
 
-The Dev Service runs in a Testcontainers container, which you create when registering the Dev Service (see xref:custom-dev-services.adoc#_auto_configuration_and_registration[Auto-Configuration and Registration]). The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `port`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your code must not apply them itself. What is left to you is the image, the exposed ports, and the wait strategy.
+The Dev Service runs in a Testcontainers container, which you create when registering the Dev Service (see xref:custom-dev-services.adoc#_auto_configuration_and_registration[Auto-Configuration and Registration]). The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `port`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your code must not apply them itself. What is left to you is the image and, optionally, the exposed ports and the wait strategy.
 
-If a Testcontainers module exists for your service, use its container class directly, with the image parsed from your properties. For example, for a service compatible with PostgreSQL:
+If a Testcontainers module exists for your service, use its container class directly, with the image parsed from your properties. For example:
 
 [source,java]
 ----
-static PostgreSQLContainer createContainer(FancyDbDevServicesProperties properties) {
-    return new PostgreSQLContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor("postgres"));
+static FancyDbContainer createContainer(FancyDbDevServicesProperties properties) {
+    return new FancyDbContainer(DockerImageName.parse(properties.getImageName()));
 }
 ----
 
-The `asCompatibleSubstituteFor(...)` call names the image the module expects, so that a user configuring an alternative image passes the compatibility check of the module. No subclass is needed: whatever the module class doesn't set, such as credentials or a wait strategy, is set on the instance before returning it.
-
-If no Testcontainers module exists, as for FancyDB, define a small `GenericContainer` subclass declaring the image, the exposed ports, and the wait strategy:
+If no Testcontainers module exists, define a small `GenericContainer` subclass declaring the image, the exposed ports, and the wait strategy:
 
 [source,java]
 ----
@@ -122,21 +118,7 @@ Declare a wait strategy unless the container class already has one of its own, a
 
 For relational databases, use the service's `JdbcDatabaseContainer` and implement `JdbcDevServicesProperties`: credentials, database name, and init scripts are then applied by the framework as well.
 
-The common `port` property binds the main port of your service to a fixed port on the host. If your service exposes more ports worth binding, such as a management console, declare a property of your own for each of them. Both the main port and the additional ones are declared when registering the Dev Service (see the next sections); the framework applies the bindings.
-
-== Exposing Links
-
-If your service has endpoints worth surfacing to developers, such as a management console or a telemetry endpoint, declare them as links when registering the Dev Service (see the next section), in terms of the container port rather than a URL: Arconia resolves the URL once the port mapping is known.
-
-[source,java]
-----
-registry.registerDevService(service -> service
-        .name("fancydb")
-        // ...
-        .link("FancyDB Console", FancyDbContainer.CONSOLE_PORT, "/console"));
-----
-
-The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]), both for a container the application started and for one it discovered from another application. Declare a port your container actually exposes: a link whose port can't be resolved is skipped with a warning, and the remaining links are still reported.
+The common `port` property binds the main port of your service to a fixed port on the host. If your service exposes more ports worth binding, such as a management console, declare a property of your own for each of them. Both the main port and the additional ones are declared when registering the Dev Service (see the next sections). The framework applies the bindings.
 
 == Auto-Configuration and Registration
 
@@ -197,6 +179,20 @@ com.example.acme.FancyDbDevServicesAutoConfiguration
 ----
 
 That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
+
+== Exposing Links
+
+If your service has endpoints worth surfacing to developers, such as a management console or a telemetry endpoint, declare them as links when registering the Dev Service (see xref:_auto_configuration_and_registration_[Auto-Configuration and Registration]), in terms of the container port rather than a URL: Arconia resolves the URL once the port mapping is known.
+
+[source,java]
+----
+registry.registerDevService(service -> service
+        .name("fancydb")
+        // ...
+        .link("FancyDB Console", FancyDbContainer.CONSOLE_PORT, "/console"));
+----
+
+The links appear in the startup message and in the `devservices` actuator endpoint (see xref:index.adoc#_startup_feedback[Startup Feedback]), both for a container the application started and for one it discovered from another application. Declare a port your container actually exposes: a link whose port can't be resolved is skipped with a warning, and the remaining links are still reported.
 
 == Wiring the Application to the Service
 
