@@ -1,13 +1,19 @@
 package io.arconia.dev.services.lgtm;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 
+import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
@@ -72,6 +78,72 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
                     .containsExactly("Grafana", "OTLP/HTTP", "OTLP/gRPC");
             assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
         });
+    }
+
+    @Nested
+    class SpringBootDashboards {
+
+        private static final String DASHBOARD_CONTAINER_PATH = LgtmDevServicesAutoConfiguration.SPRING_BOOT_DASHBOARDS_PATH + "/spring-boot.json";
+
+        private static final String[] DASHBOARD_PROPERTIES = {
+                "arconia.dev.services.lgtm.resources[0].source-path=classpath:grafana/spring-boot.json",
+                "arconia.dev.services.lgtm.resources[0].container-path=" + DASHBOARD_CONTAINER_PATH
+        };
+
+        @Test
+        void whenSpringBootDashboardIsNotConfigured() {
+            var properties = new LgtmDevServicesProperties();
+
+            assertThat(LgtmDevServicesAutoConfiguration.hasSpringBootDashboardResources(properties)).isFalse();
+        }
+
+        @Test
+        void whenSpringBootDashboardIsConfigured() {
+            var properties = new LgtmDevServicesProperties();
+            properties.setResources(List.of(new ResourceMapping("classpath:grafana/spring-boot.json", DASHBOARD_CONTAINER_PATH)));
+
+            assertThat(LgtmDevServicesAutoConfiguration.hasSpringBootDashboardResources(properties)).isTrue();
+        }
+
+        @Test
+        void whenSpringBootDashboardIsConfiguredThenProviderIsCorrect() {
+            assertThat(LgtmDevServicesAutoConfiguration.springBootDashboardsProvider())
+                    .contains("apiVersion: 1")
+                    .contains("name: Spring Boot")
+                    .contains("type: file")
+                    .contains("path: " + LgtmDevServicesAutoConfiguration.SPRING_BOOT_DASHBOARDS_PATH)
+                    .contains("foldersFromFilesStructure: false");
+        }
+
+        @Test
+        void springBootDashboardResourceIsConfigured() {
+            getContextRunner()
+                    .withPropertyValues(DASHBOARD_PROPERTIES)
+                    .run(context -> {
+                        var container = context.getBean(getContainerClass());
+                        assertThat(container.getCopyToFileContainerPathMap()).containsValue(DASHBOARD_CONTAINER_PATH);
+                    });
+        }
+
+        @Test
+        @DisabledIfDockerUnavailable
+        void springBootDashboardIsLoaded() {
+            contextRunnerWithContainerLifecycle()
+                    .withPropertyValues(DASHBOARD_PROPERTIES)
+                    .run(context -> {
+                        var container = context.getBean(getContainerClass());
+                        var grafanaUrl = "http://%s:%d".formatted(container.getHost(),
+                                container.getMappedPort(LgtmDevServicesAutoConfiguration.GRAFANA_PORT));
+                        var request = HttpRequest.newBuilder().uri(URI.create(grafanaUrl + "/api/search")).GET().build();
+
+                        try (var client = HttpClient.newHttpClient()) {
+                            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                            assertThat(response.statusCode()).isEqualTo(200);
+                            assertThat(response.body()).contains("Spring Boot Test Dashboard");
+                        }
+                    });
+        }
+
     }
 
 }
