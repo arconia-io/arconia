@@ -35,7 +35,7 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "quay.io/keycloak/keycloak:26.7";
+    private String imageName = "quay.io/keycloak/keycloak:26.8";
 
     /**
      * Environment variables to set in the service.
