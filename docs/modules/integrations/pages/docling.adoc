@@ -274,7 +274,7 @@ ConvertDocumentResponse response = doclingClient.convertSource(request);
 
 === Error Handling
 
-The `DoclingServeApi` will throw appropriate runtime exceptions for different error conditions, as managed by the underlying `RestClient`.
+When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`.
 
 [source,java]
 ----
@@ -285,8 +285,9 @@ try {
                 .build())
             .build();
     ConvertDocumentResponse response = doclingClient.convertSource(request);
-} catch (HttpClientErrorException.NotFound ex) {
-    log.warn("Document not found: {}", ex.getMessage());
+} catch (ValidationException ex) {
+    ex.getValidationError().getErrorDetails()
+            .forEach(detail -> log.warn("Invalid request: {} at {}", detail.getMessage(), detail.getLocations()));
 } catch (HttpClientErrorException ex) {
     log.error("Client error during conversion: {}", ex.getMessage());
 } catch (HttpServerErrorException ex) {

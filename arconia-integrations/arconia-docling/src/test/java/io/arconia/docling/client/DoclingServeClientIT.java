@@ -16,6 +16,7 @@ import ai.docling.serve.api.convert.request.source.HttpSource;
 import ai.docling.serve.api.convert.response.ConvertDocumentResponse;
 import ai.docling.serve.api.convert.response.InBodyConvertDocumentResponse;
 import ai.docling.serve.api.health.HealthCheckResponse;
+import ai.docling.serve.api.validation.ValidationException;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import ai.docling.testcontainers.serve.config.DoclingServeContainerConfig;
 
@@ -31,6 +32,7 @@ import io.arconia.docling.Images;
 import io.arconia.docling.actuate.DoclingServeHealthIndicator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Testcontainers(disabledWithoutDocker = true)
 class DoclingServeClientIT {
@@ -154,6 +156,23 @@ class DoclingServeClientIT {
         InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
         assertThat(inBodyResponse.getStatus()).isEqualTo("failure");
         assertThat(inBodyResponse.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldThrowValidationExceptionWhenRequestIsRejected() {
+        ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+                .source(HttpSource.builder()
+                        .url(URI.create("not-a-url"))
+                        .build())
+                .build();
+
+        assertThatThrownBy(() -> doclingServeApi.convertSource(request))
+                .isInstanceOfSatisfying(ValidationException.class, ex -> {
+                    assertThat(ex.getMessage()).contains("/v1/convert/source");
+                    assertThat(ex.getValidationError()).isNotNull();
+                    assertThat(ex.getValidationError().getErrorDetails()).isNotEmpty()
+                            .allSatisfy(detail -> assertThat(detail.getMessage()).isNotBlank());
+                });
     }
 
     @Test

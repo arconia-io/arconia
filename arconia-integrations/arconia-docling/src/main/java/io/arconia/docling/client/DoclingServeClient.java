@@ -311,6 +311,8 @@ public class DoclingServeClient implements DoclingServeApi {
                 restClientBuilder.defaultHeader(DoclingProperties.API_KEY_HEADER_NAME, apiKey);
             }
 
+            restClientBuilder.defaultStatusHandler(ValidationErrorHandler.STATUS::equals, new ValidationErrorHandler());
+
             if (logRequests || logResponses) {
                 restClientBuilder.requestInterceptor(new LoggingClientHttpRequestInterceptor(logRequests, logResponses, prettyPrint));
             }
