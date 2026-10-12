@@ -41,9 +41,23 @@ public final class LgtmDevServicesAutoConfiguration {
 
     static final int PROMETHEUS_PORT = 9090;
 
+    /**
+     * Path of the Tempo MCP server, which AI tools use to query traces.
+     */
+    static final String TEMPO_MCP_PATH = "/api/mcp";
+
+    /**
+     * Tempo accepts extra command line arguments from this environment variable. The MCP server
+     * is off by default in the image and enabled here for AI tools to query traces.
+     */
+    static final String TEMPO_EXTRA_ARGS_ENV = "TEMPO_EXTRA_ARGS";
+
+    static final String TEMPO_MCP_SERVER_ARG = "--query-frontend.mcp-server.enabled=true";
+
     static LgtmStackContainer createContainer(LgtmDevServicesProperties properties, LgtmDashboards dashboards) {
         var container = new LgtmStackContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         container.withEnv("GF_USERS_DEFAULT_THEME", "system");
+        container.withEnv(TEMPO_EXTRA_ARGS_ENV, TEMPO_MCP_SERVER_ARG);
         dashboards.applyTo(container);
         return container;
     }
@@ -70,7 +84,9 @@ public final class LgtmDevServicesAutoConfiguration {
                     .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
                     .link("Grafana", GRAFANA_PORT)
                     .link("OTLP/HTTP", OTLP_HTTP_PORT)
-                    .link("OTLP/gRPC", OTLP_GRPC_PORT));
+                    .link("OTLP/gRPC", OTLP_GRPC_PORT)
+                    .link("Prometheus", PROMETHEUS_PORT)
+                    .link("Tempo MCP", TEMPO_PORT, TEMPO_MCP_PATH));
         }
 
     }

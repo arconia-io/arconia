@@ -35,10 +35,25 @@ The application logs will show you the URL where you can access the Grafana UI.
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container <container-id> (grafana/otel-lgtm, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>, Prometheus: http://localhost:<port>, Tempo MCP: http://localhost:<port>/api/mcp
 ----
 
-By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
+The application exports logs, metrics, and traces to the OpenTelemetry Collector of the Dev Service via OTLP, using the HTTP/Protobuf format by default. The collector stores them in Loki, Prometheus, and Tempo, and Grafana comes with a data source for each of them.
+
+|===
+|Telemetry |How it reaches the Dev Service
+
+| Traces and logs
+| Exported by the OpenTelemetry SDK, as configured by xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+| Metrics instrumented with Micrometer
+| Exported by the Micrometer OTLP registry included in the Arconia OpenTelemetry starter, or by the OpenTelemetry SDK when the Micrometer Metrics Bridge is enabled instead.
+
+| Metrics instrumented with the OpenTelemetry API
+| Exported by the OpenTelemetry SDK.
+|===
+
+Prometheus stores the metrics it receives via OTLP under names translated to its own conventions: for example, `jvm.memory.used` becomes `jvm_memory_used_bytes`, and the `service.name` and `service.instance.id` resource attributes become the `job` and `instance` labels. The Prometheus link in the application logs opens its UI, where you can check the metrics received and their names before using them in a dashboard.
 
 == Grafana Dashboards
 
@@ -85,6 +100,118 @@ arconia:
 ----
 
 NOTE: The dashboards are copied into the container when it starts. When the container is reused across application restarts (see `reuse-strategy`), changes to a dashboard file take effect the next time the container is started. When the application connects to a Grafana LGTM Dev Service started by another application, the dashboards are the ones provisioned by that application.
+
+== Using AI Tools
+
+AI coding assistants can query the telemetry collected by the Dev Service through the https://modelcontextprotocol.io[Model Context Protocol (MCP)].
+
+The MCP server built into Tempo is enabled by the Dev Service and answers TraceQL queries over the traces. Its URL is the `Tempo MCP` link in the application logs. For example, to add it to Claude Code:
+
+[source,shell]
+----
+claude mcp add --transport http tempo http://localhost:<port>/api/mcp
+----
+
+The https://github.com/grafana/mcp-grafana[Grafana MCP server] gives access to dashboards, metrics (PromQL), logs (LogQL), and traces. It runs on your machine and connects to the Grafana instance of the Dev Service, which accepts the default `admin`/`admin` credentials. For example, to add it to Claude Code (it requires `uvx`):
+
+[source,shell]
+----
+claude mcp add grafana \
+  -e GRAFANA_URL=http://localhost:<port> \
+  -e GRAFANA_USERNAME=admin \
+  -e GRAFANA_PASSWORD=admin \
+  -- uvx mcp-grafana
+----
+
+NOTE: The ports of the Dev Service are assigned dynamically. To keep the MCP configuration of your AI tool valid across application runs, fix the Grafana and Tempo ports with the `arconia.dev.services.{service-name}.port` and `arconia.dev.services.{service-name}.tempo-port` properties.
+
+== Customizing the Stack
+
+The `grafana/otel-lgtm` image is configured through environment variables and configuration files, which you set with the `environment` and `resources` properties of the Dev Service. The most common cases follow. Refer to the https://github.com/grafana/docker-otel-lgtm[image documentation] for everything else.
+
+=== Component Logs
+
+The components of the stack don't write logs by default, so the logs of a failing container say little. Turn on the logs of each component separately, or all of them with `ENABLE_LOGS_ALL`.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        environment:
+          ENABLE_LOGS_OTELCOL: "true"
+          ENABLE_LOGS_GRAFANA: "true"
+----
+
+=== Component Configuration
+
+Each component accepts additional command line arguments from an environment variable: `PROMETHEUS_EXTRA_ARGS`, `LOKI_EXTRA_ARGS`, `TEMPO_EXTRA_ARGS`, `PYROSCOPE_EXTRA_ARGS`, and `OTELCOL_EXTRA_ARGS`. For deeper changes, replace the configuration file of a component with your own, copied into the container from the classpath or the host filesystem.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        environment:
+          PROMETHEUS_EXTRA_ARGS: "--storage.tsdb.retention.time=7d"
+        resources:
+          - source-path: otelcol-config.yaml
+            container-path: /otel-lgtm/otelcol-config.yaml
+----
+
+|===
+|Component |Configuration file in the container
+
+| OpenTelemetry Collector
+| `/otel-lgtm/otelcol-config.yaml`
+
+| Prometheus
+| `/otel-lgtm/prometheus.yaml`
+
+| Loki
+| `/otel-lgtm/loki-config.yaml`
+
+| Tempo
+| `/otel-lgtm/tempo-config.yaml`
+
+| Pyroscope
+| `/otel-lgtm/pyroscope-config.yaml`
+|===
+
+NOTE: The Dev Service sets `TEMPO_EXTRA_ARGS` itself to enable the Tempo MCP server. If you set the variable, include `--query-frontend.mcp-server.enabled=true` in its value to keep the MCP server on.
+
+=== Forwarding Telemetry to Another Backend
+
+The OpenTelemetry Collector of the Dev Service can forward the telemetry it receives to another OTLP/HTTP endpoint, next to storing it locally, which lets you compare the local stack with a hosted observability platform. The per-signal variables `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`, and `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` take precedence over the general one.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        environment:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.example.com
+          OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic ${OTLP_CREDENTIALS}
+----
+
+Keep credentials out of the configuration files you commit, for example by referencing an environment variable as above.
+
+=== Grafana
+
+Grafana is configured through its `GF_*` environment variables. For example, to pre-install plugins:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        environment:
+          GF_PLUGINS_PREINSTALL: grafana-clock-panel
+----
 
 == Configuring the Dev Service
 
