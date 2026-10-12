@@ -11,11 +11,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "io.awspring.cloud:spring-cloud-aws-testcontainers"
     api "io.floci:testcontainers-floci:${flociVersion}"
     api "org.springframework.boot:spring-boot-starter"
     api "org.springframework.boot:spring-boot-testcontainers"
 
-    optional "io.awspring.cloud:spring-cloud-aws-autoconfigure"
     optional "io.awspring.cloud:spring-cloud-aws-s3"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))

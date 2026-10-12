@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.testcontainers.utility.DockerImageName;
 
-import software.amazon.awssdk.awscore.AwsClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
@@ -30,7 +29,6 @@ import io.arconia.dev.services.floci.FlociDevServicesAutoConfiguration.S3Configu
  */
 @AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("floci")
-@ConditionalOnClass({AwsConnectionDetails.class, AwsClient.class})
 @EnableConfigurationProperties(FlociDevServicesProperties.class)
 @Import({FlociDevServicesRegistrar.class, S3Configuration.class})
 public final class FlociDevServicesAutoConfiguration {
@@ -61,7 +59,7 @@ public final class FlociDevServicesAutoConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass({S3ClientCustomizer.class, S3Client.class})
+    @ConditionalOnClass(S3Client.class)
     static class S3Configuration {
 
         @Bean

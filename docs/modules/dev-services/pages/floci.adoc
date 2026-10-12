@@ -7,7 +7,7 @@ It works with Spring Boot libraries that support AWS, including:
 
 * https://awspring.io[Spring Cloud AWS]
 
-The Dev Service requires https://awspring.io[Spring Cloud AWS] and the AWS SDK on the classpath to be activated. The AWS endpoint, region, and credentials are configured automatically for all Spring Cloud AWS clients.
+The Dev Service brings the core of https://awspring.io[Spring Cloud AWS] with it, including its support for connecting to Floci. Add the Spring Cloud AWS starter of each AWS service your application uses, such as `io.awspring.cloud:spring-cloud-aws-starter-s3`: the AWS endpoint, region, and credentials of its clients are configured automatically.
 
 [NOTE]
 ====
