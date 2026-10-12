@@ -22,6 +22,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The Elasticsearch Dev Service now serves plain HTTP by default. Elasticsearch 8 and later only accept HTTPS in their default configuration, with a certificate the application could not trust, so the Dev Service could not be reached before.
 * The Elasticsearch Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. With no certificate configured, Elasticsearch keeps the one it generates itself, and the application trusts it the way Spring Boot does for an `@Ssl` container. Learn more about xref:dev-services:elasticsearch.adoc#_using_ssl[Using SSL].
 
+=== Grafana LGTM
+
+* The Grafana LGTM Dev Service now provisions Grafana with dashboards for Spring Boot applications, replacing the ones bundled with the image. They are picked for the application: a JVM dashboard comes in a Micrometer or OpenTelemetry variant, depending on the metric conventions in use. Your own dashboards, and the ones shipped by libraries, are provisioned from `META-INF/grafana/dashboards` on the classpath, with no configuration needed. The `dashboards` properties let you turn the provisioning off, keep only your own dashboards, or open one of them as the Grafana home page. Learn more about xref:dev-services:lgtm.adoc#_grafana_dashboards[Grafana Dashboards].
+
 === Kafka
 
 * The Kafka Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. Learn more about xref:dev-services:kafka.adoc#_using_ssl[Using SSL].

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
@@ -103,6 +104,11 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int prometheusPort = 0;
+
+    /**
+     * Grafana dashboards provisioned in the dev service.
+     */
+    private Dashboards dashboards = new Dashboards();
 
     @Override
     public boolean isEnabled() {
@@ -223,6 +229,85 @@ public class LgtmDevServicesProperties implements BaseDevServicesProperties {
 
     public void setPrometheusPort(int prometheusPort) {
         this.prometheusPort = prometheusPort;
+    }
+
+    public Dashboards getDashboards() {
+        return dashboards;
+    }
+
+    public void setDashboards(Dashboards dashboards) {
+        this.dashboards = dashboards;
+    }
+
+    /**
+     * Grafana dashboards provisioned in the dev service.
+     */
+    public static class Dashboards {
+
+        /**
+         * Whether the dev service provisions Grafana dashboards. When disabled,
+         * Grafana keeps the dashboards bundled with the container image.
+         */
+        private boolean enabled = true;
+
+        /**
+         * File name of the provisioned dashboard to open as the Grafana home page,
+         * for example, "orders.json". By default, Grafana opens its own home page.
+         */
+        @Nullable
+        private String home;
+
+        /**
+         * Dashboards shipped with the dev service.
+         */
+        private BuiltIn builtIn = new BuiltIn();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        @Nullable
+        public String getHome() {
+            return home;
+        }
+
+        public void setHome(@Nullable String home) {
+            this.home = home;
+        }
+
+        public BuiltIn getBuiltIn() {
+            return builtIn;
+        }
+
+        public void setBuiltIn(BuiltIn builtIn) {
+            this.builtIn = builtIn;
+        }
+
+        /**
+         * Dashboards shipped with the dev service.
+         */
+        public static class BuiltIn {
+
+            /**
+             * Whether the dashboards shipped with the dev service are provisioned,
+             * next to the ones contributed by the classpath.
+             */
+            private boolean enabled = true;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+        }
+
     }
 
 }

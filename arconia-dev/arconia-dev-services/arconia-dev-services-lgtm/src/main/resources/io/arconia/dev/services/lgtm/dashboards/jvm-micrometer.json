@@ -1,0 +1,8 @@
+{
+  "title": "JVM Metrics (Micrometer)",
+  "uid": "arconia-jvm-micrometer",
+  "tags": ["Arconia", "JVM", "Micrometer"],
+  "schemaVersion": 1,
+  "version": 1,
+  "panels": []
+}

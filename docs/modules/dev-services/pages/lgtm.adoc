@@ -40,6 +40,52 @@ The application logs will show you the URL where you can access the Grafana UI.
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
 
+== Grafana Dashboards
+
+The Dev Service provisions Grafana with dashboards for Spring Boot applications, replacing the ones bundled with the `grafana/otel-lgtm` image. The dashboards are picked for the application:
+
+|===
+|Dashboard |Provisioned
+
+| JVM Metrics (Micrometer)
+| When the JVM metrics follow the Micrometer conventions, the Spring Boot default.
+
+| JVM Metrics (OpenTelemetry)
+| When the JVM metrics follow the OpenTelemetry semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc[Arconia OpenTelemetry Semantic Conventions] module is on the classpath and its JVM conventions are enabled.
+|===
+
+=== Contributing Dashboards
+
+Any Grafana dashboard JSON file under `META-INF/grafana/dashboards` on the classpath is provisioned as well, with no configuration needed. Place your own dashboards in the `src/main/resources/META-INF/grafana/dashboards` directory of your application.
+
+[source,text]
+----
+src/main/resources
+└── META-INF
+    └── grafana
+        └── dashboards
+            ├── orders.json
+            └── payments.json
+----
+
+A library can ship dashboards the same way, and they are provisioned whenever the library is on the classpath of the application. Each dashboard file needs a unique name: when two files share a name, the first one found is provisioned and the other is ignored with a warning in the logs.
+
+Set `arconia.dev.services.{service-name}.dashboards.built-in.enabled` to `false` to provision only the contributed dashboards, or `arconia.dev.services.{service-name}.dashboards.enabled` to `false` to keep the dashboards bundled with the image.
+
+To open one of the provisioned dashboards as the Grafana home page, set `arconia.dev.services.{service-name}.dashboards.home` to its file name.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      lgtm:
+        dashboards:
+          home: orders.json
+----
+
+NOTE: The dashboards are copied into the container when it starts. When the container is reused across application restarts (see `reuse-strategy`), changes to a dashboard file take effect the next time the container is started. When the application connects to a Grafana LGTM Dev Service started by another application, the dashboards are the ones provisioned by that application.
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.
@@ -102,6 +148,18 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.prometheus-port`
 | `0`
 | Fixed port for exposing the Prometheus port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.dashboards.enabled`
+| `true`
+| Whether the dev service provisions Grafana dashboards. When disabled, Grafana keeps the dashboards bundled with the container image.
+
+| `arconia.dev.services.{service-name}.dashboards.home`
+|
+| File name of the provisioned dashboard to open as the Grafana home page, for example, `orders.json`. By default, Grafana opens its own home page.
+
+| `arconia.dev.services.{service-name}.dashboards.built-in.enabled`
+| `true`
+| Whether the dashboards shipped with the dev service are provisioned, next to the ones contributed by the classpath.
 |===
 
 include::partial$disabling-dev-service.adoc[]

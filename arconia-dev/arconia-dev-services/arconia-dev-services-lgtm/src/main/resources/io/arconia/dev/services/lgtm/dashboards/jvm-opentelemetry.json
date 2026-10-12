@@ -1,0 +1,8 @@
+{
+  "title": "JVM Metrics (OpenTelemetry)",
+  "uid": "arconia-jvm-opentelemetry",
+  "tags": ["Arconia", "JVM", "OpenTelemetry"],
+  "schemaVersion": 1,
+  "version": 1,
+  "panels": []
+}

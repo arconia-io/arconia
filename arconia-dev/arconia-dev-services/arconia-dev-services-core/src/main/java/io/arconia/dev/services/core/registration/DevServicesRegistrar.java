@@ -117,6 +117,13 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     }
 
     /**
+     * Get the {@link ResourceLoader} associated with this registrar.
+     */
+    protected ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
+
+    /**
      * Register dev services with the given registry.
      */
     protected abstract void registerDevServices(DevServicesRegistry registry, Environment environment);

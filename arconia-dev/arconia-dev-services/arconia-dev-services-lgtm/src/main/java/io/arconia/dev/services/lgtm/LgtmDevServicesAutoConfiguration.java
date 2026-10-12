@@ -1,17 +1,13 @@
 package io.arconia.dev.services.lgtm;
 
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.testcontainers.grafana.LgtmStackContainer;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
-import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
@@ -45,54 +41,11 @@ public final class LgtmDevServicesAutoConfiguration {
 
     static final int PROMETHEUS_PORT = 9090;
 
-    static final String SPRING_BOOT_DASHBOARDS_PATH = "/otel-lgtm/spring-boot-dashboards";
-
-    static final String GRAFANA_DASHBOARD_PROVISIONING_PATH = "/otel-lgtm/grafana/conf/provisioning/dashboards";
-
-    static final String SPRING_BOOT_DASHBOARD_PROVIDER_FILE = "spring-boot-dashboards.yaml";
-
-    static LgtmStackContainer createContainer(LgtmDevServicesProperties properties) {
+    static LgtmStackContainer createContainer(LgtmDevServicesProperties properties, LgtmDashboards dashboards) {
         var container = new LgtmStackContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         container.withEnv("GF_USERS_DEFAULT_THEME", "system");
-        configureSpringBootDashboards(container, properties);
+        dashboards.applyTo(container);
         return container;
-    }
-
-    /**
-     * Registers a Grafana dashboard provider for the Spring Boot dashboards
-     * when at least one resource is mapped under the dedicated container path.
-     */
-    private static void configureSpringBootDashboards(LgtmStackContainer container, LgtmDevServicesProperties properties) {
-        if (!hasSpringBootDashboardResources(properties)) {
-            return;
-        }
-        container.withCopyToContainer(Transferable.of(springBootDashboardsProvider().getBytes(StandardCharsets.UTF_8)),
-                GRAFANA_DASHBOARD_PROVISIONING_PATH + "/" + SPRING_BOOT_DASHBOARD_PROVIDER_FILE);
-    }
-
-    static boolean hasSpringBootDashboardResources(LgtmDevServicesProperties properties) {
-        return properties.getResources()
-                .stream()
-                .map(ResourceMapping::containerPath)
-                .anyMatch(LgtmDevServicesAutoConfiguration::isSpringBootDashboardPath);
-    }
-
-    static String springBootDashboardsProvider() {
-        return """
-                apiVersion: 1
-
-                providers:
-                  - name: Spring Boot
-                    type: file
-                    options:
-                      path: %s
-                      foldersFromFilesStructure: false
-                """.formatted(SPRING_BOOT_DASHBOARDS_PATH);
-    }
-
-    private static boolean isSpringBootDashboardPath(String containerPath) {
-        return containerPath.equals(SPRING_BOOT_DASHBOARDS_PATH)
-                || containerPath.startsWith(SPRING_BOOT_DASHBOARDS_PATH + "/");
     }
 
     static class LgtmDevServicesRegistrar extends DevServicesRegistrar {
@@ -100,13 +53,14 @@ public final class LgtmDevServicesAutoConfiguration {
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             var properties = bindProperties(LgtmDevServicesProperties.CONFIG_PREFIX, LgtmDevServicesProperties.class);
+            var dashboards = LgtmDashboards.collect(environment, getResourceLoader(), properties.getDashboards());
 
             registry.registerDevService(service -> service
                     .name("lgtm")
                     .description("Grafana LGTM Dev Service")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
-                    .container(LgtmStackContainer.class, () -> createContainer(properties))
+                    .container(LgtmStackContainer.class, () -> createContainer(properties, dashboards))
                     .port(GRAFANA_PORT)
                     .additionalPort(OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .additionalPort(OTLP_HTTP_PORT, properties.getOtlpHttpPort())
