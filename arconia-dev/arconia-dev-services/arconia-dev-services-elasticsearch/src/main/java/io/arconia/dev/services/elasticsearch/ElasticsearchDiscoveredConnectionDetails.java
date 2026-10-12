@@ -65,11 +65,13 @@ final class ElasticsearchDiscoveredConnectionDetails implements ElasticsearchCon
     }
 
     @Override
+    @Nullable
     public String getUsername() {
         return node.username();
     }
 
     @Override
+    @Nullable
     public String getPassword() {
         return node.password();
     }

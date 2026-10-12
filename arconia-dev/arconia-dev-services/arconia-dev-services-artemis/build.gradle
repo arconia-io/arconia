@@ -1,6 +1,7 @@
 plugins {
     id "code-quality-conventions"
     id "java-conventions"
+    id "nullability-conventions"
     id "sbom-conventions"
     id "release-conventions"
 }
