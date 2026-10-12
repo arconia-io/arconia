@@ -33,9 +33,30 @@ class DevServiceDefinitionTests {
     @Test
     void whenNameIsEmptyThenThrow() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new DevServiceDefinition("", "Test Dev Service", null, TestDevServicesProperties.DEFAULT,
-                        TestPostgresContainer.class, TestPostgresContainer::new, true, null, null, null, List.of(), List.of()))
+                .isThrownBy(() -> definition().name("").build())
                 .withMessageContaining("name cannot be null or empty");
+    }
+
+    @Test
+    void whenOptionalValuesAreNotSetThenDefinitionHasDefaults() {
+        DevServiceDefinition definition = definition().build();
+
+        assertThat(definition.category()).isNull();
+        assertThat(definition.serviceConnection()).isTrue();
+        assertThat(definition.serviceConnectionName()).isNull();
+        assertThat(definition.discovery()).isNull();
+        assertThat(definition.port()).isNull();
+        assertThat(definition.additionalPorts()).isEmpty();
+        assertThat(definition.links()).isEmpty();
+        assertThat(definition.sslSupport()).isNull();
+        assertThat(definition.isSslEnabled()).isFalse();
+    }
+
+    @Test
+    void whenRequiredValueIsNotSetThenBuildThrows() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> DevServiceDefinition.builder().name("postgres").build())
+                .withMessageContaining("description cannot be null");
     }
 
     @Test
@@ -74,8 +95,15 @@ class DevServiceDefinitionTests {
     }
 
     private static DevServiceDefinition definition(List<LinkDefinition> links) {
-        return new DevServiceDefinition("postgres", "Test Dev Service", null, TestDevServicesProperties.DEFAULT,
-                TestPostgresContainer.class, TestPostgresContainer::new, true, null, null, null, List.of(), links);
+        return definition().links(links).build();
+    }
+
+    private static DevServiceDefinition.Builder definition() {
+        return DevServiceDefinition.builder()
+                .name("postgres")
+                .description("Test Dev Service")
+                .properties(TestDevServicesProperties.DEFAULT)
+                .container(TestPostgresContainer.class, TestPostgresContainer::new);
     }
 
 }

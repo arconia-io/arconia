@@ -60,6 +60,28 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.volumes`
 | `[]`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+Elasticsearch only accepts HTTPS connections in its default configuration: it generates a certificate of its own at startup and serves HTTPS with it. Since the application has no way to trust that certificate, the Dev Service serves plain HTTP by default, and the application connects to it with the `elastic` user and the password Testcontainers sets.
+
+To connect over HTTPS instead, as an application configured for a real Elasticsearch cluster does, set the `arconia.dev.services.{service-name}.ssl.enabled` property to `true`. With no certificate configured, Elasticsearch keeps the one it generates, and the application trusts it through the Spring Boot service connection, which extracts the certificate authority from the container, as described in https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections.ssl[Spring Boot's documentation]. An application connecting to a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) reads the certificate authority from that container the same way.
+
+[source,yaml,subs="attributes+"]
+----
+arconia:
+  dev:
+    services:
+      {service-name}:
+        ssl:
+          enabled: true
+----
+
+To have Elasticsearch serve HTTPS with a certificate of yours instead, configure the certificate and private key it presents.
+
+include::partial$using-ssl.adoc[]
 
 include::partial$disabling-dev-service.adoc[]

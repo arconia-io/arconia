@@ -12,6 +12,10 @@ import org.springframework.boot.actuate.endpoint.OperationResponseBody;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
+import org.springframework.boot.info.SslInfo;
+import org.springframework.boot.info.SslInfo.BundleInfo;
+import org.springframework.boot.ssl.SslBundles;
+import org.springframework.util.StringUtils;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.registration.ContainerInfo;
@@ -29,8 +33,12 @@ public class DevServicesEndpoint {
 
     private final Map<String, DevServiceRegistration> registrations;
 
-    public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations) {
+    @Nullable
+    private final SslInfo sslInfo;
+
+    public DevServicesEndpoint(Map<String, DevServiceRegistration> registrations, @Nullable SslBundles sslBundles) {
         this.registrations = Collections.unmodifiableMap(new LinkedHashMap<>(registrations));
+        this.sslInfo = (sslBundles != null) ? new SslInfo(sslBundles) : null;
     }
 
     @ReadOperation
@@ -51,8 +59,9 @@ public class DevServicesEndpoint {
         return toServiceInfo(registration);
     }
 
-    private static ServiceInfo toServiceInfo(DevServiceRegistration registration) {
-        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(), resolveContainerInfo(registration));
+    private ServiceInfo toServiceInfo(DevServiceRegistration registration) {
+        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(),
+                resolveContainerInfo(registration), resolveSslInfo(registration));
     }
 
     @Nullable
@@ -66,13 +75,29 @@ public class DevServicesEndpoint {
         }
     }
 
+    @Nullable
+    private BundleInfo resolveSslInfo(DevServiceRegistration registration) {
+        String bundleName = registration.sslBundleName();
+        if (!StringUtils.hasText(bundleName) || sslInfo == null) {
+            return null;
+        }
+        try {
+            return sslInfo.getBundle(bundleName);
+        } catch (Exception ex) {
+            logger.debug("Dev Service '{}': failed to resolve the SSL bundle '{}'", registration.name(), bundleName, ex);
+            return null;
+        }
+    }
+
     public record ServiceInfo(
             String name,
             String description,
             DevServiceRegistration.Origin origin,
             List<DevServiceLink> links,
             @Nullable
-            ContainerInfo containerInfo
+            ContainerInfo containerInfo,
+            @Nullable
+            BundleInfo ssl
     ) implements OperationResponseBody {}
 
 }

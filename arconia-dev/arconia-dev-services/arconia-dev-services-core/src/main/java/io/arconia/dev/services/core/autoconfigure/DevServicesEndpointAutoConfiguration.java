@@ -10,6 +10,7 @@ import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -29,9 +30,10 @@ public final class DevServicesEndpointAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
-    DevServicesEndpoint devServicesEndpoint(ObjectProvider<DevServiceRegistration> registrations) {
+    DevServicesEndpoint devServicesEndpoint(ObjectProvider<DevServiceRegistration> registrations, ObjectProvider<SslBundles> sslBundles) {
         return new DevServicesEndpoint(registrations.orderedStream()
-                .collect(Collectors.toMap(DevServiceRegistration::name, Function.identity(), (first, second) -> first, LinkedHashMap::new)));
+                .collect(Collectors.toMap(DevServiceRegistration::name, Function.identity(), (first, second) -> first, LinkedHashMap::new)),
+                sslBundles.getIfUnique());
     }
 
 }

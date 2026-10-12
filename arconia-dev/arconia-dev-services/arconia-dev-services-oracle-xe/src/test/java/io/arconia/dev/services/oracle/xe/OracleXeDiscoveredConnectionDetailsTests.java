@@ -74,13 +74,13 @@ class OracleXeDiscoveredConnectionDetailsTests {
     }
 
     private static DiscoveredContainer discoveredContainer() {
-        return new DiscoveredContainer(ContainerInfo.builder()
+        return DiscoveredContainer.builder().containerInfo(ContainerInfo.builder()
                 .id("abc123")
                 .imageName("oracle:latest")
                 .ports(List.of(new ContainerInfo.ContainerPort("0.0.0.0", OracleXeDevServicesAutoConfiguration.ORACLE_PORT, MAPPED_PORT, "tcp")))
                 .state("running")
                 .status("running")
-                .build(), HOST);
+                .build()).host(HOST).build();
     }
 
 }

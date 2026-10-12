@@ -1,5 +1,6 @@
 package io.arconia.dev.services.core.registration;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
+import org.springframework.boot.autoconfigure.ssl.SslBundleRegistrar;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.util.LambdaSafe;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -46,6 +49,7 @@ import io.arconia.dev.services.core.container.ContainerConfigurer;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.Discovery;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.PortBinding;
+import io.arconia.dev.services.core.registration.DevServiceSslSupport.DevServiceSslBundle;
 
 /**
  * Registry for managing the definition and lifecycle of dev services.
@@ -134,22 +138,57 @@ public final class DevServicesRegistry {
         // DevTools restart. If it has, the application keeps using it.
         boolean containerKept = restartSupport.retainKeptContainer(service.name(), containerBeanName, service.containerType());
 
-        // 5. If no container was kept, look for a container started by another application, when
+        // 5. A dev service with SSL enabled gets its SSL bundle built from its properties, whether
+        // it starts a container or connects to a discovered one. The bundle the application
+        // connects with, which trusts the certificate the dev service presents, is registered in
+        // the SslBundles of the application, for its tooling to report it and for it to be
+        // referenced by name.
+        DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(service, beanClassLoader());
+        SslBundle trustBundle = (sslBundle != null) ? DevServiceSslSupport.createTrustBundle(sslBundle) : null;
+        if (trustBundle != null) {
+            beanDefinitionRegistry.registerBeanDefinition(BeanName.SSL_BUNDLE.of(service.name()), createSslBundleBeanDefinition(service, trustBundle));
+        }
+
+        // 6. If no container was kept, look for a container started by another application, when
         // the framework reuse strategy applies. If one is discovered, the beans for it are
         // registered instead, and the application does not start a container of its own.
-        if (!containerKept && registerDiscoveredBeanDefinitions(service, reuse, registrationBeanName)) {
+        if (!containerKept && registerDiscoveredBeanDefinitions(service, reuse, registrationBeanName, trustBundle)) {
             return;
         }
 
-        // 6. Register the container bean definition. If a container was kept across a DevTools
+        // 7. Register the container bean definition. If a container was kept across a DevTools
         // restart, the bean resolves to it. Otherwise, a new container is created and started,
         // meaning that the application manages its lifecycle.
-        beanDefinitionRegistry.registerBeanDefinition(containerBeanName, createContainerBeanDefinition(service, reuse));
+        beanDefinitionRegistry.registerBeanDefinition(containerBeanName, createContainerBeanDefinition(service, reuse, sslBundle));
 
-        // 7. Register the registration bean definition describing the dev service. It depends on
+        // 8. Register the registration bean definition describing the dev service. It depends on
         // the container bean, so that the container is started before the dev service is reported
         // as ready.
-        beanDefinitionRegistry.registerBeanDefinition(registrationBeanName, createRegistrationBeanDefinition(service, reuse, containerBeanName, containerKept));
+        beanDefinitionRegistry.registerBeanDefinition(registrationBeanName, createRegistrationBeanDefinition(service, reuse, containerBeanName, containerKept, sslBundle != null));
+    }
+
+    /**
+     * Create the bean definition registering the SSL bundle the application connects to a dev
+     * service with in the {@link org.springframework.boot.ssl.SslBundles} of the application,
+     * under the name the dev service reports it by.
+     */
+    private static RootBeanDefinition createSslBundleBeanDefinition(DevServiceDefinition service, SslBundle trustBundle) {
+        String bundleName = DevServiceSslSupport.bundleName(service.name());
+        RootBeanDefinition beanDefinition = new RootBeanDefinition();
+        BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
+        beanDefinition.setBeanClass(SslBundleRegistrar.class);
+        beanDefinition.setInstanceSupplier(() -> (SslBundleRegistrar) registry -> registry.registerBundle(bundleName, trustBundle));
+        beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        return beanDefinition;
+    }
+
+    /**
+     * The class loader the resources of the application are loaded with, for the SSL material
+     * of a dev service to be resolved as the application resolves its own resources.
+     */
+    private ClassLoader beanClassLoader() {
+        ClassLoader classLoader = (beanDefinitionRegistry instanceof ConfigurableBeanFactory beanFactory) ? beanFactory.getBeanClassLoader() : null;
+        return (classLoader != null) ? classLoader : DevServicesRegistry.class.getClassLoader();
     }
 
     /**
@@ -205,7 +244,8 @@ public final class DevServicesRegistry {
      * Register the beans associated with a dev service running in a container started by another
      * application, if one is discovered, and returns whether that happened.
      */
-    private boolean registerDiscoveredBeanDefinitions(DevServiceDefinition service, ReuseDecision reuse, String registrationBeanName) {
+    private boolean registerDiscoveredBeanDefinitions(DevServiceDefinition service, ReuseDecision reuse, String registrationBeanName,
+            @Nullable SslBundle trustBundle) {
         // 1. Containers are only discovered under the framework reuse strategy, which is only
         // in effect when the dev service declares its discovery.
         Discovery discovery = service.discovery();
@@ -221,14 +261,21 @@ public final class DevServicesRegistry {
 
         // 3. Register a ConnectionDetails bean for each discovered container and a bean describing the dev service.
         // Candidates are processed from oldest to newest. If a container cannot be connected to, the candidate is skipped.
-        for (DiscoveredContainer candidate : candidates) {
+        // A discovered container of a dev service with SSL enabled is connected to with the bundle
+        // trusting the certificate the dev service is configured to present, as a managed one would be.
+        for (DiscoveredContainer discovered : candidates) {
+            DiscoveredContainer candidate = DiscoveredContainer.builder()
+                    .containerInfo(discovered.containerInfo())
+                    .host(discovered.host())
+                    .sslBundle(trustBundle)
+                    .build();
             try {
                 ConnectionDetails connectionDetails = discovery.factory().apply(candidate);
                 Assert.state(discovery.type().isInstance(connectionDetails), "connectionDetails must be an instance of " + discovery.type().getName());
                 beanDefinitionRegistry.registerBeanDefinition(BeanName.CONNECTION_DETAILS.of(service.name()),
                         createDiscoveredConnectionDetailsBeanDefinition(connectionDetails, candidate.containerInfo()));
                 beanDefinitionRegistry.registerBeanDefinition(registrationBeanName,
-                        createDiscoveredRegistrationBeanDefinition(service, reuse, candidate));
+                        createDiscoveredRegistrationBeanDefinition(service, reuse, candidate, trustBundle != null));
                 return true;
             } catch (Exception ex) {
                 logger.warn("Dev Service '{}': failed to build the connection details for the discovered container {}. Skipping it.",
@@ -265,7 +312,7 @@ public final class DevServicesRegistry {
      * so the bean doesn't depend on any container bean.
      */
     private static RootBeanDefinition createDiscoveredRegistrationBeanDefinition(DevServiceDefinition service, ReuseDecision reuse,
-            DiscoveredContainer discoveredContainer) {
+            DiscoveredContainer discoveredContainer, boolean sslBundleRegistered) {
         RootBeanDefinition beanDefinition = newRegistrationBeanDefinition(service);
 
         ContainerInfo containerInfo = discoveredContainer.containerInfo();
@@ -273,8 +320,8 @@ public final class DevServicesRegistry {
             // The links are resolved against the ports the discovered container publishes.
             List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort,
                     DevServiceRegistration.Origin.DISCOVERED);
-            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.id(), links);
-            DevServiceStartupLogger.ready(registration, containerInfo.id(), containerInfo.imageName(), false, reuse);
+            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.id(), links, sslBundleRegistered);
+            DevServiceStartupLogger.ready(registration, containerInfo.id(), containerInfo.imageName(), false, reuse, service.isSslEnabled());
             return registration;
         });
 
@@ -283,7 +330,7 @@ public final class DevServicesRegistry {
 
     // MANAGED
 
-    private GenericBeanDefinition createContainerBeanDefinition(DevServiceDefinition service, ReuseDecision reuse) {
+    private GenericBeanDefinition createContainerBeanDefinition(DevServiceDefinition service, ReuseDecision reuse, @Nullable DevServiceSslBundle sslBundle) {
         Supplier<? extends GenericContainer<?>> containerSupplier = service.containerSupplier();
 
         // Create container bean definition.
@@ -292,21 +339,30 @@ public final class DevServicesRegistry {
         beanDefinition.setBeanClass(service.containerType());
         beanDefinition.setDescription(service.description());
 
+        // The annotations Spring Boot reads from the container bean: the service connection, and
+        // what makes the application connect over SSL when the dev service is secured with it.
+        List<Annotation> annotations = new ArrayList<>();
         if (service.serviceConnection()) {
             Map<String, Object> annotationAttributes = new HashMap<>();
             if (StringUtils.hasText(service.serviceConnectionName())) {
                 // Sets the "value" attribute for the @ServiceConnection annotation
                 annotationAttributes.put("value", service.serviceConnectionName());
             }
-            beanDefinition.setAnnotations(MergedAnnotations.from(
-                    AnnotationUtils.synthesizeAnnotation(annotationAttributes, ServiceConnection.class, null)));
+            annotations.add(AnnotationUtils.synthesizeAnnotation(annotationAttributes, ServiceConnection.class, null));
         }
+        if (service.isSslEnabled()) {
+            annotations.addAll(DevServiceSslSupport.createAnnotations(sslBundle));
+        }
+        beanDefinition.setAnnotations(MergedAnnotations.from(annotations.toArray(new Annotation[0])));
 
         // Provide a supplier for creating a Container instance.
         beanDefinition.setInstanceSupplier((InstanceSupplier<GenericContainer<?>>) registeredBean -> {
             GenericContainer<?> container = containerSupplier.get();
             ContainerConfigurer.apply(container, service.properties());
             bindFixedPorts(container, service);
+            if (sslBundle != null) {
+                DevServiceSslSupport.configure(container, service, sslBundle.bundle());
+            }
             container.withReuse(reuse.effective() == ReuseStrategy.TESTCONTAINERS);
             applyCustomizers(container, registeredBean.getBeanFactory());
             applyLabels(container, service, reuse);
@@ -323,7 +379,8 @@ public final class DevServicesRegistry {
         return beanDefinition;
     }
 
-    private RootBeanDefinition createRegistrationBeanDefinition(DevServiceDefinition service, ReuseDecision reuse, String containerBeanName, boolean containerKept) {
+    private RootBeanDefinition createRegistrationBeanDefinition(DevServiceDefinition service, ReuseDecision reuse, String containerBeanName,
+            boolean containerKept, boolean sslBundleRegistered) {
         RootBeanDefinition beanDefinition = newRegistrationBeanDefinition(service);
         beanDefinition.setDependsOn(containerBeanName);
 
@@ -332,10 +389,10 @@ public final class DevServicesRegistry {
             GenericContainer<?> container = registeredBean.getBeanFactory().getBean(containerBeanName, GenericContainer.class);
             List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort,
                     DevServiceRegistration.Origin.MANAGED);
-            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links);
+            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links, sslBundleRegistered);
             // The reuse strategy is only reported in dev mode, the only one where it applies.
             DevServiceStartupLogger.ready(registration, container.getContainerId(), imageNameOf(container), containerKept,
-                    BootstrapMode.isDev() ? reuse : null);
+                    BootstrapMode.isDev() ? reuse : null, service.isSslEnabled());
             return registration;
         });
 
@@ -423,7 +480,7 @@ public final class DevServicesRegistry {
      * runtime on demand, so that the current state of the container is reported.
      */
     private static DevServiceRegistration createRegistration(DevServiceDefinition service, DevServiceRegistration.Origin origin,
-            @Nullable String containerId, List<DevServiceLink> links) {
+            @Nullable String containerId, List<DevServiceLink> links, boolean sslBundleRegistered) {
         return DevServiceRegistration.builder()
                 .name(service.name())
                 .description(service.description())
@@ -433,6 +490,7 @@ public final class DevServicesRegistry {
                     return ContainerRuntimeInfo.extractContainerInfoById(containerId);
                 })
                 .links(links)
+                .sslBundleName(sslBundleRegistered ? DevServiceSslSupport.bundleName(service.name()) : null)
                 .build();
     }
 
@@ -445,7 +503,9 @@ public final class DevServicesRegistry {
 
         CONNECTION_DETAILS("connectionDetails"),
 
-        REGISTRATION("registration");
+        REGISTRATION("registration"),
+
+        SSL_BUNDLE("sslBundle");
 
         /**
          * The prefix shared by the names of all dev service beans.

@@ -1,0 +1,71 @@
+| `arconia.dev.services.{service-name}.ssl.enabled`
+| `false`
+| Whether to enable SSL support for the dev service.
+
+| `arconia.dev.services.{service-name}.ssl.pem.keystore.certificate`
+| 
+| Location or content of the certificate or certificate chain in PEM format.
+
+| `arconia.dev.services.{service-name}.ssl.pem.keystore.private-key`
+| 
+| Location or content of the private key in PEM format.
+
+| `arconia.dev.services.{service-name}.ssl.pem.keystore.private-key-password`
+| 
+| Password used to decrypt an encrypted private key.
+
+| `arconia.dev.services.{service-name}.ssl.pem.key.alias`
+| 
+| The alias that identifies the key in the key store.
+
+| `arconia.dev.services.{service-name}.ssl.pem.key.password`
+| 
+| The password used to access the key in the key store.
+
+| `arconia.dev.services.{service-name}.ssl.pem.protocol`
+| `TLS`
+| SSL Protocol to use.
+
+| `arconia.dev.services.{service-name}.ssl.pem.options.ciphers`
+| 
+| Supported SSL ciphers.
+
+| `arconia.dev.services.{service-name}.ssl.pem.options.enabled-protocols`
+| 
+| Enabled SSL protocols.
+
+| `arconia.dev.services.{service-name}.ssl.jks.keystore.location`
+| 
+| Location of the resource containing the store content.
+
+| `arconia.dev.services.{service-name}.ssl.jks.keystore.password`
+| 
+| Password used to access the store.
+
+| `arconia.dev.services.{service-name}.ssl.jks.keystore.type`
+| 
+| Type of the store to create, e.g. JKS.
+
+| `arconia.dev.services.{service-name}.ssl.jks.keystore.provider`
+| 
+| Provider for the store.
+
+| `arconia.dev.services.{service-name}.ssl.jks.key.alias`
+| 
+| The alias that identifies the key in the key store.
+
+| `arconia.dev.services.{service-name}.ssl.jks.key.password`
+| 
+| The password used to access the key in the key store.
+
+| `arconia.dev.services.{service-name}.ssl.jks.protocol`
+| `TLS`
+| SSL Protocol to use.
+
+| `arconia.dev.services.{service-name}.ssl.jks.options.ciphers`
+| 
+| Supported SSL ciphers.
+
+| `arconia.dev.services.{service-name}.ssl.jks.options.enabled-protocols`
+| 
+| Enabled SSL protocols.

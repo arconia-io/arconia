@@ -9,6 +9,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
+import io.arconia.dev.services.tests.DevServiceContainers;
+import io.arconia.dev.services.tests.SslTestCertificates;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,6 +54,31 @@ class RabbitMqDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
                     var container = (RabbitMQContainer) context.getBean(getContainerClass());
                     assertThat(container.getAdminUsername()).isEqualTo("myusername");
                     assertThat(container.getAdminPassword()).isEqualTo("mypassword");
+                });
+    }
+
+    @Test
+    void sslApplied() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .run(context -> {
+                    var container = (RabbitMQContainer) context.getBean(getContainerClass());
+                    assertThat(DevServiceContainers.copiedFiles(container)).containsValues(
+                            RabbitMqDevServicesAutoConfiguration.SSL_DIRECTORY + "server.crt",
+                            RabbitMqDevServicesAutoConfiguration.SSL_DIRECTORY + "server.key",
+                            RabbitMqDevServicesAutoConfiguration.SSL_DIRECTORY + "ca.crt",
+                            RabbitMqDevServicesAutoConfiguration.SSL_CONFIGURATION_FILE);
+                });
+    }
+
+    @Test
+    void fixedPortBindsTheAmqpsListenerWhenSslIsEnabled() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .withPropertyValues("arconia.dev.services.%s.port=1234".formatted(getServiceName()))
+                .run(context -> {
+                    var container = (RabbitMQContainer) context.getBean(getContainerClass());
+                    assertThat(container.getPortBindings()).contains("1234:" + RabbitMqDevServicesAutoConfiguration.AMQPS_PORT + "/tcp");
                 });
     }
 

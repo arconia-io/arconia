@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,22 +16,31 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
+import org.springframework.boot.autoconfigure.ssl.SslBundleRegistrar;
+import org.springframework.boot.ssl.DefaultSslBundleRegistry;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.boot.testcontainers.service.connection.PemTrustStore;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.TestSslDevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
+import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
+import io.arconia.dev.services.core.ssl.SslCertificate;
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanAttribute;
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.OtherConnectionDetails;
@@ -642,14 +652,14 @@ class DevServicesRegistryTests {
 
         @Test
         void whenOldestDiscoveredContainerIsUnusableThenNextOneIsUsed() {
-            DiscoveredContainer unusable = new DiscoveredContainer(ContainerInfo.builder()
+            DiscoveredContainer unusable = DiscoveredContainer.builder().containerInfo(ContainerInfo.builder()
                     .id("def456")
                     .imageName("postgres:latest")
                     .names(List.of("unusable-postgres"))
                     .labels(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"))
                     .state("running")
                     .status("running")
-                    .build(), "localhost");
+                    .build()).host("localhost").build();
             DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(),
                     serviceName -> List.of(unusable, discoveredContainer()));
 
@@ -834,6 +844,160 @@ class DevServicesRegistryTests {
                             .discovery(TestConnectionDetails.class,
                                     container -> new TestConnectionDetails(container.host())));
             return restartedBeanFactory;
+        }
+
+    }
+
+    @Nested
+    class Ssl {
+
+        private final AtomicReference<SslBundle> configuredBundle = new AtomicReference<>();
+
+        private final DevServiceSslConfigurer<TestLinkContainer> configurer = (container, bundle) -> {
+            configuredBundle.set(bundle);
+            container.withEnv("SSL", "true");
+        };
+
+        @Test
+        void whenSslEnabledThenContainerHasTrustStoreAndSslAnnotationsNextToTheServiceConnection() {
+            registerSslDevService(TestSslDevServicesProperties.pem());
+
+            var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition(BeanName.CONTAINER.of("secure"));
+
+            MergedAnnotations annotations = beanDefinition.getAnnotations();
+            assertThat(annotations.isPresent(ServiceConnection.class)).isTrue();
+            assertThat(annotations.get(PemTrustStore.class).getString("certificate")).startsWith("-----BEGIN CERTIFICATE-----");
+            assertThat(annotations.isPresent(org.springframework.boot.testcontainers.service.connection.Ssl.class)).isTrue();
+        }
+
+        @Test
+        void whenSslEnabledThenContainerIsConfiguredWithTheBundleBeforeStart() {
+            registerSslDevService(TestSslDevServicesProperties.jks());
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("secure"), GenericContainer.class);
+
+            assertThat(container.getEnvMap()).containsEntry("SSL", "true");
+            assertThat(configuredBundle.get()).isNotNull();
+            assertThat(configuredBundle.get().getStores().getKeyStore()).isNotNull();
+        }
+
+        @Test
+        void whenSslEnabledThenBundleIsRegisteredInTheApplicationBundles() {
+            registerSslDevService(TestSslDevServicesProperties.pem());
+
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition("devService.sslBundle.secure");
+            assertThat(beanDefinition.getRole()).isEqualTo(BeanDefinition.ROLE_INFRASTRUCTURE);
+            assertThat(BeanAttribute.AOT_EXCLUDED.isPresent(beanDefinition)).isTrue();
+
+            // Applied by Spring Boot's SslAutoConfiguration to the registry backing SslBundles.
+            var registrar = beanFactory.getBean("devService.sslBundle.secure", SslBundleRegistrar.class);
+            var sslBundles = new DefaultSslBundleRegistry();
+            registrar.registerBundles(sslBundles);
+            assertThat(sslBundles.getBundleNames()).containsExactly("dev-services-secure");
+            // The bundle the application connects with: it trusts the dev service and presents nothing.
+            SslBundle registered = sslBundles.getBundle("dev-services-secure");
+            assertThat(registered.getStores().getKeyStore()).isNull();
+            assertThat(registered.getStores().getTrustStore()).isNotNull();
+        }
+
+        @Test
+        void whenSslEnabledThenRegistrationReportsTheBundle(CapturedOutput output) {
+            registerSslDevService(TestSslDevServicesProperties.pem());
+
+            var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
+
+            assertThat(registration.sslBundleName()).isEqualTo("dev-services-secure");
+            assertThat(output).contains("Dev Service 'secure' is ready in container").contains("ssl");
+        }
+
+        @Test
+        void whenSslEnabledWithoutKeyStoreThenOnlySslAnnotationIsDeclaredAndNoBundleExists() {
+            // The container generates its own certificate, which Spring Boot extracts.
+            registry.registerDevService(service -> service
+                    .name("secure")
+                    .description("Test Dev Service")
+                    .properties(TestSslDevServicesProperties.enabledWithoutKeyStore())
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .ssl(configurer, SslCertificate.CONFIGURED_OR_GENERATED));
+
+            var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition(BeanName.CONTAINER.of("secure"));
+            assertThat(beanDefinition.getAnnotations().isPresent(org.springframework.boot.testcontainers.service.connection.Ssl.class)).isTrue();
+            assertThat(beanDefinition.getAnnotations().isPresent(PemTrustStore.class)).isFalse();
+            assertThat(beanFactory.containsBeanDefinition("devService.sslBundle.secure")).isFalse();
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("secure"), GenericContainer.class);
+            assertThat(container.getEnvMap()).doesNotContainKey("SSL");
+            assertThat(configuredBundle.get()).isNull();
+
+            var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
+            assertThat(registration.sslBundleName()).isNull();
+        }
+
+        @Test
+        void whenSslDisabledThenNothingIsConfigured() {
+            registerSslDevService(new TestSslDevServicesProperties());
+
+            var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition(BeanName.CONTAINER.of("secure"));
+            assertThat(beanDefinition.getAnnotations().isPresent(org.springframework.boot.testcontainers.service.connection.Ssl.class)).isFalse();
+            assertThat(beanFactory.containsBeanDefinition("devService.sslBundle.secure")).isFalse();
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("secure"), GenericContainer.class);
+            assertThat(container.getEnvMap()).doesNotContainKey("SSL");
+
+            var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
+            assertThat(registration.sslBundleName()).isNull();
+        }
+
+        @Test
+        void whenSslEnabledAndContainerDiscoveredThenConnectionDetailsGetTheTrustBundle() {
+            enableDevMode();
+            AtomicReference<DiscoveredContainer> discovered = new AtomicReference<>();
+            DevServicesRegistry registry = registryDiscovering(beanFactory, discoveredContainer());
+
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestSslDevServicesProperties.pem().withReuseStrategy(ReuseStrategy.FRAMEWORK))
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .ssl(configurer)
+                    .discovery(TestConnectionDetails.class, container -> {
+                        discovered.set(container);
+                        return new TestConnectionDetails(container.host());
+                    }));
+
+            assertThat(beanFactory.containsBeanDefinition(BeanName.CONTAINER.of("postgres"))).isFalse();
+            assertThat(beanFactory.containsBeanDefinition("devService.sslBundle.postgres")).isTrue();
+            // The application trusts the certificate the dev service is configured to present, and presents none.
+            assertThat(discovered.get().sslBundle()).isNotNull();
+            assertThat(discovered.get().sslBundle().getStores().getTrustStore()).isNotNull();
+            assertThat(discovered.get().sslBundle().getStores().getKeyStore()).isNull();
+
+            var registration = beanFactory.getBean(BeanName.REGISTRATION.of("postgres"), DevServiceRegistration.class);
+            assertThat(registration.sslBundleName()).isEqualTo("dev-services-postgres");
+        }
+
+        @Test
+        void whenSslEnabledAndDevServiceSkippedThenNoBundleIsRegistered() {
+            beanFactory.registerBeanDefinition("myConnectionDetails", new RootBeanDefinition(TestConnectionDetails.class, () -> new TestConnectionDetails("localhost")));
+
+            registry.registerDevService(service -> service
+                    .name("secure")
+                    .description("Test Dev Service")
+                    .properties(TestSslDevServicesProperties.pem())
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .ssl(configurer)
+                    .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));
+
+            assertThat(beanFactory.containsBeanDefinition("devService.sslBundle.secure")).isFalse();
+        }
+
+        private void registerSslDevService(TestSslDevServicesProperties properties) {
+            registry.registerDevService(service -> service
+                    .name("secure")
+                    .description("Test Dev Service")
+                    .properties(properties)
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .ssl(configurer));
         }
 
     }

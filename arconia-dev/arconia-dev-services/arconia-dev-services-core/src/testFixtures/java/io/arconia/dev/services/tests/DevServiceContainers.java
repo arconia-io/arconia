@@ -1,6 +1,10 @@
 package io.arconia.dev.services.tests;
 
+import java.util.Map;
+
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.builder.Transferable;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
@@ -24,6 +28,16 @@ public final class DevServiceContainers {
         container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
         container.withLabel(DevServiceLabels.OWNER, ownerId);
         return container;
+    }
+
+    /**
+     * The files the given container copies into itself at startup, by target path. Testcontainers
+     * keeps the copies declared as {@link Transferable} in a field without a public accessor.
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<Transferable, String> copiedFiles(GenericContainer<?> container) {
+        Map<Transferable, String> files = (Map<Transferable, String>) ReflectionTestUtils.getField(container, "copyToTransferableContainerPathMap");
+        return (files != null) ? files : Map.of();
     }
 
 }

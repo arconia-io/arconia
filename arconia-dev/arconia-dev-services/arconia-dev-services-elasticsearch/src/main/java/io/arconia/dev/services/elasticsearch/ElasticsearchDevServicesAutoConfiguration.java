@@ -3,6 +3,7 @@ package io.arconia.dev.services.elasticsearch;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -13,6 +14,8 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.ssl.SslBundleFiles;
+import io.arconia.dev.services.core.ssl.SslCertificate;
 import io.arconia.dev.services.elasticsearch.ElasticsearchDevServicesAutoConfiguration.ElasticsearchDevServicesRegistrar;
 
 /**
@@ -28,8 +31,37 @@ public final class ElasticsearchDevServicesAutoConfiguration {
 
     static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
 
+    /**
+     * The setting enabling SSL on the HTTP layer of Elasticsearch, which its security
+     * auto-configuration turns on with a generated certificate unless set explicitly.
+     */
+    static final String HTTP_SSL_ENABLED = "xpack.security.http.ssl.enabled";
+
+    /**
+     * Where the SSL files are copied in the container.
+     */
+    static final String SSL_DIRECTORY = "/usr/share/elasticsearch/config/arconia-ssl/";
+
     static ElasticsearchContainer createContainer(ElasticsearchDevServicesProperties properties) {
-        return new ElasticsearchContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        var container = new ElasticsearchContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        // Serves plain HTTP unless SSL is enabled through its properties.
+        if (!properties.getSsl().isEnabled()) {
+            container.withEnv(HTTP_SSL_ENABLED, "false");
+        }
+        return container;
+    }
+
+    /**
+     * Configure Elasticsearch to serve HTTPS with the certificate and key of the bundle, in
+     * place of the certificate it would generate.
+     */
+    static void configureSsl(ElasticsearchContainer container, SslBundle bundle) {
+        container.withCopyToContainer(SslBundleFiles.certificateChain(bundle), SSL_DIRECTORY + "server.crt");
+        container.withCopyToContainer(SslBundleFiles.privateKey(bundle), SSL_DIRECTORY + "server.key");
+        container
+                .withEnv(HTTP_SSL_ENABLED, "true")
+                .withEnv("xpack.security.http.ssl.certificate", SSL_DIRECTORY + "server.crt")
+                .withEnv("xpack.security.http.ssl.key", SSL_DIRECTORY + "server.key");
     }
 
     static class ElasticsearchDevServicesRegistrar extends DevServicesRegistrar {
@@ -44,6 +76,9 @@ public final class ElasticsearchDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ElasticsearchContainer.class, () -> createContainer(properties))
                     .port(ELASTICSEARCH_DEFAULT_PORT)
+                    // With no key store configured, Elasticsearch generates its own certificate,
+                    // which Spring Boot extracts from the container to trust it.
+                    .ssl(ElasticsearchDevServicesAutoConfiguration::configureSsl, SslCertificate.CONFIGURED_OR_GENERATED)
                     .discovery(ElasticsearchConnectionDetails.class,
                             container -> new ElasticsearchDiscoveredConnectionDetails(container, properties)));
         }

@@ -3,6 +3,8 @@ package io.arconia.dev.services.core.registration;
 import java.util.Comparator;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
@@ -14,11 +16,14 @@ import io.arconia.dev.services.api.registration.ContainerInfo;
  *
  * @param containerInfo information about the discovered container
  * @param host the host address to use for connecting to the discovered container
+ * @param sslBundle the bundle to connect to the discovered container over SSL with, when SSL is
+ * enabled for the dev service; it trusts the certificate the dev service is configured to present
  */
 @Incubating
 public record DiscoveredContainer(
         ContainerInfo containerInfo,
-        String host
+        String host,
+        @Nullable SslBundle sslBundle
 ) {
 
     public DiscoveredContainer {
@@ -44,6 +49,68 @@ public record DiscoveredContainer(
                 .map(ContainerInfo.ContainerPort::publicPort)
                 .orElseThrow(() -> new IllegalStateException("No host port mapped to container port %d for container %s"
                         .formatted(containerPort, containerInfo.id())));
+    }
+
+    /**
+     * The content of the file at the given path in the discovered container, read through the
+     * container runtime, for a dev service to pick up what the service generated at startup,
+     * such as a certificate.
+     *
+     * @throws IllegalStateException if the file cannot be read
+     */
+    public byte[] copyFileFromContainer(String containerPath) {
+        Assert.hasText(containerPath, "containerPath cannot be null or empty");
+        return ContainerRuntimeInfo.copyFileFromContainer(containerInfo.id(), containerPath);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+
+        @Nullable
+        private ContainerInfo containerInfo;
+        @Nullable
+        private String host;
+        @Nullable
+        private SslBundle sslBundle;
+
+        private Builder() {}
+
+        /**
+         * Information about the discovered container.
+         */
+        public Builder containerInfo(ContainerInfo containerInfo) {
+            this.containerInfo = containerInfo;
+            return this;
+        }
+
+        /**
+         * The host address to use for connecting to the discovered container.
+         */
+        public Builder host(String host) {
+            this.host = host;
+            return this;
+        }
+
+        /**
+         * The bundle to connect to the discovered container over SSL with, if any.
+         */
+        public Builder sslBundle(@Nullable SslBundle sslBundle) {
+            this.sslBundle = sslBundle;
+            return this;
+        }
+
+        /**
+         * Builds the {@link DiscoveredContainer} instance.
+         */
+        public DiscoveredContainer build() {
+            Assert.notNull(containerInfo, "containerInfo cannot be null");
+            Assert.notNull(host, "host cannot be null");
+            return new DiscoveredContainer(containerInfo, host, sslBundle);
+        }
+
     }
 
 }

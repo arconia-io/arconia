@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.ssl.DefaultSslBundleRegistry;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -83,10 +85,33 @@ class DevServicesEndpointAutoConfigurationTests {
                 });
     }
 
+    @Test
+    void endpointBeanIsCreatedWithSeveralSslBundlesBeans() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .withUserConfiguration(SslBundlesConfiguration.class)
+                .run(context -> assertThat(context).hasSingleBean(DevServicesEndpoint.class));
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class SslBundlesConfiguration {
+
+        @Bean
+        SslBundles firstSslBundles() {
+            return new DefaultSslBundleRegistry();
+        }
+
+        @Bean
+        SslBundles secondSslBundles() {
+            return new DefaultSslBundleRegistry();
+        }
+
+    }
+
     @Configuration(proxyBeanMethods = false)
     static class CustomEndpointConfiguration {
 
-        static final DevServicesEndpoint customEndpoint = new DevServicesEndpoint(Map.of());
+        static final DevServicesEndpoint customEndpoint = new DevServicesEndpoint(Map.of(), null);
 
         @Bean
         DevServicesEndpoint devServicesEndpoint() {
@@ -123,7 +148,12 @@ class DevServicesEndpointAutoConfigurationTests {
     private static DevServiceRegistration registration(String name, String description, String imageName, String containerId) {
         Supplier<ContainerInfo> containerInfo = () -> new ContainerInfo(containerId, imageName, List.of("/" + imageName.split(":")[0]),
                 List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("test", "label"), "running", "Up 5 minutes");
-        return new DevServiceRegistration(name, description, DevServiceRegistration.Origin.MANAGED, containerInfo, List.of());
+        return DevServiceRegistration.builder()
+                .name(name)
+                .description(description)
+                .origin(DevServiceRegistration.Origin.MANAGED)
+                .containerInfo(containerInfo)
+                .build();
     }
 
 }

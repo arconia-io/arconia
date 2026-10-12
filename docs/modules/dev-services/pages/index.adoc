@@ -82,6 +82,57 @@ The auto-configuration mechanism uses https://docs.spring.io/spring-boot/referen
 
 If your application defines its own `ConnectionDetails` bean of the type a Dev Service provides (for example, a `JdbcConnectionDetails` bean), the application connects to the service of your choice: the Dev Service is not started, and a message says so at startup.
 
+=== SSL with Dev Services
+
+Some Dev Services can serve SSL, so that the SSL support of your application is developed and tested against them, the way https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections.ssl[SSL with Service Connections] allows with plain Spring Boot and Testcontainers. This covers two situations:
+
+* The application connects to the real service over SSL, in production, and you want dev and test to exercise the same path. For example, an application whose Redis is only reachable over SSL in production connects to the Redis Dev Service over SSL as well, so that its SSL client setup is covered by its tests.
+* The service only accepts SSL connections, as Elasticsearch does in its default configuration, so the application has no other way to reach it.
+
+The support builds on Spring Boot's and goes one step further: Spring Boot configures the application side, and Arconia configures the container as well. The connection uses SSL in one direction: the Dev Service presents a certificate, and the application verifies it. The application presents no certificate of its own, and the Dev Service doesn't ask for one.
+
+SSL is configured through the `ssl` properties of the Dev Service, which describe its SSL bundle with the keys of a https://docs.spring.io/spring-boot/reference/features/ssl.html[Spring Boot SSL bundle], in PEM form (`ssl.pem`) or as a Java keystore (`ssl.jks`). The bundle has the meaning of the bundle a Spring Boot server is configured with: its key store holds the certificate and private key the Dev Service presents. There is nothing to configure on the application side: the application trusts the certificate chain the Dev Service presents, with the protocol and options of the bundle, through the Spring Boot service connection of the Dev Service.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        ssl:
+          enabled: true
+          pem:
+            keystore:
+              certificate: "classpath:certs/redis.crt"
+              private-key: "classpath:certs/redis.key"
+----
+
+Certificates and keys are read as for any Spring Boot SSL bundle: from a `classpath:` or `file:` location, as inline PEM content, or as `base64:` content. Whatever form they are configured in, each Dev Service gets them in the form its service expects. The `ssl.pem` and `ssl.jks` properties take the `keystore`, `key`, `options`, and `protocol` keys of a `spring.ssl.bundle` definition, with the same names and meaning. A trust store is not part of them, since the Dev Service never asks the application for a certificate. When `ssl.enabled` is `false`, the other `ssl` properties have no effect.
+
+==== Certificate Requirements
+
+The clients verify the host name of the Dev Service against its certificate, so the certificate must be valid for the host the application connects to: `localhost` and `127.0.0.1` with a local container runtime, the host of the container runtime otherwise, and the name of the Dev Service and its `network-aliases` when the application reaches it over the xref:index.adoc#_shared_network[shared network]. A certificate for local development can be generated with OpenSSL, for example:
+
+[source,shell]
+----
+openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
+  -keyout redis.key -out redis.crt -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1,DNS:redis"
+----
+
+The private key must be readable by Arconia, which copies it into the container unencrypted, where the service reads it. Certificates and keys for development are not secrets, but keep them out of the resources packaged for production anyway.
+
+The bundle the application connects to the Dev Service with, which trusts the certificate the Dev Service presents, is registered in the `SslBundles` of the application under the name `dev-services-<service-name>`, so Spring Boot tooling reports it as any other bundle: the SSL information of the `info` actuator endpoint, when enabled, lists the trusted certificate chain, and the `devservices` endpoint reports it for the Dev Service (see xref:index.adoc#_actuator[Actuator]). The `dev-services-` prefix is reserved for these bundles. The startup message of the Dev Service says SSL is enabled (see xref:index.adoc#_startup_feedback[Startup Feedback]).
+
+The container is configured for SSL right after the common properties are applied and before your xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer`] beans run, so a customizer replacing the command or the configuration of the container must preserve the SSL part. A container kept across a Spring Boot DevTools restart keeps the SSL configuration it was started with, like the rest of its configuration: stop and start the application after changing the `ssl` properties (see xref:index.adoc#_lifecycle_management[Lifecycle Management]).
+
+The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], xref:kafka.adoc[Kafka], xref:mongodb.adoc[MongoDB], xref:rabbitmq.adoc[RabbitMQ], and xref:redis.adoc[Redis]. The Elasticsearch Dev Service also works with the certificate Elasticsearch generates itself, with no certificate configured at all.
+
+[NOTE]
+====
+A Dev Service with SSL enabled and running in a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) is connected to with the bundle built from the properties of this application: the applications sharing a Dev Service must configure the same `ssl` properties, as they must use the same credentials. A mismatch, such as SSL enabled in one application only or different certificates, shows up as a connection or handshake failure when the application first uses the service.
+====
+
 === Lifecycle Management
 
 Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans in the application context:
@@ -409,12 +460,13 @@ When a Dev Service is ready, Arconia logs a consistent startup message: one line
 ...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896, OTLP/gRPC: http://localhost:32897
 ----
 
-The first line states the container image, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, and, in dev mode, the reuse strategy in effect. When the configured strategy could not be applied, the reason follows it in parentheses, for example, because the Testcontainers reusable containers feature is not enabled on your machine:
+The first line states the container image, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, in dev mode, the reuse strategy in effect, and whether SSL is enabled for the Dev Service (`ssl`). When the configured strategy could not be applied, the reason follows it in parentheses, for example, because the Testcontainers reusable containers feature is not enabled on your machine:
 
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm:0.30.1, started by another application, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres:18.4-alpine, kept across restart, reuse-strategy: none)
+...i.a.d.s.startup  : Dev Service 'redis' is ready in container 5e8d2b7f0c13 (redis:8.8-alpine, reuse-strategy: none, ssl)
 ----
 
 The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`. For services with no HTTP interface, the endpoint also reports the host ports the container publishes, which is what you need to connect to them from a tool on your machine.
@@ -539,7 +591,8 @@ Response example:
       },
       "state": "running",
       "status": "Up About 67 minutes"
-    }
+    },
+    "ssl": null
   },
   "postgresql": {
     "name": "postgresql",
@@ -567,7 +620,8 @@ Response example:
       },
       "state": "running",
       "status": "Up About 67 minutes"
-    }
+    },
+    "ssl": null
   }
 }
 ----
@@ -613,7 +667,8 @@ Response example:
     },
     "state": "running",
     "status": "Up About 67 minutes"
-  }
+  },
+  "ssl": null
 }
 ----
 
@@ -624,6 +679,36 @@ The `state` field is the lifecycle state of the container as defined by the Dock
 The `links` field lists the links the Dev Service exposes, such as management consoles (see xref:index.adoc#_startup_feedback[Startup Feedback]). A Dev Service that other applications can discover also carries the `io.arconia.dev-service.discoverable` and `io.arconia.dev-service.owner` labels.
 
 The `origin` field indicates whether the Dev Service runs in a container managed by this application (`MANAGED`) or in a container started by another application and discovered by this one (`DISCOVERED`).
+
+The `ssl` field reports the SSL bundle the application connects to a Dev Service with SSL enabled with (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), in the form Spring Boot reports bundles in the `info` endpoint: the name the bundle is registered under, and, as its trust store certificate chains, the certificate chain of the Dev Service with the subject, issuer, validity period, and validity status of each certificate. It is `null` for a Dev Service without SSL, and for one using the certificate its container generates, which has no bundle of its own.
+
+[source,json]
+----
+"ssl": {
+  "name": "dev-services-redis",
+  "certificateChains": [],
+  "trustStoreCertificateChains": [
+    {
+      "alias": "certificate-0",
+      "certificates": [
+        {
+          "subject": "CN=localhost,O=Acme",
+          "version": "V3",
+          "issuer": "CN=Acme Development CA,O=Acme",
+          "validityStarts": "2026-10-11T20:57:12Z",
+          "validityEnds": "2126-09-17T20:57:12Z",
+          "serialNumber": "4f8a1c2e9b7d6a5f3e2c1b0a9f8e7d6c5b4a3f2e",
+          "signatureAlgorithmName": "SHA256withRSA",
+          "validity": {
+            "status": "VALID",
+            "message": null
+          }
+        }
+      ]
+    }
+  ]
+}
+----
 
 == Arconia Dev Services vs. Spring Boot Development-time Services
 
@@ -739,9 +824,9 @@ Example: `spring-boot-testcontainers` + `testcontainers-postgresql`.
 | Code Requirements
 | Zero additional code required
 | Requires: +
-• `@TestConfiguration` class with `@Bean` methods; +
+• `@TestConfiguration` class with `@Bean` methods, or an interface of `@Container` fields imported with `@ImportTestcontainers`; +
 • Test main class with `SpringApplication.from()`; +
-• `@ServiceConnection` and `@RestartScope` annotations.
+• `@ServiceConnection` and `@RestartScope` annotations, or `DynamicPropertyRegistrar` beans for services without connection details.
 
 | Configuration
 | Declarative via `application.yml` properties. +
@@ -777,6 +862,12 @@ With `framework`, running containers are discovered automatically across applica
 Example: `image-name`, `port`, `init-script-paths`. +
 Programmatic control via `DevServiceContainerCustomizer` beans for advanced scenarios.
 | Full programmatic control. Direct access to Testcontainers API in bean definitions.
+
+| SSL
+| Declarative via properties, with the keys of a Spring Boot SSL bundle: +
+`arconia.dev.services.<service-name>.ssl.enabled` and `ssl.pem` or `ssl.jks`. +
+Both sides are configured: the container serves SSL with the configured certificate, and the application trusts it through the service connection (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]).
+| Application side only, via the `@Ssl`, `@PemTrustStore`, `@PemKeyStore`, `@JksTrustStore`, and `@JksKeyStore` annotations on the container bean. The container must be configured to serve SSL by other means, with files and commands specific to each service.
 
 | Flexibility
 | Opinionated with sensible defaults. Configuration properties are available for common use cases.

@@ -3,7 +3,6 @@ package io.arconia.dev.services.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -35,13 +34,12 @@ class DevServiceRegistrationTests {
     }
 
     static Stream<Arguments> invalidRegistrations() {
-        Supplier<ContainerInfo> containerInfo = DevServiceRegistrationTests::createContainerInfo;
         return Stream.of(
-                Arguments.of("name", (ThrowingCallable) () -> new DevServiceRegistration("", "A test service", MANAGED, containerInfo, List.of())),
-                Arguments.of("description", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "", MANAGED, containerInfo, List.of())),
-                Arguments.of("origin", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", null, containerInfo, List.of())),
-                Arguments.of("containerInfo", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", MANAGED, null, List.of())),
-                Arguments.of("links", (ThrowingCallable) () -> new DevServiceRegistration("test-service", "A test service", MANAGED, containerInfo, null)));
+                Arguments.of("name", (ThrowingCallable) () -> validRegistration().name("").build()),
+                Arguments.of("description", (ThrowingCallable) () -> validRegistration().description("").build()),
+                Arguments.of("origin", (ThrowingCallable) () -> validRegistration().origin(null).build()),
+                Arguments.of("containerInfo", (ThrowingCallable) () -> validRegistration().containerInfo(null).build()),
+                Arguments.of("links", (ThrowingCallable) () -> validRegistration().links(null).build()));
     }
 
     @Test
@@ -81,6 +79,14 @@ class DevServiceRegistrationTests {
         assertThat(registration.links()).hasSize(1);
         assertThatThrownBy(() -> registration.links().add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
                 .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    private static DevServiceRegistration.Builder validRegistration() {
+        return DevServiceRegistration.builder()
+                .name("test-service")
+                .description("A test service")
+                .origin(MANAGED)
+                .containerInfo(DevServiceRegistrationTests::createContainerInfo);
     }
 
     private static ContainerInfo createContainerInfo() {

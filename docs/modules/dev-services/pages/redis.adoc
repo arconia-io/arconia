@@ -66,6 +66,14 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.volumes`
 | `[]`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+include::partial$using-ssl.adoc[]
+
+Redis then serves its port over SSL only, and clients are not asked for a certificate.
 
 include::partial$disabling-dev-service.adoc[]

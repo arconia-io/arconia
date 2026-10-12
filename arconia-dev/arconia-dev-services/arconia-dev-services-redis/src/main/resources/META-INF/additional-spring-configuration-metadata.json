@@ -8,6 +8,99 @@
         "reason": "Replaced by 'arconia.dev.services.redis.reuse-strategy'. Use 'testcontainers' instead of 'true'.",
         "since": "0.31.0"
       }
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable SSL support for the dev service.",
+      "defaultValue": false
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.keystore.certificate",
+      "type": "java.lang.String",
+      "description": "Location or content of the certificate or certificate chain in PEM format."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.keystore.private-key",
+      "type": "java.lang.String",
+      "description": "Location or content of the private key in PEM format."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.keystore.private-key-password",
+      "type": "java.lang.String",
+      "description": "Password used to decrypt an encrypted private key."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.key.alias",
+      "type": "java.lang.String",
+      "description": "The alias that identifies the key in the key store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.key.password",
+      "type": "java.lang.String",
+      "description": "The password used to access the key in the key store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.protocol",
+      "type": "java.lang.String",
+      "description": "SSL Protocol to use.",
+      "defaultValue": "TLS"
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.options.ciphers",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "Supported SSL ciphers."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.pem.options.enabled-protocols",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "Enabled SSL protocols."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.keystore.type",
+      "type": "java.lang.String",
+      "description": "Type of the store to create, e.g. JKS."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.keystore.provider",
+      "type": "java.lang.String",
+      "description": "Provider for the store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.keystore.location",
+      "type": "java.lang.String",
+      "description": "Location of the resource containing the store content."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.keystore.password",
+      "type": "java.lang.String",
+      "description": "Password used to access the store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.key.alias",
+      "type": "java.lang.String",
+      "description": "The alias that identifies the key in the key store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.key.password",
+      "type": "java.lang.String",
+      "description": "The password used to access the key in the key store."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.protocol",
+      "type": "java.lang.String",
+      "description": "SSL Protocol to use.",
+      "defaultValue": "TLS"
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.options.ciphers",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "Supported SSL ciphers."
+    },
+    {
+      "name": "arconia.dev.services.redis.ssl.jks.options.enabled-protocols",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "Enabled SSL protocols."
     }
   ]
 }

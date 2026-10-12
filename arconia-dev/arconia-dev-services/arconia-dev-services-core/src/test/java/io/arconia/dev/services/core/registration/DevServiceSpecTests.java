@@ -9,15 +9,19 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.ssl.SslBundle;
 
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 import io.arconia.dev.services.core.TestDevServicesProperties;
+import io.arconia.dev.services.core.TestSslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.LinkDefinition;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.PortBinding;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConnectionDetails;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
+import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
+import io.arconia.dev.services.core.ssl.SslCertificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -237,6 +241,87 @@ class DevServiceSpecTests {
             assertThatIllegalArgumentException()
                     .isThrownBy(spec::build)
                     .withMessageContaining("Dev Service 'postgres': the 'startup-timeout' property must be positive, but was: PT0S");
+        }
+
+    }
+
+    @Nested
+    class Ssl {
+
+        @Test
+        void whenSslSupportIsDeclaredThenDefinitionCarriesIt() {
+            DevServiceSslConfigurer<TestPostgresContainer> configurer = (container, bundle) -> {};
+
+            DevServiceDefinition definition = completeSpec()
+                    .properties(TestSslDevServicesProperties.pem())
+                    .ssl(configurer)
+                    .build();
+
+            assertThat(definition.sslSupport()).isNotNull();
+            assertThat(definition.sslSupport().configurer()).isSameAs(configurer);
+            assertThat(definition.sslSupport().certificate()).isEqualTo(SslCertificate.CONFIGURED);
+            assertThat(definition.isSslEnabled()).isTrue();
+        }
+
+        @Test
+        void whenCertificateMayBeGeneratedThenDefinitionSaysSo() {
+            DevServiceDefinition definition = completeSpec()
+                    .properties(TestSslDevServicesProperties.enabledWithoutKeyStore())
+                    .ssl((TestPostgresContainer container, SslBundle bundle) -> {}, SslCertificate.CONFIGURED_OR_GENERATED)
+                    .build();
+
+            assertThat(definition.sslSupport().certificate()).isEqualTo(SslCertificate.CONFIGURED_OR_GENERATED);
+            assertThat(definition.isSslEnabled()).isTrue();
+        }
+
+        @Test
+        void whenNoSslSupportIsDeclaredThenDefinitionHasNone() {
+            DevServiceDefinition definition = completeSpec().build();
+
+            assertThat(definition.sslSupport()).isNull();
+            assertThat(definition.isSslEnabled()).isFalse();
+        }
+
+        @Test
+        void whenSslIsDisabledThenDefinitionIsNotSecured() {
+            DevServiceDefinition definition = completeSpec()
+                    .properties(new TestSslDevServicesProperties())
+                    .ssl((TestPostgresContainer container, SslBundle bundle) -> {})
+                    .build();
+
+            assertThat(definition.isSslEnabled()).isFalse();
+        }
+
+        @Test
+        void whenConfigurerOrCertificateIsNullThenThrow() {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> completeSpec().ssl(null))
+                    .withMessageContaining("configurer cannot be null");
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> completeSpec().ssl((TestPostgresContainer container, SslBundle bundle) -> {}, null))
+                    .withMessageContaining("certificate cannot be null");
+        }
+
+        @Test
+        void whenSslSupportIsDeclaredWithoutServiceConnectionThenThrow() {
+            // The application is connected over SSL through the service connection only.
+            DevServiceSpec spec = completeSpec()
+                    .properties(new TestSslDevServicesProperties())
+                    .ssl((TestPostgresContainer container, SslBundle bundle) -> {})
+                    .serviceConnection(false);
+
+            assertThatIllegalStateException()
+                    .isThrownBy(spec::build)
+                    .withMessageContaining("Dev Service 'postgres': SSL support requires the service connection");
+        }
+
+        @Test
+        void whenSslPropertiesAreInvalidThenBuildThrowsNamingTheService() {
+            DevServiceSpec spec = completeSpec().properties(TestSslDevServicesProperties.pem());
+
+            assertThatIllegalArgumentException()
+                    .isThrownBy(spec::build)
+                    .withMessageContaining("Dev Service 'postgres': the 'ssl.enabled' property is true, but the dev service declares no SSL support");
         }
 
     }

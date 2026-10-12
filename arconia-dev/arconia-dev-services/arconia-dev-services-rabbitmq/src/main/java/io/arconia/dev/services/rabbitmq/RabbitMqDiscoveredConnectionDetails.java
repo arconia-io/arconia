@@ -2,7 +2,9 @@ package io.arconia.dev.services.rabbitmq;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.amqp.autoconfigure.RabbitConnectionDetails;
+import org.springframework.boot.ssl.SslBundle;
 
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 
@@ -18,8 +20,13 @@ final class RabbitMqDiscoveredConnectionDetails implements RabbitConnectionDetai
 
     private final String password;
 
+    @Nullable
+    private final SslBundle sslBundle;
+
     RabbitMqDiscoveredConnectionDetails(DiscoveredContainer container, RabbitMqDevServicesProperties properties) {
-        this.address = new Address(container.host(), container.mappedPort(RabbitMqDevServicesAutoConfiguration.AMQP_PORT));
+        this.sslBundle = container.sslBundle();
+        int port = (sslBundle != null) ? RabbitMqDevServicesAutoConfiguration.AMQPS_PORT : RabbitMqDevServicesAutoConfiguration.AMQP_PORT;
+        this.address = new Address(container.host(), container.mappedPort(port));
         this.username = properties.getUsername();
         this.password = properties.getPassword();
     }
@@ -37,6 +44,12 @@ final class RabbitMqDiscoveredConnectionDetails implements RabbitConnectionDetai
     @Override
     public List<Address> getAddresses() {
         return List.of(address);
+    }
+
+    @Override
+    @Nullable
+    public SslBundle getSslBundle() {
+        return sslBundle;
     }
 
 }

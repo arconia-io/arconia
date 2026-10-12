@@ -24,11 +24,11 @@ final class DevServiceStartupLogger {
 
     /**
      * Log that the registered dev service is ready in the given container, with the image it
-     * runs, whether it was kept across a DevTools restart, and the reuse strategy in effect
-     * when it applies.
+     * runs, whether it was kept across a DevTools restart, the reuse strategy in effect
+     * when it applies, and whether it uses SSL.
      */
     static void ready(DevServiceRegistration registration, @Nullable String containerId, @Nullable String imageName,
-            boolean kept, @Nullable ReuseDecision reuse) {
+            boolean kept, @Nullable ReuseDecision reuse, boolean ssl) {
         List<String> facts = new ArrayList<>();
         if (imageName != null) {
             facts.add(imageName);
@@ -41,6 +41,9 @@ final class DevServiceStartupLogger {
         }
         if (reuse != null) {
             facts.add(formatReuse(reuse));
+        }
+        if (ssl) {
+            facts.add("ssl");
         }
         String details = facts.isEmpty() ? "" : " (" + String.join(", ", facts) + ")";
         logger.info("Dev Service '{}' is ready in container {}{}", registration.name(), ContainerRuntimeInfo.shortId(containerId), details);

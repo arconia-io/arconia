@@ -9,13 +9,35 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 === Core
 
-* The `arconia.dev.services.startup.log-level` has been removed because redundant since Testcontainers already takes care of writing a failed container's logs to the application logs at error level.
-* The `reuse` and `shared` properties of each Dev Service have been replaced by a single `reuse-strategy` property, since both answered the same question: whether to use a container that is already running instead of starting a new one. It accepts `framework` (previously `shared=true`), `testcontainers` (previously `reuse=true`), and `none`. Learn more about xref:dev-services:index.adoc#_reusing_dev_services[Reusing Dev Services].
+* Dev Services can now serve SSL, so that the SSL support of your application is developed and tested against them. Set the `ssl.enabled` property of a Dev Service and configure the certificate it presents with the keys of a Spring Boot SSL bundle, in PEM or Java keystore form: the container is configured to serve SSL, and the application is configured to trust it through the service connection, with nothing to set up on the client side. The bundle is reported by the startup log and the `devservices` actuator endpoint, and registered in the `SslBundles` of the application. Learn more about xref:dev-services:index.adoc#_ssl_with_dev_services[SSL with Dev Services].
+* The `arconia.dev.services.<name>.reuse` and `arconia.dev.services.<name>.shared` properties of each Dev Service have been replaced by a single `arconia.dev.services.<name>.reuse-strategy` property, since both answered the same question: whether to use a container that is already running instead of starting a new one. It accepts `framework` (previously `shared=true`), `testcontainers` (previously `reuse=true`), and `none`. Learn more about xref:dev-services:index.adoc#_reusing_dev_services[Reusing Dev Services].
 * The `framework` reuse strategy is now supported by all the Dev Services.
+* The `arconia.dev.services.startup.log-level` has been removed because redundant since Testcontainers already takes care of writing a failed container's logs to the application logs at error level.
 * The `arconia.dev.services.network.name` property has been removed, and with it the support for a network shared across applications: the shared network is now always isolated per application and is created and removed by Testcontainers. Learn more about xref:dev-services:index.adoc#_shared_network[Shared Network].
 * `ContainerInfo.exposedPorts()` has been renamed to `ports()`, since it holds the port mappings of the container. The `devservices` actuator endpoint reports them under `ports` accordingly.
 * If you build your own Dev Service, some API changes have been introduced to simplify the registration and configuration of dev services. Refer to the updated documentation on how to xref:dev-services:custom-dev-services.adoc[build your own dev service].
 
+=== Elasticsearch
+
+* The Elasticsearch Dev Service now serves plain HTTP by default. Elasticsearch 8 and later only accept HTTPS in their default configuration, with a certificate the application could not trust, so the Dev Service could not be reached before.
+* The Elasticsearch Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. With no certificate configured, Elasticsearch keeps the one it generates itself, and the application trusts it the way Spring Boot does for an `@Ssl` container. Learn more about xref:dev-services:elasticsearch.adoc#_using_ssl[Using SSL].
+
+=== Kafka
+
+* The Kafka Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. Learn more about xref:dev-services:kafka.adoc#_using_ssl[Using SSL].
+
 === Keycloak
 
 * A new xref:dev-services:keycloak.adoc[Keycloak Dev Service] provides an identity and access management server for development and testing. It configures Spring Security's OAuth2 Client and OAuth2 Resource Server automatically, depending on which is on the classpath, so an application needs no OAuth2 configuration to start logging users in or validating tokens. A realm with a client, roles and users is generated out of the box, and you can configure its users and roles, import your own realms from the classpath or the host filesystem, or turn realm creation off entirely and configure Spring Security yourself.
+
+=== MongoDB
+
+* The MongoDB Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. Learn more about xref:dev-services:mongodb.adoc#_using_ssl[Using SSL].
+
+=== RabbitMQ
+
+* The RabbitMQ Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. The application connects to its AMQPS listener, which the fixed `port` property then binds. Learn more about xref:dev-services:rabbitmq.adoc#_using_ssl[Using SSL].
+
+=== Redis
+
+* The Redis Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. Learn more about xref:dev-services:redis.adoc#_using_ssl[Using SSL].

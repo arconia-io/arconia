@@ -1,16 +1,19 @@
 package io.arconia.dev.services.core.registration;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
 
 import org.jspecify.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.ContainerState;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
 
@@ -51,6 +54,37 @@ final class ContainerRuntimeInfo {
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to extract container information for ID: " + containerId, ex);
         }
+    }
+
+    /**
+     * The content of a file of the given container, read through the OCI runtime with the
+     * Testcontainers utility, which only needs to know the container.
+     */
+    static byte[] copyFileFromContainer(String containerId, String containerPath) {
+        try {
+            InspectContainerResponse containerInfo = DockerClientFactory.lazyClient().inspectContainerCmd(containerId).exec();
+            return new RunningContainerState(containerInfo).copyFileFromContainer(containerPath, InputStream::readAllBytes);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to copy the file %s from the container with ID: %s".formatted(containerPath, containerId), ex);
+        }
+    }
+
+    /**
+     * A running container the application did not start, as the state Testcontainers operates
+     * on: enough for the utilities that only need the container itself.
+     */
+    private record RunningContainerState(InspectContainerResponse containerInfo) implements ContainerState {
+
+        @Override
+        public InspectContainerResponse getContainerInfo() {
+            return containerInfo;
+        }
+
+        @Override
+        public List<Integer> getExposedPorts() {
+            return List.of();
+        }
+
     }
 
     /**

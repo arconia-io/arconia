@@ -136,7 +136,7 @@ final class DevServicesTestSupport {
     static DiscoveredContainer discoveredContainer(Map<String, String> additionalLabels) {
         Map<String, String> labels = new HashMap<>(Map.of(DevServiceLabels.NAME, "postgres", DevServiceLabels.DISCOVERABLE, "true"));
         labels.putAll(additionalLabels);
-        return new DiscoveredContainer(ContainerInfo.builder()
+        return DiscoveredContainer.builder().containerInfo(ContainerInfo.builder()
                 .id("abc123")
                 .imageName("postgres:latest")
                 .names(List.of("shared-postgres"))
@@ -144,7 +144,7 @@ final class DevServicesTestSupport {
                 .labels(labels)
                 .state("running")
                 .status("running")
-                .build(), "localhost");
+                .build()).host("localhost").build();
     }
 
     // TYPES

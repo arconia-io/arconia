@@ -7,17 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
+import io.arconia.dev.services.api.config.SslConfig;
+import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the MongoDB Dev Services.
  */
 @ConfigurationProperties(prefix = MongoDbDevServicesProperties.CONFIG_PREFIX)
-public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
+public class MongoDbDevServicesProperties implements BaseDevServicesProperties, SslDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.mongodb";
 
@@ -73,6 +76,12 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
      * or the container will be immediately reflected in the other.
      */
     private List<VolumeMapping> volumes = new ArrayList<>();
+
+    /**
+     * SSL configuration of the dev service.
+     */
+    @NestedConfigurationProperty
+    private final SslConfig ssl = new SslConfig();
 
     @Override
     public boolean isEnabled() {
@@ -153,6 +162,11 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties {
 
     public void setVolumes(List<VolumeMapping> volumes) {
         this.volumes = volumes;
+    }
+
+    @Override
+    public SslConfig getSsl() {
+        return ssl;
     }
 
 }

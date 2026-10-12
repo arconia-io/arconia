@@ -1,0 +1,17 @@
+The Dev Service can serve SSL, so that an application connecting to the real service over SSL does the same in dev and test, and its SSL support is developed and tested against the Dev Service. Set the `arconia.dev.services.{service-name}.ssl.enabled` property to `true` and configure the certificate and private key the Dev Service presents, in PEM form or in a Java keystore, with the same properties as a https://docs.spring.io/spring-boot/reference/features/ssl.html[Spring Boot SSL bundle]:
+
+[source,yaml,subs="attributes+"]
+----
+arconia:
+  dev:
+    services:
+      {service-name}:
+        ssl:
+          enabled: true
+          pem:
+            keystore:
+              certificate: "classpath:certs/{service-name}.crt"
+              private-key: "classpath:certs/{service-name}.key"
+----
+
+The container is configured to serve SSL with that certificate, and the application is configured to trust it through the Spring Boot service connection, so no client configuration is needed. The certificate must be valid for the host the application connects to, such as `localhost`. The `ssl.pem` and `ssl.jks` properties take the `keystore`, `key`, `options`, and `protocol` keys of a `spring.ssl.bundle` definition. Learn more about xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services], including the certificate requirements.

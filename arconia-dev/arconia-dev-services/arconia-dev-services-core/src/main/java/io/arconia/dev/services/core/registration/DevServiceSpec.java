@@ -18,9 +18,13 @@ import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.Discovery;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.LinkDefinition;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.PortBinding;
+import io.arconia.dev.services.core.registration.DevServiceDefinition.SslSupport;
+import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
+import io.arconia.dev.services.core.ssl.SslCertificate;
 
 /**
  * Specification of a single dev service.
@@ -70,6 +74,9 @@ public final class DevServiceSpec {
     private final List<PortBinding> additionalPorts = new ArrayList<>();
 
     private final List<LinkDefinition> links = new ArrayList<>();
+
+    @Nullable
+    private SslSupport sslSupport;
 
     DevServiceSpec() {}
 
@@ -210,6 +217,33 @@ public final class DevServiceSpec {
     }
 
     /**
+     * How to configure the container to use SSL when the {@code ssl.enabled} property of the
+     * dev service is true. Declaring it is what opts the dev service into SSL: its properties
+     * must implement {@link SslDevServicesProperties}, and setting the property for a dev service
+     * declaring no SSL support fails at startup. The configurer receives the SSL bundle built
+     * from the {@code ssl} properties, which must configure a key store. SSL support requires
+     * the service connection, through which Spring Boot connects the application over SSL.
+     */
+    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer) {
+        return ssl(configurer, SslCertificate.CONFIGURED);
+    }
+
+    /**
+     * How to configure the container to use SSL when the {@code ssl.enabled} property of the
+     * dev service is true, stating where the certificate the dev service presents comes from.
+     * A dev service whose container generates its own certificate when none is configured
+     * declares {@link SslCertificate#CONFIGURED_OR_GENERATED}: the configurer is then only called
+     * when a key store is configured, and Spring Boot extracts the generated certificate from
+     * the container otherwise.
+     */
+    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslCertificate certificate) {
+        Assert.notNull(configurer, "configurer cannot be null");
+        Assert.notNull(certificate, "certificate cannot be null");
+        this.sslSupport = new SslSupport(configurer, certificate);
+        return this;
+    }
+
+    /**
      * Check that the specification is complete and consistent, and build the definition of the
      * dev service from it. Every failure names the dev service, once its name is known.
      */
@@ -228,13 +262,28 @@ public final class DevServiceSpec {
                 () -> prefix + "a service connection name has no effect when the service connection is disabled");
         Assert.isTrue(serviceConnectionName == null || StringUtils.hasText(serviceConnectionName),
                 () -> prefix + "service connection name cannot be empty");
+        Assert.state(sslSupport == null || serviceConnection,
+                () -> prefix + "SSL support requires the service connection");
 
         validateProperties(prefix, properties);
         validatePort(prefix, properties);
         links.forEach(link -> validateLink(prefix, link));
+        DevServiceSslSupport.validate(prefix, properties, sslSupport);
 
-        return new DevServiceDefinition(name, description, category, properties, containerType, containerSupplier,
-                serviceConnection, serviceConnectionName, buildDiscovery(prefix), port, additionalPorts, links);
+        return DevServiceDefinition.builder()
+                .name(name)
+                .description(description)
+                .category(category)
+                .properties(properties)
+                .container(containerType, containerSupplier)
+                .serviceConnection(serviceConnection)
+                .serviceConnectionName(serviceConnectionName)
+                .discovery(buildDiscovery(prefix))
+                .port(port)
+                .additionalPorts(additionalPorts)
+                .links(links)
+                .sslSupport(sslSupport)
+                .build();
     }
 
     /**

@@ -16,6 +16,9 @@ import io.arconia.core.support.Incubating;
  * @param origin how the dev service container was made available to the application
  * @param containerInfo supplies the information about the container, inspected on each call
  * @param links the links the dev service exposes
+ * @param sslBundleName the name of the SSL bundle the application connects to the dev service
+ * with, registered in the {@code SslBundles} of the application, when SSL is enabled with a
+ * configured certificate
  */
 @Incubating
 public record DevServiceRegistration(
@@ -23,7 +26,8 @@ public record DevServiceRegistration(
         String description,
         Origin origin,
         Supplier<ContainerInfo> containerInfo,
-        List<DevServiceLink> links
+        List<DevServiceLink> links,
+        @Nullable String sslBundleName
 ) {
 
     public DevServiceRegistration {
@@ -73,6 +77,8 @@ public record DevServiceRegistration(
         @Nullable
         private Supplier<ContainerInfo> containerInfo;
         private List<DevServiceLink> links = List.of();
+        @Nullable
+        private String sslBundleName;
 
         private Builder() {}
 
@@ -117,6 +123,14 @@ public record DevServiceRegistration(
         }
 
         /**
+         * The name of the SSL bundle the application connects to the dev service with, if any.
+         */
+        public Builder sslBundleName(@Nullable String sslBundleName) {
+            this.sslBundleName = sslBundleName;
+            return this;
+        }
+
+        /**
          * Builds the {@link DevServiceRegistration} instance.
          */
         public DevServiceRegistration build() {
@@ -124,7 +138,7 @@ public record DevServiceRegistration(
             Assert.notNull(description, "description cannot be null");
             Assert.notNull(origin, "origin cannot be null");
             Assert.notNull(containerInfo, "containerInfo cannot be null");
-            return new DevServiceRegistration(name, description, origin, containerInfo, links);
+            return new DevServiceRegistration(name, description, origin, containerInfo, links, sslBundleName);
         }
 
     }

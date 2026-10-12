@@ -78,7 +78,10 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
     @Nullable
     private static DiscoveredContainer toDiscoveredContainer(Container dockerContainer, String host, String serviceName) {
         try {
-            return new DiscoveredContainer(ContainerRuntimeInfo.toContainerInfo(dockerContainer), host);
+            return DiscoveredContainer.builder()
+                    .containerInfo(ContainerRuntimeInfo.toContainerInfo(dockerContainer))
+                    .host(host)
+                    .build();
         } catch (Exception ex) {
             logger.debug("Dev Service '{}': skipping the discovered container {}", serviceName, dockerContainer.getId(), ex);
             return null;

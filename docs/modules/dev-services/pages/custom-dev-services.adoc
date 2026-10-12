@@ -169,6 +169,7 @@ A few constraints apply to the registration, enforced at startup:
 * The auto-configuration must declare `before = ServiceConnectionAutoConfiguration.class`, as in the example above: the container bean definition must exist by the time Spring Boot looks for the `@ServiceConnection` beans to provide the connection details for. Without it, the container starts, but the application is not connected to it.
 * `serviceConnectionName(...)` can't be combined with `serviceConnection(false)` (see xref:custom-dev-services.adoc#_wiring_the_application_to_the_service[Wiring the Application to the Service]).
 * Links (see xref:custom-dev-services.adoc#_exposing_links[Exposing Links]) are resolved as `http://` URLs.
+* SSL support (see xref:custom-dev-services.adoc#_supporting_ssl[Supporting SSL]) can only be declared by a Dev Service whose properties implement `SslDevServicesProperties`, and properties implementing it require the SSL support to be declared: `ssl.enabled` fails at startup otherwise.
 ====
 
 Finally, register the auto-configuration in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
@@ -247,6 +248,56 @@ The `reuse-strategy` property is part of the `BaseDevServicesProperties` contrac
 A discovered container is used as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications using the Dev Service; if your service is credential-protected, document this constraint for your users.
 
 For a relational database, declare `JdbcConnectionDetails` as the connection details type and return a `JdbcDiscoveredConnectionDetails` (which requires the `spring-boot-jdbc` module as a dependency of your Dev Service), building the JDBC URL from the discovered container's host and mapped port in the same format your container reports.
+
+== Supporting SSL
+
+To let users enable SSL for your Dev Service (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), implement `SslDevServicesProperties` next to `BaseDevServicesProperties` in your properties class, and declare the SSL configuration as a nested property named `ssl` of the `SslConfig` type, which holds the switch and the bundle properties with the keys of a Spring Boot SSL bundle:
+
+[source,java]
+----
+@ConfigurationProperties(prefix = "acme.dev.services.fancydb")
+public class FancyDbDevServicesProperties implements BaseDevServicesProperties, SslDevServicesProperties {
+
+    // The common properties and the properties of your own...
+
+    @NestedConfigurationProperty
+    private final SslConfig ssl = new SslConfig();
+
+    @Override
+    public SslConfig getSsl() {
+        return ssl;
+    }
+
+}
+----
+
+`SslDevServicesProperties` is a read contract next to `BaseDevServicesProperties`, not an extension of it. Since `SslConfig` lives in another module, the configuration processor generates the metadata of the `ssl` keys under your prefix without their descriptions and defaults. To document them in your module, declare them in its `META-INF/additional-spring-configuration-metadata.json`, as the built-in Dev Services do (see the one of the Redis Dev Service for the entries to copy, with your prefix).
+
+Then declare how to configure your container to serve SSL when registering the Dev Service, with `ssl(...)`. The configurer receives the `SslBundle` built from the properties when `ssl.enabled` is true, before the container is started and before any `DevServiceContainerCustomizer` runs. Whatever form the user configured the bundle in, `SslBundleFiles` renders what your container needs from it as PEM files to copy into the container: the certificate chain, the private key, both in a single file, or the certificate authorities for a service that requires a file of them. The output is deterministic, so that a container reused across runs keeps the same configuration.
+
+[source,java]
+----
+registry.registerDevService(service -> service
+        .name("fancydb")
+        .description("FancyDB Dev Service")
+        .properties(properties)
+        .container(FancyDbContainer.class, () -> createContainer(properties))
+        .ssl(FancyDbDevServicesAutoConfiguration::configureSsl));
+
+static void configureSsl(FancyDbContainer container, SslBundle bundle) {
+    container.withCopyToContainer(SslBundleFiles.certificateChain(bundle), "/fancydb/ssl/server.crt");
+    container.withCopyToContainer(SslBundleFiles.privateKey(bundle), "/fancydb/ssl/server.key");
+    container.withEnv("FANCYDB_TLS_CERTIFICATE", "/fancydb/ssl/server.crt");
+    container.withEnv("FANCYDB_TLS_KEY", "/fancydb/ssl/server.key");
+}
+----
+
+The framework takes care of the application side. It declares on the container bean the annotations Spring Boot reads to build the SSL bundle of the connection details, that is, the certificate chain to trust, inlined, and the SSL options. It also registers the bundle the application connects with in the `SslBundles` of the application, under the reserved `dev-services-<name>` name, and reports it at startup and in the `devservices` actuator endpoint. For the application to connect over SSL, the `ConnectionDetails` of your service must expose the bundle, as the Spring Boot ones listed in https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections.ssl[its documentation] do, which is why SSL support requires the service connection: it can't be combined with `serviceConnection(false)`. If your Dev Service declares discovery (see xref:custom-dev-services.adoc#_supporting_discovery[Supporting Discovery]), return the bundle the `DiscoveredContainer` carries from your `ConnectionDetails`: it trusts the certificate the Dev Service is configured to present.
+
+[WARNING]
+====
+A service generating its own certificate when none is configured, as Elasticsearch does, declares its support with `ssl(configurer, SslCertificate.CONFIGURED_OR_GENERATED)`: the configurer is then only called when the user configures a key store, and only the `@Ssl` annotation is declared otherwise. This relies on the `ContainerConnectionDetailsFactory` of the service extracting the generated certificate from the container when `@Ssl` alone is present, which only the Elasticsearch one does in Spring Boot. For a discovered container, `DiscoveredContainer.copyFileFromContainer(...)` reads such a certificate from the container.
+====
 
 == Supporting the Shared Network
 

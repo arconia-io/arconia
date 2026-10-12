@@ -10,7 +10,10 @@ import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLink;
+import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
+import io.arconia.dev.services.core.ssl.SslCertificate;
 
 /**
  * The complete and validated definition of a dev service, as built from a {@link DevServiceSpec}.
@@ -27,6 +30,7 @@ import io.arconia.dev.services.api.registration.DevServiceLink;
  * @param port the container port the common {@code port} property binds to the host, if declared
  * @param additionalPorts the other container ports bound to fixed host ports
  * @param links the links the dev service exposes
+ * @param sslSupport how the container is configured to use SSL, if the dev service supports it
  */
 record DevServiceDefinition(
         String name,
@@ -40,7 +44,8 @@ record DevServiceDefinition(
         @Nullable Discovery discovery,
         @Nullable Integer port,
         List<PortBinding> additionalPorts,
-        List<LinkDefinition> links
+        List<LinkDefinition> links,
+        @Nullable SslSupport sslSupport
 ) {
 
     DevServiceDefinition {
@@ -54,6 +59,136 @@ record DevServiceDefinition(
 
         additionalPorts = List.copyOf(additionalPorts);
         links = List.copyOf(links);
+    }
+
+    /**
+     * Whether SSL is enabled for the dev service: it supports SSL, and its properties enable it.
+     */
+    boolean isSslEnabled() {
+        return sslSupport != null
+                && properties instanceof SslDevServicesProperties sslProperties
+                && sslProperties.getSsl().isEnabled();
+    }
+
+    /**
+     * How the container of a dev service is configured to use SSL, and where the certificate
+     * it presents comes from.
+     */
+    record SslSupport(
+            DevServiceSslConfigurer<? extends GenericContainer<?>> configurer,
+            SslCertificate certificate
+    ) {
+
+        SslSupport {
+            Assert.notNull(configurer, "configurer cannot be null");
+            Assert.notNull(certificate, "certificate cannot be null");
+        }
+
+    }
+
+    static Builder builder() {
+        return new Builder();
+    }
+
+    static final class Builder {
+
+        @Nullable
+        private String name;
+        @Nullable
+        private String description;
+        @Nullable
+        private String category;
+        @Nullable
+        private BaseDevServicesProperties properties;
+        @Nullable
+        private Class<? extends GenericContainer<?>> containerType;
+        @Nullable
+        private Supplier<? extends GenericContainer<?>> containerSupplier;
+        private boolean serviceConnection = true;
+        @Nullable
+        private String serviceConnectionName;
+        @Nullable
+        private Discovery discovery;
+        @Nullable
+        private Integer port;
+        private List<PortBinding> additionalPorts = List.of();
+        private List<LinkDefinition> links = List.of();
+        @Nullable
+        private SslSupport sslSupport;
+
+        private Builder() {}
+
+        Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        Builder category(@Nullable String category) {
+            this.category = category;
+            return this;
+        }
+
+        Builder properties(BaseDevServicesProperties properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        Builder container(Class<? extends GenericContainer<?>> type, Supplier<? extends GenericContainer<?>> supplier) {
+            this.containerType = type;
+            this.containerSupplier = supplier;
+            return this;
+        }
+
+        Builder serviceConnection(boolean serviceConnection) {
+            this.serviceConnection = serviceConnection;
+            return this;
+        }
+
+        Builder serviceConnectionName(@Nullable String serviceConnectionName) {
+            this.serviceConnectionName = serviceConnectionName;
+            return this;
+        }
+
+        Builder discovery(@Nullable Discovery discovery) {
+            this.discovery = discovery;
+            return this;
+        }
+
+        Builder port(@Nullable Integer port) {
+            this.port = port;
+            return this;
+        }
+
+        Builder additionalPorts(List<PortBinding> additionalPorts) {
+            this.additionalPorts = additionalPorts;
+            return this;
+        }
+
+        Builder links(List<LinkDefinition> links) {
+            this.links = links;
+            return this;
+        }
+
+        Builder sslSupport(@Nullable SslSupport sslSupport) {
+            this.sslSupport = sslSupport;
+            return this;
+        }
+
+        DevServiceDefinition build() {
+            Assert.notNull(name, "name cannot be null");
+            Assert.notNull(description, "description cannot be null");
+            Assert.notNull(properties, "properties cannot be null");
+            Assert.notNull(containerType, "containerType cannot be null");
+            Assert.notNull(containerSupplier, "containerSupplier cannot be null");
+            return new DevServiceDefinition(name, description, category, properties, containerType, containerSupplier,
+                    serviceConnection, serviceConnectionName, discovery, port, additionalPorts, links, sslSupport);
+        }
+
     }
 
     /**

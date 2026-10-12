@@ -55,7 +55,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.port`
 | `0`
-| Fixed port for exposing the RabbitMQ AMQP port to the host. When it's 0 (default), a random available port is assigned dynamically.
+| Fixed port for exposing the RabbitMQ AMQP port to the host. When it's 0 (default), a random available port is assigned dynamically. With SSL enabled, the port exposed is the AMQPS one, which the application connects to.
 
 | `arconia.dev.services.{service-name}.resources`
 | `[]`
@@ -84,6 +84,14 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.password`
 | `arconia`
 | Password for the RabbitMQ administrator user.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+include::partial$using-ssl.adoc[]
+
+RabbitMQ then serves AMQPS on port 5671 next to the AMQP listener, and the application connects to it through the AMQPS listener. Clients are not asked for a certificate.
 
 include::partial$disabling-dev-service.adoc[]
