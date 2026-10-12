@@ -1,5 +1,8 @@
 package io.arconia.opentelemetry.logback.autoconfigure;
 
+import java.util.List;
+
+import io.opentelemetry.instrumentation.api.config.IncludeExclude;
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
 
 import org.jspecify.annotations.Nullable;
@@ -7,13 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.boot.context.logging.LoggingApplicationListener;
+import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.GenericApplicationListener;
 import org.springframework.core.ResolvableType;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import ch.qos.logback.classic.Logger;
@@ -28,6 +31,7 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
 
     private static final Class<?>[] EVENT_TYPES = {ApplicationEnvironmentPreparedEvent.class};
     private static final Class<?>[] SOURCE_TYPES = {ApplicationContext.class, SpringApplication.class};
+    private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
 
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
@@ -83,35 +87,38 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
                 .orElse(false);
         openTelemetryAppender.setCaptureExperimentalAttributes(captureExperimentalAttributes);
 
-        boolean captureKeyValuePairAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-key-value-pair-attributes", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureKeyValuePairAttributes(captureKeyValuePairAttributes);
-
-        boolean captureLoggerContext = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logger-context", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureLoggerContext(captureLoggerContext);
-
-        boolean captureLogstashMarkerAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-logstash-marker-attributes", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureLogstashMarkerAttributes(captureLogstashMarkerAttributes);
-
         boolean captureMarkerAttribute = binder
                 .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-marker-attribute", Boolean.class)
                 .orElse(false);
         openTelemetryAppender.setCaptureMarkerAttribute(captureMarkerAttribute);
 
-        String captureMdcAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-mdc-attributes", String.class)
-                .orElse(null);
-        openTelemetryAppender.setCaptureMdcAttributes(captureMdcAttributes);
+        IncludeExclude structuredAttributes = bindSelector(binder, "structured-attributes");
+        openTelemetryAppender.setKeyValuePairAttributes(structuredAttributes);
+        openTelemetryAppender.setLogstashMarkerAttributes(structuredAttributes);
+        openTelemetryAppender.setLogstashStructuredArgumentAttributes(structuredAttributes);
+
+        openTelemetryAppender.setMdcAttributes(bindSelector(binder, "mdc-attributes"));
+
+        openTelemetryAppender.setLoggerContextAttributes(bindSelector(binder, "logger-context-attributes"));
 
         Integer numLogsCapturedBeforeOtelInstall = binder
                 .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".num-logs-captured-before-otel-install", Integer.class)
                 .orElse(1000);
         openTelemetryAppender.setNumLogsCapturedBeforeOtelInstall(numLogsCapturedBeforeOtelInstall);
+    }
+
+    /**
+     * Binds the "included" and "excluded" glob patterns of an attribute selector.
+     * An empty selector captures nothing.
+     */
+    private IncludeExclude bindSelector(Binder binder, String selectorName) {
+        String prefix = LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + "." + selectorName;
+        List<String> included = binder.bind(prefix + ".included", STRING_LIST).orElse(List.of());
+        List<String> excluded = binder.bind(prefix + ".excluded", STRING_LIST).orElse(List.of());
+        return IncludeExclude.builder()
+                .setIncluded(included)
+                .setExcluded(excluded)
+                .build();
     }
 
     private boolean isAssignableFrom(@Nullable Class<?> type, Class<?>... supportedTypes) {

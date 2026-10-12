@@ -251,27 +251,54 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 |`false`
 |Enable the capture of experimental log attributes `thread.name` and `thread.id`.
 
-|`arconia.otel.logs.logback-bridge.capture-key-value-pair-attributes`
-|`false`
-|Enable the capture of Logback key value pairs as attributes.
-
-|`arconia.otel.logs.logback-bridge.capture-logger-context`
-|`false`
-|Enable the capture of Logback logger context properties as attributes.
-
-|`arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes`
-|`false`
-|Enable the capture of Logstash attributes, added to logs via `Markers.append()`, `Markers.appendEntries()`, `Markers.appendArray()` and `Markers.appendRaw()` methods.
-
 |`arconia.otel.logs.logback-bridge.capture-marker-attribute`
 |`false`
 |Enable the capture of Logback markers as attributes.
 
-|`arconia.otel.logs.logback-bridge.capture-mdc-attributes`
-|``
-|Comma separated list of MDC attributes to capture. Use the wildcard character `*` to capture all attributes.
+|`arconia.otel.logs.logback-bridge.structured-attributes.included`
+|`[]`
+|Glob patterns for the keys of structured log attributes to capture: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments.
+
+|`arconia.otel.logs.logback-bridge.structured-attributes.excluded`
+|`[]`
+|Glob patterns for the keys of structured log attributes not to capture.
+
+|`arconia.otel.logs.logback-bridge.mdc-attributes.included`
+|`[]`
+|Glob patterns for the MDC keys to capture as log attributes.
+
+|`arconia.otel.logs.logback-bridge.mdc-attributes.excluded`
+|`[]`
+|Glob patterns for the MDC keys not to capture as log attributes.
+
+|`arconia.otel.logs.logback-bridge.logger-context-attributes.included`
+|`[]`
+|Glob patterns for the Logback logger context property keys to capture as log attributes.
+
+|`arconia.otel.logs.logback-bridge.logger-context-attributes.excluded`
+|`[]`
+|Glob patterns for the Logback logger context property keys not to capture as log attributes.
 
 |`arconia.otel.logs.logback-bridge.num-logs-captured-before-otel-install`
 |`1000`
 |Log telemetry is emitted after the initialization of the OpenTelemetry Logback appender with an OpenTelemetry object. This setting allows you to modify the size of the cache used to replay the first logs. `thread.id` attribute is not captured.
 |===
+
+==== Attribute Selectors
+
+Structured attributes, MDC entries, and logger context properties may contain sensitive information, so none of them are captured by default. Each selector takes a list of case-sensitive glob patterns, where `*` matches any number of characters and `?` matches a single character. Excluded patterns take precedence over included patterns, and a selector with only excluded patterns captures every key it does not exclude.
+
+The `structured-attributes` selector applies to every event-local structured source at once: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    logs:
+      logback-bridge:
+        structured-attributes:
+          included: "*"
+          excluded: "*-secret,*-token"
+        mdc-attributes:
+          included: "tenant.id,request.id"
+----

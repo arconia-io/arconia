@@ -25,34 +25,40 @@
       "defaultValue": false
     },
     {
-      "name": "arconia.otel.logs.logback-bridge.capture-key-value-pair-attributes",
-      "type": "java.lang.Boolean",
-      "description": "Enable the capture of Logback key value pairs as attributes.",
-      "defaultValue": false
-    },
-    {
-      "name": "arconia.otel.logs.logback-bridge.capture-logger-context",
-      "type": "java.lang.Boolean",
-      "description": "Enable the capture of Logback logger context properties as attributes.",
-      "defaultValue": false
-    },
-    {
-      "name": "arconia.otel.logs.logback-bridge.capture-logstash-marker-attributes",
-      "type": "java.lang.Boolean",
-      "description": "Enable the capture of Logstash marker attributes, added to logs via 'Markers.append()', 'Markers.appendEntries()', 'Markers.appendArray()' and 'Markers.appendRaw()' methods.",
-      "defaultValue": false
-    },
-    {
       "name": "arconia.otel.logs.logback-bridge.capture-marker-attribute",
       "type": "java.lang.Boolean",
       "description": "Enable the capture of Logback markers as attributes.",
       "defaultValue": false
     },
     {
-      "name": "arconia.otel.logs.logback-bridge.capture-mdc-attributes",
-      "type": "java.lang.String",
-      "description": "Comma separated list of MDC attributes to capture. Use the wildcard character '*' to capture all attributes.",
-      "defaultValue": ""
+      "name": "arconia.otel.logs.logback-bridge.structured-attributes.included",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the keys of structured log attributes to capture: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty."
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.structured-attributes.excluded",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the keys of structured log attributes not to capture: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match."
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.mdc-attributes.included",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the MDC keys to capture as log attributes. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty."
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.mdc-attributes.excluded",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the MDC keys not to capture as log attributes. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match."
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.logger-context-attributes.included",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the Logback logger context property keys to capture as log attributes. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty."
+    },
+    {
+      "name": "arconia.otel.logs.logback-bridge.logger-context-attributes.excluded",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Case-sensitive glob patterns for the Logback logger context property keys not to capture as log attributes. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match."
     },
     {
       "name": "arconia.otel.logs.logback-bridge.num-logs-captured-before-otel-install",

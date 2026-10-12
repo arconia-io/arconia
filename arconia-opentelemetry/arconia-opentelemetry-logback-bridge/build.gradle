@@ -19,6 +19,7 @@ dependencies {
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
