@@ -3,6 +3,7 @@ package io.arconia.dev.services.core.registration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
@@ -27,7 +28,7 @@ class DevServicesNetworkIT {
 
     private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-    private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment());
+    private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader());
 
     @Test
     void networkedContainersReachEachOtherByAlias() throws Exception {

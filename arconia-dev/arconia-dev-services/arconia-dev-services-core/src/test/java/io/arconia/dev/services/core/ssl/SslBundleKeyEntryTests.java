@@ -52,7 +52,7 @@ class SslBundleKeyEntryTests {
     void whenKeyPasswordDiffersFromStorePasswordThenItMustBeSet() {
         assertThatIllegalStateException()
                 .isThrownBy(() -> SslBundleKeyEntry.resolve(jksBundle(SslTestCertificates.KEY_STORE_WITH_KEY_PASSWORD, null, null)))
-                .withMessage("The key 'server' of the SSL bundle cannot be read: set the key password when it differs from the one of the key store");
+                .withMessage("The key 'server' of the SSL bundle cannot be read: set the key store password, or the key password when it differs from the one of the key store");
         assertThat(SslBundleKeyEntry.resolve(jksBundle(SslTestCertificates.KEY_STORE_WITH_KEY_PASSWORD, null, SslTestCertificates.KEY_PASSWORD)).alias())
                 .isEqualTo("server");
     }

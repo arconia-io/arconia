@@ -7,6 +7,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
@@ -36,7 +37,7 @@ class DevServicesBeanRegistrationExcludeFilterTests {
 
     @Test
     void managedDevServiceBeansAreExcluded() {
-        registerPostgresDevService(new DevServicesRegistry(beanFactory, new StandardEnvironment()));
+        registerPostgresDevService(new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader()));
 
         assertThat(isExcluded(BeanName.CONTAINER.of("postgres"))).isTrue();
         assertThat(isExcluded(BeanName.REGISTRATION.of("postgres"))).isTrue();

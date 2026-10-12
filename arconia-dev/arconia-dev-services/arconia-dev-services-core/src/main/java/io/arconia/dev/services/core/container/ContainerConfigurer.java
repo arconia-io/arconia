@@ -13,7 +13,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.MountableFile;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.support.Internal;
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
@@ -22,7 +22,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Applies the common dev service properties to a container and resolves the resources they refer to.
  */
-@Incubating
+@Internal
 public final class ContainerConfigurer {
 
     private static final String RESOURCE_PREFIX_CLASSPATH = "classpath:";

@@ -21,7 +21,7 @@ import io.arconia.dev.services.core.registration.DevServiceDefinition.PortBindin
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConnectionDetails;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -259,18 +259,18 @@ class DevServiceSpecTests {
 
             assertThat(definition.sslSupport()).isNotNull();
             assertThat(definition.sslSupport().configurer()).isSameAs(configurer);
-            assertThat(definition.sslSupport().certificate()).isEqualTo(SslCertificate.CONFIGURED);
+            assertThat(definition.sslSupport().keyStoreRequirement()).isEqualTo(SslKeyStoreRequirement.REQUIRED);
             assertThat(definition.isSslEnabled()).isTrue();
         }
 
         @Test
-        void whenCertificateMayBeGeneratedThenDefinitionSaysSo() {
+        void whenKeyStoreIsOptionalThenDefinitionSaysSo() {
             DevServiceDefinition definition = completeSpec()
                     .properties(TestSslDevServicesProperties.enabledWithoutKeyStore())
-                    .ssl((TestPostgresContainer container, SslBundle bundle) -> {}, SslCertificate.CONFIGURED_OR_GENERATED)
+                    .ssl((TestPostgresContainer container, SslBundle bundle) -> {}, SslKeyStoreRequirement.OPTIONAL)
                     .build();
 
-            assertThat(definition.sslSupport().certificate()).isEqualTo(SslCertificate.CONFIGURED_OR_GENERATED);
+            assertThat(definition.sslSupport().keyStoreRequirement()).isEqualTo(SslKeyStoreRequirement.OPTIONAL);
             assertThat(definition.isSslEnabled()).isTrue();
         }
 
@@ -293,13 +293,13 @@ class DevServiceSpecTests {
         }
 
         @Test
-        void whenConfigurerOrCertificateIsNullThenThrow() {
+        void whenConfigurerOrKeyStoreRequirementIsNullThenThrow() {
             assertThatIllegalArgumentException()
                     .isThrownBy(() -> completeSpec().ssl(null))
                     .withMessageContaining("configurer cannot be null");
             assertThatIllegalArgumentException()
                     .isThrownBy(() -> completeSpec().ssl((TestPostgresContainer container, SslBundle bundle) -> {}, null))
-                    .withMessageContaining("certificate cannot be null");
+                    .withMessageContaining("keyStoreRequirement cannot be null");
         }
 
         @Test

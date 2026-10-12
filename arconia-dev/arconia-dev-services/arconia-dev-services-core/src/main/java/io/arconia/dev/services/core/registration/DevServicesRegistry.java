@@ -32,6 +32,7 @@ import org.springframework.boot.util.LambdaSafe;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Container;
@@ -61,6 +62,8 @@ public final class DevServicesRegistry {
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
+    private final ResourceLoader resourceLoader;
+
     private final ContainerDiscovery containerDiscovery;
 
     private final BooleanSupplier testcontainersReuseSupport;
@@ -69,23 +72,20 @@ public final class DevServicesRegistry {
 
     private final DevServiceNetworkSupport networkSupport;
 
-    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment) {
-        this(beanDefinitionRegistry, environment, new DockerContainerDiscovery());
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader) {
+        this(beanDefinitionRegistry, environment, resourceLoader, new DockerContainerDiscovery(),
+                () -> TestcontainersConfiguration.getInstance().environmentSupportsReuse());
     }
 
-    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ContainerDiscovery containerDiscovery) {
-        this(beanDefinitionRegistry, environment, containerDiscovery, () -> TestcontainersConfiguration.getInstance().environmentSupportsReuse());
-    }
-
-    /**
-     * Create a registry whose Testcontainers reuse support check is the given one instead of reading the local Testcontainers configuration.
-     */
-    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ContainerDiscovery containerDiscovery, BooleanSupplier testcontainersReuseSupport) {
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader,
+            ContainerDiscovery containerDiscovery, BooleanSupplier testcontainersReuseSupport) {
         Assert.notNull(beanDefinitionRegistry, "beanDefinitionRegistry cannot be null");
         Assert.notNull(environment, "environment cannot be null");
+        Assert.notNull(resourceLoader, "resourceLoader cannot be null");
         Assert.notNull(containerDiscovery, "containerDiscovery cannot be null");
         Assert.notNull(testcontainersReuseSupport, "testcontainersReuseSupport cannot be null");
         this.beanDefinitionRegistry = beanDefinitionRegistry;
+        this.resourceLoader = resourceLoader;
         this.containerDiscovery = containerDiscovery;
         this.testcontainersReuseSupport = testcontainersReuseSupport;
         this.restartSupport = new DevServiceRestartSupport(beanDefinitionRegistry, environment);
@@ -143,8 +143,8 @@ public final class DevServicesRegistry {
         // connects with, which trusts the certificate the dev service presents, is registered in
         // the SslBundles of the application, for its tooling to report it and for it to be
         // referenced by name.
-        DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(service, beanClassLoader());
-        SslBundle trustBundle = (sslBundle != null) ? DevServiceSslSupport.createTrustBundle(sslBundle) : null;
+        DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(service, resourceLoader);
+        SslBundle trustBundle = (sslBundle != null) ? sslBundle.trustBundle() : null;
         if (trustBundle != null) {
             beanDefinitionRegistry.registerBeanDefinition(BeanName.SSL_BUNDLE.of(service.name()), createSslBundleBeanDefinition(service, trustBundle));
         }
@@ -180,15 +180,6 @@ public final class DevServicesRegistry {
         beanDefinition.setInstanceSupplier(() -> (SslBundleRegistrar) registry -> registry.registerBundle(bundleName, trustBundle));
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         return beanDefinition;
-    }
-
-    /**
-     * The class loader the resources of the application are loaded with, for the SSL material
-     * of a dev service to be resolved as the application resolves its own resources.
-     */
-    private ClassLoader beanClassLoader() {
-        ClassLoader classLoader = (beanDefinitionRegistry instanceof ConfigurableBeanFactory beanFactory) ? beanFactory.getBeanClassLoader() : null;
-        return (classLoader != null) ? classLoader : DevServicesRegistry.class.getClassLoader();
     }
 
     /**

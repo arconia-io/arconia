@@ -11,6 +11,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
@@ -55,7 +56,8 @@ final class DevServicesTestSupport {
      * the container runtime.
      */
     static DevServicesRegistry registryDiscovering(DefaultListableBeanFactory beanFactory, @Nullable DiscoveredContainer result) {
-        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> (result != null) ? List.of(result) : List.of());
+        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(),
+                serviceName -> (result != null) ? List.of(result) : List.of(), () -> false);
     }
 
     /**
@@ -63,7 +65,7 @@ final class DevServicesTestSupport {
      * reading the local Testcontainers configuration.
      */
     static DevServicesRegistry registryWithReuseSupport(DefaultListableBeanFactory beanFactory, boolean supported) {
-        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> List.of(), () -> supported);
+        return new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(), serviceName -> List.of(), () -> supported);
     }
 
     /**
@@ -71,7 +73,7 @@ final class DevServicesTestSupport {
      * ({@code arconia.dev.services.network.enabled=true}).
      */
     static DevServicesRegistry registryWithNetworkEnabled(DefaultListableBeanFactory beanFactory) {
-        return new DevServicesRegistry(beanFactory, networkEnabledEnvironment());
+        return new DevServicesRegistry(beanFactory, networkEnabledEnvironment(), new DefaultResourceLoader());
     }
 
     static StandardEnvironment networkEnabledEnvironment() {

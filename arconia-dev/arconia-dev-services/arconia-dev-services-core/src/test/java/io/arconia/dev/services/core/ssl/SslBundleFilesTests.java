@@ -5,7 +5,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.function.Function;
 
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,7 +30,7 @@ class SslBundleFilesTests {
 
     @Test
     void certificateChainIsTheCertificateOfTheKeyEntry() {
-        Transferable file = SslBundleFiles.certificateChain(pemBundle(SslTestCertificates.CERTIFICATE, null));
+        Transferable file = SslBundleFiles.certificateChain(pemBundle(SslTestCertificates.CERTIFICATE));
 
         assertThat(file.getFileMode()).isEqualTo(Transferable.DEFAULT_FILE_MODE);
         assertThat(subjects(certificates(file))).containsExactly(SERVER_SUBJECT);
@@ -39,14 +38,14 @@ class SslBundleFilesTests {
 
     @Test
     void certificateChainKeepsTheWholeChainLeafFirst() {
-        Transferable file = SslBundleFiles.certificateChain(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN, null));
+        Transferable file = SslBundleFiles.certificateChain(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN));
 
         assertThat(subjects(certificates(file))).containsExactly(SERVER_SUBJECT, CA_SUBJECT);
     }
 
     @Test
     void privateKeyIsThePrivateKeyOfTheKeyEntry() {
-        SslBundle bundle = pemBundle(SslTestCertificates.CERTIFICATE, null);
+        SslBundle bundle = pemBundle(SslTestCertificates.CERTIFICATE);
 
         Transferable file = SslBundleFiles.privateKey(bundle);
 
@@ -59,7 +58,7 @@ class SslBundleFilesTests {
 
     @Test
     void certificateChainWithPrivateKeyHoldsBothCertificatesFirst() {
-        SslBundle bundle = pemBundle(SslTestCertificates.CERTIFICATE_CHAIN, null);
+        SslBundle bundle = pemBundle(SslTestCertificates.CERTIFICATE_CHAIN);
 
         String content = content(SslBundleFiles.certificateChainWithPrivateKey(bundle));
 
@@ -71,15 +70,8 @@ class SslBundleFilesTests {
     }
 
     @Test
-    void certificateAuthoritiesAreTheTrustStoreEntries() {
-        Transferable file = SslBundleFiles.certificateAuthorities(pemBundle(SslTestCertificates.CERTIFICATE, SslTestCertificates.CA_CERTIFICATE));
-
-        assertThat(subjects(certificates(file))).containsExactly(CA_SUBJECT);
-    }
-
-    @Test
-    void certificateAuthoritiesFallBackToTheCertificateChainWithoutTrustStore() {
-        Transferable file = SslBundleFiles.certificateAuthorities(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN, null));
+    void certificateAuthoritiesAreTheCertificateChain() {
+        Transferable file = SslBundleFiles.certificateAuthorities(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN));
 
         assertThat(subjects(certificates(file))).containsExactly(SERVER_SUBJECT, CA_SUBJECT);
     }
@@ -105,15 +97,14 @@ class SslBundleFilesTests {
         };
 
         assertThat(file.apply(jksBundle()).getBytes()).isEqualTo(file.apply(jksBundle()).getBytes());
-        assertThat(file.apply(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN, null)).getBytes())
-                .isEqualTo(file.apply(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN, null)).getBytes());
+        assertThat(file.apply(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN)).getBytes())
+                .isEqualTo(file.apply(pemBundle(SslTestCertificates.CERTIFICATE_CHAIN)).getBytes());
     }
 
-    private static SslBundle pemBundle(String certificate, @Nullable String trustCertificate) {
+    private static SslBundle pemBundle(String certificate) {
         PemSslBundleProperties properties = new PemSslBundleProperties();
         properties.getKeystore().setCertificate(certificate);
         properties.getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
-        properties.getTruststore().setCertificate(trustCertificate);
         return PropertiesSslBundle.get(properties);
     }
 

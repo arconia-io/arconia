@@ -10,9 +10,11 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.env.DefaultPropertiesPropertySource;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 
@@ -27,7 +29,7 @@ import io.arconia.core.support.Incubating;
  * and import it in your module's {@code @AutoConfiguration} class.
  */
 @Incubating
-public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
+public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware, ResourceLoaderAware {
 
     /**
      * The name of the property source holding the properties added via
@@ -41,9 +43,12 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     @SuppressWarnings("NullAway.Init")
     private Environment environment;
 
+    @SuppressWarnings("NullAway.Init")
+    private ResourceLoader resourceLoader;
+
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        registerDevServices(new DevServicesRegistry(registry, environment), environment);
+        registerDevServices(new DevServicesRegistry(registry, environment, resourceLoader), environment);
     }
 
     @Override
@@ -54,6 +59,11 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
     }
 
     /**

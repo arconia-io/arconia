@@ -12,6 +12,8 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.PemTrustStore;
 import org.springframework.boot.testcontainers.service.connection.Ssl;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 
 import io.arconia.dev.services.core.TestDevServicesProperties;
 import io.arconia.dev.services.core.TestSslDevServicesProperties;
@@ -20,7 +22,7 @@ import io.arconia.dev.services.core.registration.DevServiceSslSupport.DevService
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestLinkContainer;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 import io.arconia.dev.services.tests.SslTestCertificates;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,11 +40,11 @@ class DevServiceSslSupportTests {
 
     private static final DevServiceSslConfigurer<TestPostgresContainer> CONFIGURER = (container, bundle) -> container.withEnv("SSL", "true");
 
-    private static final SslSupport SUPPORT = new SslSupport(CONFIGURER, SslCertificate.CONFIGURED);
+    private static final SslSupport SUPPORT = new SslSupport(CONFIGURER, SslKeyStoreRequirement.REQUIRED);
 
-    private static final SslSupport SUPPORT_WITH_GENERATED_CERTIFICATE = new SslSupport(CONFIGURER, SslCertificate.CONFIGURED_OR_GENERATED);
+    private static final SslSupport SUPPORT_WITH_OPTIONAL_KEY_STORE = new SslSupport(CONFIGURER, SslKeyStoreRequirement.OPTIONAL);
 
-    private static final ClassLoader CLASS_LOADER = DevServiceSslSupportTests.class.getClassLoader();
+    private static final ResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
 
     @Nested
     class Validate {
@@ -97,7 +99,7 @@ class DevServiceSslSupportTests {
                     .isThrownBy(() -> DevServiceSslSupport.validate(PREFIX, certificateOnly, SUPPORT))
                     .withMessage(PREFIX + "the 'ssl.pem.keystore.private-key' property is required with 'ssl.pem.keystore.certificate'");
             assertThatIllegalStateException()
-                    .isThrownBy(() -> DevServiceSslSupport.validate(PREFIX, keyOnly, SUPPORT_WITH_GENERATED_CERTIFICATE))
+                    .isThrownBy(() -> DevServiceSslSupport.validate(PREFIX, keyOnly, SUPPORT_WITH_OPTIONAL_KEY_STORE))
                     .withMessage(PREFIX + "the 'ssl.pem.keystore.certificate' property is required with 'ssl.pem.keystore.private-key'");
         }
 
@@ -110,7 +112,7 @@ class DevServiceSslSupportTests {
 
         @Test
         void whenCertificateMayBeGeneratedThenEnablingSslAloneIsValid() {
-            assertThatCode(() -> DevServiceSslSupport.validate(PREFIX, TestSslDevServicesProperties.enabledWithoutKeyStore(), SUPPORT_WITH_GENERATED_CERTIFICATE))
+            assertThatCode(() -> DevServiceSslSupport.validate(PREFIX, TestSslDevServicesProperties.enabledWithoutKeyStore(), SUPPORT_WITH_OPTIONAL_KEY_STORE))
                     .doesNotThrowAnyException();
         }
 
@@ -121,13 +123,13 @@ class DevServiceSslSupportTests {
 
         @Test
         void whenSslIsNotEnabledThenNoBundle() {
-            assertThat(DevServiceSslSupport.createBundle(definition(TestDevServicesProperties.DEFAULT, null), CLASS_LOADER)).isNull();
-            assertThat(DevServiceSslSupport.createBundle(definition(new TestSslDevServicesProperties(), SUPPORT), CLASS_LOADER)).isNull();
+            assertThat(DevServiceSslSupport.createBundle(definition(TestDevServicesProperties.DEFAULT, null), RESOURCE_LOADER)).isNull();
+            assertThat(DevServiceSslSupport.createBundle(definition(new TestSslDevServicesProperties(), SUPPORT), RESOURCE_LOADER)).isNull();
         }
 
         @Test
         void whenNoKeyStoreIsConfiguredThenNoBundle() {
-            assertThat(DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.enabledWithoutKeyStore(), SUPPORT_WITH_GENERATED_CERTIFICATE), CLASS_LOADER)).isNull();
+            assertThat(DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.enabledWithoutKeyStore(), SUPPORT_WITH_OPTIONAL_KEY_STORE), RESOURCE_LOADER)).isNull();
         }
 
         @Test
@@ -136,26 +138,28 @@ class DevServiceSslSupportTests {
             properties.getSsl().getPem().setProtocol("TLSv1.3");
             properties.getSsl().getPem().getKey().setAlias("custom");
 
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER);
 
             assertThat(sslBundle).isNotNull();
             assertThat(sslBundle.bundle().getProtocol()).isEqualTo("TLSv1.3");
             KeyStore keyStore = sslBundle.bundle().getStores().getKeyStore();
             assertThat(keyStore).isNotNull();
             assertThat(keyStore.isKeyEntry("custom")).isTrue();
-            assertThat(sslBundle.keyEntry().alias()).isEqualTo("custom");
             assertThat(sslBundle.certificateChain()).startsWith("-----BEGIN CERTIFICATE-----");
         }
 
         @Test
         void whenJksIsConfiguredThenBundleIsBuiltFromIt() throws Exception {
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.jks(), SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.jks(), SUPPORT), RESOURCE_LOADER);
 
             assertThat(sslBundle).isNotNull();
             KeyStore keyStore = sslBundle.bundle().getStores().getKeyStore();
             assertThat(keyStore).isNotNull();
             assertThat(keyStore.isKeyEntry("server")).isTrue();
-            assertThat(sslBundle.keyEntry().certificateChain()).hasSize(2);
+            // The chain in the key store, server certificate and CA, is what the application trusts.
+            KeyStore trustStore = sslBundle.trustBundle().getStores().getTrustStore();
+            assertThat(trustStore).isNotNull();
+            assertThat(trustStore.size()).isEqualTo(2);
         }
 
         @Test
@@ -164,12 +168,12 @@ class DevServiceSslSupportTests {
             properties.getSsl().getJks().getKeystore().setLocation(SslTestCertificates.KEY_STORE_WITH_KEY_PASSWORD);
 
             assertThatIllegalStateException()
-                    .isThrownBy(() -> DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER))
+                    .isThrownBy(() -> DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER))
                     .withMessage("Dev Service 'postgres': failed to load the SSL bundle from the 'ssl' properties")
-                    .withStackTraceContaining("set the key password when it differs from the one of the key store");
+                    .withStackTraceContaining("set the key store password, or the key password when it differs from the one of the key store");
 
             properties.getSsl().getJks().getKey().setPassword(SslTestCertificates.KEY_PASSWORD);
-            assertThat(DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER)).isNotNull();
+            assertThat(DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER)).isNotNull();
         }
 
         @Test
@@ -178,7 +182,7 @@ class DevServiceSslSupportTests {
             properties.getSsl().getPem().getKeystore().setCertificate("classpath:ssl/missing.crt");
 
             assertThatIllegalStateException()
-                    .isThrownBy(() -> DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER))
+                    .isThrownBy(() -> DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER))
                     .withMessage("Dev Service 'postgres': failed to load the SSL bundle from the 'ssl' properties")
                     .withCauseInstanceOf(RuntimeException.class);
         }
@@ -194,9 +198,9 @@ class DevServiceSslSupportTests {
             properties.getSsl().getPem().getKeystore().setCertificate(TestSslDevServicesProperties.CERTIFICATE_CHAIN);
             properties.getSsl().getPem().setProtocol("TLSv1.3");
             properties.getSsl().getPem().getOptions().setCiphers(Set.of("TLS_AES_256_GCM_SHA384"));
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER);
 
-            SslBundle trustBundle = DevServiceSslSupport.createTrustBundle(sslBundle);
+            SslBundle trustBundle = sslBundle.trustBundle();
 
             // The application presents no certificate of its own.
             assertThat(trustBundle.getStores().getKeyStore()).isNull();
@@ -220,7 +224,7 @@ class DevServiceSslSupportTests {
             properties.getSsl().getPem().setProtocol("TLSv1.3");
             properties.getSsl().getPem().getOptions().setCiphers(Set.of("TLS_AES_256_GCM_SHA384"));
             properties.getSsl().getPem().getOptions().setEnabledProtocols(Set.of("TLSv1.3"));
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(properties, SUPPORT), RESOURCE_LOADER);
 
             MergedAnnotations annotations = merged(DevServiceSslSupport.createAnnotations(sslBundle));
 
@@ -234,7 +238,7 @@ class DevServiceSslSupportTests {
 
         @Test
         void whenBundleHasNoOptionsThenSslAnnotationHasDefaults() {
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), RESOURCE_LOADER);
 
             MergedAnnotations annotations = merged(DevServiceSslSupport.createAnnotations(sslBundle));
 
@@ -259,7 +263,7 @@ class DevServiceSslSupportTests {
 
         @Test
         void whenContainerMatchesThenConfigurerIsApplied() {
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), RESOURCE_LOADER);
             var container = new TestPostgresContainer();
 
             DevServiceSslSupport.configure(container, definition(TestSslDevServicesProperties.pem(), SUPPORT), sslBundle.bundle());
@@ -269,7 +273,7 @@ class DevServiceSslSupportTests {
 
         @Test
         void whenContainerDoesNotMatchTheConfigurerThenTheCastFails() {
-            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), CLASS_LOADER);
+            DevServiceSslBundle sslBundle = DevServiceSslSupport.createBundle(definition(TestSslDevServicesProperties.pem(), SUPPORT), RESOURCE_LOADER);
 
             // A programming error of the dev service, reported by the JVM with both types named.
             assertThatExceptionOfType(ClassCastException.class)
@@ -290,7 +294,7 @@ class DevServiceSslSupportTests {
                 .properties(properties)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new);
         if (sslSupport != null) {
-            spec.ssl(sslSupport.configurer(), sslSupport.certificate());
+            spec.ssl(sslSupport.configurer(), sslSupport.keyStoreRequirement());
         }
         return spec.build();
     }

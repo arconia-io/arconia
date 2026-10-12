@@ -24,7 +24,7 @@ import io.arconia.dev.services.core.registration.DevServiceDefinition.LinkDefini
 import io.arconia.dev.services.core.registration.DevServiceDefinition.PortBinding;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.SslSupport;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 
 /**
  * Specification of a single dev service.
@@ -225,21 +225,20 @@ public final class DevServiceSpec {
      * the service connection, through which Spring Boot connects the application over SSL.
      */
     public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer) {
-        return ssl(configurer, SslCertificate.CONFIGURED);
+        return ssl(configurer, SslKeyStoreRequirement.REQUIRED);
     }
 
     /**
      * How to configure the container to use SSL when the {@code ssl.enabled} property of the
-     * dev service is true, stating where the certificate the dev service presents comes from.
-     * A dev service whose container generates its own certificate when none is configured
-     * declares {@link SslCertificate#CONFIGURED_OR_GENERATED}: the configurer is then only called
-     * when a key store is configured, and Spring Boot extracts the generated certificate from
-     * the container otherwise.
+     * dev service is true, stating whether a key store is required. A dev service whose
+     * container generates its own certificate when none is configured declares
+     * {@link SslKeyStoreRequirement#OPTIONAL}: the configurer is then only called when a key store is
+     * configured, and Spring Boot extracts the generated certificate from the container otherwise.
      */
-    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslCertificate certificate) {
+    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslKeyStoreRequirement keyStoreRequirement) {
         Assert.notNull(configurer, "configurer cannot be null");
-        Assert.notNull(certificate, "certificate cannot be null");
-        this.sslSupport = new SslSupport(configurer, certificate);
+        Assert.notNull(keyStoreRequirement, "keyStoreRequirement cannot be null");
+        this.sslSupport = new SslSupport(configurer, keyStoreRequirement);
         return this;
     }
 

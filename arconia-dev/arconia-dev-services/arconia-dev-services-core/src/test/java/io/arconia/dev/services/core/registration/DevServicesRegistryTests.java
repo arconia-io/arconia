@@ -28,6 +28,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.config.BaseDevServicesProperties;
@@ -40,7 +41,7 @@ import io.arconia.dev.services.core.TestDevServicesProperties;
 import io.arconia.dev.services.core.TestSslDevServicesProperties;
 import io.arconia.dev.services.core.container.DevServiceContainerCustomizer;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanAttribute;
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.OtherConnectionDetails;
@@ -73,7 +74,7 @@ class DevServicesRegistryTests {
 
     private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-    private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment());
+    private final DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader());
 
     @BeforeEach
     @AfterEach
@@ -223,10 +224,10 @@ class DevServicesRegistryTests {
         void whenApplicationDefinesConnectionDetailsThenNoDiscoveryHappens() {
             enableDevMode();
             AtomicInteger lookups = new AtomicInteger();
-            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), serviceName -> {
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(), serviceName -> {
                 lookups.incrementAndGet();
                 return List.of(discoveredContainer());
-            });
+            }, () -> false);
             beanFactory.registerSingleton("userConnectionDetails", new TestConnectionDetails("user-defined"));
 
             registerSharedDevService(registry);
@@ -433,7 +434,7 @@ class DevServicesRegistryTests {
         @Test
         void whenTestcontainersStrategyWithSharedNetworkThenContainerIsNotReusable() {
             enableDevMode();
-            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, DevServicesTestSupport.networkEnabledEnvironment(),
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, DevServicesTestSupport.networkEnabledEnvironment(), new DefaultResourceLoader(),
                     serviceName -> List.of(), () -> true);
 
             registry.registerDevService(service -> service
@@ -660,8 +661,8 @@ class DevServicesRegistryTests {
                     .state("running")
                     .status("running")
                     .build()).host("localhost").build();
-            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(),
-                    serviceName -> List.of(unusable, discoveredContainer()));
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(),
+                    serviceName -> List.of(unusable, discoveredContainer()), () -> false);
 
             registry.registerDevService(service -> service
                     .name("postgres")
@@ -694,7 +695,7 @@ class DevServicesRegistryTests {
 
         @Test
         void whenTestcontainersStrategyThenNoDiscoveryHappens() {
-            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(),
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(),
                     serviceName -> List.of(discoveredContainer()), () -> true);
 
             registry.registerDevService(service -> service
@@ -790,7 +791,7 @@ class DevServicesRegistryTests {
             restarted.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
             restarted.registerSingleton("userConnectionDetails", new TestConnectionDetails("user-defined"));
 
-            new DevServicesRegistry(restarted, new StandardEnvironment(), serviceName -> List.of())
+            new DevServicesRegistry(restarted, new StandardEnvironment(), new DefaultResourceLoader(), serviceName -> List.of(), () -> false)
                     .registerDevService(service -> service
                             .name("postgres")
                             .description("Test Dev Service")
@@ -835,7 +836,7 @@ class DevServicesRegistryTests {
             restartedBeanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
             var environment = new StandardEnvironment();
             environment.getPropertySources().addFirst(new MapPropertySource("test", configuration));
-            new DevServicesRegistry(restartedBeanFactory, environment, serviceName -> discoveredContainers)
+            new DevServicesRegistry(restartedBeanFactory, environment, new DefaultResourceLoader(), serviceName -> discoveredContainers, () -> false)
                     .registerDevService(service -> service
                             .name("postgres")
                             .description("Test Dev Service")
@@ -918,7 +919,7 @@ class DevServicesRegistryTests {
                     .description("Test Dev Service")
                     .properties(TestSslDevServicesProperties.enabledWithoutKeyStore())
                     .container(TestLinkContainer.class, TestLinkContainer::new)
-                    .ssl(configurer, SslCertificate.CONFIGURED_OR_GENERATED));
+                    .ssl(configurer, SslKeyStoreRequirement.OPTIONAL));
 
             var beanDefinition = (DevServiceContainerBeanDefinition) beanFactory.getBeanDefinition(BeanName.CONTAINER.of("secure"));
             assertThat(beanDefinition.getAnnotations().isPresent(org.springframework.boot.testcontainers.service.connection.Ssl.class)).isTrue();

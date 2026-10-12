@@ -16,8 +16,6 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslStoreBundle;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
-
 /**
  * The key entry of an {@link SslBundle}: the private key the bundle holds and the certificate
  * chain it presents, leaf certificate first. The entry is the one selected by the key alias of
@@ -27,14 +25,13 @@ import io.arconia.core.support.Incubating;
  * @param privateKey the private key
  * @param certificateChain the certificate chain, leaf certificate first
  */
-@Incubating
-public record SslBundleKeyEntry(
+record SslBundleKeyEntry(
         String alias,
         PrivateKey privateKey,
         List<X509Certificate> certificateChain
 ) {
 
-    public SslBundleKeyEntry {
+    SslBundleKeyEntry {
         Assert.hasText(alias, "alias cannot be null or empty");
         Assert.notNull(privateKey, "privateKey cannot be null");
         Assert.notEmpty(certificateChain, "certificateChain cannot be null or empty");
@@ -48,7 +45,7 @@ public record SslBundleKeyEntry(
      * @throws IllegalStateException if the bundle has no key store, the entry cannot be
      * determined or read, or it holds no private key with a certificate chain
      */
-    public static SslBundleKeyEntry resolve(SslBundle bundle) {
+    static SslBundleKeyEntry resolve(SslBundle bundle) {
         Assert.notNull(bundle, "bundle cannot be null");
         SslStoreBundle stores = bundle.getStores();
         KeyStore keyStore = stores.getKeyStore();
@@ -66,7 +63,7 @@ public record SslBundleKeyEntry(
             Assert.state(chain != null && chain.length > 0, () -> "The SSL bundle key store entry '" + alias + "' has no certificate chain");
             return new SslBundleKeyEntry(alias, (PrivateKey) key, x509(chain, alias));
         } catch (UnrecoverableKeyException ex) {
-            throw new IllegalStateException("The key '%s' of the SSL bundle cannot be read: set the key password when it differs from the one of the key store".formatted(alias), ex);
+            throw new IllegalStateException("The key '%s' of the SSL bundle cannot be read: set the key store password, or the key password when it differs from the one of the key store".formatted(alias), ex);
         } catch (GeneralSecurityException ex) {
             throw new IllegalStateException("Failed to read the key entry '%s' of the SSL bundle".formatted(alias), ex);
         }

@@ -689,7 +689,7 @@ The `ssl` field reports the SSL bundle the application connects to a Dev Service
   "certificateChains": [],
   "trustStoreCertificateChains": [
     {
-      "alias": "certificate-0",
+      "alias": "ssl-0",
       "certificates": [
         {
           "subject": "CN=localhost,O=Acme",

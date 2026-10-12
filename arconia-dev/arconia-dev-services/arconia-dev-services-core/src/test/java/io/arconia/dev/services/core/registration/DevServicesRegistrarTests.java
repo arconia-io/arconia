@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 
 import io.arconia.dev.services.core.TestDevServicesProperties;
@@ -133,6 +134,7 @@ class DevServicesRegistrarTests {
             this.registrar = registrar;
             setEnvironment(environment);
             setBeanFactory(beanDefinitionRegistry);
+            setResourceLoader(new DefaultResourceLoader());
         }
 
         @Override

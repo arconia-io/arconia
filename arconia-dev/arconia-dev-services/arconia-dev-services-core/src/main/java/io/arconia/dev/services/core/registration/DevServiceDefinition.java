@@ -13,7 +13,7 @@ import io.arconia.dev.services.api.config.BaseDevServicesProperties;
 import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 
 /**
  * The complete and validated definition of a dev service, as built from a {@link DevServiceSpec}.
@@ -71,17 +71,17 @@ record DevServiceDefinition(
     }
 
     /**
-     * How the container of a dev service is configured to use SSL, and where the certificate
-     * it presents comes from.
+     * How the container of a dev service is configured to use SSL, and whether a key store is
+     * required for the certificate it presents.
      */
     record SslSupport(
             DevServiceSslConfigurer<? extends GenericContainer<?>> configurer,
-            SslCertificate certificate
+            SslKeyStoreRequirement keyStoreRequirement
     ) {
 
         SslSupport {
             Assert.notNull(configurer, "configurer cannot be null");
-            Assert.notNull(certificate, "certificate cannot be null");
+            Assert.notNull(keyStoreRequirement, "keyStoreRequirement cannot be null");
         }
 
     }

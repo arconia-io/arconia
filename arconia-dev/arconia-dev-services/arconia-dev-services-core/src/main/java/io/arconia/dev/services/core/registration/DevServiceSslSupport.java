@@ -1,25 +1,21 @@
 package io.arconia.dev.services.core.registration;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties;
+import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties;
+import org.springframework.boot.autoconfigure.ssl.PropertiesSslBundle;
+import org.springframework.boot.autoconfigure.ssl.SslBundleProperties;
 import org.springframework.boot.io.ApplicationResourceLoader;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundleKey;
 import org.springframework.boot.ssl.SslOptions;
-import org.springframework.boot.ssl.SslStoreBundle;
-import org.springframework.boot.ssl.jks.JksSslStoreBundle;
-import org.springframework.boot.ssl.jks.JksSslStoreDetails;
-import org.springframework.boot.ssl.pem.PemSslStore;
 import org.springframework.boot.ssl.pem.PemSslStoreBundle;
 import org.springframework.boot.ssl.pem.PemSslStoreDetails;
 import org.springframework.boot.testcontainers.service.connection.PemTrustStore;
@@ -36,8 +32,7 @@ import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.SslSupport;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
-import io.arconia.dev.services.core.ssl.SslBundleKeyEntry;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 
 /**
  * Configures support for SSL in dev services.
@@ -74,8 +69,6 @@ final class DevServiceSslSupport {
         }
         SslConfig ssl = sslProperties.getSsl();
         Assert.notNull(ssl, () -> prefix + "the 'ssl' property cannot be null");
-        Assert.notNull(ssl.getPem(), () -> prefix + "the 'ssl.pem' property cannot be null");
-        Assert.notNull(ssl.getJks(), () -> prefix + "the 'ssl.jks' property cannot be null");
         if (!ssl.isEnabled()) {
             return;
         }
@@ -83,87 +76,95 @@ final class DevServiceSslSupport {
 
         boolean certificate = StringUtils.hasText(ssl.getPem().getKeystore().getCertificate());
         boolean privateKey = StringUtils.hasText(ssl.getPem().getKeystore().getPrivateKey());
-        boolean jks = StringUtils.hasText(ssl.getJks().getKeystore().getLocation());
+        boolean jks = hasJksKeyStore(ssl);
         Assert.state(!((certificate || privateKey) && jks),
                 () -> prefix + "the 'ssl.pem' and 'ssl.jks' properties cannot be used together: configure one of them");
         Assert.state(certificate == privateKey, () -> prefix + (certificate
                 ? "the 'ssl.pem.keystore.private-key' property is required with 'ssl.pem.keystore.certificate'"
                 : "the 'ssl.pem.keystore.certificate' property is required with 'ssl.pem.keystore.private-key'"));
-        Assert.state(certificate || jks || sslSupport.certificate() == SslCertificate.CONFIGURED_OR_GENERATED,
+        Assert.state(certificate || jks || sslSupport.keyStoreRequirement() == SslKeyStoreRequirement.OPTIONAL,
                 () -> prefix + "the 'ssl.enabled' property is true, but no key store is configured: set 'ssl.pem.keystore.certificate' and 'ssl.pem.keystore.private-key', or 'ssl.jks.keystore.location'");
     }
 
     /**
      * Build the SSL bundle of the given dev service from its SSL properties, when SSL is
-     * enabled and a key store is configured. A dev service with SSL enabled and no key store
-     * has a container generating its own certificate: there is no bundle to build.
+     * enabled and a key store is configured, with the resources resolved as the application
+     * resolves its own. A dev service with SSL enabled and no key store has a container
+     * generating its own certificate: there is no bundle to build. The key store is loaded here,
+     * so that a bundle that cannot be loaded fails at registration, naming the dev service.
      */
     @Nullable
-    static DevServiceSslBundle createBundle(DevServiceDefinition service, ClassLoader classLoader) {
+    static DevServiceSslBundle createBundle(DevServiceDefinition service, ResourceLoader resourceLoader) {
         if (!service.isSslEnabled()) {
             return null;
         }
         SslConfig ssl = ((SslDevServicesProperties) service.properties()).getSsl();
-        boolean pem = StringUtils.hasText(ssl.getPem().getKeystore().getCertificate());
-        boolean jks = StringUtils.hasText(ssl.getJks().getKeystore().getLocation());
-        if (!pem && !jks) {
+        boolean pem = hasPemKeyStore(ssl);
+        if (!pem && !hasJksKeyStore(ssl)) {
             return null;
         }
         try {
-            ResourceLoader resourceLoader = ApplicationResourceLoader.get(classLoader);
-            SslBundle bundle = pem ? createPemBundle(ssl.getPem(), resourceLoader) : createJksBundle(ssl.getJks(), resourceLoader);
-            SslBundleKeyEntry keyEntry = SslBundleKeyEntry.resolve(bundle);
+            ResourceLoader applicationResourceLoader = ApplicationResourceLoader.get(resourceLoader);
+            SslBundle bundle = pem
+                    ? PropertiesSslBundle.get(pemProperties(ssl.getPem()), applicationResourceLoader)
+                    : PropertiesSslBundle.get(jksProperties(ssl.getJks()), applicationResourceLoader);
             String certificateChain = new String(SslBundleFiles.certificateChain(bundle).getBytes(), StandardCharsets.US_ASCII);
-            return new DevServiceSslBundle(bundle, keyEntry, certificateChain);
+            return new DevServiceSslBundle(bundle, createTrustBundle(bundle, certificateChain), certificateChain);
         } catch (RuntimeException ex) {
             throw new IllegalStateException("Dev Service '%s': failed to load the SSL bundle from the 'ssl' properties".formatted(service.name()), ex);
         }
     }
 
-    /**
-     * The bundle from the PEM properties. The store is loaded eagerly.
-     */
-    private static SslBundle createPemBundle(SslConfig.Pem pem, ResourceLoader resourceLoader) {
-        SslConfig.Pem.Keystore store = pem.getKeystore();
-        PemSslStore keyStore = PemSslStore.load(new PemSslStoreDetails(null, store.getCertificate(), store.getPrivateKey(), store.getPrivateKeyPassword()), resourceLoader);
-        Assert.notNull(keyStore, "The PEM key store cannot be loaded");
-        keyStore = keyStore.withAlias(pem.getKey().getAlias()).withPassword(pem.getKey().getPassword());
-        return createBundle(new PemSslStoreBundle(keyStore, null), pem);
+    private static boolean hasPemKeyStore(SslConfig ssl) {
+        return StringUtils.hasText(ssl.getPem().getKeystore().getCertificate());
+    }
+
+    private static boolean hasJksKeyStore(SslConfig ssl) {
+        return StringUtils.hasText(ssl.getJks().getKeystore().getLocation());
     }
 
     /**
-     * The bundle from the JKS properties.
+     * The PEM properties as the Spring Boot ones they mirror, for Spring Boot to build the bundle.
      */
-    private static SslBundle createJksBundle(SslConfig.Jks jks, ResourceLoader resourceLoader) {
-        SslConfig.Jks.Keystore store = jks.getKeystore();
-        JksSslStoreDetails details = new JksSslStoreDetails(store.getType(), store.getProvider(), store.getLocation(), store.getPassword());
-        return createBundle(new JksSslStoreBundle(details, null, resourceLoader), jks);
+    private static PemSslBundleProperties pemProperties(SslConfig.Pem pem) {
+        PemSslBundleProperties properties = new PemSslBundleProperties();
+        properties.getKeystore().setCertificate(pem.getKeystore().getCertificate());
+        properties.getKeystore().setPrivateKey(pem.getKeystore().getPrivateKey());
+        properties.getKeystore().setPrivateKeyPassword(pem.getKeystore().getPrivateKeyPassword());
+        copyBundleProperties(pem, properties);
+        return properties;
     }
 
-    private static SslBundle createBundle(SslStoreBundle stores, SslConfig.Bundle bundle) {
-        SslBundleKey key = SslBundleKey.of(bundle.getKey().getPassword(), bundle.getKey().getAlias());
-        SslOptions options = SslOptions.of(bundle.getOptions().getCiphers(), bundle.getOptions().getEnabledProtocols());
-        return SslBundle.of(stores, key, options, bundle.getProtocol());
+    /**
+     * The JKS properties as the Spring Boot ones they mirror, for Spring Boot to build the bundle.
+     */
+    private static JksSslBundleProperties jksProperties(SslConfig.Jks jks) {
+        JksSslBundleProperties properties = new JksSslBundleProperties();
+        properties.getKeystore().setType(jks.getKeystore().getType());
+        properties.getKeystore().setProvider(jks.getKeystore().getProvider());
+        properties.getKeystore().setLocation(jks.getKeystore().getLocation());
+        properties.getKeystore().setPassword(jks.getKeystore().getPassword());
+        copyBundleProperties(jks, properties);
+        return properties;
+    }
+
+    private static void copyBundleProperties(SslConfig.Bundle bundle, SslBundleProperties properties) {
+        properties.getKey().setAlias(bundle.getKey().getAlias());
+        properties.getKey().setPassword(bundle.getKey().getPassword());
+        properties.getOptions().setCiphers(bundle.getOptions().getCiphers());
+        properties.getOptions().setEnabledProtocols(bundle.getOptions().getEnabledProtocols());
+        properties.setProtocol(bundle.getProtocol());
     }
 
     /**
      * The bundle the application connects to the dev service with: it trusts the certificate
      * chain the dev service presents, with the protocol and options of the dev service bundle,
-     * and presents no certificate of its own.
+     * and presents no certificate of its own. It is built from the chain in PEM form the same
+     * way Spring Boot builds it from the {@code @PemTrustStore} annotation.
      */
-    static SslBundle createTrustBundle(DevServiceSslBundle sslBundle) {
-        try {
-            KeyStore trustStore = KeyStore.getInstance("PKCS12");
-            trustStore.load(null, null);
-            int index = 0;
-            for (X509Certificate certificate : sslBundle.keyEntry().certificateChain()) {
-                trustStore.setCertificateEntry("certificate-" + index++, certificate);
-            }
-            SslBundle bundle = sslBundle.bundle();
-            return SslBundle.of(SslStoreBundle.of(null, null, trustStore), SslBundleKey.NONE, bundle.getOptions(), bundle.getProtocol());
-        } catch (GeneralSecurityException | IOException ex) {
-            throw new IllegalStateException("Failed to build the trust bundle of the dev service", ex);
-        }
+    private static SslBundle createTrustBundle(SslBundle bundle, String certificateChain) {
+        PemSslStoreBundle stores = new PemSslStoreBundle(null, PemSslStoreDetails.forCertificate(certificateChain));
+        return SslBundle.of(stores, SslBundleKey.NONE, bundle.getOptions(), bundle.getProtocol());
     }
 
     /**
@@ -203,14 +204,15 @@ final class DevServiceSslSupport {
     }
 
     /**
-     * The SSL bundle of a dev service, resolved once at registration: the bundle, its key
-     * entry, and the certificate chain it presents in PEM form, for the application to trust.
+     * The SSL bundle of a dev service, resolved once at registration: the bundle of the dev
+     * service, the bundle the application connects to it with, and the certificate chain the dev
+     * service presents in PEM form, for the application to trust.
      */
-    record DevServiceSslBundle(SslBundle bundle, SslBundleKeyEntry keyEntry, String certificateChain) {
+    record DevServiceSslBundle(SslBundle bundle, SslBundle trustBundle, String certificateChain) {
 
         DevServiceSslBundle {
             Assert.notNull(bundle, "bundle cannot be null");
-            Assert.notNull(keyEntry, "keyEntry cannot be null");
+            Assert.notNull(trustBundle, "trustBundle cannot be null");
             Assert.hasText(certificateChain, "certificateChain cannot be null or empty");
         }
 

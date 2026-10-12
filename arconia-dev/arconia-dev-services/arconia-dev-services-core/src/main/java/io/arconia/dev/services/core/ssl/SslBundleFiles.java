@@ -2,12 +2,9 @@ package io.arconia.dev.services.core.ssl;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.boot.ssl.SslBundle;
@@ -20,8 +17,8 @@ import io.arconia.core.support.Incubating;
  * The certificates and keys of an {@link SslBundle} as PEM files to copy into a container, so
  * that a dev service gets what its service expects whatever form the bundle was configured in.
  * <p>
- * The key entry used is the one of {@link SslBundleKeyEntry}. Private keys are written
- * unencrypted, in PKCS#8 form.
+ * The key entry used is the one selected by the key alias of the bundle, or the only key entry
+ * of its key store. Private keys are written unencrypted, in PKCS#8 form.
  */
 @Incubating
 public final class SslBundleFiles {
@@ -54,29 +51,12 @@ public final class SslBundleFiles {
     }
 
     /**
-     * The certificate authorities to give a service that requires a file of them: the entries
-     * of the trust store of the bundle or, when it has none, the certificate chain the bundle
-     * presents.
+     * The certificate authorities to give a service that requires a file of them: the
+     * certificate chain the bundle presents, since the bundle of a dev service has no trust
+     * store of its own.
      */
     public static Transferable certificateAuthorities(SslBundle bundle) {
-        Assert.notNull(bundle, "bundle cannot be null");
-        List<Certificate> certificates = new ArrayList<>();
-        KeyStore trustStore = bundle.getStores().getTrustStore();
-        if (trustStore != null) {
-            try {
-                for (String alias : Collections.list(trustStore.aliases())) {
-                    if (trustStore.isCertificateEntry(alias)) {
-                        certificates.add(trustStore.getCertificate(alias));
-                    }
-                }
-            } catch (GeneralSecurityException ex) {
-                throw new IllegalStateException("Failed to read the trust store of the SSL bundle", ex);
-            }
-        }
-        if (certificates.isEmpty()) {
-            certificates.addAll(SslBundleKeyEntry.resolve(bundle).certificateChain());
-        }
-        return pem(certificates(certificates));
+        return certificateChain(bundle);
     }
 
     private static String certificates(List<? extends Certificate> certificates) {

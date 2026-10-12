@@ -15,7 +15,7 @@ import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
-import io.arconia.dev.services.core.ssl.SslCertificate;
+import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
 import io.arconia.dev.services.elasticsearch.ElasticsearchDevServicesAutoConfiguration.ElasticsearchDevServicesRegistrar;
 
 /**
@@ -78,7 +78,7 @@ public final class ElasticsearchDevServicesAutoConfiguration {
                     .port(ELASTICSEARCH_DEFAULT_PORT)
                     // With no key store configured, Elasticsearch generates its own certificate,
                     // which Spring Boot extracts from the container to trust it.
-                    .ssl(ElasticsearchDevServicesAutoConfiguration::configureSsl, SslCertificate.CONFIGURED_OR_GENERATED)
+                    .ssl(ElasticsearchDevServicesAutoConfiguration::configureSsl, SslKeyStoreRequirement.OPTIONAL)
                     .discovery(ElasticsearchConnectionDetails.class,
                             container -> new ElasticsearchDiscoveredConnectionDetails(container, properties)));
         }

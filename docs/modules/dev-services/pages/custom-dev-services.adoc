@@ -12,7 +12,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 The Dev Services infrastructure is split into two modules:
 
 * `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
-* `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, `@ConditionalOnDevServicesEnabled`, and the `ContainerConfigurer` helpers for resolving resources. This is the module to build your own Dev Service on.
+* `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
 
@@ -273,7 +273,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties, 
 
 `SslDevServicesProperties` is a read contract next to `BaseDevServicesProperties`, not an extension of it. Since `SslConfig` lives in another module, the configuration processor generates the metadata of the `ssl` keys under your prefix without their descriptions and defaults. To document them in your module, declare them in its `META-INF/additional-spring-configuration-metadata.json`, as the built-in Dev Services do (see the one of the Redis Dev Service for the entries to copy, with your prefix).
 
-Then declare how to configure your container to serve SSL when registering the Dev Service, with `ssl(...)`. The configurer receives the `SslBundle` built from the properties when `ssl.enabled` is true, before the container is started and before any `DevServiceContainerCustomizer` runs. Whatever form the user configured the bundle in, `SslBundleFiles` renders what your container needs from it as PEM files to copy into the container: the certificate chain, the private key, both in a single file, or the certificate authorities for a service that requires a file of them. The output is deterministic, so that a container reused across runs keeps the same configuration.
+Then declare how to configure your container to serve SSL when registering the Dev Service, with `ssl(...)`. The configurer receives the `SslBundle` built from the properties when `ssl.enabled` is true, before the container is started and before any `DevServiceContainerCustomizer` runs. Whatever form the user configured the bundle in, `SslBundleFiles` renders what your container needs from it as PEM files to copy into the container: the certificate chain, the private key, both in a single file, or the chain again as the certificate authorities file some services require. The output is deterministic, so that a container reused across runs keeps the same configuration.
 
 [source,java]
 ----
@@ -296,7 +296,7 @@ The framework takes care of the application side. It declares on the container b
 
 [WARNING]
 ====
-A service generating its own certificate when none is configured, as Elasticsearch does, declares its support with `ssl(configurer, SslCertificate.CONFIGURED_OR_GENERATED)`: the configurer is then only called when the user configures a key store, and only the `@Ssl` annotation is declared otherwise. This relies on the `ContainerConnectionDetailsFactory` of the service extracting the generated certificate from the container when `@Ssl` alone is present, which only the Elasticsearch one does in Spring Boot. For a discovered container, `DiscoveredContainer.copyFileFromContainer(...)` reads such a certificate from the container.
+A service generating its own certificate when none is configured, as Elasticsearch does, declares its support with `ssl(configurer, SslKeyStoreRequirement.OPTIONAL)`: the configurer is then only called when the user configures a key store, and only the `@Ssl` annotation is declared otherwise, so the protocol and options of the `ssl` properties don't apply. This relies on the `ContainerConnectionDetailsFactory` of the service extracting the generated certificate from the container when `@Ssl` alone is present, which only the Elasticsearch one does in Spring Boot. For a discovered container, `DiscoveredContainer.copyFileFromContainer(...)` reads such a certificate from the container.
 ====
 
 == Supporting the Shared Network
