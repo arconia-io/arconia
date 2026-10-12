@@ -50,7 +50,8 @@ public final class DoclingDevServicesAutoConfiguration {
                     .discovery(DoclingServeConnectionDetails.class,
                             container -> new DoclingDiscoveredConnectionDetails(container, properties))
                     .link("Docling UI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui")
-                    .link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs"));
+                    .link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs")
+                    .link("Docling Scalar", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/scalar"));
         }
 
     }

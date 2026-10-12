@@ -5,10 +5,11 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import ai.docling.serve.api.DoclingServeApi;
+import ai.docling.serve.api.DoclingServeApiConfig;
 import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
 import ai.docling.serve.api.chunk.request.HybridChunkDocumentRequest;
 import ai.docling.serve.api.chunk.response.ChunkDocumentResponse;
@@ -37,13 +38,30 @@ import io.arconia.docling.autoconfigure.DoclingProperties;
  */
 public class DoclingServeClient implements DoclingServeApi {
 
-    private static final ExecutorService virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
     private final RestClient restClient;
+    private final DoclingServeApiConfig config;
 
-    private DoclingServeClient(RestClient restClient) {
+    private DoclingServeClient(RestClient restClient, DoclingServeApiConfig config) {
         Assert.notNull(restClient, "restClient cannot be null");
+        Assert.notNull(config, "config cannot be null");
+        Assert.notNull(config.asyncExecutor(), "asyncExecutor cannot be null");
         this.restClient = restClient;
+        this.config = config;
     }
+
+    // CONFIG
+
+    @Override
+    public DoclingServeApiConfig config() {
+        return config;
+    }
+
+    private Executor asyncExecutor() {
+        Executor asyncExecutor = config.asyncExecutor();
+        Assert.notNull(asyncExecutor, "asyncExecutor cannot be null");
+        return asyncExecutor;
+    }
+
     // HEALTH
 
     @Override
@@ -51,7 +69,7 @@ public class DoclingServeClient implements DoclingServeApi {
         return restClient.get()
                 .uri("/health")
                 .retrieve()
-                .body(HealthCheckResponse.class);
+                .requiredBody(HealthCheckResponse.class);
     }
 
     // CONVERT
@@ -62,7 +80,7 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/convert/source")
                 .body(request)
                 .retrieve()
-                .body(ConvertDocumentResponse.class);
+                .requiredBody(ConvertDocumentResponse.class);
     }
 
     @Override
@@ -71,8 +89,8 @@ public class DoclingServeClient implements DoclingServeApi {
                         .uri("/v1/convert/source/async")
                         .body(request)
                         .retrieve()
-                        .body(ConvertDocumentResponse.class),
-                virtualThreadExecutor
+                        .requiredBody(ConvertDocumentResponse.class),
+                asyncExecutor()
         );
     }
 
@@ -82,7 +100,7 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/convert/source/batch")
                 .body(request)
                 .retrieve()
-                .body(TaskStatusPollResponse.class);
+                .requiredBody(TaskStatusPollResponse.class);
     }
 
     @Override
@@ -91,8 +109,8 @@ public class DoclingServeClient implements DoclingServeApi {
                         .uri("/v1/convert/source/batch")
                         .body(request)
                         .retrieve()
-                        .body(ConvertDocumentResponse.class),
-                virtualThreadExecutor
+                        .requiredBody(ConvertDocumentResponse.class),
+                asyncExecutor()
         );
     }
 
@@ -104,7 +122,7 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/chunk/hierarchical/source")
                 .body(request)
                 .retrieve()
-                .body(ChunkDocumentResponse.class);
+                .requiredBody(ChunkDocumentResponse.class);
     }
 
     @Override
@@ -113,7 +131,7 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/chunk/hybrid/source")
                 .body(request)
                 .retrieve()
-                .body(ChunkDocumentResponse.class);
+                .requiredBody(ChunkDocumentResponse.class);
     }
 
     @Override
@@ -122,8 +140,8 @@ public class DoclingServeClient implements DoclingServeApi {
                         .uri("/v1/chunk/hierarchical/source/async")
                         .body(request)
                         .retrieve()
-                        .body(ChunkDocumentResponse.class),
-                virtualThreadExecutor);
+                        .requiredBody(ChunkDocumentResponse.class),
+                asyncExecutor());
     }
 
     @Override
@@ -132,8 +150,8 @@ public class DoclingServeClient implements DoclingServeApi {
                         .uri("/v1/chunk/hybrid/source/async")
                         .body(request)
                         .retrieve()
-                        .body(ChunkDocumentResponse.class),
-                virtualThreadExecutor);
+                        .requiredBody(ChunkDocumentResponse.class),
+                asyncExecutor());
     }
 
     // CLEAR
@@ -143,7 +161,7 @@ public class DoclingServeClient implements DoclingServeApi {
         return restClient.get()
                 .uri("/v1/clear/converters")
                 .retrieve()
-                .body(ClearResponse.class);
+                .requiredBody(ClearResponse.class);
     }
 
     @Override
@@ -151,7 +169,7 @@ public class DoclingServeClient implements DoclingServeApi {
         return restClient.get()
                 .uri("/v1/clear/results", uri -> uri.queryParam("older_then", request.getOlderThen()).build())
                 .retrieve()
-                .body(ClearResponse.class);
+                .requiredBody(ClearResponse.class);
     }
 
     // TASK
@@ -163,7 +181,7 @@ public class DoclingServeClient implements DoclingServeApi {
                         .queryParam("wait", request.getWaitTime())
                         .build(request.getTaskId()))
                 .retrieve()
-                .body(TaskStatusPollResponse.class);
+                .requiredBody(TaskStatusPollResponse.class);
     }
 
     @Override
@@ -172,7 +190,7 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/result/{taskId}", uriBuilder -> uriBuilder
                         .build(request.getTaskId()))
                 .retrieve()
-                .body(ConvertDocumentResponse.class);
+                .requiredBody(ConvertDocumentResponse.class);
     }
 
     @Override
@@ -181,29 +199,37 @@ public class DoclingServeClient implements DoclingServeApi {
                 .uri("/v1/result/{taskId}", uriBuilder -> uriBuilder
                         .build(request.getTaskId()))
                 .retrieve()
-                .body(ChunkDocumentResponse.class);
+                .requiredBody(ChunkDocumentResponse.class);
     }
 
     // BUILDER
 
+    /**
+     * Not supported. Use {@code config().toBuilder()} to create a modified copy of this client.
+     */
     @Override
-    @SuppressWarnings("unchecked")
-    public Builder toBuilder() {
-        throw new UnsupportedOperationException("toBuilder is not supported");
+    @SuppressWarnings({"removal"})
+    public <T extends DoclingServeApi, B extends DoclingApiBuilder<T, B>> DoclingApiBuilder<T, B> toBuilder() {
+        throw new UnsupportedOperationException("toBuilder is not supported. Use config().toBuilder() instead.");
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public static class Builder implements DoclingApiBuilder<DoclingServeClient, Builder> {
+    public static class Builder {
 
         private RestClient.Builder restClientBuilder = RestClient.builder();
+        @Nullable
         private URI baseUrl;
         @Nullable
         private String apiKey;
         private Duration connectTimeout = Duration.ofSeconds(5);
         private Duration readTimeout = Duration.ofSeconds(30);
+        private Executor asyncExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        private boolean logRequests = false;
+        private boolean logResponses = false;
+        private boolean prettyPrint = false;
 
         private Builder() {}
 
@@ -212,61 +238,57 @@ public class DoclingServeClient implements DoclingServeApi {
             return this;
         }
 
-        @Override
+        public Builder baseUrl(String baseUrl) {
+            Assert.hasText(baseUrl, "baseUrl cannot be null or empty");
+            return baseUrl(URI.create(baseUrl));
+        }
+
         public Builder baseUrl(URI baseUrl) {
             this.baseUrl = baseUrl;
             return this;
         }
 
-        @Override
         public Builder apiKey(@Nullable String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
-        @Override
-        public Builder logRequests(boolean logRequests) {
-            throw new UnsupportedOperationException("asyncTimeout is not supported");
-        }
-
-        @Override
-        public Builder logResponses(boolean logResponses) {
-            throw new UnsupportedOperationException("asyncTimeout is not supported");
-        }
-
-        @Override
-        public Builder prettyPrint(boolean prettyPrint) {
-            throw new UnsupportedOperationException("asyncTimeout is not supported");
-        }
-
-        @Override
         public Builder connectTimeout(Duration connectTimeout) {
             this.connectTimeout = connectTimeout;
             return this;
         }
 
-        @Override
         public Builder readTimeout(Duration readTimeout) {
             this.readTimeout = readTimeout;
             return this;
         }
 
-        @Override
-        public Builder asyncPollInterval(Duration asyncPollInterval) {
-            throw new UnsupportedOperationException("asyncPollInterval is not supported");
+        public Builder asyncExecutor(Executor asyncExecutor) {
+            this.asyncExecutor = asyncExecutor;
+            return this;
         }
 
-        @Override
-        public Builder asyncTimeout(Duration asyncTimeout) {
-            throw new UnsupportedOperationException("asyncTimeout is not supported");
+        public Builder logRequests(boolean logRequests) {
+            this.logRequests = logRequests;
+            return this;
         }
 
-        @Override
+        public Builder logResponses(boolean logResponses) {
+            this.logResponses = logResponses;
+            return this;
+        }
+
+        public Builder prettyPrint(boolean prettyPrint) {
+            this.prettyPrint = prettyPrint;
+            return this;
+        }
+
         public DoclingServeClient build() {
             Assert.notNull(restClientBuilder, "restClientBuilder cannot be null");
             Assert.notNull(baseUrl, "baseUrl cannot be null");
             Assert.notNull(connectTimeout, "connectTimeout cannot be null");
             Assert.notNull(readTimeout, "readTimeout cannot be null");
+            Assert.notNull(asyncExecutor, "asyncExecutor cannot be null");
             Assert.isTrue(connectTimeout.isPositive(), "connectTimeout must be positive");
             Assert.isTrue(readTimeout.isPositive(), "readTimeout must be positive");
 
@@ -289,7 +311,26 @@ public class DoclingServeClient implements DoclingServeApi {
                 restClientBuilder.defaultHeader(DoclingProperties.API_KEY_HEADER_NAME, apiKey);
             }
 
-            return new DoclingServeClient(restClientBuilder.build());
+            if (logRequests || logResponses) {
+                restClientBuilder.requestInterceptor(new LoggingClientHttpRequestInterceptor(logRequests, logResponses, prettyPrint));
+            }
+            if (logResponses) {
+                // Buffer the response bodies so that they can be logged and then still read by the response handlers.
+                restClientBuilder.bufferContent((uri, method) -> true);
+            }
+
+            DoclingServeApiConfig config = DoclingServeApi.builder()
+                    .baseUrl(baseUrl)
+                    .apiKey(apiKey)
+                    .connectTimeout(connectTimeout)
+                    .readTimeout(readTimeout)
+                    .asyncExecutor(asyncExecutor)
+                    .logRequests(logRequests)
+                    .logResponses(logResponses)
+                    .prettyPrint(prettyPrint)
+                    .config();
+
+            return new DoclingServeClient(restClientBuilder.build(), config);
         }
 
     }

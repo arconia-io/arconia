@@ -137,6 +137,18 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |`arconia.docling.read-timeout`
 |`30s`
 |Timeout for receiving a response from the Docling Serve API.
+
+|`arconia.docling.log-requests`
+|`false`
+|Whether to log the requests sent to the Docling Serve API. The API key is masked.
+
+|`arconia.docling.log-responses`
+|`false`
+|Whether to log the responses received from the Docling Serve API. Non-JSON bodies, such as zip archives, are not logged.
+
+|`arconia.docling.pretty-print`
+|`false`
+|Whether to pretty-print the JSON bodies of the logged requests and responses.
 |===
 
 == Actuator
@@ -183,6 +195,24 @@ public class DocumentService {
     }
 }
 ----
+
+=== Building a Client Manually
+
+Arconia registers a `DoclingServeApiProvider`, so the standard `DoclingServeApi.builder()` entry point from Docling Java resolves to the Arconia client as well. That's useful outside the Spring context, for example in tests, or to create a modified copy of the auto-configured client via `config().toBuilder()`.
+
+[source,java]
+----
+DoclingServeApi doclingClient = DoclingServeApi.builder()
+        .baseUrl("http://localhost:5001")
+        .readTimeout(Duration.ofMinutes(2))
+        .build();
+
+DoclingServeApi slowerClient = doclingClient.config().toBuilder()
+        .readTimeout(Duration.ofMinutes(5))
+        .build();
+----
+
+The async operations of the Arconia client don't poll for the task status, so the `asyncPollInterval` and `asyncTimeout` options are ignored with a warning. They run on virtual threads unless you pass your own `asyncExecutor`. To customize the underlying `RestClient`, use `DoclingServeClient.builder()` directly.
 
 === Converting HTTP Sources
 

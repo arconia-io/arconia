@@ -35,6 +35,21 @@ public class DoclingProperties {
      */
     private Duration readTimeout = Duration.ofSeconds(30);
 
+    /**
+     * Whether to log the requests sent to the Docling Serve API.
+     */
+    private boolean logRequests = false;
+
+    /**
+     * Whether to log the responses received from the Docling Serve API.
+     */
+    private boolean logResponses = false;
+
+    /**
+     * Whether to pretty-print the JSON bodies of the logged requests and responses.
+     */
+    private boolean prettyPrint = false;
+
     public URI getBaseUrl() {
         return baseUrl;
     }
@@ -66,6 +81,30 @@ public class DoclingProperties {
 
     public void setReadTimeout(Duration readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public boolean isLogRequests() {
+        return logRequests;
+    }
+
+    public void setLogRequests(boolean logRequests) {
+        this.logRequests = logRequests;
+    }
+
+    public boolean isLogResponses() {
+        return logResponses;
+    }
+
+    public void setLogResponses(boolean logResponses) {
+        this.logResponses = logResponses;
+    }
+
+    public boolean isPrettyPrint() {
+        return prettyPrint;
+    }
+
+    public void setPrettyPrint(boolean prettyPrint) {
+        this.prettyPrint = prettyPrint;
     }
 
 }

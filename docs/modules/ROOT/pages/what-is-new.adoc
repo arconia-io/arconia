@@ -17,6 +17,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * `ContainerInfo.exposedPorts()` has been renamed to `ports()`, since it holds the port mappings of the container. The `devservices` actuator endpoint reports them under `ports` accordingly.
 * If you build your own Dev Service, some API changes have been introduced to simplify the registration and configuration of dev services. Refer to the updated documentation on how to xref:dev-services:custom-dev-services.adoc[build your own dev service].
 
+=== Docling
+
+* The Docling Dev Service now links to the Scalar API reference of Docling Serve at `/scalar`, next to the Docling UI and the OpenAPI documentation.
+
 === Elasticsearch
 
 * The Elasticsearch Dev Service now serves plain HTTP by default. Elasticsearch 8 and later only accept HTTPS in their default configuration, with a certificate the application could not trust, so the Dev Service could not be reached before.
@@ -45,3 +49,11 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Redis
 
 * The Redis Dev Service can now serve SSL, with the certificate configured through its `ssl` properties, and the application is configured to trust it automatically. Learn more about xref:dev-services:redis.adoc#_using_ssl[Using SSL].
+
+== Integrations
+
+=== Docling
+
+* The Docling integration has been upgraded to Docling Java 0.7, which replaces the `DoclingServeApiBuilderFactory` SPI with `DoclingServeApiProvider`. Arconia registers a provider, so the standard `DoclingServeApi.builder()` entry point now builds the Arconia client, and `DoclingServeApi.config()` reports the configuration of the auto-configured client, which `config().toBuilder()` copies. The builder of `DoclingServeClient` no longer implements the deprecated `DoclingApiBuilder` interface, and its `toBuilder()` method is unsupported in favor of `config().toBuilder()`.
+* The requests sent to Docling Serve and the responses received from it can now be logged with the `arconia.docling.log-requests`, `arconia.docling.log-responses`, and `arconia.docling.pretty-print` properties, with the API key masked.
+* The executor running the async operations of the Docling client can be customized with the `asyncExecutor` option of `DoclingServeClient.builder()` or `DoclingServeApi.builder()`. Virtual threads are used by default.
