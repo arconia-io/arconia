@@ -15,6 +15,8 @@ public final class DevServiceCategories {
 
     public static final String MONGODB = "mongodb";
 
+    public static final String OIDC = "oidc";
+
     public static final String OPENTELEMETRY = "opentelemetry";
 
     public static final String REDIS = "redis";

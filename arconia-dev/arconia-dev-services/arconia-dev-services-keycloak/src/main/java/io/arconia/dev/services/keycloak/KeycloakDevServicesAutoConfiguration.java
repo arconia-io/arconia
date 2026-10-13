@@ -8,6 +8,7 @@ import org.springframework.core.env.Environment;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
+import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.keycloak.KeycloakDevServicesAutoConfiguration.KeycloakDevServicesRegistrar;
@@ -30,6 +31,7 @@ public final class KeycloakDevServicesAutoConfiguration {
             registry.registerDevService(service -> service
                     .name("keycloak")
                     .description("Keycloak Dev Service")
+                    .category(DevServiceCategories.OIDC)
                     .properties(properties)
                     .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))
                     .port(ArconiaKeycloakContainer.HTTP_PORT)

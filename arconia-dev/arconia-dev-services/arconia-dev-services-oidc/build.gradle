@@ -1,0 +1,28 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api "org.springframework.boot:spring-boot-starter"
+
+    optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services OIDC"
+                description = "Arconia Dev Services OIDC."
+            }
+        }
+    }
+}

@@ -34,6 +34,7 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mongodb")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mongodb-atlas")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-mysql")
+        api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oidc")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-ollama")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-openlit")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oracle")

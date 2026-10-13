@@ -1,8 +1,7 @@
 package io.arconia.dev.services.keycloak;
 
-import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
-
 import io.arconia.core.support.Incubating;
+import io.arconia.dev.services.oidc.OidcConnectionDetails;
 
 /**
  * Details for connecting to a Keycloak dev service.
@@ -12,7 +11,7 @@ import io.arconia.core.support.Incubating;
  * {@link KeycloakDevServicesProperties.Client} instead.
  */
 @Incubating
-public interface KeycloakConnectionDetails extends ConnectionDetails {
+public interface KeycloakConnectionDetails extends OidcConnectionDetails {
 
     /**
      * The URL of the Keycloak server.
@@ -24,16 +23,12 @@ public interface KeycloakConnectionDetails extends ConnectionDetails {
      */
     String getRealm();
 
-    /**
-     * The issuer URI of the realm, as it appears in the tokens Keycloak issues.
-     */
+    @Override
     default String getIssuerUri() {
         return "%s/realms/%s".formatted(getAuthServerUrl(), getRealm());
     }
 
-    /**
-     * The URI of the JSON Web Key Set the realm signs its tokens with.
-     */
+    @Override
     default String getJwkSetUri() {
         return getIssuerUri() + "/protocol/openid-connect/certs";
     }
