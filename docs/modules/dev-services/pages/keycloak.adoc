@@ -1,9 +1,9 @@
 = Keycloak Dev Service
 :service-name: keycloak
 
-A service providing a https://www.keycloak.org[Keycloak] identity and access management server for development and testing purposes. It's based on the https://github.com/dasniko/testcontainers-keycloak[Testcontainers Keycloak] module.
+A service providing a https://www.keycloak.org[Keycloak] identity and access management server for development and testing purposes.
 
-It configures the Spring Security libraries on the classpath automatically, so that a servlet application needs no OAuth2 configuration to get started:
+It configures the Spring Security libraries on the classpath automatically so that a Spring Boot application needs no OAuth2 configuration to get started:
 
 * https://docs.spring.io/spring-security/reference/servlet/oauth2/login/index.html[Spring Security OAuth2 Client], to log users in.
 * https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/index.html[Spring Security OAuth2 Resource Server], to validate access tokens.
@@ -16,7 +16,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-The Dev Service imports a realm named `arconia` with a confidential client (id `arconia-app`, secret `arconia-secret`) and two users:
+The Dev Service imports a realm named `arconia` with a confidential client (id `arconia-app`, secret `arconia-secret`), and two users:
 
 [cols="1,1,1"]
 |===
@@ -39,7 +39,7 @@ The application logs show the URLs of the Keycloak Admin Console, where you can 
 ...i.a.d.s.startup  : Dev Service 'keycloak' links: Keycloak Admin Console: http://localhost:<port>/admin, OpenID Connect Issuer: http://localhost:<port>/realms/arconia
 ----
 
-To reach the server from your own code, inject the `KeycloakConnectionDetails` bean, which provides the server URL, the realm and the issuer URI.
+To reach the server from your own code, inject the `KeycloakConnectionDetails` bean, which provides the server URL, the realm, and the issuer URI.
 
 == Logging Users In
 
@@ -47,11 +47,11 @@ When Spring Security's OAuth2 Client is on the classpath, the Dev Service regist
 
 The client is configured with the `client.*` properties of the Dev Service, which also declare it in the realm, so the two always match. Your `spring.security.oauth2.client` properties are not used while the Dev Service is active, so you can keep your production configuration as it is.
 
-The Dev Service's `ClientRegistrationRepository` replaces any your application defines, for example for multitenancy, so production configuration never gets in the way in dev. To keep your own instead, set `arconia.dev.services.{service-name}.client.enabled=false`.
+The Dev Service's `ClientRegistrationRepository` replaces any your application defines, so production configuration never gets in the way in dev. To keep your own instead, set `arconia.dev.services.{service-name}.client.enabled=false`.
 
 == Protecting a Resource Server
 
-When Spring Security's OAuth2 Resource Server is on the classpath, the Dev Service configures it to validate the tokens issued by the realm, taking precedence over your own configuration. It sets these `spring.security.oauth2.resourceserver.jwt` properties, which code reading them directly sees too:
+When Spring Security's OAuth2 Resource Server is on the classpath, the Dev Service configures it to validate the tokens issued by the realm, taking precedence over your own configuration. It sets these `spring.security.oauth2.resourceserver.jwt` properties:
 
 * `issuer-uri` and `jwk-set-uri`, pointing at the realm.
 * `jws-algorithms`, set to `RS256`.
@@ -61,12 +61,26 @@ Properties describing how your application reads a token, such as `authorities-c
 
 The client allows the password grant, so you can get a token without a browser, using the issuer URI from the application logs:
 
+[tabs]
+======
+HTTPie::
++
+[source,shell]
+----
+http --form <issuer-uri>/protocol/openid-connect/token \
+  grant_type=password client_id=arconia-app client_secret=arconia-secret \
+  username=isabella password=isabella
+----
+
+curl::
++
 [source,shell]
 ----
 curl -s <issuer-uri>/protocol/openid-connect/token \
   -d grant_type=password -d client_id=arconia-app -d client_secret=arconia-secret \
   -d username=isabella -d password=isabella
 ----
+======
 
 Send the `access_token` from the response as `Authorization: Bearer <token>`.
 
@@ -79,7 +93,6 @@ arconia:
     services:
       keycloak:
         realm:
-          name: my-realm
           users:
             alice:
               password: alice-password
@@ -89,7 +102,7 @@ arconia:
               roles: [reader]
 ----
 
-Usernames must be lower case, and each user gets the email address `<username>@arconia.io` and its capitalized username as first and last name, since Keycloak requires them to issue tokens. The realm roles are the ones the users hold.
+Usernames must be lower-case, and each user gets the email address `<username>@arconia.io` and its capitalized username as first and last name, since Keycloak requires them to issue tokens. The realm roles are the ones the users hold.
 
 Configuring users replaces the default users.
 
@@ -147,7 +160,7 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.{service-name}.image-name`
-| `quay.io/keycloak/keycloak:26.8`
+| `quay.io/keycloak/keycloak`
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.{service-name}.environment`
@@ -168,7 +181,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.reuse-strategy`
 | `framework`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
+| Strategy for reusing a running container for the dev service instead of starting a new one. Only applicable in dev mode.
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `2m`
