@@ -129,7 +129,8 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 assertThat(response.statusCode()).isEqualTo(200);
                 assertThat(response.body())
-                        .containsAnyOf("JVM Metrics (Micrometer)", "JVM Metrics (OpenTelemetry)")
+                        .containsAnyOf("arconia-jvm-micrometer", "arconia-jvm-opentelemetry")
+                        .contains("arconia-logging")
                         .contains("Spring Boot Test Dashboard")
                         .doesNotContain("JVM Overview (OpenTelemetry)")
                         .doesNotContain("RED Metrics");

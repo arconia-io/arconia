@@ -71,9 +71,12 @@ final class LgtmDashboards {
 
     private static final String OPENTELEMETRY_JVM_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.jvm.enabled";
 
+    private static final String LOGBACK_CLASS = "ch.qos.logback.classic.LoggerContext";
+
     static final List<BuiltInDashboard> BUILT_IN = List.of(
             new BuiltInDashboard("jvm-micrometer.json", openTelemetryJvmConventions().negate()),
-            new BuiltInDashboard("jvm-opentelemetry.json", openTelemetryJvmConventions()));
+            new BuiltInDashboard("jvm-opentelemetry.json", openTelemetryJvmConventions()),
+            new BuiltInDashboard("logging.json", classPresent(LOGBACK_CLASS)));
 
     /**
      * Grafana environment variable pointing at the dashboard to open as the home page.

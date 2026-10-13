@@ -72,6 +72,22 @@ class LgtmDashboardsTests {
         }
 
         @Test
+        void loggingDashboardWhenLogbackPresent() {
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet()).contains("logging.json");
+        }
+
+        @Test
+        void noLoggingDashboardWhenLogbackAbsent() {
+            var resourceLoader = new DefaultResourceLoader(new FilteredClassLoader("ch.qos.logback.classic"));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet()).doesNotContain("logging.json");
+        }
+
+        @Test
         void builtInDashboardsAreReadable() {
             var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
 

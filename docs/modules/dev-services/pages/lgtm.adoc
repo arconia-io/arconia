@@ -60,14 +60,22 @@ Prometheus stores the metrics it receives via OTLP under names translated to its
 The Dev Service provisions Grafana with dashboards for Spring Boot applications, replacing the ones bundled with the `grafana/otel-lgtm` image. The dashboards are picked for the application:
 
 |===
-|Dashboard |Provisioned
+|Dashboard |Content |Provisioned
 
-| JVM Metrics (Micrometer)
+| JVM (`jvm-micrometer.json`)
+| CPU, system load, memory, garbage collection, threads, classes, and buffers.
 | When the JVM metrics follow the Micrometer conventions, the Spring Boot default.
 
-| JVM Metrics (OpenTelemetry)
+| JVM (`jvm-opentelemetry.json`)
+| Same as above.
 | When the JVM metrics follow the OpenTelemetry semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc[Arconia OpenTelemetry Semantic Conventions] module is on the classpath and its JVM conventions are enabled.
+
+| Logging (`logging.json`)
+| Log events by level, and the application logs with links to their traces.
+| When Logback is on the classpath, the Spring Boot default.
 |===
+
+Each dashboard lets you select the application and its instance, listing the most recently started instance first. The "Dashboards" menu in the top-right corner switches between them, keeping the selection and the time range.
 
 === Contributing Dashboards
 
