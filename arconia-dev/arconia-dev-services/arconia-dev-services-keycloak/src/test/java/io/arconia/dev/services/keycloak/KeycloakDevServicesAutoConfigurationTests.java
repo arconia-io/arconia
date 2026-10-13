@@ -78,10 +78,18 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
             var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
             container.start();
             try {
-                assertRealmIsUsable(issuerUri(container), "isabella", "isabella",
+                Map<String, Object> token = assertRealmIsUsable(issuerUri(container), "isabella", "isabella",
                         KeycloakDevServicesProperties.Client.DEFAULT_CLIENT_ID,
                         KeycloakDevServicesProperties.Client.DEFAULT_CLIENT_SECRET,
                         List.of("admin", "user"));
+                assertThat(realmRoles(parseJson(decodeJwtPayload((String) token.get("id_token")))))
+                        .containsExactlyInAnyOrder("admin", "user");
+                HttpResponse<String> userInfo = HttpClient.newHttpClient().send(
+                        HttpRequest.newBuilder(URI.create(issuerUri(container) + "/protocol/openid-connect/userinfo"))
+                                .header("Authorization", "Bearer " + token.get("access_token"))
+                                .build(),
+                        HttpResponse.BodyHandlers.ofString());
+                assertThat(realmRoles(parseJson(userInfo.body()))).containsExactlyInAnyOrder("admin", "user");
                 // The second default user carries the narrower role set.
                 assertRealmIsUsable(issuerUri(container), "bjorn", "bjorn",
                         KeycloakDevServicesProperties.Client.DEFAULT_CLIENT_ID,
@@ -146,7 +154,7 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
      * advertises the expected issuer, the confidential client authenticates, the user exists,
      * and the expected realm roles are present in the issued token.
      */
-    private static void assertRealmIsUsable(String issuerUri, String username, String password,
+    private static Map<String, Object> assertRealmIsUsable(String issuerUri, String username, String password,
             String clientId, String clientSecret, List<String> expectedRoles) throws Exception {
         Map<String, Object> discoveryDocument = parseJson(
                 get(issuerUri + "/.well-known/openid-configuration").body());
@@ -173,6 +181,14 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
         @SuppressWarnings("unchecked")
         List<Object> roles = (List<Object>) realmAccess.get("roles");
         assertThat(roles).containsAll(expectedRoles);
+        return token;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> realmRoles(Map<String, Object> claims) {
+        Map<String, Object> realmAccess = (Map<String, Object>) claims.get("realm_access");
+        assertThat(realmAccess).withFailMessage("no realm_access claim in %s", claims).isNotNull();
+        return (List<Object>) realmAccess.get("roles");
     }
 
     private static HttpResponse<String> get(String url) throws Exception {

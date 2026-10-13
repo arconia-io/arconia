@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.RolesRepresentation;
@@ -155,6 +156,29 @@ final class KeycloakRealmFactory {
     }
 
     /**
+     * Keycloak's default "realm roles" mapper puts the realm roles in the access token only, while
+     * an OAuth2 Client application reads the user from the ID token and the userinfo endpoint. This
+     * mapper adds them there too, under the same claim; it leaves the access token alone, which the
+     * default mapper already covers.
+     */
+    private static ProtocolMapperRepresentation realmRolesInIdTokenAndUserInfo() {
+        ProtocolMapperRepresentation mapper = new ProtocolMapperRepresentation();
+        mapper.setName("realm roles in ID token and userinfo");
+        mapper.setProtocol("openid-connect");
+        mapper.setProtocolMapper("oidc-usermodel-realm-role-mapper");
+        Map<String,String> config = new LinkedHashMap<>();
+        config.put("claim.name", "realm_access.roles");
+        config.put("jsonType.label", "String");
+        config.put("multivalued", "true");
+        config.put("id.token.claim", "true");
+        config.put("userinfo.token.claim", "true");
+        config.put("access.token.claim", "false");
+        config.put("introspection.token.claim", "false");
+        mapper.setConfig(config);
+        return mapper;
+    }
+
+    /**
      * A confidential client. The direct access grant is enabled so that tests and scripts can
      * obtain a token without a browser.
      */
@@ -175,6 +199,7 @@ final class KeycloakRealmFactory {
         client.setServiceAccountsEnabled(true);
         client.setRedirectUris(List.of(ANY_URL));
         client.setWebOrigins(List.of(ANY_URL));
+        client.setProtocolMappers(List.of(realmRolesInIdTokenAndUserInfo()));
         return client;
     }
 
