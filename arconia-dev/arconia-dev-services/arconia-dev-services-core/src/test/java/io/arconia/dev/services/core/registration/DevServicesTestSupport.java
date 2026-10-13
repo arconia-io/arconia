@@ -222,6 +222,22 @@ final class DevServicesTestSupport {
             }
             return 1234;
         }
+
+        @Override
+        public String getContainerId() {
+            return "test-link-container";
+        }
+    }
+
+    /**
+     * A {@link TestLinkContainer} that was never started, so it has no container identifier.
+     */
+    static class TestUnstartedLinkContainer extends TestLinkContainer {
+
+        @Override
+        public String getContainerId() {
+            return null;
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package io.arconia.dev.services.core.registration;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.dockerjava.api.model.Container;
 
@@ -17,6 +18,33 @@ import static org.mockito.Mockito.when;
  * Unit tests for {@link DockerContainerDiscovery}.
  */
 class DockerContainerDiscoveryTests {
+
+    @Test
+    void whenQueryFailsOnceThenItIsRetried() {
+        // The runtime may have closed the pooled connection while idle; the retry runs on a fresh one.
+        AtomicInteger calls = new AtomicInteger();
+        var discovery = new DockerContainerDiscovery(serviceName -> {
+            if (calls.incrementAndGet() == 1) {
+                throw new IllegalStateException("stale connection");
+            }
+            return List.of();
+        });
+
+        assertThat(discovery.discover("postgres")).isEmpty();
+        assertThat(calls).hasValue(2);
+    }
+
+    @Test
+    void whenQueryKeepsFailingThenNothingIsDiscovered() {
+        AtomicInteger calls = new AtomicInteger();
+        var discovery = new DockerContainerDiscovery(serviceName -> {
+            calls.incrementAndGet();
+            throw new IllegalStateException("runtime unavailable");
+        });
+
+        assertThat(discovery.discover("postgres")).isEmpty();
+        assertThat(calls).hasValue(2);
+    }
 
     @Test
     void whenNoContainersThenNoCandidates() {

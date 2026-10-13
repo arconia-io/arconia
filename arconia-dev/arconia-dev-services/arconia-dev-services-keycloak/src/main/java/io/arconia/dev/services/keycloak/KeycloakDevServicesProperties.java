@@ -22,7 +22,7 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.keycloak";
 
-    public static final String DEFAULT_REALM = "arconia";
+    static final String DEFAULT_REALM = "arconia";
 
     static final String DEFAULT_ADMIN_USERNAME = "arconia";
     static final String DEFAULT_ADMIN_PASSWORD = "arconia";
@@ -68,9 +68,7 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     private ReuseStrategy reuseStrategy = ReuseStrategy.FRAMEWORK;
 
     /**
-     * Maximum waiting time for the service to start. Keycloak needs considerably longer
-     * than most services, since it boots and imports the configured realms before
-     * reporting itself as ready.
+     * Maximum waiting time for the service to start, counted from the container start.
      */
     private Duration startupTimeout = Duration.ofMinutes(2);
 
@@ -93,20 +91,23 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
     /**
-     * Configuration of the realm the application connects to.
+     * The realm the application connects to.
      */
     private Realm realm = new Realm();
 
     /**
-     * Configuration of the OAuth2 client the application authenticates as.
+     * The OAuth2 client the application authenticates as.
      */
     private Client client = new Client();
 
     /**
-     * Ports on the host that Keycloak can reach from inside its container. Only needed
-     * when Keycloak initiates calls to the application, such as OpenID Connect
-     * Back-Channel Logout; the ordinary login flow does not require it, since the
-     * browser performs the redirect.
+     * The OAuth2 resource server wiring.
+     */
+    private ResourceServer resourceServer = new ResourceServer();
+
+    /**
+     * Ports on the host that Keycloak can reach from inside its container, such as for
+     * OpenID Connect Back-Channel Logout.
      */
     private List<Integer> hostAccessiblePorts = new ArrayList<>();
 
@@ -223,6 +224,14 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
         this.client = client;
     }
 
+    public ResourceServer getResourceServer() {
+        return resourceServer;
+    }
+
+    public void setResourceServer(ResourceServer resourceServer) {
+        this.resourceServer = resourceServer;
+    }
+
     public List<Integer> getHostAccessiblePorts() {
         return hostAccessiblePorts;
     }
@@ -232,55 +241,27 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     }
 
     /**
-     * Configuration of the realm the application connects to.
-     * <p>
-     * A realm comes from one of two places. Either it is generated from this configuration,
-     * which is the default and covers the common case of wanting a few users with a few roles,
-     * or it is imported from realm files, which takes over completely for realms too elaborate
-     * to express here. Generation can also be turned off altogether, leaving Keycloak with only
-     * its `master` realm for an application that configures Spring Security itself.
+     * The realm the application connects to: either generated from this configuration or
+     * imported from a realm file.
      */
     public static class Realm {
 
         /**
-         * Name of the realm the application connects to. When empty, it is derived from the
-         * first realm import file, or defaults to `arconia` when no realm file is configured.
-         * Set it explicitly to connect to a realm this application does not import itself,
-         * such as one imported by another application using the same dev service.
+         * Name of the generated realm. Defaults to `arconia`.
          */
         private String name = "";
 
         /**
-         * Whether a realm is generated from this configuration. When disabled and no realm
-         * import path is configured, Keycloak starts with only its `master` realm and the dev
-         * service contributes no OAuth2 configuration, leaving the application's own Spring
-         * Security configuration untouched.
+         * Path to a Keycloak realm file to import instead of generating a realm, resolved from
+         * the classpath or the host filesystem. It can be prefixed with `classpath:` or `file:`.
          */
-        private boolean create = true;
+        private String importPath = "";
 
         /**
-         * Paths to Keycloak realm files to import at startup, resolved from the classpath
-         * or the host filesystem. A path can be prefixed with `classpath:` or `file:` to
-         * select the location explicitly; otherwise the classpath is searched first and
-         * the host filesystem second. When set, the realm files are imported as they are
-         * and no realm is generated.
-         */
-        private List<String> importPaths = new ArrayList<>();
-
-        /**
-         * Users to create in the generated realm, as a map of username to user. A user whose
-         * password is all it needs can be given as the password alone, as in
-         * `alice: alice-password`. When empty, two default users are created: `isabella`
-         * and `bjorn`.
+         * Users of the generated realm, by username. Defaults to `isabella` (roles `admin` and
+         * `user`) and `bjorn` (role `user`), each with their username as the password.
          */
         private Map<String,User> users = new LinkedHashMap<>();
-
-        /**
-         * Roles to create in the generated realm, as a map of role name to the usernames
-         * holding it. A role with no users is created but assigned to nobody. When both this
-         * and `users` are empty, the default `admin` and `user` roles are created.
-         */
-        private Map<String,List<String>> roles = new LinkedHashMap<>();
 
         public String getName() {
             return name;
@@ -290,20 +271,12 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
             this.name = name;
         }
 
-        public boolean isCreate() {
-            return create;
+        public String getImportPath() {
+            return importPath;
         }
 
-        public void setCreate(boolean create) {
-            this.create = create;
-        }
-
-        public List<String> getImportPaths() {
-            return importPaths;
-        }
-
-        public void setImportPaths(List<String> importPaths) {
-            this.importPaths = importPaths;
+        public void setImportPath(String importPath) {
+            this.importPath = importPath;
         }
 
         public Map<String,User> getUsers() {
@@ -314,64 +287,20 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
             this.users = users;
         }
 
-        public Map<String,List<String>> getRoles() {
-            return roles;
-        }
-
-        public void setRoles(Map<String,List<String>> roles) {
-            this.roles = roles;
-        }
-
         /**
          * A user of the generated realm.
-         * <p>
-         * Only the password is required, which is why the compact form
-         * `alice: alice-password` is accepted alongside the full one: {@link #of(String)} is the
-         * static factory Spring's conversion service looks for when binding a scalar to an
-         * object, so a user that needs nothing but a password stays a single line.
-         * <p>
-         * The remaining fields are an identity, not embellishment. Keycloak's default user
-         * profile marks the email address and both names as required, and refuses to issue a
-         * token for a user missing any of them with the decidedly unhelpful
-         * `Account is not fully set up`. Leaving them empty is therefore not the same as leaving
-         * them out: the dev service derives them from the username instead, so the compact form
-         * still produces a user that can log in.
-         * <p>
-         * Roles are deliberately absent. They are configured the other way round, under `roles`,
-         * mapping a role to the users holding it, which is the direction one usually thinks in
-         * and keeps each assignment in a single place.
          */
         public static class User {
 
             /**
-             * Password of the user. Required.
+             * Password of the user.
              */
             private String password = "";
 
             /**
-             * First name of the user. When empty, it is derived from the username.
+             * Realm roles held by the user.
              */
-            private String firstName = "";
-
-            /**
-             * Last name of the user. When empty, it is derived from the username.
-             */
-            private String lastName = "";
-
-            /**
-             * Email address of the user. When empty, it is derived from the username.
-             */
-            private String email = "";
-
-            /**
-             * A user with the given password and an identity derived from its username, which is
-             * what the compact configuration form binds to.
-             */
-            public static User of(String password) {
-                User user = new User();
-                user.setPassword(password);
-                return user;
-            }
+            private List<String> roles = new ArrayList<>();
 
             public String getPassword() {
                 return password;
@@ -381,28 +310,12 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
                 this.password = password;
             }
 
-            public String getFirstName() {
-                return firstName;
+            public List<String> getRoles() {
+                return roles;
             }
 
-            public void setFirstName(String firstName) {
-                this.firstName = firstName;
-            }
-
-            public String getLastName() {
-                return lastName;
-            }
-
-            public void setLastName(String lastName) {
-                this.lastName = lastName;
-            }
-
-            public String getEmail() {
-                return email;
-            }
-
-            public void setEmail(String email) {
-                this.email = email;
+            public void setRoles(List<String> roles) {
+                this.roles = roles;
             }
 
         }
@@ -410,68 +323,36 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
     }
 
     /**
-     * Configuration of the OAuth2 client the application authenticates as.
-     * <p>
-     * The client governs two things that are easy to conflate. It is declared in the generated
-     * realm from {@code id} and {@code secret}, which applies to every application, including one
-     * that is purely a resource server: a realm needs a client for tokens to be minted against,
-     * whether or not this application performs the login. And when Spring Security's OAuth2
-     * Client is on the classpath, the same values back the client registration the dev service
-     * registers with Spring Security, so the client declared in the realm and the one the
-     * application authenticates as are the same by construction.
+     * The OAuth2 client declared in the generated realm and, when Spring Security's OAuth2
+     * Client is on the classpath, registered with Spring Security.
      */
     public static class Client {
 
-        /**
-         * The client registered in the realm generated when no realm import path is configured.
-         */
-        public static final String DEFAULT_CLIENT_ID = "arconia-app";
+        static final String DEFAULT_CLIENT_ID = "arconia-app";
+
+        static final String DEFAULT_CLIENT_SECRET = "arconia-secret";
 
         /**
-         * The secret of the client registered in the realm generated when no realm import path
-         * is configured.
-         */
-        public static final String DEFAULT_CLIENT_SECRET = "arconia-secret";
-
-        /**
-         * The scopes requested when none are configured. The `openid` scope is what makes the
-         * flow an OpenID Connect login rather than a plain OAuth2 authorization.
-         */
-        public static final List<String> DEFAULT_SCOPES = List.of("openid", "profile", "email");
-
-        /**
-         * Whether the dev service declares a client. When disabled, the client is left out of
-         * the generated realm and no Spring Security client registration is registered. The two
-         * always agree, because a registration pointing at a client that was never created is
-         * worse than no registration at all.
+         * Whether the dev service declares the client in the generated realm and registers it
+         * with Spring Security.
          */
         private boolean enabled = true;
 
         /**
-         * Identifier of the Keycloak client the application authenticates as. It must exist in
-         * the realm in use, which is a given for the generated realm, and the reason this must
-         * be set explicitly when realm files are imported: the clients a realm file declares are
-         * not inspected.
+         * Identifier of the client. With an imported realm, the realm file must declare it.
          */
         private String id = DEFAULT_CLIENT_ID;
 
         /**
-         * Secret of the Keycloak client the application authenticates with. Leave it empty for
-         * a public client, in which case the client is registered with no client authentication
-         * instead.
+         * Secret of the client.
          */
         private String secret = DEFAULT_CLIENT_SECRET;
 
         /**
-         * Identifier of the Spring Security client registration the dev service registers. It
-         * appears in the login URL, as in `/oauth2/authorization/{registration-id}`.
+         * Identifier of the Spring Security client registration, as used in the login URL
+         * `/oauth2/authorization/{registration-id}`.
          */
         private String registrationId = "keycloak";
-
-        /**
-         * Scopes the client registration requests.
-         */
-        private List<String> scopes = new ArrayList<>(DEFAULT_SCOPES);
 
         public boolean isEnabled() {
             return enabled;
@@ -505,12 +386,26 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
             this.registrationId = registrationId;
         }
 
-        public List<String> getScopes() {
-            return scopes;
+    }
+
+    /**
+     * The OAuth2 resource server wiring, applied when Spring Security's OAuth2 Resource Server
+     * is on the classpath.
+     */
+    public static class ResourceServer {
+
+        /**
+         * Whether the resource server is configured to validate the tokens issued by the
+         * dev service.
+         */
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
         }
 
-        public void setScopes(List<String> scopes) {
-            this.scopes = scopes;
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
     }

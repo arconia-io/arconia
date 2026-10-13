@@ -1,9 +1,13 @@
 package io.arconia.dev.services.keycloak;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerProperties;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -24,11 +28,11 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
      * Spelled out rather than referenced from the auto-configuration, so that a change to the
      * constant has to be made deliberately here too instead of silently agreeing with itself.
      */
-    private static final String ISSUER_URI_PROPERTY = "spring.security.oauth2.resourceserver.jwt.issuer-uri";
+    private static final String JWT_PROPERTY_PREFIX = "spring.security.oauth2.resourceserver.jwt.";
+
+    private static final String ISSUER_URI_PROPERTY = JWT_PROPERTY_PREFIX + "issuer-uri";
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            // Dev Service container beans live in the "restart" scope when DevTools is present,
-            // which a plain runner doesn't register.
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ResourceServerDevServicesAutoConfiguration.class));
@@ -55,8 +59,6 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
 
     @Test
     void backsOffWhenSpringSecurityOAuth2ResourceServerIsAbsent() {
-        // The module is on the classpath of applications that are only OAuth2 clients, which have
-        // no resource server to configure an issuer for.
         contextRunner
                 .withClassLoader(new FilteredClassLoader(BearerTokenAuthenticationToken.class))
                 .run(context -> {
@@ -68,7 +70,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
     @Test
     void resourceServerWiringCanBeDisabled() {
         contextRunner
-                .withPropertyValues(KeycloakResourceServerDevServicesProperties.CONFIG_PREFIX + ".enabled=false")
+                .withPropertyValues(KeycloakDevServicesProperties.CONFIG_PREFIX + ".resource-server.enabled=false")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     assertThat(contributesIssuerUri(context)).isFalse();
@@ -76,35 +78,33 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
     }
 
     @Test
-    void noIssuerUriWhenNoRealmIsGeneratedOrImported() {
-        // With no realm, the issuer could only point at one that does not exist, so the
-        // application's own OAuth2 configuration is left to apply untouched.
+    void tokenPropertiesConfiguredByTheApplicationAreSupersededByTheDevService() {
         contextRunner
-                .withPropertyValues(KeycloakDevServicesProperties.CONFIG_PREFIX + ".realm.create=false")
-                .run(context -> {
-                    assertThat(context).hasNotFailed();
-                    assertThat(contributesIssuerUri(context)).isFalse();
-                });
-    }
-
-    @Test
-    void issuerUriContributedWhenRealmCreationIsDisabledButOneIsImported() {
-        // Turning off generation is not the same as wanting no realm.
-        contextRunner
+                .withBean(KeycloakConnectionDetails.class, () -> new FixedConnectionDetails("http://localhost:8180", "arconia"))
                 .withPropertyValues(
-                        KeycloakDevServicesProperties.CONFIG_PREFIX + ".realm.create=false",
-                        KeycloakDevServicesProperties.CONFIG_PREFIX + ".realm.import-paths=classpath:keycloak/test-realm.json")
+                        JWT_PROPERTY_PREFIX + "issuer-uri=https://idp.example.com/realms/production",
+                        JWT_PROPERTY_PREFIX + "jwk-set-uri=https://idp.example.com/realms/production/certs",
+                        JWT_PROPERTY_PREFIX + "jws-algorithms[0]=ES256",
+                        JWT_PROPERTY_PREFIX + "audiences[0]=orders-api",
+                        JWT_PROPERTY_PREFIX + "audiences[1]=billing-api")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
-                    assertThat(contributesIssuerUri(context)).isTrue();
+                    var environment = context.getEnvironment();
+                    assertThat(environment.getProperty(ISSUER_URI_PROPERTY))
+                            .isEqualTo("http://localhost:8180/realms/arconia");
+                    assertThat(environment.getProperty(JWT_PROPERTY_PREFIX + "jwk-set-uri"))
+                            .isEqualTo("http://localhost:8180/realms/arconia/protocol/openid-connect/certs");
+
+                    var jwt = Binder.get(environment)
+                            .bindOrCreate("spring.security.oauth2.resourceserver", OAuth2ResourceServerProperties.class)
+                            .getJwt();
+                    assertThat(jwt.getJwsAlgorithms()).containsExactly("RS256");
+                    assertThat(jwt.getAudiences()).isEmpty();
                 });
     }
 
     @Test
     void issuerUriTakesPrecedenceOverAUserProvidedOne() {
-        // The dev service property source is registered first, so it supersedes configuration
-        // the application provides itself. That is promised in the class javadoc and in the
-        // documentation, and the ordering is what makes it true.
         contextRunner
                 .withPropertyValues(ISSUER_URI_PROPERTY + "=https://issuer.example.com/realms/mine")
                 .run(context -> {
@@ -112,9 +112,6 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
 
                     assertThat(contributesIssuerUri(context)).isTrue();
 
-                    // Expressed as a comparison rather than as "index 0", so it states the
-                    // property that matters — the dev service is consulted first — instead of a
-                    // position that other property sources could shift without breaking anything.
                     var propertySources = context.getEnvironment().getPropertySources();
                     PropertySource<?> userProvided = null;
                     for (PropertySource<?> propertySource : propertySources) {
@@ -128,9 +125,36 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
                             .withFailMessage("the user-provided issuer URI never reached the environment")
                             .isNotNull();
                     assertThat(propertySources.precedenceOf(
-                            propertySources.get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME)))
+                            Objects.requireNonNull(propertySources.get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME))))
                             .isLessThan(propertySources.precedenceOf(userProvided));
                 });
+    }
+
+    /**
+     * Connection details the application provides itself, which make the dev service step aside
+     * so that no container is started.
+     */
+    private static final class FixedConnectionDetails implements KeycloakConnectionDetails {
+
+        private final String authServerUrl;
+
+        private final String realm;
+
+        FixedConnectionDetails(String authServerUrl, String realm) {
+            this.authServerUrl = authServerUrl;
+            this.realm = realm;
+        }
+
+        @Override
+        public String getAuthServerUrl() {
+            return authServerUrl;
+        }
+
+        @Override
+        public String getRealm() {
+            return realm;
+        }
+
     }
 
 }

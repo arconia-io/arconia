@@ -376,10 +376,12 @@ public final class DevServicesRegistry {
         beanDefinition.setDependsOn(containerBeanName);
 
         beanDefinition.setInstanceSupplier((InstanceSupplier<DevServiceRegistration>) registeredBean -> {
-            // The container is started at this point, so the links can be resolved against its mapped ports.
+            // In an application, the Testcontainers lifecycle has started the container by now, so the links
+            // can be resolved against its mapped ports. A container that was never started has no ports to
+            // resolve, as when an application context is created without that lifecycle, and so no links.
             GenericContainer<?> container = registeredBean.getBeanFactory().getBean(containerBeanName, GenericContainer.class);
-            List<DevServiceLink> links = DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort,
-                    DevServiceRegistration.Origin.MANAGED);
+            List<DevServiceLink> links = container.getContainerId() == null ? List.of()
+                    : DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, DevServiceRegistration.Origin.MANAGED);
             DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links, sslBundleRegistered);
             // The reuse strategy is only reported in dev mode, the only one where it applies.
             DevServiceStartupLogger.ready(registration, container.getContainerId(), imageNameOf(container), containerKept,

@@ -28,9 +28,4 @@ final class KeycloakDiscoveredConnectionDetails implements KeycloakConnectionDet
         return realm;
     }
 
-    @Override
-    public String getIssuerUri() {
-        return ArconiaKeycloakContainer.issuerUri(authServerUrl, realm);
-    }
-
 }

@@ -33,9 +33,9 @@ public final class KeycloakDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))
                     .port(ArconiaKeycloakContainer.HTTP_PORT)
-                    .discovery(KeycloakConnectionDetails.class,
-                            container -> new KeycloakDiscoveredConnectionDetails(container, properties))
-                    .link("Keycloak Admin Console", ArconiaKeycloakContainer.HTTP_PORT, "/admin"));
+                    .discovery(KeycloakConnectionDetails.class, container -> new KeycloakDiscoveredConnectionDetails(container, properties))
+                    .link("Keycloak Admin Console", ArconiaKeycloakContainer.HTTP_PORT, "/admin")
+                    .link("OpenID Connect Issuer", ArconiaKeycloakContainer.HTTP_PORT, "/realms/" + KeycloakRealmMetadata.resolveRealmName(properties)));
         }
 
     }

@@ -1,15 +1,11 @@
 package io.arconia.dev.services.keycloak;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.core.env.Environment;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
@@ -18,39 +14,43 @@ import io.arconia.dev.services.keycloak.KeycloakOAuth2ResourceServerDevServicesA
 
 /**
  * Auto-configuration wiring an OAuth2 Resource Server to the Keycloak Dev Service.
+ * <p>
+ * The wiring is expressed as properties. Every property describing the tokens the dev service issues
+ * is overridden, since a value left over from the application's own configuration would describe
+ * a different issuer. The properties describing how the application interprets a token,
+ * such as the claim holding its authorities, are left alone.
  */
 @AutoConfiguration(after = KeycloakDevServicesAutoConfiguration.class,
-        beforeName = {
-                "org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration",
-                "org.springframework.boot.security.oauth2.server.resource.autoconfigure.reactive.ReactiveOAuth2ResourceServerAutoConfiguration"
-        })
+        beforeName = "org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration")
 @ConditionalOnDevServicesEnabled("keycloak")
 @ConditionalOnClass(BearerTokenAuthenticationToken.class)
-@ConditionalOnProperty(prefix = KeycloakResourceServerDevServicesProperties.CONFIG_PREFIX, name = "enabled",
+@ConditionalOnProperty(prefix = KeycloakDevServicesProperties.CONFIG_PREFIX + ".resource-server", name = "enabled",
         havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties(KeycloakResourceServerDevServicesProperties.class)
 @Import(KeycloakResourceServerPropertyRegistrar.class)
 public final class KeycloakOAuth2ResourceServerDevServicesAutoConfiguration {
 
-    private static final String ISSUER_URI_PROPERTY = "spring.security.oauth2.resourceserver.jwt.issuer-uri";
+    private static final String JWT_PROPERTY_PREFIX = "spring.security.oauth2.resourceserver.jwt.";
+
+    /**
+     * The algorithm Keycloak signs the tokens of a realm with, unless the realm says otherwise.
+     */
+    private static final String KEYCLOAK_DEFAULT_SIGNATURE_ALGORITHM = "RS256";
 
     static class KeycloakResourceServerPropertyRegistrar extends DevServicesRegistrar {
 
-        private static final Logger logger = LoggerFactory.getLogger(KeycloakResourceServerPropertyRegistrar.class);
-
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
-            var properties = bindProperties(KeycloakDevServicesProperties.CONFIG_PREFIX, KeycloakDevServicesProperties.class);
+            addDynamicProperty(JWT_PROPERTY_PREFIX + "issuer-uri", () -> connectionDetails().getIssuerUri());
+            addDynamicProperty(JWT_PROPERTY_PREFIX + "jwk-set-uri", () -> connectionDetails().getJwkSetUri());
+            addDynamicProperty(JWT_PROPERTY_PREFIX + "jws-algorithms", () -> KEYCLOAK_DEFAULT_SIGNATURE_ALGORITHM);
+            // Cleared rather than left alone: the tokens issued by the dev service cannot carry
+            // the audience an application expects in production, so validating it would reject
+            // every one of them. An empty value takes precedence over a list configured elsewhere.
+            addDynamicProperty(JWT_PROPERTY_PREFIX + "audiences", () -> "");
+        }
 
-            // With no realm to validate tokens against, the issuer could only point at one that
-            // does not exist, so the application's own issuer configuration is left alone.
-            if (!KeycloakRealmMetadata.hasRealm(properties.getRealm())) {
-                logger.info("Keycloak Dev Service: no realm is generated or imported, so no OAuth2 resource server issuer is contributed. The application's own OAuth2 configuration applies.");
-                return;
-            }
-
-            addDynamicProperty(ISSUER_URI_PROPERTY,
-                    () -> getBeanFactory().getBean(KeycloakConnectionDetails.class).getIssuerUri());
+        private KeycloakConnectionDetails connectionDetails() {
+            return getBeanFactory().getBean(KeycloakConnectionDetails.class);
         }
 
     }

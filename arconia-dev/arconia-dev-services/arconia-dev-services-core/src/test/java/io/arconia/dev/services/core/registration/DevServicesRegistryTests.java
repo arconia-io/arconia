@@ -48,6 +48,7 @@ import io.arconia.dev.services.core.registration.DevServicesTestSupport.OtherCon
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.RestartingContainer;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConnectionDetails;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestLinkContainer;
+import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestUnstartedLinkContainer;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestNetwork;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
@@ -1022,6 +1023,22 @@ class DevServicesRegistryTests {
             assertThat(registration.links()).containsExactly(
                     new DevServiceLink("UI", "http://localhost:1234"),
                     new DevServiceLink("Docs", "http://localhost:1234/docs"));
+        }
+
+        @Test
+        void whenContainerNotStartedThenLinksAreSkippedWithoutWarning(CapturedOutput output) {
+            // As when an application context is created without the Testcontainers lifecycle.
+            registry.registerDevService(service -> service
+                    .name("linky")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestUnstartedLinkContainer.class, TestUnstartedLinkContainer::new)
+                    .link("UI", 8080));
+
+            var registration = beanFactory.getBean(BeanName.REGISTRATION.of("linky"), DevServiceRegistration.class);
+
+            assertThat(registration.links()).isEmpty();
+            assertThat(output).doesNotContain("skipping the 'UI' link");
         }
 
         @Test

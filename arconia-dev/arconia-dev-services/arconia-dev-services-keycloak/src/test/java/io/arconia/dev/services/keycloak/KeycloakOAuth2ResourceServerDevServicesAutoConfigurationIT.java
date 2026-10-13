@@ -60,13 +60,13 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationIT {
     }
 
     @Test
-    void issuerUriTakesPrecedenceOverAUserProvidedOne() {
-        // The dev service property source is registered first, so its issuer supersedes the one
-        // the application configured. If it did not, the decoder would be built against an issuer
-        // that cannot be reached and the context would fail outright — which is what makes this
-        // an assertion about precedence rather than about a string.
+    void tokenPropertiesTakePrecedenceOverUserProvidedOnes() {
         contextRunner
-                .withPropertyValues(ISSUER_URI_PROPERTY + "=https://issuer.invalid/realms/nowhere")
+                .withPropertyValues(
+                        ISSUER_URI_PROPERTY + "=https://issuer.invalid/realms/nowhere",
+                        "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://issuer.invalid/realms/nowhere/certs",
+                        "spring.security.oauth2.resourceserver.jwt.jws-algorithms[0]=ES256",
+                        "spring.security.oauth2.resourceserver.jwt.audiences[0]=orders-api")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
 

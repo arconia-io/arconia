@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
@@ -25,25 +26,54 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
 
     private static final String STATUS_RUNNING = "running";
 
+    /**
+     * The query is attempted twice. The pooled connection to the container runtime can be closed
+     * by the runtime while idle (as podman does after a few seconds, for example while a slow
+     * container starts), and failing on it would silently start a duplicate container. The failed
+     * attempt discards that connection, so the second one runs on a fresh one.
+     */
+    private static final int ATTEMPTS = 2;
+
+    private final Function<String, List<Container>> runningContainers;
+
+    DockerContainerDiscovery() {
+        this(DockerContainerDiscovery::listRunningContainers);
+    }
+
+    DockerContainerDiscovery(Function<String, List<Container>> runningContainers) {
+        this.runningContainers = runningContainers;
+    }
+
     @Override
     public List<DiscoveredContainer> discover(String serviceName) {
-        try {
-            // Get Docker client from Testcontainers. We don't close the connection as it's handled
-            // globally by the DockerClientFactory.
-            DockerClient dockerClient = DockerClientFactory.lazyClient();
-            List<Container> containers = dockerClient.listContainersCmd()
-                    .withLabelFilter(Map.of(
-                            DevServiceLabels.NAME, serviceName,
-                            DevServiceLabels.DISCOVERABLE, "true"))
-                    // Paused or restarting containers are never valid candidates.
-                    .withStatusFilter(List.of(STATUS_RUNNING))
-                    .exec();
-            return select(containers, DockerClientFactory.instance().dockerHostIpAddress(), serviceName);
-        } catch (Exception ex) {
-            logger.info("Dev Service '{}': failed to discover running containers ({}). Starting its own container instead.", serviceName, ex.getMessage());
-            logger.debug("Dev Service '{}': container discovery failure", serviceName, ex);
-            return List.of();
+        for (int attempt = 1; ; attempt++) {
+            try {
+                List<Container> containers = runningContainers.apply(serviceName);
+                return containers.isEmpty() ? List.of()
+                        : select(containers, DockerClientFactory.instance().dockerHostIpAddress(), serviceName);
+            } catch (Exception ex) {
+                if (attempt < ATTEMPTS) {
+                    logger.debug("Dev Service '{}': failed to discover running containers, retrying", serviceName, ex);
+                    continue;
+                }
+                logger.info("Dev Service '{}': failed to discover running containers ({}). Starting its own container instead.", serviceName, ex.getMessage());
+                logger.debug("Dev Service '{}': container discovery failure", serviceName, ex);
+                return List.of();
+            }
         }
+    }
+
+    private static List<Container> listRunningContainers(String serviceName) {
+        // Get Docker client from Testcontainers. We don't close the connection as it's handled
+        // globally by the DockerClientFactory.
+        DockerClient dockerClient = DockerClientFactory.lazyClient();
+        return dockerClient.listContainersCmd()
+                .withLabelFilter(Map.of(
+                        DevServiceLabels.NAME, serviceName,
+                        DevServiceLabels.DISCOVERABLE, "true"))
+                // Paused or restarting containers are never valid candidates.
+                .withStatusFilter(List.of(STATUS_RUNNING))
+                .exec();
     }
 
     /**

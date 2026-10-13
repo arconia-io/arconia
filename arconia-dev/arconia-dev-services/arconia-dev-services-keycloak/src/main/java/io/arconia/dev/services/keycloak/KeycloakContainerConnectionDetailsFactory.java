@@ -7,19 +7,16 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
  * {@link ContainerConnectionDetailsFactory} that produces {@link KeycloakConnectionDetails}
  * from an {@link ArconiaKeycloakContainer}.
  */
-class KeycloakContainerConnectionDetailsFactory
-        extends ContainerConnectionDetailsFactory<ArconiaKeycloakContainer, KeycloakConnectionDetails> {
+class KeycloakContainerConnectionDetailsFactory extends ContainerConnectionDetailsFactory<ArconiaKeycloakContainer, KeycloakConnectionDetails> {
 
     KeycloakContainerConnectionDetailsFactory() {}
 
     @Override
-    protected KeycloakConnectionDetails getContainerConnectionDetails(
-            ContainerConnectionSource<ArconiaKeycloakContainer> source) {
+    protected KeycloakConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<ArconiaKeycloakContainer> source) {
         return new KeycloakContainerConnectionDetails(source);
     }
 
-    private static final class KeycloakContainerConnectionDetails
-            extends ContainerConnectionDetails<ArconiaKeycloakContainer> implements KeycloakConnectionDetails {
+    private static final class KeycloakContainerConnectionDetails extends ContainerConnectionDetails<ArconiaKeycloakContainer> implements KeycloakConnectionDetails {
 
         private KeycloakContainerConnectionDetails(ContainerConnectionSource<ArconiaKeycloakContainer> source) {
             super(source);
@@ -33,11 +30,6 @@ class KeycloakContainerConnectionDetailsFactory
         @Override
         public String getRealm() {
             return getContainer().getRealm();
-        }
-
-        @Override
-        public String getIssuerUri() {
-            return getContainer().getIssuerUri();
         }
 
     }
