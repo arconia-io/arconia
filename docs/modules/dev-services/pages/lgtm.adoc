@@ -55,6 +55,15 @@ The application exports logs, metrics, and traces to the OpenTelemetry Collector
 
 Prometheus stores the metrics it receives via OTLP under names translated to its own conventions: for example, `jvm.memory.used` becomes `jvm_memory_used_bytes`, and the `service.name` and `service.instance.id` resource attributes become the `job` and `instance` labels. The Prometheus link in the application logs opens its UI, where you can check the metrics received and their names before using them in a dashboard.
 
+== Exploring Telemetry
+
+Besides the dashboards, Grafana offers two ways to look at the telemetry of your application:
+
+* The "Drilldown" apps in the Grafana menu let you browse metrics, logs, and traces by service without writing any query.
+* The "Explore" page lets you query each data source directly, with PromQL for Prometheus, LogQL for Loki, and TraceQL for Tempo.
+
+The data sources are linked with each other: a log record links to its trace, and a trace links to its logs. Tempo also derives request rates, errors, and durations from the traces, and draws the calls between services as a service graph. These derived metrics appear about half a minute after the first requests reach the application.
+
 == Grafana Dashboards
 
 The Dev Service provisions Grafana with dashboards for Spring Boot applications, replacing the ones bundled with the `grafana/otel-lgtm` image. The dashboards are picked for the application:
@@ -75,7 +84,7 @@ The Dev Service provisions Grafana with dashboards for Spring Boot applications,
 | When Logback is on the classpath, the Spring Boot default.
 |===
 
-Each dashboard lets you select the application and its instance, listing the most recently started instance first. The "Dashboards" menu in the top-right corner switches between them, keeping the selection and the time range.
+Each dashboard lets you select the application and its instance, listing the most recently started instance first. The "Dashboards" menu next to the selectors switches between them, keeping the selection and the time range.
 
 === Contributing Dashboards
 
@@ -154,7 +163,7 @@ arconia:
 
 === Component Configuration
 
-Each component accepts additional command line arguments from an environment variable: `PROMETHEUS_EXTRA_ARGS`, `LOKI_EXTRA_ARGS`, `TEMPO_EXTRA_ARGS`, `PYROSCOPE_EXTRA_ARGS`, and `OTELCOL_EXTRA_ARGS`. For deeper changes, replace the configuration file of a component with your own, copied into the container from the classpath or the host filesystem.
+Each component accepts additional command line arguments from an environment variable: `PROMETHEUS_EXTRA_ARGS`, `LOKI_EXTRA_ARGS`, `TEMPO_EXTRA_ARGS`, and `OTELCOL_EXTRA_ARGS`. For deeper changes, replace the configuration file of a component with your own, copied into the container from the classpath or the host filesystem.
 
 [source,yaml]
 ----
@@ -183,9 +192,6 @@ arconia:
 
 | Tempo
 | `/otel-lgtm/tempo-config.yaml`
-
-| Pyroscope
-| `/otel-lgtm/pyroscope-config.yaml`
 |===
 
 NOTE: The Dev Service sets `TEMPO_EXTRA_ARGS` itself to enable the Tempo MCP server. If you set the variable, include `--query-frontend.mcp-server.enabled=true` in its value to keep the MCP server on.
