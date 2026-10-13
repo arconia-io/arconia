@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +78,36 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
         var container = LgtmDevServicesAutoConfiguration.createContainer(properties, dashboards);
         assertThat(container.getEnvMap())
                 .containsEntry(LgtmDevServicesAutoConfiguration.TEMPO_EXTRA_ARGS_ENV, LgtmDevServicesAutoConfiguration.TEMPO_MCP_SERVER_ARG);
+    }
+
+    @Test
+    void grafanaAdminCredentialsConfiguredInContainer() {
+        var properties = new LgtmDevServicesProperties();
+        var dashboards = LgtmDashboards.collect(new MockEnvironment(), new DefaultResourceLoader(), properties.getDashboards());
+        var container = LgtmDevServicesAutoConfiguration.createContainer(properties, dashboards);
+        assertThat(container.getEnvMap())
+                .containsEntry("GF_SECURITY_ADMIN_USER", LgtmDevServicesAutoConfiguration.GRAFANA_ADMIN_USER)
+                .containsEntry("GF_SECURITY_ADMIN_PASSWORD", LgtmDevServicesAutoConfiguration.GRAFANA_ADMIN_PASSWORD);
+    }
+
+    @Test
+    @DisabledIfDockerUnavailable
+    void grafanaAdminSignsInWithArconiaCredentials() {
+        contextRunnerWithContainerLifecycle().run(context -> {
+            var container = context.getBean(LgtmStackContainer.class);
+            var credentials = Base64.getEncoder().encodeToString("%s:%s".formatted(
+                    LgtmDevServicesAutoConfiguration.GRAFANA_ADMIN_USER, LgtmDevServicesAutoConfiguration.GRAFANA_ADMIN_PASSWORD)
+                    .getBytes(StandardCharsets.UTF_8));
+            var request = HttpRequest.newBuilder().uri(URI.create(container.getGrafanaHttpUrl() + "/api/user"))
+                    .header("Authorization", "Basic " + credentials)
+                    .GET().build();
+
+            try (var client = HttpClient.newHttpClient()) {
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                assertThat(response.statusCode()).isEqualTo(200);
+                assertThat(response.body()).contains("\"login\":\"arconia\"");
+            }
+        });
     }
 
     @Test

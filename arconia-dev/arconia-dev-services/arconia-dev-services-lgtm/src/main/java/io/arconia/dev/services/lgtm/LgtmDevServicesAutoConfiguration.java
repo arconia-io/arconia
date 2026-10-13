@@ -54,9 +54,15 @@ public final class LgtmDevServicesAutoConfiguration {
 
     static final String TEMPO_MCP_SERVER_ARG = "--query-frontend.mcp-server.enabled=true";
 
+    static final String GRAFANA_ADMIN_USER = "arconia";
+
+    static final String GRAFANA_ADMIN_PASSWORD = "arconia";
+
     static LgtmStackContainer createContainer(LgtmDevServicesProperties properties, LgtmDashboards dashboards) {
         var container = new LgtmStackContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         container.withEnv("GF_USERS_DEFAULT_THEME", "system");
+        container.withEnv("GF_SECURITY_ADMIN_USER", GRAFANA_ADMIN_USER);
+        container.withEnv("GF_SECURITY_ADMIN_PASSWORD", GRAFANA_ADMIN_PASSWORD);
         container.withEnv(TEMPO_EXTRA_ARGS_ENV, TEMPO_MCP_SERVER_ARG);
         dashboards.applyTo(container);
         return container;

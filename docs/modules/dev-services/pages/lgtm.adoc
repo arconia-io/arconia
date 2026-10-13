@@ -129,14 +129,14 @@ The MCP server built into Tempo is enabled by the Dev Service and answers TraceQ
 claude mcp add --transport http tempo http://localhost:<port>/api/mcp
 ----
 
-The https://github.com/grafana/mcp-grafana[Grafana MCP server] gives access to dashboards, metrics (PromQL), logs (LogQL), and traces. It runs on your machine and connects to the Grafana instance of the Dev Service, which accepts the default `admin`/`admin` credentials. For example, to add it to Claude Code (it requires `uvx`):
+The https://github.com/grafana/mcp-grafana[Grafana MCP server] gives access to dashboards, metrics (PromQL), logs (LogQL), and traces. It runs on your machine and connects to the Grafana instance of the Dev Service, which accepts the `arconia`/`arconia` credentials. For example, to add it to Claude Code (it requires `uvx`):
 
 [source,shell]
 ----
 claude mcp add grafana \
   -e GRAFANA_URL=http://localhost:<port> \
-  -e GRAFANA_USERNAME=admin \
-  -e GRAFANA_PASSWORD=admin \
+  -e GRAFANA_USERNAME=arconia \
+  -e GRAFANA_PASSWORD=arconia \
   -- uvx mcp-grafana
 ----
 
