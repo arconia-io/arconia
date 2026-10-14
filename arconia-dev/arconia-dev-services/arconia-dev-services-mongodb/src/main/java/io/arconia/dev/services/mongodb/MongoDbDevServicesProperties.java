@@ -32,7 +32,7 @@ public class MongoDbDevServicesProperties implements BaseDevServicesProperties, 
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mongo:8.2-noble";
+    private String imageName = "mongo:9.0-noble";
 
     /**
      * Environment variables to set in the service.
