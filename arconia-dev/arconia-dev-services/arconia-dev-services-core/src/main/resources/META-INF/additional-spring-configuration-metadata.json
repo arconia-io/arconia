@@ -5,7 +5,7 @@
       "type": "java.lang.String",
       "deprecation": {
         "level": "error",
-        "reason": "Cross-application networks are no longer managed by Arconia. Define a Network bean with a stable id instead.",
+        "reason": "Cross-application networks are no longer managed by Arconia. To join a network you manage, define your own Network bean.",
         "since": "0.31.0"
       }
     }
