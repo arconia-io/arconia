@@ -161,6 +161,7 @@ By default, all observability signals are exported via OTLP. If you set the expo
 .Exporter Type Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.type`
 |`otlp`
 |The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
@@ -171,6 +172,7 @@ You can change the type of the exporter in use for each observability signal usi
 .Specific Exporter Type Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.logs.exporter.type`
 |_(inherited from arconia.otel.exporter.type)_
 |The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
@@ -189,6 +191,7 @@ Global properties are available to configure the OTLP exporters for logs, metric
 .OTLP Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.otlp.compression`
 |`gzip`
 |Compression type to use for OTLP requests. Options: `none`, `gzip`.
@@ -198,7 +201,7 @@ Global properties are available to configure the OTLP exporters for logs, metric
 |The maximum waiting time for the exporter to establish a connection to the endpoint.
 
 |`arconia.otel.exporter.otlp.endpoint`
-|`http://localhost:4317` (gPRC) or `http://localhost:4318` (HTTP)
+|`http://localhost:4317` (gRPC) or `http://localhost:4318` (HTTP)
 |The endpoint to which telemetry data will be sent.
 
 |`arconia.otel.exporter.otlp.headers`

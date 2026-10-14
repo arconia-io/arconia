@@ -27,6 +27,7 @@ Constraints for the data captured by log records.
 .Log Limits Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.logs.limits.max-attribute-value-length`
 |-
 |The maximum length of an attribute value.
@@ -43,6 +44,7 @@ Configuration for the batch log record processor.
 .Log Record Processor Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.logs.processor.export-timeout`
 |`30s`
 |The maximum allowed time to export log records.
@@ -110,6 +112,7 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 .General Logs Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.type`
 |`otlp`
 |The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
@@ -130,6 +133,7 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 .OTLP Logs Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.logs.exporter.otlp.compression`
 |`gzip`
 |Compression type to use for OTLP requests. Options: `none`, `gzip`.
@@ -139,7 +143,7 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 |The maximum waiting time for the exporter to establish a connection to the endpoint.
 
 |`arconia.otel.logs.exporter.otlp.endpoint`
-|`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/logs` (HTTP)
+|`http://localhost:4317` (gRPC) or `http://localhost:4318/v1/logs` (HTTP)
 |The endpoint to which telemetry data will be sent.
 
 |`arconia.otel.logs.exporter.otlp.headers`
@@ -235,6 +239,7 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 .Logback OpenTelemetry Bridge Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.logs.logback-bridge.capture-arguments`
 |`false`
 |Enable the capture of Logback log event arguments.

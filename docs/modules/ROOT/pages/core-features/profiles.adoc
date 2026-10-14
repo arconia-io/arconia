@@ -56,17 +56,18 @@ arconia.bootstrap.profiles.enabled=false
 .Profiles Configuration Properties
 |===
 |Property |Default |Description
-|	`arconia.bootstrap.profiles.enabled`
-|	`true`
-|	Whether the profiles are enabled based on the application mode.
 
-|	`arconia.dev.profiles`
-|	`dev`
-|	Names of the profiles to activate in dev mode.
+|`arconia.bootstrap.profiles.enabled`
+|`true`
+|Whether the profiles are enabled based on the application mode.
 
-|	`arconia.test.profiles`
-|	`test`
-|	Names of the profiles to activate in test mode.
+|`arconia.dev.profiles`
+|`dev`
+|Names of the profiles to activate in dev mode.
+
+|`arconia.test.profiles`
+|`test`
+|Names of the profiles to activate in test mode.
 |===
 
 Both profile properties accept a list of profiles. For example, you can define multiple profiles to be activated when running in dev mode:

@@ -1,4 +1,4 @@
-[what-is-new]
+[[what-is-new]]
 = What's New in Arconia {page-component-version}
 
 Arconia {page-component-version} provides a number of new features and enhancements. This page includes the highlights of the release, but you can also check out the full https://github.com/arconia-io/arconia/releases[release notes] for more details about each new feature and bug fix.

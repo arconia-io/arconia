@@ -11,6 +11,7 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 .Default Resource Attributes
 |===
 |Property |Example |Description
+
 |`service.name`
 |`inventory-service`
 |The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.

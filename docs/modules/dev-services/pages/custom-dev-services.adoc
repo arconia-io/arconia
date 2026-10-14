@@ -183,7 +183,7 @@ That's it. When your module is on the dev or test classpath, the container start
 
 == Exposing Links
 
-If your service has endpoints worth surfacing to developers, such as a management console or a telemetry endpoint, declare them as links when registering the Dev Service (see xref:_auto_configuration_and_registration_[Auto-Configuration and Registration]), in terms of the container port rather than a URL: Arconia resolves the URL once the port mapping is known.
+If your service has endpoints worth surfacing to developers, such as a management console or a telemetry endpoint, declare them as links when registering the Dev Service (see xref:_auto_configuration_and_registration[Auto-Configuration and Registration]), in terms of the container port rather than a URL: Arconia resolves the URL once the port mapping is known.
 
 [source,java]
 ----

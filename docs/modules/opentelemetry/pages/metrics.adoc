@@ -23,6 +23,7 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 .Metrics Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.metrics.cardinality-limit`
 |`2000`
 |Maximum number of distinct points per metric.
@@ -82,6 +83,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 .General Metrics Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.type`
 |`otlp`
 |The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
@@ -114,6 +116,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 .OTLP Metrics Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.metrics.exporter.otlp.compression`
 |`gzip`
 |Compression type to use for OTLP requests. Options: `none`, `gzip`.
@@ -123,7 +126,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 |The maximum waiting time for the exporter to establish a connection to the endpoint.
 
 |`arconia.otel.metrics.exporter.otlp.endpoint`
-|`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/metrics` (HTTP)
+|`http://localhost:4317` (gRPC) or `http://localhost:4318/v1/metrics` (HTTP)
 |The endpoint to which telemetry data will be sent.
 
 |`arconia.otel.metrics.exporter.otlp.headers`
@@ -159,7 +162,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 |Backoff multiplier.
 |===
 
-NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
+NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc[OTLP gRPC].
 
 ==== Micrometer OTLP
 
@@ -217,6 +220,7 @@ On top of the general metrics and OTLP configuration described previously, the M
 .Micrometer Metrics Registry OTLP Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.otlp.micrometer.base-time-unit`
 |`seconds`
 |Base time unit for Micrometer metrics.
@@ -251,7 +255,7 @@ The following table summarizes the differences between the two approaches:
 | Maintained by the Micrometer team | ✅ | ❌
 |===
 
-By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, use a different exporter than OTLP, or need exemplar support, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation_[Micrometer Metrics OpenTelemetry Bridge] section for more details.
+By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, use a different exporter than OTLP, or need exemplar support, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge] section for more details.
 
 === Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
@@ -316,6 +320,7 @@ The Micrometer Metrics OpenTelemetry Bridge can be configured via configuration 
 .Micrometer Metrics OpenTelemetry Bridge Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.metrics.micrometer-bridge.base-time-unit`
 |`seconds`
 |The base time unit for Micrometer metrics.

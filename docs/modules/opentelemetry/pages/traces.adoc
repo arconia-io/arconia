@@ -26,8 +26,10 @@ How to sample traces.
 
 .Sampling Configuration Properties
 |===
+|Property |Default |Description
+
 |`arconia.otel.traces.sampling.strategy`
-|`128`
+|`parent-based-always-on`
 |How to sample traces. Options: `always-on`, `always-off`, `trace-id-ratio`, `parent-based-always-on`, `parent-based-always-off`, `parent-based-trace-id-ratio`.
 
 |`management.tracing.sampling.probability`
@@ -43,6 +45,8 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 
 .Propagation Configuration Properties
 |===
+|Property |Default |Description
+
 |`management.tracing.propagation.type`
 |``
 |Tracing context propagation types produced and consumed by the application. Setting this property overrides the more fine-grained propagation type properties.
@@ -64,6 +68,8 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 
 .Baggage Configuration Properties
 |===
+|Property |Default |Description
+
 |`management.tracing.baggage.enabled`
 |`true`
 |Whether to enable Micrometer Tracing baggage propagation.
@@ -73,7 +79,7 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 |Whether to enable correlation of the baggage context with logging contexts.
 
 |`management.tracing.baggage.correlation.fields`
-|`w3c`, `b3`, `b3-multi`
+|``
 |List of fields that should be correlated with the logging context. That means that these fields would end up as key-value pairs in e.g. MDC.
 
 |`management.tracing.baggage.remote-fields`
@@ -92,6 +98,7 @@ Constraints for the data captured by spans.
 .Span Limits Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.traces.limits.max-attribute-value-length`
 |-
 |Maximum length of each attribute value.
@@ -124,6 +131,7 @@ Configuration for the batch span processor.
 .Span Processor Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.traces.processor.export-unsampled-spans`
 |`false`
 |Whether to export unsampled spans.
@@ -195,6 +203,7 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 .General Traces Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.exporter.type`
 |`otlp`
 |The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
@@ -210,11 +219,12 @@ NOTE: For more information on exporting traces to the console, refer to xref:ind
 
 When traces are exported via OTLP (default behavior), you can configure the following properties. 
 
-NOTE: If a value is not provided specifically for traces, the value configured for the general OTLP export is used, if available. See xref:index.adoc#_otlp_[OTLP].
+NOTE: If a value is not provided specifically for traces, the value configured for the general OTLP export is used, if available. See xref:index.adoc#_otlp[OTLP].
 
 .OTLP Traces Exporter Configuration Properties
 |===
 |Property |Default |Description
+
 |`arconia.otel.traces.exporter.otlp.compression`
 |`gzip`
 |Compression type to use for OTLP requests. Options: `none`, `gzip`.
@@ -224,7 +234,7 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 |The maximum waiting time for the exporter to establish a connection to the endpoint.
 
 |`arconia.otel.traces.exporter.otlp.endpoint`
-|`http://localhost:4317` (gPRC) or `http://localhost:4318/v1/traces` (HTTP)
+|`http://localhost:4317` (gRPC) or `http://localhost:4318/v1/traces` (HTTP)
 |The endpoint to which telemetry data will be sent.
 
 |`arconia.otel.traces.exporter.otlp.headers`
@@ -260,7 +270,7 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 |Backoff multiplier.
 |===
 
-NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc_[OTLP gRPC].
+NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc[OTLP gRPC].
 
 == Micrometer Tracing Support
 

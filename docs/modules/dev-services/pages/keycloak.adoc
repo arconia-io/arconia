@@ -225,7 +225,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.client.registration-id`
 | `keycloak`
-| Identifier of the Spring Security client registration, as used in the login URL `/oauth2/authorization/{registration-id}`.
+| Identifier of the Spring Security client registration, as used in the login URL `/oauth2/authorization/\{registration-id}`.
 
 | `arconia.dev.services.{service-name}.resource-server.enabled`
 | `true`
