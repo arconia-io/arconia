@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenLitContainerIT {
 
     private static final DockerImageName IMAGE = DockerImageName.parse("ghcr.io/openlit/openlit:1.24.2");
-    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.7-distroless");
+    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.9-distroless");
 
     @Test
     void containerStartsAndStopsSuccessfully() {
