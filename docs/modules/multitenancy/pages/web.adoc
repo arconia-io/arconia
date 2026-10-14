@@ -224,6 +224,8 @@ If you need the tenant before authentication, for example to select which author
 Certain paths can be excluded from tenant resolution. By default, the following paths are ignored:
 
 * `/actuator/**`
+* `/livez`
+* `/readyz`
 * `/webjars/**`
 * `/css/**`
 * `/js/**`
@@ -293,7 +295,7 @@ arconia:
 |Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain, which is required when resolving the tenant from an OAuth2 token.
 
 |`arconia.multitenancy.resolution.http.filter.ignore-paths`
-|`/actuator/\**, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
+|`/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
 |HTTP request paths for which tenant resolution will not be performed.
 
 |`arconia.multitenancy.resolution.http.filter.additional-ignore-paths`

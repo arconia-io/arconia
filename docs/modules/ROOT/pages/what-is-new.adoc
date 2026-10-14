@@ -68,6 +68,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * When the Docling Serve API rejects a request, the Docling client now throws the `ValidationException` of Docling Java, carrying the validation details reported by the API, instead of a bare `HttpClientErrorException`.
 * The executor running the async operations of the Docling client can be customized with the `asyncExecutor` option of `DoclingServeClient.builder()` or `DoclingServeApi.builder()`. Virtual threads are used by default.
 
+== Multitenancy
+
+* The HTTP tenant resolution filter now ignores the `/livez` and `/readyz` paths by default, next to `/actuator/**`. They are the additional paths on which Spring Boot serves the liveness and readiness health probes when `management.endpoint.health.probes.add-additional-paths` is enabled, so that probe requests no longer fail for lack of a tenant. Learn more about xref:multitenancy:web.adoc#_ignoring_paths[Ignoring Paths].
+
 == OpenTelemetry
 
 * In dev mode with Spring Boot DevTools, traces are now exported every 3 seconds (`arconia.otel.traces.processor.schedule-delay=3s`), the way metrics were already exported every 5 seconds, so that telemetry shows up in your observability platform within seconds. The production defaults are unchanged.

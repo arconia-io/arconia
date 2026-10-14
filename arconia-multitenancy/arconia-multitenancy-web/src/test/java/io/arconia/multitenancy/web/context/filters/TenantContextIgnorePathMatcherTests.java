@@ -89,8 +89,8 @@ class TenantContextIgnorePathMatcherTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "/actuator/health", "/webjars/bootstrap/css/bootstrap.css", "/css/app.css", "/js/app.js",
-            "/login", "/oauth2/authorization/google", "/login/oauth2/code/google" })
+    @ValueSource(strings = { "/actuator/health", "/livez", "/readyz", "/webjars/bootstrap/css/bootstrap.css", "/css/app.css",
+            "/js/app.js", "/login", "/oauth2/authorization/google", "/login/oauth2/code/google" })
     void shippedDefaultsIgnoreInfrastructureAndLoginPaths(String requestUri) {
         var request = new MockHttpServletRequest();
         request.setRequestURI(requestUri);
