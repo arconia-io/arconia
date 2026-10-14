@@ -11,7 +11,7 @@ public final class Images {
 
     public static final String OTEL_COLLECTOR = "otel/opentelemetry-collector-contrib:0.162.0";
 
-    public static final String OPENLIT = "ghcr.io/openlit/openlit:1.24.2";
+    public static final String OPENLIT = "ghcr.io/openlit/openlit:2.1.0";
 
     public static final String PHOENIX = "arizephoenix/phoenix:version-20.21-nonroot";
 

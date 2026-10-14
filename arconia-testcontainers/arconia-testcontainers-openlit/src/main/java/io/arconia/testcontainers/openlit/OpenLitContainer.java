@@ -1,5 +1,6 @@
 package io.arconia.testcontainers.openlit;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.testcontainers.DockerClientFactory;
@@ -7,6 +8,7 @@ import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -28,14 +30,17 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     private static final DockerImageName DEFAULT_CLICKHOUSE_IMAGE_NAME =
             DockerImageName.parse("clickhouse/clickhouse-server");
 
-    private static final String CLICKHOUSE_NETWORK_ALIAS = "clickhouse";
+    private static final String CLICKHOUSE_NETWORK_ALIAS = "openlit-clickhouse";
     private static final String OTEL_COLLECTOR_CONFIG_PATH = "/etc/otel/otel-collector-config.yaml";
+
+    private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(2);
 
     // Named network used in reuse mode so the Docker network UUID is stable across JVM restarts,
     // keeping the container hash deterministic and allowing Testcontainers to find the existing container.
     private static final String REUSE_NETWORK_NAME = "arconia-openlit";
 
-    // Matches the OTel Collector config from the upstream docker-compose assets, with values
+    // The OpenLit image bundles the OpenTelemetry Collector but ships no configuration for it.
+    // This matches the configuration mounted by the upstream docker-compose assets, with values
     // substituted at configure() time rather than relying on the Collector's env var expansion.
     private static final String OTEL_COLLECTOR_CONFIG_TEMPLATE = """
             receivers:
@@ -96,7 +101,15 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(UI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT);
-        this.waitingFor(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500));
+        // ClickHouse initialization and the Next.js startup make OpenLit slow to come up.
+        // The OTLP endpoint is checked explicitly because a custom wait strategy replaces the default
+        // port check. The Collector answers GET with 405 on the OTLP paths and starts the gRPC listener
+        // together with the HTTP one. An HTTP check is used instead of a port check because the latter
+        // aborts on any transient Docker API error.
+        this.waitingFor(new WaitAllStrategy()
+                .withStrategy(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500))
+                .withStrategy(Wait.forHttp("/v1/traces").forPort(OTLP_HTTP_PORT).forStatusCode(405))
+                .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
     public OpenLitContainer withClickHouseImage(DockerImageName imageName) {
@@ -131,26 +144,28 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 CLICKHOUSE_NETWORK_ALIAS, clickHouseContainer.getDatabaseName(),
                 clickHouseContainer.getUsername(), clickHouseContainer.getPassword());
 
-        this.withEnv("PORT", String.valueOf(UI_PORT));
-        this.withEnv("TELEMETRY_ENABLED", "false");
+        Map<String, String> env = getEnvMap();
+
+        env.putIfAbsent("TELEMETRY_ENABLED", "false");
 
         // Sets the host address of the ClickHouse server for OpenLIT to connect.
-        this.withEnv("INIT_DB_HOST", CLICKHOUSE_NETWORK_ALIAS);
+        env.putIfAbsent("INIT_DB_HOST", CLICKHOUSE_NETWORK_ALIAS);
         // Sets the port on which ClickHouse listens.
-        this.withEnv("INIT_DB_PORT", "8123");
+        env.putIfAbsent("INIT_DB_PORT", "8123");
         // Sets the name of the database in Clickhouse to be used by OpenLIT.
-        this.withEnv("INIT_DB_DATABASE", clickHouseContainer.getDatabaseName());
+        env.putIfAbsent("INIT_DB_DATABASE", clickHouseContainer.getDatabaseName());
         // Sets the username for authenticating with ClickHouse.
-        this.withEnv("INIT_DB_USERNAME", clickHouseContainer.getUsername());
+        env.putIfAbsent("INIT_DB_USERNAME", clickHouseContainer.getUsername());
         // Sets the password for authenticating with ClickHouse.
-        this.withEnv("INIT_DB_PASSWORD", clickHouseContainer.getPassword());
+        env.putIfAbsent("INIT_DB_PASSWORD", clickHouseContainer.getPassword());
 
         // Sets the location where SQLITE data is stored.
-        this.withEnv("SQLITE_DATABASE_URL", "file:/app/client/data/data.db");
+        env.putIfAbsent("SQLITE_DATABASE_URL", "file:/app/client/data/data.db");
         this.withTmpFs(Map.of("/app/client/data", "rw"));
 
-        this.withEnv("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
-        this.withEnv("DEMO_ACCOUNT_PASSWORD", "openlituser");
+        // Demo account created by the OpenLit seed, used for automatic sign-in.
+        env.putIfAbsent("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
+        env.putIfAbsent("DEMO_ACCOUNT_PASSWORD", "openlituser");
 
         this.withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
     }

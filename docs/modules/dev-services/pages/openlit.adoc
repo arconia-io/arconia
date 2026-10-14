@@ -4,7 +4,6 @@
 A service providing https://openlit.io[OpenLit], an AI Observability and Evaluation platform based on OpenTelemetry, for development and testing purposes. It consists of:
 
 * https://openlit.io[OpenLit] for visualizing and exploring telemetry data from AI applications.
-* https://opentelemetry.io/docs/collector[OpenTelemetry Collector] for collecting telemetry data from your application using OTLP.
 * https://clickhouse.com[ClickHouse] as the backend database for storing telemetry data.
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
@@ -37,6 +36,18 @@ The application logs will show you the URL where you can access the OpenLit UI.
 ----
 
 The service is pre-configured with a demo account which is automatically authenticated when accessing OpenLit the first time. The credentials are: `user@openlit.io` (username) and `openlituser` (password).
+
+OpenLit restricts a few operations for the demo account, such as changing the database configuration and deleting API keys or prompts. If you need them, disable the automatic sign-in by setting the `DEMO_ACCOUNT_EMAIL` environment variable to an empty value and register a new user from the OpenLit login page.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      openlit:
+        environment:
+          DEMO_ACCOUNT_EMAIL: ""
+----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
 
