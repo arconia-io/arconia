@@ -168,6 +168,19 @@ When Spring Boot Actuator is present on the classpath, Arconia automatically con
 
 When enabled, the health status will be included in the actuator `/health` endpoint response, showing whether the Docling Serve API is reachable and operational.
 
+When health details are shown, the response also includes the `location` of the Docling Serve instance (its base URL). In case of failure, the response includes the `status` reported by Docling Serve or the `error` that prevented the check from completing.
+
+[source,json]
+----
+{
+  "status": "DOWN",
+  "details": {
+    "location": "http://localhost:5001",
+    "status": "unhealthy"
+  }
+}
+----
+
 == Using the Docling Client
 
 Once you have added the dependency and optionally configured the connection settings, you can autowire and use the auto-configured `DoclingServeApi` in your Spring components.

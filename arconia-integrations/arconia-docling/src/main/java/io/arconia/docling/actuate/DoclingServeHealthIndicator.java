@@ -25,6 +25,8 @@ public final class DoclingServeHealthIndicator extends AbstractHealthIndicator {
     protected void doHealthCheck(Health.Builder builder) {
         Assert.notNull(builder, "builder cannot be null");
 
+        builder.withDetail("location", doclingServeApi.config().baseUrl().toString());
+
         try {
             HealthCheckResponse healthCheckResponse = doclingServeApi.health();
 

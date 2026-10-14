@@ -67,6 +67,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The requests sent to Docling Serve and the responses received from it can now be logged with the `arconia.docling.log-requests`, `arconia.docling.log-responses`, and `arconia.docling.pretty-print` properties, with the API key masked.
 * When the Docling Serve API rejects a request, the Docling client now throws the `ValidationException` of Docling Java, carrying the validation details reported by the API, instead of a bare `HttpClientErrorException`.
 * The executor running the async operations of the Docling client can be customized with the `asyncExecutor` option of `DoclingServeClient.builder()` or `DoclingServeApi.builder()`. Virtual threads are used by default.
+* The Docling health indicator now reports the `location` of the Docling Serve instance (its base URL) in the health details, whether the status is `UP` or `DOWN`, so that you can tell which instance the application talked to when the check fails. Learn more about the xref:integrations:docling.adoc#_health_indicator[Health Indicator].
 
 == Multitenancy
 
