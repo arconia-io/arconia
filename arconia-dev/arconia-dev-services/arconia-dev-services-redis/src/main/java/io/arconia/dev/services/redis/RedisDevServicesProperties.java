@@ -32,7 +32,7 @@ public class RedisDevServicesProperties implements BaseDevServicesProperties, Ss
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "redis:8.8-alpine";
+    private String imageName = "redis:8.10-alpine";
 
     /**
      * Environment variables to set in the service.
