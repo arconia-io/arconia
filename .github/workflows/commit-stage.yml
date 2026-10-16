@@ -93,6 +93,9 @@ jobs:
       - name: Stage artifacts to local directory
         run: ./gradlew publish
 
+      - name: Remove optional checksums
+        run: find build/staging-deploy -type f \( -name "*.sha256" -o -name "*.sha512" \) -delete
+
       - name: Define project properties
         id: project-props
         run: |
