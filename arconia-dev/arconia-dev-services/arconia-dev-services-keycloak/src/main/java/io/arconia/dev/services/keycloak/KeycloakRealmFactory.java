@@ -29,11 +29,6 @@ import io.arconia.dev.services.keycloak.KeycloakDevServicesProperties.Realm.User
 final class KeycloakRealmFactory {
 
     /**
-     * The realm Keycloak creates itself, which is why an import of the same name is skipped.
-     */
-    private static final String MASTER_REALM = "master";
-
-    /**
      * Usernames as Keycloak stores them, lower case, and usable as the local part of the
      * email address derived from them.
      */
@@ -54,9 +49,9 @@ final class KeycloakRealmFactory {
      */
     static String generateRealmJson(KeycloakDevServicesProperties properties) {
         String realmName = KeycloakRealmMetadata.resolveRealmName(properties);
-        Assert.state(!MASTER_REALM.equals(realmName),
+        Assert.state(!KeycloakRealmMetadata.MASTER_REALM.equals(realmName),
                 () -> "the generated realm cannot be named '%s', since Keycloak creates that realm itself; set another name in '%s.realm.name'"
-                        .formatted(MASTER_REALM, KeycloakDevServicesProperties.CONFIG_PREFIX));
+                        .formatted(KeycloakRealmMetadata.MASTER_REALM, KeycloakDevServicesProperties.CONFIG_PREFIX));
 
         Map<String,User> users = resolveUsers(properties);
         validateUsers(users);

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,6 @@ class ArconiaKeycloakContainerTests {
     @Test
     @SuppressWarnings("deprecation")
     void shouldCopyTheGeneratedRealmUnderTheNameKeycloakExpects() {
-        // Keycloak refuses to start unless each imported file is named "<realm>-realm.json".
         var container = container(new KeycloakDevServicesProperties());
 
         assertThat(container.getRealm()).isEqualTo(KeycloakDevServicesProperties.DEFAULT_REALM);
@@ -47,41 +47,50 @@ class ArconiaKeycloakContainerTests {
 
     @Test
     @SuppressWarnings("deprecation")
-    void shouldCopyTheImportedRealmFileNamedAfterTheRealmItDeclares(@TempDir Path tempDir) throws IOException {
+    void shouldCopyTheImportedRealmFilesUnderTheirOwnNames(@TempDir Path tempDir) throws IOException {
         Path realmFile = Files.writeString(tempDir.resolve("anything-at-all.json"), """
             {"realm":"from-disk"}""");
         var properties = new KeycloakDevServicesProperties();
-        properties.getRealm().setImportPath(realmFile.toString());
+        properties.getRealm().setImportPaths(List.of(realmFile.toString(), "classpath:keycloak/gamma-realm.json"));
 
         var container = container(properties);
 
         assertThat(container.getRealm()).isEqualTo("from-disk");
         assertThat(container.getCopyToFileContainerPathMap().values())
-                .containsExactly(ArconiaKeycloakContainer.IMPORT_DIRECTORY + "from-disk-realm.json");
-        // No realm is generated alongside an imported one.
+                .containsExactlyInAnyOrder(ArconiaKeycloakContainer.IMPORT_DIRECTORY + "anything-at-all.json",
+                        ArconiaKeycloakContainer.IMPORT_DIRECTORY + "gamma-realm.json");
         assertThat(transferableDestinations(container)).isEmpty();
+    }
+
+    @Test
+    void shouldFailWhenTwoImportedRealmFilesShareAName(@TempDir Path tempDir) throws IOException {
+        Path realmFile = Files.writeString(tempDir.resolve("test.json"), """
+            {"realm":"from-disk"}""");
+        var properties = new KeycloakDevServicesProperties();
+        properties.getRealm().setImportPaths(List.of(realmFile.toString(), "classpath:keycloak/test.json"));
+
+        assertThatThrownBy(() -> container(properties))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("'test.json'");
     }
 
     @Test
     @SuppressWarnings("deprecation")
     void shouldCopyRealmFilesReadableByTheKeycloakUser() {
-        // A resource extracted from a jar carries no usable permissions, and Keycloak runs as a
-        // non-root user that would otherwise be unable to read the realm it is told to import.
         var properties = new KeycloakDevServicesProperties();
-        properties.getRealm().setImportPath("classpath:keycloak/test-realm.json");
+        properties.getRealm().setImportPaths(List.of("classpath:keycloak/test.json"));
 
         var container = container(properties);
 
         assertThat(container.getCopyToFileContainerPathMap().keySet())
                 .singleElement()
-                // Masked to the permission bits: the mode also carries the file type.
                 .satisfies(file -> assertThat(file.getFileMode() & 0777).isEqualTo(0644));
     }
 
     @Test
     void shouldFailWhenTheRealmImportPathDoesNotExist() {
         var properties = new KeycloakDevServicesProperties();
-        properties.getRealm().setImportPath("classpath:no/such/realm.json");
+        properties.getRealm().setImportPaths(List.of("classpath:no/such/realm.json"));
 
         assertThatThrownBy(() -> container(properties))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -90,17 +99,16 @@ class ArconiaKeycloakContainerTests {
 
     @Test
     @SuppressWarnings("deprecation")
-    void shouldIgnoreGeneratedRealmPropertiesWhenARealmIsImported() {
+    void shouldIgnoreGeneratedRealmUsersWhenARealmIsImported() {
         var properties = new KeycloakDevServicesProperties();
-        properties.getRealm().setImportPath("classpath:keycloak/test-realm.json");
-        properties.getRealm().setName("ignored");
+        properties.getRealm().setImportPaths(List.of("classpath:keycloak/test.json"));
         properties.getRealm().setUsers(Map.of("alice", new KeycloakDevServicesProperties.Realm.User()));
 
         var container = container(properties);
 
         assertThat(container.getRealm()).isEqualTo("test-realm");
         assertThat(container.getCopyToFileContainerPathMap().values())
-                .containsExactly(ArconiaKeycloakContainer.IMPORT_DIRECTORY + "test-realm-realm.json");
+                .containsExactly(ArconiaKeycloakContainer.IMPORT_DIRECTORY + "test.json");
         assertThat(transferableDestinations(container)).isEmpty();
     }
 

@@ -1,0 +1,118 @@
+[
+  {
+    "realm": "alpha",
+    "enabled": true,
+    "sslRequired": "none",
+    "roles": {
+      "realm": [
+        {
+          "name": "alpha-role"
+        }
+      ]
+    },
+    "clients": [
+      {
+        "clientId": "alpha-client",
+        "enabled": true,
+        "publicClient": false,
+        "fullScopeAllowed": false,
+        "secret": "alpha-client-secret",
+        "standardFlowEnabled": true,
+        "directAccessGrantsEnabled": true,
+        "redirectUris": [
+          "*"
+        ],
+        "webOrigins": [
+          "*"
+        ]
+      }
+    ],
+    "scopeMappings": [
+      {
+        "client": "alpha-client",
+        "roles": [
+          "alpha-role"
+        ]
+      }
+    ],
+    "users": [
+      {
+        "username": "alice",
+        "enabled": true,
+        "emailVerified": true,
+        "email": "alice@arconia.io",
+        "firstName": "Alice",
+        "lastName": "Fixture",
+        "requiredActions": [],
+        "credentials": [
+          {
+            "type": "password",
+            "value": "alice",
+            "temporary": false
+          }
+        ],
+        "realmRoles": [
+          "alpha-role"
+        ]
+      }
+    ]
+  },
+  {
+    "realm": "beta",
+    "enabled": true,
+    "sslRequired": "none",
+    "roles": {
+      "realm": [
+        {
+          "name": "beta-role"
+        }
+      ]
+    },
+    "clients": [
+      {
+        "clientId": "beta-client",
+        "enabled": true,
+        "publicClient": false,
+        "fullScopeAllowed": false,
+        "secret": "beta-client-secret",
+        "standardFlowEnabled": true,
+        "directAccessGrantsEnabled": true,
+        "redirectUris": [
+          "*"
+        ],
+        "webOrigins": [
+          "*"
+        ]
+      }
+    ],
+    "scopeMappings": [
+      {
+        "client": "beta-client",
+        "roles": [
+          "beta-role"
+        ]
+      }
+    ],
+    "users": [
+      {
+        "username": "bob",
+        "enabled": true,
+        "emailVerified": true,
+        "email": "bob@arconia.io",
+        "firstName": "Bob",
+        "lastName": "Fixture",
+        "requiredActions": [],
+        "credentials": [
+          {
+            "type": "password",
+            "value": "bob",
+            "temporary": false
+          }
+        ],
+        "realmRoles": [
+          "beta-role"
+        ]
+      }
+    ]
+  }
+]

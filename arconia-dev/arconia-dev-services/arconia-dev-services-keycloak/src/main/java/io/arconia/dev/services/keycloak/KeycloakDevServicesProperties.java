@@ -242,20 +242,23 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
 
     /**
      * The realm the application connects to: either generated from this configuration or
-     * imported from a realm file.
+     * imported from realm files, which can declare further realms as well.
      */
     public static class Realm {
 
         /**
-         * Name of the generated realm. Defaults to `arconia`.
+         * Name of the generated realm, or the realm the application connects to among the imported
+         * ones. Defaults to `arconia` when generated, and to the first imported realm other than
+         * `master` otherwise.
          */
         private String name = "";
 
         /**
-         * Path to a Keycloak realm file to import instead of generating a realm, resolved from
-         * the classpath or the host filesystem. It can be prefixed with `classpath:` or `file:`.
+         * Paths to Keycloak realm files to import instead of generating a realm, resolved from
+         * the classpath or the host filesystem. Each can be prefixed with `classpath:` or `file:`,
+         * and declares a single realm or a list of realms, as exported by Keycloak.
          */
-        private String importPath = "";
+        private List<String> importPaths = new ArrayList<>();
 
         /**
          * Users of the generated realm, by username. Defaults to `isabella` (roles `admin` and
@@ -271,12 +274,12 @@ public class KeycloakDevServicesProperties implements BaseDevServicesProperties 
             this.name = name;
         }
 
-        public String getImportPath() {
-            return importPath;
+        public List<String> getImportPaths() {
+            return importPaths;
         }
 
-        public void setImportPath(String importPath) {
-            this.importPath = importPath;
+        public void setImportPaths(List<String> importPaths) {
+            this.importPaths = importPaths;
         }
 
         public Map<String,User> getUsers() {

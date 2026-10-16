@@ -28,7 +28,8 @@ public final class KeycloakDevServicesAutoConfiguration {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             var properties = bindProperties(KeycloakDevServicesProperties.CONFIG_PREFIX, KeycloakDevServicesProperties.class);
 
-            registry.registerDevService(service -> service
+            registry.registerDevService(service -> {
+                service
                     .name("keycloak")
                     .description("Keycloak Dev Service")
                     .category(DevServiceCategories.OIDC)
@@ -36,8 +37,11 @@ public final class KeycloakDevServicesAutoConfiguration {
                     .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))
                     .port(ArconiaKeycloakContainer.HTTP_PORT)
                     .discovery(KeycloakConnectionDetails.class, container -> new KeycloakDiscoveredConnectionDetails(container, properties))
-                    .link("Keycloak Admin Console", ArconiaKeycloakContainer.HTTP_PORT, "/admin")
-                    .link("OpenID Connect Issuer", ArconiaKeycloakContainer.HTTP_PORT, "/realms/" + KeycloakRealmMetadata.resolveRealmName(properties)));
+                    .link("Keycloak Admin Console", ArconiaKeycloakContainer.HTTP_PORT, "/admin");
+                for (String realm : KeycloakRealmMetadata.resolveRealmNames(properties)) {
+                    service.link("OpenID Connect Issuer", ArconiaKeycloakContainer.HTTP_PORT, "/realms/" + realm);
+                }
+            });
         }
 
     }

@@ -1,6 +1,10 @@
 package io.arconia.dev.services.keycloak;
 
-import org.springframework.util.StringUtils;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.util.Assert;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.images.PullPolicy;
 import org.testcontainers.images.builder.Transferable;
@@ -21,11 +25,6 @@ final class ArconiaKeycloakContainer extends KeycloakContainer {
 
     static final String IMPORT_DIRECTORY = "/opt/keycloak/data/import/";
 
-    /**
-     * Realm files are copied with an explicit file mode: a resource extracted from a jar
-     * carries no usable permissions, and Keycloak runs as a non-root user that would
-     * otherwise be unable to read the imported realm.
-     */
     private static final int REALM_FILE_MODE = 0644;
 
     private final KeycloakDevServicesProperties properties;
@@ -41,26 +40,26 @@ final class ArconiaKeycloakContainer extends KeycloakContainer {
         this.withAdminUsername(properties.getAdminUsername());
         this.withAdminPassword(properties.getAdminPassword());
 
-        // Keycloak requires each imported file to be named after the realm it declares.
-        String importPath = properties.getRealm().getImportPath();
-        if (StringUtils.hasText(importPath)) {
-            this.withCopyFileToContainer(ContainerConfigurer.resolveMountableFile(importPath, REALM_FILE_MODE),
-                    IMPORT_DIRECTORY + importFileName(realm));
-        } else {
+        List<String> importPaths = properties.getRealm().getImportPaths();
+        if (importPaths.isEmpty()) {
             this.withCopyToContainer(Transferable.of(KeycloakRealmFactory.generateRealmJson(properties), REALM_FILE_MODE),
-                    IMPORT_DIRECTORY + importFileName(realm));
+                    IMPORT_DIRECTORY + realm + KeycloakRealmMetadata.REALM_FILE_SUFFIX);
+        } else {
+            Set<String> fileNames = new HashSet<>();
+            for (String importPath : importPaths) {
+                String fileName = ContainerConfigurer.resolveResource(importPath).getFilename();
+                Assert.state(fileName != null && fileNames.add(fileName),
+                        () -> "Realm files are imported under their own name, so two of them cannot be named '%s'."
+                                .formatted(fileName));
+                this.withCopyFileToContainer(ContainerConfigurer.resolveMountableFile(importPath, REALM_FILE_MODE),
+                        IMPORT_DIRECTORY + fileName);
+            }
         }
-    }
-
-    static String importFileName(String realmName) {
-        return realmName + "-realm.json";
     }
 
     @Override
     protected void configure() {
         super.configure();
-        // Publishes host ports into the container's network namespace, so Keycloak can call
-        // back into the application. Must happen before the container starts.
         for (Integer hostPort : properties.getHostAccessiblePorts()) {
             Testcontainers.exposeHostPorts(hostPort);
         }

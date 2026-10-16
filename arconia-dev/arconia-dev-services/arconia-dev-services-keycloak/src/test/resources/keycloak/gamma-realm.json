@@ -1,0 +1,58 @@
+{
+  "realm": "gamma",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      {
+        "name": "gamma-role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "gamma-client",
+      "enabled": true,
+      "publicClient": false,
+      "fullScopeAllowed": false,
+      "secret": "gamma-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "gamma-client",
+      "roles": [
+        "gamma-role"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "gina",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "gina@arconia.io",
+      "firstName": "Gina",
+      "lastName": "Fixture",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "gina",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "gamma-role"
+      ]
+    }
+  ]
+}

@@ -106,9 +106,9 @@ Usernames must be lower-case, and each user gets the email address `<username>@a
 
 Configuring users replaces the default users.
 
-== Importing a Realm
+== Importing Realms
 
-For anything the generated realm doesn't cover, import your own realm file from the classpath or the filesystem:
+For anything the generated realm doesn't cover, import your own realm files from the classpath or the filesystem:
 
 [source,yaml]
 ----
@@ -117,13 +117,49 @@ arconia:
     services:
       keycloak:
         realm:
-          import-path: classpath:keycloak/my-realm.json
+          import-paths: classpath:keycloak/realm.json
         client:
           id: my-app
           secret: my-secret
 ----
 
-The realm name is read from the file, which must also declare the client configured in `client.*`. The imported realm takes precedence: `realm.name` and `realm.users` only apply to the generated realm.
+The realm name is read from the file, which must also declare the client configured in `client.*`. Imported realms take precedence: `realm.users` only applies to the generated realm.
+
+A realm file holds either a single realm or a list of realms, in the formats https://www.keycloak.org/server/importExport[Keycloak exports]. Keycloak reads a file named `<realm>-realm.json` as that single realm, so name a file that way only if it declares that realm. Import several files by listing them:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        realm:
+          import-paths:
+            - classpath:keycloak/dukes-realm.json
+            - classpath:keycloak/beans-realm.json
+          name: beans
+----
+
+When the files declare several realms, `realm.name` selects the one the application connects to and that the `KeycloakConnectionDetails` describe. It defaults to the first realm declared, skipping `master`. The application logs list the OpenID Connect issuer of every imported realm.
+
+An export of all realms also includes `master`. Importing it is fine: Keycloak still creates the Dev Service administrator in it, so the imported `master` realm must not already have a user named like `admin-username`. That happens with an export taken from the Dev Service container itself: either set another `admin-username` or drop `master` from the file.
+
+A multitenant application, with a realm for each tenant, typically configures Spring Security itself to pick the realm from the request. Keep its own configuration by disabling the `client` and `resource-server` wiring of the Dev Service, and give the Dev Service a fixed `port` if the issuer URIs the application resolves are fixed too:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      keycloak:
+        port: 8080
+        realm:
+          import-paths: file:../keycloak/realms.json
+        client:
+          enabled: false
+        resource-server:
+          enabled: false
+----
 
 [WARNING]
 ====
@@ -201,11 +237,11 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.realm.name`
 | `arconia`
-| Name of the generated realm.
+| Name of the generated realm, or the realm the application connects to among the imported ones. Defaults to the first imported realm other than `master`.
 
-| `arconia.dev.services.{service-name}.realm.import-path`
-|
-| Path to a Keycloak realm file to import instead of generating a realm, resolved from the classpath or the host filesystem. It can be prefixed with `classpath:` or `file:`.
+| `arconia.dev.services.{service-name}.realm.import-paths`
+| `[]`
+| Paths to Keycloak realm files to import instead of generating a realm, resolved from the classpath or the host filesystem. Each can be prefixed with `classpath:` or `file:`, and declares a single realm or a list of realms, as exported by Keycloak.
 
 | `arconia.dev.services.{service-name}.realm.users`
 | `isabella`, `bjorn`

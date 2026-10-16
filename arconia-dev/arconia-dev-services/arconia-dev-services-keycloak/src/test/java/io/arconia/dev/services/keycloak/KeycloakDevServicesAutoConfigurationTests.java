@@ -130,7 +130,7 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
     @DisabledIfDockerUnavailable
     void realmImported() {
         getContextRunner()
-                .withPropertyValues("arconia.dev.services.%s.realm.import-path=classpath:keycloak/test-realm.json"
+                .withPropertyValues("arconia.dev.services.%s.realm.import-paths=classpath:keycloak/test.json"
                         .formatted(getServiceName()))
                 .run(context -> {
                     var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
@@ -142,6 +142,31 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
                     } finally {
                         container.stop();
                     }
+                });
+    }
+
+    @Test
+    @DisabledIfDockerUnavailable
+    void severalRealmsImportedFromSeveralFiles() {
+        contextRunnerWithContainerLifecycle()
+                .withPropertyValues(
+                        "arconia.dev.services.%s.realm.import-paths=classpath:keycloak/tenants.json,classpath:keycloak/gamma-realm.json"
+                                .formatted(getServiceName()),
+                        "arconia.dev.services.%s.realm.name=beta".formatted(getServiceName()))
+                .run(context -> {
+                    var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
+                    assertThat(container.getRealm()).isEqualTo("beta");
+                    assertThat(context.getBean(DevServiceRegistration.class).links())
+                            .extracting(link -> link.url())
+                            .containsExactly(
+                                    container.getAuthServerUrl() + "/admin",
+                                    container.getAuthServerUrl() + "/realms/alpha",
+                                    container.getAuthServerUrl() + "/realms/beta",
+                                    container.getAuthServerUrl() + "/realms/gamma");
+                    String realms = container.getAuthServerUrl() + "/realms/";
+                    assertRealmIsUsable(realms + "alpha", "alice", "alice", "alpha-client", "alpha-client-secret", List.of("alpha-role"));
+                    assertRealmIsUsable(realms + "beta", "bob", "bob", "beta-client", "beta-client-secret", List.of("beta-role"));
+                    assertRealmIsUsable(realms + "gamma", "gina", "gina", "gamma-client", "gamma-client-secret", List.of("gamma-role"));
                 });
     }
 
