@@ -9,6 +9,7 @@ if (!project.plugins.hasPlugin('java-platform')) {
     }
 
     javadoc {
+        options.addBooleanOption("-no-fonts", true)
         options.addStringOption("Xdoclint:none", "-quiet")
     }
 }
