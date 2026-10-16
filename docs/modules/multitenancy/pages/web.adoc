@@ -151,7 +151,7 @@ arconia:
 
 [IMPORTANT]
 ====
-This mode requires the request to be authenticated before the tenant is resolved, so the `TenantContextFilter` must run after the Spring Security filter chain. That is the default. See xref:_spring_security_integration[Spring Security Integration] if you change the filter placement.
+This mode requires the request to be authenticated before the tenant is resolved, so the `TenantContextFilter` must run after the Spring Security filter chain. That is the default. See xref:_oauth2_mode[OAuth2 Mode] under Filter Placement if you change the filter placement.
 ====
 
 === Configuration Properties
@@ -200,11 +200,18 @@ The filter also runs on error dispatches, so error handling for a failed request
 Asynchronous request handling is a separate case. A `Callable` or `DeferredResult` runs on another thread, which does not inherit the `ScopedValue` binding, and the response is completed on a dispatch where the filter does not re-bind the tenant. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
 ====
 
-=== Filter Order
+=== Filter Placement
 
-The `TenantContextFilter` is auto-configured as a standard servlet filter, registered after the Spring Security filter chain. That is what the `oauth2` resolution mode requires, since the tenant claim can only be read once the request has been authenticated.
+The `TenantContextFilter` is auto-configured as a standard servlet filter that runs after the Spring Security filter chain. With that placement the tenant is available to your controllers and services, but not to anything that runs inside the security filter chain. Whether that is enough depends on the resolution mode and on what needs the tenant.
 
-You can change where the filter runs relative to the other servlet filters:
+[WARNING]
+====
+Anything that runs during authentication and reads the tenant context requires the tenant to be bound before the security filter chain runs. Typical examples are an `AuthenticationManagerResolver` that selects the JWT decoder for the tenant, or a `ClientRegistrationRepository` that looks up the tenant's OAuth2 client. With the default placement, such a component calls `TenantContext.getRequiredTenantIdentifier()` before any tenant is bound, the resulting `TenantNotFoundException` escapes the security filter chain, and the request fails with an HTTP `500` response. The first visible sign is the tenant filter running on the error dispatch rather than on the request itself. Use the placement described in xref:_header_cookie_and_subdomain_modes[Header, Cookie and Subdomain Modes] for these cases.
+====
+
+==== Header, Cookie and Subdomain Modes
+
+In these modes the tenant comes from the request itself, so nothing is gained by waiting for authentication. Bind the tenant before the security filter chain so that it is available to authentication and authorization alike. The simplest way is to lower the filter order, since Spring Security registers its filter chain at order `-100`:
 
 [source,yaml]
 ----
@@ -216,17 +223,37 @@ arconia:
           order: -101
 ----
 
-Spring Security registers its own filter chain at order `-100`, so a lower value makes the tenant context available to it. Be aware that the tenant is then resolved for every request reaching the filter, including the login and OAuth2 redirect endpoints. Those are part of the ignored paths by default, so authentication keeps working, but any other endpoint that must be reachable before a tenant is known has to be added to the ignored paths as well.
+The filter stays registered as a standard servlet filter, so no further configuration is needed. The tenant is then resolved for every request reaching the filter, including the login and OAuth2 redirect endpoints. Those are part of the ignored paths by default, so authentication keeps working, but any other endpoint that must be reachable before a tenant is known has to be added to the ignored paths as well.
 
-=== Spring Security Integration
-
-When the tenant context must be available during security processing, for example for tenant-aware authorization, register the filter inside the security filter chain instead. Place it after the `AnonymousAuthenticationFilter`, which runs after every authentication filter and before the `AuthorizationFilter`, so that both the authenticated principal and the tenant context are available where they are needed:
+Alternatively, place the filter inside the security filter chain, right before the authentication filter that needs it. In an OAuth2 resource server that is the `BearerTokenAuthenticationFilter`, so that an `AuthenticationManagerResolver` can select the authorization server for the tenant:
 
 [source,java]
 ----
 import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http, TenantContextFilter tenantContextFilter) throws Exception {
+    return http
+        .addFilterBefore(tenantContextFilter, BearerTokenAuthenticationFilter.class)
+        // ... other security configuration
+        .build();
+}
+----
+
+In an OAuth2 login client, place it before the `OAuth2AuthorizationRequestRedirectFilter` instead, so that the tenant is known when the authorization request is built. Either way, also disable the standard servlet registration as described in xref:_registering_the_filter_in_the_security_filter_chain[Registering the Filter in the Security Filter Chain].
+
+A tenant identifier resolved before authentication comes from unverified request data. It is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted, and never use it to build an issuer URL directly.
+
+==== OAuth2 Mode
+
+In this mode the tenant is read from the authenticated principal, so the filter can only run after authentication. The default placement satisfies that. When the tenant must also be available to authorization rules, place the filter inside the security filter chain after the `AnonymousAuthenticationFilter`, which runs after every authentication filter and before the `AuthorizationFilter`:
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 @Bean
@@ -236,6 +263,19 @@ SecurityFilterChain securityFilterChain(HttpSecurity http, TenantContextFilter t
         // ... other security configuration
         .build();
 }
+----
+
+Then disable the standard servlet registration as described next.
+
+==== Registering the Filter in the Security Filter Chain
+
+Spring Boot registers every `Filter` bean as a standard servlet filter. When the `TenantContextFilter` is added to a `SecurityFilterChain`, disable that registration so that the filter is applied only by the security filter chain:
+
+[source,java]
+----
+import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 @Bean
 FilterRegistrationBean<TenantContextFilter> tenantContextFilterRegistration(TenantContextFilter filter) {
@@ -245,9 +285,7 @@ FilterRegistrationBean<TenantContextFilter> tenantContextFilterRegistration(Tena
 }
 ----
 
-The second bean disables the registration that Spring Boot would otherwise create for the filter bean, so the filter is applied only by the security filter chain. Without it, the filter would also be registered as a standard servlet filter. That does not run it twice, since `TenantContextFilter` is a `OncePerRequestFilter`, but it does mean requests not matched by any `SecurityFilterChain` would be handled at a different point in the request lifecycle, with no authenticated principal available. The `arconia.multitenancy.resolution.http.filter.order` property no longer applies once the filter is placed in the security filter chain.
-
-If you need the tenant before authentication, for example to select which authorization server validates the token, use the `header`, `cookie` or `subdomain` resolution mode and place the filter early in the chain. Such a tenant identifier comes from unverified request data: it is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted, and never use it to build an issuer URL directly.
+Without this bean the filter would not run twice, since `TenantContextFilter` is a `OncePerRequestFilter`, but requests not matched by any `SecurityFilterChain` would be handled by the servlet registration at a different point in the request lifecycle. The `arconia.multitenancy.resolution.http.filter.order` property does not apply to a filter placed in the security filter chain.
 
 === Ignoring Paths
 
@@ -322,7 +360,7 @@ arconia:
 
 |`arconia.multitenancy.resolution.http.filter.order`
 |`2147483647`
-|Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain, which is required when resolving the tenant from an OAuth2 token.
+|Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain. Set it below `-100` to bind the tenant before the security filter chain. See xref:_filter_placement[Filter Placement].
 
 |`arconia.multitenancy.resolution.http.filter.ignore-paths`
 |`/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
