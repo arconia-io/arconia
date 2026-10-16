@@ -51,6 +51,11 @@ class HttpTenantResolutionPropertiesDefaultsTests {
     }
 
     @Test
+    void subdomainPatternHasNoDefault() {
+        assertThat(properties.getSubdomain().getPattern()).isNull();
+    }
+
+    @Test
     void resolutionIsEnabledInHeaderModeByDefault() {
         assertThat(properties.isEnabled()).isTrue();
         assertThat(properties.getResolutionMode()).isEqualTo(HttpResolutionMode.HEADER);
@@ -71,7 +76,7 @@ class HttpTenantResolutionPropertiesDefaultsTests {
     void conditionalOnPropertyLiteralsMatchTheResolutionModeEnum() {
         // The @ConditionalOnProperty havingValue attributes cannot reference the enum,
         // because annotation values must be constants of type String.
-        assertThat(List.of("cookie", "header", "oauth2"))
+        assertThat(List.of("cookie", "header", "oauth2", "subdomain"))
             .containsExactlyInAnyOrderElementsOf(Arrays.stream(HttpResolutionMode.values())
                 .map(mode -> mode.name().toLowerCase(Locale.ROOT))
                 .toList());

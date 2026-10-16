@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.util.Assert;
 
 import io.arconia.multitenancy.core.autoconfigure.FixedTenantResolutionProperties;
 import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
@@ -25,14 +26,14 @@ import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HeaderTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.OAuth2TenantResolver;
+import io.arconia.multitenancy.web.context.resolvers.SubdomainTenantResolver;
 
 /**
  * Configuration for HTTP tenant resolution.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(HttpTenantResolutionProperties.class)
-@ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "enabled",
-        matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 public final class HttpTenantResolutionConfiguration {
 
     @Bean
@@ -44,8 +45,7 @@ public final class HttpTenantResolutionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(HttpRequestTenantResolver.class)
-    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
-            havingValue = "header", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode", havingValue = "header", matchIfMissing = true)
     HeaderTenantResolver headerTenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
         return HeaderTenantResolver.builder()
             .tenantHeaderName(httpTenantResolutionProperties.getHeader().getHeaderName())
@@ -54,12 +54,21 @@ public final class HttpTenantResolutionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(HttpRequestTenantResolver.class)
-    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
-            havingValue = "cookie")
+    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode", havingValue = "cookie")
     CookieTenantResolver cookieTenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
         return CookieTenantResolver.builder()
             .tenantCookieName(httpTenantResolutionProperties.getCookie().getCookieName())
             .build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(HttpRequestTenantResolver.class)
+    @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode", havingValue = "subdomain")
+    SubdomainTenantResolver subdomainTenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
+        var pattern = httpTenantResolutionProperties.getSubdomain().getPattern();
+        Assert.hasText(pattern, "The '" + HttpTenantResolutionProperties.CONFIG_PREFIX
+                + ".subdomain.pattern' property must be set when the HTTP tenant resolution mode is 'subdomain'");
+        return SubdomainTenantResolver.builder().pattern(pattern).build();
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -68,8 +77,7 @@ public final class HttpTenantResolutionConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(HttpRequestTenantResolver.class)
-        @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode",
-                havingValue = "oauth2")
+        @ConditionalOnProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "resolution-mode", havingValue = "oauth2")
         OAuth2TenantResolver oauth2TenantResolver(HttpTenantResolutionProperties httpTenantResolutionProperties) {
             return OAuth2TenantResolver.builder()
                 .tenantClaimName(httpTenantResolutionProperties.getOauth2().getClaimName())
@@ -79,8 +87,7 @@ public final class HttpTenantResolutionConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "filter.enabled",
-            matchIfMissing = true)
+    @ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "filter.enabled", matchIfMissing = true)
     static class HttpTenantFilterConfiguration {
 
         @Bean
@@ -104,8 +111,7 @@ public final class HttpTenantResolutionConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher(
-                HttpTenantResolutionProperties httpTenantResolutionProperties) {
+        TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher(HttpTenantResolutionProperties httpTenantResolutionProperties) {
             var ignorePathMatcher = new HashSet<>(httpTenantResolutionProperties.getFilter().getIgnorePaths());
             ignorePathMatcher.addAll(httpTenantResolutionProperties.getFilter().getAdditionalIgnorePaths());
             return new TenantContextIgnorePathMatcher(ignorePathMatcher);

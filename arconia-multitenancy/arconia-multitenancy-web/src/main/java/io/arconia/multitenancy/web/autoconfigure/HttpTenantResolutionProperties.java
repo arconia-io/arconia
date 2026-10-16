@@ -2,6 +2,7 @@ package io.arconia.multitenancy.web.autoconfigure;
 
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.Ordered;
 
@@ -32,6 +33,11 @@ public class HttpTenantResolutionProperties {
      * Configuration for HTTP cookie tenant resolution.
      */
     private final Cookie cookie = new Cookie();
+
+    /**
+     * Configuration for HTTP subdomain tenant resolution.
+     */
+    private final Subdomain subdomain = new Subdomain();
 
     /**
      * Configuration for OAuth2 tenant resolution.
@@ -65,6 +71,10 @@ public class HttpTenantResolutionProperties {
 
     public Cookie getCookie() {
         return cookie;
+    }
+
+    public Subdomain getSubdomain() {
+        return subdomain;
     }
 
     public OAuth2 getOauth2() {
@@ -105,6 +115,27 @@ public class HttpTenantResolutionProperties {
 
         public void setCookieName(String cookieName) {
             this.cookieName = cookieName;
+        }
+
+    }
+
+    public static class Subdomain {
+
+        /**
+         * Pattern matched against the request host, containing a "{tenant}" variable that
+         * captures the tenant identifier, such as "{tenant}.example.com" for tenants served
+         * at "acme.example.com". Required when the resolution mode is "subdomain".
+         */
+        @Nullable
+        private String pattern;
+
+        @Nullable
+        public String getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(@Nullable String pattern) {
+            this.pattern = pattern;
         }
 
     }
@@ -191,7 +222,8 @@ public class HttpTenantResolutionProperties {
 
         COOKIE,
         HEADER,
-        OAUTH2;
+        OAUTH2,
+        SUBDOMAIN;
 
     }
 

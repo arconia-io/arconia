@@ -10,3 +10,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 === Keycloak
 
 * The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].
+
+== Multitenancy
+
+* Tenants can now be resolved from the subdomain of the HTTP request, next to headers, cookies, and OAuth2 tokens. Set `arconia.multitenancy.resolution.http.resolution-mode=subdomain` and configure a pattern for the request host in `arconia.multitenancy.resolution.http.subdomain.pattern`, where the `{tenant}` variable captures the tenant identifier. The pattern follows the syntax of Spring MVC request mappings, so `{tenant}.example.com` serves the tenant `acme` at `acme.example.com`, and `{tenant}-admin.example.com` serves it at `acme-admin.example.com`. Learn more about xref:multitenancy:web.adoc#_subdomain_based_resolution[Subdomain-Based Resolution].

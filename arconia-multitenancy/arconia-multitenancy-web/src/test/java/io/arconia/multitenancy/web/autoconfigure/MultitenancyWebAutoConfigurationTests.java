@@ -29,6 +29,7 @@ import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HeaderTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
 import io.arconia.multitenancy.web.context.resolvers.OAuth2TenantResolver;
+import io.arconia.multitenancy.web.context.resolvers.SubdomainTenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,6 +75,32 @@ class MultitenancyWebAutoConfigurationTests {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=cookie").run(context -> {
             assertThat(context).hasSingleBean(CookieTenantResolver.class);
         });
+    }
+
+    @Test
+    void httpRequestTenantResolverSubdomain() {
+        contextRunner
+                .withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=subdomain",
+                        "arconia.multitenancy.resolution.http.subdomain.pattern={tenant}.rocks")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(SubdomainTenantResolver.class);
+                    var request = new MockHttpServletRequest();
+                    request.setServerName("dukes.rocks");
+                    assertThat(context.getBean(SubdomainTenantResolver.class).resolveTenantIdentifier(request))
+                            .isEqualTo("dukes");
+                });
+    }
+
+    @Test
+    void httpRequestTenantResolverSubdomainWithoutPatternThenFail() {
+        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.resolution-mode=subdomain")
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    assertThat(context.getStartupFailure()).rootCause()
+                            .isInstanceOf(IllegalArgumentException.class)
+                            .hasMessageContaining("arconia.multitenancy.resolution.http.subdomain.pattern")
+                            .hasMessageContaining("'subdomain'");
+                });
     }
 
     @Test

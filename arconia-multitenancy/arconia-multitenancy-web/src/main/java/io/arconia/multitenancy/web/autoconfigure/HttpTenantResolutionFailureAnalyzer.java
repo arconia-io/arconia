@@ -43,7 +43,7 @@ public class HttpTenantResolutionFailureAnalyzer extends AbstractFailureAnalyzer
                 """
                 Add Spring Security OAuth2 to your project, for example with the \
                 'spring-boot-starter-security-oauth2-resource-server' or 'spring-boot-starter-security-oauth2-client' dependency.
-                Alternatively, set %s to 'header' or 'cookie', or register your own %s bean."""
+                Alternatively, set %s to 'header', 'cookie' or 'subdomain', or register your own %s bean."""
                     .formatted(RESOLUTION_MODE_PROPERTY, HttpRequestTenantResolver.class.getSimpleName()),
                 cause);
     }

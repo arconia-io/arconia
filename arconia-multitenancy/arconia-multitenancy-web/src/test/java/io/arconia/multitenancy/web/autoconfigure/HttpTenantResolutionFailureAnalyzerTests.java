@@ -27,7 +27,7 @@ class HttpTenantResolutionFailureAnalyzerTests {
         assertThat(analysis.getDescription()).contains("is set to 'oauth2'")
             .contains("Spring Security OAuth2 is not on the classpath");
         assertThat(analysis.getAction()).contains("spring-boot-starter-security-oauth2-resource-server")
-            .contains("set %s to 'header' or 'cookie'".formatted(RESOLUTION_MODE_PROPERTY));
+            .contains("set %s to 'header', 'cookie' or 'subdomain'".formatted(RESOLUTION_MODE_PROPERTY));
     }
 
     @Test

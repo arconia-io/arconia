@@ -186,7 +186,7 @@ Maven::
 
 The xref:web.adoc[web module] (`arconia-multitenancy-web-spring-boot-starter`) adds HTTP-specific multitenancy support for Spring MVC applications:
 
-* HTTP tenant resolution from headers or cookies.
+* HTTP tenant resolution from headers, cookies, subdomains or OAuth2 tokens.
 * A servlet filter (`TenantContextFilter`) that establishes the tenant context for each request.
 * The `@TenantIdentifier` annotation for injecting the tenant into controller methods.
 

@@ -1,6 +1,6 @@
 = Web
 
-The Arconia Multitenancy Web module adds HTTP-specific multitenancy support for Spring MVC applications. It provides tenant resolution from HTTP headers or cookies, a servlet filter for automatic context management, and a controller annotation for convenient access to the current tenant.
+The Arconia Multitenancy Web module adds HTTP-specific multitenancy support for Spring MVC applications. It provides tenant resolution from HTTP headers, cookies, subdomains or OAuth2 tokens, a servlet filter for automatic context management, and a controller annotation for convenient access to the current tenant.
 
 == Dependencies
 
@@ -93,6 +93,32 @@ arconia:
           cookie-name: MY-TENANT
 ----
 
+=== Subdomain-Based Resolution
+
+The tenant can also be resolved from the subdomain of the request, so that `acme.example.com` serves the tenant `acme`. Switch the resolution mode and configure a pattern for the request host, where the `{tenant}` variable captures the tenant identifier.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: subdomain
+        subdomain:
+          pattern: "{tenant}.example.com"
+----
+
+The pattern follows the same syntax as Spring MVC request mappings, with the dot as the separator, and is matched case-insensitively against the whole host. The variable may be embedded in a label, so `{tenant}-admin.example.com` serves the tenant `acme` at `acme-admin.example.com`, and it may carry an inline regular expression such as `{tenant:[a-z0-9-]+}.example.com`. A request whose host does not match the pattern resolves no tenant. The variable matches a single label, so nested subdomains such as `api.acme.example.com` never match the `{tenant}.example.com` pattern.
+
+Host names are case-insensitive, so the host is lowercased before matching and the resolved tenant identifier is always lowercase: `Acme.example.com` and `acme.example.com` both serve the tenant `acme`. Register tenants with lowercase identifiers when using this mode, because a tenant such as `Acme` can never be matched from a subdomain.
+
+During local development, you can use the `{tenant}.localhost` pattern. Most browsers resolve `acme.localhost` to the loopback address without any extra setup, so `http://acme.localhost:8080` serves the tenant `acme`.
+
+[IMPORTANT]
+====
+The host is read from the request as seen by the application. When the application runs behind a reverse proxy or load balancer, configure Spring Boot to process forwarded headers, for example with `server.forward-headers-strategy=framework`, so that the original host from `X-Forwarded-Host` is used rather than the address of the proxy.
+====
+
 === OAuth2-Based Resolution
 
 When the application is secured with OAuth2, the tenant can be resolved from a claim in the token that authenticated the request.
@@ -140,7 +166,7 @@ This mode requires the request to be authenticated before the tenant is resolved
 
 |`arconia.multitenancy.resolution.http.resolution-mode`
 |`header`
-|Mode of HTTP resolution. Options: `header`, `cookie`, `oauth2`.
+|Mode of HTTP resolution. Options: `header`, `cookie`, `subdomain`, `oauth2`.
 
 |`arconia.multitenancy.resolution.http.header.header-name`
 |`X-TenantId`
@@ -149,6 +175,10 @@ This mode requires the request to be authenticated before the tenant is resolved
 |`arconia.multitenancy.resolution.http.cookie.cookie-name`
 |`TENANT-ID`
 |Name of the HTTP cookie from which to resolve the current tenant.
+
+|`arconia.multitenancy.resolution.http.subdomain.pattern`
+|
+|Pattern matched against the request host, containing a `{tenant}` variable that captures the tenant identifier, such as `{tenant}.example.com`. Required when the resolution mode is `subdomain`.
 
 |`arconia.multitenancy.resolution.http.oauth2.claim-name`
 |`tenant_id`
@@ -217,7 +247,7 @@ FilterRegistrationBean<TenantContextFilter> tenantContextFilterRegistration(Tena
 
 The second bean disables the registration that Spring Boot would otherwise create for the filter bean, so the filter is applied only by the security filter chain. Without it, the filter would also be registered as a standard servlet filter. That does not run it twice, since `TenantContextFilter` is a `OncePerRequestFilter`, but it does mean requests not matched by any `SecurityFilterChain` would be handled at a different point in the request lifecycle, with no authenticated principal available. The `arconia.multitenancy.resolution.http.filter.order` property no longer applies once the filter is placed in the security filter chain.
 
-If you need the tenant before authentication, for example to select which authorization server validates the token, use the `header` or `cookie` resolution mode and place the filter early in the chain. Such a tenant identifier comes from unverified request data: it is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted, and never use it to build an issuer URL directly.
+If you need the tenant before authentication, for example to select which authorization server validates the token, use the `header`, `cookie` or `subdomain` resolution mode and place the filter early in the chain. Such a tenant identifier comes from unverified request data: it is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted, and never use it to build an issuer URL directly.
 
 === Ignoring Paths
 
@@ -338,7 +368,7 @@ NOTE: You can also use the `TenantContext` directly to access the tenant identif
 
 == Custom Tenant Resolution
 
-You can implement your own HTTP tenant resolution strategy by providing a custom `HttpRequestTenantResolver` bean. This replaces the default header or cookie resolver.
+You can implement your own HTTP tenant resolution strategy by providing a custom `HttpRequestTenantResolver` bean. This replaces the resolver selected by the resolution mode.
 
 [source,java]
 ----
