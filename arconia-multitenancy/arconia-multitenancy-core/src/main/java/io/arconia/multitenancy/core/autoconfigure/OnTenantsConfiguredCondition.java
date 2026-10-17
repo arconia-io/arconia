@@ -28,7 +28,7 @@ class OnTenantsConfiguredCondition extends SpringBootCondition {
         List<TenantDetailsProperties.TenantConfig> tenants = getTenants(context.getEnvironment());
         if (!tenants.isEmpty()) {
             return ConditionOutcome.match(message.foundExactly("configured tenants " + tenants.stream()
-                .map(TenantDetailsProperties.TenantConfig::getIdentifier)
+                .map(tenant -> String.valueOf(tenant.getIdentifier()))
                 .collect(Collectors.joining(", "))));
         }
         return ConditionOutcome.noMatch(message.notAvailable("configured tenants"));

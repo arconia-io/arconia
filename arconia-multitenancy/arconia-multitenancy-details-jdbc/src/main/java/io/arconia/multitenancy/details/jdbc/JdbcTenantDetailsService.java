@@ -115,6 +115,7 @@ public final class JdbcTenantDetailsService implements TenantDetailsService {
         }
 
         public JdbcTenantDetailsService build() {
+            Assert.notNull(jdbcClient, "jdbcClient cannot be null");
             return new JdbcTenantDetailsService(jdbcClient);
         }
 

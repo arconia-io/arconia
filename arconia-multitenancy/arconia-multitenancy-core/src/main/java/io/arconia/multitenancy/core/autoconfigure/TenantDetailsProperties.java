@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
 
@@ -29,6 +30,7 @@ public class TenantDetailsProperties {
         /**
          * Identifier for the tenant.
          */
+        @Nullable
         private String identifier;
 
         /**
@@ -41,6 +43,7 @@ public class TenantDetailsProperties {
          */
         private Map<String, Object> attributes = Map.of();
 
+        @Nullable
         public String getIdentifier() {
             return identifier;
         }

@@ -49,6 +49,10 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     private static final String TENANT_LOOKUP_ERROR_MESSAGE = "The tenant could not be verified because the tenant registry is currently unavailable";
 
+    private static final String INVALID_TENANT_MESSAGE = "The tenant identifier is not valid";
+
+    private static final String REJECTED_TENANT_MESSAGE = "The resolved tenant is invalid or disabled";
+
     private final int order;
 
     private final TenantResolver<HttpServletRequest> tenantResolver;
@@ -92,7 +96,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         try {
             tenantIdentifier = tenantResolver.resolveTenantIdentifier(request);
         } catch (InvalidTenantIdentifierException ex) {
-            handleFailure(request, response, filterChain, Outcome.INVALID, ex.getMessage(), ex, null);
+            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, null);
             return;
         }
         if (!StringUtils.hasText(tenantIdentifier)) {
@@ -106,10 +110,10 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
                 tenantVerifier.verify(tenantIdentifier);
             }
         } catch (InvalidTenantIdentifierException ex) {
-            handleFailure(request, response, filterChain, Outcome.INVALID, ex.getMessage(), ex, tenantIdentifier);
+            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, tenantIdentifier);
             return;
         } catch (TenantVerificationException ex) {
-            handleFailure(request, response, filterChain, Outcome.REJECTED, ex.getMessage(), ex, tenantIdentifier);
+            handleFailure(request, response, filterChain, Outcome.REJECTED, messageOf(ex, REJECTED_TENANT_MESSAGE), ex, tenantIdentifier);
             return;
         } catch (RuntimeException ex) {
             // The tenant registry itself failed, for example, because the datastore
@@ -152,6 +156,15 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
                 default -> throw new ServletException(ex);
             }
         }
+    }
+
+    /**
+     * The exception message describes the violated rule to the caller. An exception
+     * without one falls back to a generic description of the outcome.
+     */
+    private static String messageOf(TenantVerificationException exception, String fallback) {
+        var message = exception.getMessage();
+        return StringUtils.hasText(message) ? message : fallback;
     }
 
     /**
@@ -203,10 +216,13 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
         private int order = Ordered.LOWEST_PRECEDENCE;
 
+        @Nullable
         private TenantResolver<HttpServletRequest> tenantResolver;
 
+        @Nullable
         private TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
 
+        @Nullable
         private ApplicationEventPublisher eventPublisher;
 
         private TenantIdentifierValidator tenantIdentifierValidator = DefaultTenantIdentifierValidator.builder()
@@ -285,6 +301,9 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         }
 
         public TenantContextFilter build() {
+            Assert.notNull(tenantResolver, "httpRequestTenantResolver cannot be null");
+            Assert.notNull(tenantContextIgnorePathMatcher, "tenantContextIgnorePathMatcher cannot be null");
+            Assert.notNull(eventPublisher, "eventPublisher cannot be null");
             return new TenantContextFilter(order, tenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
                     tenantIdentifierValidator, tenantVerifier, tenantObservationFilter, failureHandler);
         }

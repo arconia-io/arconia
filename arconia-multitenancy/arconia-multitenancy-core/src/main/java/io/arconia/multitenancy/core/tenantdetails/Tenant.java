@@ -3,6 +3,7 @@ package io.arconia.multitenancy.core.tenantdetails;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
@@ -29,6 +30,7 @@ public record Tenant(String identifier, boolean enabled, Map<String, Object> att
 
     public static final class Builder {
 
+        @Nullable
         private String identifier;
 
         private boolean enabled = true;
@@ -74,6 +76,7 @@ public record Tenant(String identifier, boolean enabled, Map<String, Object> att
          * Builds the {@link Tenant} instance.
          */
         public Tenant build() {
+            Assert.hasText(identifier, "identifier cannot be null or empty");
             return new Tenant(identifier, enabled, attributes);
         }
 
