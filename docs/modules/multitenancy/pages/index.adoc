@@ -106,7 +106,7 @@ You can access the current tenant identifier in your controllers using the `@Ten
 
 [source,java]
 ----
-import io.arconia.multitenancy.web.context.annotations.TenantIdentifier;
+import io.arconia.multitenancy.web.context.TenantIdentifier;
 
 @RestController
 class GreetingController {
@@ -130,19 +130,7 @@ import io.arconia.multitenancy.core.context.TenantContext;
 String tenantId = TenantContext.getRequiredTenantIdentifier();
 ----
 
-== How It Works
-
-When a request arrives, the framework:
-
-1. *Resolves the tenant*. Extracts the tenant identifier from the request source using a configurable xref:tenant-resolution.adoc[`TenantResolver`].
-2. *Validates the identifier*. Checks the syntax of the resolved identifier with a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`]. This always happens, whether or not tenant details are configured.
-3. *Verifies the tenant (optional)*. If a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] is configured, checks that the tenant exists and is enabled.
-4. *Binds the context*. Binds the tenant identifier to a xref:tenant-context.adoc[`ScopedValue`] via `TenantContext`, making it available throughout the request scope.
-5. *Publishes a context event*. Fires a `TenantContextAttachedEvent` that triggers registered xref:tenant-context.adoc#_tenant_context_events[listeners] (e.g., MDC enrichment).
-6. *Executes the request*. The request proceeds with the tenant context available. All Micrometer observations are automatically enriched with the tenant identifier.
-7. *Cleans up*. After the request completes, fires a `TenantContextClosedEvent`. The `ScopedValue` binding is automatically removed when the scope exits.
-
-In xref:web.adoc[web applications], this happens transparently via a servlet filter (`TenantContextFilter`) that is auto-configured when using the web starter.
+The xref:architecture.adoc[Architecture] page explains how the tenant goes from the request to the `TenantContext`, and what happens when it cannot.
 
 == Modules
 
@@ -153,10 +141,10 @@ Arconia Multitenancy is organized into modules, each addressing a specific conce
 The core module (`arconia-multitenancy-core-spring-boot-starter`) provides the foundational building blocks for multitenancy, independent of any specific application layer:
 
 * *xref:tenant-context.adoc[Tenant Context]*: Scoped context propagation via `TenantContext` using Java's `ScopedValue` API.
-* *xref:tenant-resolution.adoc[Tenant Resolution]*: Strategy-based tenant resolution with built-in and custom resolvers.
+* *xref:tenant-resolution.adoc[Tenant Resolution]*: Strategy-based tenant resolution with built-in and custom resolvers, composable into chains.
 * *xref:tenant-details.adoc[Tenant Details]*: Tenant identifier validation via `TenantIdentifierValidator`, tenant metadata management via `TenantDetailsService`, and verification via `TenantVerifier`.
 * *xref:observability.adoc[Observability]*: SLF4J MDC logging enrichment and Micrometer observation integration.
-* *Caching*: Tenant-aware cache key generation for cache isolation between tenants.
+* *Caching*: Tenant-aware cache key generation for cache isolation between tenants. See xref:tenant-context.adoc#_tenant_aware_caching[Tenant-Aware Caching].
 
 If you are building a non-web application (e.g., a message consumer or a batch job), you can use the core starter directly:
 
@@ -186,8 +174,8 @@ Maven::
 
 The xref:web.adoc[web module] (`arconia-multitenancy-web-spring-boot-starter`) adds HTTP-specific multitenancy support for Spring MVC applications:
 
-* HTTP tenant resolution from headers, cookies, subdomains or OAuth2 tokens.
-* A servlet filter (`TenantContextFilter`) that establishes the tenant context for each request.
+* HTTP tenant resolution from headers, cookies, paths, subdomains, or OAuth2 tokens, combined in a configurable chain, with an optional default tenant.
+* A servlet filter (`TenantContextFilter`) that establishes the tenant context for each request, with a pluggable handler for requests whose tenant cannot be established.
 * The `@TenantIdentifier` annotation for injecting the tenant into controller methods.
 
 The web starter includes the core module, so all core features are available automatically.
@@ -199,4 +187,4 @@ The xref:data-jdbc.adoc[Data JDBC module] (`arconia-multitenancy-data-jdbc`) add
 * A `TenantDataSource` that routes each connection request to the database belonging to the current tenant.
 * Per-tenant data sources registered upfront or created on demand and cached.
 
-It builds on plain JDBC and works with `JdbcClient`, `JdbcTemplate`, and Spring Data JDBC alike. Unlike the other modules, it ships no auto-configuration, so it has no starter: add the artifact and declare the `TenantDataSource` bean yourself.
+It builds on plain JDBC and works with `JdbcClient`, `JdbcTemplate`, and Spring Data JDBC. Unlike the other modules, it ships no auto-configuration, so it has no starter: add the artifact and declare the `TenantDataSource` bean yourself.

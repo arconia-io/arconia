@@ -4,7 +4,7 @@ Once a tenant is resolved, the tenant context is propagated through the request 
 
 == TenantContext
 
-The `TenantContext` provides static methods to access the current tenant identifier from anywhere in your code. It uses a `ScopedValue` internally, ensuring the tenant context is immutable within a scope and automatically cleaned up.
+The `TenantContext` provides static methods to access the current tenant identifier from anywhere in your code. It uses a `ScopedValue` internally. A binding cannot be changed from inside its scope, only shadowed by a nested one, and it is automatically removed when the scope exits. The tenant context is a per-scope binding, not a tenant store: code that leaves the scope does not see it.
 
 [source,java]
 ----
@@ -21,7 +21,7 @@ In xref:web.adoc[web applications], the `TenantContext` is automatically bound f
 
 === Manual Context Management
 
-For non-web scenarios (e.g., background jobs, message consumers), you can bind the tenant context using `TenantContext.where()`:
+For non-web scenarios (e.g., background jobs, message consumers), you can bind the tenant context using `TenantContext.where()`. This is a trusted boundary: the identifier is only checked to be non-empty, so validate or verify an identifier taken from untrusted input before binding it. See xref:architecture.adoc#_trust_boundaries[Trust Boundaries].
 
 [source,java]
 ----
@@ -104,8 +104,8 @@ You can register your own listeners to react to tenant context events:
 ----
 import org.springframework.context.event.EventListener;
 
-import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
-import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
+import io.arconia.multitenancy.core.context.TenantContextAttachedEvent;
+import io.arconia.multitenancy.core.context.TenantContextClosedEvent;
 
 @Component
 class CustomTenantListener {
@@ -147,7 +147,7 @@ class ProductService {
 }
 ----
 
-Key generation requires a tenant context. When no tenant is bound, a `TenantNotFoundException` is thrown rather than falling back to a tenant-independent key. A shared key would let an entry written outside a tenant context, for example by a scheduled task, be read later by a request belonging to a tenant.
+Key generation requires a tenant context. When no tenant is bound, a `TenantNotFoundException` is thrown rather than falling back to a tenant-independent key. A shared key would let an entry written outside a tenant context, for example, by a scheduled task, be read later by a request belonging to a tenant.
 
 If a cache holds data that is genuinely the same for every tenant, give it its own cache name and leave it on Spring's default key generator, or wrap the work in `TenantContext.where()` so a tenant is bound.
 

@@ -20,9 +20,9 @@ import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.context.TenantContext;
-import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
-import io.arconia.multitenancy.core.tenantdetails.DefaultTenantIdentifierValidator;
-import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
+import io.arconia.multitenancy.core.context.TenantNotFoundException;
+import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
+import io.arconia.multitenancy.core.resolution.TenantIdentifierValidator;
 
 /**
  * A {@link DataSource} that routes each connection request to the {@link DataSource}

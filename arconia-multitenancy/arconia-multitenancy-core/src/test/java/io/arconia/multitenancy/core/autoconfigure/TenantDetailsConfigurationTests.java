@@ -9,9 +9,10 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.arconia.multitenancy.core.resolution.TenantVerifier;
+import io.arconia.multitenancy.core.tenantdetails.InMemoryTenantDetailsService;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
-import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,16 +26,16 @@ class TenantDetailsConfigurationTests {
 
     @Test
     void tenantDetailsServiceWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).doesNotHaveBean(TenantDetailsService.class);
-        });
+        contextRunner.run(context ->
+            assertThat(context).doesNotHaveBean(TenantDetailsService.class)
+        );
     }
 
     @Test
     void tenantDetailsServiceWhenTenantsConfigured() {
         contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context -> {
             assertThat(context).hasSingleBean(TenantDetailsService.class);
-            assertThat(context).hasSingleBean(PropertiesTenantDetailsService.class);
+            assertThat(context).hasSingleBean(InMemoryTenantDetailsService.class);
         });
     }
 
@@ -49,7 +50,7 @@ class TenantDetailsConfigurationTests {
 
                 assertThat(tenantDetailsService.loadAllTenants()).hasSize(2);
                 assertThat(tenantDetailsService.loadTenantByIdentifier("beans")).isNotNull()
-                    .extracting(TenantDetails::enabled)
+                    .extracting(tenantDetails -> tenantDetails != null && tenantDetails.enabled())
                     .isEqualTo(false);
             });
     }
@@ -60,15 +61,15 @@ class TenantDetailsConfigurationTests {
             .withUserConfiguration(CustomTenantDetailsServiceConfiguration.class)
             .run(context -> {
                 assertThat(context).hasSingleBean(TenantDetailsService.class);
-                assertThat(context).doesNotHaveBean(PropertiesTenantDetailsService.class);
+                assertThat(context).doesNotHaveBean(InMemoryTenantDetailsService.class);
             });
     }
 
     @Test
     void tenantVerifierWhenNoService() {
-        contextRunner.run(context -> {
-            assertThat(context).doesNotHaveBean(TenantVerifier.class);
-        });
+        contextRunner.run(context ->
+            assertThat(context).doesNotHaveBean(TenantVerifier.class)
+        );
     }
 
     @Test

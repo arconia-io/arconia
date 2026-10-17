@@ -14,9 +14,9 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
+import io.arconia.multitenancy.core.resolution.TenantVerifier;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
-import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
 import io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;

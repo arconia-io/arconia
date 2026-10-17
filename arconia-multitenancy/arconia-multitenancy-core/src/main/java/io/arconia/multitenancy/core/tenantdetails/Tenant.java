@@ -27,9 +27,6 @@ public record Tenant(String identifier, boolean enabled, Map<String, Object> att
         return new Builder();
     }
 
-    /**
-     * Builder for {@link Tenant}.
-     */
     public static final class Builder {
 
         private String identifier;

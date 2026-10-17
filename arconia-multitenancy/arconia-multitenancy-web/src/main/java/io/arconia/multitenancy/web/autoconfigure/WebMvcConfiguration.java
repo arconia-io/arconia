@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import io.arconia.multitenancy.web.context.annotations.TenantIdentifierArgumentResolver;
+import io.arconia.multitenancy.web.context.TenantIdentifierArgumentResolver;
 
 /**
  * Register Arconia-specific Spring Web MVC configuration.

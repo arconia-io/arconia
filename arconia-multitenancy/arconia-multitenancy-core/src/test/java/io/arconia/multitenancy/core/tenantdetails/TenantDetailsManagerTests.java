@@ -10,8 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link TenantDetailsManager}, exercising the contract through a minimal
- * in-memory implementation.
+ * Unit tests for {@link TenantDetailsManager}.
  */
 class TenantDetailsManagerTests {
 

@@ -23,7 +23,7 @@ public class TenantObservationProperties {
     private String keyName = "tenant.id";
 
     /**
-     * The cardinality of the tenant identifier key value. HIGH (default) adds it as a
+     * Cardinality of the tenant identifier key value. HIGH (default) adds it as a
      * high-cardinality key value, appearing only in traces. LOW adds it as a
      * low-cardinality key value, appearing in both metrics and traces.
      */

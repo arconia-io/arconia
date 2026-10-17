@@ -1,7 +1,6 @@
 package io.arconia.multitenancy.web.autoconfigure;
 
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -10,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.ClassPathResource;
 
-import io.arconia.multitenancy.web.autoconfigure.HttpTenantResolutionProperties.HttpResolutionMode;
-import io.arconia.multitenancy.web.context.resolvers.CookieTenantResolver;
-import io.arconia.multitenancy.web.context.resolvers.HeaderTenantResolver;
-import io.arconia.multitenancy.web.context.resolvers.OAuth2TenantResolver;
-
 import tools.jackson.databind.json.JsonMapper;
+
+import io.arconia.multitenancy.web.autoconfigure.HttpTenantResolutionProperties.HttpResolutionMode;
+import io.arconia.multitenancy.web.resolution.CookieTenantResolver;
+import io.arconia.multitenancy.web.resolution.HeaderTenantResolver;
+import io.arconia.multitenancy.web.resolution.OAuth2TenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,7 +57,7 @@ class HttpTenantResolutionPropertiesDefaultsTests {
     @Test
     void resolutionIsEnabledInHeaderModeByDefault() {
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.getResolutionMode()).isEqualTo(HttpResolutionMode.HEADER);
+        assertThat(properties.getResolutionMode()).containsExactly(HttpResolutionMode.HEADER);
     }
 
     @Test
@@ -73,13 +72,19 @@ class HttpTenantResolutionPropertiesDefaultsTests {
     }
 
     @Test
-    void conditionalOnPropertyLiteralsMatchTheResolutionModeEnum() {
-        // The @ConditionalOnProperty havingValue attributes cannot reference the enum,
-        // because annotation values must be constants of type String.
-        assertThat(List.of("cookie", "header", "oauth2", "subdomain"))
-            .containsExactlyInAnyOrderElementsOf(Arrays.stream(HttpResolutionMode.values())
-                .map(mode -> mode.name().toLowerCase(Locale.ROOT))
-                .toList());
+    void pathPatternHasNoDefault() {
+        assertThat(properties.getPath().getPattern()).isNull();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void resolutionModeDefaultMatchesConfigurationMetadata() throws Exception {
+        var declaredModes = (List<String>) metadataDefault("arconia.multitenancy.resolution.http.resolution-mode");
+
+        assertThat(declaredModes).containsExactlyElementsOf(properties.getResolutionMode()
+            .stream()
+            .map(mode -> mode.name().toLowerCase(Locale.ROOT))
+            .toList());
     }
 
     @Test

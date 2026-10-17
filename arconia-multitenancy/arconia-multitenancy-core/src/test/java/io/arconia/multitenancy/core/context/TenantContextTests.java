@@ -2,9 +2,9 @@ package io.arconia.multitenancy.core.context;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -14,9 +14,9 @@ class TenantContextTests {
 
     @Test
     void whenBoundThenGetTenantIdentifierReturnsValue() {
-        TenantContext.where("acme").run(() -> {
-            assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme");
-        });
+        TenantContext.where("acme").run(() ->
+            assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme")
+        );
     }
 
     @Test
@@ -26,9 +26,9 @@ class TenantContextTests {
 
     @Test
     void whenBoundThenGetRequiredTenantIdentifierReturnsValue() {
-        TenantContext.where("acme").run(() -> {
-            assertThat(TenantContext.getRequiredTenantIdentifier()).isEqualTo("acme");
-        });
+        TenantContext.where("acme").run(() ->
+            assertThat(TenantContext.getRequiredTenantIdentifier()).isEqualTo("acme")
+        );
     }
 
     @Test
@@ -39,37 +39,40 @@ class TenantContextTests {
 
     @Test
     void whenScopeExitsThenTenantIsUnbound() {
-        TenantContext.where("acme").run(() -> {
-            assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme");
-        });
+        TenantContext.where("acme").run(() ->
+            assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme")
+        );
         assertThat(TenantContext.getTenantIdentifier()).isNull();
     }
 
     @Test
     void whenNullTenantIdentifierThenThrow() {
-        assertThatThrownBy(() -> TenantContext.where(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TenantContext.where(null))
+                .withMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
     void whenEmptyTenantIdentifierThenThrow() {
-        assertThatThrownBy(() -> TenantContext.where("")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TenantContext.where(""))
+                .withMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
     void whenBlankTenantIdentifierThenThrow() {
-        assertThatThrownBy(() -> TenantContext.where("   ")).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifier cannot be null or empty");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TenantContext.where("  "))
+                .withMessageContaining("tenantIdentifier cannot be null or empty");
     }
 
     @Test
     void whenNestedScopesThenInnerBindingShadowsOuter() {
         TenantContext.where("acme").run(() -> {
             assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme");
-            TenantContext.where("beans").run(() -> {
-                assertThat(TenantContext.getTenantIdentifier()).isEqualTo("beans");
-            });
+            TenantContext.where("beans").run(() ->
+                assertThat(TenantContext.getTenantIdentifier()).isEqualTo("beans")
+            );
             assertThat(TenantContext.getTenantIdentifier()).isEqualTo("acme");
         });
     }

@@ -1,6 +1,12 @@
 {
   "properties": [
     {
+      "name": "arconia.multitenancy.resolution.http.resolution-mode",
+      "defaultValue": [
+        "header"
+      ]
+    },
+    {
       "name": "arconia.multitenancy.resolution.http.filter.order",
       "defaultValue": 2147483647
     },

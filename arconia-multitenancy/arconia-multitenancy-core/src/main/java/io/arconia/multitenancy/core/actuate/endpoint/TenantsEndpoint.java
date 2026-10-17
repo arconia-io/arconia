@@ -20,7 +20,7 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
  * Endpoint for exposing the tenants known to the application.
  * <p>
  * Attribute values are never exposed, only attribute names, since tenant attributes are
- * application-defined and may carry credentials.
+ * application-defined and may carry sensitive information such as secrets.
  */
 @Incubating
 @Endpoint(id = "tenants")

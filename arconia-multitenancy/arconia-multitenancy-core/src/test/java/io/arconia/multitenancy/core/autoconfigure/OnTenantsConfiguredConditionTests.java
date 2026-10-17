@@ -18,16 +18,16 @@ class OnTenantsConfiguredConditionTests {
 
     @Test
     void whenNoTenantsConfiguredThenNoMatch() {
-        contextRunner.run(context -> {
-            assertThat(context).doesNotHaveBean("conditionalBean");
-        });
+        contextRunner.run(context ->
+            assertThat(context).doesNotHaveBean("conditionalBean")
+        );
     }
 
     @Test
     void whenSingleTenantConfiguredThenMatch() {
-        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context -> {
-            assertThat(context).hasBean("conditionalBean");
-        });
+        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context ->
+            assertThat(context).hasBean("conditionalBean")
+        );
     }
 
     @Test
@@ -35,9 +35,9 @@ class OnTenantsConfiguredConditionTests {
         contextRunner
             .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",
                     "arconia.multitenancy.details.tenants[1].identifier=beans")
-            .run(context -> {
-                assertThat(context).hasBean("conditionalBean");
-            });
+            .run(context ->
+                assertThat(context).hasBean("conditionalBean")
+            );
     }
 
     @Test
@@ -45,16 +45,16 @@ class OnTenantsConfiguredConditionTests {
         contextRunner
             .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",
                     "arconia.multitenancy.details.tenants[0].enabled=false")
-            .run(context -> {
-                assertThat(context).hasBean("conditionalBean");
-            });
+            .run(context ->
+                assertThat(context).hasBean("conditionalBean")
+            );
     }
 
     @Test
     void whenTenantIdentifierIsEmptyThenFailFast() {
-        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=").run(context -> {
-            assertThat(context).hasFailed();
-        });
+        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=").run(context ->
+            assertThat(context).hasFailed()
+        );
     }
 
     @Configuration(proxyBeanMethods = false)

@@ -7,13 +7,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
-import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
-import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
+import io.arconia.multitenancy.core.context.TenantContextAttachedEvent;
+import io.arconia.multitenancy.core.context.TenantContextClosedEvent;
 
 /**
  * Manages the SLF4J {@link MDC} tenant identifier in response to tenant context events.
  * <p>
- * Both events are expected to be published synchronously, on the thread the tenant
+ * Both events are expected to be published synchronously on the thread the tenant
  * context is bound to. An asynchronous {@code ApplicationEventMulticaster} would apply
  * the MDC value to the wrong thread.
  */
@@ -54,9 +54,6 @@ public final class MdcTenantEventListener {
         return new Builder();
     }
 
-    /**
-     * Builder for {@link MdcTenantEventListener}.
-     */
     public static final class Builder {
 
         private String tenantIdentifierKey = DEFAULT_TENANT_IDENTIFIER_KEY;

@@ -7,13 +7,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
-import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
 import io.arconia.multitenancy.core.observability.MdcTenantEventListener;
 import io.arconia.multitenancy.core.observability.TenantObservationFilter;
-import io.arconia.multitenancy.core.tenantdetails.DefaultTenantIdentifierValidator;
-import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
+import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
+import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
+import io.arconia.multitenancy.core.resolution.TenantIdentifierValidator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link MultitenancyCoreAutoConfiguration}.
@@ -25,9 +26,9 @@ class MultitenancyCoreAutoConfigurationTests {
 
     @Test
     void tenantKeyGenerator() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(TenantKeyGenerator.class);
-        });
+        contextRunner.run(context ->
+            assertThat(context).hasSingleBean(TenantKeyGenerator.class)
+        );
     }
 
     @Test
@@ -48,61 +49,62 @@ class MultitenancyCoreAutoConfigurationTests {
 
     @Test
     void tenantObservationFilterWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(TenantObservationFilter.class);
-        });
+        contextRunner.run(context ->
+            assertThat(context).hasSingleBean(TenantObservationFilter.class)
+        );
     }
 
     @Test
     void tenantObservationFilterWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.observations.enabled=false").run(context -> {
-            assertThat(context).doesNotHaveBean(TenantObservationFilter.class);
-        });
+        contextRunner.withPropertyValues("arconia.multitenancy.observations.enabled=false").run(context ->
+            assertThat(context).doesNotHaveBean(TenantObservationFilter.class)
+        );
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(MdcTenantEventListener.class);
-        });
+        contextRunner.run(context ->
+            assertThat(context).hasSingleBean(MdcTenantEventListener.class)
+        );
     }
 
     @Test
     void mdcTenantContextEventListenerWhenDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.logging.mdc.enabled=false").run(context -> {
-            assertThat(context).doesNotHaveBean(MdcTenantEventListener.class);
-        });
+        contextRunner.withPropertyValues("arconia.multitenancy.logging.mdc.enabled=false").run(context ->
+            assertThat(context).doesNotHaveBean(MdcTenantEventListener.class)
+        );
     }
 
     @Test
-    void fixedTenantResolverWhenDefault() {
+    void tenantIdentifierValidatorWhenDefaultPolicy() {
         contextRunner.run(context -> {
-            assertThat(context).doesNotHaveBean(FixedTenantResolver.class);
+            var validator = context.getBean(DefaultTenantIdentifierValidator.class);
+            assertThat(validator.getMaxLength()).isEqualTo(64);
+            assertThat(validator.getPattern()).isEqualTo("[a-zA-Z0-9_-]+");
         });
     }
 
     @Test
-    void fixedTenantResolverWhenEnabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true").run(context -> {
-            assertThat(context).hasSingleBean(FixedTenantResolver.class);
-        });
-    }
-
-    @Test
-    void fixedTenantResolverWhenEnabledUsesDefaultIdentifier() {
-        contextRunner.withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true").run(context -> {
-            assertThat(context.getBean(FixedTenantResolver.class).resolveTenantIdentifier(this)).isEqualTo("default");
-        });
-    }
-
-    @Test
-    void fixedTenantResolverWhenCustomIdentifier() {
+    void tenantIdentifierValidatorWhenCustomPolicy() {
         contextRunner
-            .withPropertyValues("arconia.multitenancy.resolution.fixed.enabled=true",
-                    "arconia.multitenancy.resolution.fixed.tenant-identifier=acme")
+            .withPropertyValues("arconia.multitenancy.identifier.max-length=8",
+                    "arconia.multitenancy.identifier.pattern=[a-z]+")
             .run(context -> {
-                assertThat(context.getBean(FixedTenantResolver.class).resolveTenantIdentifier(this)).isEqualTo("acme");
+                var validator = context.getBean(DefaultTenantIdentifierValidator.class);
+                assertThat(validator.getMaxLength()).isEqualTo(8);
+                assertThat(validator.getPattern()).isEqualTo("[a-z]+");
+                assertThatThrownBy(() -> validator.validate("ACME")).isInstanceOf(InvalidTenantIdentifierException.class);
             });
+    }
+
+    @Test
+    void tenantIdentifierValidatorWhenMalformedPatternThenFailFast() {
+        contextRunner.withPropertyValues("arconia.multitenancy.identifier.pattern=[a-z").run(context -> {
+            assertThat(context).hasFailed();
+            assertThat(context.getStartupFailure()).hasStackTraceContaining("pattern is not a valid regular expression")
+                .rootCause()
+                .isInstanceOf(java.util.regex.PatternSyntaxException.class);
+        });
     }
 
     @Configuration(proxyBeanMethods = false)

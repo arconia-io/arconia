@@ -2,10 +2,11 @@ package io.arconia.multitenancy.core.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 
-import io.arconia.multitenancy.core.context.resolvers.FixedTenantResolver;
 import io.arconia.multitenancy.core.observability.Cardinality;
 import io.arconia.multitenancy.core.observability.MdcTenantEventListener;
 import io.arconia.multitenancy.core.observability.TenantObservationFilter;
+import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
+import io.arconia.multitenancy.core.resolution.FixedTenantResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,8 +27,12 @@ class MultitenancyCorePropertiesDefaultsTests {
     }
 
     @Test
-    void fixedTenantResolutionIsDisabledByDefault() {
-        assertThat(new FixedTenantResolutionProperties().isEnabled()).isFalse();
+    void identifierPolicyDefaultsMatchValidatorDefaults() {
+        var validator = DefaultTenantIdentifierValidator.builder().build();
+        var properties = new TenantIdentifierProperties();
+
+        assertThat(properties.getMaxLength()).isEqualTo(validator.getMaxLength());
+        assertThat(properties.getPattern()).isEqualTo(validator.getPattern());
     }
 
     @Test

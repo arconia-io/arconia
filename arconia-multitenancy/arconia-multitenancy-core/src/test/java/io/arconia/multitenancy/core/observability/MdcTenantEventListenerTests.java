@@ -3,11 +3,11 @@ package io.arconia.multitenancy.core.observability;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
-import io.arconia.multitenancy.core.context.events.TenantContextAttachedEvent;
-import io.arconia.multitenancy.core.context.events.TenantContextClosedEvent;
+import io.arconia.multitenancy.core.context.TenantContextAttachedEvent;
+import io.arconia.multitenancy.core.context.TenantContextClosedEvent;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 /**
  * Unit tests for {@link MdcTenantEventListener}.
@@ -16,16 +16,16 @@ class MdcTenantEventListenerTests {
 
     @Test
     void whenNullCustomValueThenThrow() {
-        assertThatThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey(null).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey(null).build())
+            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomValueThenThrow() {
-        assertThatThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey("").build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> MdcTenantEventListener.builder().tenantIdentifierKey("").build())
+            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test

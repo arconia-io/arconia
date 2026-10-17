@@ -22,16 +22,16 @@ class TenantsEndpointAutoConfigurationTests {
 
     @Test
     void tenantsEndpointWhenNoTenantDetailsService() {
-        contextRunner.withPropertyValues("management.endpoints.web.exposure.include=tenants").run(context -> {
-            assertThat(context).doesNotHaveBean(TenantsEndpoint.class);
-        });
+        contextRunner.withPropertyValues("management.endpoints.web.exposure.include=tenants").run(context ->
+            assertThat(context).doesNotHaveBean(TenantsEndpoint.class)
+        );
     }
 
     @Test
     void tenantsEndpointWhenNotExposed() {
-        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context -> {
-            assertThat(context).doesNotHaveBean(TenantsEndpoint.class);
-        });
+        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context ->
+            assertThat(context).doesNotHaveBean(TenantsEndpoint.class)
+        );
     }
 
     @Test

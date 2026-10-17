@@ -11,22 +11,10 @@ public class FixedTenantResolutionProperties {
     public static final String CONFIG_PREFIX = "arconia.multitenancy.resolution.fixed";
 
     /**
-     * Whether a fixed tenant resolution strategy should be used.
-     */
-    private boolean enabled = false;
-
-    /**
-     * Identifier of the fixed tenant to use in each context.
+     * Identifier of the fixed tenant to use when the fixed resolution strategy is part
+     * of a resolution chain.
      */
     private String tenantIdentifier = "default";
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public String getTenantIdentifier() {
         return tenantIdentifier;

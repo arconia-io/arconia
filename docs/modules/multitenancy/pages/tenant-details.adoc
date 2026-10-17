@@ -77,7 +77,7 @@ arconia:
             onboarding: true
 ----
 
-As soon as at least one tenant is configured, Arconia auto-configures a `PropertiesTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
+As soon as at least one tenant is configured, Arconia auto-configures a `InMemoryTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
 
 .Tenant Details Configuration Properties
 |===
@@ -231,7 +231,7 @@ When a custom `TenantDetailsService` is registered, it takes precedence over the
 
 == Tenant Identifier Validation
 
-Before a tenant is looked up, the syntax of the resolved identifier is validated. The identifier arrives from an untrusted source such as an HTTP header or a subdomain, and it goes on to select tenant-specific resources, so it is checked at the boundary regardless of how tenant details are configured.
+Before a tenant is looked up, the syntax of the resolved identifier is validated. The identifier arrives from an untrusted source such as an HTTP header, a path segment, or a subdomain, and it goes on to select tenant-specific resources, so it is checked at the boundary regardless of how tenant details are configured. The same policy applies to every source of tenant identifiers, and to the fixed tenant identifier when the application starts.
 
 The `TenantIdentifierValidator` interface defines the contract:
 
@@ -244,53 +244,62 @@ public interface TenantIdentifierValidator {
 }
 ----
 
-Arconia always auto-configures a `DefaultTenantIdentifierValidator`. It accepts identifiers made up of alphanumeric characters, dashes, and underscores, up to 64 characters. Anything else is rejected with a `TenantVerificationException`, resulting in an HTTP `400 Bad Request` response.
+Arconia always auto-configures a `DefaultTenantIdentifierValidator`. It accepts identifiers that match a regular expression in full, up to a maximum length. By default, identifiers are made up of alphanumeric characters, dashes, and underscores, up to 64 characters, which is a set that is safe to use in logs, cache keys, and schema or database names. Anything else is rejected with an `InvalidTenantIdentifierException`, resulting in an HTTP `400 Bad Request` response.
 
-To accept longer identifiers, register the default implementation with a different limit:
+Both the maximum length and the pattern can be configured. A pattern that is not a valid regular expression fails when the application starts.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    identifier:
+      max-length: 128
+      pattern: "[a-z0-9]+(\\.[a-z0-9]+)*"
+----
+
+.Tenant Identifier Configuration Properties
+|===
+| Property | Default | Description
+
+| `arconia.multitenancy.identifier.max-length`
+| `64`
+| Maximum number of characters accepted in a tenant identifier.
+
+| `arconia.multitenancy.identifier.pattern`
+| `[a-zA-Z0-9_-]+`
+| Regular expression a tenant identifier must match in full.
+|===
+
+For rules that a regular expression cannot express, provide your own implementation. It takes precedence over the auto-configured default:
 
 [source,java]
 ----
-import io.arconia.multitenancy.core.tenantdetails.DefaultTenantIdentifierValidator;
-import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
-
-@Bean
-TenantIdentifierValidator tenantIdentifierValidator() {
-    return DefaultTenantIdentifierValidator.builder()
-        .maxLength(128)
-        .build();
-}
-----
-
-For a different set of accepted characters, provide your own implementation. It takes precedence over the auto-configured default:
-
-[source,java]
-----
-import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
-import io.arconia.multitenancy.core.tenantdetails.TenantIdentifierValidator;
+import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
+import io.arconia.multitenancy.core.resolution.TenantIdentifierValidator;
 
 @Bean
 TenantIdentifierValidator tenantIdentifierValidator() {
     return tenantIdentifier -> {
         if (!tenantIdentifier.matches("[a-z0-9]{8}")) {
-            throw new TenantVerificationException("The tenant identifier must be 8 lowercase alphanumeric characters");
+            throw new InvalidTenantIdentifierException("The tenant identifier must be 8 lowercase alphanumeric characters");
         }
     };
 }
 ----
 
-Keep a custom validator strict. A tenant identifier that passes validation can be used to select a database, a schema, or a cache partition, and it is recorded in logs and observations.
+Keep a custom validator strict. A tenant identifier that passes validation can be used to select a database, a schema, or a cache partition, and it is recorded in logs and observations. Keep the exception message free of the rejected value too, since the message is logged and returned to the caller. There is no switch to turn validation off: widen the pattern instead.
 
 == Tenant Verification
 
 The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier belongs to a tenant that exists and is allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled. Unlike identifier validation, verification is only applied when a `TenantDetailsService` is configured.
 
-Entry points such as the xref:web.adoc[`TenantContextFilter`] call the verifier directly before establishing the tenant context. If verification fails, a `TenantVerificationException` is thrown, resulting in an HTTP `400 Bad Request` response.
+Entry points such as the xref:web.adoc[`TenantContextFilter`] call the verifier directly before establishing the tenant context. If verification fails, a `TenantVerificationException` is thrown, resulting in an HTTP `400 Bad Request` response. An unknown tenant and a disabled tenant are reported with the same message, so that callers cannot find out which tenants exist.
 
 You can provide a custom `TenantVerifier` bean to implement your own verification logic:
 
 [source,java]
 ----
-import io.arconia.multitenancy.core.tenantdetails.TenantVerifier;
+import io.arconia.multitenancy.core.resolution.TenantVerifier;
 
 @Bean
 TenantVerifier tenantVerifier() {

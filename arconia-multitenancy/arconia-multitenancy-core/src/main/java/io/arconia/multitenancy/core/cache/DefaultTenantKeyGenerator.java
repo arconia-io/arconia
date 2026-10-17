@@ -7,7 +7,7 @@ import org.springframework.cache.interceptor.SimpleKeyGenerator;
 
 import io.arconia.core.support.Incubating;
 import io.arconia.multitenancy.core.context.TenantContext;
-import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
+import io.arconia.multitenancy.core.context.TenantNotFoundException;
 
 /**
  * An implementation of {@link TenantKeyGenerator} that generates cache keys combining the

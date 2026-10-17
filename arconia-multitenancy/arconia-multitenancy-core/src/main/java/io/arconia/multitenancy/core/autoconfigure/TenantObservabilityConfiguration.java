@@ -18,8 +18,7 @@ class TenantObservabilityConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBooleanProperty(prefix = TenantObservationProperties.CONFIG_PREFIX, value = "enabled",
-            matchIfMissing = true)
+    @ConditionalOnBooleanProperty(prefix = TenantObservationProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
     TenantObservationFilter tenantObservationFilter(TenantObservationProperties tenantObservationProperties) {
         return TenantObservationFilter.builder()
             .tenantIdentifierKey(tenantObservationProperties.getKeyName())
@@ -29,8 +28,7 @@ class TenantObservabilityConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBooleanProperty(prefix = TenantLoggingProperties.CONFIG_PREFIX, value = "mdc.enabled",
-            matchIfMissing = true)
+    @ConditionalOnBooleanProperty(prefix = TenantLoggingProperties.CONFIG_PREFIX, value = "mdc.enabled", matchIfMissing = true)
     MdcTenantEventListener mdcTenantEventListener(TenantLoggingProperties tenantLoggingProperties) {
         return MdcTenantEventListener.builder()
             .tenantIdentifierKey(tenantLoggingProperties.getMdc().getKeyName())

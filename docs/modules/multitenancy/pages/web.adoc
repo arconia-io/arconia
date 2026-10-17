@@ -1,6 +1,6 @@
 = Web
 
-The Arconia Multitenancy Web module adds HTTP-specific multitenancy support for Spring MVC applications. It provides tenant resolution from HTTP headers, cookies, subdomains or OAuth2 tokens, a servlet filter for automatic context management, and a controller annotation for convenient access to the current tenant.
+The Arconia Multitenancy Web module adds HTTP-specific multitenancy support for Spring MVC applications. It provides tenant resolution from HTTP headers, cookies, paths, subdomains, or OAuth2 tokens, a servlet filter for automatic context management, and a controller annotation for convenient access to the current tenant.
 
 == Dependencies
 
@@ -32,7 +32,53 @@ The web starter includes the core multitenancy module, so all xref:tenant-contex
 
 == HTTP Tenant Resolution
 
-The web module resolves the tenant identifier from each incoming HTTP request using a configurable strategy.
+The web module resolves the tenant identifier from each incoming HTTP request with a chain of resolvers. The chain is consulted in order until one resolver finds a tenant identifier. A resolver that finds nothing it handles hands over to the next one. A resolver that finds unusable tenant information rejects the request, and no further resolver is consulted. See xref:tenant-resolution.adoc[Tenant Resolution] for the contract.
+
+=== Resolution Modes
+
+The `arconia.multitenancy.resolution.http.resolution-mode` property lists the built-in resolvers to use, in the order they are consulted. By default, only the `header` mode is used.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: subdomain, header
+----
+
+With this configuration, the tenant is read from the subdomain when the host matches the configured pattern, and from the `X-TenantId` header otherwise.
+
+[cols="1,3,2", options="header"]
+|===
+| Mode | Source | Behaviour in a chain
+
+| `header`
+| A header of the request.
+| Hands over when the header is absent. Rejects the request when the header appears more than once.
+
+| `cookie`
+| A cookie of the request.
+| Hands over when the cookie is absent. Rejects the request when several cookies carry that name.
+
+| `path`
+| A segment of the request path.
+| Hands over when the path does not match the pattern.
+
+| `subdomain`
+| A label of the request host.
+| Hands over when the host does not match the pattern.
+
+| `oauth2`
+| A claim of the OAuth2 token that authenticated the request.
+| Hands over when the request is not authenticated, or is authenticated by other means than OAuth2. Rejects the request when the OAuth2 token does not carry the claim.
+
+| `fixed`
+| A fixed tenant identifier.
+| Always resolves a tenant, so it can only be the last mode and acts as the default tenant.
+|===
+
+Mode names are case-insensitive. An empty list, a mode listed twice, a `fixed` mode that is not last, and a `path` or `subdomain` mode without its pattern fail when the application starts. The configured chain is logged once at startup.
 
 === Header-Based Resolution
 
@@ -67,9 +113,11 @@ arconia:
           header-name: X-Custom-Tenant
 ----
 
+A request carrying the header more than once is rejected rather than resolved from the first value, since conflicting values are a sign of a misbehaving or malicious client.
+
 === Cookie-Based Resolution
 
-Alternatively, you can resolve the tenant from an HTTP cookie by switching the resolution mode.
+Alternatively, you can resolve the tenant from an HTTP cookie by using the `cookie` mode.
 
 [source,yaml]
 ----
@@ -93,9 +141,30 @@ arconia:
           cookie-name: MY-TENANT
 ----
 
+A request carrying several cookies with that name is rejected, for the same reason as duplicate headers.
+
+=== Path-Based Resolution
+
+The tenant can be resolved from a segment of the request path, so that `/tenants/acme/products` serves the tenant `acme`. Use the `path` mode and configure a pattern for the request path, where the `{tenant}` variable captures the tenant identifier.
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: path
+        path:
+          pattern: /tenants/{tenant}/**
+----
+
+The pattern follows the same syntax as Spring MVC request mappings and is matched against the path within the application, so it keeps working when the application is deployed under a context path. The variable may carry an inline regular expression such as `/tenants/{tenant:[a-z]+}/**`. A request whose path does not match the pattern resolves no tenant.
+
+The resolver only extracts the identifier. It does not rewrite the path, so your handler mappings must still include the tenant segment, for example `@GetMapping("/tenants/{tenant}/products")`, or a gateway in front of the application must strip it.
+
 === Subdomain-Based Resolution
 
-The tenant can also be resolved from the subdomain of the request, so that `acme.example.com` serves the tenant `acme`. Switch the resolution mode and configure a pattern for the request host, where the `{tenant}` variable captures the tenant identifier.
+The tenant can also be resolved from the subdomain of the request, so that `acme.example.com` serves the tenant `acme`. Use the `subdomain` mode and configure a pattern for the request host, where the `{tenant}` variable captures the tenant identifier.
 
 [source,yaml]
 ----
@@ -110,13 +179,13 @@ arconia:
 
 The pattern follows the same syntax as Spring MVC request mappings, with the dot as the separator, and is matched case-insensitively against the whole host. The variable may be embedded in a label, so `{tenant}-admin.example.com` serves the tenant `acme` at `acme-admin.example.com`, and it may carry an inline regular expression such as `{tenant:[a-z0-9-]+}.example.com`. A request whose host does not match the pattern resolves no tenant. The variable matches a single label, so nested subdomains such as `api.acme.example.com` never match the `{tenant}.example.com` pattern.
 
-Host names are case-insensitive, so the host is lowercased before matching and the resolved tenant identifier is always lowercase: `Acme.example.com` and `acme.example.com` both serve the tenant `acme`. Register tenants with lowercase identifiers when using this mode, because a tenant such as `Acme` can never be matched from a subdomain.
+Host names are case-insensitive, so the host is lowercased before matching, and the resolved tenant identifier is always lowercase: `Acme.example.com` and `acme.example.com` both serve the tenant `acme`. Register tenants with lowercase identifiers when using this mode, because a tenant such as `Acme` can never be matched from a subdomain. This is the only mode that normalizes case. Identifiers resolved from headers, cookies, paths and tokens are used as they are.
 
 During local development, you can use the `{tenant}.localhost` pattern. Most browsers resolve `acme.localhost` to the loopback address without any extra setup, so `http://acme.localhost:8080` serves the tenant `acme`.
 
 [IMPORTANT]
 ====
-The host is read from the request as seen by the application. When the application runs behind a reverse proxy or load balancer, configure Spring Boot to process forwarded headers, for example with `server.forward-headers-strategy=framework`, so that the original host from `X-Forwarded-Host` is used rather than the address of the proxy.
+The host is read from the request as seen by the application. When the application runs behind a reverse proxy or load balancer, configure Spring Boot to process forwarded headers, for example, with `server.forward-headers-strategy=framework`, so that the original host from `X-Forwarded-Host` is used rather than the address of the proxy.
 ====
 
 === OAuth2-Based Resolution
@@ -132,9 +201,9 @@ arconia:
         resolution-mode: oauth2
 ----
 
-This works both for OAuth2 client applications, where the claim is read from the ID token and the UserInfo response, and for OAuth2 resource servers, where it is read from the access token, whether it is a JWT or an opaque token resolved via introspection. Because the claim is read from the authenticated principal rather than from the raw `Authorization` header, it also works for client applications that carry a session instead of a bearer token.
+This works both for OAuth2 client applications, where the claim is read from the ID token and the UserInfo response, and for OAuth2 resource servers, where it is read from the access token, whether it is a JWT or an opaque token resolved via introspection. Because the claim is read from the authenticated principal rather than from the raw `Authorization` header, it also works for client applications that carry a session instead of a bearer token. The mode is named after what it reads, an OAuth2 principal, rather than one token format.
 
-It requires Spring Security OAuth2 on the classpath, for example via the `spring-boot-starter-security-oauth2-resource-server` or `spring-boot-starter-security-oauth2-client` dependency.
+It requires Spring Security OAuth2 on the classpath, for example, via the `spring-boot-starter-security-oauth2-resource-server` or `spring-boot-starter-security-oauth2-client` dependency. The application fails to start otherwise.
 
 By default, the claim name is `tenant_id`. You can customize it:
 
@@ -149,69 +218,206 @@ arconia:
           claim-name: tid
 ----
 
+In a chain, this mode hands over to the next resolver when the request is not authenticated, which lets a login page be served by tenant from the subdomain while authenticated requests take the tenant from the token. Once a request is authenticated with an OAuth2 token, a missing claim rejects the request instead of handing over, so that a client can never make the application fall back to a header it controls.
+
 [IMPORTANT]
 ====
-This mode requires the request to be authenticated before the tenant is resolved, so the `TenantContextFilter` must run after the Spring Security filter chain. That is the default. See xref:_oauth2_mode[OAuth2 Mode] under Filter Placement if you change the filter placement.
+This mode requires the request to be authenticated before the tenant is resolved, so the `TenantContextFilter` must run after the Spring Security filter chain. That is the default. See xref:_oauth2_mode[OAuth2 Mode] under Filter Placement if you change the filter placement. A `permitAll` endpoint that is not among the xref:_ignoring_paths[ignored paths] is reached by anonymous requests, which the `oauth2` mode alone cannot resolve, so either ignore the path or add another mode to the chain.
 ====
+
+=== Fixed Tenant and Default Tenant
+
+The `fixed` mode resolves the tenant configured in `arconia.multitenancy.resolution.fixed.tenant-identifier`, regardless of the request. On its own, it turns the application into a single-tenant deployment:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: fixed
+      fixed:
+        tenant-identifier: acme
+----
+
+As the last mode of a chain, it acts as the default tenant, used only when no other resolver found a tenant in the request:
+
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    resolution:
+      http:
+        resolution-mode: header, fixed
+      fixed:
+        tenant-identifier: public
+----
+
+A request rejected by an earlier resolver, for example, because it carries two `X-TenantId` headers, never reaches the fixed tenant. Without a `fixed` mode, a request without a tenant is rejected, which is the safe default for an application that must never serve data without knowing the tenant.
+
+The fixed identifier goes through the same xref:tenant-details.adoc#_tenant_identifier_validation[validation] at startup and xref:tenant-details.adoc#_tenant_verification[verification] on each request as any other tenant, so it must be a known, enabled tenant when a `TenantDetailsService` is configured.
+
+=== Custom Tenant Resolution
+
+The configured modes are assembled into a single `HttpRequestTenantResolver` bean. Define your own bean of that type to replace it entirely, following the usual Spring Boot convention: the auto-configuration backs off.
+
+[source,java]
+----
+import io.arconia.multitenancy.web.resolution.HttpRequestTenantResolver;
+
+@Bean
+HttpRequestTenantResolver tenantResolver() {
+    return request -> request.getParameter("tenant");
+}
+----
+
+To combine your own strategy with the built-in ones, compose them explicitly with a `CompositeHttpRequestTenantResolver`, which consults its resolvers in order:
+
+[source,java]
+----
+import io.arconia.multitenancy.web.resolution.CompositeHttpRequestTenantResolver;
+import io.arconia.multitenancy.web.resolution.HeaderTenantResolver;
+import io.arconia.multitenancy.web.resolution.HttpRequestTenantResolver;
+
+@Bean
+HttpRequestTenantResolver tenantResolver() {
+    HttpRequestTenantResolver queryParameterTenantResolver = request -> request.getParameter("tenant");
+    return new CompositeHttpRequestTenantResolver(List.of(
+        queryParameterTenantResolver,
+        HeaderTenantResolver.builder().build()));
+}
+----
+
+The `resolution-mode` property and the mode-specific properties have no effect once you define your own resolver bean, since the built-in resolvers are then created by your code.
+
+Follow the resolution contract: return `null` when the request carries nothing your resolver handles, and throw an `InvalidTenantIdentifierException` when it carries tenant information that is present but unusable. Keep exception messages free of request values, since they are logged and returned to the caller. See xref:tenant-resolution.adoc#_tenantresolver[TenantResolver].
+
+`HttpRequestTenantResolver` is a specialization of the core xref:tenant-resolution.adoc[`TenantResolver<T>`] interface for `HttpServletRequest` sources.
+
+=== Trusting the Resolved Tenant
+
+In the `header`, `cookie`, `path` and `subdomain` modes the tenant identifier is client input. Validation proves that it is well-formed, and verification proves that the tenant exists and is enabled. Neither proves that the caller belongs to that tenant. With a shared identity provider, an authenticated user of tenant `acme` can send `X-TenantId: beans` and be served as `beans` unless the application checks that the tenant in the token matches the tenant in the context. Until Arconia provides that check, do it in your authorization rules whenever the tenant does not come from the token itself.
+
+With one identity provider per tenant, the check is implicit: the tenant resolved from the request selects the trusted issuer, and a token minted for another tenant does not validate against its keys. A tenant identifier resolved before authentication is safe to use for selecting a trusted issuer, as long as it is resolved through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted and never used to build an issuer URL directly.
+
+The `oauth2` mode reads the tenant from the verified token, so the identity and the tenant come from the same trusted source.
 
 === Configuration Properties
 
 .HTTP Tenant Resolution Configuration Properties
 |===
-|Property |Default |Description
+| Property | Default | Description
 
-|`arconia.multitenancy.resolution.http.enabled`
-|`true`
-|Whether HTTP tenant resolution is enabled.
+| `arconia.multitenancy.resolution.http.enabled`
+| `true`
+| Whether HTTP tenant resolution is enabled. When disabled, neither the resolvers nor the filter are configured.
 
-|`arconia.multitenancy.resolution.http.resolution-mode`
-|`header`
-|Mode of HTTP resolution. Options: `header`, `cookie`, `subdomain`, `oauth2`.
+| `arconia.multitenancy.resolution.http.resolution-mode`
+| `header`
+| Modes of HTTP resolution, consulted in order until one resolves a tenant. Options: `header`, `cookie`, `path`, `subdomain`, `oauth2`, `fixed`. The `fixed` mode always resolves a tenant, so it can only be the last one.
 
-|`arconia.multitenancy.resolution.http.header.header-name`
-|`X-TenantId`
-|Name of the HTTP header from which to resolve the current tenant.
+| `arconia.multitenancy.resolution.http.header.header-name`
+| `X-TenantId`
+| Name of the HTTP header from which to resolve the current tenant.
 
-|`arconia.multitenancy.resolution.http.cookie.cookie-name`
-|`TENANT-ID`
-|Name of the HTTP cookie from which to resolve the current tenant.
+| `arconia.multitenancy.resolution.http.cookie.cookie-name`
+| `TENANT-ID`
+| Name of the HTTP cookie from which to resolve the current tenant.
 
-|`arconia.multitenancy.resolution.http.subdomain.pattern`
+| `arconia.multitenancy.resolution.http.path.pattern`
 |
-|Pattern matched against the request host, containing a `{tenant}` variable that captures the tenant identifier, such as `{tenant}.example.com`. Required when the resolution mode is `subdomain`.
+| Pattern matched against the request path, containing a `{tenant}` variable that captures the tenant identifier, such as `/tenants/{tenant}/**`. Required when the `path` mode is used.
 
-|`arconia.multitenancy.resolution.http.oauth2.claim-name`
-|`tenant_id`
-|Name of the OAuth2 token claim from which to resolve the current tenant.
+| `arconia.multitenancy.resolution.http.subdomain.pattern`
+|
+| Pattern matched against the request host, containing a `{tenant}` variable that captures the tenant identifier, such as `{tenant}.example.com`. Required when the `subdomain` mode is used.
+
+| `arconia.multitenancy.resolution.http.oauth2.claim-name`
+| `tenant_id`
+| Name of the OAuth2 token claim from which to resolve the current tenant.
 |===
+
+The fixed tenant identifier is configured in `arconia.multitenancy.resolution.fixed.tenant-identifier`, described in xref:tenant-resolution.adoc#_fixed_tenant_resolution[Fixed Tenant Resolution].
 
 == Tenant Context Filter
 
-The `TenantContextFilter` is a servlet filter that intercepts incoming HTTP requests, resolves the tenant, validates the identifier via a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`], optionally verifies it via a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], and establishes the xref:tenant-context.adoc[tenant context] for the duration of the request using a `ScopedValue` binding. It publishes `TenantContextAttachedEvent` on entry and `TenantContextClosedEvent` on completion, triggering all registered xref:tenant-context.adoc#_tenant_context_events[event listeners].
+The `TenantContextFilter` is a servlet filter that intercepts incoming HTTP requests, resolves the tenant with the resolver chain, validates the identifier via a xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`], optionally verifies it via a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], and establishes the xref:tenant-context.adoc[tenant context] for the duration of the request using a `ScopedValue` binding. It publishes `TenantContextAttachedEvent` on entry and `TenantContextClosedEvent` on completion, triggering all registered xref:tenant-context.adoc#_tenant_context_events[event listeners].
 
-If the tenant identifier cannot be resolved (e.g., the header is missing), fails validation (e.g., it contains characters outside the accepted set), or fails verification (e.g., the tenant is not found or disabled), the filter returns an HTTP `400 Bad Request` response with an `application/problem+json` body describing the error.
+=== Failure Responses
 
-If the tenant registry itself is unavailable, for example because the database backing the `TenantDetailsService` cannot be reached, the filter returns an HTTP `503 Service Unavailable` response instead. That distinguishes a caller sending a bad tenant identifier from an outage on the server side, and keeps a registry failure from surfacing as an unhandled error on every request.
+When no tenant context can be established, the filter hands the request to a `TenantResolutionFailureHandler` together with a `TenantResolutionFailure` describing the outcome. The default handler writes an `application/problem+json` response.
 
-The filter also runs on error dispatches, so error handling for a failed request executes with the same tenant bound as the request that failed. On an error dispatch the filter never writes a response of its own: if the tenant cannot be resolved or validated there, the request proceeds without a tenant context rather than replacing the response the container is already producing.
+[cols="1,3,1", options="header"]
+|===
+| Outcome | Meaning | Status
+
+| `MISSING`
+| No resolver found a tenant identifier in the request.
+| `400`
+
+| `INVALID`
+| A tenant identifier was present but unusable: it violates the identifier policy, or the request carries conflicting or incomplete tenant information, such as two `X-TenantId` headers or an OAuth2 token without the tenant claim.
+| `400`
+
+| `REJECTED`
+| The tenant identifier is well-formed, but the tenant verifier rejected it because the tenant is unknown or disabled.
+| `400`
+
+| `UNAVAILABLE`
+| The tenant could not be verified because the tenant registry failed, for example, because the database backing the `TenantDetailsService` cannot be reached.
+| `503`
+|===
+
+The `detail` of the problem response carries the message of the failure and `instance` carries the request URI. An unknown tenant and a disabled tenant produce the same message on purpose so that callers cannot enumerate which tenants exist. A registry outage is reported as `503` rather than `400`, so that a server-side problem is distinguishable from a bad request and does not surface as an unhandled error on every request.
+
+Every rejection is logged at `DEBUG` level, with the identifier in a log-safe form. A registry outage is logged at `ERROR` level.
+
+The response is produced by the filter, outside Spring MVC, so `@ControllerAdvice` and `spring.mvc.problemdetails` do not apply to it. To shape the response yourself, for example, to redirect a browser to a tenant selection page when the tenant cookie is missing, register a `TenantResolutionFailureHandler` bean:
+
+[source,java]
+----
+import io.arconia.multitenancy.web.resolution.TenantResolutionFailure;
+import io.arconia.multitenancy.web.resolution.TenantResolutionFailureHandler;
+
+@Bean
+TenantResolutionFailureHandler tenantResolutionFailureHandler() {
+    return (request, response, failure) -> {
+        if (failure.outcome() == TenantResolutionFailure.Outcome.MISSING) {
+            response.sendRedirect("/choose-tenant");
+        } else {
+            response.sendError(400, failure.message());
+        }
+    };
+}
+----
+
+The handler decides the response only. The filter still decides the outcome, logs it, and never calls the handler on an error dispatch.
+
+=== Error Dispatches
+
+The filter also runs on error dispatches, so error handling for a failed request executes with the same tenant bound as the request that failed. On an error dispatch the filter never writes a response of its own: if the tenant cannot be resolved or validated there, the request proceeds without a tenant context rather than replacing the response the container is already producing. Spring Boot registers `Filter` beans for every dispatcher type, and the Spring Security filter chain is registered for every dispatcher type too, so this behaviour is the same whether the filter runs as a servlet filter or inside the security filter chain.
 
 [NOTE]
 ====
 Asynchronous request handling is a separate case. A `Callable` or `DeferredResult` runs on another thread, which does not inherit the `ScopedValue` binding, and the response is completed on a dispatch where the filter does not re-bind the tenant. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
 ====
 
+A resolver, validator, or verifier that throws an unexpected exception other than the ones described above is treated as a programming error, and the exception propagates like any other servlet exception.
+
 === Filter Placement
 
 The `TenantContextFilter` is auto-configured as a standard servlet filter that runs after the Spring Security filter chain. With that placement the tenant is available to your controllers and services, but not to anything that runs inside the security filter chain. Whether that is enough depends on the resolution mode and on what needs the tenant.
 
+Running after Spring Security is the default for two reasons. The `oauth2` mode needs an authenticated request. And for every mode, it means that an unauthenticated caller is answered by Spring Security alone: with the tenant filter in front of the security filter chain, an unauthenticated caller could tell a known tenant, answered with `401` by Spring Security, from an unknown or missing one, answered with `400` by the tenant filter, and use the difference to enumerate tenants.
+
 [WARNING]
 ====
-Anything that runs during authentication and reads the tenant context requires the tenant to be bound before the security filter chain runs. Typical examples are an `AuthenticationManagerResolver` that selects the JWT decoder for the tenant, or a `ClientRegistrationRepository` that looks up the tenant's OAuth2 client. With the default placement, such a component calls `TenantContext.getRequiredTenantIdentifier()` before any tenant is bound, the resulting `TenantNotFoundException` escapes the security filter chain, and the request fails with an HTTP `500` response. The first visible sign is the tenant filter running on the error dispatch rather than on the request itself. Use the placement described in xref:_header_cookie_and_subdomain_modes[Header, Cookie and Subdomain Modes] for these cases.
+Anything that runs during authentication and reads the tenant context requires the tenant to be bound before the security filter chain runs. Typical examples are an `AuthenticationManagerResolver` that selects the JWT decoder for the tenant, or a `ClientRegistrationRepository` that looks up the tenant's OAuth2 client. With the default placement, such a component calls `TenantContext.getRequiredTenantIdentifier()` before any tenant is bound, the resulting `TenantNotFoundException` escapes the security filter chain, and the request fails with an HTTP `500` response. The first visible sign is the tenant filter running on the error dispatch rather than on the request itself. Use the placement described in xref:_header_cookie_path_and_subdomain_modes[Header, Cookie, Path and Subdomain Modes] for these cases.
 ====
 
-==== Header, Cookie and Subdomain Modes
+==== Header, Cookie, Path and Subdomain Modes
 
-In these modes the tenant comes from the request itself, so nothing is gained by waiting for authentication. Bind the tenant before the security filter chain so that it is available to authentication and authorization alike. The simplest way is to lower the filter order, since Spring Security registers its filter chain at order `-100`:
+In these modes the tenant comes from the request itself, so nothing is gained by waiting for authentication. When authentication needs the tenant, bind it before the security filter chain. The simplest way is to lower the filter order, since Spring Security registers its filter chain at order `-100`:
 
 [source,yaml]
 ----
@@ -225,11 +431,16 @@ arconia:
 
 The filter stays registered as a standard servlet filter, so no further configuration is needed. The tenant is then resolved for every request reaching the filter, including the login and OAuth2 redirect endpoints. Those are part of the ignored paths by default, so authentication keeps working, but any other endpoint that must be reachable before a tenant is known has to be added to the ignored paths as well.
 
+[WARNING]
+====
+With the filter in front of Spring Security, unauthenticated requests are answered by the tenant filter first. A request with a known tenant proceeds to Spring Security and gets `401`, while a request with an unknown or missing tenant gets `400`. The difference lets an unauthenticated caller find out which tenants exist. Accept this only when authentication itself needs the tenant, and consider a custom `TenantResolutionFailureHandler` that answers every failure with the same status Spring Security uses.
+====
+
 Alternatively, place the filter inside the security filter chain, right before the authentication filter that needs it. In an OAuth2 resource server that is the `BearerTokenAuthenticationFilter`, so that an `AuthenticationManagerResolver` can select the authorization server for the tenant:
 
 [source,java]
 ----
-import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+import io.arconia.multitenancy.web.context.TenantContextFilter;
 
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 
@@ -244,7 +455,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http, TenantContextFilter t
 
 In an OAuth2 login client, place it before the `OAuth2AuthorizationRequestRedirectFilter` instead, so that the tenant is known when the authorization request is built. Either way, also disable the standard servlet registration as described in xref:_registering_the_filter_in_the_security_filter_chain[Registering the Filter in the Security Filter Chain].
 
-A tenant identifier resolved before authentication comes from unverified request data. It is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted, and never use it to build an issuer URL directly.
+A tenant identifier resolved before authentication comes from unverified request data. It is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted and never use it to build an issuer URL directly.
 
 ==== OAuth2 Mode
 
@@ -252,7 +463,7 @@ In this mode the tenant is read from the authenticated principal, so the filter 
 
 [source,java]
 ----
-import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+import io.arconia.multitenancy.web.context.TenantContextFilter;
 
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
@@ -273,7 +484,7 @@ Spring Boot registers every `Filter` bean as a standard servlet filter. When the
 
 [source,java]
 ----
-import io.arconia.multitenancy.web.context.filters.TenantContextFilter;
+import io.arconia.multitenancy.web.context.TenantContextFilter;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
@@ -303,6 +514,8 @@ Certain paths can be excluded from tenant resolution. By default, the following 
 * `/login/oauth2/code/**`
 
 The login and OAuth2 endpoints are ignored so that a user can still authenticate when no tenant has been established yet. At the default filter order those endpoints are handled inside the Spring Security filter chain and never reach the tenant filter, but they do reach it when the login page is served by your own controller, or when the filter is ordered ahead of the security chain.
+
+The actuator paths are ignored so that health probes and metrics scrapers need no tenant. The defaults assume Spring Boot's default `management.endpoints.web.base-path`, and the `/livez` and `/readyz` entries match the additional probe paths Spring Boot registers when `management.endpoint.health.probes.add-additional-paths` is enabled. Adjust the paths if you change the base path. When the actuator is served on a separate port with `management.server.port`, the tenant filter is not registered on that port at all, since Spring Boot registers application filters only on the main server, so these entries only matter on a shared port.
 
 Patterns are matched against the path within the application, so they keep working when the application is deployed under a context path. With `server.servlet.context-path=/app`, the `/actuator/**` pattern still matches a request to `/app/actuator/health`.
 
@@ -336,7 +549,7 @@ arconia:
 
 === Disabling the Filter
 
-You can disable the tenant context filter while keeping the rest of the multitenancy configuration active:
+You can disable the tenant context filter while keeping the rest of the multitenancy configuration active, including the resolver beans, which you can then use from your own filter:
 
 [source,yaml]
 ----
@@ -348,27 +561,29 @@ arconia:
           enabled: false
 ----
 
+To remove the resolvers as well, disable HTTP tenant resolution altogether with `arconia.multitenancy.resolution.http.enabled=false`.
+
 === Configuration Properties
 
 .Tenant Context Filter Configuration Properties
 |===
-|Property |Default |Description
+| Property | Default | Description
 
-|`arconia.multitenancy.resolution.http.filter.enabled`
-|`true`
-|Whether the HTTP filter resolving the current tenant is enabled.
+| `arconia.multitenancy.resolution.http.filter.enabled`
+| `true`
+| Whether the HTTP filter resolving the current tenant is enabled.
 
-|`arconia.multitenancy.resolution.http.filter.order`
-|`2147483647`
-|Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain. Set it below `-100` to bind the tenant before the security filter chain. See xref:_filter_placement[Filter Placement].
+| `arconia.multitenancy.resolution.http.filter.order`
+| `2147483647`
+| Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain. Set it below `-100` to bind the tenant before the security filter chain. See xref:_filter_placement[Filter Placement].
 
-|`arconia.multitenancy.resolution.http.filter.ignore-paths`
-|`/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
-|HTTP request paths for which tenant resolution will not be performed.
+| `arconia.multitenancy.resolution.http.filter.ignore-paths`
+| `/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
+| HTTP request paths for which tenant resolution will not be performed.
 
-|`arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
-|`[]`
-|Additional HTTP request paths for which tenant resolution will not be performed.
+| `arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
+| `[]`
+| Additional HTTP request paths for which tenant resolution will not be performed.
 |===
 
 == @TenantIdentifier Annotation
@@ -377,7 +592,7 @@ In Spring MVC controllers, you can inject the current tenant identifier directly
 
 [source,java]
 ----
-import io.arconia.multitenancy.web.context.annotations.TenantIdentifier;
+import io.arconia.multitenancy.web.context.TenantIdentifier;
 
 @RestController
 class TenantController {
@@ -403,22 +618,3 @@ String status(@TenantIdentifier Optional<String> tenantId) {
 ----
 
 NOTE: You can also use the `TenantContext` directly to access the tenant identifier from any component, not just controllers. The `@TenantIdentifier` annotation is a convenience for Spring MVC handler methods.
-
-== Custom Tenant Resolution
-
-You can implement your own HTTP tenant resolution strategy by providing a custom `HttpRequestTenantResolver` bean. This replaces the resolver selected by the resolution mode.
-
-[source,java]
-----
-import io.arconia.multitenancy.web.context.resolvers.HttpRequestTenantResolver;
-
-@Bean
-HttpRequestTenantResolver customTenantResolver() {
-    return request -> {
-        // Custom logic to extract tenant from the request
-        return request.getParameter("tenant");
-    };
-}
-----
-
-`HttpRequestTenantResolver` is a specialization of the core xref:tenant-resolution.adoc[`TenantResolver<T>`] interface for `HttpServletRequest` sources.

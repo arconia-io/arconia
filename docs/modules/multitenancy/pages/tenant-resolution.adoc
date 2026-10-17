@@ -1,6 +1,6 @@
 = Tenant Resolution
 
-Tenant resolution is the process of identifying which tenant a request belongs to. Arconia Multitenancy defines a strategy-based model for resolving tenants, with built-in implementations and support for custom resolvers.
+Tenant resolution is the process of identifying which tenant a request belongs to. Arconia Multitenancy defines a strategy-based model for resolving tenants, with built-in implementations, support for custom resolvers, and a way to consult several resolvers in turn.
 
 == TenantResolver
 
@@ -11,16 +11,34 @@ The `TenantResolver<T>` interface is the core abstraction for tenant resolution.
 @FunctionalInterface
 public interface TenantResolver<T> {
 
+    @Nullable
     String resolveTenantIdentifier(T source);
 
 }
 ----
 
+A resolver has three possible outcomes:
+
+* It returns a tenant identifier when the source carries one.
+* It returns `null` when the source carries nothing this resolver handles, so that another resolver may be consulted.
+* It throws an `InvalidTenantIdentifierException` when the source carries tenant information that is present but unusable, such as conflicting values or an authenticated principal without a tenant claim. No further resolver is consulted in that case, so that unusable input from one source never falls through to a less trusted one.
+
+Exception messages are logged and, in web applications, returned to the caller. They should describe the rule that was violated rather than embed the raw source value.
+
 Different modules provide specialized implementations of this interface for specific source contexts. For example, the xref:web.adoc[web module] provides `HttpRequestTenantResolver` to resolve tenants from HTTP requests.
+
+== Resolver Chains
+
+Several resolvers can be consulted in turn: a resolver returning `null` hands over to the next one, and a resolver throwing an `InvalidTenantIdentifierException` stops the chain. In xref:web.adoc#_http_tenant_resolution[web applications], the chain is assembled for you from the configured resolution modes, and `CompositeHttpRequestTenantResolver` lets you assemble your own.
 
 == Fixed Tenant Resolution
 
-For single-tenant applications or testing scenarios, the core module provides a `FixedTenantResolver` that always returns the same tenant identifier.
+The core module provides a `FixedTenantResolver` that always returns the same tenant identifier, regardless of the source context. It serves two purposes:
+
+* On its own, it turns a multitenant codebase into a single-tenant deployment, for example, when each tenant runs its own instance of the application, or in tests.
+* As the last resolver of a chain, it acts as the default tenant: it is used only when no other resolver found a tenant in the request. Since it always resolves a tenant, nothing after it in a chain would ever be consulted.
+
+The identifier it returns is configured once and shared by every chain that includes it:
 
 [source,yaml]
 ----
@@ -28,40 +46,22 @@ arconia:
   multitenancy:
     resolution:
       fixed:
-        enabled: true
-        tenant-identifier: my-tenant
+        tenant-identifier: public
 ----
 
-When fixed resolution is enabled, every request is associated with the configured tenant identifier, regardless of the source context.
+The fixed identifier is validated against the xref:tenant-details.adoc#_tenant_identifier_validation[identifier policy] when the application starts, so a misconfigured value fails at startup rather than on the first request. Like any other resolved tenant, it is still xref:tenant-details.adoc#_tenant_verification[verified] on each request when a `TenantDetailsService` is configured, so the fixed tenant must be a known, enabled tenant.
+
+Whether and where the fixed resolver takes part in the resolution is decided by each entry point. In web applications, add `fixed` to the xref:web.adoc#_resolution_modes[resolution modes].
 
 .Fixed Tenant Resolution Configuration Properties
 |===
-|Property |Default |Description
+| Property | Default | Description
 
-|`arconia.multitenancy.resolution.fixed.enabled`
-|`false`
-|Whether a fixed tenant resolution strategy should be used.
-
-|`arconia.multitenancy.resolution.fixed.tenant-identifier`
-|`default`
-|Identifier of the fixed tenant to use in each context.
+| `arconia.multitenancy.resolution.fixed.tenant-identifier`
+| `default`
+| Identifier of the fixed tenant to use when the fixed resolution strategy is part of a resolution chain.
 |===
 
 == Custom Tenant Resolution
 
-You can implement the `TenantResolver<T>` interface to create custom resolution strategies for any source context:
-
-[source,java]
-----
-import io.arconia.multitenancy.core.context.resolvers.TenantResolver;
-
-@Bean
-TenantResolver<MyContext> customTenantResolver() {
-    return context -> {
-        // Custom logic to extract tenant from the context
-        return context.getTenantId();
-    };
-}
-----
-
-For HTTP-specific custom resolvers, see xref:web.adoc#_custom_tenant_resolution[Custom Tenant Resolution] in the Web module documentation.
+You can implement the `TenantResolver<T>` interface to create custom resolution strategies for any source context, following the outcome rules above. For HTTP requests, register an `HttpRequestTenantResolver` bean: it replaces the auto-configured resolver. See xref:web.adoc#_custom_tenant_resolution[Custom Tenant Resolution] in the Web module documentation.

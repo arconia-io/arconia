@@ -1,0 +1,16 @@
+package io.arconia.multitenancy.core.context;
+
+import io.arconia.core.support.Incubating;
+
+/**
+ * A {@link TenantEvent} which indicates a tenant has been attached to the current
+ * context.
+ */
+@Incubating
+public final class TenantContextAttachedEvent extends TenantEvent {
+
+    public TenantContextAttachedEvent(String tenantIdentifier, Object source) {
+        super(tenantIdentifier, source);
+    }
+
+}

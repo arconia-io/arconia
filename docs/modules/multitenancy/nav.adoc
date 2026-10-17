@@ -1,4 +1,5 @@
 .xref:index.adoc[Multitenancy]
+* xref:architecture.adoc[Architecture]
 * Core
 ** xref:tenant-context.adoc[Tenant Context]
 ** xref:tenant-resolution.adoc[Tenant Resolution]

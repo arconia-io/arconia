@@ -4,7 +4,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import io.arconia.core.support.Incubating;
-import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
 
 /**
  * Provides access to the current tenant identifier via a {@link ScopedValue}.

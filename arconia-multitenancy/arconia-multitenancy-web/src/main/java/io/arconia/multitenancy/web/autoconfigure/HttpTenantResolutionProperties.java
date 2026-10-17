@@ -1,5 +1,6 @@
 package io.arconia.multitenancy.web.autoconfigure;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -20,9 +21,10 @@ public class HttpTenantResolutionProperties {
     private boolean enabled = true;
 
     /**
-     * Mode of HTTP resolution.
+     * Modes of HTTP resolution, consulted in order until one resolves a tenant. The
+     * "fixed" mode always resolves a tenant, so it can only be the last one.
      */
-    private HttpResolutionMode resolutionMode = HttpResolutionMode.HEADER;
+    private List<HttpResolutionMode> resolutionMode = List.of(HttpResolutionMode.HEADER);
 
     /**
      * Configuration for HTTP header tenant resolution.
@@ -33,6 +35,11 @@ public class HttpTenantResolutionProperties {
      * Configuration for HTTP cookie tenant resolution.
      */
     private final Cookie cookie = new Cookie();
+
+    /**
+     * Configuration for HTTP path tenant resolution.
+     */
+    private final Path path = new Path();
 
     /**
      * Configuration for HTTP subdomain tenant resolution.
@@ -57,11 +64,11 @@ public class HttpTenantResolutionProperties {
         this.enabled = enabled;
     }
 
-    public HttpResolutionMode getResolutionMode() {
+    public List<HttpResolutionMode> getResolutionMode() {
         return resolutionMode;
     }
 
-    public void setResolutionMode(HttpResolutionMode resolutionMode) {
+    public void setResolutionMode(List<HttpResolutionMode> resolutionMode) {
         this.resolutionMode = resolutionMode;
     }
 
@@ -71,6 +78,10 @@ public class HttpTenantResolutionProperties {
 
     public Cookie getCookie() {
         return cookie;
+    }
+
+    public Path getPath() {
+        return path;
     }
 
     public Subdomain getSubdomain() {
@@ -119,12 +130,33 @@ public class HttpTenantResolutionProperties {
 
     }
 
+    public static class Path {
+
+        /**
+         * Pattern matched against the request path, containing a "{tenant}" variable that
+         * captures the tenant identifier, such as "/tenants/{tenant}/**" for tenants served
+         * at "/tenants/acme/...". Required when the "path" resolution mode is used.
+         */
+        @Nullable
+        private String pattern;
+
+        @Nullable
+        public String getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(@Nullable String pattern) {
+            this.pattern = pattern;
+        }
+
+    }
+
     public static class Subdomain {
 
         /**
          * Pattern matched against the request host, containing a "{tenant}" variable that
          * captures the tenant identifier, such as "{tenant}.example.com" for tenants served
-         * at "acme.example.com". Required when the resolution mode is "subdomain".
+         * at "acme.example.com". Required when the "subdomain" resolution mode is used.
          */
         @Nullable
         private String pattern;
@@ -167,7 +199,8 @@ public class HttpTenantResolutionProperties {
         /**
          * Order of the HTTP filter resolving the current tenant. By default, the filter
          * runs after the Spring Security filter chain, which is required when resolving
-         * the tenant from an OAuth2 token.
+         * the tenant from an OAuth2 token and keeps unauthenticated callers from probing
+         * which tenants exist.
          */
         private int order = Ordered.LOWEST_PRECEDENCE;
 
@@ -218,11 +251,40 @@ public class HttpTenantResolutionProperties {
 
     }
 
+    /**
+     * Sources from which the current tenant can be resolved.
+     */
     public enum HttpResolutionMode {
 
+        /**
+         * A cookie of the request.
+         */
         COOKIE,
+
+        /**
+         * A fixed tenant identifier, regardless of the request. Always resolves a tenant,
+         * so it acts as the default tenant when placed last in the chain.
+         */
+        FIXED,
+
+        /**
+         * A header of the request.
+         */
         HEADER,
+
+        /**
+         * A claim of the OAuth2 token that authenticated the request.
+         */
         OAUTH2,
+
+        /**
+         * A segment of the request path.
+         */
+        PATH,
+
+        /**
+         * A label of the request host.
+         */
         SUBDOMAIN;
 
     }

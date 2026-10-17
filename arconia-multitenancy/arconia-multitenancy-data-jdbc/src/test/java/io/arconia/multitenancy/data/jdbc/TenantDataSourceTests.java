@@ -14,8 +14,8 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import io.arconia.multitenancy.core.context.TenantContext;
-import io.arconia.multitenancy.core.exceptions.TenantNotFoundException;
-import io.arconia.multitenancy.core.exceptions.TenantVerificationException;
+import io.arconia.multitenancy.core.context.TenantNotFoundException;
+import io.arconia.multitenancy.core.resolution.TenantVerificationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;

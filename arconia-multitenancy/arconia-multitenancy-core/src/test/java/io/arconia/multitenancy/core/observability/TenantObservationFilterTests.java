@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import io.arconia.multitenancy.core.context.TenantContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 /**
  * Unit tests for {@link TenantObservationFilter}.
@@ -18,23 +18,23 @@ class TenantObservationFilterTests {
 
     @Test
     void whenEmptyTenantKeyThenThrow() {
-        assertThatThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey("").build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey("").build())
+            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
     void whenNullTenantKeyThenThrow() {
-        assertThatThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey(null).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantIdentifierKey cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey(null).build())
+            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
     }
 
     @Test
     void whenNullCardinalityThenThrow() {
-        assertThatThrownBy(() -> TenantObservationFilter.builder().cardinality(null).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("cardinality cannot be null");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> TenantObservationFilter.builder().cardinality(null).build())
+            .withMessageContaining("cardinality cannot be null");
     }
 
     @Test

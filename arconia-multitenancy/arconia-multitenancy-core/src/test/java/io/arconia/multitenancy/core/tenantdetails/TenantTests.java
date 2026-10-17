@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,21 +17,23 @@ class TenantTests {
 
     @Test
     void whenIdentifierIsNullThenThrow() {
-        assertThatThrownBy(() -> Tenant.builder().build()).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("identifier cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> Tenant.builder().build())
+            .withMessageContaining("identifier cannot be null or empty");
     }
 
     @Test
     void whenIdentifierIsEmptyThenThrow() {
-        assertThatThrownBy(() -> Tenant.builder().identifier("").build()).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("identifier cannot be null or empty");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> Tenant.builder().identifier("").build())
+            .withMessageContaining("identifier cannot be null or empty");
     }
 
     @Test
     void whenAttributesIsNullThenThrow() {
-        assertThatThrownBy(() -> Tenant.builder().identifier("acme").attributes(null).build())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("attributes cannot be null");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> Tenant.builder().identifier("acme").attributes(null).build())
+            .withMessageContaining("attributes cannot be null");
     }
 
     @Test

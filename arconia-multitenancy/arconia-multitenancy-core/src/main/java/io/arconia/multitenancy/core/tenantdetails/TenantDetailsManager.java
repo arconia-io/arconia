@@ -12,8 +12,8 @@ import io.arconia.core.support.Incubating;
 public interface TenantDetailsManager extends TenantDetailsService {
 
     /**
-     * Creates a tenant with the given identifier, state and additional information, and
-     * returns the tenant that was created.
+     * Creates a tenant with the given identifier, state, and additional information
+     * and returns the tenant that was created.
      */
     TenantDetails createTenant(String identifier, boolean enabled, Map<String, Object> attributes);
 

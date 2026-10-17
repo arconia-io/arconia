@@ -35,8 +35,6 @@ class OnTenantsConfiguredCondition extends SpringBootCondition {
     }
 
     private List<TenantDetailsProperties.TenantConfig> getTenants(Environment environment) {
-        // Bind via the Binder so that invalid values fail loudly instead of being
-        // silently interpreted as no tenant being configured.
         return Binder.get(environment).bind(TENANTS_PROPERTY, TENANT_LIST).orElse(List.of());
     }
 

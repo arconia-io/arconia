@@ -1,0 +1,25 @@
+= Architecture
+
+Arconia Multitenancy establishes a tenant context for each unit of work, such as an HTTP request, and makes it available to the rest of the application through the `TenantContext`. This page explains how the pieces fit together. Each piece is described in full on its own page.
+
+== How It Works
+
+When a request arrives, the framework:
+
+1. *Resolves the tenant*. A xref:tenant-resolution.adoc[`TenantResolver`] extracts the tenant identifier from the request source, such as a header, the host, the path, or the authenticated principal. Several resolvers can be consulted in turn.
+2. *Validates the identifier*. A xref:tenant-details.adoc#_tenant_identifier_validation[`TenantIdentifierValidator`] checks the syntax of the identifier. This always happens, whether or not tenant details are configured.
+3. *Verifies the tenant*. If a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] is configured, it checks that the tenant exists and is enabled.
+4. *Binds the context*. The identifier is bound to the xref:tenant-context.adoc[`TenantContext`] with a `ScopedValue` for the duration of the request.
+5. *Publishes a context event*. A `TenantContextAttachedEvent` triggers the registered xref:tenant-context.adoc#_tenant_context_events[listeners], such as MDC enrichment.
+6. *Executes the request*. The request proceeds with the tenant context available, and Micrometer xref:observability.adoc[observations] are enriched with the tenant identifier.
+7. *Cleans up*. A `TenantContextClosedEvent` is published and the binding is removed when the scope exits, so it cannot leak into the next request.
+
+In xref:web.adoc[web applications], the `TenantContextFilter` drives these steps for every HTTP request. When a step does not succeed, the filter hands the request to a `TenantResolutionFailureHandler`, which by default answers with a problem detail response. See xref:web.adoc#_failure_responses[Failure Responses].
+
+== Trust Boundaries
+
+The identifier is checked where it enters the application, and the checks build on each other. Resolution decides whether the request carries a tenant at all. A resolver that has inspected tenant information and found it unusable stops the whole resolution so that the request cannot fall back to a less trusted source. Validation then constrains the shape of the identifier before it reaches logs, cache keys, or data stores. Verification finally confirms that the identifier belongs to a known, enabled tenant.
+
+None of this proves that the caller belongs to the tenant. In the header, cookie, path, and subdomain modes the identifier is client input, and the application's authorization rules must relate it to the authenticated user. See xref:web.adoc#_trusting_the_resolved_tenant[Trusting the Resolved Tenant].
+
+Binding a tenant programmatically with `TenantContext.where()` sits inside the boundary: it is meant for application code that already trusts the identifier, such as a scheduled job iterating over the tenants returned by a `TenantDetailsService`, and performs no validation. The xref:data-jdbc.adoc[`TenantDataSource`] validates the identifier again before creating a connection pool for it, so even a programmatic binding cannot route to an unexpected database.

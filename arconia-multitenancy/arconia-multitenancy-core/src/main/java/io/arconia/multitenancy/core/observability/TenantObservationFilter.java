@@ -45,14 +45,22 @@ public final class TenantObservationFilter implements ObservationFilter {
         if (tenantIdentifier == null) {
             return context;
         }
+        return enrich(context, tenantIdentifier);
+    }
 
+    /**
+     * Adds the given tenant identifier to the observation context with the configured
+     * key and cardinality.
+     */
+    public Observation.Context enrich(Observation.Context context, String tenantIdentifier) {
+        Assert.notNull(context, "context cannot be null");
+        Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
         var keyValue = KeyValue.of(tenantIdentifierKey, tenantIdentifier);
         if (cardinality == Cardinality.LOW) {
             context.addLowCardinalityKeyValue(keyValue);
         } else {
             context.addHighCardinalityKeyValue(keyValue);
         }
-
         return context;
     }
 
@@ -63,9 +71,6 @@ public final class TenantObservationFilter implements ObservationFilter {
         return new Builder();
     }
 
-    /**
-     * Builder for {@link TenantObservationFilter}.
-     */
     public static final class Builder {
 
         private String tenantIdentifierKey = DEFAULT_TENANT_IDENTIFIER_KEY;

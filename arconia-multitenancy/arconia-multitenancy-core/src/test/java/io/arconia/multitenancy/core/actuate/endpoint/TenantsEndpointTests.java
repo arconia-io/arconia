@@ -11,7 +11,7 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 /**
  * Unit tests for {@link TenantsEndpoint}.
@@ -20,8 +20,9 @@ class TenantsEndpointTests {
 
     @Test
     void whenNullTenantDetailsServiceThenThrow() {
-        assertThatThrownBy(() -> new TenantsEndpoint(null)).isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("tenantDetailsService cannot be null");
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> new TenantsEndpoint(null))
+            .withMessageContaining("tenantDetailsService cannot be null");
     }
 
     @Test
