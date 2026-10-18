@@ -8,7 +8,7 @@ create table tenant_details
 
 create table tenant_details_attributes
 (
-    tenant_id       integer not null references tenant_details (id),
+    tenant_id       integer not null references tenant_details (id) on delete cascade,
     attribute_name  varchar(255) not null,
     attribute_value varchar(255) not null,
     primary key (tenant_id, attribute_name)

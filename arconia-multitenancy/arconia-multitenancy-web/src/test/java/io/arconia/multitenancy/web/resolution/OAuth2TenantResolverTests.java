@@ -6,12 +6,14 @@ import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -113,6 +115,24 @@ class OAuth2TenantResolverTests {
         authenticate(new JwtAuthenticationToken(token, "customPrincipal", AuthorityUtils.NO_AUTHORITIES));
 
         assertThat(oauth2TenantResolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);
+    }
+
+    @Test
+    void whenNullSecurityContextHolderStrategyThenThrow() {
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> OAuth2TenantResolver.builder().securityContextHolderStrategy(null).build())
+            .withMessageContaining("securityContextHolderStrategy cannot be null");
+    }
+
+    @Test
+    void whenCustomSecurityContextHolderStrategyThenUsed() {
+        var strategy = Mockito.mock(SecurityContextHolderStrategy.class);
+        var context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(new JwtAuthenticationToken(jwt(Map.of("tenant_id", TENANT_ID)), AuthorityUtils.NO_AUTHORITIES));
+        Mockito.when(strategy.getContext()).thenReturn(context);
+        var resolver = OAuth2TenantResolver.builder().securityContextHolderStrategy(strategy).build();
+
+        assertThat(resolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);
     }
 
     @Test

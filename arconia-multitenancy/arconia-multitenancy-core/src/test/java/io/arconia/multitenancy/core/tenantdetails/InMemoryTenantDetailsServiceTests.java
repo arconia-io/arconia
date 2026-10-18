@@ -1,5 +1,6 @@
 package io.arconia.multitenancy.core.tenantdetails;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,14 @@ class InMemoryTenantDetailsServiceTests {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> new InMemoryTenantDetailsService(null))
             .withMessageContaining("tenants cannot be null");
+    }
+
+    @Test
+    void whenDuplicateIdentifiersThenThrow() {
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> new InMemoryTenantDetailsService(
+                    List.of(tenant("acme", true), tenant("beans", true), tenant("acme", false))))
+            .withMessageContaining("tenants must have unique identifiers, but found duplicates: acme");
     }
 
     @Test
@@ -69,7 +78,7 @@ class InMemoryTenantDetailsServiceTests {
 
     @Test
     void whenSourceListChangesThenServiceIsUnaffected() {
-        var tenants = new java.util.ArrayList<>(List.of(tenant("acme", true)));
+        var tenants = new ArrayList<>(List.of(tenant("acme", true)));
         var tenantDetailsService = new InMemoryTenantDetailsService(tenants);
         tenants.clear();
 

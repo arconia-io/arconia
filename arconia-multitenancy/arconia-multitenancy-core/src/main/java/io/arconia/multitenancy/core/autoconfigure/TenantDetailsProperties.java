@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
 
@@ -12,7 +13,7 @@ import org.springframework.util.Assert;
  * Configuration properties for tenant details.
  */
 @ConfigurationProperties(prefix = TenantDetailsProperties.CONFIG_PREFIX)
-public class TenantDetailsProperties {
+public class TenantDetailsProperties implements InitializingBean {
 
     public static final String CONFIG_PREFIX = "arconia.multitenancy.details";
 
@@ -23,6 +24,19 @@ public class TenantDetailsProperties {
 
     public List<TenantConfig> getTenants() {
         return tenants;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        validate();
+    }
+
+    public void validate() {
+        for (int i = 0; i < tenants.size(); i++) {
+            if (tenants.get(i).getIdentifier() == null) {
+                throw new IllegalStateException("The '%s.tenants[%d].identifier' property must be set".formatted(CONFIG_PREFIX, i));
+            }
+        }
     }
 
     public static class TenantConfig {

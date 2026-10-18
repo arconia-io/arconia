@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -39,7 +38,7 @@ public class TenantsEndpoint {
             .stream()
             .map(tenant -> new TenantSummary(tenant.identifier(), tenant.enabled()))
             .sorted(Comparator.comparing(TenantSummary::identifier))
-            .collect(Collectors.toList());
+            .toList();
         return new TenantsDescriptor(tenants);
     }
 

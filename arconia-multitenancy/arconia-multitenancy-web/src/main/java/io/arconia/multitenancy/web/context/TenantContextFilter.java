@@ -51,7 +51,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     private static final String INVALID_TENANT_MESSAGE = "The tenant identifier is not valid";
 
-    private static final String REJECTED_TENANT_MESSAGE = "The resolved tenant is invalid or disabled";
+    private static final String REJECTED_TENANT_MESSAGE = "The tenant was rejected";
 
     private final int order;
 

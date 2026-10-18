@@ -77,7 +77,7 @@ arconia:
             onboarding: true
 ----
 
-As soon as at least one tenant is configured, Arconia auto-configures a `InMemoryTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected.
+As soon as at least one tenant is configured, Arconia auto-configures a `InMemoryTenantDetailsService` that loads tenant details from the configuration. Requests with a tenant identifier not in the list or for a disabled tenant will be rejected. Identifiers must be unique and must satisfy the tenant identifier validation policy (see <<_tenant_identifier_validation>>). The application fails to start when two tenants share an identifier, when a tenant has no identifier, or when an identifier is not valid.
 
 .Tenant Details Configuration Properties
 |===
@@ -146,12 +146,16 @@ create table tenant_details
 
 create table tenant_details_attributes
 (
-    tenant_id       integer not null references tenant_details (id),
+    tenant_id       integer not null references tenant_details (id) on delete cascade,
     attribute_name  text not null,
     attribute_value text not null,
     primary key (tenant_id, attribute_name)
 );
 ----
+
+Deleting a tenant also deletes its attributes. Attribute values are stored as text, so `TenantDetails.attribute(key, String.class)` is the way to read them, whereas tenants declared in properties keep the type the value was bound with.
+
+Identifiers are compared by the database, so the result follows its collation. PostgreSQL and H2 compare them case-sensitively, like the rest of Arconia Multitenancy, while a case-insensitive collation, such as the MySQL default, would let `Acme` match a tenant registered as `acme`.
 
 Schema scripts are bundled for PostgreSQL and H2, together with matching scripts to drop the tables again.
 
@@ -395,35 +399,3 @@ An unknown tenant identifier returns HTTP `404 Not Found`.
 ====
 The endpoint reports attribute names but never attribute values. Tenant attributes are defined by the application and may carry credentials or connection details, which should not be readable from an actuator endpoint. Use the `TenantDetailsService` directly when you need the values.
 ====
-
-=== Health Indicator
-
-When tenant details are loaded from a relational database and Spring Boot Actuator is present in the classpath, Arconia auto-configures a health indicator for the database holding them. It reports the application as down when that database cannot be reached, which is the condition that would otherwise make every request fail tenant verification.
-
-The check is a bounded count against the tenant details table rather than a full read, so polling it does not scan every tenant. The number of registered tenants is reported as a detail.
-
-[source,json]
-----
-{
-  "status": "UP",
-  "components": {
-    "tenantdetails": {
-      "status": "UP",
-      "details": {
-        "tenants": 3
-      }
-    }
-  }
-}
-----
-
-.Tenant Details Health Configuration Properties
-|===
-|Property |Default |Description
-
-|`management.health.tenantdetails.enabled`
-|`true`
-|Whether the tenant details health indicator should be enabled.
-|===
-
-The health indicator is only auto-configured for the JDBC-based tenant details. A properties-based or custom `TenantDetailsService` has no external dependency to check, so none is registered.

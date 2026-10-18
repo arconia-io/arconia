@@ -32,14 +32,15 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
 
     private final String tenantClaimName;
 
-    private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-        .getContextHolderStrategy();
+    private final SecurityContextHolderStrategy securityContextHolderStrategy;
 
     private final AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 
-    private OAuth2TenantResolver(String tenantClaimName) {
+    private OAuth2TenantResolver(String tenantClaimName, SecurityContextHolderStrategy securityContextHolderStrategy) {
         Assert.hasText(tenantClaimName, "tenantClaimName cannot be null or empty");
+        Assert.notNull(securityContextHolderStrategy, "securityContextHolderStrategy cannot be null");
         this.tenantClaimName = tenantClaimName;
+        this.securityContextHolderStrategy = securityContextHolderStrategy;
     }
 
     /**
@@ -106,6 +107,9 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
 
         private String tenantClaimName = DEFAULT_CLAIM_NAME;
 
+        private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
+            .getContextHolderStrategy();
+
         private Builder() {}
 
         /**
@@ -117,10 +121,18 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
         }
 
         /**
+         * Strategy giving access to the security context of the current request.
+         */
+        public Builder securityContextHolderStrategy(SecurityContextHolderStrategy securityContextHolderStrategy) {
+            this.securityContextHolderStrategy = securityContextHolderStrategy;
+            return this;
+        }
+
+        /**
          * Builds the {@link OAuth2TenantResolver} instance.
          */
         public OAuth2TenantResolver build() {
-            return new OAuth2TenantResolver(tenantClaimName);
+            return new OAuth2TenantResolver(tenantClaimName, securityContextHolderStrategy);
         }
 
     }
