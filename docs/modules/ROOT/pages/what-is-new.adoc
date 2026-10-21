@@ -7,6 +7,35 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
+* Test slices such as `@DataJdbcTest`, `@DataJpaTest`, `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest` now pick up the Dev Service of their technology with no further configuration, instead of the embedded database Spring Boot would otherwise configure for them. To get the embedded database back for a slice, disable the Dev Service with its `enabled` property. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
+* The observability Dev Services (Grafana LGTM, OpenTelemetry Collector, Phoenix, and OpenLit) are now skipped in test mode by default, since most tests have no use for a telemetry backend. Set `arconia.dev.services.<service-name>.skip-in-tests` to `false` for the tests that verify the telemetry the application exports. Learn more about xref:dev-services:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode].
+* When the application process exits, the containers it kept across Spring Boot DevTools restarts are now stopped, instead of being left to the Testcontainers resource reaper a few seconds later. Another application can no longer connect to a container that is about to disappear. Containers kept by the `testcontainers` reuse strategy are still left running. Learn more about xref:dev-services:index.adoc#_lifecycle_management[Lifecycle Management].
+* The startup message of a Dev Service now includes the host address of its main port, which is what you need to connect a tool on your machine to it, and says why a configured reuse strategy doesn't apply in test mode. Learn more about xref:dev-services:index.adoc#_startup_feedback[Startup Feedback].
+* A new xref:dev-services:index.adoc#_troubleshooting[Troubleshooting] section covers containers that fail to start, showing the logs of a container in the application log, and Podman closing idle connections. The documentation also explains how Dev Services work together with xref:dev-services:index.adoc#_spring_boot_docker_compose[Spring Boot Docker Compose].
+
+=== Building Dev Services
+
+The following changes affect the custom Dev Services you build on the Arconia Dev Services API. The xref:upgrading-arconia.adoc[upgrade recipe] applies the renames.
+
+* `BaseDevServicesProperties` has been renamed to `DevServicesProperties`.
+* `DevServiceRegistration` and `ContainerInfo` are classes with getters instead of records, so that they can describe more about a Dev Service in the future without breaking changes: `registration.name()` becomes `registration.getName()`, `containerInfo.imageName()` becomes `containerInfo.getImageName()`, and so on. Create instances with their builders. `DevServiceRegistration` also reports the category of the Dev Service, which the `devservices` actuator endpoint now includes.
+* `DevServiceSslConfigurer` accepts any Testcontainers `Container`, like `DevServiceContainerCustomizer`.
+* The methods of `DevServicesRegistrar` called by Spring are now `final`. Implement `registerDevServices` only.
+* A Dev Service auto-configuration only needs to be ordered before Spring Boot's `ServiceConnectionAutoConfiguration`: ordering it after `DevServicesAutoConfiguration` is no longer necessary. Learn more about xref:dev-services:custom-dev-services.adoc[Building Your Own Dev Service].
+
+=== Elasticsearch
+
+* An application connecting to an Elasticsearch Dev Service started by another application now uses the password configured through the `ELASTIC_PASSWORD` environment variable, as the application that started it does.
+
+=== LLDAP
+
+* The LLDAP Dev Service now starts with its default configuration, with the `admin` user and the `password` password. Learn more about the xref:dev-services:lldap.adoc[LLDAP Dev Service].
+
+=== MongoDB
+
+* The MongoDB Dev Service runs a single-node replica set again, so that transactions and change streams work as they do in production.
+* The MongoDB Dev Service now starts on Linux kernels 6.19 to 7.0, which MongoDB 8.0 and later refuse to run on with their default memory allocator settings (https://jira.mongodb.org/browse/SERVER-121912[SERVER-121912]).
+
 === Keycloak
 
 * The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].
