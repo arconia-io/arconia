@@ -81,7 +81,7 @@ public class OllamaDevServicesProperties implements DevServicesProperties {
     private boolean ignoreNativeService = false;
 
     /**
-     * Names of the models to pull into the dev service once the container is ready, such as `ministral-3:3b`.
+     * Names of the models to pull into the dev service once the container is ready, such as `qwen3:0.6b`.
      * They are pulled in the order they are declared. When empty (default), no model is pulled.
      */
     private List<String> models = new ArrayList<>();

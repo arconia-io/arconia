@@ -28,16 +28,15 @@ The application logs will show you the URLs where the OpenTelemetry Collector is
 
 [source,logs]
 ----
-...s.l.e.o.OtlpLoggingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: http://localhost:39117/v1/logs
-...s.m.e.o.OtlpMetricsExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: http://localhost:39117/v1/metrics
-...s.t.e.o.OtlpTracingExporterConfiguration : Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: http://localhost:39117/v1/traces
+...i.a.d.s.startup  : Dev Service 'otel-collector' is ready in container <container-id> (otel/opentelemetry-collector-contrib, localhost:<port>, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'otel-collector' links: OTLP/gRPC: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>
 ----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.
 
 [NOTE]
 ====
-The Dev Service runs the image's built-in default configuration, whose pipeline only exports the received telemetry to the collector's own debug exporter, visible in the collector container logs. It is meant for locally inspecting what your application emits, not for forwarding telemetry to another backend. To route telemetry elsewhere, supply a custom collector configuration as described in the next section.
+The Dev Service runs the image's built-in default configuration, whose pipeline only exports the received telemetry to the collector's own debug exporter, visible in the collector container logs (see xref:index.adoc#_troubleshooting[Troubleshooting] to stream them into the application log). It is meant for locally inspecting what your application emits, not for forwarding telemetry to another backend. To route telemetry elsewhere, supply a custom collector configuration as described in the next section.
 ====
 
 == Customizing the Collector Configuration
@@ -98,7 +97,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.reuse-strategy`
 | `framework`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `30s`

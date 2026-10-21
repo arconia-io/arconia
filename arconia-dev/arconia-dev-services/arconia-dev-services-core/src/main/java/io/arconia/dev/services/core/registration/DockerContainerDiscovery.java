@@ -56,7 +56,7 @@ final class DockerContainerDiscovery implements ContainerDiscovery {
                     logger.debug("Dev Service '{}': failed to discover running containers, retrying", serviceName, ex);
                     continue;
                 }
-                logger.info("Dev Service '{}': failed to discover running containers ({}). Starting its own container instead.", serviceName, ex.getMessage());
+                logger.info("Dev Service '{}': failed to discover running containers ({})", serviceName, ex.getMessage());
                 logger.debug("Dev Service '{}': container discovery failure", serviceName, ex);
                 return List.of();
             }

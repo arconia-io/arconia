@@ -20,7 +20,7 @@ When Arconia Dev Services are detected while the application is running in xref:
 3. Wires the service: Integrates the service into your application context using Spring Boot's Service Connection mechanism.
 4. Manages the lifecycle: Handles container startup, shutdown, and cleanup.
 
-This happens transparently without requiring any code or configuration. Dev Services take precedence over manually configured properties, ensuring your application always connects to the containerized service during development and testing.
+This happens transparently without requiring any code or configuration.
 
 == Quick Start
 
@@ -56,7 +56,12 @@ Maven::
 +
 include::ROOT:partial$app-run.adoc[]
 
-3. That's it! The PostgreSQL container starts automatically, and your application connects to it. No configuration files, no code changes needed.
+3. That's it! The PostgreSQL container starts automatically, and your application connects to it. No configuration files, no code changes needed. The application log says where the database is:
++
+[source,logs]
+----
+...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres, localhost:<port>)
+----
 
 [TIP]
 ====
@@ -81,57 +86,6 @@ Your application is automatically configured to connect to Dev Services, which t
 The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
 If a `ConnectionDetails` bean of the type a Dev Service provides already exists in your application (for example, a `JdbcConnectionDetails` bean you define, or one Spring Boot Docker Compose provides), the application connects to that service instead: the Dev Service is not started, and a message says so at startup.
-
-=== SSL with Dev Services
-
-Some Dev Services can serve SSL, so that the SSL support of your application is developed and tested against them, the way https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections.ssl[SSL with Service Connections] allows with plain Spring Boot and Testcontainers. This covers two situations:
-
-* The application connects to the real service over SSL, in production, and you want dev and test to exercise the same path. For example, an application whose Redis is only reachable over SSL in production connects to the Redis Dev Service over SSL as well, so that its SSL client setup is covered by its tests.
-* The service only accepts SSL connections, as Elasticsearch does in its default configuration, so the application has no other way to reach it.
-
-The support builds on Spring Boot's and goes one step further: Spring Boot configures the application side, and Arconia configures the container as well. The connection uses SSL in one direction: the Dev Service presents a certificate, and the application verifies it. The application presents no certificate of its own, and the Dev Service doesn't ask for one.
-
-SSL is configured through the `ssl` properties of the Dev Service, which describe its SSL bundle with the keys of a https://docs.spring.io/spring-boot/reference/features/ssl.html[Spring Boot SSL bundle], in PEM form (`ssl.pem`) or as a Java keystore (`ssl.jks`). The bundle has the meaning of the bundle a Spring Boot server is configured with: its key store holds the certificate and private key the Dev Service presents. There is nothing to configure on the application side: the application trusts the certificate chain the Dev Service presents, with the protocol and options of the bundle, through the Spring Boot service connection of the Dev Service.
-
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      redis:
-        ssl:
-          enabled: true
-          pem:
-            keystore:
-              certificate: "classpath:certs/redis.crt"
-              private-key: "classpath:certs/redis.key"
-----
-
-Certificates and keys are read as for any Spring Boot SSL bundle: from a `classpath:` or `file:` location, as inline PEM content, or as `base64:` content. Whatever form they are configured in, each Dev Service gets them in the form its service expects. The `ssl.pem` and `ssl.jks` properties take the `keystore`, `key`, `options`, and `protocol` keys of a `spring.ssl.bundle` definition, with the same names and meaning. A trust store is not part of them, since the Dev Service never asks the application for a certificate. When `ssl.enabled` is `false`, the other `ssl` properties have no effect.
-
-==== Certificate Requirements
-
-The clients verify the host name of the Dev Service against its certificate, so the certificate must be valid for the host the application connects to: `localhost` and `127.0.0.1` with a local container runtime, the host of the container runtime otherwise, and the name of the Dev Service and its `network-aliases` when the application reaches it over the xref:index.adoc#_shared_network[shared network]. A certificate for local development can be generated with OpenSSL, for example:
-
-[source,shell]
-----
-openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
-  -keyout redis.key -out redis.crt -subj "/CN=localhost" \
-  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1,DNS:redis"
-----
-
-The private key must be readable by Arconia, which copies it into the container unencrypted, where the service reads it. Certificates and keys for development are not secrets, but keep them out of the resources packaged for production anyway.
-
-The bundle the application connects to the Dev Service with, which trusts the certificate the Dev Service presents, is registered in the `SslBundles` of the application under the name `dev-services-<service-name>`, so Spring Boot tooling reports it as any other bundle: the SSL information of the `info` actuator endpoint, when enabled, lists the trusted certificate chain, and the `devservices` endpoint reports it for the Dev Service (see xref:index.adoc#_actuator[Actuator]). The `dev-services-` prefix is reserved for these bundles. The startup message of the Dev Service says SSL is enabled (see xref:index.adoc#_startup_feedback[Startup Feedback]).
-
-The container is configured for SSL right after the common properties are applied and before your xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer`] beans run, so a customizer replacing the command or the configuration of the container must preserve the SSL part. A container kept across a Spring Boot DevTools restart keeps the SSL configuration it was started with, like the rest of its configuration: stop and start the application after changing the `ssl` properties (see xref:index.adoc#_lifecycle_management[Lifecycle Management]).
-
-The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], xref:kafka.adoc[Kafka], xref:mongodb.adoc[MongoDB], xref:rabbitmq.adoc[RabbitMQ], and xref:redis.adoc[Redis]. The Elasticsearch Dev Service also works with the certificate Elasticsearch generates itself, with no certificate configured at all.
-
-[NOTE]
-====
-A Dev Service with SSL enabled and running in a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) is connected to with the bundle built from the properties of this application: the applications sharing a Dev Service must configure the same `ssl` properties, as they must use the same credentials. A mismatch, such as SSL enabled in one application only or different certificates, shows up as a connection or handshake failure when the application first uses the service.
-====
 
 === Lifecycle Management
 
@@ -167,43 +121,58 @@ Each Dev Service can be customized through Spring Boot configuration properties.
 
 ==== Common Properties
 
-The following properties are available for all Dev Services. 
-
-[NOTE]
-====
-All Dev Services are enabled by default. Other properties have sensible defaults that may vary by service.
-====
+The following properties are available for all Dev Services. Each Dev Service page lists its defaults.
 
 |===
-|Property |Description
+|Property |Default |Description
 
 | `arconia.dev.services.<service-name>.enabled`
+| `true`
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.<service-name>.image-name`
+| Varies by service
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.<service-name>.environment`
+| `{}`
 | Environment variables to set in the service.
 
 | `arconia.dev.services.<service-name>.network-aliases`
+| `[]`
 | Additional hostnames the dev service container is reachable by on the shared network, next to the name of the dev service. Only applicable when the shared network is enabled.
 
 | `arconia.dev.services.<service-name>.port`
+| `0`
 | Fixed port for exposing the primary service port to the host. When it's 0 (default), a random available port is assigned dynamically.
 
 | `arconia.dev.services.<service-name>.resources`
+| `[]`
 | Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
 
 | `arconia.dev.services.<service-name>.reuse-strategy`
-| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode.
+| Varies by service
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.<service-name>.startup-timeout`
+| `30s`, or `120s` for slow-starting services
 | Maximum waiting time for the service to start, counted from the container start.
 
 | `arconia.dev.services.<service-name>.volumes`
+| `[]`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
 |===
+
+==== Global Properties
+
+To disable all Dev Services at once, set the `arconia.dev.services.enabled` property to `false`.
+
+The `arconia.dev.services.network.enabled` property (default `false`) turns on the shared network: when enabled, all Dev Service containers join a common OCI network so they can reach each other by name (see xref:index.adoc#_shared_network[Shared Network]).
+
+[NOTE]
+====
+Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
+====
 
 ==== Service-Specific Properties
 
@@ -305,25 +274,8 @@ Testcontainers identifies a reusable container by its configuration. Changing th
 
 [WARNING]
 ====
-Reusable containers are never removed automatically. You are in charge of stopping and removing them with your container runtime (Docker/Podman) when they are no longer required (see xref:index.adoc#_finding_and_cleaning_up_containers[Finding and Cleaning Up Containers]).
+Reusable containers are never removed automatically. You are in charge of stopping and removing them with your container runtime (Docker/Podman) when they are no longer required (see xref:index.adoc#_finding_and_cleaning_up_containers[Finding and Cleaning Up Containers] in Troubleshooting).
 ====
-
-==== Finding and Cleaning Up Containers
-
-The startup message of each Dev Service reports the container it runs in, and the reuse strategy in effect (see xref:index.adoc#_startup_feedback[Startup Feedback]). Every Dev Service container also carries the `io.arconia.dev-service.name` label, holding the name of the Dev Service, so you can list the containers with your container runtime:
-
-[source,shell]
-----
-docker ps --filter label=io.arconia.dev-service.name
-docker ps --filter label=io.arconia.dev-service.name=rabbitmq
-----
-
-To stop and remove all the Dev Service containers left running, including the ones kept by the `testcontainers` strategy:
-
-[source,shell]
-----
-docker rm -f $(docker ps -q --filter label=io.arconia.dev-service.name)
-----
 
 === Resource Mappings
 
@@ -456,6 +408,57 @@ GenericContainer<?> daprContainer(Network devServicesNetwork) {
 
 A user-defined `Network` bean takes precedence over the one Arconia provides.
 
+=== SSL with Dev Services
+
+Some Dev Services can serve SSL, so that the SSL support of your application is developed and tested against them, the way https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections.ssl[SSL with Service Connections] allows with plain Spring Boot and Testcontainers. This covers two situations:
+
+* The application connects to the real service over SSL, in production, and you want dev and test to exercise the same path. For example, an application whose Redis is only reachable over SSL in production connects to the Redis Dev Service over SSL as well, so that its SSL client setup is covered by its tests.
+* The service only accepts SSL connections, as Elasticsearch does in its default configuration, so the application has no other way to reach it.
+
+The support builds on Spring Boot's and goes one step further: Spring Boot configures the application side, and Arconia configures the container as well. The connection uses SSL in one direction: the Dev Service presents a certificate, and the application verifies it. The application presents no certificate of its own, and the Dev Service doesn't ask for one.
+
+SSL is configured through the `ssl` properties of the Dev Service, which describe its SSL bundle with the keys of a https://docs.spring.io/spring-boot/reference/features/ssl.html[Spring Boot SSL bundle], in PEM form (`ssl.pem`) or as a Java keystore (`ssl.jks`). The bundle has the meaning of the bundle a Spring Boot server is configured with: its key store holds the certificate and private key the Dev Service presents. There is nothing to configure on the application side: the application trusts the certificate chain the Dev Service presents through the Spring Boot service connection of the Dev Service. The `protocol` and `options` of the bundle apply to that application side, as for any Spring Boot SSL bundle: they configure the client the application connects with, not the Dev Service container.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      redis:
+        ssl:
+          enabled: true
+          pem:
+            keystore:
+              certificate: "classpath:certs/redis.crt"
+              private-key: "classpath:certs/redis.key"
+----
+
+Certificates and keys are read as for any Spring Boot SSL bundle: from a `classpath:` or `file:` location, as inline PEM content, or as `base64:` content. Whatever form they are configured in, each Dev Service gets them in the form its service expects. The `ssl.pem` and `ssl.jks` properties take the `keystore`, `key`, `options`, and `protocol` keys of a `spring.ssl.bundle` definition, with the same names and meaning. A trust store is not part of them, since the Dev Service never asks the application for a certificate. When `ssl.enabled` is `false`, the other `ssl` properties have no effect.
+
+==== Certificate Requirements
+
+The clients verify the host name of the Dev Service against its certificate, so the certificate must be valid for the host the application connects to: `localhost` and `127.0.0.1` with a local container runtime, the host of the container runtime otherwise, and the name of the Dev Service and its `network-aliases` when the application reaches it over the xref:index.adoc#_shared_network[shared network]. A certificate for local development can be generated with OpenSSL, for example:
+
+[source,shell]
+----
+openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
+  -keyout redis.key -out redis.crt -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1,DNS:redis"
+----
+
+The private key must be readable by Arconia, which copies it into the container unencrypted, where the service reads it. Certificates and keys for development are not secrets, but keep them out of the resources packaged for production anyway.
+
+The bundle the application connects to the Dev Service with, which trusts the certificate the Dev Service presents, is registered in the `SslBundles` of the application under the name `dev-services-<service-name>`, so Spring Boot tooling reports it as any other bundle: the SSL information of the `info` actuator endpoint, when enabled, lists the trusted certificate chain, and the `devservices` endpoint reports it for the Dev Service (see xref:index.adoc#_actuator[Actuator]). The `dev-services-` prefix is reserved for these bundles. The startup message of the Dev Service says SSL is enabled (see xref:index.adoc#_startup_feedback[Startup Feedback]).
+
+The container is configured for SSL right after the common properties are applied and before your xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer`] beans run, so a customizer replacing the command or the configuration of the container must preserve the SSL part. A container kept across a Spring Boot DevTools restart keeps the SSL configuration it was started with, like the rest of its configuration: stop and start the application after changing the `ssl` properties (see xref:index.adoc#_lifecycle_management[Lifecycle Management]).
+
+The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], xref:kafka.adoc[Kafka], xref:mongodb.adoc[MongoDB], xref:rabbitmq.adoc[RabbitMQ], and xref:redis.adoc[Redis]. The Elasticsearch Dev Service also works with the certificate Elasticsearch generates itself, with no certificate configured at all.
+
+[NOTE]
+====
+A Dev Service with SSL enabled and running in a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) is connected to with the bundle built from the properties of this application: the applications sharing a Dev Service must configure the same `ssl` properties, as they must use the same credentials. A mismatch, such as SSL enabled in one application only or different certificates, shows up as a connection or handshake failure when the application first uses the service.
+====
+
 === Startup Sequence
 
 Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
@@ -481,26 +484,13 @@ The first line states the container image, the address of the main port of the s
 
 The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`, together with all the host ports the container publishes.
 
-The messages are written by the `io.arconia.dev.services.startup` logger. Testcontainers logs its own progress (connecting to the container runtime, pulling images, starting containers) at info level as well. To keep only the Arconia messages, set `logging.level.org.testcontainers=WARN` and `logging.level.tc=WARN`.
-
-When a container fails to start, Testcontainers writes the container's logs to the application log at error level.
+The messages are written by the `io.arconia.dev.services.startup` logger. To keep only them, quiet the logging of Testcontainers (see xref:index.adoc#_troubleshooting[Troubleshooting]).
 
 === Ahead-of-Time Processing and Native Images
 
 Dev Services are a dev and test time feature. Spring AOT processing of an application and native images imply the prod mode, in which Dev Services are not active at all.
 
 In AOT-processed tests (`spring.aot.enabled=true`), Dev Services are excluded from the generated code and are not available: their beans are created at startup from the state of the container runtime, which cannot be decided ahead of time. This is the same limitation Spring Boot has for `@ServiceConnection` on `@Bean` methods, `@ImportTestcontainers`, and Docker Compose in AOT-processed tests. Run tests that rely on Dev Services without AOT.
-
-=== Global Configuration
-
-In case you want to disable all Dev Services at once, you can set the `arconia.dev.services.enabled` property to `false`.
-
-The `arconia.dev.services.network.enabled` property (default `false`) turns on the shared network: when enabled, all Dev Service containers join a common OCI network so they can reach each other by name (see xref:index.adoc#_shared_network[Shared Network]).
-
-[NOTE]
-====
-Disabling Dev Services globally overrides individual service settings. If global disabling is set, no Dev Services will start, regardless of their individual `enabled` properties. If you want to disable only specific services, leave the global setting enabled and configure individual services instead via the `arconia.dev.services.<service-name>.enabled` property.
-====
 
 == Supported Services
 
@@ -702,7 +692,7 @@ The `ssl` field reports the SSL bundle the application connects to a Dev Service
   "certificateChains": [],
   "trustStoreCertificateChains": [
     {
-      "alias": "ssl-0",
+      "alias": "ssl",
       "certificates": [
         {
           "subject": "CN=localhost,O=Acme",
@@ -721,6 +711,69 @@ The `ssl` field reports the SSL bundle the application connects to a Dev Service
     }
   ]
 }
+----
+
+== Troubleshooting
+
+=== When a Container Fails to Start
+
+When a container fails to start, Testcontainers writes the container's logs to the application log at error level, followed by the exception that stops the application. The common causes are:
+
+* The container runtime is not running or not reachable: Spring Boot reports that no valid Docker environment was found. Start Docker or Podman, and make sure Testcontainers can reach it.
+* A fixed port is already in use: the container runtime refuses to publish the port. Free the port, or remove the `port` property of the Dev Service (or the additional port property involved) to use a random port.
+* The service exits during startup: the container logs written above the exception say why, such as an invalid configuration passed through the `environment` property.
+
+=== Showing the Logs of a Container
+
+Dev Services don't forward the logs of their containers to the application log, except when a container fails to start. To follow the logs of a container while the application runs, attach a log consumer to it with a `DevServiceContainerCustomizer` (see xref:index.adoc#_programmatic_customization[Programmatic Customization]):
+
+[source,java]
+----
+@Configuration(proxyBeanMethods = false)
+class ContainerLogsConfiguration {
+
+    @Bean
+    DevServiceContainerCustomizer<GenericContainer<?>> containerLogs() {
+        return container -> container.withLogConsumer(
+                new Slf4jLogConsumer(LoggerFactory.getLogger("dev-services." + container.getDockerImageName())));
+    }
+
+}
+----
+
+Declare the bean in a configuration used only in development and tests, such as one under `src/test/java`. The logs are written at info level, under a logger named after the image of the container.
+
+=== Quieting the Testcontainers Logs
+
+Testcontainers logs its own progress (connecting to the container runtime, pulling images, starting containers) at info level, next to the startup message of each Dev Service. To keep only the Arconia messages, set `logging.level.org.testcontainers=WARN` and `logging.level.tc=WARN`.
+
+=== Podman Closing Idle Connections
+
+With Podman, a container sometimes fails to start with `NoHttpResponseException: localhost:2375 failed to respond` or `Broken pipe`. The Podman API service drops idle connections after a few seconds, as set by its `service_timeout` option (5 seconds by default), and Testcontainers can send a request over a connection Podman has just closed (see https://github.com/testcontainers/testcontainers-java/issues/7310[testcontainers-java#7310]). Disable the timeout, for example on a Podman machine:
+
+[source,shell]
+----
+podman machine ssh -- 'sudo mkdir -p /etc/containers/containers.conf.d && printf "[engine]\nservice_timeout = 0\n" | sudo tee /etc/containers/containers.conf.d/service-timeout.conf'
+podman machine stop && podman machine start
+----
+
+On Linux without a Podman machine, set `service_timeout = 0` in the `[engine]` section of `~/.config/containers/containers.conf`, then restart the API service with `systemctl --user restart podman.socket`.
+
+=== Finding and Cleaning Up Containers
+
+The startup message of each Dev Service reports the container it runs in, and the reuse strategy in effect (see xref:index.adoc#_startup_feedback[Startup Feedback]). Every Dev Service container also carries the `io.arconia.dev-service.name` label, holding the name of the Dev Service, so you can list the containers with your container runtime:
+
+[source,shell]
+----
+docker ps --filter label=io.arconia.dev-service.name
+docker ps --filter label=io.arconia.dev-service.name=rabbitmq
+----
+
+To stop and remove all the Dev Service containers left running, including the ones kept by the `testcontainers` strategy:
+
+[source,shell]
+----
+docker rm -f $(docker ps -q --filter label=io.arconia.dev-service.name)
 ----
 
 == Arconia Dev Services vs. Spring Boot Development-time Services

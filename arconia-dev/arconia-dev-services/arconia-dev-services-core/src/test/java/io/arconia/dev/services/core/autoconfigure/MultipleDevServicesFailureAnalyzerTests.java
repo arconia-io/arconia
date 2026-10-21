@@ -26,9 +26,8 @@ class MultipleDevServicesFailureAnalyzerTests {
         assertThat(analysis.getDescription()).contains("opentelemetry", "lgtm", "openlit");
         assertThat(analysis.getAction())
                 .contains("opentelemetry")
-                .contains("lgtm.enabled=false")
-                .contains("<prefix>")
-                .contains("arconia.dev.services by default");
+                .contains("arconia.dev.services.lgtm.enabled=false")
+                .doesNotContain("<prefix>");
     }
 
 }

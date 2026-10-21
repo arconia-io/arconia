@@ -46,7 +46,7 @@ public class ElasticsearchDevServicesProperties implements DevServicesProperties
     private List<String> networkAliases = new ArrayList<>();
 
     /**
-     * Fixed port for exposing the Elasticsearch database port to the host.
+     * Fixed port for exposing the Elasticsearch HTTP port to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int port = 0;

@@ -18,3 +18,5 @@ arconia.dev.services.{service-name}.init-script-paths=data/init.sql
 ====
 If you need to execute SQL scripts only when running tests, you can place them in the `src/test/resources` directory instead of `src/main/resources`.
 ====
+
+The scripts run every time the application starts the container, including a container kept running across application runs by the `testcontainers` reuse strategy, so write them to be idempotent (for example, `CREATE TABLE IF NOT EXISTS`). An application connecting to a container started by another application, with the `framework` reuse strategy, doesn't run them: the application that started the container did.

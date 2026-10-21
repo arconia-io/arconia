@@ -46,7 +46,7 @@ public class RedisDevServicesProperties implements DevServicesProperties, SslDev
     private List<String> networkAliases = new ArrayList<>();
 
     /**
-     * Fixed port for exposing the Redis database port to the host.
+     * Fixed port for exposing the Redis port to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int port = 0;

@@ -52,6 +52,7 @@ public class RabbitMqDevServicesProperties implements DevServicesProperties, Ssl
     /**
      * Fixed port for exposing the RabbitMQ AMQP port to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
+     * With SSL enabled, the port exposed is the AMQPS one, which the application connects to.
      */
     private int port = 0;
 

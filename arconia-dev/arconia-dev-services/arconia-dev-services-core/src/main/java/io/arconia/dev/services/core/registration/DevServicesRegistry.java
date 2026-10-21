@@ -281,8 +281,9 @@ public final class DevServicesRegistry {
                         createDiscoveredRegistrationBeanDefinition(service, reuse, candidate, trustBundle != null));
                 return true;
             } catch (Exception ex) {
-                logger.warn("Dev Service '{}': failed to build the connection details for the discovered container {}. Skipping it.",
-                        service.name(), ContainerRuntimeInfo.shortId(candidate.containerInfo().getId()), ex);
+                logger.info("Dev Service '{}': skipping the discovered container {}, its connection details could not be built ({})",
+                        service.name(), ContainerRuntimeInfo.shortId(candidate.containerInfo().getId()), ex.getMessage());
+                logger.debug("Dev Service '{}': connection details failure", service.name(), ex);
             }
         }
 

@@ -67,6 +67,8 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
 
     /**
      * Resources from the classpath or host filesystem to copy into the container.
+     * They can be files or directories that will be copied to the specified
+     * destination path inside the container at startup and are immutable (read-only).
      */
     private List<ResourceMapping> resources = new ArrayList<>();
 
@@ -90,6 +92,9 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
 
     /**
      * Files or directories to mount from the host filesystem into the container.
+     * They are mounted at the specified destination path inside the container
+     * at startup and are mutable (read-write). Changes in either the host
+     * or the container will be immediately reflected in the other.
      */
     private List<VolumeMapping> volumes = new ArrayList<>();
 

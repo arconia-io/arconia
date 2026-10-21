@@ -18,8 +18,8 @@ class MultipleDevServicesFailureAnalyzer extends AbstractFailureAnalyzer<Multipl
                 "Multiple %s dev services detected: %s.".formatted(cause.getCategory(), cause.getServiceNames()),
                 """
                 Disable all but one %s dev service by setting its enabled property to false.
-                For example, to disable the '%s' dev service, set <prefix>.%s.enabled=false, \
-                where <prefix> is the dev service configuration prefix (arconia.dev.services by default)."""
+                For example, to disable the '%s' dev service, set arconia.dev.services.%s.enabled=false \
+                (a dev service that is not part of Arconia uses the configuration prefix it documents)."""
                         .formatted(cause.getCategory(), cause.getServiceNames().getFirst(), cause.getServiceNames().getFirst()),
                 cause);
     }

@@ -9,7 +9,7 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 [NOTE]
 ====
-Phoenix accepts OpenTelemetry traces only. While the Dev Service is active, logs and metrics are not exported.
+Phoenix accepts OpenTelemetry traces only. While the Phoenix Dev Service module is on the classpath, logs and metrics are not exported, also when the application connects to a Phoenix instance of its own instead of the Dev Service.
 ====
 
 [NOTE]
@@ -72,7 +72,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.reuse-strategy`
 | `framework`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `120s`

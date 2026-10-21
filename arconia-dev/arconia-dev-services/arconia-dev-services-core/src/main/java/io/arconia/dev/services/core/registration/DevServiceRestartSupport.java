@@ -187,9 +187,12 @@ final class DevServiceRestartSupport {
         synchronized (KEPT_CONTAINERS) {
             KEPT_CONTAINERS.remove(container);
         }
-        if (!container.isShouldBeReused()) {
-            container.stop();
+        if (container.isShouldBeReused()) {
+            logger.info("Container {} is left running, as the 'testcontainers' reuse strategy keeps it",
+                    ContainerRuntimeInfo.shortId(container.getContainerId()));
+            return;
         }
+        container.stop();
     }
 
     private Scope requireRestartScope() {

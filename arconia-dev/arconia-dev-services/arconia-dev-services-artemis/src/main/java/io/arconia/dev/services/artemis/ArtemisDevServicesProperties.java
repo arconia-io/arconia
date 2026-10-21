@@ -46,7 +46,7 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     private List<String> networkAliases = new ArrayList<>();
 
     /**
-     * Fixed port for exposing the Artemis' TCP port to the host (CORE, MQTT, AMQP, HORNETQ, STOMP, OPENWIRE).
+     * Fixed port for exposing the Artemis TCP port (CORE, MQTT, AMQP, HORNETQ, STOMP, OPENWIRE) to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int port = 0;

@@ -22,6 +22,39 @@ include::partial$running-application.adoc[]
 
 By default, when running the application in dev mode, multiple applications running simultaneously use the same Ollama Dev Service: the application connects to a running Ollama Dev Service started by another application if available, or else starts its own that other applications can discover in turn. This requires the Spring AI Ollama module on the classpath: applications using only the OpenAI-compatible integration always start their own container. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
+== Pulling Models
+
+By default, the Ollama Dev Service starts without any model. You can have one or more models pulled automatically once the container is ready via the `models` property. They are pulled in the order they are declared.
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      ollama:
+        models:
+          - qwen3:0.6b
+          - nomic-embed-text:v1.5
+----
+
+[NOTE]
+====
+The first pull downloads the entire model and can take a long time. Consider setting the `reuse-strategy` property to `testcontainers` so that you don't pay that cost at every application restart. The container is then no longer discoverable by other applications.
+
+Only containers started by the application are affected. When the application connects to a container started by another application, its models are left untouched.
+====
+
+== Spring AI OpenAI Compatibility
+
+When the Spring AI OpenAI module is on the classpath, the Ollama Dev Service automatically configures the OpenAI client to use the Ollama-compatible API endpoint. The `spring.ai.openai.base-url` and `spring.ai.openai.api-key` properties are set dynamically, pointing to the Ollama container when available or to the native Ollama service otherwise.
+
+[NOTE]
+====
+While the Ollama Dev Service is enabled, these properties take precedence over any user-defined configuration, and the API key is set to `ollama`.
+
+If you want your application to use a real OpenAI endpoint in dev or test mode, opt out of the compatibility layer via `arconia.dev.services.ollama.openai-compatibility=false`. The Ollama Dev Service keeps running and your `spring.ai.openai.*` configuration is left untouched, which is useful when you use Ollama and OpenAI side by side. Disabling the Ollama Dev Service altogether via `arconia.dev.services.ollama.enabled=false` also works.
+====
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.
@@ -55,7 +88,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.reuse-strategy`
 | `framework`
-| Strategy for reusing a running container for the dev service instead of starting a new one. With `framework`, the dev service is discoverable by other applications, and the application connects to an existing dev service if available. With `testcontainers`, the container is kept running across application restarts, relying on the Testcontainers reusable containers feature, which must be enabled in the `~/.testcontainers.properties` file; such containers are not stopped automatically and must be cleaned up manually. Only applicable in dev mode.
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.{service-name}.startup-timeout`
 | `120s`
@@ -78,37 +111,4 @@ You can configure the Dev Service via configuration properties.
 | Whether to configure the Spring AI OpenAI client to use the OpenAI-compatible API exposed by the dev service, when the Spring AI OpenAI module is on the classpath.
 |===
 
-== Pulling Models
-
-By default, the Ollama Dev Service starts without any model. You can have one or more models pulled automatically once the container is ready via the `models` property. They are pulled in the order they are declared.
-
-[source,yaml]
-----
-arconia:
-  dev:
-    services:
-      ollama:
-        models:
-          - ministral-3:3b
-          - nomic-embed-text:v1.5
-----
-
-[NOTE]
-====
-The first pull downloads the entire model and can take a long time. Consider setting the `reuse-strategy` property to `testcontainers` so that you don't pay that cost at every application restart. The container is then no longer discoverable by other applications.
-
-Only containers started by the application are affected. When the application connects to a container started by another application, its models are left untouched.
-====
-
 include::partial$disabling-dev-service.adoc[]
-
-== Spring AI OpenAI Compatibility
-
-When the Spring AI OpenAI module is on the classpath, the Ollama Dev Service automatically configures the OpenAI client to use the Ollama-compatible API endpoint. The `spring.ai.openai.base-url` and `spring.ai.openai.api-key` properties are set dynamically, pointing to the Ollama container when available or to the native Ollama service otherwise.
-
-[NOTE]
-====
-While the Ollama Dev Service is enabled, these properties take precedence over any user-defined configuration, and the API key is set to `ollama`.
-
-If you want your application to use a real OpenAI endpoint in dev or test mode, opt out of the compatibility layer via `arconia.dev.services.ollama.openai-compatibility=false`. The Ollama Dev Service keeps running and your `spring.ai.openai.*` configuration is left untouched, which is useful when you use Ollama and OpenAI side by side. Disabling the Ollama Dev Service altogether via `arconia.dev.services.ollama.enabled=false` also works.
-====
