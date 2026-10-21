@@ -58,6 +58,13 @@ class MongoDbDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Test
+    void containerStartsOnAnyLinuxKernel() {
+        var container = MongoDbDevServicesAutoConfiguration.createContainer(new MongoDbDevServicesProperties());
+
+        assertThat(container.getEnvMap()).containsEntry(MongoDbDevServicesAutoConfiguration.GLIBC_TUNABLES, "glibc.pthread.rseq=1");
+    }
+
+    @Test
     void sslArgumentsAreAppendedToTheReplicaSetCommand() {
         var container = MongoDbDevServicesAutoConfiguration.createContainer(new MongoDbDevServicesProperties());
         PemSslBundleProperties properties = new PemSslBundleProperties();

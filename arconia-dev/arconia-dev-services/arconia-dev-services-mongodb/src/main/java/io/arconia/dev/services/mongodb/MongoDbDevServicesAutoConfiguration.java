@@ -38,11 +38,18 @@ public final class MongoDbDevServicesAutoConfiguration {
      */
     static final String SSL_DIRECTORY = "/arconia/ssl/";
 
+    static final String GLIBC_TUNABLES = "GLIBC_TUNABLES";
+
     static MongoDBContainer createContainer(MongoDbDevServicesProperties properties) {
         var container = new MongoDBContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         // A single-node replica set, so that transactions and change streams work as they do
         // against a production deployment. It also gives the container its own wait strategy.
         container.withReplicaSet();
+        // MongoDB 8.0 and later refuse to start on Linux kernels from 6.19 up to 7.0.13, whose
+        // restartable sequences break the per-CPU caches of its memory allocator. Letting glibc
+        // own restartable sequences makes the allocator use per-thread caches instead, which
+        // works on any kernel. See https://jira.mongodb.org/browse/SERVER-121912.
+        container.withEnv(GLIBC_TUNABLES, "glibc.pthread.rseq=1");
         return container;
     }
 
