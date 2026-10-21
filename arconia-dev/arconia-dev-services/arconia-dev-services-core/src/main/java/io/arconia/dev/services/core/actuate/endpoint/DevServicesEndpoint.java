@@ -60,31 +60,31 @@ public class DevServicesEndpoint {
     }
 
     private ServiceInfo toServiceInfo(DevServiceRegistration registration) {
-        return new ServiceInfo(registration.name(), registration.description(), registration.origin(), registration.links(),
-                resolveContainerInfo(registration), resolveSslInfo(registration));
+        return new ServiceInfo(registration.getName(), registration.getDescription(), registration.getCategory(), registration.getOrigin(),
+                registration.getLinks(), resolveContainerInfo(registration), resolveSslInfo(registration));
     }
 
     @Nullable
     private static ContainerInfo resolveContainerInfo(DevServiceRegistration registration) {
         try {
-            return registration.containerInfo().get();
+            return registration.getContainerInfo().get();
         } catch (Exception ex) {
             // For example, the container may have been removed manually.
-            logger.debug("Dev Service '{}': failed to resolve container information", registration.name(), ex);
+            logger.debug("Dev Service '{}': failed to resolve container information", registration.getName(), ex);
             return null;
         }
     }
 
     @Nullable
     private BundleInfo resolveSslInfo(DevServiceRegistration registration) {
-        String bundleName = registration.sslBundleName();
+        String bundleName = registration.getSslBundleName();
         if (!StringUtils.hasText(bundleName) || sslInfo == null) {
             return null;
         }
         try {
             return sslInfo.getBundle(bundleName);
         } catch (Exception ex) {
-            logger.debug("Dev Service '{}': failed to resolve the SSL bundle '{}'", registration.name(), bundleName, ex);
+            logger.debug("Dev Service '{}': failed to resolve the SSL bundle '{}'", registration.getName(), bundleName, ex);
             return null;
         }
     }
@@ -92,6 +92,8 @@ public class DevServicesEndpoint {
     public record ServiceInfo(
             String name,
             String description,
+            @Nullable
+            String category,
             DevServiceRegistration.Origin origin,
             List<DevServiceLink> links,
             @Nullable

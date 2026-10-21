@@ -22,7 +22,7 @@ import io.arconia.boot.bootstrap.BootstrapMode;
  */
 class OnDevServicesEnabledCondition extends SpringBootCondition {
 
-    private static final String GLOBAL_PROPERTY = DevServicesProperties.CONFIG_PREFIX + ".enabled";
+    private static final String GLOBAL_PROPERTY = GlobalDevServicesProperties.CONFIG_PREFIX + ".enabled";
 
     private static final String DEV_SERVICES_PROPERTY = "%s.%s.enabled";
 
@@ -54,7 +54,7 @@ class OnDevServicesEnabledCondition extends SpringBootCondition {
                     .because("dev services are globally enabled and no specific dev services name is specified"));
         }
 
-        String prefix = StringUtils.hasText(customPrefix) ? customPrefix : DevServicesProperties.CONFIG_PREFIX;
+        String prefix = StringUtils.hasText(customPrefix) ? customPrefix : GlobalDevServicesProperties.CONFIG_PREFIX;
         String enabledProperty = DEV_SERVICES_PROPERTY.formatted(prefix, devServicesName);
 
         BindResult<Boolean> devServiceEnabled = binder.bind(enabledProperty, Boolean.class);

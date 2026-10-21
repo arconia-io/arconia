@@ -270,7 +270,7 @@ public final class DevServicesRegistry {
                 return true;
             } catch (Exception ex) {
                 logger.warn("Dev Service '{}': failed to build the connection details for the discovered container {}. Skipping it.",
-                        service.name(), ContainerRuntimeInfo.shortId(candidate.containerInfo().id()), ex);
+                        service.name(), ContainerRuntimeInfo.shortId(candidate.containerInfo().getId()), ex);
             }
         }
 
@@ -292,7 +292,7 @@ public final class DevServicesRegistry {
 
         // Attach the container image metadata, letting downstream auto-configurations
         // introspect which image backs the connection details bean.
-        new ContainerImageMetadata(containerInfo.imageName()).addTo(beanDefinition);
+        new ContainerImageMetadata(containerInfo.getImageName()).addTo(beanDefinition);
 
         return beanDefinition;
     }
@@ -311,8 +311,8 @@ public final class DevServicesRegistry {
             // The links are resolved against the ports the discovered container publishes.
             List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort,
                     DevServiceRegistration.Origin.DISCOVERED);
-            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.id(), links, sslBundleRegistered);
-            DevServiceStartupLogger.ready(registration, containerInfo.id(), containerInfo.imageName(), false, reuse, service.isSslEnabled());
+            DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.getId(), links, sslBundleRegistered);
+            DevServiceStartupLogger.ready(registration, containerInfo.getId(), containerInfo.getImageName(), false, reuse, service.isSslEnabled());
             return registration;
         });
 
@@ -477,6 +477,7 @@ public final class DevServicesRegistry {
         return DevServiceRegistration.builder()
                 .name(service.name())
                 .description(service.description())
+                .category(service.category())
                 .origin(origin)
                 .containerInfo(() -> {
                     Assert.notNull(containerId, "containerId cannot be null");

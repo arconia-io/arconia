@@ -12,41 +12,91 @@ import io.arconia.core.support.Incubating;
  * Holds information about a container.
  * <p>
  * Used to map details from <a href="https://github.com/docker-java/docker-java/blob/main/docker-java-api/src/main/java/com/github/dockerjava/api/model/Container.java">docker-java</a>.
- *
- * @param id the container id
- * @param imageName the name of the container image
- * @param names the names of the container
- * @param ports the port mappings of the container, as the container runtime reports them
- * @param labels the labels of the container
- * @param state the state of the container as the container runtime reports it, one of the values
- *              defined by the Docker Engine API ({@code created}, {@code running}, {@code paused},
- *              {@code restarting}, {@code removing}, {@code exited}, {@code dead})
- * @param status the human-readable status of the container as the container runtime reports it,
- *               such as {@code Up 5 minutes}
  */
 @Incubating
-public record ContainerInfo(
-        String id,
-        String imageName,
-        List<String> names,
-        List<ContainerPort> ports,
-        Map<String, String> labels,
-        String state,
-        String status
-) {
+public final class ContainerInfo {
 
-    public ContainerInfo {
-        Assert.hasText(id, "id cannot be null or empty");
-        Assert.hasText(imageName, "imageName cannot be null or empty");
-        Assert.notNull(names, "names cannot be null");
-        Assert.notNull(ports, "ports cannot be null");
-        Assert.notNull(labels, "labels cannot be null");
-        Assert.hasText(state, "state cannot be null or empty");
-        Assert.hasText(status, "status cannot be null or empty");
+    private final String id;
 
-        names = List.copyOf(names);
-        ports = List.copyOf(ports);
-        labels = Map.copyOf(labels);
+    private final String imageName;
+
+    private final List<String> names;
+
+    private final List<ContainerPort> ports;
+
+    private final Map<String, String> labels;
+
+    private final String state;
+
+    private final String status;
+
+    private ContainerInfo(Builder builder) {
+        Assert.hasText(builder.id, "id cannot be null or empty");
+        Assert.hasText(builder.imageName, "imageName cannot be null or empty");
+        Assert.notNull(builder.names, "names cannot be null");
+        Assert.notNull(builder.ports, "ports cannot be null");
+        Assert.notNull(builder.labels, "labels cannot be null");
+        Assert.hasText(builder.state, "state cannot be null or empty");
+        Assert.hasText(builder.status, "status cannot be null or empty");
+        this.id = builder.id;
+        this.imageName = builder.imageName;
+        this.names = List.copyOf(builder.names);
+        this.ports = List.copyOf(builder.ports);
+        this.labels = Map.copyOf(builder.labels);
+        this.state = builder.state;
+        this.status = builder.status;
+    }
+
+    /**
+     * The container id.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * The name of the container image.
+     */
+    public String getImageName() {
+        return imageName;
+    }
+
+    /**
+     * The names of the container.
+     */
+    public List<String> getNames() {
+        return names;
+    }
+
+    /**
+     * The port mappings of the container, as the container runtime reports them.
+     */
+    public List<ContainerPort> getPorts() {
+        return ports;
+    }
+
+    /**
+     * The labels of the container.
+     */
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    /**
+     * The state of the container as the container runtime reports it, one of the values
+     * defined by the Docker Engine API ({@code created}, {@code running}, {@code paused},
+     * {@code restarting}, {@code removing}, {@code exited}, {@code dead}).
+     */
+    public String getState() {
+        return state;
+    }
+
+    /**
+     * The human-readable status of the container as the container runtime reports it,
+     * such as {@code Up 5 minutes}.
+     */
+    public String getStatus() {
+        return status;
     }
 
     /**
@@ -147,11 +197,7 @@ public record ContainerInfo(
          * Builds the {@link ContainerInfo} instance.
          */
         public ContainerInfo build() {
-            Assert.notNull(id, "id cannot be null");
-            Assert.notNull(imageName, "imageName cannot be null");
-            Assert.notNull(state, "state cannot be null");
-            Assert.notNull(status, "status cannot be null");
-            return new ContainerInfo(id, imageName, names, ports, labels, state, status);
+            return new ContainerInfo(this);
         }
 
     }

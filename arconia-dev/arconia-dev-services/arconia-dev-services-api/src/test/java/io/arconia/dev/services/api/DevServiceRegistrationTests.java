@@ -30,13 +30,14 @@ class DevServiceRegistrationTests {
     void whenAComponentIsMissingThenThrow(String component, ThrowingCallable creation) {
         assertThatThrownBy(creation)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining(component + " cannot be null");
+                .hasMessageContaining(component + " cannot be");
     }
 
     static Stream<Arguments> invalidRegistrations() {
         return Stream.of(
                 Arguments.of("name", (ThrowingCallable) () -> validRegistration().name("").build()),
                 Arguments.of("description", (ThrowingCallable) () -> validRegistration().description("").build()),
+                Arguments.of("category", (ThrowingCallable) () -> validRegistration().category("").build()),
                 Arguments.of("origin", (ThrowingCallable) () -> validRegistration().origin(null).build()),
                 Arguments.of("containerInfo", (ThrowingCallable) () -> validRegistration().containerInfo(null).build()),
                 Arguments.of("links", (ThrowingCallable) () -> validRegistration().links(null).build()));
@@ -53,12 +54,21 @@ class DevServiceRegistrationTests {
                 .containerInfo(() -> expectedContainerInfo)
                 .build();
 
-        assertThat(registration.name()).isEqualTo("test-service");
-        assertThat(registration.description()).isEqualTo("A test service");
-        assertThat(registration.origin()).isEqualTo(MANAGED);
-        assertThat(registration.containerInfo().get()).isEqualTo(expectedContainerInfo);
-        // No links by default.
-        assertThat(registration.links()).isEmpty();
+        assertThat(registration.getName()).isEqualTo("test-service");
+        assertThat(registration.getDescription()).isEqualTo("A test service");
+        assertThat(registration.getOrigin()).isEqualTo(MANAGED);
+        assertThat(registration.getContainerInfo().get()).isEqualTo(expectedContainerInfo);
+        // No category, no links, and no SSL bundle by default.
+        assertThat(registration.getCategory()).isNull();
+        assertThat(registration.getLinks()).isEmpty();
+        assertThat(registration.getSslBundleName()).isNull();
+    }
+
+    @Test
+    void whenCategoryProvidedThenExposed() {
+        var registration = validRegistration().category("jdbc").build();
+
+        assertThat(registration.getCategory()).isEqualTo("jdbc");
     }
 
     @Test
@@ -76,8 +86,8 @@ class DevServiceRegistrationTests {
         // Mutating the original list must not affect the registration
         links.add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318"));
 
-        assertThat(registration.links()).hasSize(1);
-        assertThatThrownBy(() -> registration.links().add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
+        assertThat(registration.getLinks()).hasSize(1);
+        assertThatThrownBy(() -> registration.getLinks().add(new DevServiceLink("OTLP/HTTP", "http://localhost:4318")))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 

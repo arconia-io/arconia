@@ -11,14 +11,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
- * Unit tests for {@link DevServiceDynamicPropertySource}.
+ * Unit tests for {@link DevServicesDynamicPropertySource}.
  */
-class DevServiceDynamicPropertySourceTests {
+class DevServicesDynamicPropertySourceTests {
 
     @Test
     void addAndResolveProperty() {
         var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
 
         propertySource.add("my.property", () -> "my-value");
 
@@ -28,7 +28,7 @@ class DevServiceDynamicPropertySourceTests {
     @Test
     void supplierIsResolvedLazily() {
         var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
 
         int[] callCount = {0};
         propertySource.add("lazy.property", () -> {
@@ -44,7 +44,7 @@ class DevServiceDynamicPropertySourceTests {
     @Test
     void supplierIsInvokedOnEachAccess() {
         var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
 
         var value = new AtomicReference<>("initial");
         propertySource.add("dynamic.property", value::get);
@@ -58,7 +58,7 @@ class DevServiceDynamicPropertySourceTests {
     @Test
     void addOverridesExistingProperty() {
         var environment = new MockEnvironment();
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
 
         propertySource.add("my.property", () -> "original");
         assertThat(environment.getProperty("my.property")).isEqualTo("original");
@@ -71,8 +71,8 @@ class DevServiceDynamicPropertySourceTests {
     void getOrCreateReturnsSameInstance() {
         var environment = new MockEnvironment();
 
-        var first = DevServiceDynamicPropertySource.getOrCreate(environment);
-        var second = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var first = DevServicesDynamicPropertySource.getOrCreate(environment);
+        var second = DevServicesDynamicPropertySource.getOrCreate(environment);
 
         assertThat(first).isSameAs(second);
     }
@@ -81,10 +81,10 @@ class DevServiceDynamicPropertySourceTests {
     void multipleRegistrarsShareSamePropertySource() {
         var environment = new MockEnvironment();
 
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
         propertySource.add("first.property", () -> "first-value");
 
-        var samePropertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var samePropertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
         samePropertySource.add("second.property", () -> "second-value");
 
         assertThat(environment.getProperty("first.property")).isEqualTo("first-value");
@@ -98,7 +98,7 @@ class DevServiceDynamicPropertySourceTests {
                 new MapPropertySource(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME, Map.of()));
 
         assertThatIllegalStateException()
-                .isThrownBy(() -> DevServiceDynamicPropertySource.getOrCreate(environment));
+                .isThrownBy(() -> DevServicesDynamicPropertySource.getOrCreate(environment));
     }
 
     @Test
@@ -106,7 +106,7 @@ class DevServiceDynamicPropertySourceTests {
         var environment = new MockEnvironment();
         environment.setProperty("my.property", "from-environment");
 
-        var propertySource = DevServiceDynamicPropertySource.getOrCreate(environment);
+        var propertySource = DevServicesDynamicPropertySource.getOrCreate(environment);
         propertySource.add("my.property", () -> "from-dev-service");
 
         assertThat(environment.getProperty("my.property")).isEqualTo("from-dev-service");

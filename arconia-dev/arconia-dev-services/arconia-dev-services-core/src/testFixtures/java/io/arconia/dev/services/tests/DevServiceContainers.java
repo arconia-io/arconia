@@ -6,7 +6,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.core.container.ContainerConfigurer;
 
@@ -22,7 +22,7 @@ public final class DevServiceContainers {
      * container of the given dev service would: the common dev service properties, and the
      * discovery labels (name, discoverable, owner).
      */
-    public static <C extends GenericContainer<?>> C discoverable(C container, BaseDevServicesProperties properties, String serviceName, String ownerId) {
+    public static <C extends GenericContainer<?>> C discoverable(C container, DevServicesProperties properties, String serviceName, String ownerId) {
         ContainerConfigurer.apply(container, properties);
         container.withLabel(DevServiceLabels.NAME, serviceName);
         container.withLabel(DevServiceLabels.DISCOVERABLE, "true");

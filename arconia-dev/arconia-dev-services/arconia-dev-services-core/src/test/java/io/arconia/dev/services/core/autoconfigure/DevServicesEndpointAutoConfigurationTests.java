@@ -146,8 +146,15 @@ class DevServicesEndpointAutoConfigurationTests {
     }
 
     private static DevServiceRegistration registration(String name, String description, String imageName, String containerId) {
-        Supplier<ContainerInfo> containerInfo = () -> new ContainerInfo(containerId, imageName, List.of("/" + imageName.split(":")[0]),
-                List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")), Map.of("test", "label"), "running", "Up 5 minutes");
+        Supplier<ContainerInfo> containerInfo = () -> ContainerInfo.builder()
+                .id(containerId)
+                .imageName(imageName)
+                .names(List.of("/" + imageName.split(":")[0]))
+                .ports(List.of(new ContainerInfo.ContainerPort("0.0.0.0", 5432, 5432, "tcp")))
+                .labels(Map.of("test", "label"))
+                .state("running")
+                .status("Up 5 minutes")
+                .build();
         return DevServiceRegistration.builder()
                 .name(name)
                 .description(description)

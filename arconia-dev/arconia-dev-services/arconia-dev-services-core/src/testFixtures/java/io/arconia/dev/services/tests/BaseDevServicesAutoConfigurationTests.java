@@ -22,7 +22,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 
@@ -113,7 +113,7 @@ public abstract class BaseDevServicesAutoConfigurationTests {
      * container would: the common dev service properties, and the discovery labels (name,
      * discoverable, owner).
      */
-    protected GenericContainer<?> asDiscoverableContainer(GenericContainer<?> container, BaseDevServicesProperties properties, String ownerId) {
+    protected GenericContainer<?> asDiscoverableContainer(GenericContainer<?> container, DevServicesProperties properties, String ownerId) {
         return DevServiceContainers.discoverable(container, properties, getServiceName(), ownerId);
     }
 
@@ -248,15 +248,15 @@ public abstract class BaseDevServicesAutoConfigurationTests {
 
                         assertThat(context).hasSingleBean(DevServiceRegistration.class);
                         DevServiceRegistration registration = context.getBean(DevServiceRegistration.class);
-                        assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-                        assertThat(registration.containerInfo().get().id()).isEqualTo(discoveredContainer.getContainerId());
+                        assertThat(registration.getOrigin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+                        assertThat(registration.getContainerInfo().get().getId()).isEqualTo(discoveredContainer.getContainerId());
 
                         // The links the dev service declares are resolved against the host and the
                         // ports the discovered container publishes.
                         List<String> publishedPorts = discoveredContainer.getExposedPorts().stream()
                                 .map(port -> String.valueOf(discoveredContainer.getMappedPort(port)))
                                 .toList();
-                        assertThat(registration.links()).allSatisfy(link -> {
+                        assertThat(registration.getLinks()).allSatisfy(link -> {
                             assertThat(link.url()).startsWith("http://" + discoveredContainer.getHost() + ":");
                             assertThat(link.url()).matches(url -> publishedPorts.stream().anyMatch(port -> url.contains(":" + port)));
                         });

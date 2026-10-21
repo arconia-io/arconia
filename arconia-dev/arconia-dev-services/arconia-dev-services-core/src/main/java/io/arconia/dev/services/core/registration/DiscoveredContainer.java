@@ -38,7 +38,7 @@ public record DiscoveredContainer(
      * matching the address family of {@link #host()}.
      */
     public int mappedPort(int containerPort) {
-        return containerInfo.ports().stream()
+        return containerInfo.getPorts().stream()
                 .filter(port -> port.privatePort() != null && port.privatePort() == containerPort)
                 // A UDP mapping on the same port number is a different endpoint.
                 .filter(port -> port.type() == null || "tcp".equalsIgnoreCase(port.type()))
@@ -48,7 +48,7 @@ public record DiscoveredContainer(
                 .min(Comparator.comparing(port -> port.ip() != null && port.ip().contains(":")))
                 .map(ContainerInfo.ContainerPort::publicPort)
                 .orElseThrow(() -> new IllegalStateException("No host port mapped to container port %d for container %s"
-                        .formatted(containerPort, containerInfo.id())));
+                        .formatted(containerPort, containerInfo.getId())));
     }
 
     /**
@@ -60,7 +60,7 @@ public record DiscoveredContainer(
      */
     public byte[] copyFileFromContainer(String containerPath) {
         Assert.hasText(containerPath, "containerPath cannot be null or empty");
-        return ContainerRuntimeInfo.copyFileFromContainer(containerInfo.id(), containerPath);
+        return ContainerRuntimeInfo.copyFileFromContainer(containerInfo.getId(), containerPath);
     }
 
     public static Builder builder() {

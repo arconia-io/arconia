@@ -24,9 +24,10 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.SslConfig;
 import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.SslSupport;
@@ -62,7 +63,7 @@ final class DevServiceSslSupport {
     /**
      * Check the SSL properties of a dev service against the SSL support it declares.
      */
-    static void validate(String prefix, BaseDevServicesProperties properties, @Nullable SslSupport sslSupport) {
+    static void validate(String prefix, DevServicesProperties properties, @Nullable SslSupport sslSupport) {
         if (!(properties instanceof SslDevServicesProperties sslProperties)) {
             Assert.isNull(sslSupport, () -> prefix + "SSL support is declared, but the properties don't implement SslDevServicesProperties: implement it, or remove the ssl(...) declaration");
             return;
@@ -200,7 +201,7 @@ final class DevServiceSslSupport {
     static void configure(GenericContainer<?> container, DevServiceDefinition service, SslBundle bundle) {
         SslSupport sslSupport = service.sslSupport();
         Assert.notNull(sslSupport, "sslSupport cannot be null");
-        ((DevServiceSslConfigurer<GenericContainer<?>>) sslSupport.configurer()).configure(container, bundle);
+        ((DevServiceSslConfigurer<Container<?>>) sslSupport.configurer()).configure(container, bundle);
     }
 
     /**

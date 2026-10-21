@@ -31,15 +31,25 @@ class ContainerInfoTests {
     }
 
     static Stream<Arguments> invalidContainerInfos() {
-        var port = new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp");
         return Stream.of(
-                Arguments.of("id", (ThrowingCallable) () -> new ContainerInfo("", "image", List.of(), List.of(port), Map.of(), "running", "Up 5 minutes")),
-                Arguments.of("imageName", (ThrowingCallable) () -> new ContainerInfo("id", "", List.of(), List.of(port), Map.of(), "running", "Up 5 minutes")),
-                Arguments.of("names", (ThrowingCallable) () -> new ContainerInfo("id", "image", null, List.of(port), Map.of(), "running", "Up 5 minutes")),
-                Arguments.of("ports", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), null, Map.of(), "running", "Up 5 minutes")),
-                Arguments.of("labels", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), null, "running", "Up 5 minutes")),
-                Arguments.of("state", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "", "Up 5 minutes")),
-                Arguments.of("status", (ThrowingCallable) () -> new ContainerInfo("id", "image", List.of(), List.of(port), Map.of(), "running", "")));
+                Arguments.of("id", (ThrowingCallable) () -> validContainerInfo().id("").build()),
+                Arguments.of("imageName", (ThrowingCallable) () -> validContainerInfo().imageName("").build()),
+                Arguments.of("names", (ThrowingCallable) () -> validContainerInfo().names(null).build()),
+                Arguments.of("ports", (ThrowingCallable) () -> validContainerInfo().ports(null).build()),
+                Arguments.of("labels", (ThrowingCallable) () -> validContainerInfo().labels(null).build()),
+                Arguments.of("state", (ThrowingCallable) () -> validContainerInfo().state("").build()),
+                Arguments.of("status", (ThrowingCallable) () -> validContainerInfo().status("").build()));
+    }
+
+    private static ContainerInfo.Builder validContainerInfo() {
+        return ContainerInfo.builder()
+                .id("id")
+                .imageName("image")
+                .names(List.of())
+                .ports(List.of(new ContainerInfo.ContainerPort("127.0.0.1", 8080, 8080, "tcp")))
+                .labels(Map.of())
+                .state("running")
+                .status("Up 5 minutes");
     }
 
     @Test
@@ -59,13 +69,13 @@ class ContainerInfoTests {
                 .status("Up 5 minutes")
                 .build();
 
-        assertThat(containerInfo.id()).isEqualTo("id123");
-        assertThat(containerInfo.imageName()).isEqualTo("image");
-        assertThat(containerInfo.names()).containsExactly("container1", "container2");
-        assertThat(containerInfo.ports()).containsExactly(port);
-        assertThat(containerInfo.labels()).containsEntry("key1", "value1").containsEntry("key2", "value2");
-        assertThat(containerInfo.state()).isEqualTo("running");
-        assertThat(containerInfo.status()).isEqualTo("Up 5 minutes");
+        assertThat(containerInfo.getId()).isEqualTo("id123");
+        assertThat(containerInfo.getImageName()).isEqualTo("image");
+        assertThat(containerInfo.getNames()).containsExactly("container1", "container2");
+        assertThat(containerInfo.getPorts()).containsExactly(port);
+        assertThat(containerInfo.getLabels()).containsEntry("key1", "value1").containsEntry("key2", "value2");
+        assertThat(containerInfo.getState()).isEqualTo("running");
+        assertThat(containerInfo.getStatus()).isEqualTo("Up 5 minutes");
     }
 
     @Test
@@ -91,16 +101,16 @@ class ContainerInfoTests {
         labels.put("key2", "value2");
 
         // Verify that the ContainerInfo collections are unchanged (defensive copies were made)
-        assertThat(containerInfo.names()).hasSize(1).containsExactly("container1");
-        assertThat(containerInfo.ports()).hasSize(1).containsExactly(port);
-        assertThat(containerInfo.labels()).hasSize(1).containsEntry("key1", "value1");
+        assertThat(containerInfo.getNames()).hasSize(1).containsExactly("container1");
+        assertThat(containerInfo.getPorts()).hasSize(1).containsExactly(port);
+        assertThat(containerInfo.getLabels()).hasSize(1).containsEntry("key1", "value1");
 
         // Verify that the returned collections are immutable
-        assertThatThrownBy(() -> containerInfo.names().add("container3"))
+        assertThatThrownBy(() -> containerInfo.getNames().add("container3"))
                 .isInstanceOf(UnsupportedOperationException.class);
-        assertThatThrownBy(() -> containerInfo.ports().add(new ContainerInfo.ContainerPort("127.0.0.1", 9090, 9090, "tcp")))
+        assertThatThrownBy(() -> containerInfo.getPorts().add(new ContainerInfo.ContainerPort("127.0.0.1", 9090, 9090, "tcp")))
                 .isInstanceOf(UnsupportedOperationException.class);
-        assertThatThrownBy(() -> containerInfo.labels().put("key2", "value2"))
+        assertThatThrownBy(() -> containerInfo.getLabels().put("key2", "value2"))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 

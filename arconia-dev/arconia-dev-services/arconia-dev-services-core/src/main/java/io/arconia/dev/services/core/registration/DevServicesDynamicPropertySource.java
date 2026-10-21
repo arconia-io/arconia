@@ -28,11 +28,11 @@ import org.springframework.util.Assert;
  *
  * @see DevServicesRegistrar#addDynamicProperty(String, Supplier)
  */
-final class DevServiceDynamicPropertySource extends MapPropertySource {
+final class DevServicesDynamicPropertySource extends MapPropertySource {
 
     private final Map<String, Supplier<Object>> valueSuppliers;
 
-    private DevServiceDynamicPropertySource(Map<String, Supplier<Object>> valueSuppliers) {
+    private DevServicesDynamicPropertySource(Map<String, Supplier<Object>> valueSuppliers) {
         super(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME, Collections.unmodifiableMap(valueSuppliers));
         this.valueSuppliers = valueSuppliers;
     }
@@ -54,22 +54,22 @@ final class DevServiceDynamicPropertySource extends MapPropertySource {
     }
 
     /**
-     * Get the {@code DevServiceDynamicPropertySource} registered in the environment
-     * or create and register a new {@code DevServiceDynamicPropertySource} in the
+     * Get the {@code DevServicesDynamicPropertySource} registered in the environment
+     * or create and register a new {@code DevServicesDynamicPropertySource} in the
      * environment.
      */
-    static synchronized DevServiceDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
+    static synchronized DevServicesDynamicPropertySource getOrCreate(ConfigurableEnvironment environment) {
         MutablePropertySources propertySources = environment.getPropertySources();
         PropertySource<?> existingPropertySource = propertySources.get(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME);
-        if (existingPropertySource instanceof DevServiceDynamicPropertySource devServicePropertySource) {
+        if (existingPropertySource instanceof DevServicesDynamicPropertySource devServicePropertySource) {
             return devServicePropertySource;
         } else if (existingPropertySource == null) {
-            var propertySource = new DevServiceDynamicPropertySource(new ConcurrentHashMap<>());
+            var propertySource = new DevServicesDynamicPropertySource(new ConcurrentHashMap<>());
             propertySources.addFirst(propertySource);
             return propertySource;
         } else {
             throw new IllegalStateException(
-                    "PropertySource with name '%s' must be a DevServiceDynamicPropertySource".formatted(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME));
+                    "PropertySource with name '%s' must be a DevServicesDynamicPropertySource".formatted(DevServicesRegistrar.DYNAMIC_PROPERTY_SOURCE_NAME));
         }
     }
 

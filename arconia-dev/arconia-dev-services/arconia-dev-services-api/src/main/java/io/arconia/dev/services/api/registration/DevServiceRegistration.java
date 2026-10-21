@@ -10,34 +10,93 @@ import io.arconia.core.support.Incubating;
 
 /**
  * Describes a registered dev service.
- *
- * @param name the logical name of the dev service
- * @param description the description of the dev service
- * @param origin how the dev service container was made available to the application
- * @param containerInfo supplies the information about the container, inspected on each call
- * @param links the links the dev service exposes
- * @param sslBundleName the name of the SSL bundle the application connects to the dev service
- * with, registered in the {@code SslBundles} of the application, when SSL is enabled with a
- * configured certificate
  */
 @Incubating
-public record DevServiceRegistration(
-        String name,
-        String description,
-        Origin origin,
-        Supplier<ContainerInfo> containerInfo,
-        List<DevServiceLink> links,
-        @Nullable String sslBundleName
-) {
+public final class DevServiceRegistration {
 
-    public DevServiceRegistration {
-        Assert.hasText(name, "name cannot be null or empty");
-        Assert.hasText(description, "description cannot be null or empty");
-        Assert.notNull(origin, "origin cannot be null");
-        Assert.notNull(containerInfo, "containerInfo cannot be null");
-        Assert.notNull(links, "links cannot be null");
+    private final String name;
 
-        links = List.copyOf(links);
+    private final String description;
+
+    @Nullable
+    private final String category;
+
+    private final Origin origin;
+
+    private final Supplier<ContainerInfo> containerInfo;
+
+    private final List<DevServiceLink> links;
+
+    @Nullable
+    private final String sslBundleName;
+
+    private DevServiceRegistration(Builder builder) {
+        Assert.hasText(builder.name, "name cannot be null or empty");
+        Assert.hasText(builder.description, "description cannot be null or empty");
+        Assert.isTrue(builder.category == null || !builder.category.isBlank(), "category cannot be empty");
+        Assert.notNull(builder.origin, "origin cannot be null");
+        Assert.notNull(builder.containerInfo, "containerInfo cannot be null");
+        Assert.notNull(builder.links, "links cannot be null");
+        this.name = builder.name;
+        this.description = builder.description;
+        this.category = builder.category;
+        this.origin = builder.origin;
+        this.containerInfo = builder.containerInfo;
+        this.links = List.copyOf(builder.links);
+        this.sslBundleName = builder.sslBundleName;
+    }
+
+    /**
+     * The logical name of the dev service.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * The description of the dev service.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * The category of mutually exclusive dev services the dev service belongs to, if any.
+     */
+    @Nullable
+    public String getCategory() {
+        return category;
+    }
+
+    /**
+     * How the dev service container was made available to the application.
+     */
+    public Origin getOrigin() {
+        return origin;
+    }
+
+    /**
+     * Supplies the information about the container, inspected on each call.
+     */
+    public Supplier<ContainerInfo> getContainerInfo() {
+        return containerInfo;
+    }
+
+    /**
+     * The links the dev service exposes.
+     */
+    public List<DevServiceLink> getLinks() {
+        return links;
+    }
+
+    /**
+     * The name of the SSL bundle the application connects to the dev service with, registered
+     * in the {@code SslBundles} of the application, when SSL is enabled with a configured
+     * certificate.
+     */
+    @Nullable
+    public String getSslBundleName() {
+        return sslBundleName;
     }
 
     /**
@@ -73,6 +132,8 @@ public record DevServiceRegistration(
         @Nullable
         private String description;
         @Nullable
+        private String category;
+        @Nullable
         private Origin origin;
         @Nullable
         private Supplier<ContainerInfo> containerInfo;
@@ -95,6 +156,14 @@ public record DevServiceRegistration(
          */
         public Builder description(String description) {
             this.description = description;
+            return this;
+        }
+
+        /**
+         * The category of mutually exclusive dev services the dev service belongs to, if any.
+         */
+        public Builder category(@Nullable String category) {
+            this.category = category;
             return this;
         }
 
@@ -134,11 +203,7 @@ public record DevServiceRegistration(
          * Builds the {@link DevServiceRegistration} instance.
          */
         public DevServiceRegistration build() {
-            Assert.notNull(name, "name cannot be null");
-            Assert.notNull(description, "description cannot be null");
-            Assert.notNull(origin, "origin cannot be null");
-            Assert.notNull(containerInfo, "containerInfo cannot be null");
-            return new DevServiceRegistration(name, description, origin, containerInfo, links, sslBundleName);
+            return new DevServiceRegistration(this);
         }
 
     }

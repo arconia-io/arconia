@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -17,7 +17,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Properties for the Ollama Dev Services.
  */
 @ConfigurationProperties(prefix = OllamaDevServicesProperties.CONFIG_PREFIX)
-public class OllamaDevServicesProperties implements BaseDevServicesProperties {
+public class OllamaDevServicesProperties implements DevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.ollama";
 

@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "arconia.dev.services.keycloak.realm.import-path",
+      "type": "java.lang.String",
+      "deprecation": {
+        "level": "error",
+        "reason": "Replaced by 'arconia.dev.services.keycloak.realm.import-paths', which accepts a list of realm files.",
+        "since": "0.32.0"
+      }
+    }
+  ]
+}

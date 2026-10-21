@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Global configuration properties for Dev Services.
  */
-@ConfigurationProperties(prefix = DevServicesProperties.CONFIG_PREFIX)
-class DevServicesProperties {
+@ConfigurationProperties(prefix = GlobalDevServicesProperties.CONFIG_PREFIX)
+class GlobalDevServicesProperties {
 
     static final String CONFIG_PREFIX = "arconia.dev.services";
 

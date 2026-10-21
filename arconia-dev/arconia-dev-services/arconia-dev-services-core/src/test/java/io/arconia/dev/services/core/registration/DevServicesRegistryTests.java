@@ -31,7 +31,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
@@ -617,8 +617,8 @@ class DevServicesRegistryTests {
             assertThat(BeanAttribute.AOT_EXCLUDED.isPresent(registrationDefinition)).isTrue();
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("postgres"), DevServiceRegistration.class);
-            assertThat(registration.name()).isEqualTo("postgres");
-            assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+            assertThat(registration.getName()).isEqualTo("postgres");
+            assertThat(registration.getOrigin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
         }
 
         @Test
@@ -835,19 +835,19 @@ class DevServicesRegistryTests {
          * sharing the same restart scope, in which the dev service is registered with the given
          * configuration, returning the container bean.
          */
-        private RestartingContainer restart(Map<String, Object> configuration, BaseDevServicesProperties properties,
+        private RestartingContainer restart(Map<String, Object> configuration, DevServicesProperties properties,
                 List<DiscoveredContainer> discoveredContainers) {
             return restartedBeanFactory(configuration, properties, discoveredContainers)
                     .getBean(BeanName.CONTAINER.of("postgres"), RestartingContainer.class);
         }
 
-        private DefaultListableBeanFactory restartedBeanFactory(Map<String, Object> configuration, BaseDevServicesProperties properties,
+        private DefaultListableBeanFactory restartedBeanFactory(Map<String, Object> configuration, DevServicesProperties properties,
                 List<DiscoveredContainer> discoveredContainers) {
             return restartedBeanFactory(configuration, properties, discoveredContainers, RestartingContainer.class, RestartingContainer::new);
         }
 
         private <C extends GenericContainer<?>> DefaultListableBeanFactory restartedBeanFactory(Map<String, Object> configuration,
-                BaseDevServicesProperties properties, List<DiscoveredContainer> discoveredContainers, Class<C> containerType, Supplier<C> containerSupplier) {
+                DevServicesProperties properties, List<DiscoveredContainer> discoveredContainers, Class<C> containerType, Supplier<C> containerSupplier) {
             var restartedBeanFactory = new DefaultListableBeanFactory();
             restartedBeanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
             var environment = new StandardEnvironment();
@@ -923,7 +923,7 @@ class DevServicesRegistryTests {
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
 
-            assertThat(registration.sslBundleName()).isEqualTo("dev-services-secure");
+            assertThat(registration.getSslBundleName()).isEqualTo("dev-services-secure");
             assertThat(output).contains("Dev Service 'secure' is ready in container").contains("ssl");
         }
 
@@ -947,7 +947,7 @@ class DevServicesRegistryTests {
             assertThat(configuredBundle.get()).isNull();
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
-            assertThat(registration.sslBundleName()).isNull();
+            assertThat(registration.getSslBundleName()).isNull();
         }
 
         @Test
@@ -962,7 +962,7 @@ class DevServicesRegistryTests {
             assertThat(container.getEnvMap()).doesNotContainKey("SSL");
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("secure"), DevServiceRegistration.class);
-            assertThat(registration.sslBundleName()).isNull();
+            assertThat(registration.getSslBundleName()).isNull();
         }
 
         @Test
@@ -990,7 +990,7 @@ class DevServicesRegistryTests {
             assertThat(discovered.get().sslBundle().getStores().getKeyStore()).isNull();
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("postgres"), DevServiceRegistration.class);
-            assertThat(registration.sslBundleName()).isEqualTo("dev-services-postgres");
+            assertThat(registration.getSslBundleName()).isEqualTo("dev-services-postgres");
         }
 
         @Test
@@ -1034,8 +1034,8 @@ class DevServicesRegistryTests {
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("linky"), DevServiceRegistration.class);
 
-            assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.MANAGED);
-            assertThat(registration.links()).containsExactly(
+            assertThat(registration.getOrigin()).isEqualTo(DevServiceRegistration.Origin.MANAGED);
+            assertThat(registration.getLinks()).containsExactly(
                     new DevServiceLink("UI", "http://localhost:1234"),
                     new DevServiceLink("Docs", "http://localhost:1234/docs"));
         }
@@ -1052,7 +1052,7 @@ class DevServicesRegistryTests {
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("linky"), DevServiceRegistration.class);
 
-            assertThat(registration.links()).isEmpty();
+            assertThat(registration.getLinks()).isEmpty();
             assertThat(output).doesNotContain("skipping the 'UI' link");
         }
 
@@ -1062,7 +1062,7 @@ class DevServicesRegistryTests {
 
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("postgres"), DevServiceRegistration.class);
 
-            assertThat(registration.links()).isEmpty();
+            assertThat(registration.getLinks()).isEmpty();
         }
 
         @Test
@@ -1075,8 +1075,8 @@ class DevServicesRegistryTests {
             var registration = beanFactory.getBean(BeanName.REGISTRATION.of("postgres"), DevServiceRegistration.class);
 
             // The same declaration resolves against the host and published ports of the discovered container.
-            assertThat(registration.origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
-            assertThat(registration.links()).containsExactly(new DevServiceLink("Console", "http://localhost:54321/console"));
+            assertThat(registration.getOrigin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+            assertThat(registration.getLinks()).containsExactly(new DevServiceLink("Console", "http://localhost:54321/console"));
         }
 
     }

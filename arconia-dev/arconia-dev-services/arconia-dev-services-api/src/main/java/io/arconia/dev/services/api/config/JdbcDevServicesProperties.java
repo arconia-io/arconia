@@ -8,7 +8,7 @@ import io.arconia.core.support.Incubating;
  * Base properties for dev services that use JDBC.
  */
 @Incubating
-public interface JdbcDevServicesProperties extends BaseDevServicesProperties {
+public interface JdbcDevServicesProperties extends DevServicesProperties {
 
     /**
      * Username to be used for connecting to the database.

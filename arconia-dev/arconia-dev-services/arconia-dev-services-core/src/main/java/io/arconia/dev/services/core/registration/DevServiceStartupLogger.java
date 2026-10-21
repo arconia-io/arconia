@@ -33,7 +33,7 @@ final class DevServiceStartupLogger {
         if (imageName != null) {
             facts.add(imageName);
         }
-        if (registration.origin() == Origin.DISCOVERED) {
+        if (registration.getOrigin() == Origin.DISCOVERED) {
             facts.add("started by another application");
         }
         if (kept) {
@@ -46,9 +46,9 @@ final class DevServiceStartupLogger {
             facts.add("ssl");
         }
         String details = facts.isEmpty() ? "" : " (" + String.join(", ", facts) + ")";
-        logger.info("Dev Service '{}' is ready in container {}{}", registration.name(), ContainerRuntimeInfo.shortId(containerId), details);
-        if (!registration.links().isEmpty()) {
-            logger.info("Dev Service '{}' links: {}", registration.name(), formatLinks(registration.links()));
+        logger.info("Dev Service '{}' is ready in container {}{}", registration.getName(), ContainerRuntimeInfo.shortId(containerId), details);
+        if (!registration.getLinks().isEmpty()) {
+            logger.info("Dev Service '{}' links: {}", registration.getName(), formatLinks(registration.getLinks()));
         }
     }
 

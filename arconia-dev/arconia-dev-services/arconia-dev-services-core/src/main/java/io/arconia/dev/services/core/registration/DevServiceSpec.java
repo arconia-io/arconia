@@ -14,10 +14,11 @@ import org.springframework.boot.autoconfigure.service.connection.ConnectionDetai
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.core.support.Incubating;
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.Discovery;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.LinkDefinition;
@@ -49,7 +50,7 @@ public final class DevServiceSpec {
     private String category;
 
     @Nullable
-    private BaseDevServicesProperties properties;
+    private DevServicesProperties properties;
 
     @Nullable
     private Class<? extends GenericContainer<?>> containerType;
@@ -110,7 +111,7 @@ public final class DevServiceSpec {
     /**
      * The configuration properties of the dev service.
      */
-    public DevServiceSpec properties(BaseDevServicesProperties properties) {
+    public DevServiceSpec properties(DevServicesProperties properties) {
         this.properties = properties;
         return this;
     }
@@ -224,7 +225,7 @@ public final class DevServiceSpec {
      * from the {@code ssl} properties, which must configure a key store. SSL support requires
      * the service connection, through which Spring Boot connects the application over SSL.
      */
-    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer) {
+    public <C extends Container<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer) {
         return ssl(configurer, SslKeyStoreRequirement.REQUIRED);
     }
 
@@ -235,7 +236,7 @@ public final class DevServiceSpec {
      * {@link SslKeyStoreRequirement#OPTIONAL}: the configurer is then only called when a key store is
      * configured, and Spring Boot extracts the generated certificate from the container otherwise.
      */
-    public <C extends GenericContainer<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslKeyStoreRequirement keyStoreRequirement) {
+    public <C extends Container<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslKeyStoreRequirement keyStoreRequirement) {
         Assert.notNull(configurer, "configurer cannot be null");
         Assert.notNull(keyStoreRequirement, "keyStoreRequirement cannot be null");
         this.sslSupport = new SslSupport(configurer, keyStoreRequirement);
@@ -290,7 +291,7 @@ public final class DevServiceSpec {
      * a fixed port configured through the {@code port} property has a container port to bind
      * to, so that the property is never silently ignored.
      */
-    private void validatePort(String prefix, BaseDevServicesProperties properties) {
+    private void validatePort(String prefix, DevServicesProperties properties) {
         Set<Integer> containerPorts = new HashSet<>();
         if (port != null) {
             requirePort(prefix, port, "container port");
@@ -329,7 +330,7 @@ public final class DevServiceSpec {
      * returning null, as a hand-written properties class may, is reported by property name
      * rather than failing deep inside the framework or Testcontainers.
      */
-    private static void validateProperties(String prefix, BaseDevServicesProperties properties) {
+    private static void validateProperties(String prefix, DevServicesProperties properties) {
         Assert.hasText(properties.getImageName(), () -> prefix + "the 'image-name' property cannot be null or empty");
         Assert.notNull(properties.getEnvironment(), () -> prefix + "the 'environment' property cannot be null");
         Assert.notNull(properties.getNetworkAliases(), () -> prefix + "the 'network-aliases' property cannot be null");

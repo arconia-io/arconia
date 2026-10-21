@@ -1,7 +1,7 @@
 package io.arconia.dev.services.core.ssl;
 
 import org.springframework.boot.ssl.SslBundle;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Container;
 
 import io.arconia.core.support.Incubating;
 
@@ -14,7 +14,7 @@ import io.arconia.core.support.Incubating;
  */
 @FunctionalInterface
 @Incubating
-public interface DevServiceSslConfigurer<C extends GenericContainer<?>> {
+public interface DevServiceSslConfigurer<C extends Container<?>> {
 
     /**
      * Configure the given container to use SSL with the given bundle.

@@ -111,7 +111,7 @@ class DockerContainerDiscoveryTests {
 
     private static List<String> candidateIds(List<Container> containers) {
         return DockerContainerDiscovery.select(containers, "localhost", "postgres").stream()
-                .map(candidate -> candidate.containerInfo().id())
+                .map(candidate -> candidate.containerInfo().getId())
                 .toList();
     }
 

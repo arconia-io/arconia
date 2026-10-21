@@ -53,7 +53,7 @@ class RedisDevServicesSslIT {
                     redisTemplate.opsForValue().set("greeting", "hello");
                     assertThat(redisTemplate.opsForValue().get("greeting")).isEqualTo("hello");
 
-                    assertThat(context.getBean(DevServiceRegistration.class).sslBundleName()).isEqualTo("dev-services-redis");
+                    assertThat(context.getBean(DevServiceRegistration.class).getSslBundleName()).isEqualTo("dev-services-redis");
                     assertThat(context.getBean(SslBundles.class).getBundleNames()).contains("dev-services-redis");
                 });
     }
@@ -79,7 +79,7 @@ class RedisDevServicesSslIT {
                     .withPropertyValues("arconia.dev.services.redis.reuse-strategy=framework")
                     .run(context -> {
                         assertThat(context).doesNotHaveBean(RedisContainer.class);
-                        assertThat(context.getBean(DevServiceRegistration.class).origin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
+                        assertThat(context.getBean(DevServiceRegistration.class).getOrigin()).isEqualTo(DevServiceRegistration.Origin.DISCOVERED);
                         assertThat(context.getBean(DataRedisConnectionDetails.class).getSslBundle()).isNotNull();
                         StringRedisTemplate redisTemplate = context.getBean(StringRedisTemplate.class);
                         redisTemplate.opsForValue().set("greeting", "hello");

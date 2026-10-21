@@ -7,10 +7,11 @@ import java.util.Map;
 import io.arconia.core.support.Incubating;
 
 /**
- * Base properties for dev services.
+ * Common configuration properties of a dev service, which the properties class of every dev
+ * service implements.
  */
 @Incubating
-public interface BaseDevServicesProperties {
+public interface DevServicesProperties {
 
     /**
      * Whether the dev service is enabled.

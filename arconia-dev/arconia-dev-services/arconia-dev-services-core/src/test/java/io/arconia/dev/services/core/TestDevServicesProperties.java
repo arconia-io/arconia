@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -13,7 +13,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Configuration properties for a dev service under test. The {@code with*} methods return a
  * modified copy, so the shared constants are never changed by a test.
  */
-public class TestDevServicesProperties implements BaseDevServicesProperties {
+public class TestDevServicesProperties implements DevServicesProperties {
 
     public static final TestDevServicesProperties DEFAULT = new TestDevServicesProperties();
 

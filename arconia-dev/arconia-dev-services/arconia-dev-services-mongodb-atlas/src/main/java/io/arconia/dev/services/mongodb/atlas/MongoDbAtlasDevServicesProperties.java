@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -17,7 +17,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Properties for the MongoDB Atlas Dev Services.
  */
 @ConfigurationProperties(prefix = MongoDbAtlasDevServicesProperties.CONFIG_PREFIX)
-public class MongoDbAtlasDevServicesProperties implements BaseDevServicesProperties {
+public class MongoDbAtlasDevServicesProperties implements DevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.mongodb-atlas";
 

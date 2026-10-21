@@ -70,7 +70,7 @@ class ElasticsearchDevServicesSslIT {
                             .satisfies(node -> assertThat(node.protocol()).isEqualTo(Protocol.HTTPS));
                     assertClusterIsReachable(context.getBean(ElasticsearchClient.class));
                     // No bundle of its own: the certificate is the one of the container.
-                    assertThat(context.getBean(DevServiceRegistration.class).sslBundleName()).isNull();
+                    assertThat(context.getBean(DevServiceRegistration.class).getSslBundleName()).isNull();
                 });
     }
 
@@ -84,7 +84,7 @@ class ElasticsearchDevServicesSslIT {
                             .satisfies(node -> assertThat(node.protocol()).isEqualTo(Protocol.HTTPS));
                     assertClusterIsReachable(context.getBean(ElasticsearchClient.class));
                     assertThat(context.getBean(DevServiceRegistration.class)
-                            .sslBundleName()).isEqualTo("dev-services-elasticsearch");
+                            .getSslBundleName()).isEqualTo("dev-services-elasticsearch");
                 });
     }
 

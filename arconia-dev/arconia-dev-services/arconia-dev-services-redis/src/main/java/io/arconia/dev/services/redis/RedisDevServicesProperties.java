@@ -9,7 +9,7 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.SslConfig;
@@ -20,7 +20,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
  * Properties for the Redis Dev Services.
  */
 @ConfigurationProperties(prefix = RedisDevServicesProperties.CONFIG_PREFIX)
-public class RedisDevServicesProperties implements BaseDevServicesProperties, SslDevServicesProperties {
+public class RedisDevServicesProperties implements DevServicesProperties, SslDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.redis";
 

@@ -61,7 +61,7 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
     @DisabledIfDockerUnavailable
     void devServiceLinksExposeAdminConsoleAndIssuerUrls() {
         contextRunnerWithContainerLifecycle().run(context -> {
-            var links = context.getBean(DevServiceRegistration.class).links();
+            var links = context.getBean(DevServiceRegistration.class).getLinks();
             String adminConsoleUrl = links.getFirst().url();
             assertThat(adminConsoleUrl).endsWith("/admin");
             assertThat(get(adminConsoleUrl).statusCode()).isLessThan(400);
@@ -156,7 +156,7 @@ class KeycloakDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
                 .run(context -> {
                     var container = (ArconiaKeycloakContainer) context.getBean(getContainerClass());
                     assertThat(container.getRealm()).isEqualTo("beta");
-                    assertThat(context.getBean(DevServiceRegistration.class).links())
+                    assertThat(context.getBean(DevServiceRegistration.class).getLinks())
                             .extracting(link -> link.url())
                             .containsExactly(
                                     container.getAuthServerUrl() + "/admin",

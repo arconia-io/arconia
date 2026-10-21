@@ -11,7 +11,7 @@ The Dev Services APIs are currently marked as `@Incubating` and may change in fu
 
 The Dev Services infrastructure is split into two modules:
 
-* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`BaseDevServicesProperties`, `JdbcDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
+* `arconia-dev-services-api`: lightweight contracts with no Docker/Testcontainers dependencies, such as the configuration property interfaces (`DevServicesProperties`, `JdbcDevServicesProperties`), the runtime descriptors (`DevServiceRegistration`, `ContainerInfo`), and the container labels Dev Services are identified and described by (`DevServiceLabels`). It's designed to be safely usable in contexts where Testcontainers should not be on the classpath, such as tooling or user interfaces built around Dev Services.
 * `arconia-dev-services-core`: the machinery for registering and configuring Dev Services, including `DevServicesRegistrar`, `DevServicesRegistry`, and `@ConditionalOnDevServicesEnabled`. This is the module to build your own Dev Service on.
 
 First, add the `arconia-dev-services-core` dependency to your Dev Service module, together with the Testcontainers module for your service (or the plain `org.testcontainers:testcontainers` dependency if none exists):
@@ -26,7 +26,7 @@ dependencies {
 
 == Configuration Properties
 
-Define a configuration properties class implementing `BaseDevServicesProperties` (or `JdbcDevServicesProperties` for relational databases), using a prefix under your own namespace. Structure the prefix as `<namespace>.<service-name>` (e.g. `acme.dev.services.fancydb`), mirroring the built-in Dev Services (`arconia.dev.services.<service-name>`): the enablement condition used later in the auto-configuration relies on this structure.
+Define a configuration properties class implementing `DevServicesProperties` (or `JdbcDevServicesProperties` for relational databases), using a prefix under your own namespace. Structure the prefix as `<namespace>.<service-name>` (e.g. `acme.dev.services.fancydb`), mirroring the built-in Dev Services (`arconia.dev.services.<service-name>`): the enablement condition used later in the auto-configuration relies on this structure.
 
 [IMPORTANT]
 ====
@@ -36,7 +36,7 @@ Do not use the `arconia.` prefix for your own properties: it's reserved for the 
 [source,java]
 ----
 @ConfigurationProperties(prefix = "acme.dev.services.fancydb")
-public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
+public class FancyDbDevServicesProperties implements DevServicesProperties {
 
     /**
      * Whether the dev service is enabled.
@@ -77,7 +77,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties {
 
 [NOTE]
 ====
-`BaseDevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
+`DevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
 ====
 
 == Container
@@ -243,7 +243,7 @@ Declaring the discovery is what opts your Dev Service into it: a service that de
 
 The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. The declared type also tells the framework which `ConnectionDetails` the application may define on its own: when the application defines a bean of that type, the Dev Service is neither started nor discovered, mirroring Spring Boot's service connections behavior (see xref:index.adoc#_service_connections[Service Connections]).
 
-The `reuse-strategy` property is part of the `BaseDevServicesProperties` contract and defaults to `none`. Choose the default for your Dev Service in your properties class: `framework` if it declares discovery and is the kind of service applications typically share, such as a message broker, and `none` otherwise.
+The `reuse-strategy` property is part of the `DevServicesProperties` contract and defaults to `none`. Choose the default for your Dev Service in your properties class: `framework` if it declares discovery and is the kind of service applications typically share, such as a message broker, and `none` otherwise.
 
 A discovered container is used as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications using the Dev Service; if your service is credential-protected, document this constraint for your users.
 
@@ -251,12 +251,12 @@ For a relational database, declare `JdbcConnectionDetails` as the connection det
 
 == Supporting SSL
 
-To let users enable SSL for your Dev Service (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), implement `SslDevServicesProperties` next to `BaseDevServicesProperties` in your properties class, and declare the SSL configuration as a nested property named `ssl` of the `SslConfig` type, which holds the switch and the bundle properties with the keys of a Spring Boot SSL bundle:
+To let users enable SSL for your Dev Service (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), implement `SslDevServicesProperties` next to `DevServicesProperties` in your properties class, and declare the SSL configuration as a nested property named `ssl` of the `SslConfig` type, which holds the switch and the bundle properties with the keys of a Spring Boot SSL bundle:
 
 [source,java]
 ----
 @ConfigurationProperties(prefix = "acme.dev.services.fancydb")
-public class FancyDbDevServicesProperties implements BaseDevServicesProperties, SslDevServicesProperties {
+public class FancyDbDevServicesProperties implements DevServicesProperties, SslDevServicesProperties {
 
     // The common properties and the properties of your own...
 
@@ -271,7 +271,7 @@ public class FancyDbDevServicesProperties implements BaseDevServicesProperties, 
 }
 ----
 
-`SslDevServicesProperties` is a read contract next to `BaseDevServicesProperties`, not an extension of it. Since `SslConfig` lives in another module, the configuration processor generates the metadata of the `ssl` keys under your prefix without their descriptions and defaults. To document them in your module, declare them in its `META-INF/additional-spring-configuration-metadata.json`, as the built-in Dev Services do (see the one of the Redis Dev Service for the entries to copy, with your prefix).
+`SslDevServicesProperties` is a read contract next to `DevServicesProperties`, not an extension of it. Since `SslConfig` lives in another module, the configuration processor generates the metadata of the `ssl` keys under your prefix without their descriptions and defaults. To document them in your module, declare them in its `META-INF/additional-spring-configuration-metadata.json`, as the built-in Dev Services do (see the one of the Redis Dev Service for the entries to copy, with your prefix).
 
 Then declare how to configure your container to serve SSL when registering the Dev Service, with `ssl(...)`. The configurer receives the `SslBundle` built from the properties when `ssl.enabled` is true, before the container is started and before any `DevServiceContainerCustomizer` runs. Whatever form the user configured the bundle in, `SslBundleFiles` renders what your container needs from it as PEM files to copy into the container: the certificate chain, the private key, both in a single file, or the chain again as the certificate authorities file some services require. The output is deterministic, so that a container reused across runs keeps the same configuration.
 

@@ -68,7 +68,7 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     void devServiceLinksExposePhoenixUi() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
-            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
             assertThat(links).singleElement().satisfies(link -> {
                 assertThat(link.label()).isEqualTo("Phoenix UI");
                 assertThat(link.url()).startsWith("http://")

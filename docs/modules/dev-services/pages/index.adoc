@@ -557,6 +557,7 @@ Response example:
   "docling": {
     "name": "docling",
     "description": "Docling Dev Service",
+    "category": null,
     "origin": "MANAGED",
     "links": [
       {
@@ -597,6 +598,7 @@ Response example:
   "postgresql": {
     "name": "postgresql",
     "description": "PostgreSQL Dev Service",
+    "category": "jdbc",
     "origin": "MANAGED",
     "links": [],
     "containerInfo": {
@@ -644,6 +646,7 @@ Response example:
 {
   "name": "postgresql",
   "description": "PostgreSQL Dev Service",
+  "category": "jdbc",
   "origin": "MANAGED",
   "links": [],
   "containerInfo": {

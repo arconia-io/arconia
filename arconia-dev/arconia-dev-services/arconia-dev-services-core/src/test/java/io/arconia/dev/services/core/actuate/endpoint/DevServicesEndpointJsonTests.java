@@ -36,13 +36,14 @@ class DevServicesEndpointJsonTests {
                 .state("running")
                 .status("Up About 67 minutes")
                 .build();
-        ServiceInfo serviceInfo = new ServiceInfo("postgresql", "PostgreSQL Dev Service", DevServiceRegistration.Origin.MANAGED,
+        ServiceInfo serviceInfo = new ServiceInfo("postgresql", "PostgreSQL Dev Service", "jdbc", DevServiceRegistration.Origin.MANAGED,
                 List.of(new DevServiceLink("Console", "http://localhost:36803/console")), containerInfo, null);
 
         JSONAssert.assertEquals("""
                 {
                   "name": "postgresql",
                   "description": "PostgreSQL Dev Service",
+                  "category": "jdbc",
                   "origin": "MANAGED",
                   "links": [
                     {
@@ -77,12 +78,13 @@ class DevServicesEndpointJsonTests {
 
     @Test
     void containerInfoIsNullWhenTheContainerCannotBeInspected() throws Exception {
-        ServiceInfo serviceInfo = new ServiceInfo("postgresql", "PostgreSQL Dev Service", DevServiceRegistration.Origin.DISCOVERED, List.of(), null, null);
+        ServiceInfo serviceInfo = new ServiceInfo("postgresql", "PostgreSQL Dev Service", "jdbc", DevServiceRegistration.Origin.DISCOVERED, List.of(), null, null);
 
         JSONAssert.assertEquals("""
                 {
                   "name": "postgresql",
                   "description": "PostgreSQL Dev Service",
+                  "category": "jdbc",
                   "origin": "DISCOVERED",
                   "links": [],
                   "containerInfo": null,
@@ -98,7 +100,7 @@ class DevServicesEndpointJsonTests {
         properties.getTruststore().setCertificate(TestSslDevServicesProperties.CERTIFICATE);
         var sslBundles = new DefaultSslBundleRegistry();
         sslBundles.registerBundle("dev-services-redis", PropertiesSslBundle.get(properties));
-        ServiceInfo serviceInfo = new ServiceInfo("redis", "Redis Dev Service", DevServiceRegistration.Origin.MANAGED, List.of(), null,
+        ServiceInfo serviceInfo = new ServiceInfo("redis", "Redis Dev Service", null, DevServiceRegistration.Origin.MANAGED, List.of(), null,
                 new SslInfo(sslBundles).getBundle("dev-services-redis"));
 
         // The shape is the one of the SSL information in the info endpoint; the certificate details vary.

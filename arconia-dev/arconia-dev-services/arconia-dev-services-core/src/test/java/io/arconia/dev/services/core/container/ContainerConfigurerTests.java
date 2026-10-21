@@ -22,7 +22,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -41,7 +41,7 @@ class ContainerConfigurerTests {
     void applyShouldConfigureTheContainerFromTheProperties() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
         container.waitingFor(Wait.defaultWaitStrategy());
-        BaseDevServicesProperties properties = new TestDevServicesProperties()
+        DevServicesProperties properties = new TestDevServicesProperties()
                 .withEnvironment(Map.of("KEY1", "VALUE1", "KEY2", "VALUE2"))
                 .withNetworkAliases(List.of("alias1", "alias2"))
                 .withStartupTimeout(Duration.ofMinutes(2))
@@ -66,7 +66,7 @@ class ContainerConfigurerTests {
     @Test
     void applyShouldFailWhenAResourceIsNotFound() {
         GenericContainer<?> container = new GenericContainer<>("alpine:latest");
-        BaseDevServicesProperties properties = new TestDevServicesProperties()
+        DevServicesProperties properties = new TestDevServicesProperties()
                 .withResources(List.of(new ResourceMapping("non-existent-resource.txt", "/etc/config/test.txt")));
 
         assertThatThrownBy(() -> ContainerConfigurer.apply(container, properties))

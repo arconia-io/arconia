@@ -7,9 +7,10 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.util.Assert;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.core.ssl.DevServiceSslConfigurer;
@@ -36,7 +37,7 @@ record DevServiceDefinition(
         String name,
         String description,
         @Nullable String category,
-        BaseDevServicesProperties properties,
+        DevServicesProperties properties,
         Class<? extends GenericContainer<?>> containerType,
         Supplier<? extends GenericContainer<?>> containerSupplier,
         boolean serviceConnection,
@@ -75,7 +76,7 @@ record DevServiceDefinition(
      * required for the certificate it presents.
      */
     record SslSupport(
-            DevServiceSslConfigurer<? extends GenericContainer<?>> configurer,
+            DevServiceSslConfigurer<? extends Container<?>> configurer,
             SslKeyStoreRequirement keyStoreRequirement
     ) {
 
@@ -99,7 +100,7 @@ record DevServiceDefinition(
         @Nullable
         private String category;
         @Nullable
-        private BaseDevServicesProperties properties;
+        private DevServicesProperties properties;
         @Nullable
         private Class<? extends GenericContainer<?>> containerType;
         @Nullable
@@ -133,7 +134,7 @@ record DevServiceDefinition(
             return this;
         }
 
-        Builder properties(BaseDevServicesProperties properties) {
+        Builder properties(DevServicesProperties properties) {
             this.properties = properties;
             return this;
         }

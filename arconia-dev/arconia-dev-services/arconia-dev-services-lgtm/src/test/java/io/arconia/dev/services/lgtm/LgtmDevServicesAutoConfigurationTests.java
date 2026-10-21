@@ -115,7 +115,7 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     void devServiceLinksExposeGrafanaOtlpPrometheusAndTempoMcpUrls() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
-            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+            List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
             assertThat(links).extracting(DevServiceLink::label)
                     .containsExactly("Grafana", "OTLP/HTTP", "OTLP/gRPC", "Prometheus", "Tempo MCP");
             assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));

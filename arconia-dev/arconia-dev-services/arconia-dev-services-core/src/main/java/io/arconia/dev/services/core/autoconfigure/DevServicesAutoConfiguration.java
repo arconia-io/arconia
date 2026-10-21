@@ -14,7 +14,7 @@ import org.testcontainers.containers.Network;
  */
 @AutoConfiguration
 @ConditionalOnDevServicesEnabled
-@EnableConfigurationProperties(DevServicesProperties.class)
+@EnableConfigurationProperties(GlobalDevServicesProperties.class)
 public final class DevServicesAutoConfiguration {
 
     /**

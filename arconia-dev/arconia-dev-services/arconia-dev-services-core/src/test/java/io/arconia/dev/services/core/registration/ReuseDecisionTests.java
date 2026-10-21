@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.core.TestDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConnectionDetails;
@@ -104,7 +104,7 @@ class ReuseDecisionTests {
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.FRAMEWORK);
     }
 
-    private static DevServiceDefinition serviceSpec(BaseDevServicesProperties properties, boolean discovery) {
+    private static DevServiceDefinition serviceSpec(DevServicesProperties properties, boolean discovery) {
         DevServiceSpec service = new DevServiceSpec()
                 .name("postgres")
                 .description("Test Dev Service")

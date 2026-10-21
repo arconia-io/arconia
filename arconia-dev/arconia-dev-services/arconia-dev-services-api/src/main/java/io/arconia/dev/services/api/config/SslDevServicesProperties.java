@@ -4,7 +4,7 @@ import io.arconia.core.support.Incubating;
 
 /**
  * Properties of a dev service that supports SSL, implemented next to
- * {@link BaseDevServicesProperties} by the properties of such a dev service.
+ * {@link DevServicesProperties} by the properties of such a dev service.
  * <p>
  * Declare the configuration as a nested property named {@code ssl}:
  * <pre>{@code

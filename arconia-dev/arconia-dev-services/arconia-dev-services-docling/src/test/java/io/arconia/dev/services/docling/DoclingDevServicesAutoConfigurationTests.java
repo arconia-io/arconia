@@ -44,7 +44,7 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
         contextRunnerWithContainerLifecycle()
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
                     assertThat(links).extracting(DevServiceLink::label).containsExactly("Docling UI", "Docling OpenAPI", "Docling Scalar");
                     assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
                     assertThat(links).filteredOn(link -> link.label().equals("Docling OpenAPI"))

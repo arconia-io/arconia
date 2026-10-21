@@ -28,7 +28,7 @@ class DevServicesAutoConfigurationTests {
 
     @Test
     void propertiesBeanIsAvailable() {
-        contextRunner.run(context -> assertThat(context).hasSingleBean(DevServicesProperties.class));
+        contextRunner.run(context -> assertThat(context).hasSingleBean(GlobalDevServicesProperties.class));
     }
 
     @Test

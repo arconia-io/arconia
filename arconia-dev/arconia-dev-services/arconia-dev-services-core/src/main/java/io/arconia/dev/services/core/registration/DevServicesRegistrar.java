@@ -47,22 +47,22 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
     private ResourceLoader resourceLoader;
 
     @Override
-    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
         registerDevServices(new DevServicesRegistry(registry, environment, resourceLoader), environment);
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    public final void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
     }
 
     @Override
-    public void setEnvironment(Environment environment) {
+    public final void setEnvironment(Environment environment) {
         this.environment = environment;
     }
 
     @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
+    public final void setResourceLoader(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
@@ -105,7 +105,7 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
      */
     protected void addDynamicProperty(String name, Supplier<Object> valueSupplier) {
         Assert.state(environment instanceof ConfigurableEnvironment, "environment must be a ConfigurableEnvironment");
-        DevServiceDynamicPropertySource.getOrCreate((ConfigurableEnvironment) environment)
+        DevServicesDynamicPropertySource.getOrCreate((ConfigurableEnvironment) environment)
                 .add(name, valueSupplier);
     }
 

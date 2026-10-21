@@ -62,7 +62,7 @@ class LldapDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
         contextRunnerWithContainerLifecycle()
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();
+                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
                     assertThat(links).singleElement().satisfies(link -> {
                         assertThat(link.label()).isEqualTo("LLDAP Console");
                         assertThat(link.url()).isEqualTo(

@@ -14,7 +14,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.MountableFile;
 
 import io.arconia.core.support.Internal;
-import io.arconia.dev.services.api.config.BaseDevServicesProperties;
+import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.VolumeMapping;
@@ -39,7 +39,7 @@ public final class ContainerConfigurer {
      * A {@link JdbcDatabaseContainer} configured with {@link JdbcDevServicesProperties}
      * also gets its common properties applied.
      */
-    public static void apply(GenericContainer<?> container, BaseDevServicesProperties properties) {
+    public static void apply(GenericContainer<?> container, DevServicesProperties properties) {
         Assert.notNull(container, "container cannot be null");
         Assert.notNull(properties, "properties cannot be null");
 
@@ -58,7 +58,7 @@ public final class ContainerConfigurer {
         }
     }
 
-    private static void volumes(GenericContainer<?> container, BaseDevServicesProperties properties) {
+    private static void volumes(GenericContainer<?> container, DevServicesProperties properties) {
         for (VolumeMapping volume : properties.getVolumes()) {
             container.withFileSystemBind(volume.hostPath(), volume.containerPath(), BindMode.READ_WRITE);
         }

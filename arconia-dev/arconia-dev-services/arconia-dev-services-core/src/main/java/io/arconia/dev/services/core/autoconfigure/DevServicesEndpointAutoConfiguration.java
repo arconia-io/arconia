@@ -32,7 +32,7 @@ public final class DevServicesEndpointAutoConfiguration {
     @ConditionalOnAvailableEndpoint
     DevServicesEndpoint devServicesEndpoint(ObjectProvider<DevServiceRegistration> registrations, ObjectProvider<SslBundles> sslBundles) {
         return new DevServicesEndpoint(registrations.orderedStream()
-                .collect(Collectors.toMap(DevServiceRegistration::name, Function.identity(), (first, second) -> first, LinkedHashMap::new)),
+                .collect(Collectors.toMap(DevServiceRegistration::getName, Function.identity(), (first, second) -> first, LinkedHashMap::new)),
                 sslBundles.getIfUnique());
     }
 
