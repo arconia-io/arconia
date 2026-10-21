@@ -26,6 +26,9 @@ import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 public final class DoclingDevServicesAutoConfiguration {
 
     static DoclingServeContainer createContainer(DoclingDevServicesProperties properties) {
+        // The container applies its configuration right before it starts, after the common
+        // properties have been applied, so the environment and the startup timeout are passed
+        // here as well for the configured values to win.
         return new DoclingServeContainer(DoclingServeContainerConfig.builder()
                 .image(properties.getImageName())
                 .enableUi(properties.isEnableUi())
@@ -41,17 +44,20 @@ public final class DoclingDevServicesAutoConfiguration {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             var properties = bindProperties(DoclingDevServicesProperties.CONFIG_PREFIX, DoclingDevServicesProperties.class);
 
-            registry.registerDevService(service -> service
-                    .name("docling")
-                    .description("Docling Dev Service")
-                    .properties(properties)
-                    .container(DoclingServeContainer.class, () -> createContainer(properties))
-                    .port(DoclingServeContainer.DEFAULT_DOCLING_PORT)
-                    .discovery(DoclingServeConnectionDetails.class,
-                            container -> new DoclingDiscoveredConnectionDetails(container, properties))
-                    .link("Docling UI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui")
-                    .link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs")
-                    .link("Docling Scalar", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/scalar"));
+            registry.registerDevService(service -> {
+                service.name("docling")
+                        .description("Docling Dev Service")
+                        .properties(properties)
+                        .container(DoclingServeContainer.class, () -> createContainer(properties))
+                        .port(DoclingServeContainer.DEFAULT_DOCLING_PORT)
+                        .discovery(DoclingServeConnectionDetails.class,
+                                container -> new DoclingDiscoveredConnectionDetails(container, properties));
+                if (properties.isEnableUi()) {
+                    service.link("Docling UI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui");
+                }
+                service.link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs")
+                        .link("Docling Scalar", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/scalar");
+            });
         }
 
     }
