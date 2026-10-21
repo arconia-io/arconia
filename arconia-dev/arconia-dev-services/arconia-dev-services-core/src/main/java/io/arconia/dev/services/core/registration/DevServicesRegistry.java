@@ -118,21 +118,21 @@ public final class DevServicesRegistry {
         Assert.state(!beanDefinitionRegistry.containsBeanDefinition(registrationBeanName),
                 () -> "A dev service named '%s' is already registered".formatted(service.name()));
 
-        // 2. Ensure no other dev service of the same category is registered, since dev services
-        // providing the same capability are mutually exclusive.
-        ensureCategoryIsFree(service);
-
-        // 3. A disabled dev service is not started nor registered. The auto-configuration
+        // 2. A disabled dev service is not started nor registered. The auto-configuration
         // condition normally backs off earlier; this honors the properties contract for a dev
         // service whose condition doesn't read the property. A ConnectionDetails bean of the
         // declared type defined by the application takes precedence over the dev service as well,
         // mirroring Spring Boot's service connection behavior: the application connects to the
         // service of its choice. Either way, a container kept across a DevTools restart is no
-        // longer needed.
+        // longer needed. A skipped dev service takes no part in the mutual exclusion below.
         if (isDisabled(service) || isConnectionDetailsDefinedByApplication(service)) {
             restartSupport.discardKeptContainer(service.name(), containerBeanName);
             return;
         }
+
+        // 3. Ensure no other dev service of the same category is registered, since dev services
+        // providing the same capability are mutually exclusive.
+        ensureCategoryIsFree(service);
 
         // 4. Check whether the application has kept a running container for this dev service across a
         // DevTools restart. If it has, the application keeps using it.

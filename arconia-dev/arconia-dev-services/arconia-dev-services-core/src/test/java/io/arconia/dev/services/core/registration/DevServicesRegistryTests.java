@@ -186,6 +186,21 @@ class DevServicesRegistryTests {
         }
 
         @Test
+        void whenDevServiceInSameCategoryIsDisabledThenItIsSkippedInsteadOfConflicting() {
+            registerCategorizedDevService("first", "jdbc", TestPostgresContainer::new);
+
+            registry.registerDevService(service -> service
+                    .name("second")
+                    .description("Test Dev Service")
+                    .category("jdbc")
+                    .properties(TestDevServicesProperties.DEFAULT.withEnabled(false))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+            assertThat(beanFactory.containsBeanDefinition(BeanName.REGISTRATION.of("first"))).isTrue();
+            assertThat(beanFactory.containsBeanDefinition(BeanName.REGISTRATION.of("second"))).isFalse();
+        }
+
+        @Test
         void whenDifferentCategoriesOrNoCategoryThenAllAreRegistered() {
             registerCategorizedDevService("first", "jdbc", TestPostgresContainer::new);
             registerCategorizedDevService("other", "opentelemetry", TestPostgresContainer::new);
