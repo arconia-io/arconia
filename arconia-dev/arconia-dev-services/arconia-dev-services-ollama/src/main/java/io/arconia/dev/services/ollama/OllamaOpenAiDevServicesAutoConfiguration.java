@@ -42,14 +42,9 @@ import io.arconia.dev.services.ollama.OllamaOpenAiDevServicesAutoConfiguration.O
 @Import(OllamaOpenAiPropertyRegistrar.class)
 public final class OllamaOpenAiDevServicesAutoConfiguration {
 
-    private static final String DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
-
     private static final String OLLAMA_BASE_URL_PROPERTY = "spring.ai.ollama.base-url";
 
     static class OllamaOpenAiPropertyRegistrar extends DevServicesRegistrar {
-
-        private static final String OLLAMA_CONNECTION_DETAILS_CLASS =
-                "org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails";
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
@@ -72,7 +67,7 @@ public final class OllamaOpenAiDevServicesAutoConfiguration {
                 // from another application, or a native Ollama service is used.
             }
 
-            if (ClassUtils.isPresent(OLLAMA_CONNECTION_DETAILS_CLASS, null)) {
+            if (ClassUtils.isPresent(OllamaDevServicesAutoConfiguration.OLLAMA_CONNECTION_DETAILS_CLASS, null)) {
                 String baseUrl = resolveBaseUrlFromConnectionDetails(beanFactory);
                 if (baseUrl != null) {
                     return baseUrl;
@@ -80,7 +75,7 @@ public final class OllamaOpenAiDevServicesAutoConfiguration {
             }
 
             String baseUrl = environment.getProperty(OLLAMA_BASE_URL_PROPERTY);
-            return (baseUrl != null && !baseUrl.isBlank()) ? baseUrl : DEFAULT_OLLAMA_BASE_URL;
+            return (baseUrl != null && !baseUrl.isBlank()) ? baseUrl : OllamaDevServicesAutoConfiguration.DEFAULT_OLLAMA_BASE_URL;
         }
 
         /**

@@ -17,7 +17,6 @@ import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -27,7 +26,7 @@ import io.arconia.dev.services.floci.FlociDevServicesAutoConfiguration.S3Configu
 /**
  * Auto-configuration for Floci Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("floci")
 @EnableConfigurationProperties(FlociDevServicesProperties.class)
 @Import({FlociDevServicesRegistrar.class, S3Configuration.class})

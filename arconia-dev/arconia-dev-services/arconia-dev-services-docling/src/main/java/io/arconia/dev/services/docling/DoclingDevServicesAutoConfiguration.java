@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.docling.DoclingDevServicesAutoConfiguration.DoclingDevServicesRegistrar;
@@ -19,7 +18,7 @@ import io.arconia.docling.autoconfigure.DoclingServeConnectionDetails;
 /**
  * Auto-configuration for Docling Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("docling")
 @EnableConfigurationProperties(DoclingDevServicesProperties.class)
 @Import(DoclingDevServicesRegistrar.class)

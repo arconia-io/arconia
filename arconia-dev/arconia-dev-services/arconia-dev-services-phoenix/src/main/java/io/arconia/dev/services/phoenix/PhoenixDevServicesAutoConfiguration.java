@@ -8,7 +8,6 @@ import org.springframework.core.env.Environment;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -23,8 +22,7 @@ import io.arconia.testcontainers.phoenix.PhoenixContainer;
 /**
  * Auto-configuration for Arize Phoenix Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class,
-        before = { OpenTelemetryExporterAutoConfiguration.class, ServiceConnectionAutoConfiguration.class })
+@AutoConfiguration(before = { OpenTelemetryExporterAutoConfiguration.class, ServiceConnectionAutoConfiguration.class })
 @ConditionalOnDevServicesEnabled("phoenix")
 @ConditionalOnOpenTelemetry
 @EnableConfigurationProperties(PhoenixDevServicesProperties.class)

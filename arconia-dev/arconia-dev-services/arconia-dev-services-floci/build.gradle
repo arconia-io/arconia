@@ -13,8 +13,7 @@ dependencies {
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "io.awspring.cloud:spring-cloud-aws-testcontainers"
     api "io.floci:testcontainers-floci-aws:${flociVersion}"
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
 
     optional "io.awspring.cloud:spring-cloud-aws-s3"
 

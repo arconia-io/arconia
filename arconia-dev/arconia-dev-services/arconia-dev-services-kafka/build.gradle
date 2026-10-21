@@ -12,8 +12,7 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.boot:spring-boot-kafka"
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-kafka"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))

@@ -12,8 +12,7 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oidc")
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
 
     api("com.github.dasniko:testcontainers-keycloak:${testcontainersKeycloakVersion}") {
         exclude group: "org.jboss.shrinkwrap"

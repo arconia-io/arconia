@@ -1,8 +1,10 @@
 package io.arconia.dev.services.tests;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
@@ -49,6 +51,9 @@ public abstract class BaseJdbcDevServicesAutoConfigurationTests extends BaseDevS
                     assertThat(container.getUsername()).isEqualTo("mytest");
                     assertThat(container.getPassword()).isEqualTo("mytest");
                     assertThat(container.getDatabaseName()).isEqualTo("mytest");
+                    // Testcontainers keeps the init scripts in a private field, with no getter.
+                    assertThat(ReflectionTestUtils.getField(container, JdbcDatabaseContainer.class, "initScriptPaths"))
+                            .asInstanceOf(InstanceOfAssertFactories.LIST).containsExactly("sql/init.sql");
                 });
     }
 

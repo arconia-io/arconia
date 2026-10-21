@@ -12,7 +12,6 @@ import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
@@ -21,7 +20,7 @@ import io.arconia.dev.services.kafka.KafkaDevServicesAutoConfiguration.KafkaDevS
 /**
  * Auto-configuration for Kafka Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("kafka")
 @EnableConfigurationProperties(KafkaDevServicesProperties.class)
 @Import(KafkaDevServicesRegistrar.class)

@@ -26,7 +26,9 @@ import io.arconia.core.support.Incubating;
  * <p>
  * If you create a Dev Services module, you should extend this class,
  * implement {@link #registerDevServices(DevServicesRegistry, Environment)},
- * and import it in your module's {@code @AutoConfiguration} class.
+ * and import it in your module's {@code @AutoConfiguration} class. That auto-configuration must
+ * be ordered before Spring Boot's {@code ServiceConnectionAutoConfiguration}, which creates the
+ * connection details of the containers registered by the time it runs.
  */
 @Incubating
 public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware, ResourceLoaderAware {

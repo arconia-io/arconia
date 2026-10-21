@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the certificate Elasticsearch generates or the one configured through the properties.
  */
 @DisabledIfDockerUnavailable
-class ElasticsearchDevServicesSslIT {
+class ElasticsearchDevServicesIT {
 
     private static final String STARTUP_TIMEOUT = "arconia.dev.services.elasticsearch.startup-timeout=180s";
 

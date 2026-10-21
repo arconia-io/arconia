@@ -12,7 +12,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -23,7 +22,7 @@ import io.arconia.dev.services.postgresql.PostgresqlDevServicesAutoConfiguration
 /**
  * Auto-configuration for PostgreSQL Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("postgresql")
 @EnableConfigurationProperties(PostgresqlDevServicesProperties.class)
 @Import(PostgresqlDevServicesRegistrar.class)

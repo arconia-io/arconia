@@ -13,8 +13,7 @@ dependencies {
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api project(":arconia-integrations:arconia-docling")
     api "ai.docling:docling-testcontainers"
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
     testImplementation "org.springframework.boot:spring-boot-starter-test"

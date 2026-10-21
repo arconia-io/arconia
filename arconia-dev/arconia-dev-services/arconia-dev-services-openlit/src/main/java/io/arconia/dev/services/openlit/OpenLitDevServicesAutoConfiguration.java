@@ -8,7 +8,6 @@ import org.springframework.core.env.Environment;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -20,7 +19,7 @@ import io.arconia.testcontainers.openlit.OpenLitContainer;
 /**
  * Auto-configuration for OpenLit Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
 @ConditionalOnDevServicesEnabled("openlit")
 @EnableConfigurationProperties(OpenLitDevServicesProperties.class)

@@ -11,7 +11,6 @@ import org.testcontainers.mariadb.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -22,7 +21,7 @@ import io.arconia.dev.services.mariadb.MariaDbDevServicesAutoConfiguration.Maria
 /**
  * Auto-configuration for MariaDB Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("mariadb")
 @EnableConfigurationProperties(MariaDbDevServicesProperties.class)
 @Import(MariaDbDevServicesRegistrar.class)

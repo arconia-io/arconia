@@ -12,8 +12,7 @@ dependencies {
 
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api project(":arconia-opentelemetry:arconia-opentelemetry")
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-grafana"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))

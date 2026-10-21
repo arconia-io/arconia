@@ -9,7 +9,6 @@ import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -20,7 +19,7 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 /**
  * Auto-configuration for Grafana LGTM Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
 @ConditionalOnDevServicesEnabled("lgtm")
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)

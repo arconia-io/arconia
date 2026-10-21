@@ -12,7 +12,6 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
@@ -21,7 +20,7 @@ import io.arconia.dev.services.rabbitmq.RabbitMqDevServicesAutoConfiguration.Rab
 /**
  * Auto-configuration for RabbitMQ Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("rabbitmq")
 @EnableConfigurationProperties(RabbitMqDevServicesProperties.class)
 @Import(RabbitMqDevServicesRegistrar.class)

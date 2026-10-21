@@ -27,8 +27,6 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
 
     private static final Logger logger = LoggerFactory.getLogger(OnOllamaNativeUnavailable.class);
 
-    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
-
     /**
      * Probe results cached per base URL: the condition can be evaluated multiple times
      * in the same JVM (context refreshes, cached test contexts), and the availability
@@ -83,7 +81,7 @@ class OnOllamaNativeUnavailable extends SpringBootCondition {
                 return ollamaProperties.getBaseUrl();
             }
         }
-        return DEFAULT_BASE_URL;
+        return OllamaDevServicesAutoConfiguration.DEFAULT_OLLAMA_BASE_URL;
     }
 
     /**

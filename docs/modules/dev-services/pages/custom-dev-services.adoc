@@ -126,7 +126,7 @@ Register the Dev Service through an auto-configuration class guarded by `@Condit
 
 [source,java]
 ----
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled(name = "fancydb", prefix = "acme.dev.services")
 @EnableConfigurationProperties(FancyDbDevServicesProperties.class)
 @Import(FancyDbDevServicesRegistrar.class)

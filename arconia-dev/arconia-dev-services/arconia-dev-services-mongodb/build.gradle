@@ -13,8 +13,7 @@ dependencies {
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.mongodb:mongodb-driver-core"
     api "org.springframework.boot:spring-boot-mongodb"
-    api "org.springframework.boot:spring-boot-starter"
-    api "org.springframework.boot:spring-boot-testcontainers"
+    api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-mongodb"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))

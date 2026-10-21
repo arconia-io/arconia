@@ -9,7 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceSpec;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -21,17 +20,25 @@ import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.OllamaD
  * If the application is running in dev mode and a native Ollama connection is detected,
  * the auto-configuration will be skipped.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("ollama")
 @ConditionalOnOllamaNativeUnavailable
 @EnableConfigurationProperties(OllamaDevServicesProperties.class)
 @Import(OllamaDevServicesRegistrar.class)
 public final class OllamaDevServicesAutoConfiguration {
 
-    static class OllamaDevServicesRegistrar extends DevServicesRegistrar {
+    /**
+     * The base URL of an Ollama service running natively on the host, on its default port.
+     */
+    static final String DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
 
-        private static final String OLLAMA_CONNECTION_DETAILS_CLASS =
-                "org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails";
+    /**
+     * The connection details of the Spring AI Ollama module, which provides the service
+     * connection for the Ollama container when it is on the classpath.
+     */
+    static final String OLLAMA_CONNECTION_DETAILS_CLASS = "org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails";
+
+    static class OllamaDevServicesRegistrar extends DevServicesRegistrar {
 
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {

@@ -14,7 +14,6 @@ import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
@@ -24,7 +23,7 @@ import io.arconia.dev.services.mongodb.MongoDbDevServicesAutoConfiguration.Mongo
 /**
  * Auto-configuration for MongoDB Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("mongodb")
 @EnableConfigurationProperties(MongoDbDevServicesProperties.class)
 @Import(MongoDbDevServicesRegistrar.class)

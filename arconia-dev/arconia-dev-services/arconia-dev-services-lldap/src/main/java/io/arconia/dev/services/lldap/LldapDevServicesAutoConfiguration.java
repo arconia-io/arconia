@@ -10,7 +10,6 @@ import org.testcontainers.ldap.LLdapContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
-import io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.LldapDevServicesRegistrar;
@@ -18,7 +17,7 @@ import io.arconia.dev.services.lldap.LldapDevServicesAutoConfiguration.LldapDevS
 /**
  * Auto-configuration for LLDAP Dev Services.
  */
-@AutoConfiguration(after = DevServicesAutoConfiguration.class, before = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("lldap")
 @EnableConfigurationProperties(LldapDevServicesProperties.class)
 @Import(LldapDevServicesRegistrar.class)

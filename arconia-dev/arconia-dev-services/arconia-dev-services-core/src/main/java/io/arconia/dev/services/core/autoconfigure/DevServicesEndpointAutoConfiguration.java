@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.ssl.SslBundles;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import io.arconia.boot.autoconfigure.bootstrap.ConditionalOnDevMode;
@@ -21,7 +20,7 @@ import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
 /**
  * Auto-configuration for the Dev Services Actuator endpoint.
  */
-@AutoConfiguration(after = ServiceConnectionAutoConfiguration.class)
+@AutoConfiguration
 @ConditionalOnDevMode
 @ConditionalOnDevServicesEnabled
 @ConditionalOnClass(Endpoint.class)

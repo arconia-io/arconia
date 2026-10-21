@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-autoconfigure"
 
     optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"
 
