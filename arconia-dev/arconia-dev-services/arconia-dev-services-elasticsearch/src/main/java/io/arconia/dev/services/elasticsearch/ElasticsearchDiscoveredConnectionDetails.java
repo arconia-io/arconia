@@ -37,11 +37,13 @@ final class ElasticsearchDiscoveredConnectionDetails implements ElasticsearchCon
     private final SslBundle sslBundle;
 
     ElasticsearchDiscoveredConnectionDetails(DiscoveredContainer container, ElasticsearchDevServicesProperties properties) {
-        // The container is only asked how it would be configured, it is never started.
-        ElasticsearchContainer configuration = ElasticsearchDevServicesAutoConfiguration.createContainer(properties);
         this.sslBundle = resolveSslBundle(container, properties);
         this.node = new Node(container.host(), container.mappedPort(ElasticsearchDevServicesAutoConfiguration.ELASTICSEARCH_DEFAULT_PORT),
-                (sslBundle != null) ? Node.Protocol.HTTPS : Node.Protocol.HTTP, USERNAME, configuration.getEnvMap().get(PASSWORD_ENVIRONMENT_VARIABLE));
+                (sslBundle != null) ? Node.Protocol.HTTPS : Node.Protocol.HTTP, USERNAME, password(properties));
+    }
+
+    private static String password(ElasticsearchDevServicesProperties properties) {
+        return properties.getEnvironment().getOrDefault(PASSWORD_ENVIRONMENT_VARIABLE, ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD);
     }
 
     /**
