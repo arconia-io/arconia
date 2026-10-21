@@ -60,6 +60,16 @@ jobs:
       - name: Compile and test
         run: ./gradlew build -Dorg.gradle.parallel=false
 
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          retention-days: 1
+          name: test-reports
+          path: |
+            **/build/test-results/test/*.xml
+            **/build/reports/tests/test/
+
       - name: Generate SBOMs
         run: ./gradlew cyclonedxBom
 
