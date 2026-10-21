@@ -23,10 +23,11 @@ The application logs will show you the URL where you can access the LLDAP Manage
 
 [source,logs]
 ----
-...o.t.ldap.LLdapContainer                  : LLDAP container is ready! UI available at http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'lldap' is ready in container 7c2e1f9a3b5d (lldap/lldap, reuse-strategy: none)
+...i.a.d.s.startup  : Dev Service 'lldap' links: LLDAP Console: http://localhost:<port>
 ----
 
-By default, you can log in with username `admin` and password `password`. The default base DN is `dc=example,dc=com`.
+You can log in with username `admin` and password `password`. The default base DN is `dc=example,dc=com`. The same credentials are used by the application to connect to the LDAP server.
 
 == Configuring the Dev Service
 

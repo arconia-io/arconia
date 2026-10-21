@@ -27,12 +27,7 @@ class LldapDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
 
     @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
-        // LLDAP requires these to boot; otherwise the container exits with code 1.
-        // The password is the one LLDAP connection details default to.
         LldapDevServicesProperties properties = new LldapDevServicesProperties();
-        properties.setEnvironment(Map.of(
-                "LLDAP_JWT_SECRET", "letItGoWannaBuildSnowman",
-                "LLDAP_LDAP_USER_PASS", "password"));
         return asDiscoverableContainer(LldapDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
     }
 
@@ -52,13 +47,19 @@ class LldapDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigur
     }
 
     @Test
+    void containerBootsWithFixedCredentials() {
+        var container = LldapDevServicesAutoConfiguration.createContainer(new LldapDevServicesProperties());
+
+        assertThat(container.getEnvMap())
+                .containsEntry("LLDAP_JWT_SECRET", LldapDevServicesAutoConfiguration.JWT_SECRET)
+                .containsEntry("LLDAP_LDAP_USER_PASS", LldapDevServicesAutoConfiguration.ADMIN_PASSWORD);
+        assertThat(container.getUser()).startsWith("cn=admin,");
+    }
+
+    @Test
     @DisabledIfDockerUnavailable
     void devServiceLinksExposeManagementConsoleUrl() {
         contextRunnerWithContainerLifecycle()
-                // LLDAP requires these to boot; otherwise the container exits with code 1.
-                .withPropertyValues(
-                        "arconia.dev.services.%s.environment.LLDAP_JWT_SECRET=letItGoWannaBuildSnowman".formatted(getServiceName()),
-                        "arconia.dev.services.%s.environment.LLDAP_LDAP_USER_PASS=password".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).links();

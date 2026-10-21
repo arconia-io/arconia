@@ -30,8 +30,19 @@ public final class LldapDevServicesAutoConfiguration {
 
     static final int UI_PORT = 17170;
 
+    static final String ADMIN_PASSWORD = "password";
+
+    /**
+     * The secret LLDAP signs its session tokens with, which it refuses to start without.
+     * A fixed value, so that a container kept across restarts keeps its sessions valid.
+     */
+    static final String JWT_SECRET = "arconia-dev-services-lldap";
+
     static LLdapContainer createContainer(LldapDevServicesProperties properties) {
-        return new LLdapContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        var container = new LLdapContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        container.withEnv("LLDAP_JWT_SECRET", JWT_SECRET);
+        container.withUserPass(ADMIN_PASSWORD);
+        return container;
     }
 
     static class LldapDevServicesRegistrar extends DevServicesRegistrar {
