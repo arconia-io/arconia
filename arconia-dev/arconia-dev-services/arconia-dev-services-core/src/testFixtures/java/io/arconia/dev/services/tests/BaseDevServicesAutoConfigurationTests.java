@@ -62,11 +62,12 @@ public abstract class BaseDevServicesAutoConfigurationTests {
     }
 
     /**
-     * The context runner with the auto-configuration of the dev service. Override it to add
-     * what every test of the dev service needs, such as a property or a filtered class loader.
+     * The context runner with the auto-configuration of the dev service, opting into the dev
+     * service when it is skipped in test mode by default. Override it to add what every test of
+     * the dev service needs, such as a property or a filtered class loader.
      */
     protected ApplicationContextRunner getContextRunner() {
-        return contextRunner;
+        return contextRunner.withPropertyValues(testModeProperties());
     }
 
     /**
@@ -125,10 +126,38 @@ public abstract class BaseDevServicesAutoConfigurationTests {
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
     }
 
+    /**
+     * Whether the dev service is skipped in test mode by default, as the observability dev
+     * services are. The tests that need the dev service in test mode then opt into it.
+     */
+    protected boolean isSkippedInTestsByDefault() {
+        return false;
+    }
+
+    /**
+     * The properties opting into the dev service in test mode, when it is skipped there by default.
+     */
+    private String[] testModeProperties() {
+        return isSkippedInTestsByDefault()
+                ? new String[] { "arconia.dev.services.%s.skip-in-tests=false".formatted(getServiceName()) }
+                : new String[0];
+    }
+
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
         BootstrapMode.clear();
+    }
+
+    @Test
+    void skippedInTestModeByDefault() {
+        Assumptions.assumeTrue(isSkippedInTestsByDefault(), "the dev service is not skipped in test mode");
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=test")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(getContainerClass());
+                    assertThat(context).doesNotHaveBean(DevServiceRegistration.class);
+                });
     }
 
     @Test

@@ -24,6 +24,11 @@ class OtelCollectorDevServicesAutoConfigurationTests extends BaseDevServicesAuto
     }
 
     @Override
+    protected boolean isSkippedInTestsByDefault() {
+        return true;
+    }
+
+    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new OtelCollectorDevServicesProperties();
         return asDiscoverableContainer(new ArconiaOtelCollectorContainer(properties), properties, ownerId);

@@ -73,6 +73,13 @@ public interface DevServicesProperties {
     }
 
     /**
+     * Whether the dev service is skipped in test mode, as a service most tests have no use for.
+     */
+    default boolean isSkipInTests() {
+        return false;
+    }
+
+    /**
      * Files or directories to mount from the host filesystem into the container.
      * They are mounted at the specified destination path inside the container
      * at startup and are mutable (read-write). Changes in either the host

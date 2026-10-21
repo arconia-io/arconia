@@ -141,7 +141,7 @@ Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans i
 * Shutdown: Services stop when the application stops.
 * Persistence: Services remain available throughout the lifecycle of your application or tests.
 
-When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] in dev mode, Dev Services are not recreated on restart. They remain running in the background until the application process exits, ensuring a smooth development experience without wait times or state loss.
+When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] in dev mode, Dev Services are not recreated on restart. They remain running in the background until the application process exits, ensuring a smooth development experience without wait times or state loss. When the process exits, the containers it kept are stopped, unless they are kept by the `testcontainers` reuse strategy (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]). A process killed outright cannot stop them; the container runtime then removes them a few seconds later through Testcontainers' resource reaper.
 
 Since the container is kept, changes to the configuration of a Dev Service take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example, because it was removed manually.
 
@@ -150,6 +150,16 @@ A Dev Service can also use a container that is already running instead of starti
 === Dev Services in Test Mode
 
 In test mode, every test application context starts its own containers and stops them when it closes, to ensure test isolation, consistency, and reliability. The features that keep or share containers are only available in dev mode: the reuse strategies, the persistence across Spring Boot DevTools restarts, and the `devservices` actuator endpoint.
+
+The observability Dev Services (xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], and xref:openlit.adoc[OpenLit]) are skipped in test mode by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set the `arconia.dev.services.<service-name>.skip-in-tests` property to `false`, for example in `application-test.yml` or on the test class:
+
+[source,java]
+----
+@SpringBootTest(properties = "arconia.dev.services.lgtm.skip-in-tests=false")
+class TelemetryTests {
+    ...
+}
+----
 
 === Configuration Options
 

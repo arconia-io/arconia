@@ -37,6 +37,11 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     }
 
     @Override
+    protected boolean isSkippedInTestsByDefault() {
+        return true;
+    }
+
+    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new LgtmDevServicesProperties();
         var dashboards = LgtmDashboards.collect(new MockEnvironment(), new DefaultResourceLoader(), properties.getDashboards());

@@ -67,6 +67,12 @@ public class OtelCollectorDevServicesProperties implements DevServicesProperties
     private Duration startupTimeout = Duration.ofSeconds(30);
 
     /**
+     * Whether the dev service is skipped in test mode, where the application rarely needs a
+     * telemetry backend. Set it to false for tests that verify the telemetry the application exports.
+     */
+    private boolean skipInTests = true;
+
+    /**
      * Files or directories to mount from the host filesystem into the container.
      * They are mounted at the specified destination path inside the container
      * at startup and are mutable (read-write). Changes in either the host
@@ -153,6 +159,14 @@ public class OtelCollectorDevServicesProperties implements DevServicesProperties
     }
 
     @Override
+    public boolean isSkipInTests() {
+        return skipInTests;
+    }
+
+    public void setSkipInTests(boolean skipInTests) {
+        this.skipInTests = skipInTests;
+    }
+
     public List<VolumeMapping> getVolumes() {
         return volumes;
     }

@@ -108,6 +108,10 @@ You can configure the Dev Service via configuration properties.
 | `[]`
 | Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
 
+| `arconia.dev.services.{service-name}.skip-in-tests`
+| `true`
+| Whether the dev service is skipped in test mode, where the application rarely needs a telemetry backend. Set it to false for tests that verify the telemetry the application exports.
+
 | `arconia.dev.services.{service-name}.otlp-grpc-port`
 | `0`
 | Fixed port for exposing the OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.

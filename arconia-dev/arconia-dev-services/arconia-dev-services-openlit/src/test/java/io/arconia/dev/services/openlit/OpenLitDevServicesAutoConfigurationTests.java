@@ -29,6 +29,11 @@ class OpenLitDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Override
+    protected boolean isSkippedInTestsByDefault() {
+        return true;
+    }
+
+    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new OpenLitDevServicesProperties();
         return asDiscoverableContainer(OpenLitDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);

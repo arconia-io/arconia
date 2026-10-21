@@ -1,11 +1,18 @@
 package io.arconia.dev.services.core.registration;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.Scope;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
@@ -14,7 +21,14 @@ import io.arconia.boot.bootstrap.BootstrapMode;
 
 /**
  * Keeps dev service containers across Spring Boot DevTools restarts by placing them in the
- * DevTools {@code restart} scope, where they stay until the application process exits.
+ * DevTools {@code restart} scope, where they stay until the application process exits, and
+ * stops them when it does.
+ * <p>
+ * The {@code restart} scope never destroys what it holds, and Testcontainers leaves a container
+ * running until Ryuk notices the process is gone, which takes a few seconds. In the meantime,
+ * another application could discover the container and connect to it right before it disappears.
+ * So the containers kept by this process are stopped when the JVM exits, as the containers of
+ * an application without DevTools are stopped with its application context.
  */
 final class DevServiceRestartSupport {
 
@@ -26,6 +40,14 @@ final class DevServiceRestartSupport {
     private static final Logger logger = LoggerFactory.getLogger(DevServiceRestartSupport.class);
 
     private static final String DEVTOOLS_RESTART_ENABLED_PROPERTY = "spring.devtools.restart.enabled";
+
+    /**
+     * The containers this process keeps across restarts, by the name of their dev service.
+     * One per JVM, as the {@code restart} scope is.
+     */
+    private static final Map<GenericContainer<?>, String> KEPT_CONTAINERS = new LinkedHashMap<>();
+
+    private static final AtomicBoolean SHUTDOWN_HANDLER_REGISTERED = new AtomicBoolean();
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
@@ -83,6 +105,50 @@ final class DevServiceRestartSupport {
     }
 
     /**
+     * Keep the given container of the dev service across restarts: the {@code restart} scope
+     * holds it, and it is stopped when the JVM exits. Nothing happens when the scope is not active.
+     */
+    void keepAcrossRestarts(String serviceName, GenericContainer<?> container) {
+        Assert.hasText(serviceName, "serviceName cannot be null or empty");
+        Assert.notNull(container, "container cannot be null");
+
+        if (!isRestartScopeActive()) {
+            return;
+        }
+        synchronized (KEPT_CONTAINERS) {
+            KEPT_CONTAINERS.put(container, serviceName);
+        }
+        if (SHUTDOWN_HANDLER_REGISTERED.compareAndSet(false, true)) {
+            SpringApplication.getShutdownHandlers().add(DevServiceRestartSupport::stopKeptContainers);
+        }
+    }
+
+    /**
+     * Stop the containers kept across restarts, at JVM exit. A container reused via
+     * Testcontainers is left running, as everywhere else.
+     */
+    static void stopKeptContainers() {
+        List<Map.Entry<GenericContainer<?>, String>> kept;
+        synchronized (KEPT_CONTAINERS) {
+            kept = new ArrayList<>(KEPT_CONTAINERS.entrySet());
+            KEPT_CONTAINERS.clear();
+        }
+        for (Map.Entry<GenericContainer<?>, String> entry : kept) {
+            GenericContainer<?> container = entry.getKey();
+            try {
+                if (!container.isShouldBeReused()) {
+                    logger.info("Dev Service '{}': stopping container {} as the application exits",
+                            entry.getValue(), ContainerRuntimeInfo.shortId(container.getContainerId()));
+                }
+                release(container);
+            } catch (Exception ex) {
+                logger.warn("Dev Service '{}': failed to stop container {} ({})",
+                        entry.getValue(), ContainerRuntimeInfo.shortId(container.getContainerId()), ex.getMessage());
+            }
+        }
+    }
+
+    /**
      * Discard the container the {@code restart} scope holds for the dev service, if any, when
      * the dev service is not registered after a restart (for example, because the application now
      * defines its own connection details): the container is removed from the scope and released,
@@ -106,11 +172,10 @@ final class DevServiceRestartSupport {
      */
     @Nullable
     private GenericContainer<?> takeKeptContainer(String containerBeanName) {
-        Scope restartScope = restartScope();
-        if (restartScope == null || !isRestartScopeActive()) {
+        if (!isRestartScopeActive()) {
             return null;
         }
-        return (restartScope.remove(containerBeanName) instanceof GenericContainer<?> keptContainer) ? keptContainer : null;
+        return (requireRestartScope().remove(containerBeanName) instanceof GenericContainer<?> keptContainer) ? keptContainer : null;
     }
 
     /**
@@ -119,6 +184,9 @@ final class DevServiceRestartSupport {
      * it as long as it runs.
      */
     private static void release(GenericContainer<?> container) {
+        synchronized (KEPT_CONTAINERS) {
+            KEPT_CONTAINERS.remove(container);
+        }
         if (!container.isShouldBeReused()) {
             container.stop();
         }

@@ -208,6 +208,53 @@ class DevServiceRestartSupportTests {
         assertThat(support.retainKeptContainer("postgres", CONTAINER_BEAN_NAME, RestartingContainer.class)).isFalse();
     }
 
+    @Test
+    void whenContainerKeptAcrossRestartsThenItIsStoppedWhenTheJvmExits(CapturedOutput output) {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = new RestartingContainer();
+        RestartingContainer reusable = new RestartingContainer().withReuse(true);
+        support.keepAcrossRestarts("postgres", kept);
+        support.keepAcrossRestarts("redis", reusable);
+
+        DevServiceRestartSupport.stopKeptContainers();
+
+        assertThat(kept.stopped).isTrue();
+        assertThat(reusable.stopped).isFalse();
+        assertThat(output).contains("Dev Service 'postgres': stopping container");
+        // Stopped once: a second exit handling finds nothing to stop.
+        kept.stopped = false;
+        DevServiceRestartSupport.stopKeptContainers();
+        assertThat(kept.stopped).isFalse();
+    }
+
+    @Test
+    void whenKeptContainerIsReleasedThenItIsNotStoppedAgainWhenTheJvmExits() {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        RestartingContainer kept = keep(new RestartingContainer());
+        support.keepAcrossRestarts("postgres", kept);
+
+        support.discardKeptContainer("postgres", CONTAINER_BEAN_NAME);
+        assertThat(kept.stopped).isTrue();
+        kept.stopped = false;
+
+        DevServiceRestartSupport.stopKeptContainers();
+
+        assertThat(kept.stopped).isFalse();
+    }
+
+    @Test
+    void whenRestartScopeIsNotActiveThenContainerIsNotKeptForTheJvmExit() {
+        RestartingContainer container = new RestartingContainer();
+
+        support.keepAcrossRestarts("postgres", container);
+        DevServiceRestartSupport.stopKeptContainers();
+
+        // Outside the restart scope, the application context stops the container itself.
+        assertThat(container.stopped).isFalse();
+    }
+
     /**
      * Put the given container in the restart scope under the container bean name, as a
      * previous run of the application would have.

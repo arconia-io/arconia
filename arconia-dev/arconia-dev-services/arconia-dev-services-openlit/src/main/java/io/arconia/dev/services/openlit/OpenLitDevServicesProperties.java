@@ -83,6 +83,12 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     private Duration startupTimeout = Duration.ofMinutes(2);
 
     /**
+     * Whether the dev service is skipped in test mode, where the application rarely needs a
+     * telemetry backend. Set it to false for tests that verify the telemetry the application exports.
+     */
+    private boolean skipInTests = true;
+
+    /**
      * Files or directories to mount from the host filesystem into the container.
      */
     private List<VolumeMapping> volumes = new ArrayList<>();
@@ -184,6 +190,14 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
+    public boolean isSkipInTests() {
+        return skipInTests;
+    }
+
+    public void setSkipInTests(boolean skipInTests) {
+        this.skipInTests = skipInTests;
+    }
+
     public List<VolumeMapping> getVolumes() {
         return volumes;
     }

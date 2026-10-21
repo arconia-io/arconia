@@ -36,6 +36,11 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Override
+    protected boolean isSkippedInTestsByDefault() {
+        return true;
+    }
+
+    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new PhoenixDevServicesProperties();
         return asDiscoverableContainer(PhoenixDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);

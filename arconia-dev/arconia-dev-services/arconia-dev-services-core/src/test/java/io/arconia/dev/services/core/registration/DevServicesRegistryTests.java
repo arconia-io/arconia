@@ -237,6 +237,31 @@ class DevServicesRegistryTests {
         }
 
         @Test
+        void whenDevServiceSkipsTestsThenNothingIsRegisteredInTestMode(CapturedOutput output) {
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withSkipInTests(true))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+            assertThat(beanFactory.getBeanDefinitionNames()).noneMatch(name -> name.startsWith(BeanName.PREFIX));
+            assertThat(output).contains("Dev Service 'postgres' is skipped in test mode");
+        }
+
+        @Test
+        void whenDevServiceSkipsTestsThenItIsRegisteredInDevMode() {
+            enableDevMode();
+
+            registry.registerDevService(service -> service
+                    .name("postgres")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT.withSkipInTests(true))
+                    .container(TestPostgresContainer.class, TestPostgresContainer::new));
+
+            assertThat(beanFactory.containsBeanDefinition(BeanName.CONTAINER.of("postgres"))).isTrue();
+        }
+
+        @Test
         void whenApplicationDefinesConnectionDetailsThenNoDiscoveryHappens() {
             enableDevMode();
             AtomicInteger lookups = new AtomicInteger();
