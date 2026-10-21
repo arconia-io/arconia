@@ -42,7 +42,7 @@ class MongoDbDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
                 .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
                 .run(context -> {
                     var container = (MongoDBContainer) context.getBean(getContainerClass());
-                    assertThat(container.getCommandParts()).containsSequence("--tlsMode", "requireTLS")
+                    assertThat(container.getCommandParts()).containsSequence("--tlsMode", "preferTLS")
                             .contains("--tlsAllowConnectionsWithoutCertificates");
                     assertThat(DevServiceContainers.copiedFiles(container)).containsValues(
                             MongoDbDevServicesAutoConfiguration.SSL_DIRECTORY + "server.pem",
@@ -51,15 +51,22 @@ class MongoDbDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Test
-    void sslArgumentsAreAppendedToAnExistingCommand() {
-        var container = MongoDbDevServicesAutoConfiguration.createContainer(new MongoDbDevServicesProperties()).withCommand("--replSet", "docker-rs");
+    void containerRunsAReplicaSet() {
+        var container = MongoDbDevServicesAutoConfiguration.createContainer(new MongoDbDevServicesProperties());
+
+        assertThat(container.getCommandParts()).containsSequence("--replSet", "docker-rs");
+    }
+
+    @Test
+    void sslArgumentsAreAppendedToTheReplicaSetCommand() {
+        var container = MongoDbDevServicesAutoConfiguration.createContainer(new MongoDbDevServicesProperties());
         PemSslBundleProperties properties = new PemSslBundleProperties();
         properties.getKeystore().setCertificate(SslTestCertificates.CERTIFICATE);
         properties.getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
 
         MongoDbDevServicesAutoConfiguration.configureSsl(container, PropertiesSslBundle.get(properties));
 
-        assertThat(container.getCommandParts()).startsWith("--replSet", "docker-rs").containsSequence("--tlsMode", "requireTLS");
+        assertThat(container.getCommandParts()).startsWith("--replSet", "docker-rs").containsSequence("--tlsMode", "preferTLS");
     }
 
 }

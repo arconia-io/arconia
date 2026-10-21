@@ -10,7 +10,6 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -42,17 +41,18 @@ public final class MongoDbDevServicesAutoConfiguration {
 
     static MongoDBContainer createContainer(MongoDbDevServicesProperties properties) {
         var container = new MongoDBContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
-        // Testcontainers uses a shared wait strategy instance across all containers.
-        // MongoDBContainer doesn't set a wait strategy of its own, so when we customize
-        // the startup timeout, it will be applied to all containers. Hence, we must
-        // provide an explicit wait strategy.
-        container.waitingFor(Wait.defaultWaitStrategy());
+        // A single-node replica set, so that transactions and change streams work as they do
+        // against a production deployment. It also gives the container its own wait strategy.
+        container.withReplicaSet();
         return container;
     }
 
     /**
-     * Configure MongoDB to require SSL, with the certificate and key of the bundle in the
-     * single file it expects them in. Clients are not asked for a certificate.
+     * Configure MongoDB to serve SSL, with the certificate and key of the bundle in the
+     * single file it expects them in. Clients are not asked for a certificate. SSL is
+     * preferred rather than required: the application connects over SSL through its
+     * service connection, while the replica set is initiated from inside the container
+     * over a plain connection.
      */
     static void configureSsl(MongoDBContainer container, SslBundle bundle) {
         container.withCopyToContainer(SslBundleFiles.certificateChainWithPrivateKey(bundle), SSL_DIRECTORY + "server.pem");
@@ -60,7 +60,7 @@ public final class MongoDbDevServicesAutoConfiguration {
         String[] command = container.getCommandParts();
         List<String> parts = new ArrayList<>((command != null) ? List.of(command) : List.of());
         parts.addAll(List.of(
-                "--tlsMode", "requireTLS",
+                "--tlsMode", "preferTLS",
                 "--tlsCertificateKeyFile", SSL_DIRECTORY + "server.pem",
                 "--tlsCAFile", SSL_DIRECTORY + "ca.crt",
                 "--tlsAllowConnectionsWithoutCertificates"));

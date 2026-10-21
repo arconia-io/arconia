@@ -1,7 +1,7 @@
 = MongoDB Dev Service
 :service-name: mongodb
 
-A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes.
+A service providing a https://www.mongodb.com[MongoDB] database for development and testing purposes. The database runs as a single-node replica set, so transactions and change streams work as they do in production.
 
 It works with Spring Boot libraries that support MongoDB, including:
 
