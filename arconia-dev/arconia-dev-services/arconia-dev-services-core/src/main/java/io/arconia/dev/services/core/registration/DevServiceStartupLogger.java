@@ -24,14 +24,17 @@ final class DevServiceStartupLogger {
 
     /**
      * Log that the registered dev service is ready in the given container, with the image it
-     * runs, whether it was kept across a DevTools restart, the reuse strategy in effect
-     * when it applies, and whether it uses SSL.
+     * runs, the address of its main port on the host, whether it was kept across a DevTools
+     * restart, the reuse strategy in effect when it applies, and whether it uses SSL.
      */
     static void ready(DevServiceRegistration registration, @Nullable String containerId, @Nullable String imageName,
-            boolean kept, @Nullable ReuseDecision reuse, boolean ssl) {
+            @Nullable String address, boolean kept, @Nullable ReuseDecision reuse, boolean ssl) {
         List<String> facts = new ArrayList<>();
         if (imageName != null) {
             facts.add(imageName);
+        }
+        if (address != null) {
+            facts.add(address);
         }
         if (registration.getOrigin() == Origin.DISCOVERED) {
             facts.add("started by another application");

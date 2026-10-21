@@ -179,6 +179,8 @@ Finally, register the auto-configuration in `META-INF/spring/org.springframework
 com.example.acme.FancyDbDevServicesAutoConfiguration
 ----
 
+For the Dev Service to be picked up by the Spring Boot test slice of its technology, register the auto-configuration for the slice too, in `META-INF/spring/<slice annotation>.imports`. For example, the PostgreSQL Dev Service registers `io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration` and its own auto-configuration in `META-INF/spring/org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.imports`, which `@DataJdbcTest` and `@DataJpaTest` load.
+
 That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
 
 == Exposing Links

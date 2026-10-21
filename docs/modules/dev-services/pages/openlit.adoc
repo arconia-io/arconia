@@ -31,7 +31,7 @@ The application logs will show you the URL where you can access the OpenLit UI.
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'openlit' is ready in container <container-id> (ghcr.io/openlit/openlit, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'openlit' is ready in container <container-id> (ghcr.io/openlit/openlit, localhost:<port>, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'openlit' links: OpenLit UI: http://localhost:<port>
 ----
 

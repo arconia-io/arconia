@@ -33,7 +33,7 @@ The application logs will show you the URL where you can access the Arize Phoeni
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'phoenix' is ready in container <container-id> (arizephoenix/phoenix, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'phoenix' is ready in container <container-id> (arizephoenix/phoenix, localhost:<port>, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'phoenix' links: Phoenix UI: http://localhost:<port>
 ----
 

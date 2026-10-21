@@ -23,7 +23,7 @@ The application logs will show you the URL where you can access the LLDAP Manage
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lldap' is ready in container 7c2e1f9a3b5d (lldap/lldap, reuse-strategy: none)
+...i.a.d.s.startup  : Dev Service 'lldap' is ready in container 7c2e1f9a3b5d (lldap/lldap, localhost:<port>, reuse-strategy: none)
 ...i.a.d.s.startup  : Dev Service 'lldap' links: LLDAP Console: http://localhost:<port>
 ----
 

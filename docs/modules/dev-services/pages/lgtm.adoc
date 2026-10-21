@@ -34,7 +34,7 @@ The application logs will show you the URL where you can access the Grafana UI.
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container <container-id> (grafana/otel-lgtm, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container <container-id> (grafana/otel-lgtm, localhost:<port>, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>, Prometheus: http://localhost:<port>, Tempo MCP: http://localhost:<port>/api/mcp
 ----
 

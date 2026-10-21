@@ -35,7 +35,7 @@ The application logs show the URLs of the Keycloak Admin Console, where you can 
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'keycloak' is ready in container <container-id> (quay.io/keycloak/keycloak, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'keycloak' is ready in container <container-id> (quay.io/keycloak/keycloak, localhost:<port>, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'keycloak' links: Keycloak Admin Console: http://localhost:<port>/admin, OpenID Connect Issuer: http://localhost:<port>/realms/arconia
 ----
 

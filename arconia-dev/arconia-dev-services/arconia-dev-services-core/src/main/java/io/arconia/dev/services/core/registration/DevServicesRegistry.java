@@ -2,12 +2,12 @@ package io.arconia.dev.services.core.registration;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -236,8 +236,8 @@ public final class DevServicesRegistry {
         if (existingBeanNames.length == 0) {
             return false;
         }
-        logger.info("Dev Service '{}' is not started: the application defines its own {} in {}",
-                service.name(), discovery.type().getSimpleName(), Arrays.asList(existingBeanNames));
+        logger.info("Dev Service '{}' is not started: a {} bean already exists in the application ({})",
+                service.name(), discovery.type().getSimpleName(), String.join(", ", existingBeanNames));
         return true;
     }
 
@@ -324,7 +324,8 @@ public final class DevServicesRegistry {
             List<DevServiceLink> links = DevServiceLinks.resolve(service, discoveredContainer.host(), discoveredContainer::mappedPort,
                     DevServiceRegistration.Origin.DISCOVERED);
             DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.DISCOVERED, containerInfo.getId(), links, sslBundleRegistered);
-            DevServiceStartupLogger.ready(registration, containerInfo.getId(), containerInfo.getImageName(), false, reuse, service.isSslEnabled());
+            DevServiceStartupLogger.ready(registration, containerInfo.getId(), containerInfo.getImageName(),
+                    resolveAddress(service, discoveredContainer.host(), discoveredContainer::mappedPort), false, reuse, service.isSslEnabled());
             return registration;
         });
 
@@ -396,9 +397,11 @@ public final class DevServicesRegistry {
             List<DevServiceLink> links = container.getContainerId() == null ? List.of()
                     : DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, DevServiceRegistration.Origin.MANAGED);
             DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links, sslBundleRegistered);
-            // The reuse strategy is only reported in dev mode, the only one where it applies.
-            DevServiceStartupLogger.ready(registration, container.getContainerId(), imageNameOf(container), containerKept,
-                    BootstrapMode.isDev() ? reuse : null, service.isSslEnabled());
+            String address = container.getContainerId() == null ? null : resolveAddress(service, container.getHost(), container::getMappedPort);
+            // The reuse strategy is only reported in dev mode, the only one where it applies, unless
+            // the configured one could not be applied, which is worth knowing in any mode.
+            DevServiceStartupLogger.ready(registration, container.getContainerId(), imageNameOf(container), address, containerKept,
+                    (BootstrapMode.isDev() || reuse.reason() != null) ? reuse : null, service.isSslEnabled());
             return registration;
         });
 
@@ -467,6 +470,24 @@ public final class DevServicesRegistry {
         if (reuse.effective() == ReuseStrategy.FRAMEWORK) {
             container.withLabel(DevServiceLabels.DISCOVERABLE, "true");
             container.withLabel(DevServiceLabels.OWNER, DevServiceLabels.ownerId());
+        }
+    }
+
+    /**
+     * The address of the main port of the dev service on the host, when the dev service declares
+     * one and the container publishes it, for the developer to connect a tool to the service.
+     */
+    @Nullable
+    private static String resolveAddress(DevServiceDefinition service, String host, IntUnaryOperator portMapper) {
+        Integer port = service.port();
+        if (port == null) {
+            return null;
+        }
+        try {
+            return host + ":" + portMapper.applyAsInt(port);
+        } catch (Exception ex) {
+            logger.debug("Dev Service '{}': port {} could not be resolved", service.name(), port, ex);
+            return null;
         }
     }
 

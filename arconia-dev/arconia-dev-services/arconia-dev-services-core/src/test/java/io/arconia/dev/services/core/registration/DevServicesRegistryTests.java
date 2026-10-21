@@ -219,7 +219,7 @@ class DevServicesRegistryTests {
             // The application connects to the service of its choice: the dev service is neither
             // started nor registered.
             assertThat(beanFactory.getBeanDefinitionNames()).noneMatch(name -> name.startsWith(BeanName.PREFIX));
-            assertThat(output).contains("Dev Service 'postgres' is not started: the application defines its own TestConnectionDetails");
+            assertThat(output).contains("Dev Service 'postgres' is not started: a TestConnectionDetails bean already exists in the application (userConnectionDetails)");
         }
 
         @Test
@@ -1040,6 +1040,53 @@ class DevServicesRegistryTests {
                     .properties(properties)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(configurer));
+        }
+
+    }
+
+    @Nested
+    class StartupMessage {
+
+        @Test
+        void whenPortDeclaredThenReadyMessageReportsTheAddress(CapturedOutput output) {
+            registry.registerDevService(service -> service
+                    .name("addressed")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .port(8080));
+
+            beanFactory.getBean(BeanName.REGISTRATION.of("addressed"), DevServiceRegistration.class);
+
+            // The container id is shortened to 12 characters.
+            assertThat(output).contains("Dev Service 'addressed' is ready in container test-link-co (localhost:1234)");
+        }
+
+        @Test
+        void whenNoPortDeclaredThenReadyMessageReportsNoAddress(CapturedOutput output) {
+            registry.registerDevService(service -> service
+                    .name("unaddressed")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.DEFAULT)
+                    .container(TestLinkContainer.class, TestLinkContainer::new));
+
+            beanFactory.getBean(BeanName.REGISTRATION.of("unaddressed"), DevServiceRegistration.class);
+
+            assertThat(output).contains("Dev Service 'unaddressed' is ready in container test-link-co\n");
+        }
+
+        @Test
+        void whenReuseStrategyCannotBeAppliedOutsideDevModeThenReadyMessageSaysWhy(CapturedOutput output) {
+            registry.registerDevService(service -> service
+                    .name("reusable")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.FRAMEWORK)
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails("discovered")));
+
+            beanFactory.getBean(BeanName.REGISTRATION.of("reusable"), DevServiceRegistration.class);
+
+            assertThat(output).contains("reuse-strategy: none (reuse only applies in dev mode)");
         }
 
     }
