@@ -30,7 +30,7 @@ class DevServiceRestartSupportTests {
 
     private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-    private final DevServiceRestartSupport support = new DevServiceRestartSupport(beanFactory, new StandardEnvironment());
+    private final DevServiceRestartSupport support = new DevServiceRestartSupport(beanFactory, new StandardEnvironment(), () -> true);
 
     /**
      * Stands in for the scope DevTools registers, which outlives the application contexts.
@@ -59,7 +59,7 @@ class DevServiceRestartSupportTests {
         environment.getPropertySources().addFirst(new MapPropertySource("test",
                 Map.of("spring.devtools.restart.enabled", "false")));
 
-        assertThat(new DevServiceRestartSupport(beanFactory, environment).isRestartScopeActive()).isFalse();
+        assertThat(new DevServiceRestartSupport(beanFactory, environment, () -> true).isRestartScopeActive()).isFalse();
     }
 
     @Test
@@ -150,6 +150,20 @@ class DevServiceRestartSupportTests {
         assertThat(retained).isFalse();
         assertThat(kept.stopped).isFalse();
         assertThat(restartScope.remove(CONTAINER_BEAN_NAME)).isNull();
+    }
+
+    @Test
+    void whenContainerAsksForReuseButReuseIsNotEnabledOnTheMachineThenItIsStopped() {
+        enableDevMode();
+        beanFactory.registerScope(DevServiceRestartSupport.SCOPE_NAME, restartScope);
+        // A customizer can ask for reuse without the Testcontainers reuse feature being enabled,
+        // in which case Testcontainers doesn't reuse the container and it must be stopped.
+        RestartingContainer kept = keep(new RestartingContainer().withReuse(true));
+        var support = new DevServiceRestartSupport(beanFactory, new StandardEnvironment(), () -> false);
+
+        support.discardKeptContainer("postgres", CONTAINER_BEAN_NAME);
+
+        assertThat(kept.stopped).isTrue();
     }
 
     @Test

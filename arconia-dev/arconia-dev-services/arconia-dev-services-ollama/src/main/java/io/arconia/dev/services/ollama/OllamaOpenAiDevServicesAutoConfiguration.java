@@ -22,7 +22,7 @@ import io.arconia.dev.services.ollama.OllamaOpenAiDevServicesAutoConfiguration.O
  * <p>
  * When the Ollama Dev Service is active and the Spring AI OpenAI module is on the classpath,
  * this auto-configuration registers dynamic properties to connect the OpenAI client
- * to Ollama's OpenAI-compatible API endpoint.
+ * to Ollama's OpenAI-compatible API endpoint, served under {@code /v1}.
  * <p>
  * The endpoint is resolved from the Ollama container when one is available
  * (either started by this application or discovered from another application),
@@ -44,6 +44,11 @@ public final class OllamaOpenAiDevServicesAutoConfiguration {
 
     private static final String OLLAMA_BASE_URL_PROPERTY = "spring.ai.ollama.base-url";
 
+    /**
+     * The path under which Ollama serves its OpenAI-compatible API.
+     */
+    private static final String OPENAI_API_PATH = "/v1";
+
     static class OllamaOpenAiPropertyRegistrar extends DevServicesRegistrar {
 
         @Override
@@ -53,8 +58,18 @@ public final class OllamaOpenAiDevServicesAutoConfiguration {
             // published as a dynamic property instead. That is what gives it precedence over
             // user-provided values, matching ConnectionDetails semantics.
             addDynamicProperty("spring.ai.openai.base-url",
-                    () -> resolveOllamaEndpoint(getBeanFactory(), environment));
+                    () -> openAiBaseUrl(resolveOllamaEndpoint(getBeanFactory(), environment)));
             addDynamicProperty("spring.ai.openai.api-key", () -> "ollama");
+        }
+
+        /**
+         * The base URL of the OpenAI-compatible API of the given Ollama endpoint, which Ollama
+         * serves under {@code /v1}. Spring AI passes the base URL to the OpenAI client as is,
+         * and the client appends only the operation path, such as {@code chat/completions}.
+         */
+        static String openAiBaseUrl(String ollamaEndpoint) {
+            String endpoint = ollamaEndpoint.endsWith("/") ? ollamaEndpoint.substring(0, ollamaEndpoint.length() - 1) : ollamaEndpoint;
+            return endpoint.endsWith(OPENAI_API_PATH) ? endpoint : endpoint + OPENAI_API_PATH;
         }
 
         private static String resolveOllamaEndpoint(BeanFactory beanFactory, Environment environment) {

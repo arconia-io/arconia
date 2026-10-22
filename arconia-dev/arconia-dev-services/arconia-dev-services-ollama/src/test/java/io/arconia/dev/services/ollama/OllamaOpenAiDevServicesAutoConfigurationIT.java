@@ -1,5 +1,10 @@
 package io.arconia.dev.services.ollama;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -39,10 +44,12 @@ class OllamaOpenAiDevServicesAutoConfigurationIT {
                     container.start();
 
                     var environment = context.getEnvironment();
-                    assertThat(environment.getProperty("spring.ai.openai.base-url"))
-                            .isEqualTo(container.getEndpoint());
+                    String baseUrl = environment.getProperty("spring.ai.openai.base-url");
+                    assertThat(baseUrl).isEqualTo(container.getEndpoint() + "/v1");
                     assertThat(environment.getProperty("spring.ai.openai.api-key"))
                             .isEqualTo("ollama");
+                    // The OpenAI client appends the operation path to the base URL, as for the model list.
+                    assertThat(get(baseUrl + "/models")).isEqualTo(200);
 
                     container.stop();
                 });
@@ -62,11 +69,17 @@ class OllamaOpenAiDevServicesAutoConfigurationIT {
 
                         var environment = context.getEnvironment();
                         assertThat(environment.getProperty("spring.ai.openai.base-url"))
-                                .isEqualTo("http://%s:%d".formatted(
+                                .isEqualTo("http://%s:%d/v1".formatted(
                                         discoveredContainer.getHost(), discoveredContainer.getMappedPort(ArconiaOllamaContainer.OLLAMA_PORT)));
                         assertThat(environment.getProperty("spring.ai.openai.api-key"))
                                 .isEqualTo("ollama");
                     });
+        }
+    }
+
+    private static int get(String url) throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            return client.send(HttpRequest.newBuilder(URI.create(url)).GET().build(), HttpResponse.BodyHandlers.discarding()).statusCode();
         }
     }
 

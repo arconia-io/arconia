@@ -20,8 +20,11 @@ final class LldapDiscoveredConnectionDetails implements LdapConnectionDetails {
     private final String password;
 
     LldapDiscoveredConnectionDetails(DiscoveredContainer container, LldapDevServicesProperties properties) {
-        // The container is only asked how it would be configured, it is never started.
+        // The container is only asked how it would be configured, it is never started. The
+        // environment variables are applied as for a container the application starts itself,
+        // since the base DN and the password can be configured through them.
         LLdapContainer configuration = LldapDevServicesAutoConfiguration.createContainer(properties);
+        configuration.withEnv(properties.getEnvironment());
         this.url = "ldap://%s:%d".formatted(container.host(), container.mappedPort(LldapDevServicesAutoConfiguration.LDAP_PORT));
         this.baseDn = configuration.getBaseDn();
         this.username = configuration.getUser();

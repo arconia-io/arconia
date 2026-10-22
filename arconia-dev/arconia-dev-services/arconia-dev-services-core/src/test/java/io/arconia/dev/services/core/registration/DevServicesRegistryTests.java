@@ -647,6 +647,23 @@ class DevServicesRegistryTests {
         }
 
         @Test
+        void whenContainerDiscoveredThenAnotherDevServiceOfTheSameCategoryStillConflicts() {
+            DevServicesRegistry registry = registryDiscovering(beanFactory, discoveredContainer());
+            registerSharedDevService(registry, service -> service.category("jdbc"));
+
+            // The connection details registered for the discovered dev service are not the
+            // application's own: the second dev service fails on the conflict instead of backing off.
+            assertThatExceptionOfType(MultipleDevServicesException.class)
+                    .isThrownBy(() -> registry.registerDevService(service -> service
+                            .name("other")
+                            .description("Other Dev Service")
+                            .category("jdbc")
+                            .properties(TestDevServicesProperties.FRAMEWORK)
+                            .container(TestPostgresContainer.class, TestPostgresContainer::new)
+                            .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()))));
+        }
+
+        @Test
         void whenNoContainerDiscoveredThenManagedContainerIsRegistered() {
             DevServicesRegistry registry = registryDiscovering(beanFactory, null);
 

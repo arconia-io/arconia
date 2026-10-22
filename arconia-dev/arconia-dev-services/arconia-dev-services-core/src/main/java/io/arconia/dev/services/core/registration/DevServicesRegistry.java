@@ -2,6 +2,7 @@ package io.arconia.dev.services.core.registration;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,7 @@ public final class DevServicesRegistry {
         this.resourceLoader = resourceLoader;
         this.containerDiscovery = containerDiscovery;
         this.testcontainersReuseSupport = testcontainersReuseSupport;
-        this.restartSupport = new DevServiceRestartSupport(beanDefinitionRegistry, environment);
+        this.restartSupport = new DevServiceRestartSupport(beanDefinitionRegistry, environment, testcontainersReuseSupport);
         this.networkSupport = new DevServiceNetworkSupport(environment);
     }
 
@@ -232,7 +233,11 @@ public final class DevServicesRegistry {
         if (discovery == null || !(beanDefinitionRegistry instanceof ListableBeanFactory listableBeanFactory)) {
             return false;
         }
-        String[] existingBeanNames = listableBeanFactory.getBeanNamesForType(discovery.type(), true, false);
+        // The connection details registered for a discovered dev service don't count: another dev
+        // service of the same category must fail on the conflict, not back off.
+        String[] existingBeanNames = Arrays.stream(listableBeanFactory.getBeanNamesForType(discovery.type(), true, false))
+                .filter(beanName -> !beanName.startsWith(BeanName.PREFIX))
+                .toArray(String[]::new);
         if (existingBeanNames.length == 0) {
             return false;
         }

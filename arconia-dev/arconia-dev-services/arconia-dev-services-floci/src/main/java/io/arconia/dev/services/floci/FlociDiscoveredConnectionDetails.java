@@ -23,8 +23,11 @@ final class FlociDiscoveredConnectionDetails implements AwsConnectionDetails {
     private final String secretKey;
 
     FlociDiscoveredConnectionDetails(DiscoveredContainer container, FlociDevServicesProperties properties) {
-        // The container is only asked how it would be configured, it is never started.
+        // The container is only asked how it would be configured, it is never started. The
+        // environment variables are applied as for a container the application starts itself,
+        // since the region can be configured through them.
         FlociContainer configuration = FlociDevServicesAutoConfiguration.createContainer(properties);
+        configuration.withEnv(properties.getEnvironment());
         this.endpoint = URI.create("http://%s:%d".formatted(container.host(), container.mappedPort(FlociContainer.PORT)));
         this.region = configuration.getRegion();
         this.accessKey = configuration.getAccessKey();

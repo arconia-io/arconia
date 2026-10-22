@@ -82,7 +82,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
                     // Precedence over user-provided values is intentional: it mirrors how a
                     // ConnectionDetails bean supersedes the matching configuration properties.
                     assertThat(environment.getProperty("spring.ai.openai.base-url"))
-                            .isEqualTo("http://custom-host:8080");
+                            .isEqualTo("http://custom-host:8080/v1");
                     assertThat(environment.getProperty("spring.ai.openai.api-key"))
                             .isEqualTo("ollama");
                 });
@@ -102,7 +102,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
                 .withBean(OllamaConnectionDetails.class, () -> () -> "http://shared-host:12345")
                 .run(context -> assertThat(context.getEnvironment().getProperty("spring.ai.openai.base-url"))
-                        .isEqualTo("http://shared-host:12345"));
+                        .isEqualTo("http://shared-host:12345/v1"));
     }
 
     @Test
@@ -112,7 +112,7 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
                 .run(context -> {
                     var environment = context.getEnvironment();
                     assertThat(environment.getProperty("spring.ai.openai.base-url"))
-                            .isEqualTo("http://localhost:11434");
+                            .isEqualTo("http://localhost:11434/v1");
                     assertThat(environment.getProperty("spring.ai.openai.api-key"))
                             .isEqualTo("ollama");
                 });
@@ -122,9 +122,9 @@ class OllamaOpenAiDevServicesAutoConfigurationTests {
     void fallsBackToCustomOllamaUrlWhenNoContainer() {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(OllamaOpenAiDevServicesAutoConfiguration.class))
-                .withPropertyValues("spring.ai.ollama.base-url=http://custom-host:8080")
+                .withPropertyValues("spring.ai.ollama.base-url=http://custom-host:8080/")
                 .run(context -> assertThat(context.getEnvironment().getProperty("spring.ai.openai.base-url"))
-                        .isEqualTo("http://custom-host:8080"));
+                        .isEqualTo("http://custom-host:8080/v1"));
     }
 
 }

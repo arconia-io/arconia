@@ -21,11 +21,9 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         super(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         addExposedPorts(OTLP_GRPC_PORT, OTLP_HTTP_PORT);
 
-        // Testcontainers uses a shared wait strategy instance across all containers.
-        // GenericContainer doesn't set a wait strategy of its own, so when we customize
-        // the startup timeout, it will be applied to all containers. Hence, we must
-        // provide an explicit wait strategy.
-        this.waitingFor(Wait.defaultWaitStrategy());
+        // The collector logs this line once its pipelines are running. The image has no shell,
+        // so the default wait strategy, which checks the ports from inside the container, can't be used.
+        this.waitingFor(Wait.forLogMessage(".*Everything is ready\\. Begin running and processing data\\..*", 1));
     }
 
     public Integer getGrpcPort() {

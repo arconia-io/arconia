@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -42,10 +43,9 @@ final class DevServiceRestartSupport {
     private static final String DEVTOOLS_RESTART_ENABLED_PROPERTY = "spring.devtools.restart.enabled";
 
     /**
-     * The containers this process keeps across restarts, by the name of their dev service.
-     * One per JVM, as the {@code restart} scope is.
+     * The containers this process keeps across restarts. One per JVM, as the {@code restart} scope is.
      */
-    private static final Map<GenericContainer<?>, String> KEPT_CONTAINERS = new LinkedHashMap<>();
+    private static final Map<GenericContainer<?>, KeptContainer> KEPT_CONTAINERS = new LinkedHashMap<>();
 
     private static final AtomicBoolean SHUTDOWN_HANDLER_REGISTERED = new AtomicBoolean();
 
@@ -53,11 +53,15 @@ final class DevServiceRestartSupport {
 
     private final Environment environment;
 
-    DevServiceRestartSupport(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment) {
+    private final BooleanSupplier testcontainersReuseSupport;
+
+    DevServiceRestartSupport(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, BooleanSupplier testcontainersReuseSupport) {
         Assert.notNull(beanDefinitionRegistry, "beanDefinitionRegistry cannot be null");
         Assert.notNull(environment, "environment cannot be null");
+        Assert.notNull(testcontainersReuseSupport, "testcontainersReuseSupport cannot be null");
         this.beanDefinitionRegistry = beanDefinitionRegistry;
         this.environment = environment;
+        this.testcontainersReuseSupport = testcontainersReuseSupport;
     }
 
     /**
@@ -89,13 +93,13 @@ final class DevServiceRestartSupport {
         if (!keptContainer.isRunning()) {
             logger.info("Dev Service '{}': container {} is no longer running, a new one takes its place",
                     serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
-            release(keptContainer);
+            release(keptContainer, isReused(keptContainer));
             return false;
         }
         if (!containerType.isInstance(keptContainer)) {
             logger.info("Dev Service '{}': the container class was reloaded, a new container takes the place of {}",
                     serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
-            release(keptContainer);
+            release(keptContainer, isReused(keptContainer));
             return false;
         }
         // The scope offers no way to look at an object without creating it,
@@ -116,7 +120,7 @@ final class DevServiceRestartSupport {
             return;
         }
         synchronized (KEPT_CONTAINERS) {
-            KEPT_CONTAINERS.put(container, serviceName);
+            KEPT_CONTAINERS.put(container, new KeptContainer(serviceName, isReused(container)));
         }
         if (SHUTDOWN_HANDLER_REGISTERED.compareAndSet(false, true)) {
             SpringApplication.getShutdownHandlers().add(DevServiceRestartSupport::stopKeptContainers);
@@ -128,22 +132,23 @@ final class DevServiceRestartSupport {
      * Testcontainers is left running, as everywhere else.
      */
     static void stopKeptContainers() {
-        List<Map.Entry<GenericContainer<?>, String>> kept;
+        List<Map.Entry<GenericContainer<?>, KeptContainer>> kept;
         synchronized (KEPT_CONTAINERS) {
             kept = new ArrayList<>(KEPT_CONTAINERS.entrySet());
             KEPT_CONTAINERS.clear();
         }
-        for (Map.Entry<GenericContainer<?>, String> entry : kept) {
+        for (Map.Entry<GenericContainer<?>, KeptContainer> entry : kept) {
             GenericContainer<?> container = entry.getKey();
+            KeptContainer keptContainer = entry.getValue();
             try {
-                if (!container.isShouldBeReused()) {
+                if (!keptContainer.reused()) {
                     logger.info("Dev Service '{}': stopping container {} as the application exits",
-                            entry.getValue(), ContainerRuntimeInfo.shortId(container.getContainerId()));
+                            keptContainer.serviceName(), ContainerRuntimeInfo.shortId(container.getContainerId()));
                 }
-                release(container);
+                release(container, keptContainer.reused());
             } catch (Exception ex) {
                 logger.warn("Dev Service '{}': failed to stop container {} ({})",
-                        entry.getValue(), ContainerRuntimeInfo.shortId(container.getContainerId()), ex.getMessage());
+                        keptContainer.serviceName(), ContainerRuntimeInfo.shortId(container.getContainerId()), ex.getMessage());
             }
         }
     }
@@ -163,7 +168,7 @@ final class DevServiceRestartSupport {
             return;
         }
         logger.info("Dev Service '{}': container {} is no longer needed", serviceName, ContainerRuntimeInfo.shortId(keptContainer.getContainerId()));
-        release(keptContainer);
+        release(keptContainer, isReused(keptContainer));
     }
 
     /**
@@ -183,17 +188,31 @@ final class DevServiceRestartSupport {
      * is left alone: it outlives the application by design, and Testcontainers reattaches to
      * it as long as it runs.
      */
-    private static void release(GenericContainer<?> container) {
+    private static void release(GenericContainer<?> container, boolean reused) {
         synchronized (KEPT_CONTAINERS) {
             KEPT_CONTAINERS.remove(container);
         }
-        if (container.isShouldBeReused()) {
+        if (reused) {
             logger.info("Container {} is left running, as the 'testcontainers' reuse strategy keeps it",
                     ContainerRuntimeInfo.shortId(container.getContainerId()));
             return;
         }
         container.stop();
     }
+
+    /**
+     * Whether the container is reused via Testcontainers, which requires the reuse feature to be
+     * enabled on the machine as well, the same condition Spring Boot applies when it closes containers.
+     */
+    private boolean isReused(GenericContainer<?> container) {
+        return container.isShouldBeReused() && testcontainersReuseSupport.getAsBoolean();
+    }
+
+    /**
+     * A container kept across restarts: the dev service it belongs to, and whether it is reused
+     * via Testcontainers, decided when it is kept.
+     */
+    private record KeptContainer(String serviceName, boolean reused) {}
 
     private Scope requireRestartScope() {
         Scope restartScope = restartScope();
