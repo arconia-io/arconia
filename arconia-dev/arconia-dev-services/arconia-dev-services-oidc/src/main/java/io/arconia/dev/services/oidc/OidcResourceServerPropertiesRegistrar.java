@@ -2,6 +2,7 @@ package io.arconia.dev.services.oidc;
 
 import org.springframework.core.env.Environment;
 
+import io.arconia.core.support.Incubating;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 
@@ -13,6 +14,7 @@ import io.arconia.dev.services.core.registration.DevServicesRegistry;
  * properties too. With {@code ConnectionDetails} support in Spring Boot's resource server
  * auto-configuration, all of this would reduce to publishing the connection details bean.
  */
+@Incubating
 public class OidcResourceServerPropertiesRegistrar extends DevServicesRegistrar {
 
     static final String JWT_PROPERTY_PREFIX = "spring.security.oauth2.resourceserver.jwt.";

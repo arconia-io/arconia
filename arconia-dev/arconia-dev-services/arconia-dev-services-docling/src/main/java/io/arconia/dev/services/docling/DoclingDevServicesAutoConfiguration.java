@@ -27,7 +27,7 @@ public final class DoclingDevServicesAutoConfiguration {
     static DoclingServeContainer createContainer(DoclingDevServicesProperties properties) {
         return new DoclingServeContainer(DoclingServeContainerConfig.builder()
                 .image(properties.getImageName())
-                .enableUi(properties.isEnableUi())
+                .enableUi(properties.isUiEnabled())
                 .apiKey(properties.getApiKey())
                 .build());
     }
@@ -46,7 +46,7 @@ public final class DoclingDevServicesAutoConfiguration {
                         .port(DoclingServeContainer.DEFAULT_DOCLING_PORT)
                         .discovery(DoclingServeConnectionDetails.class,
                                 container -> new DoclingDiscoveredConnectionDetails(container, properties));
-                if (properties.isEnableUi()) {
+                if (properties.isUiEnabled()) {
                     service.link("Docling UI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/ui");
                 }
                 service.link("Docling OpenAPI", DoclingServeContainer.DEFAULT_DOCLING_PORT, "/docs")

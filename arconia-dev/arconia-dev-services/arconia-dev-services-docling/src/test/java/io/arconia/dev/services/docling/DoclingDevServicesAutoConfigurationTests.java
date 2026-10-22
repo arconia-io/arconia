@@ -57,7 +57,7 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     @Test
     void whenUiDisabledThenNoUiLinkIsDeclared() {
         getContextRunner()
-                .withPropertyValues("arconia.dev.services.%s.enable-ui=false".formatted(getServiceName()))
+                .withPropertyValues("arconia.dev.services.%s.ui-enabled=false".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
                     ReflectionTestUtils.invokeMethod(container, "configure");

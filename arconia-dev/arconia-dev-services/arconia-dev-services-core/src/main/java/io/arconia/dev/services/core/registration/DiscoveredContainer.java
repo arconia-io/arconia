@@ -13,22 +13,46 @@ import io.arconia.dev.services.api.registration.ContainerInfo;
 /**
  * A running dev service container started by another application and discovered,
  * providing the information needed to build the connection configuration.
- *
- * @param containerInfo information about the discovered container
- * @param host the host address to use for connecting to the discovered container
- * @param sslBundle the bundle to connect to the discovered container over SSL with, when SSL is
- * enabled for the dev service; it trusts the certificate the dev service is configured to present
  */
 @Incubating
-public record DiscoveredContainer(
-        ContainerInfo containerInfo,
-        String host,
-        @Nullable SslBundle sslBundle
-) {
+public final class DiscoveredContainer {
 
-    public DiscoveredContainer {
-        Assert.notNull(containerInfo, "containerInfo cannot be null");
-        Assert.hasText(host, "host cannot be null or empty");
+    private final ContainerInfo containerInfo;
+
+    private final String host;
+
+    @Nullable
+    private final SslBundle sslBundle;
+
+    private DiscoveredContainer(Builder builder) {
+        Assert.notNull(builder.containerInfo, "containerInfo cannot be null");
+        Assert.hasText(builder.host, "host cannot be null or empty");
+        this.containerInfo = builder.containerInfo;
+        this.host = builder.host;
+        this.sslBundle = builder.sslBundle;
+    }
+
+    /**
+     * Information about the discovered container.
+     */
+    public ContainerInfo containerInfo() {
+        return containerInfo;
+    }
+
+    /**
+     * The host address to use for connecting to the discovered container.
+     */
+    public String host() {
+        return host;
+    }
+
+    /**
+     * The bundle to connect to the discovered container over SSL with, when SSL is enabled for
+     * the dev service. It trusts the certificate the dev service is configured to present.
+     */
+    @Nullable
+    public SslBundle sslBundle() {
+        return sslBundle;
     }
 
     /**
@@ -106,9 +130,7 @@ public record DiscoveredContainer(
          * Builds the {@link DiscoveredContainer} instance.
          */
         public DiscoveredContainer build() {
-            Assert.notNull(containerInfo, "containerInfo cannot be null");
-            Assert.notNull(host, "host cannot be null");
-            return new DiscoveredContainer(containerInfo, host, sslBundle);
+            return new DiscoveredContainer(this);
         }
 
     }

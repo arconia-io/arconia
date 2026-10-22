@@ -78,7 +78,7 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
     /**
      * Whether to enable the Docling UI.
      */
-    private boolean enableUi = true;
+    private boolean uiEnabled = true;
 
     /**
      * API key to be used for authenticating requests to the Docling Serve API.
@@ -167,12 +167,12 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
         this.volumes = volumes;
     }
 
-    public boolean isEnableUi() {
-        return enableUi;
+    public boolean isUiEnabled() {
+        return uiEnabled;
     }
 
-    public void setEnableUi(boolean enableUi) {
-        this.enableUi = enableUi;
+    public void setUiEnabled(boolean uiEnabled) {
+        this.uiEnabled = uiEnabled;
     }
 
     @Nullable

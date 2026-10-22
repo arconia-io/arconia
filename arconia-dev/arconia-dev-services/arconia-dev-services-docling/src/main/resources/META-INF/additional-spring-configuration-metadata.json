@@ -17,6 +17,15 @@
         "reason": "Replaced by 'arconia.dev.services.docling.reuse-strategy'. Use 'none' instead of 'false'.",
         "since": "0.31.0"
       }
+    },
+    {
+      "name": "arconia.dev.services.docling.enable-ui",
+      "type": "java.lang.Boolean",
+      "deprecation": {
+        "level": "error",
+        "replacement": "arconia.dev.services.docling.ui-enabled",
+        "since": "0.32.0"
+      }
     }
   ]
 }
