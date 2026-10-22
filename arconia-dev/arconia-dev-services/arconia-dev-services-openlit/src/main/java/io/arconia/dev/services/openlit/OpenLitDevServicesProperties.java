@@ -27,7 +27,7 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     private boolean enabled = true;
 
     /**
-     * Full name of the container image used for OpenLit.
+     * Full name of the container image used in the dev service.
      */
     private String imageName = "ghcr.io/openlit/openlit:2.1.0";
 
@@ -37,7 +37,7 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     private String clickhouseImageName = "clickhouse/clickhouse-server:26.9-distroless";
 
     /**
-     * Environment variables to set in the OpenLit service.
+     * Environment variables to set in the service.
      */
     private Map<String, String> environment = new HashMap<>();
 

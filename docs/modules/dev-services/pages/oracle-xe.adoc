@@ -21,7 +21,13 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration, and so do the test slices built on a JDBC data source: `@JdbcTest`, `@DataJdbcTest`, `@DataJpaTest`, and `@JooqTest`. To use Spring Boot's embedded database in a test slice instead, when one is on the classpath, disable the Dev Service for that test with `arconia.dev.services.{service-name}.enabled=false`.
+
 By default, each application starts its own Oracle XE Dev Service. To let multiple applications running simultaneously in dev mode use the same one, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `framework`: the application connects to a running Oracle XE Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same username, password, and database name. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+
+== Initializing the Database
+
+include::partial$initializing-a-jdbc-database.adoc[]
 
 == Configuring the Dev Service
 
@@ -84,7 +90,3 @@ You can configure the Dev Service via configuration properties. Testcontainers r
 |===
 
 include::partial$disabling-dev-service.adoc[]
-
-== Initializing the Database
-
-include::partial$initializing-a-jdbc-database.adoc[]

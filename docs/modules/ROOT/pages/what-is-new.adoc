@@ -7,11 +7,14 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
-* Test slices such as `@DataJdbcTest`, `@DataJpaTest`, `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest` now pick up the Dev Service of their technology with no further configuration, instead of the embedded database Spring Boot would otherwise configure for them. To get the embedded database back for a slice, disable the Dev Service with its `enabled` property. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
+* Test slices now pick up the Dev Service of their technology with no further configuration: `@JdbcTest`, `@DataJdbcTest`, `@DataJpaTest`, and `@JooqTest` for the JDBC Dev Services, `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest`. For the JDBC slices, the Dev Service replaces the embedded database Spring Boot would otherwise configure; disable the Dev Service for a test with its `enabled` property to get the embedded database back. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
 * The observability Dev Services (Grafana LGTM, OpenTelemetry Collector, Phoenix, and OpenLit) are now skipped in test mode by default, since most tests have no use for a telemetry backend. Set `arconia.dev.services.<service-name>.skip-in-tests` to `false` for the tests that verify the telemetry the application exports. Learn more about xref:dev-services:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode].
 * When the application process exits, the containers it kept across Spring Boot DevTools restarts are now stopped, instead of being left to the Testcontainers resource reaper a few seconds later. Another application can no longer connect to a container that is about to disappear. Containers kept by the `testcontainers` reuse strategy are still left running. Learn more about xref:dev-services:index.adoc#_lifecycle_management[Lifecycle Management].
-* The startup message of a Dev Service now includes the host address of its main port, which is what you need to connect a tool on your machine to it, and says why a configured reuse strategy doesn't apply in test mode. Learn more about xref:dev-services:index.adoc#_startup_feedback[Startup Feedback].
-* A new xref:dev-services:index.adoc#_troubleshooting[Troubleshooting] section covers containers that fail to start, showing the logs of a container in the application log, and Podman closing idle connections. The documentation also explains how Dev Services work together with xref:dev-services:index.adoc#_spring_boot_docker_compose[Spring Boot Docker Compose].
+* The startup message of a Dev Service now includes the host address of its main port, which is what you need to connect a tool on your machine to it, and only mentions the reuse strategy when a container is reused or the configured strategy could not be applied. Learn more about xref:dev-services:index.adoc#_startup_feedback[Startup Feedback].
+* The default `startup-timeout` of the Dev Services is now 60 seconds, as in Testcontainers, instead of 30 seconds. The Dev Services that take longer to start keep their 120 seconds default.
+* An application connecting to a Dev Service started by another application now honors the configuration set through the `environment` property of the Dev Service, as the application that started it does: the region of Floci, the base DN and password of LLDAP, and the API key of Docling.
+* Two Dev Services of the same category, such as two JDBC databases, now fail at startup also when one of them connects to a container started by another application, instead of the second one being silently skipped.
+* A new xref:dev-services:index.adoc#_troubleshooting[Troubleshooting] section covers containers that fail to start, running without a container runtime, showing the logs of a container in the application log, and Podman closing idle connections. The documentation also explains how Dev Services work together with xref:dev-services:index.adoc#_spring_boot_docker_compose[Spring Boot Docker Compose], how test application contexts share containers, and how to start containers in parallel.
 
 === Building Dev Services
 
@@ -20,12 +23,19 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * `BaseDevServicesProperties` has been renamed to `DevServicesProperties`.
 * `DevServiceRegistration` and `ContainerInfo` are classes with getters instead of records, so that they can describe more about a Dev Service in the future without breaking changes: `registration.name()` becomes `registration.getName()`, `containerInfo.imageName()` becomes `containerInfo.getImageName()`, and so on. Create instances with their builders. `DevServiceRegistration` also reports the category of the Dev Service, which the `devservices` actuator endpoint now includes.
 * `DevServiceSslConfigurer` accepts any Testcontainers `Container`, like `DevServiceContainerCustomizer`.
+* `DiscoveredContainer` is a class instead of a record, so that it can carry more information in the future without breaking changes. Its accessors and builder are unchanged.
 * The methods of `DevServicesRegistrar` called by Spring are now `final`. Implement `registerDevServices` only.
 * A Dev Service auto-configuration only needs to be ordered before Spring Boot's `ServiceConnectionAutoConfiguration`: ordering it after `DevServicesAutoConfiguration` is no longer necessary. Learn more about xref:dev-services:custom-dev-services.adoc[Building Your Own Dev Service].
+
+=== Docling
+
+* The Docling Dev Service now uses the `ghcr.io/docling-project/docling-serve-cpu` image by default, less than half the size of the image with GPU support, which the Dev Service never used.
+* The `arconia.dev.services.docling.enable-ui` property has been renamed to `arconia.dev.services.docling.ui-enabled`, consistent with the other boolean properties. The xref:upgrading-arconia.adoc[upgrade recipe] renames it.
 
 === Elasticsearch
 
 * An application connecting to an Elasticsearch Dev Service started by another application now uses the password configured through the `ELASTIC_PASSWORD` environment variable, as the application that started it does.
+* The Elasticsearch Dev Service now runs with a heap of 512 MB to 1 GB (`ES_JAVA_OPTS=-Xms512m -Xmx1g`), instead of the fixed 2 GB Testcontainers configures. Override it through the `environment` property.
 
 === LLDAP
 
@@ -35,6 +45,10 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 * The MongoDB Dev Service runs a single-node replica set again, so that transactions and change streams work as they do in production.
 * The MongoDB Dev Service now starts on Linux kernels 6.19 to 7.0, which MongoDB 8.0 and later refuse to run on with their default memory allocator settings (https://jira.mongodb.org/browse/SERVER-121912[SERVER-121912]).
+
+=== Ollama
+
+* The OpenAI compatibility of the Ollama Dev Service now works with Spring AI 2: the `spring.ai.openai.base-url` property points to the OpenAI-compatible API of Ollama, under `/v1`, where requests previously failed with a 404 error.
 
 === Keycloak
 

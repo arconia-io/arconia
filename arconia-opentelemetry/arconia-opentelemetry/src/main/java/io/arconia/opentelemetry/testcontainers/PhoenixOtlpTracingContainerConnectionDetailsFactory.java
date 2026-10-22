@@ -8,7 +8,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingCo
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
 /**
- * Factory for creating {@link OtlpTracingConnectionDetails} for LGTM containers.
+ * Factory for creating {@link OtlpTracingConnectionDetails} for Phoenix containers.
  */
 class PhoenixOtlpTracingContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<PhoenixContainer, OtlpTracingConnectionDetails> {

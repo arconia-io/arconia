@@ -3,7 +3,3 @@ When using the Arconia Dev Services, you can keep running your application as yo
 include::ROOT:partial$app-run.adoc[]
 
 NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
-
-Your integration tests based on `@SpringBootTest` will automatically use the Dev Services without any additional configuration.
-
-Test slices, such as `@DataJdbcTest`, `@DataJpaTest`, or `@DataMongoTest`, pick up the Dev Service as well: the slice is backed by the Dev Service container, the same way a `@SpringBootTest` is, instead of the embedded database Spring Boot would otherwise configure for it. To get the embedded database back for a slice, disable the Dev Service for that test with `arconia.dev.services.{service-name}.enabled=false`.

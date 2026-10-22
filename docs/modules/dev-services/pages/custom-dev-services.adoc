@@ -19,10 +19,15 @@ First, add the `arconia-dev-services-core` dependency to your Dev Service module
 [source,groovy]
 ----
 dependencies {
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
     api 'io.arconia:arconia-dev-services-core'
     api 'org.testcontainers:testcontainers'
 }
 ----
+
+The configuration processor generates the metadata that gives your users completion and documentation for your properties in their IDE.
 
 == Configuration Properties
 
@@ -48,9 +53,13 @@ public class FancyDbDevServicesProperties implements DevServicesProperties {
      */
     private String imageName = "acme/fancydb:1.0.0";
 
-    // Additional common properties...
+    // The other common properties, each with its Javadoc...
 
-    // More properties of your own...
+    /**
+     * Fixed port for exposing the FancyDB console to the host.
+     * When it's 0 (default), a random available port is assigned dynamically.
+     */
+    private int consolePort = 0;
 
     @Override
     public boolean isEnabled() {
@@ -70,7 +79,15 @@ public class FancyDbDevServicesProperties implements DevServicesProperties {
         this.imageName = imageName;
     }
 
-    // Additional getters and setters...
+    public int getConsolePort() {
+        return consolePort;
+    }
+
+    public void setConsolePort(int consolePort) {
+        this.consolePort = consolePort;
+    }
+
+    // The other getters and setters...
 
 }
 ----
@@ -80,9 +97,11 @@ public class FancyDbDevServicesProperties implements DevServicesProperties {
 `DevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
 ====
 
+The common properties are `enabled`, `image-name`, `environment`, `network-aliases`, `port`, `resources`, `reuse-strategy`, `skip-in-tests`, `startup-timeout`, and `volumes`. The quickest way to get all of them, each with the Javadoc that becomes its description in the IDE, is to copy the properties class of a built-in Dev Service, such as `RedisDevServicesProperties`, and adapt it.
+
 == Container
 
-The Dev Service runs in a Testcontainers container, which you create when registering the Dev Service (see xref:custom-dev-services.adoc#_auto_configuration_and_registration[Auto-Configuration and Registration]). The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `port`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your code must not apply them itself. What is left to you is the image and, optionally, the exposed ports and the wait strategy.
+The Dev Service runs in a Testcontainers container, which you create when registering the Dev Service (see xref:custom-dev-services.adoc#_auto_configuration_and_registration[Auto-Configuration and Registration]). The container is configured from your properties when the framework creates it: the common properties (`environment`, `network-aliases`, `port`, `startup-timeout`, `resources`, `volumes`, `reuse-strategy`) are applied by Arconia, so your code must not apply them itself. What is left to you is the image from `image-name` and, optionally, the exposed ports and the wait strategy.
 
 If a Testcontainers module exists for your service, use its container class directly, with the image parsed from your properties. For example:
 
@@ -106,7 +125,11 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
     public FancyDbContainer(DockerImageName image) {
         super(image);
         this.withExposedPorts(FANCYDB_PORT, CONSOLE_PORT);
-        this.waitingFor(Wait.defaultWaitStrategy());
+        this.waitingFor(Wait.forListeningPorts(FANCYDB_PORT));
+    }
+
+    public String getUrl() {
+        return "fancydb://" + getHost() + ":" + getMappedPort(FANCYDB_PORT);
     }
 
 }
@@ -114,7 +137,7 @@ public final class FancyDbContainer extends GenericContainer<FancyDbContainer> {
 
 A subclass is also the place for behavior a module class doesn't offer, such as running a command once the container has started, by overriding the protected hooks of `GenericContainer`.
 
-Declare a wait strategy unless the container class already has one of its own, as in the example above. The `startup-timeout` property is applied to the container's wait strategy, and Testcontainers shares a single default wait strategy instance across all containers that don't declare one: without an explicit strategy, the timeout configured for your Dev Service would change the startup timeout of every other container relying on the shared instance. Container classes provided by Testcontainers vary in this respect: `GenericContainer`, `MySQLContainer`, and `OllamaContainer` rely on the shared instance, whereas `PostgreSQLContainer` and `RabbitMQContainer` declare their own.
+Declare a wait strategy unless the container class already has one of its own, as in the example above. Testcontainers shares one default wait strategy instance across all containers that don't declare one, and the `startup-timeout` property is applied to it: without an explicit strategy, your timeout would change the one of every other such container.
 
 For relational databases, use the service's `JdbcDatabaseContainer` and implement `JdbcDevServicesProperties`: credentials, database name, and init scripts are then applied by the framework as well.
 
@@ -144,7 +167,11 @@ public final class FancyDbDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(FancyDbContainer.class, () -> createContainer(properties))
                     .port(FancyDbContainer.FANCYDB_PORT)
-                    .additionalPort(FancyDbContainer.CONSOLE_PORT, properties.getConsolePort()));
+                    .additionalPort(FancyDbContainer.CONSOLE_PORT, properties.getConsolePort())
+                    .serviceConnection(false));
+
+            addDynamicProperty("acme.fancydb.url", () ->
+                    getBeanFactory().getBean(FancyDbContainer.class).getUrl());
         }
 
     }
@@ -157,6 +184,8 @@ public final class FancyDbDevServicesAutoConfiguration {
 ----
 
 The `container(...)` call declares the container type and how to create an instance, which the framework then configures and starts. The `port(...)` call declares the container port of the main service, which the common `port` property binds to a fixed port on the host when a user sets it. Each `additionalPort(...)` call declares another container port together with the host port a property of your own binds it to; a value of `0`, the default of such a property, binds nothing and the port is published on a random available port.
+
+FancyDB has no Spring Boot integration, so the example disables the service connection and connects the application through a property of the FancyDB client, `acme.fancydb.url`, instead (see xref:custom-dev-services.adoc#_wiring_the_application_to_the_service[Wiring the Application to the Service]). For a service Spring Boot supports, such as one running in a `PostgreSQLContainer`, leave `serviceConnection(false)` and the property out: Spring Boot connects the application through its service connection.
 
 [IMPORTANT]
 ====
@@ -179,7 +208,7 @@ Finally, register the auto-configuration in `META-INF/spring/org.springframework
 com.example.acme.FancyDbDevServicesAutoConfiguration
 ----
 
-For the Dev Service to be picked up by the Spring Boot test slice of its technology, register the auto-configuration for the slice too, in `META-INF/spring/<slice annotation>.imports`. For example, the PostgreSQL Dev Service registers `io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration` and its own auto-configuration in `META-INF/spring/org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.imports`, which `@DataJdbcTest` and `@DataJpaTest` load.
+For the Dev Service to be picked up by the Spring Boot test slice of its technology, register the auto-configuration for the slice too, in `META-INF/spring/<slice annotation>.imports`. For example, the PostgreSQL Dev Service registers `io.arconia.dev.services.core.autoconfigure.DevServicesAutoConfiguration` and its own auto-configuration in `META-INF/spring/org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.imports`, which `@DataJdbcTest` and `@DataJpaTest` load. The slice must also import Spring Boot's `ServiceConnectionAutoConfiguration`, which the data slices of Spring Boot already do.
 
 That's it. When your module is on the dev or test classpath, the container starts automatically with the application, lifecycle management (startup, shutdown, DevTools restarts) is handled by the framework, and users can configure the service via your `acme.dev.services.fancydb.*` properties or a xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer` bean].
 
@@ -199,35 +228,17 @@ The links appear in the startup message and in the `devservices` actuator endpoi
 
 == Wiring the Application to the Service
 
-The container is registered with Spring Boot's https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Service Connections] mechanism, which resolves a `ConnectionDetailsFactory` for the container. There are three ways to make the connection work, depending on what's available for your service:
+The container is registered with Spring Boot's https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections[Service Connections] mechanism, which resolves a `ConnectionDetailsFactory` for the container. There are three ways to make the connection work, depending on what's available for your service:
 
 * By container type (the default): if a `ContainerConnectionDetailsFactory` exists for your container's type in Spring Boot (as is the case for many containers shipped with Testcontainers modules, like `PostgreSQLContainer`), no further configuration is needed.
 * By connection name: if the factory for your service matches by name rather than type, set it explicitly with `serviceConnectionName("<name>")` when registering the service. The name must match the one the factory requires, which is typically the container image name without registry and tag.
-* By dynamic properties: if no `ConnectionDetails` abstraction exists for your service, disable the service connection with `serviceConnection(false)` and contribute configuration properties lazily from the registrar instead:
-
-[source,java]
-----
-@Override
-protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
-    var properties = bindProperties("acme.dev.services.fancydb", FancyDbDevServicesProperties.class);
-
-    registry.registerDevService(service -> service
-            .name("fancydb")
-            .description("FancyDB Dev Service")
-            .properties(properties)
-            .container(FancyDbContainer.class, () -> new FancyDbContainer(properties))
-            .serviceConnection(false));
-
-    addDynamicProperty("acme.fancydb.url", () ->
-            getBeanFactory().getBean(FancyDbContainer.class).getUrl());
-}
-----
+* By dynamic properties: if no `ConnectionDetails` abstraction exists for your service, disable the service connection with `serviceConnection(false)` and contribute configuration properties lazily from the registrar instead, as the FancyDB example does with `addDynamicProperty(...)`. Without `serviceConnection(false)`, Spring Boot fails at startup, because it finds no `ConnectionDetailsFactory` for the container.
 
 The property value is resolved lazily, every time the property is read, mirroring the semantics of Spring Boot's `@DynamicPropertySource`. Looking up the container bean from the supplier starts the container on demand if it isn't running yet, so the value is always the one of the running container.
 
 == Supporting Discovery
 
-To let multiple applications running simultaneously use the same container of your Dev Service through the `framework` reuse strategy (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]), declare how to connect to a container started by another application when registering the service: the `ConnectionDetails` type and a factory that builds it for a discovered container:
+To let multiple applications running simultaneously use the same container of your Dev Service through the `framework` reuse strategy (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]), declare how to connect to a container started by another application when registering the service: the `ConnectionDetails` type and a factory that builds it for a discovered container. Discovery requires a `ConnectionDetails` type for your service. The following example assumes the FancyDB integration provides one, `FancyDbConnectionDetails`, and that your module implements it for a discovered container in `FancyDbDiscoveredConnectionDetails`:
 
 [source,java]
 ----
@@ -235,7 +246,7 @@ registry.registerDevService(service -> service
         .name("fancydb")
         .description("FancyDB Dev Service")
         .properties(properties)
-        .container(FancyDbContainer.class, () -> new FancyDbContainer(properties))
+        .container(FancyDbContainer.class, () -> createContainer(properties))
         .discovery(FancyDbConnectionDetails.class,
                 container -> new FancyDbDiscoveredConnectionDetails(
                         container.host(), container.mappedPort(FancyDbContainer.FANCYDB_PORT))));

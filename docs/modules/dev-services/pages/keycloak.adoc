@@ -16,6 +16,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration.
+
 The Dev Service imports a realm named `arconia` with a confidential client (id `arconia-app`, secret `arconia-secret`), and two users:
 
 [cols="1,1,1"]

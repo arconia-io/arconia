@@ -8,6 +8,8 @@ It works with Spring Boot libraries that support AMQP or RabbitMQ, including:
 * https://spring.io/projects/spring-amqp[Spring AMQP]
 * https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
 
+When the application connects to a RabbitMQ Dev Service started by another application, it gets the connection details of Spring AMQP only.
+
 == Dependencies
 
 include::partial$dependencies.adoc[]
@@ -15,6 +17,8 @@ include::partial$dependencies.adoc[]
 == Running the Application
 
 include::partial$running-application.adoc[]
+
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration.
 
 By default, when running the application in dev mode, multiple applications running simultaneously use the same RabbitMQ Dev Service: the application connects to a running RabbitMQ Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same credentials. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 

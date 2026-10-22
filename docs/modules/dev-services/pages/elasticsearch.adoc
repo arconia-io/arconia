@@ -16,6 +16,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration, and so do `@DataElasticsearchTest` test slices.
+
 By default, each application starts its own Elasticsearch Dev Service. To let multiple applications running simultaneously in dev mode use the same one, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `framework`: the application connects to a running Elasticsearch Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same password. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 == Configuring the Dev Service

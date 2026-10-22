@@ -23,6 +23,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+In test mode, the Dev Service is skipped by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set `arconia.dev.services.{service-name}.skip-in-tests` to `false`, preferably in a configuration shared by those tests, such as an `application-test.yml` file, so that they share one application context and one container (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
+
 By default, when running the application in dev mode, multiple applications running simultaneously use the same OpenLit Dev Service: the application connects to a running OpenLit Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 == Accessing OpenLit

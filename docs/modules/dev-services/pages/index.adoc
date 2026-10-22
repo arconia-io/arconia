@@ -24,7 +24,7 @@ This happens transparently without requiring any code or configuration.
 
 == Quick Start
 
-Get started with Arconia Dev Services in three simple steps:
+You need a container runtime, such as https://podman-desktop.io[Podman] or https://www.docker.com[Docker], installed and running. Then get started with Arconia Dev Services in three simple steps:
 
 1. Add the dependency for your required service (e.g., PostgreSQL):
 +
@@ -62,6 +62,8 @@ include::ROOT:partial$app-run.adoc[]
 ----
 ...i.a.d.s.startup  : Dev Service 'postgresql' is ready in container 9b1c4e7a2d60 (postgres, localhost:<port>)
 ----
++
+Your `@SpringBootTest` tests use the same Dev Service, with no further setup.
 
 [TIP]
 ====
@@ -83,7 +85,9 @@ Dev Services are provisioned as OCI containers. Ensure you have a container runt
 
 Your application is automatically configured to connect to Dev Services, which take precedence over manually configured properties. For example, when using the `arconia-dev-services-postgresql` module, the Dev Service transparently overrides properties like `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password`.
 
-The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
+To change how the Dev Service is configured, such as its credentials, use its own properties (for example, `arconia.dev.services.postgresql.username`), not the `spring.datasource.*` ones, which the Dev Service overrides.
+
+The auto-configuration mechanism uses https://docs.spring.io/spring-boot/reference/testing/testcontainers.html#testing.testcontainers.service-connections[Spring Boot's Service Connections] internally to establish connections between your application and containerized services, eliminating the need for manual property configuration or test-specific setup code.
 
 If a `ConnectionDetails` bean of the type a Dev Service provides already exists in your application (for example, a `JdbcConnectionDetails` bean you define, or one Spring Boot Docker Compose provides), the application connects to that service instead: the Dev Service is not started, and a message says so at startup.
 
@@ -97,7 +101,7 @@ Arconia instructs Spring Boot to manage the lifecycle of Dev Services as beans i
 
 When using https://docs.spring.io/spring-boot/reference/using/devtools.html[Spring Boot DevTools] in dev mode, Dev Services are not recreated on restart. They remain running in the background until the application process exits, ensuring a smooth development experience without wait times or state loss. When the process exits, the containers it kept are stopped, unless they are kept by the `testcontainers` reuse strategy (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]). A process killed outright cannot stop them; the container runtime then removes them a few seconds later through Testcontainers' resource reaper.
 
-Since the container is kept, changes to the configuration of a Dev Service take effect once you stop and start the application again. The only container replaced on restart is one that is no longer running, for example, because it was removed manually.
+Since the container is kept, changes to the configuration of a Dev Service take effect once you stop and start the application again. The same applies to disabling a Dev Service: its kept container runs until the application process exits. The only container replaced on restart is one that is no longer running, for example, because it was removed manually.
 
 A Dev Service can also use a container that is already running instead of starting a new one, which changes when the container is stopped. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
@@ -105,11 +109,24 @@ A Dev Service can also use a container that is already running instead of starti
 
 In test mode, every test application context starts its own containers and stops them when it closes, to ensure test isolation, consistency, and reliability. The features that keep or share containers are only available in dev mode: the reuse strategies, the persistence across Spring Boot DevTools restarts, and the `devservices` actuator endpoint.
 
-The observability Dev Services (xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], and xref:openlit.adoc[OpenLit]) are skipped in test mode by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set the `arconia.dev.services.<service-name>.skip-in-tests` property to `false`, for example in `application-test.yml` or on the test class:
+Spring caches test application contexts, so the test classes sharing a context also share its containers. A test class with a different configuration gets its own context and starts its own set of containers: different properties, a different set of mocked beans (`@MockitoBean`), a test slice, or `@DirtiesContext` all lead to a new context. To keep the suite fast, put the configuration your tests share in an `application-test.yml` file or a common base class rather than on individual test classes, and consider starting containers in parallel (see xref:index.adoc#_startup_sequence[Startup Sequence]). The `spring.test.context.cache.maxSize` property limits how many contexts, and so how many sets of containers, are kept alive at once.
+
+The observability Dev Services (xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], and xref:openlit.adoc[OpenLit]) are skipped in test mode by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set the `arconia.dev.services.<service-name>.skip-in-tests` property to `false`. Prefer a configuration those tests share, such as a dedicated profile, over properties on each test class, which would start a new context and new containers for each of them:
+
+[source,yaml]
+----
+# application-telemetry-test.yml
+arconia:
+  dev:
+    services:
+      lgtm:
+        skip-in-tests: false
+----
 
 [source,java]
 ----
-@SpringBootTest(properties = "arconia.dev.services.lgtm.skip-in-tests=false")
+@SpringBootTest
+@ActiveProfiles("telemetry-test")
 class TelemetryTests {
     ...
 }
@@ -202,10 +219,33 @@ A wait strategy set by a customizer replaces the one the Dev Service configured,
 
 A customizer typed on a common supertype (e.g. `GenericContainer<?>`) applies to all Dev Service containers. When multiple customizers match the same container, they are applied following the semantics of the `@Order` annotation and `Ordered` interface.
 
-[NOTE]
-====
-Customizers reference classes from the Dev Services and Testcontainers dependencies, which are not present in production builds. Define them in a configuration class that is only included at development and test time, consistently with how you scoped the Dev Service dependency itself.
-====
+Customizers use classes from the Dev Service and Testcontainers dependencies, which you scope to development and tests. Define them the same way: in a dedicated module of your build that depends on the Dev Service, register the configuration class as an auto-configuration in its `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` file, and add the module to your application as a development and test only dependency, as you do for the Arconia Dev Services:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    testAndDevelopmentOnly project(':dev-services')
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>com.example</groupId>
+    <artifactId>dev-services</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+The customizers then apply whenever the Dev Services do, when running the application in dev mode and in your tests, and never reach your production build.
 
 === Reusing Dev Services
 
@@ -338,17 +378,17 @@ Volume mappings are configured through the `arconia.dev.services.<service-name>.
 * Host path: Location of the file or directory on the host filesystem;
 * Container path: Destination path inside the container.
 
-For example, to mount a configuration directory from the host filesystem into a PostgreSQL container:
+For example, to keep the models the Ollama Dev Service downloads in a directory of your home folder, across application runs and tests:
 
 [source,yaml]
 ----
 arconia:
   dev:
     services:
-      postgresql:
+      ollama:
         volumes:
-          - host-path: ./postgresql/data
-            container-path: /var/lib/postgresql/data/pgdata
+          - host-path: ${user.home}/.ollama
+            container-path: /root/.ollama
 ----
 
 === Networks and Ports
@@ -361,11 +401,11 @@ By default, Dev Services use random available ports to avoid conflicts. However,
 
 Some Dev Services may expose multiple ports (e.g., management console ports). In such cases, the Dev Service will offer additional properties to configure fixed ports for those secondary services. For example, the RabbitMQ Dev Service provides the common `arconia.dev.services.rabbitmq.port` property for the main AMQP port and an additional `arconia.dev.services.rabbitmq.management-console-port` property for the management UI port.
 
-A common use case for fixed ports is when other tools or services in your development environment need to connect to the Dev Service container using a known port, or for exposing UI consoles through well-known ports. For example, to expose Grafana on port 3000.
+A common use case for fixed ports is when other tools or services in your development environment need to connect to the Dev Service container using a known port, or for exposing UI consoles through well-known ports. For example, `arconia.dev.services.lgtm.port=3000` exposes Grafana on port 3000.
 
 [WARNING]
 ====
-Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary.
+Using fixed ports may cause conflicts if another service is already using the port. Consider using fixed ports only when necessary, and set them in a configuration that only applies in dev mode, such as an `application-dev.yml` file: in tests, every cached application context starts its own container, and a second container can't bind the same port.
 ====
 
 === Shared Network
@@ -456,12 +496,20 @@ The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], 
 
 [NOTE]
 ====
-A Dev Service with SSL enabled and running in a container started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) is connected to with the bundle built from the properties of this application: the applications sharing a Dev Service must configure the same `ssl` properties, as they must use the same credentials. A mismatch, such as SSL enabled in one application only or different certificates, shows up as a connection or handshake failure when the application first uses the service.
+When an application connects to a Dev Service started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]), it uses the bundle built from its own `ssl` properties. All the applications sharing the Dev Service must configure the same `ssl` properties, as they must use the same credentials. A mismatch, such as SSL enabled in one application only or different certificates, shows up as a connection or handshake failure when the application first uses the service.
 ====
 
 === Startup Sequence
 
-Control how Dev Services start using the `spring.testcontainers.beans.startup` property. It can be set to `parallel` or `sequential`. By default, Dev Services are started sequentially.
+Control how Dev Services start using the `spring.testcontainers.beans.startup` property of Spring Boot. It can be set to `parallel` or `sequential`. By default, containers are started sequentially, so the startup time is the sum of the startup times of all the containers. With `parallel`, it is the startup time of the slowest one, which pays off as soon as an application uses two or more Dev Services that take a while to start, such as Keycloak and Elasticsearch, and also when images are pulled for the first time. The property applies to every Testcontainers container of the application, not only Dev Services. Set it in `application.yml`, so that your tests benefit from it too:
+
+[source,yaml]
+----
+spring:
+  testcontainers:
+    beans:
+      startup: parallel
+----
 
 === Startup Feedback
 
@@ -473,7 +521,15 @@ When a Dev Service is ready, Arconia logs a consistent startup message: one line
 ...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896, OTLP/gRPC: http://localhost:32897, Prometheus: http://localhost:32898, Tempo MCP: http://localhost:32899/api/mcp
 ----
 
-The first line states the container image, the address of the main port of the service on the host, which is what you need to connect a tool on your machine to it, whether the container was started by another application (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]) or kept across a Spring Boot DevTools restart, the reuse strategy in effect when a container is reused, and whether SSL is enabled for the Dev Service (`ssl`). When the configured reuse strategy could not be applied, the line says so and gives the reason in parentheses, for example, because the Testcontainers reusable containers feature is not enabled on your machine:
+The first line states:
+
+* the container image;
+* the address of the main port of the service on the host, which is what you need to connect a tool on your machine to it;
+* `started by another application` or `kept across restart`, when applicable (see xref:index.adoc#_reusing_dev_services[Reusing Dev Services]);
+* the reuse strategy in effect, when a container is reused;
+* `ssl`, when SSL is enabled for the Dev Service.
+
+When the configured reuse strategy could not be applied, the line says so and gives the reason in parentheses, for example, because the Testcontainers reusable containers feature is not enabled on your machine:
 
 [source,logs]
 ----
@@ -683,7 +739,7 @@ The `links` field lists the links the Dev Service exposes, such as management co
 
 The `origin` field indicates whether the Dev Service runs in a container managed by this application (`MANAGED`) or in a container started by another application and discovered by this one (`DISCOVERED`).
 
-The `ssl` field reports the SSL bundle the application connects to a Dev Service with SSL enabled with (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), in the form Spring Boot reports bundles in the `info` endpoint: the name the bundle is registered under, and, as its trust store certificate chains, the certificate chain of the Dev Service with the subject, issuer, validity period, and validity status of each certificate. It is `null` for a Dev Service without SSL, and for one using the certificate its container generates, which has no bundle of its own.
+The `ssl` field describes the bundle the application uses to trust a Dev Service with SSL enabled (see xref:index.adoc#_ssl_with_dev_services[SSL with Dev Services]), as Spring Boot reports bundles in the `info` endpoint: the name the bundle is registered under, and, as its trust store certificate chains, the certificate chain of the Dev Service with the subject, issuer, validity period, and validity status of each certificate. It is `null` for a Dev Service without SSL, and for one using the certificate its container generates, which has no bundle of its own.
 
 [source,json]
 ----
@@ -723,6 +779,12 @@ When a container fails to start, Testcontainers writes the container's logs to t
 * A fixed port is already in use: the container runtime refuses to publish the port. Free the port, or remove the `port` property of the Dev Service (or the additional port property involved) to use a random port.
 * The service exits during startup: the container logs written above the exception say why, such as an invalid configuration passed through the `environment` property.
 
+Spring Boot starts all the containers of the application together, so the exception may name the bean of another Dev Service than the one that failed. The image named in the cause of the exception identifies the container that failed.
+
+=== Running Without a Container Runtime
+
+To run the application or the tests without a container runtime, disable the Dev Services with `arconia.dev.services.enabled=false` and configure the connections yourself, for example with `spring.datasource.url`.
+
 === Showing the Logs of a Container
 
 Dev Services don't forward the logs of their containers to the application log, except when a container fails to start. To follow the logs of a container while the application runs, attach a log consumer to it with a `DevServiceContainerCustomizer` (see xref:index.adoc#_programmatic_customization[Programmatic Customization]):
@@ -735,13 +797,13 @@ class ContainerLogsConfiguration {
     @Bean
     DevServiceContainerCustomizer<GenericContainer<?>> containerLogs() {
         return container -> container.withLogConsumer(
-                new Slf4jLogConsumer(LoggerFactory.getLogger("dev-services." + container.getDockerImageName())));
+                new Slf4jLogConsumer(LoggerFactory.getLogger("dev-services")).withPrefix(container.getDockerImageName()));
     }
 
 }
 ----
 
-Declare the bean in a configuration used only in development and tests, such as one under `src/test/java`. The logs are written at info level, under a logger named after the image of the container.
+Declare the bean in the module holding your Dev Service customizations (see xref:index.adoc#_programmatic_customization[Programmatic Customization]). The logs are written at info level under the `dev-services` logger, each line prefixed with the image of the container.
 
 === Quieting the Testcontainers Logs
 

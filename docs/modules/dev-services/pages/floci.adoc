@@ -14,11 +14,6 @@ The Dev Service brings the core of https://awspring.io[Spring Cloud AWS] with it
 Floci exposes a single HTTP endpoint for all emulated AWS services. When using Spring Cloud AWS S3, path-style access is enabled while the Floci Dev Service module is on the classpath, also when the application connects to an endpoint of its own instead of the Dev Service.
 ====
 
-[NOTE]
-====
-This Dev Service is mutually exclusive with other AWS dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
-====
-
 == Dependencies
 
 include::partial$dependencies.adoc[]
@@ -26,6 +21,8 @@ include::partial$dependencies.adoc[]
 == Running the Application
 
 include::partial$running-application.adoc[]
+
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration.
 
 By default, each application starts its own Floci Dev Service. To let multiple applications running simultaneously in dev mode use the same one, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `framework`: the application connects to a running Floci Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same region. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 

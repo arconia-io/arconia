@@ -16,6 +16,8 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
+Your `@SpringBootTest` integration tests use the Dev Service with no additional configuration.
+
 By default, when running the application in dev mode, multiple applications running simultaneously use the same Artemis Dev Service: the application connects to a running Artemis Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same credentials. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 == Accessing the Management Console
