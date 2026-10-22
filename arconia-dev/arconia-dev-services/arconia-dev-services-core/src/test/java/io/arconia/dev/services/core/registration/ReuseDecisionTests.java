@@ -46,11 +46,11 @@ class ReuseDecisionTests {
     }
 
     @Test
-    void whenNotInDevModeThenConfiguredReuseStrategyIsNotApplied() {
+    void whenNotInDevModeThenNoReuseStrategyApplies() {
         var decision = ReuseDecision.decide(serviceSpec(TestDevServicesProperties.FRAMEWORK, true), () -> true, false);
 
         assertThat(decision.effective()).isEqualTo(ReuseStrategy.NONE);
-        assertThat(decision.reason()).isEqualTo("reuse only applies in dev mode");
+        assertThat(decision.reason()).isNull();
     }
 
     @Test

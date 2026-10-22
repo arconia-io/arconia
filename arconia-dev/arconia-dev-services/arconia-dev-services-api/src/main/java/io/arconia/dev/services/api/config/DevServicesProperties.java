@@ -69,7 +69,7 @@ public interface DevServicesProperties {
      * Maximum waiting time for the service to start, counted from the container start.
      */
     default Duration getStartupTimeout() {
-        return Duration.ofSeconds(30);
+        return Duration.ofSeconds(60);
     }
 
     /**

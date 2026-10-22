@@ -404,10 +404,9 @@ public final class DevServicesRegistry {
                     : DevServiceLinks.resolve(service, container.getHost(), container::getMappedPort, DevServiceRegistration.Origin.MANAGED);
             DevServiceRegistration registration = createRegistration(service, DevServiceRegistration.Origin.MANAGED, container.getContainerId(), links, sslBundleRegistered);
             String address = container.getContainerId() == null ? null : resolveAddress(service, container.getHost(), container::getMappedPort);
-            // The reuse strategy is only reported in dev mode, the only one where it applies, unless
-            // the configured one could not be applied, which is worth knowing in any mode.
+            boolean reuseWorthReporting = reuse.effective() != ReuseStrategy.NONE || reuse.reason() != null;
             DevServiceStartupLogger.ready(registration, container.getContainerId(), imageNameOf(container), address, containerKept,
-                    (BootstrapMode.isDev() || reuse.reason() != null) ? reuse : null, service.isSslEnabled());
+                    reuseWorthReporting ? reuse : null, service.isSslEnabled());
             return registration;
         });
 

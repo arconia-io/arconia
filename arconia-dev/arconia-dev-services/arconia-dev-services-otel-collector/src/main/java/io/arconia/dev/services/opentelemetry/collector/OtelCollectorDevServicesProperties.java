@@ -64,7 +64,7 @@ public class OtelCollectorDevServicesProperties implements DevServicesProperties
     /**
      * Maximum waiting time for the service to start, counted from the container start.
      */
-    private Duration startupTimeout = Duration.ofSeconds(30);
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     /**
      * Whether the dev service is skipped in test mode, where the application rarely needs a

@@ -22,7 +22,7 @@ Furthermore, the Dev Service is configured to enable the Docling UI. The applica
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'docling' is ready in container <container-id> (ghcr.io/docling-project/docling-serve, localhost:<port>, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'docling' is ready in container <container-id> (ghcr.io/docling-project/docling-serve-cpu, localhost:<port>, reuse-strategy: framework)
 ...i.a.d.s.startup  : Dev Service 'docling' links: Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs, Docling Scalar: http://localhost:<port>/scalar
 ----
 
@@ -38,7 +38,7 @@ You can configure the Dev Service via configuration properties.
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.{service-name}.image-name`
-| `ghcr.io/docling-project/docling-serve`
+| `ghcr.io/docling-project/docling-serve-cpu`
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.{service-name}.environment`
@@ -62,7 +62,7 @@ You can configure the Dev Service via configuration properties.
 | Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.{service-name}.startup-timeout`
-| `30s`
+| `60s`
 | Maximum waiting time for the service to start, counted from the container start.
 
 | `arconia.dev.services.{service-name}.volumes`

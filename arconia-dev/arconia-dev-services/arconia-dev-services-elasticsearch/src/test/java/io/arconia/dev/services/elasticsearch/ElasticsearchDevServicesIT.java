@@ -17,6 +17,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.nodes.stats.NodeStatsMetric;
 
 import io.arconia.boot.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
@@ -55,7 +56,12 @@ class ElasticsearchDevServicesIT {
             ElasticsearchConnectionDetails connectionDetails = context.getBean(ElasticsearchConnectionDetails.class);
             assertThat(connectionDetails.getSslBundle()).isNull();
             assertThat(connectionDetails.getNodes()).singleElement().satisfies(node -> assertThat(node.protocol()).isEqualTo(Protocol.HTTP));
-            assertClusterIsReachable(context.getBean(ElasticsearchClient.class));
+            ElasticsearchClient client = context.getBean(ElasticsearchClient.class);
+            assertClusterIsReachable(client);
+            // The heap the dev service configures wins over the 2 GB Testcontainers sets.
+            assertThat(client.nodes().stats(stats -> stats.metric(NodeStatsMetric.Jvm)).nodes().values())
+                    .singleElement()
+                    .satisfies(node -> assertThat(node.jvm().mem().heapMaxInBytes()).isLessThanOrEqualTo(1024L * 1024 * 1024));
         });
     }
 

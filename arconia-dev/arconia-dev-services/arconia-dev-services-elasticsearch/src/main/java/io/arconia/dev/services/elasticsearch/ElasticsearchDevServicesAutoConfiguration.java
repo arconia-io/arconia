@@ -41,8 +41,15 @@ public final class ElasticsearchDevServicesAutoConfiguration {
      */
     static final String SSL_DIRECTORY = "/usr/share/elasticsearch/config/arconia-ssl/";
 
+    static final String JAVA_OPTS = "ES_JAVA_OPTS";
+
+    static final String DEFAULT_JAVA_OPTS = "-Xms512m -Xmx1g";
+
     static ElasticsearchContainer createContainer(ElasticsearchDevServicesProperties properties) {
         var container = new ElasticsearchContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+        // A heap sized for development, instead of the fixed 2 GB Testcontainers configures.
+        // The environment property of the dev service can override it.
+        container.withEnv(JAVA_OPTS, DEFAULT_JAVA_OPTS);
         // Serves plain HTTP unless SSL is enabled through its properties.
         if (!properties.getSsl().isEnabled()) {
             container.withEnv(HTTP_SSL_ENABLED, "false");

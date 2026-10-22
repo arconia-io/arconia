@@ -23,7 +23,7 @@ The application logs will show you the URL where you can access the LLDAP Manage
 
 [source,logs]
 ----
-...i.a.d.s.startup  : Dev Service 'lldap' is ready in container 7c2e1f9a3b5d (lldap/lldap, localhost:<port>, reuse-strategy: none)
+...i.a.d.s.startup  : Dev Service 'lldap' is ready in container 7c2e1f9a3b5d (lldap/lldap, localhost:<port>)
 ...i.a.d.s.startup  : Dev Service 'lldap' links: LLDAP Console: http://localhost:<port>
 ----
 
@@ -65,7 +65,7 @@ You can configure the Dev Service via configuration properties.
 | Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.{service-name}.startup-timeout`
-| `30s`
+| `60s`
 | Maximum waiting time for the service to start, counted from the container start.
 
 | `arconia.dev.services.{service-name}.volumes`

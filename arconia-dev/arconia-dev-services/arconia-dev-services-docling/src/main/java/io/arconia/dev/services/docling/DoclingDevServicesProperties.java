@@ -30,7 +30,7 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ghcr.io/docling-project/docling-serve:v1.37.0";
+    private String imageName = "ghcr.io/docling-project/docling-serve-cpu:v1.37.0";
 
     /**
      * Environment variables to set in the service.
@@ -65,7 +65,7 @@ public class DoclingDevServicesProperties implements DevServicesProperties {
     /**
      * Maximum waiting time for the service to start, counted from the container start.
      */
-    private Duration startupTimeout = Duration.ofSeconds(30);
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     /**
      * Files or directories to mount from the host filesystem into the container.

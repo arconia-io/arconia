@@ -1093,7 +1093,7 @@ class DevServicesRegistryTests {
         }
 
         @Test
-        void whenReuseStrategyCannotBeAppliedOutsideDevModeThenReadyMessageSaysWhy(CapturedOutput output) {
+        void whenNothingIsReusedThenReadyMessageDoesNotMentionTheReuseStrategy(CapturedOutput output) {
             registry.registerDevService(service -> service
                     .name("reusable")
                     .description("Test Dev Service")
@@ -1103,7 +1103,23 @@ class DevServicesRegistryTests {
 
             beanFactory.getBean(BeanName.REGISTRATION.of("reusable"), DevServiceRegistration.class);
 
-            assertThat(output).contains("reuse-strategy: none (reuse only applies in dev mode)");
+            assertThat(output).contains("Dev Service 'reusable' is ready").doesNotContain("reuse-strategy");
+        }
+
+        @Test
+        void whenReuseStrategyCannotBeAppliedInDevModeThenReadyMessageSaysWhy(CapturedOutput output) {
+            enableDevMode();
+            DevServicesRegistry registry = new DevServicesRegistry(beanFactory, new StandardEnvironment(), new DefaultResourceLoader(),
+                    serviceName -> List.of(), () -> false);
+            registry.registerDevService(service -> service
+                    .name("reusable")
+                    .description("Test Dev Service")
+                    .properties(TestDevServicesProperties.TESTCONTAINERS)
+                    .container(TestLinkContainer.class, TestLinkContainer::new));
+
+            beanFactory.getBean(BeanName.REGISTRATION.of("reusable"), DevServiceRegistration.class);
+
+            assertThat(output).contains("reuse-strategy: none ('testcontainers' requires reuse to be enabled");
         }
 
     }

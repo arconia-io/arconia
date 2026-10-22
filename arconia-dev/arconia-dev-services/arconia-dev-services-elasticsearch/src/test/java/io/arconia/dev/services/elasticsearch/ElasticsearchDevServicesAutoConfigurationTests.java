@@ -45,6 +45,20 @@ class ElasticsearchDevServicesAutoConfigurationTests extends BaseDevServicesAuto
     }
 
     @Test
+    void heapSizedForDevelopmentByDefault() {
+        getContextRunner().run(context -> assertThat(context.getBean(getContainerClass()).getEnvMap())
+                .containsEntry(ElasticsearchDevServicesAutoConfiguration.JAVA_OPTS, ElasticsearchDevServicesAutoConfiguration.DEFAULT_JAVA_OPTS));
+    }
+
+    @Test
+    void heapConfigurableThroughTheEnvironment() {
+        getContextRunner()
+                .withPropertyValues("arconia.dev.services.%s.environment.ES_JAVA_OPTS=-Xms1g -Xmx2g".formatted(getServiceName()))
+                .run(context -> assertThat(context.getBean(getContainerClass()).getEnvMap())
+                        .containsEntry(ElasticsearchDevServicesAutoConfiguration.JAVA_OPTS, "-Xms1g -Xmx2g"));
+    }
+
+    @Test
     void httpSslDisabledByDefault() {
         getContextRunner().run(context -> {
             var container = context.getBean(getContainerClass());

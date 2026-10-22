@@ -68,7 +68,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
     /**
      * Maximum waiting time for the service to start, counted from the container start.
      */
-    private Duration startupTimeout = Duration.ofSeconds(30);
+    private Duration startupTimeout = Duration.ofSeconds(60);
 
     /**
      * Files or directories to mount from the host filesystem into the container.

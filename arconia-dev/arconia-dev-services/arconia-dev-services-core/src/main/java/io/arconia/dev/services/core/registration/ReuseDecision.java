@@ -24,11 +24,8 @@ record ReuseDecision(ReuseStrategy effective, @Nullable String reason) {
      */
     static ReuseDecision decide(DevServiceDefinition service, BooleanSupplier testcontainersReuseSupport, boolean networkEnabled) {
         ReuseStrategy configured = service.properties().getReuseStrategy();
-        if (configured == ReuseStrategy.NONE) {
+        if (configured == ReuseStrategy.NONE || !BootstrapMode.isDev()) {
             return new ReuseDecision(ReuseStrategy.NONE, null);
-        }
-        if (!BootstrapMode.isDev()) {
-            return new ReuseDecision(ReuseStrategy.NONE, "reuse only applies in dev mode");
         }
         if (configured == ReuseStrategy.FRAMEWORK && service.discovery() == null) {
             return new ReuseDecision(ReuseStrategy.NONE, "'framework' is not supported by this dev service");
