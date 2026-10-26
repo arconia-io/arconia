@@ -23,7 +23,7 @@ public final class OpenTelemetryConventionsAutoConfiguration {
 
         @Bean
         OpenTelemetryResourceBuilderCustomizer conventionsCustomizer() {
-            return builder -> builder.setSchemaUrl(SchemaUrls.V1_41_0);
+            return builder -> builder.setSchemaUrl(SchemaUrls.V1_44_0);
         }
 
     }

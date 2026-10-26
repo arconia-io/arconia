@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.instrumentation.http;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.opentelemetry.semconv.ErrorAttributes;
 
 import org.springframework.http.server.observation.OpenTelemetryServerRequestObservationConvention;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
@@ -35,6 +36,21 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
             }
         }
         return NETWORK_PROTOCOL_VERSION_UNKNOWN;
+    }
+
+    /**
+     * Reports the response status code as the error type when the response signals a server error
+     * without an exception being thrown, as the conventions require.
+     */
+    @Override
+    protected KeyValue exception(ServerRequestObservationContext context) {
+        if (context.getError() == null && context.getResponse() != null) {
+            int status = context.getResponse().getStatus();
+            if (status >= 500 && status < 600) {
+                return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status));
+            }
+        }
+        return super.exception(context);
     }
 
     // HIGH CARDINALITY

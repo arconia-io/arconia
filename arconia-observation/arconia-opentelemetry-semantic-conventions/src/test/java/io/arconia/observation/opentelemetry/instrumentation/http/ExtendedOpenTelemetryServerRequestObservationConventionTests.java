@@ -20,6 +20,42 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     private final ExtendedOpenTelemetryServerRequestObservationConvention convention =
             new ExtendedOpenTelemetryServerRequestObservationConvention(defaultOptions);
 
+    // LOW CARDINALITY — error.type
+
+    @Test
+    void errorTypeIsStatusCodeForServerErrorWithoutException() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(503);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", "503"));
+    }
+
+    @Test
+    void errorTypeIsExceptionTypeForServerErrorWithException() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(500);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+        context.setError(new IllegalStateException("boom"));
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", "java.lang.IllegalStateException"));
+    }
+
+    @Test
+    void errorTypeIsNoneForClientError() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(404);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", KeyValue.NONE_VALUE));
+    }
+
     // LOW CARDINALITY — network.protocol.version
 
     @Test
