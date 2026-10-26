@@ -11,18 +11,16 @@ dependencies {
 
     api project(":arconia-spring-boot")
     api project(":arconia-observation:arconia-observation")
+    api "io.opentelemetry:opentelemetry-api"
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
     api "io.micrometer:micrometer-core"
 
-    implementation "tools.jackson.core:jackson-databind"
-
-    implementation "org.springframework.boot:spring-boot-starter"
-
+    optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework:spring-web"
-    optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "jakarta.servlet:jakarta.servlet-api"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "tools.jackson.core:jackson-databind"
     testImplementation "org.springframework:spring-web"
     testImplementation "jakarta.servlet:jakarta.servlet-api"
     testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
