@@ -71,7 +71,6 @@ arconia:
     resource:
       enable:
         service.instance.id: false
-        webengine.description: false
 ----
 
 The `all` special key can be used to enable or disable all attributes at once via configuration properties.
@@ -191,7 +190,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `HostResourceContributor` contributes attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`host.arch`**: The CPU architecture of the host the application is running on.
+* **`host.arch`**: The CPU architecture of the host the application is running on, using the values defined by the OpenTelemetry Semantic Conventions (for example, `amd64` or `arm64`) and the architecture reported by the JVM for the others.
 * **`host.name`**: The name of the host the application is running on.
 
 This contributor is disabled by default. You can enable it via configuration properties.
@@ -261,9 +260,11 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `ProcessResourceContributor` contributes attributes to the `Resource` instance about the Java process, following the OpenTelemetry Semantic Conventions whenever possible.
 
+* **`process.creation.time`**: The date and time the Java process was created, in ISO 8601 format.
 * **`process.owner`**: The username of the user that owns the Java process.
 * **`process.parent_pid`**: The parent process ID of the Java process.
 * **`process.pid`**: The process ID of the Java process.
+* **`process.working_directory`**: The working directory of the Java process.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `process` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.process-information[Spring Boot Actuator documentation] for more details.
 

@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.resource.contributor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -53,12 +54,30 @@ public final class HostResourceContributor implements ResourceContributor {
     @Override
     public void contribute(ResourceBuilder builder) {
         if (StringUtils.hasText(osInfo.getArch())) {
-            builder.put(HOST_ARCH, osInfo.getArch());
+            builder.put(HOST_ARCH, toHostArch(osInfo.getArch()));
         }
         String hostName = hostNameSupplier.get();
         if (StringUtils.hasText(hostName)) {
             builder.put(HOST_NAME, hostName);
         }
+    }
+
+    /**
+     * Maps the architecture reported by the JVM to the well-known values of {@code host.arch},
+     * falling back to the reported value for other architectures.
+     */
+    static String toHostArch(String osArch) {
+        return switch (osArch.toLowerCase(Locale.ROOT)) {
+            case "amd64", "x86_64" -> "amd64";
+            case "aarch64", "arm64" -> "arm64";
+            case "arm", "arm32" -> "arm32";
+            case "x86", "i386", "i486", "i586", "i686" -> "x86";
+            case "ia64", "ia64w" -> "ia64";
+            case "ppc", "powerpc" -> "ppc32";
+            case "ppc64", "ppc64le" -> "ppc64";
+            case "s390x" -> "s390x";
+            default -> osArch;
+        };
     }
 
     @Nullable

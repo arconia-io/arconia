@@ -5,11 +5,14 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.info.OsInfo;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +42,22 @@ class HostResourceContributorTests {
 
         contributor.contribute(resourceBuilder);
 
-        verify(resourceBuilder).put(HostResourceContributor.HOST_ARCH, "aarch64");
+        verify(resourceBuilder).put(HostResourceContributor.HOST_ARCH, "arm64");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "amd64, amd64", "x86_64, amd64",
+            "aarch64, arm64", "arm64, arm64",
+            "arm, arm32",
+            "x86, x86", "i386, x86", "i686, x86",
+            "ia64, ia64",
+            "ppc, ppc32", "ppc64, ppc64", "ppc64le, ppc64",
+            "s390x, s390x",
+            "riscv64, riscv64"
+    })
+    void shouldMapArchitectureToHostArchValues(String osArch, String hostArch) {
+        assertThat(HostResourceContributor.toHostArch(osArch)).isEqualTo(hostArch);
     }
 
     @Test
@@ -91,7 +109,7 @@ class HostResourceContributorTests {
 
         contributor.contribute(resourceBuilder);
 
-        verify(resourceBuilder).put(HostResourceContributor.HOST_ARCH, "aarch64");
+        verify(resourceBuilder).put(HostResourceContributor.HOST_ARCH, "arm64");
         verify(resourceBuilder).put(HostResourceContributor.HOST_NAME, "test-host");
     }
 
