@@ -96,6 +96,19 @@ Semantic Conventions for HTTP Server are based on the support provided by the ht
 |	Whether to include the URL query string in the HTTP server observations. Disabled by default due to potential PII sensitivity.
 |===
 
+== Errors
+
+Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the fully qualified class name of the error, unless the convention for the observation already sets a more specific value, and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
+
+.Errors Configuration Properties
+|===
+|Property |Default |Description
+
+|	`arconia.observations.conventions.opentelemetry.error.enabled`
+|	`true`
+|	Whether to enable error semantic conventions, recording the `error.type` attribute on observations ending in an error.
+|===
+
 == Database
 
 Activated when the https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[Datasource Micrometer] dependencies are added to the project. They automatically instrument all `DataSource` beans in your Spring Boot application, generating metrics and traces for database queries executed via JDBC following the stable https://opentelemetry.io/docs/specs/semconv/database/[OpenTelemetry Semantic Conventions for Database]. Arconia manages the versions of the dependencies for you.
@@ -159,6 +172,8 @@ The module supports multiple convention _flavors_. The default `opentelemetry` f
 * Chat client spans, reported as agent invocations (`invoke_agent`) with conversation ID tracking via chat memory.
 * Token usage metrics.
 * Input/output message content, captured as span attributes, span events, or log events.
+
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the <<_errors,error conventions>> are active.
 
 === Content Capturing
 
