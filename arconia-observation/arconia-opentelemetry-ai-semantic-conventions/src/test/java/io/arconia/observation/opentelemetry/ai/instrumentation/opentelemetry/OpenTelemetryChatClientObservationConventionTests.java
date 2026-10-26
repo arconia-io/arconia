@@ -20,6 +20,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -37,14 +38,45 @@ class OpenTelemetryChatClientObservationConventionTests {
             new OpenTelemetryChatClientObservationConvention(properties);
 
     @Test
+    void contextualNameShouldBeInvokeAgent() {
+        var context = createContext("Hello");
+        assertThat(convention.getContextualName(context)).isEqualTo("invoke_agent");
+    }
+
+    @Test
+    void shouldIncludeRequestModelWhenAvailable() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(Prompt.builder()
+                                .content("Hello")
+                                .chatOptions(ChatOptions.builder().model("gpt-5").build())
+                                .build())
+                        .build())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "gpt-5"));
+    }
+
+    @Test
+    void shouldNotIncludeRequestModelWhenNotAvailable() {
+        var context = createContext("Hello");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey()));
+    }
+
+    @Test
     void shouldHaveLowCardinalityKeyValues() {
         var context = createContext("Hello");
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_workflow"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), "false")
+                KeyValue.of("spring.ai.chat.client.stream", "false")
         );
     }
 
@@ -59,7 +91,7 @@ class OpenTelemetryChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), "true")
+                KeyValue.of("spring.ai.chat.client.stream", "true")
         );
     }
 

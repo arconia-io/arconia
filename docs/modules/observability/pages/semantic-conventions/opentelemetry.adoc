@@ -156,7 +156,7 @@ The module supports multiple convention _flavors_. The default `opentelemetry` f
 * Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
 * Embedding model spans with dimension tracking.
 * Tool execution spans.
-* Chat client observations (including conversation ID tracking via chat memory).
+* Chat client spans, reported as agent invocations (`invoke_agent`) with conversation ID tracking via chat memory.
 * Token usage metrics.
 * Input/output message content, captured as span attributes, span events, or log events.
 
@@ -170,7 +170,7 @@ The `inference-content-destination` property decides where the captured messages
 * `log-events`: in a `gen_ai.client.inference.operation.details` event exported through the OpenTelemetry Logs API, as defined by the OpenTelemetry Semantic Conventions. The event carries the attributes of the model call span and the content in structured form, and it's correlated with the span. The xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] exports it together with the other application logs.
 * `span-events`: in a `gen_ai.client.inference.operation.details` event attached to the model call span. The OpenTelemetry Semantic Conventions don't define this option, but it suits backends that display span events alongside the trace.
 
-The arguments and result of tool executions are always recorded as attributes of the tool execution span, the only option the OpenTelemetry Semantic Conventions define for them.
+The arguments and result of tool executions are always recorded as attributes of the tool execution span, the only option the OpenTelemetry Semantic Conventions define for them. The same goes for the input and output messages of a chat client call, recorded on the agent invocation span: they are recorded only with the `span-attributes` destination, since with the other destinations the model calls of the chat client already carry them in their events.
 
 === Configuration Properties
 

@@ -7,10 +7,11 @@ import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
+import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.observation.conventions.SpringAiKind;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -20,6 +21,12 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttri
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
+/**
+ * Base {@link ChatClientObservationConvention} implementing OpenTelemetry Semantic Conventions for Generative AI,
+ * reporting a ChatClient call as an agent invocation. Subclasses for other flavors override only what differs.
+ *
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/">OpenTelemetry Semantic Conventions for GenAI Agent Spans</a>
+ */
 public class OpenTelemetryChatClientObservationConvention extends DefaultChatClientObservationConvention {
 
     private final JsonHelper jsonHelper = new JsonHelper();
@@ -36,13 +43,13 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
 
     @Override
     public String getContextualName(ChatClientObservationContext context) {
-        return "%s %s".formatted(GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_WORKFLOW, SpringAiKind.CHAT_CLIENT.value());
+        return GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_AGENT;
     }
 
     @Override
     protected KeyValue aiOperationType(ChatClientObservationContext context) {
         return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(),
-                GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_WORKFLOW);
+                GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_AGENT);
     }
 
     @Override
@@ -52,13 +59,9 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
     }
 
     @Override
-    protected KeyValue stream(ChatClientObservationContext context) {
-        return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), String.valueOf(context.isStream()));
-    }
-
-    @Override
     public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
+        keyValues = requestModel(keyValues, context);
         if (properties.isCaptureMessageContent() && recordsContentOnSpanAttributes()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
@@ -67,12 +70,22 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
     }
 
     /**
-     * Whether the captured content is recorded on the span attributes, as opposed to an event.
+     * Whether the captured content is recorded on the span attributes. The conventions define no event
+     * for agent invocations, so the content is recorded only when the inference content goes to span
+     * attributes too. When it goes to events, the model calls already carry it.
      * Flavors recording content on span attributes only override it.
      */
     protected boolean recordsContentOnSpanAttributes() {
         return properties.getInferenceContentDestination()
                 == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
+    }
+
+    protected KeyValues requestModel(KeyValues keyValues, ChatClientObservationContext context) {
+        ChatOptions options = context.getRequest().prompt().getOptions();
+        if (options == null || !StringUtils.hasText(options.getModel())) {
+            return keyValues;
+        }
+        return keyValues.and(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), options.getModel());
     }
 
     @Override

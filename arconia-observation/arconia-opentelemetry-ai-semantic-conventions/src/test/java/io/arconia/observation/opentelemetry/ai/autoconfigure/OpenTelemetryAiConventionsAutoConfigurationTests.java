@@ -37,7 +37,6 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenL
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryToolCallingObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelLogEventObservationHandler;
@@ -133,7 +132,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     void otelFlavorRegistersChatClientBeansWhenChatClientOnClasspath() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OpenTelemetryChatClientObservationConvention.class);
-            assertThat(context).hasSingleBean(OpenTelemetryChatClientEventObservationHandler.class);
         });
     }
 
@@ -143,7 +141,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatClientObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatClientEventObservationHandler.class);
                 });
     }
 
@@ -153,7 +150,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader("io.micrometer.tracing.otel.bridge.OtelSpan"))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatClientEventObservationHandler.class);
                 });
     }
 

@@ -35,7 +35,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_workflow"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
                 KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
         );
@@ -47,7 +47,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), "false")
+                KeyValue.of("spring.ai.chat.client.stream", "false")
         );
     }
 
@@ -62,7 +62,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey(), "true")
+                KeyValue.of("spring.ai.chat.client.stream", "true")
         );
     }
 
