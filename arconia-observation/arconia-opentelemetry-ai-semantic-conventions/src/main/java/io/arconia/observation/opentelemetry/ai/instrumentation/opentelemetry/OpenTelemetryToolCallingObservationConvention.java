@@ -7,6 +7,7 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.tool.observation.DefaultToolCallingObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -77,6 +78,9 @@ public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCa
     @Override
     protected KeyValues toolCallId(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallId = context.getToolCallId();
+        if (!StringUtils.hasText(toolCallId)) {
+            return keyValues;
+        }
         return keyValues.and(
                 GenAiIncubatingAttributes.GEN_AI_TOOL_CALL_ID.getKey(),
                 toolCallId);

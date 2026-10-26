@@ -73,6 +73,15 @@ class OpenTelemetryToolCallingObservationConventionTests {
     }
 
     @Test
+    void shouldNotIncludeToolCallIdWhenNotSupplied() {
+        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_TOOL_CALL_ID.getKey()));
+    }
+
+    @Test
     void shouldNotIncludeContentWhenDisabled() {
         properties.setIncludeToolCallContent(false);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", """
