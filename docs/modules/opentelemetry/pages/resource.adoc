@@ -35,6 +35,14 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |`webengine.version`
 |`3.5.7`
 |The version of the web engine (Spring Boot) in use.
+
+|`telemetry.distro.name`
+|`arconia-opentelemetry`
+|The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
+
+|`telemetry.distro.version`
+|`{page-component-version}`
+|The version of the Arconia OpenTelemetry distribution in use.
 |===
 
 == Configuration Properties
@@ -153,6 +161,29 @@ arconia:
 ----
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#service[Resource Service Semantic Conventions].
+
+=== Distro Resource Contributor
+
+The `DistroResourceContributor` contributes information about the OpenTelemetry distribution to the `Resource` instance, following the OpenTelemetry Semantic Conventions.
+
+* **`telemetry.distro.name`**: The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
+* **`telemetry.distro.version`**: The version of the Arconia OpenTelemetry distribution in use. If not available, no value is added.
+
+The attributes complement the `telemetry.sdk.*` attributes identifying the OpenTelemetry SDK, which Arconia uses unmodified.
+
+This contributor is enabled by default. You can disable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        distro:
+          enabled: false
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-distribution[Resource Telemetry Distribution Semantic Conventions].
 
 === Host Resource Contributor
 

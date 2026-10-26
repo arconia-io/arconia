@@ -5,6 +5,7 @@ import java.util.Properties;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.TelemetryAttributes;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.BuildResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.resource.contributor.DistroResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.HostResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.JavaResourceContributor;
@@ -43,6 +45,7 @@ class OpenTelemetryResourceAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(Resource.class);
             assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
+            assertThat(context).hasSingleBean(DistroResourceContributor.class);
             assertThat(context).hasSingleBean(EnvironmentResourceContributor.class);
             assertThat(context).hasSingleBean(OpenTelemetryResourceBuilderCustomizer.class);
             assertThat(context).doesNotHaveBean(HostResourceContributor.class);
@@ -78,6 +81,21 @@ class OpenTelemetryResourceAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(Resource.class);
                     assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
+                });
+    }
+
+    @Test
+    void distroAttributesContributedByDefault() {
+        contextRunner.run(context -> assertThat(context.getBean(Resource.class)
+                .getAttribute(TelemetryAttributes.TELEMETRY_DISTRO_NAME)).isEqualTo("arconia-opentelemetry"));
+    }
+
+    @Test
+    void distroResourceContributorNotCreatedWhenDisabled() {
+        contextRunner.withPropertyValues("arconia.otel.resource.contributors.distro.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(DistroResourceContributor.class);
+                    assertThat(context.getBean(Resource.class).getAttribute(TelemetryAttributes.TELEMETRY_DISTRO_NAME)).isNull();
                 });
     }
 

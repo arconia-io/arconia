@@ -16,6 +16,7 @@ import org.springframework.core.env.Environment;
 
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.BuildResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.resource.contributor.DistroResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.HostResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.JavaResourceContributor;
@@ -50,6 +51,13 @@ public final class OpenTelemetryResourceAutoConfiguration {
     @Order(DEFAULT_ORDER)
     BuildResourceContributor buildResourceContributor(BuildProperties properties) {
         return new BuildResourceContributor(properties);
+    }
+
+    @Bean
+    @ConditionalOnOpenTelemetryResourceContributor(value = "distro", matchIfMissing = true)
+    @Order(DEFAULT_ORDER)
+    DistroResourceContributor distroResourceContributor() {
+        return new DistroResourceContributor();
     }
 
     @Bean
