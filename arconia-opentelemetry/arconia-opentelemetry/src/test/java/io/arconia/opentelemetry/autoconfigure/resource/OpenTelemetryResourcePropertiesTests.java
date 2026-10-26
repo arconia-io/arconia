@@ -19,6 +19,7 @@ class OpenTelemetryResourcePropertiesTests {
         OpenTelemetryResourceProperties properties = new OpenTelemetryResourceProperties();
 
         assertThat(properties.getServiceName()).isNull();
+        assertThat(properties.getDeploymentEnvironmentName()).isNull();
         assertThat(properties.getAttributes()).isNotNull().isEmpty();
         assertThat(properties.getEnable()).isNotNull().isEmpty();
     }
@@ -31,6 +32,15 @@ class OpenTelemetryResourcePropertiesTests {
         properties.setServiceName(serviceName);
 
         assertThat(properties.getServiceName()).isEqualTo(serviceName);
+    }
+
+    @Test
+    void shouldUpdateDeploymentEnvironmentName() {
+        OpenTelemetryResourceProperties properties = new OpenTelemetryResourceProperties();
+
+        properties.setDeploymentEnvironmentName("staging");
+
+        assertThat(properties.getDeploymentEnvironmentName()).isEqualTo("staging");
     }
 
     @Test

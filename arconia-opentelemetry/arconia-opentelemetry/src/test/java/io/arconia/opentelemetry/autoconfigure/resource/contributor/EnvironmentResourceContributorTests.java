@@ -2,7 +2,9 @@ package io.arconia.opentelemetry.autoconfigure.resource.contributor;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.DeploymentAttributes;
 import io.opentelemetry.semconv.ServiceAttributes;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -65,6 +68,37 @@ class EnvironmentResourceContributorTests {
         verify(resourceBuilder).put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         verify(resourceBuilder).put(WEBENGINE_VERSION, SpringBootVersion.getVersion());
         verify(resourceBuilder).putAll(Attributes.empty());
+    }
+
+    @Test
+    void shouldAddDeploymentEnvironmentNameWhenPropertyIsSet() {
+        properties.setDeploymentEnvironmentName("staging");
+        EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder).put(DeploymentAttributes.DEPLOYMENT_ENVIRONMENT_NAME, "staging");
+    }
+
+    @Test
+    void shouldNotAddDeploymentEnvironmentNameWhenPropertyIsNotSet() {
+        EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder, never()).put(eq(DeploymentAttributes.DEPLOYMENT_ENVIRONMENT_NAME), anyString());
+    }
+
+    @Test
+    void shouldPreferDeploymentEnvironmentNamePropertyOverAttribute() {
+        properties.setDeploymentEnvironmentName("production");
+        properties.getAttributes().put(DeploymentAttributes.DEPLOYMENT_ENVIRONMENT_NAME.getKey(), "staging");
+        EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
+        ResourceBuilder builder = Resource.builder();
+
+        contributor.contribute(builder);
+
+        assertThat(builder.build().getAttribute(DeploymentAttributes.DEPLOYMENT_ENVIRONMENT_NAME)).isEqualTo("production");
     }
 
     @Test

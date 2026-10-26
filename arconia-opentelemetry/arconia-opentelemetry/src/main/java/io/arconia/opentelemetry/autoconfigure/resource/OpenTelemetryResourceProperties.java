@@ -22,6 +22,13 @@ public class OpenTelemetryResourceProperties {
     private String serviceName;
 
     /**
+     * Name of the deployment environment (also known as deployment tier), such as 'production', 'staging',
+     * 'test', or 'development'.
+     */
+    @Nullable
+    private String deploymentEnvironmentName;
+
+    /**
      * Additional attributes to include in the resource.
      */
     private final Map<String, String> attributes = new HashMap<>();
@@ -39,6 +46,15 @@ public class OpenTelemetryResourceProperties {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    @Nullable
+    public String getDeploymentEnvironmentName() {
+        return deploymentEnvironmentName;
+    }
+
+    public void setDeploymentEnvironmentName(String deploymentEnvironmentName) {
+        this.deploymentEnvironmentName = deploymentEnvironmentName;
     }
 
     public Map<String, String> getAttributes() {

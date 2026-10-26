@@ -68,5 +68,28 @@
       "description": "Whether to enable compatibility for OpenTelemetry Environment Variable Specification properties.",
       "defaultValue": true
     }
+  ],
+  "hints": [
+    {
+      "name": "arconia.otel.resource.deployment-environment-name",
+      "values": [
+        {
+          "value": "production",
+          "description": "Production environment."
+        },
+        {
+          "value": "staging",
+          "description": "Staging environment."
+        },
+        {
+          "value": "test",
+          "description": "Testing environment."
+        },
+        {
+          "value": "development",
+          "description": "Development environment."
+        }
+      ]
+    }
   ]
 }

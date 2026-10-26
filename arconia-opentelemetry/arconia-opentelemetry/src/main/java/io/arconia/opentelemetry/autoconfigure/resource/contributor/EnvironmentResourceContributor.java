@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.DeploymentAttributes;
 import io.opentelemetry.semconv.ServiceAttributes;
 
 import org.jspecify.annotations.Nullable;
@@ -26,6 +27,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceProp
  * <p>
  * The following attributes are populated:
  * <ul>
+ *     <li>{@code deployment.environment.name}</li>
  *     <li>{@code service.name}</li>
  *     <li>{@code service.namespace}</li>
  *     <li>{@code service.instance.id}</li>
@@ -72,6 +74,10 @@ public final class EnvironmentResourceContributor implements ResourceContributor
 
         String serviceInstanceId = computeServiceInstanceId();
         builder.put(ServiceAttributes.SERVICE_INSTANCE_ID, serviceInstanceId);
+
+        if (StringUtils.hasText(properties.getDeploymentEnvironmentName())) {
+            builder.put(DeploymentAttributes.DEPLOYMENT_ENVIRONMENT_NAME, properties.getDeploymentEnvironmentName());
+        }
 
         builder.put(WEBENGINE_NAME, SPRING_BOOT_NAME);
         builder.put(WEBENGINE_VERSION, SpringBootVersion.getVersion());

@@ -57,10 +57,13 @@ arconia:
   otel:
     resource:
       service-name: my-service
+      deployment-environment-name: production
       attributes:
         service.namespace: my-namespace
         cluster: production-3
 ----
+
+The `deployment-environment-name` property sets the `deployment.environment.name` attribute, identifying the deployment environment (also known as deployment tier) of the application. Use one of the values defined by the OpenTelemetry Semantic Conventions when it applies: `production`, `staging`, `test`, or `development`. If not set, no value is added.
 
 You can also control whether certain attributes should be added or disabled altogether via configuration properties.
 
@@ -111,6 +114,7 @@ The `EnvironmentResourceContributor` contributes attributes to the `Resource` in
 * **`service.name`**: The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
 * **`service.namespace`**: The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
 * **`service.instance.id`**: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* **`deployment.environment.name`**: The name of the deployment environment as defined in the `arconia.otel.resource.deployment-environment-name` property or `arconia.otel.resource.attributes`. If none of these properties are set, no value is added.
 * **`webengine.name`**: The name of the web engine. It's always `Spring Boot`.
 * **`webengine.version`**: The version of the web engine (Spring Boot) in use.
 
