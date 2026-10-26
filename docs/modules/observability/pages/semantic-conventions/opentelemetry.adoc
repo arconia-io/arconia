@@ -31,7 +31,7 @@ Maven::
 ----
 ======
 
-Your application also needs OpenTelemetry configured for traces and metrics export. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+Your application also needs OpenTelemetry configured for traces and metrics export, using either the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or the https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot OpenTelemetry support] (`spring-boot-starter-opentelemetry`). The recommended approach is the Arconia OpenTelemetry Spring Boot Starter:
 
 [tabs]
 ======
@@ -188,7 +188,7 @@ Model calls and tool executions can carry sensitive data, so capturing their con
 The `inference-content-destination` property decides where the captured messages and tool definitions of a model call are recorded:
 
 * `span-attributes` (default): as attributes of the model call span.
-* `log-events`: in a `gen_ai.client.inference.operation.details` event exported through the OpenTelemetry Logs API, as defined by the OpenTelemetry Semantic Conventions. The event carries the attributes of the model call span and the content in structured form, and it's correlated with the span. The xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] exports it together with the other application logs.
+* `log-events`: in a `gen_ai.client.inference.operation.details` event exported through the OpenTelemetry Logs API, as defined by the OpenTelemetry Semantic Conventions. The event carries the attributes of the model call span and the content in structured form, and it's correlated with the span. It's exported together with the other application logs, whether OpenTelemetry is configured by the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or by the Spring Boot OpenTelemetry support.
 * `span-events`: in a `gen_ai.client.inference.operation.details` event attached to the model call span. The OpenTelemetry Semantic Conventions don't define this option, but it suits backends that display span events alongside the trace.
 
 The arguments and result of tool executions are always recorded as attributes of the tool execution span, the only option the OpenTelemetry Semantic Conventions define for them. The same goes for the input and output messages of a chat client call, recorded on the agent invocation span: they are recorded only with the `span-attributes` destination, since with the other destinations the model calls of the chat client already carry them in their events.

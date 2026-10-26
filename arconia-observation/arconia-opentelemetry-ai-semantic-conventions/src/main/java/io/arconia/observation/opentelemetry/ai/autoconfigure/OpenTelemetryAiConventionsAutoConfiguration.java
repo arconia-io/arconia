@@ -18,7 +18,10 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
  *
  * @see OpenTelemetryAiConventionsProperties
  */
-@AutoConfiguration(afterName = "io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration", beforeName = {
+@AutoConfiguration(afterName = {
+        "io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration",
+        "org.springframework.boot.opentelemetry.autoconfigure.OpenTelemetrySdkAutoConfiguration"
+}, beforeName = {
         "org.springframework.ai.model.chat.client.autoconfigure.ChatClientAutoConfiguration",
         "org.springframework.ai.model.chat.observation.autoconfigure.ChatObservationAutoConfiguration",
         "org.springframework.ai.model.embedding.observation.autoconfigure.EmbeddingObservationAutoConfiguration",

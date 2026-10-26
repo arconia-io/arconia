@@ -12,6 +12,7 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.ai.image.observation.ImageModelObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.opentelemetry.autoconfigure.OpenTelemetrySdkAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -159,6 +160,18 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withBean(OpenTelemetry.class, OpenTelemetry::noop)
                 .run(context ->
                         assertThat(context).hasSingleBean(OpenTelemetryChatModelLogEventObservationHandler.class));
+    }
+
+    @Test
+    void otelFlavorRegistersLogEventHandlerWithSpringBootOpenTelemetry() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(OpenTelemetryAiConventionsAutoConfiguration.class,
+                        OpenTelemetrySdkAutoConfiguration.class))
+                .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OpenTelemetry.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryChatModelLogEventObservationHandler.class);
+                });
     }
 
     @Test

@@ -43,7 +43,7 @@ Maven::
 
 include::partial$ai-conventions-activation.adoc[]
 
-Your application also needs OpenTelemetry configured for exporting traces. The recommended approach is to use the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter]:
+Your application also needs OpenTelemetry configured for exporting traces, using either the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or the https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot OpenTelemetry support] (`spring-boot-starter-opentelemetry`). The recommended approach is the Arconia OpenTelemetry Spring Boot Starter:
 
 [tabs]
 ======
