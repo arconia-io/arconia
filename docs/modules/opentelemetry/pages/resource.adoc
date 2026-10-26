@@ -47,6 +47,51 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 
 The `Resource` declares the schema URL of the OpenTelemetry Semantic Conventions version its attributes follow, so that backends can interpret them correctly.
 
+=== Stability
+
+The OpenTelemetry Semantic Conventions assign each attribute a stability level: _stable_, _release candidate_, or _development_. Attributes that aren't stable yet might be renamed or changed in future versions of the conventions, and Arconia reports such changes in the xref:ROOT:what-is-new.adoc[release notes].
+
+By default, Arconia only adds stable attributes, with one exception: the `webengine.*` attributes (development), because they are the only attributes reporting the Spring Boot version on all telemetry signals. The resource contributors adding attributes that aren't stable yet are disabled by default.
+
+[cols="2,1,2"]
+|===
+|Resource Contributor |Enabled by Default |Stability
+
+|<<_environment_resource_contributor,Environment>>
+|Yes
+|Stable, except `webengine.*` (development)
+
+|<<_build_resource_contributor,Build>>
+|Yes
+|Stable
+
+|<<_distro_resource_contributor,Distro>>
+|Yes
+|Stable
+
+|<<_git_resource_contributor,Git>>
+|No
+|Release candidate
+
+|<<_host_resource_contributor,Host>>
+|No
+|Development
+
+|<<_java_resource_contributor,Java>>
+|No
+|Release candidate
+
+|<<_os_resource_contributor,OS>>
+|No
+|Development
+
+|<<_process_resource_contributor,Process>>
+|No
+|Release candidate
+|===
+
+TIP: Check the stability of each attribute in the https://opentelemetry.io/docs/specs/semconv/registry/attributes/[OpenTelemetry Attribute Registry].
+
 == Configuration Properties
 
 You can add new attributes or override the default values via configuration properties.

@@ -210,7 +210,7 @@ Global properties are available to configure the OTLP exporters for logs, metric
 
 |`arconia.otel.exporter.otlp.metrics`
 |`false`
-|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
+|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
 |`arconia.otel.exporter.otlp.protocol`
 |`http-protobuf`

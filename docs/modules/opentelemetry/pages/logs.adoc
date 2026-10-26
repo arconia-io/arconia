@@ -59,7 +59,7 @@ Configuration for the batch log record processor.
 
 |`arconia.otel.logs.processor.metrics`
 |`false`
-|Whether to generate metrics for the log record processor. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
+|Whether to generate metrics for the log record processor. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
 |`arconia.otel.logs.processor.schedule-delay`
 |`1s`
@@ -152,7 +152,7 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 
 |`arconia.otel.logs.exporter.otlp.metrics`
 |`false`
-|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
+|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
 |`arconia.otel.logs.exporter.otlp.protocol`
 |`http-protobuf`
