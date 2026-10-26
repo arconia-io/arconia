@@ -103,25 +103,80 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void networkProtocolVersionUnknownWhenProtocolIsNotHttp() {
+    void networkProtocolVersionAbsentWhenProtocolIsNotHttp() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setProtocol("BLAH");
         ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
 
-        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "UNKNOWN"));
+        assertThat(keyValues).noneMatch(kv -> "network.protocol.version".equals(kv.getKey()));
     }
 
     @Test
-    void networkProtocolVersionUnknownWhenProtocolIsNull() {
+    void networkProtocolVersionAbsentWhenProtocolIsNull() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setProtocol(null);
         ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
 
-        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "UNKNOWN"));
+        assertThat(keyValues).noneMatch(kv -> "network.protocol.version".equals(kv.getKey()));
+    }
+
+    // LOW CARDINALITY — http.route, http.response.status_code, url.scheme
+
+    @Test
+    void routeFromPathPattern() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users/42");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+        context.setPathPattern("/users/{id}");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.route", "/users/{id}"));
+        assertThat(convention.getContextualName(context)).isEqualTo("GET /users/{id}");
+    }
+
+    @Test
+    void rootRouteForEmptyPathPattern() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+        context.setPathPattern("");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.route", "/"));
+        assertThat(convention.getContextualName(context)).isEqualTo("GET /");
+    }
+
+    @Test
+    void routeAbsentWhenNoPathPatternMatched() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/missing");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(404);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).noneMatch(kv -> "http.route".equals(kv.getKey()));
+        assertThat(convention.getContextualName(context)).isEqualTo("GET");
+    }
+
+    @Test
+    void routeAbsentForRedirectionWithoutPathPattern() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/old");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(302);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).noneMatch(kv -> "http.route".equals(kv.getKey()));
+    }
+
+    @Test
+    void statusCodeAndSchemeFromRequestAndResponse() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(201);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of("http.response.status_code", "201"),
+                KeyValue.of("url.scheme", "http"));
     }
 
     // HIGH CARDINALITY — client.address

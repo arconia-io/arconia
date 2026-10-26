@@ -19,7 +19,7 @@ import org.springframework.http.server.observation.ServerRequestObservationConte
  */
 public class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
 
-    private static final KeyValue NETWORK_PROTOCOL_VERSION_UNKNOWN = KeyValue.of(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), "UNKNOWN");
+    private static final String ROOT_ROUTE = "/";
 
     private final OpenTelemetryHttpOptions options;
 
@@ -27,22 +27,66 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
         this.options = options;
     }
 
-    // LOW CARDINALITY
-
+    /**
+     * Names the span after the root route when the request matched the root pattern,
+     * which Spring represents as an empty pattern.
+     */
     @Override
-    public KeyValues getLowCardinalityKeyValues(ServerRequestObservationContext context) {
-        // Make sure that KeyValues entries are already sorted by key name for better performance
-        return KeyValues.of(exception(context), method(context), status(context), pathTemplate(context), networkProtocolVersion(context), outcome(context), scheme(context));
+    public String getContextualName(ServerRequestObservationContext context) {
+        String pattern = context.getPathPattern();
+        if (context.getCarrier() != null && pattern != null && pattern.isEmpty()) {
+            String method = getMethodValue(context);
+            return "%s %s".formatted(method != null ? method : "HTTP", ROOT_ROUTE);
+        }
+        return super.getContextualName(context);
     }
 
-    private KeyValue networkProtocolVersion(ServerRequestObservationContext context) {
+    // LOW CARDINALITY
+
+    /**
+     * Records each attribute only when its value is available, as the conventions require,
+     * instead of the placeholder values used by Spring Framework.
+     */
+    @Override
+    public KeyValues getLowCardinalityKeyValues(ServerRequestObservationContext context) {
+        var keyValues = KeyValues.of(exception(context), method(context), outcome(context));
+        keyValues = statusCode(keyValues, context);
+        keyValues = route(keyValues, context);
+        keyValues = networkProtocolVersion(keyValues, context);
+        keyValues = urlScheme(keyValues, context);
+        return keyValues;
+    }
+
+    private KeyValues statusCode(KeyValues keyValues, ServerRequestObservationContext context) {
+        if (context.getResponse() != null) {
+            return keyValues.and(HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), Integer.toString(context.getResponse().getStatus()));
+        }
+        return keyValues;
+    }
+
+    private KeyValues route(KeyValues keyValues, ServerRequestObservationContext context) {
+        String pattern = context.getPathPattern();
+        if (context.getCarrier() != null && pattern != null) {
+            return keyValues.and(HttpAttributes.HTTP_ROUTE.getKey(), pattern.isEmpty() ? ROOT_ROUTE : pattern);
+        }
+        return keyValues;
+    }
+
+    private KeyValues networkProtocolVersion(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String protocol = context.getCarrier().getProtocol();
             if (protocol != null && protocol.startsWith("HTTP/")) {
-                return KeyValue.of(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), protocol.substring(5));
+                return keyValues.and(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), protocol.substring(5));
             }
         }
-        return NETWORK_PROTOCOL_VERSION_UNKNOWN;
+        return keyValues;
+    }
+
+    private KeyValues urlScheme(KeyValues keyValues, ServerRequestObservationContext context) {
+        if (context.getCarrier() != null) {
+            return keyValues.and(UrlAttributes.URL_SCHEME.getKey(), context.getCarrier().getScheme());
+        }
+        return keyValues;
     }
 
     /**
@@ -71,6 +115,13 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
         return super.getMethodValue(context);
     }
 
+    private KeyValues urlPath(KeyValues keyValues, ServerRequestObservationContext context) {
+        if (context.getCarrier() != null) {
+            return keyValues.and(UrlAttributes.URL_PATH.getKey(), context.getCarrier().getRequestURI());
+        }
+        return keyValues;
+    }
+
     /**
      * Records the original method only when it differs from {@code http.request.method},
      * that is when the method is not a known one and is reported as {@code _OTHER}.
@@ -87,7 +138,7 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
     @Override
     public KeyValues getHighCardinalityKeyValues(ServerRequestObservationContext context) {
         // Make sure that KeyValues entries are already sorted by key name for better performance
-        var keyValues = KeyValues.of(httpUrl(context));
+        var keyValues = urlPath(KeyValues.empty(), context);
         keyValues = methodOriginal(keyValues, context);
         keyValues = clientAddress(keyValues, context);
         keyValues = serverAddress(keyValues, context);
