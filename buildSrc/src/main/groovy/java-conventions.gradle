@@ -30,6 +30,17 @@ tasks.named('compileJava') {
     inputs.files(tasks.named('processResources'))
 }
 
+tasks.named('jar') {
+    def title = project.name
+    def version = project.version.toString()
+    manifest {
+        attributes(
+            'Implementation-Title': title,
+            'Implementation-Version': version
+        )
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
     testLogging {
