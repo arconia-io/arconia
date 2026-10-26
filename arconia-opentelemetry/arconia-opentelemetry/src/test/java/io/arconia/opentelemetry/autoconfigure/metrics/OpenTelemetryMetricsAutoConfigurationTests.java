@@ -2,14 +2,18 @@ package io.arconia.opentelemetry.autoconfigure.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +31,7 @@ class OpenTelemetryMetricsAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(OpenTelemetryMetricsAutoConfiguration.class))
             .withBean(Clock.class, Clock::getDefault)
             .withBean(Resource.class, Resource::empty)
-            .withBean(OpenTelemetry.class, () -> mock(OpenTelemetry.class));
+            .withBean(OpenTelemetry.class, OpenTelemetry::noop);
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {
@@ -41,6 +45,21 @@ class OpenTelemetryMetricsAutoConfigurationTests {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.enabled=false")
             .run(context -> assertThat(context).doesNotHaveBean(SdkMeterProvider.class));
+    }
+
+    @Test
+    void meterUsesSpringBootInstrumentationScope() {
+        InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+        try (OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
+                .setMeterProvider(SdkMeterProvider.builder().registerMetricReader(metricReader).build())
+                .build()) {
+            Meter meter = new OpenTelemetryMetricsAutoConfiguration().meter(openTelemetry);
+            meter.counterBuilder("test.counter").build().add(1);
+
+            InstrumentationScopeInfo scope = metricReader.collectAllMetrics().iterator().next().getInstrumentationScopeInfo();
+            assertThat(scope.getName()).isEqualTo(OpenTelemetryMetricsAutoConfiguration.INSTRUMENTATION_SCOPE_NAME);
+            assertThat(scope.getVersion()).isEqualTo(SpringBootVersion.getVersion());
+        }
     }
 
     @Test

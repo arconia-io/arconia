@@ -13,15 +13,18 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.util.JacksonUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -45,10 +48,22 @@ public class OpenTelemetryChatModelLogEventObservationHandler implements Observa
     private final Logger logger;
 
     public OpenTelemetryChatModelLogEventObservationHandler(OpenTelemetryAiConventionsProperties properties, OpenTelemetry openTelemetry) {
+        this(properties, openTelemetry, OpenTelemetryChatModelLogEventObservationHandler.class.getPackage().getImplementationVersion());
+    }
+
+    /**
+     * Creates the handler with the version of the instrumentation scope, which is the Arconia version when known.
+     */
+    OpenTelemetryChatModelLogEventObservationHandler(OpenTelemetryAiConventionsProperties properties, OpenTelemetry openTelemetry,
+            @Nullable String instrumentationVersion) {
         Assert.notNull(properties, "properties cannot be null");
         Assert.notNull(openTelemetry, "openTelemetry cannot be null");
         this.properties = properties;
-        this.logger = openTelemetry.getLogsBridge().get(INSTRUMENTATION_SCOPE_NAME);
+        LoggerBuilder loggerBuilder = openTelemetry.getLogsBridge().loggerBuilder(INSTRUMENTATION_SCOPE_NAME);
+        if (StringUtils.hasText(instrumentationVersion)) {
+            loggerBuilder.setInstrumentationVersion(instrumentationVersion);
+        }
+        this.logger = loggerBuilder.build();
     }
 
     @Override

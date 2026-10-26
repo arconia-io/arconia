@@ -105,6 +105,29 @@ class OpenTelemetryChatModelLogEventObservationHandlerTests {
     }
 
     @Test
+    void shouldUseInstrumentationScopeVersionWhenKnown() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(InferenceContentDestination.LOG_EVENTS);
+        var versionedHandler = new OpenTelemetryChatModelLogEventObservationHandler(properties, openTelemetry, "1.2.3");
+        ObservationRegistry registry = ObservationRegistry.create();
+        registry.observationConfig().observationHandler(versionedHandler);
+
+        Observation.createNotStarted(convention, this::createContext, registry).start().stop();
+
+        assertThat(singleLogRecord().getInstrumentationScopeInfo().getVersion()).isEqualTo("1.2.3");
+    }
+
+    @Test
+    void shouldOmitInstrumentationScopeVersionWhenUnknown() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(InferenceContentDestination.LOG_EVENTS);
+
+        observe(createContext());
+
+        assertThat(singleLogRecord().getInstrumentationScopeInfo().getVersion()).isNull();
+    }
+
+    @Test
     void shouldEmitEventWithStructuredMessages() {
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(InferenceContentDestination.LOG_EVENTS);

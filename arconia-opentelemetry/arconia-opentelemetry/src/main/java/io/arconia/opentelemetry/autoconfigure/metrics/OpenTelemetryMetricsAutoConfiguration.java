@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -64,7 +65,9 @@ public final class OpenTelemetryMetricsAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean(OpenTelemetry.class)
     Meter meter(OpenTelemetry openTelemetry) {
-        return openTelemetry.getMeter(INSTRUMENTATION_SCOPE_NAME);
+        return openTelemetry.meterBuilder(INSTRUMENTATION_SCOPE_NAME)
+                .setInstrumentationVersion(SpringBootVersion.getVersion())
+                .build();
     }
 
 }
