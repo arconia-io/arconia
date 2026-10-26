@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.resource;
 
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.SchemaUrls;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -39,7 +40,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
     Resource resource(ObjectProvider<ResourceContributor> resourceContributors,
                       ObjectProvider<OpenTelemetryResourceBuilderCustomizer> customizers
     ) {
-        ResourceBuilder builder = Resource.getDefault().toBuilder();
+        ResourceBuilder builder = Resource.getDefault().toBuilder().setSchemaUrl(SchemaUrls.V1_44_0);
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
         customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
         return builder.build();

@@ -45,6 +45,8 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |The version of the Arconia OpenTelemetry distribution in use.
 |===
 
+The `Resource` declares the schema URL of the OpenTelemetry Semantic Conventions version its attributes follow, so that backends can interpret them correctly.
+
 == Configuration Properties
 
 You can add new attributes or override the default values via configuration properties.

@@ -1,10 +1,14 @@
 package io.arconia.opentelemetry.autoconfigure.resource;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Properties;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.semconv.SchemaUrls;
 import io.opentelemetry.semconv.TelemetryAttributes;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ReflectionUtils;
 
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.BuildResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.DistroResourceContributor;
@@ -82,6 +87,12 @@ class OpenTelemetryResourceAutoConfigurationTests {
                     assertThat(context).hasSingleBean(Resource.class);
                     assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
                 });
+    }
+
+    @Test
+    void resourceDeclaresSchemaUrlOfSemanticConventionsVersion() {
+        contextRunner.run(context ->
+                assertThat(context.getBean(Resource.class).getSchemaUrl()).isEqualTo(latestSchemaUrl()));
     }
 
     @Test
@@ -316,6 +327,24 @@ class OpenTelemetryResourceAutoConfigurationTests {
             return new BuildProperties(properties);
         }
 
+    }
+
+    /**
+     * Returns the schema URL of the latest version in the {@code opentelemetry-semconv} dependency,
+     * so that upgrading the dependency without updating the schema URL makes the test fail.
+     */
+    private static String latestSchemaUrl() {
+        Field latest = Arrays.stream(SchemaUrls.class.getFields())
+                .filter(field -> field.getName().matches("V\\d+_\\d+_\\d+"))
+                .max(Comparator.comparing((Field field) -> version(field, 0))
+                        .thenComparing(field -> version(field, 1))
+                        .thenComparing(field -> version(field, 2)))
+                .orElseThrow();
+        return (String) ReflectionUtils.getField(latest, null);
+    }
+
+    private static int version(Field field, int index) {
+        return Integer.parseInt(field.getName().substring(1).split("_")[index]);
     }
 
 }
