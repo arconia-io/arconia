@@ -26,6 +26,9 @@ public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
         String name = id.getName();
         if ("jvm.gc.pause".equals(name) || "jvm.gc.concurrent.phase.time".equals(name)) {
 
+            // 'jvm.gc.cause' is not stable yet, but it's kept: the stable 'jvm.gc.duration' metric defines it as opt-in,
+            // the OpenTelemetry Java instrumentation records it, and together with 'jvm.gc.name' it tells GC pauses
+            // from concurrent phases, which Micrometer records in separate timers.
             List<Tag> mappedTags = id.getTags().stream()
                     .map(t -> {
                         if ("gc".equals(t.getKey())) return Tag.of(JvmAttributes.JVM_GC_NAME.getKey(), t.getValue());

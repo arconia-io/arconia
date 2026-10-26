@@ -68,6 +68,8 @@ Provides semantic conventions for JVM metrics, following the stable https://open
 
 Semantic Conventions for JVM are based on the support provided by the https://micrometer.io[Micrometer Metrics] project, extended by Arconia to support additional stable conventions.
 
+The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concurrent.phase.time` metrics from Micrometer, so it covers both garbage collection pauses and concurrent phases. The `jvm.gc.name` and `jvm.gc.cause` attributes tell them apart: for example, `G1 Young Generation` pauses versus `G1 Concurrent GC` phases (with cause `No GC`), or `ZGC Pauses` versus `ZGC Cycles`.
+
 .JVM Configuration Properties
 |===
 |Property |Default |Description
