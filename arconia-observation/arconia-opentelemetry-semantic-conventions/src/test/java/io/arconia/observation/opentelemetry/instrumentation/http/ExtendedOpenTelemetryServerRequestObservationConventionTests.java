@@ -228,7 +228,39 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
 
         assertThat(keyValues).contains(KeyValue.of("url.path", "/api/users"));
-        assertThat(keyValues).contains(KeyValue.of("http.request.method_original", "GET"));
+    }
+
+    // http.request.method / http.request.method_original
+
+    @Test
+    void methodOriginalAbsentForKnownMethod() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/users");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "GET"));
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
+    }
+
+    @Test
+    void methodOriginalPresentForUnknownMethod() {
+        MockHttpServletRequest request = new MockHttpServletRequest("QUERY", "/api/users");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "_OTHER"));
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .contains(KeyValue.of("http.request.method_original", "QUERY"));
+    }
+
+    @Test
+    void connectIsKnownMethod() {
+        MockHttpServletRequest request = new MockHttpServletRequest("CONNECT", "/");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "CONNECT"));
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
+        assertThat(convention.getContextualName(context)).isEqualTo("CONNECT");
     }
 
 }
