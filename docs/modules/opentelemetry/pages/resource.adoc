@@ -186,6 +186,32 @@ arconia:
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-distribution[Resource Telemetry Distribution Semantic Conventions].
 
+=== Git Resource Contributor
+
+The `GitResourceContributor` contributes attributes to the `Resource` instance about the Git revision the application was built from, following the OpenTelemetry Semantic Conventions.
+
+* **`vcs.ref.head.revision`**: The ID of the commit the application was built from.
+* **`vcs.ref.head.name`**: The name of the branch the application was built from.
+* **`vcs.ref.head.type`**: The type of the reference the application was built from. It's always `branch`.
+* **`vcs.repository.url.full`**: The URL of the repository, resolved from the URL of the `origin` remote. Credentials and the `.git` extension are removed, and SSH remotes are converted to HTTPS URLs on the same host, such as `https://github.com/arconia-io/arconia`. If the remote is not available or not a repository URL, no value is added.
+* **`vcs.repository.name`**: The name of the repository, resolved from its URL.
+
+The information is extracted from the `git.properties` file generated at build time, which Spring Boot exposes as `GitProperties`. You can generate it with the https://github.com/n0mer/gradle-git-properties[Gradle Git Properties] plugin or the https://github.com/git-commit-id/git-commit-id-maven-plugin[Git Commit Id Maven Plugin].
+
+This contributor is disabled by default. You can enable it via configuration properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      contributors:
+        git:
+          enabled: true
+----
+
+NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/registry/attributes/vcs/[VCS Semantic Conventions].
+
 === Host Resource Contributor
 
 The `HostResourceContributor` contributes attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.

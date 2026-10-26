@@ -14,6 +14,7 @@ import io.opentelemetry.semconv.TelemetryAttributes;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.boot.info.GitProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import org.springframework.util.ReflectionUtils;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.BuildResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.DistroResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.EnvironmentResourceContributor;
+import io.arconia.opentelemetry.autoconfigure.resource.contributor.GitResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.HostResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.JavaResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.OsResourceContributor;
@@ -87,6 +89,29 @@ class OpenTelemetryResourceAutoConfigurationTests {
                     assertThat(context).hasSingleBean(Resource.class);
                     assertThat(context).doesNotHaveBean(BuildResourceContributor.class);
                 });
+    }
+
+    @Test
+    void gitResourceContributorCreatedWhenEnabledAndGitPropertiesAvailable() {
+        contextRunner.withPropertyValues("arconia.otel.resource.contributors.git.enabled=true")
+                .withUserConfiguration(GitPropertiesConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(GitResourceContributor.class);
+                    assertThat(context.getBean(Resource.class).getAttribute(GitResourceContributor.VCS_REF_HEAD_REVISION))
+                            .isEqualTo("9d59409acf479dfa0df1aa568182e43e43df8bbe");
+                });
+    }
+
+    @Test
+    void gitResourceContributorNotCreatedByDefault() {
+        contextRunner.withUserConfiguration(GitPropertiesConfiguration.class)
+                .run(context -> assertThat(context).doesNotHaveBean(GitResourceContributor.class));
+    }
+
+    @Test
+    void gitResourceContributorNotCreatedWhenGitPropertiesNotAvailable() {
+        contextRunner.withPropertyValues("arconia.otel.resource.contributors.git.enabled=true")
+                .run(context -> assertThat(context).doesNotHaveBean(GitResourceContributor.class));
     }
 
     @Test
@@ -313,6 +338,18 @@ class OpenTelemetryResourceAutoConfigurationTests {
         @Bean
         Resource customResource() {
             return Resource.empty();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class GitPropertiesConfiguration {
+
+        @Bean
+        GitProperties gitProperties() {
+            Properties properties = new Properties();
+            properties.setProperty("commit.id", "9d59409acf479dfa0df1aa568182e43e43df8bbe");
+            return new GitProperties(properties);
         }
 
     }
