@@ -52,7 +52,7 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
             return;
         }
         setUsageAttributes(span, context);
-        if (properties.isContentCaptureEnabled()) {
+        if (properties.isCaptureMessageContent()) {
             emitInputMessageEvents(span, context);
             emitOutputMessageEvents(span, context);
         }

@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,8 +15,11 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.content.MediaContent;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.JsonHelper;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
@@ -142,6 +146,30 @@ public final class GenAiContent {
             }
         }
         return outputMessages;
+    }
+
+    /**
+     * Converts the tools available to the model in a request into tool definitions,
+     * returning an empty list when the request has no tools.
+     *
+     * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-tool-definitions.json">Tool Definitions Schema</a>
+     */
+    public static List<Map<String, Object>> toolDefinitions(@Nullable ChatOptions options) {
+        if (!(options instanceof ToolCallingChatOptions toolCallingOptions)
+                || CollectionUtils.isEmpty(toolCallingOptions.getToolCallbacks())) {
+            return List.of();
+        }
+        List<Map<String, Object>> toolDefinitions = new ArrayList<>();
+        for (ToolCallback toolCallback : toolCallingOptions.getToolCallbacks()) {
+            Map<String, Object> toolDefinition = new HashMap<>();
+            toolDefinition.put("type", "function");
+            toolDefinition.put("name", toolCallback.getToolDefinition().name());
+            toolDefinition.put("description", toolCallback.getToolDefinition().description());
+            toolDefinition.put("parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallback.getToolDefinition().inputSchema(),
+                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of()));
+            toolDefinitions.add(toolDefinition);
+        }
+        return toolDefinitions;
     }
 
     private static void addMediaParts(List<MessagePart> parts, Message message) {

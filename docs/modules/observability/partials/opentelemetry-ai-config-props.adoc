@@ -10,16 +10,22 @@
 |	`opentelemetry`
 |	The convention flavor to apply. Accepted values: `opentelemetry`, `openlit`, `openllmetry`, `langsmith`.
 
-|	`arconia.observations.conventions.opentelemetry.ai.capture-content`
-|	`{flavor-default-capture-content}` (when flavor is `{flavor-value}`)
-|	How to capture input and output message content. Accepted values: `none`, `span-attributes`, `span-events`.
+|	`arconia.observations.conventions.opentelemetry.ai.capture-message-content`
+|	`{flavor-default-capture-message-content}` (when flavor is `{flavor-value}`)
+|	Whether to capture the input and output messages of model calls.
 
-|	`arconia.observations.conventions.opentelemetry.ai.include-tool-definitions`
-|	`{flavor-default-include-tool-definitions}` (when flavor is `{flavor-value}`)
-|	Whether to include tool definitions in inference observations.
+|	`arconia.observations.conventions.opentelemetry.ai.capture-tool-definitions`
+|	`{flavor-default-capture-tool-definitions}` (when flavor is `{flavor-value}`)
+|	Whether to capture the definitions of the tools available to the model in model calls.
 
-|	`arconia.observations.conventions.opentelemetry.ai.include-tool-call-content`
-|	`{flavor-default-include-tool-call-content}` (when flavor is `{flavor-value}`)
-|	Whether to include tool content (arguments and result) in tool execution observations.
+|	`arconia.observations.conventions.opentelemetry.ai.capture-tool-call-content`
+|	`{flavor-default-capture-tool-call-content}` (when flavor is `{flavor-value}`)
+|	Whether to capture the arguments and result of tool executions.
+
+ifeval::["{flavor-value}" == "opentelemetry"]
+|	`arconia.observations.conventions.opentelemetry.ai.inference-content-destination`
+|	`span-attributes`
+|	Where to record the captured messages and tool definitions of model calls. Accepted values: `span-attributes`, `span-events`, `log-events`.
+endif::[]
 
 |===

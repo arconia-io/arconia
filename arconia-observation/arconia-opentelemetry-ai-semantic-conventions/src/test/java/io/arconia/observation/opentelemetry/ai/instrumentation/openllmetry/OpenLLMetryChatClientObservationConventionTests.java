@@ -102,7 +102,7 @@ class OpenLLMetryChatClientObservationConventionTests {
 
     @Test
     void shouldIncludeContentWhenCaptureContentIsSpanAttributes() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         var context = createContextWithMessages(
                 List.of(new SystemMessage("Be helpful"), new UserMessage("Hi")));
         setResponse(context, "Hello!", "stop");
@@ -124,21 +124,22 @@ class OpenLLMetryChatClientObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentWhenCaptureContentIsSpanEvents() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS);
+    void shouldIncludeContentRegardlessOfInferenceContentDestination() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         var context = createContext("Hello");
         setResponse(context, "Hi there!", "stop");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT));
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT));
+        assertThat(keyValues).anySatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT));
+        assertThat(keyValues).anySatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT));
     }
 
     @Test
     void shouldIncludeInputContentButNotOutputWhenNoResponse() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         var context = createContextWithMessages(List.of(new UserMessage("Hi")));
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);

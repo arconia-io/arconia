@@ -23,25 +23,32 @@ public class OpenTelemetryAiConventionsProperties {
     private GenAiConventionFlavor flavor = GenAiConventionFlavor.OPENTELEMETRY;
 
     /**
-     * How to capture input and output message content in an inference observation.
+     * Whether to capture the input and output messages of an inference observation.
      * The actual default depends on the configured flavor and is set by
      * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
      */
-    private CaptureContentFormat captureContent = CaptureContentFormat.NONE;
+    private boolean captureMessageContent = false;
 
     /**
-     * Whether to include tool definitions in an inference observation.
+     * Whether to capture the tool definitions of an inference observation.
      * The actual default depends on the configured flavor and is set by
      * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
      */
-    private boolean includeToolDefinitions = false;
+    private boolean captureToolDefinitions = false;
 
     /**
-     * Whether to include tool content (arguments and result) in a tool execution observation.
+     * Whether to capture the tool content (arguments and result) of a tool execution observation.
      * The actual default depends on the configured flavor and is set by
      * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
      */
-    private boolean includeToolCallContent = false;
+    private boolean captureToolCallContent = false;
+
+    /**
+     * Where to record the captured content of an inference observation (messages and tool definitions).
+     * Only the {@code opentelemetry} flavor supports it. The other flavors record the content
+     * where their platform expects it.
+     */
+    private InferenceContentDestination inferenceContentDestination = InferenceContentDestination.SPAN_ATTRIBUTES;
 
     public boolean isEnabled() {
         return enabled;
@@ -59,57 +66,59 @@ public class OpenTelemetryAiConventionsProperties {
         this.flavor = flavor;
     }
 
-    public CaptureContentFormat getCaptureContent() {
-        return captureContent;
+    public boolean isCaptureMessageContent() {
+        return captureMessageContent;
     }
 
-    public void setCaptureContent(CaptureContentFormat captureContent) {
-        this.captureContent = captureContent;
+    public void setCaptureMessageContent(boolean captureMessageContent) {
+        this.captureMessageContent = captureMessageContent;
     }
 
-    public boolean isIncludeToolDefinitions() {
-        return includeToolDefinitions;
+    public boolean isCaptureToolDefinitions() {
+        return captureToolDefinitions;
     }
 
-    public void setIncludeToolDefinitions(boolean includeToolDefinitions) {
-        this.includeToolDefinitions = includeToolDefinitions;
+    public void setCaptureToolDefinitions(boolean captureToolDefinitions) {
+        this.captureToolDefinitions = captureToolDefinitions;
     }
 
-    public boolean isIncludeToolCallContent() {
-        return includeToolCallContent;
+    public boolean isCaptureToolCallContent() {
+        return captureToolCallContent;
     }
 
-    public void setIncludeToolCallContent(boolean includeToolCallContent) {
-        this.includeToolCallContent = includeToolCallContent;
+    public void setCaptureToolCallContent(boolean captureToolCallContent) {
+        this.captureToolCallContent = captureToolCallContent;
+    }
+
+    public InferenceContentDestination getInferenceContentDestination() {
+        return inferenceContentDestination;
+    }
+
+    public void setInferenceContentDestination(InferenceContentDestination inferenceContentDestination) {
+        this.inferenceContentDestination = inferenceContentDestination;
     }
 
     /**
-     * Whether content capture is enabled (any mode other than {@link CaptureContentFormat#NONE}).
-     * Useful for flavors that use a boolean include/exclude model (LangSmith, OpenLLMetry).
+     * Where to record the captured content of an inference observation.
      */
-    public boolean isContentCaptureEnabled() {
-        return captureContent != CaptureContentFormat.NONE;
-    }
-
-    /**
-     * Format for capturing input/output message content in inference observations.
-     */
-    public enum CaptureContentFormat {
+    public enum InferenceContentDestination {
 
         /**
-         * Do not capture message content.
-         */
-        NONE,
-
-        /**
-         * Capture message content as span attributes (high cardinality).
+         * Record the content as attributes of the inference span.
          */
         SPAN_ATTRIBUTES,
 
         /**
-         * Capture message content as span events.
+         * Record the content in a {@code gen_ai.client.inference.operation.details} event
+         * attached to the inference span.
          */
-        SPAN_EVENTS
+        SPAN_EVENTS,
+
+        /**
+         * Record the content in a {@code gen_ai.client.inference.operation.details} event
+         * exported through the OpenTelemetry Logs API and correlated with the inference span.
+         */
+        LOG_EVENTS
 
     }
 

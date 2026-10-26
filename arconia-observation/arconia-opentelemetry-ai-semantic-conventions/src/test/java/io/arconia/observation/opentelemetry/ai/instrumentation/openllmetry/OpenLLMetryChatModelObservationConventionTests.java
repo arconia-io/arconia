@@ -140,7 +140,7 @@ class OpenLLMetryChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenDisabled() {
-        properties.setIncludeToolDefinitions(false);
+        properties.setCaptureToolDefinitions(false);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -163,7 +163,7 @@ class OpenLLMetryChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeToolDefinitionsWhenEnabled() throws JSONException {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolDefinition weatherTool = ToolDefinition.builder()
                 .name("get_weather")
@@ -228,7 +228,7 @@ class OpenLLMetryChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeContentWhenCaptureContentIsSpanAttributes() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         ChatModelObservationContext context = createContextWithMessages(
                 List.of(new SystemMessage("Be helpful"), new UserMessage("Hi")),
                 "mistral"
@@ -252,16 +252,17 @@ class OpenLLMetryChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentWhenCaptureContentIsSpanEvents() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS);
+    void shouldIncludeContentRegardlessOfInferenceContentDestination() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
+        assertThat(keyValues).anySatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
+        assertThat(keyValues).anySatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
     }
 
     @Test

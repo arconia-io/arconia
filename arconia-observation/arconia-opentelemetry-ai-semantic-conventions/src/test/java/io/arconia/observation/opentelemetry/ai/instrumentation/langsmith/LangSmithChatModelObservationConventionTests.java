@@ -150,7 +150,7 @@ class LangSmithChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeContentEvenWhenCaptureContentIsSpanAttributes() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
 
@@ -163,7 +163,7 @@ class LangSmithChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenDisabled() {
-        properties.setIncludeToolDefinitions(false);
+        properties.setCaptureToolDefinitions(false);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -186,7 +186,7 @@ class LangSmithChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreNull() {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -205,7 +205,7 @@ class LangSmithChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreEmpty() {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -224,7 +224,7 @@ class LangSmithChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeToolDefinitionsWhenEnabled() throws JSONException {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolDefinition weatherTool = ToolDefinition.builder()
                 .name("get_weather")

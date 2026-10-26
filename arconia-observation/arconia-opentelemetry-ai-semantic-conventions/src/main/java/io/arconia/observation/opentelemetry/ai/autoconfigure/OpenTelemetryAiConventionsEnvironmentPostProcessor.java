@@ -13,10 +13,9 @@ import org.springframework.util.Assert;
  * Injects flavor-specific default property values at the lowest priority so that
  * any user-configured value always takes precedence.
  * <p>
- * OpenTelemetry defaults to the conservative OTel baseline (NONE, no tool definitions).
- * OpenLLMetry and OpenLIT default to SPAN_ATTRIBUTES with tool definitions included.
- * LangSmith defaults to SPAN_EVENTS (content is emitted via span events by LangSmith handlers)
- * with tool definitions included.
+ * OpenTelemetry defaults to the conservative OTel baseline, capturing no content.
+ * OpenLLMetry, OpenLIT, and LangSmith capture all content by default, each recording it
+ * where its platform expects it.
  */
 class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
@@ -25,14 +24,14 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentP
     private static final String FLAVOUR_KEY =
             OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor";
 
-    private static final String CAPTURE_CONTENT_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-content";
+    private static final String CAPTURE_MESSAGE_CONTENT_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-message-content";
 
-    private static final String INCLUDE_TOOL_DEFINITIONS_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".include-tool-definitions";
+    private static final String CAPTURE_TOOL_DEFINITIONS_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-tool-definitions";
 
-    private static final String TOOL_EXECUTION_INCLUDE_CONTENT_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".include-tool-call-content";
+    private static final String CAPTURE_TOOL_CALL_CONTENT_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-tool-call-content";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -41,20 +40,15 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentP
         String flavor = environment.getProperty(FLAVOUR_KEY, "opentelemetry").toLowerCase();
 
         Map<String, Object> defaults = switch (flavor) {
-            case "openllmetry", "openlit" -> Map.of(
-                    CAPTURE_CONTENT_KEY, "SPAN_ATTRIBUTES",
-                    INCLUDE_TOOL_DEFINITIONS_KEY, "true",
-                    TOOL_EXECUTION_INCLUDE_CONTENT_KEY, "true"
-            );
-            case "langsmith" -> Map.of(
-                    CAPTURE_CONTENT_KEY, "SPAN_EVENTS",
-                    INCLUDE_TOOL_DEFINITIONS_KEY, "true",
-                    TOOL_EXECUTION_INCLUDE_CONTENT_KEY, "true"
+            case "openllmetry", "openlit", "langsmith" -> Map.of(
+                    CAPTURE_MESSAGE_CONTENT_KEY, "true",
+                    CAPTURE_TOOL_DEFINITIONS_KEY, "true",
+                    CAPTURE_TOOL_CALL_CONTENT_KEY, "true"
             );
             default -> Map.of(
-                    CAPTURE_CONTENT_KEY, "NONE",
-                    INCLUDE_TOOL_DEFINITIONS_KEY, "false",
-                    TOOL_EXECUTION_INCLUDE_CONTENT_KEY, "false"
+                    CAPTURE_MESSAGE_CONTENT_KEY, "false",
+                    CAPTURE_TOOL_DEFINITIONS_KEY, "false",
+                    CAPTURE_TOOL_CALL_CONTENT_KEY, "false"
             );
         };
 

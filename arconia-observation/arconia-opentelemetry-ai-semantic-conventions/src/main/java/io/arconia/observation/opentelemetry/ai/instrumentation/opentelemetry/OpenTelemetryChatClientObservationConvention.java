@@ -59,11 +59,20 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
     @Override
     public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
-        if (OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES == properties.getCaptureContent()) {
+        if (properties.isCaptureMessageContent() && recordsContentOnSpanAttributes()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
         }
         return keyValues;
+    }
+
+    /**
+     * Whether the captured content is recorded on the span attributes, as opposed to an event.
+     * Flavors recording content on span attributes only override it.
+     */
+    protected boolean recordsContentOnSpanAttributes() {
+        return properties.getInferenceContentDestination()
+                == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
     }
 
     @Override

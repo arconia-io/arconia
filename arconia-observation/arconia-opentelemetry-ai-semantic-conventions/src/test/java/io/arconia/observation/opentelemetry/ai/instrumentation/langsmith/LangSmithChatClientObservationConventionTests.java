@@ -82,7 +82,7 @@ class LangSmithChatClientObservationConventionTests {
 
     @Test
     void shouldNotIncludeContentEvenWhenCaptureContentIsSpanAttributes() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         var context = ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
                         .prompt(new Prompt(java.util.List.of(new UserMessage("Hi"))))

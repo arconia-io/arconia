@@ -77,7 +77,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldIncludeArgumentsAsInput() throws JSONException {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather",
                 """
                 {"location": "Paris"}""");
@@ -90,7 +90,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldWrapNonObjectResultAsJsonObject() throws JSONException {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
         context.setToolCallResult("rainy, 57°F");
 
@@ -102,7 +102,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldWrapJsonArrayResultAsJsonObject() throws JSONException {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_books", "Get books", "{}");
         context.setToolCallResult("""
                 [{"title": "His Dark Materials", "author": "Philip Pullman"}]""");
@@ -116,7 +116,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldWrapJsonNullResultAsJsonObject() throws JSONException {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
         context.setToolCallResult("null");
 
@@ -128,7 +128,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldPassThroughJsonObjectResult() throws JSONException {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
         context.setToolCallResult("""
                 {"temperature": "57°F", "condition": "rainy"}""");
@@ -141,7 +141,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldNotIncludeOutputWhenResultIsNull() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
@@ -151,7 +151,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldNotIncludeContentWhenDisabled() {
-        properties.setIncludeToolCallContent(false);
+        properties.setCaptureToolCallContent(false);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", """
                 {"location": "Paris}""");
         context.setToolCallResult("rainy, 57°F");
@@ -165,7 +165,7 @@ class LangSmithToolCallingObservationConventionTests {
 
     @Test
     void shouldHandleNullToolCallResult() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);

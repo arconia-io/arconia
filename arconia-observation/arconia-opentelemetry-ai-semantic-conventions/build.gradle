@@ -23,8 +23,9 @@ dependencies {
     optional "io.micrometer:micrometer-tracing-bridge-otel"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "io.micrometer:micrometer-tracing-bridge-otel"
+    testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testRuntimeOnly project(":arconia-opentelemetry:arconia-opentelemetry")
-    testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

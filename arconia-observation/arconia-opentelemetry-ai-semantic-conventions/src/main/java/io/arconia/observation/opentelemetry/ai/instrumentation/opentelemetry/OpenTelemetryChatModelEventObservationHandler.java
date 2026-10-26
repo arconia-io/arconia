@@ -7,6 +7,7 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
@@ -30,19 +31,9 @@ public class OpenTelemetryChatModelEventObservationHandler implements Observatio
 
     @Override
     public void onStop(ChatModelObservationContext context) {
-        if (!OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS.equals(
-                properties.getCaptureContent())) {
+        if (properties.getInferenceContentDestination() != OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS
+                || !(properties.isCaptureMessageContent() || properties.isCaptureToolDefinitions())) {
             return;
-        }
-
-        List<GenAiContent.InputMessage> inputMessages = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(context.getRequest().getInstructions())) {
-            inputMessages = GenAiContent.fromMessages(context.getRequest().getInstructions());
-        }
-
-        List<GenAiContent.OutputMessage> outputMessages = new ArrayList<>();
-        if (context.getResponse() != null && !CollectionUtils.isEmpty(context.getResponse().getResults())) {
-            outputMessages = GenAiContent.fromGenerations(context.getResponse().getResults());
         }
 
         TracingObservationHandler.TracingContext tracingContext = context.get(TracingObservationHandler.TracingContext.class);
@@ -52,10 +43,31 @@ public class OpenTelemetryChatModelEventObservationHandler implements Observatio
             return;
         }
 
-        span.addEvent(GenAiAttributes.GEN_AI_CLIENT_INFERENCE_OPERATION_DETAILS, Attributes.builder()
-                .put(GenAiAttributes.GEN_AI_INPUT_MESSAGES, jsonHelper.toJson(inputMessages))
-                .put(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES, jsonHelper.toJson(outputMessages))
-                .build());
+        AttributesBuilder attributes = Attributes.builder();
+
+        if (properties.isCaptureMessageContent()) {
+            List<GenAiContent.InputMessage> inputMessages = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(context.getRequest().getInstructions())) {
+                inputMessages = GenAiContent.fromMessages(context.getRequest().getInstructions());
+            }
+
+            List<GenAiContent.OutputMessage> outputMessages = new ArrayList<>();
+            if (context.getResponse() != null && !CollectionUtils.isEmpty(context.getResponse().getResults())) {
+                outputMessages = GenAiContent.fromGenerations(context.getResponse().getResults());
+            }
+
+            attributes.put(GenAiAttributes.GEN_AI_INPUT_MESSAGES, jsonHelper.toJson(inputMessages));
+            attributes.put(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES, jsonHelper.toJson(outputMessages));
+        }
+
+        if (properties.isCaptureToolDefinitions()) {
+            var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
+            if (!toolDefinitions.isEmpty()) {
+                attributes.put(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS, jsonHelper.toJson(toolDefinitions));
+            }
+        }
+
+        span.addEvent(GenAiAttributes.GEN_AI_CLIENT_INFERENCE_OPERATION_DETAILS, attributes.build());
     }
 
     @Override

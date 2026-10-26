@@ -120,7 +120,7 @@ class OpenLitChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeToolDefinitionsWhenEnabled() throws JSONException {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolDefinition weatherTool = ToolDefinition.builder()
                 .name("get_weather")
@@ -161,7 +161,7 @@ class OpenLitChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeContentWhenCaptureContentIsSpanAttributes() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         ChatModelObservationContext context = createContextWithMessages(
                 List.of(new SystemMessage("Be helpful"), new UserMessage("Hi")),
                 "mistral"

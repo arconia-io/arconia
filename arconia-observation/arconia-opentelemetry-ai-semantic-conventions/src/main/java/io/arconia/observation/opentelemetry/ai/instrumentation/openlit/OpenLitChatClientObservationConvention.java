@@ -30,4 +30,10 @@ public final class OpenLitChatClientObservationConvention extends OpenTelemetryC
         return KeyValue.of(OpenLitAttributes.GEN_AI_REQUEST_IS_STREAM, String.valueOf(context.isStream()));
     }
 
+    @Override
+    protected boolean recordsContentOnSpanAttributes() {
+        // OpenLIT records content on span attributes only.
+        return true;
+    }
+
 }

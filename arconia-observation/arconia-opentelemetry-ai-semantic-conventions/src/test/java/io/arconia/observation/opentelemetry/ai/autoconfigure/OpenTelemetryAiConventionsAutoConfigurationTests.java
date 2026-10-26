@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.opentelemetry.api.OpenTelemetry;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
@@ -39,6 +40,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenL
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelLogEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
@@ -153,6 +155,20 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatClientEventObservationHandler.class);
                 });
+    }
+
+    @Test
+    void otelFlavorRegistersLogEventHandlerWhenOpenTelemetryAvailable() {
+        contextRunner
+                .withBean(OpenTelemetry.class, OpenTelemetry::noop)
+                .run(context ->
+                        assertThat(context).hasSingleBean(OpenTelemetryChatModelLogEventObservationHandler.class));
+    }
+
+    @Test
+    void otelFlavorDoesNotRegisterLogEventHandlerWhenOpenTelemetryNotAvailable() {
+        contextRunner.run(context ->
+                assertThat(context).doesNotHaveBean(OpenTelemetryChatModelLogEventObservationHandler.class));
     }
 
     // Custom bean precedence (OTel flavor)

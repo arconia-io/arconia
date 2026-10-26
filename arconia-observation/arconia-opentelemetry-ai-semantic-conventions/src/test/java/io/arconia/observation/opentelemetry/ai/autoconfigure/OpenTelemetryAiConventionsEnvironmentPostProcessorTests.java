@@ -17,14 +17,14 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
     private final OpenTelemetryAiConventionsEnvironmentPostProcessor processor =
             new OpenTelemetryAiConventionsEnvironmentPostProcessor();
 
-    private static final String CAPTURE_CONTENT_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-content";
+    private static final String CAPTURE_MESSAGE_CONTENT_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-message-content";
 
-    private static final String INCLUDE_TOOL_DEFINITIONS_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".include-tool-definitions";
+    private static final String CAPTURE_TOOL_DEFINITIONS_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-tool-definitions";
 
-    private static final String TOOL_EXECUTION_INCLUDE_CONTENT_KEY =
-            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".include-tool-call-content";
+    private static final String CAPTURE_TOOL_CALL_CONTENT_KEY =
+            OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".capture-tool-call-content";
 
     @Test
     void postProcessEnvironmentShouldThrowExceptionWhenEnvironmentIsNull() {
@@ -43,9 +43,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
         var environment = new MockEnvironment();
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("NONE");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("false");
     }
 
     @Test
@@ -54,9 +54,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "opentelemetry");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("NONE");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("false");
     }
 
     @Test
@@ -65,9 +65,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "openllmetry");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("SPAN_ATTRIBUTES");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
     }
 
     @Test
@@ -76,9 +76,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "langsmith");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("SPAN_EVENTS");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
     }
 
     @Test
@@ -87,9 +87,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "openlit");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("SPAN_ATTRIBUTES");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
     }
 
     @Test
@@ -98,9 +98,9 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "OpenLLMetry");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("SPAN_ATTRIBUTES");
-        assertThat(environment.getProperty(INCLUDE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
-        assertThat(environment.getProperty(TOOL_EXECUTION_INCLUDE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
     }
 
     @Test
@@ -108,12 +108,12 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
         // EPP adds at lowest priority (addLast), user's explicit property takes precedence
         var environment = new MockEnvironment()
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "openllmetry")
-                .withProperty(CAPTURE_CONTENT_KEY, "NONE");
+                .withProperty(CAPTURE_MESSAGE_CONTENT_KEY, "false");
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         // MockEnvironment.withProperty adds to a higher-priority source than addLast,
-        // so the user's "NONE" wins over the EPP's "SPAN_ATTRIBUTES".
-        assertThat(environment.getProperty(CAPTURE_CONTENT_KEY)).isEqualTo("NONE");
+        // so the user's "false" wins over the EPP's "true".
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("false");
     }
 
 }

@@ -2,9 +2,9 @@
 :page-aliases: observation:semantic-conventions/openlit.adoc
 
 :flavor-value: openlit
-:flavor-default-capture-content: span-attributes
-:flavor-default-include-tool-definitions: true
-:flavor-default-include-tool-call-content: true
+:flavor-default-capture-message-content: true
+:flavor-default-capture-tool-definitions: true
+:flavor-default-capture-tool-call-content: true
 
 Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.openlit.io[OpenLIT Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace and metric visualization in platforms like https://openlit.io[OpenLIT].
 

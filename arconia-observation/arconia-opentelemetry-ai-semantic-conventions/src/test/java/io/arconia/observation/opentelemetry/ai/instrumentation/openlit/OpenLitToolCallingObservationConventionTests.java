@@ -81,7 +81,7 @@ class OpenLitToolCallingObservationConventionTests {
 
     @Test
     void shouldUseToolArgsKeyInsteadOfToolCallArguments() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", """
                 {"location": "Paris"}""");
 
@@ -96,7 +96,7 @@ class OpenLitToolCallingObservationConventionTests {
 
     @Test
     void shouldIncludeToolCallResultWhenContentEnabled() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
         context.setToolCallResult("rainy, 57°F");
 
@@ -108,7 +108,7 @@ class OpenLitToolCallingObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolCallResultWhenContentDisabled() {
-        properties.setIncludeToolCallContent(false);
+        properties.setCaptureToolCallContent(false);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
         context.setToolCallResult("rainy, 57°F");
 

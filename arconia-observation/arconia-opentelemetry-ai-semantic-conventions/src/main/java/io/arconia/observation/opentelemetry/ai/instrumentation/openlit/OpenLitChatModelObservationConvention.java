@@ -34,4 +34,10 @@ public final class OpenLitChatModelObservationConvention extends OpenTelemetryCh
         return keyValues;
     }
 
+    @Override
+    protected boolean recordsContentOnSpanAttributes() {
+        // OpenLIT records content on span attributes only.
+        return true;
+    }
+
 }

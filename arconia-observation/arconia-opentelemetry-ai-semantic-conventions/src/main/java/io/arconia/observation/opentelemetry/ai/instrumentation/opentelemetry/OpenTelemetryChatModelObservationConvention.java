@@ -1,10 +1,6 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -16,10 +12,7 @@ import org.springframework.ai.chat.observation.ChatModelObservationConvention;
 import org.springframework.ai.chat.observation.DefaultChatModelObservationConvention;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.tool.StructuredOutputChatOptions;
-import org.springframework.ai.model.tool.ToolCallingChatOptions;
-import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.JsonHelper;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -78,11 +71,20 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
     public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
         keyValues = outputType(keyValues, context);
-        if (OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES == properties.getCaptureContent()) {
+        if (properties.isCaptureMessageContent() && recordsContentOnSpanAttributes()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
         }
         return keyValues;
+    }
+
+    /**
+     * Whether the captured inference content is recorded on the span attributes,
+     * as opposed to an event. Flavors recording content on span attributes only override it.
+     */
+    protected boolean recordsContentOnSpanAttributes() {
+        return properties.getInferenceContentDestination()
+                == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
     }
 
     private KeyValues outputType(KeyValues keyValues, ChatModelObservationContext context) {
@@ -100,31 +102,14 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
 
     @Override
     protected KeyValues requestTools(KeyValues keyValues, ChatModelObservationContext context) {
-        if (!properties.isIncludeToolDefinitions()) {
+        if (!properties.isCaptureToolDefinitions() || !recordsContentOnSpanAttributes()) {
             return keyValues;
         }
-        if (!(context.getRequest().getOptions() instanceof ToolCallingChatOptions options)) {
+        var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
+        if (toolDefinitions.isEmpty()) {
             return keyValues;
         }
-        if (CollectionUtils.isEmpty(options.getToolCallbacks())) {
-            return keyValues;
-        }
-        return keyValues.and(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(),
-                jsonHelper.toJson(buildToolDefinitions(options.getToolCallbacks())));
-    }
-
-    protected List<Map<String, Object>> buildToolDefinitions(List<ToolCallback> toolCallbacks) {
-        List<Map<String, Object>> toolDefinitions = new ArrayList<>();
-        for (ToolCallback toolCallback : toolCallbacks) {
-            Map<String, Object> toolDef = new HashMap<>();
-            toolDef.put("type", "function");
-            toolDef.put("name", toolCallback.getToolDefinition().name());
-            toolDef.put("description", toolCallback.getToolDefinition().description());
-            toolDef.put("parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallback.getToolDefinition().inputSchema(),
-                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of()));
-            toolDefinitions.add(toolDef);
-        }
-        return toolDefinitions;
+        return keyValues.and(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(), jsonHelper.toJson(toolDefinitions));
     }
 
     // Content

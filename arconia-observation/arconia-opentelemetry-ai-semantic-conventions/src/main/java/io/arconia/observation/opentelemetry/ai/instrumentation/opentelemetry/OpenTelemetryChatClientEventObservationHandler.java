@@ -30,8 +30,8 @@ public class OpenTelemetryChatClientEventObservationHandler implements Observati
 
     @Override
     public void onStop(ChatClientObservationContext context) {
-        if (!OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS.equals(
-                properties.getCaptureContent())) {
+        if (!properties.isCaptureMessageContent()
+                || properties.getInferenceContentDestination() != OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS) {
             return;
         }
 

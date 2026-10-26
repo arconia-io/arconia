@@ -80,4 +80,10 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
         return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, jsonHelper.toJson(outputMessages));
     }
 
+    @Override
+    protected boolean recordsContentOnSpanAttributes() {
+        // OpenLLMetry records content on span attributes only.
+        return true;
+    }
+
 }

@@ -73,7 +73,7 @@ class OpenLLMetryToolCallingObservationConventionTests {
 
     @Test
     void shouldNotIncludeContentWhenDisabled() {
-        properties.setIncludeToolCallContent(false);
+        properties.setCaptureToolCallContent(false);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", """
                 {"location": "Paris}""");
         context.setToolCallResult("rainy, 57°F");
@@ -87,7 +87,7 @@ class OpenLLMetryToolCallingObservationConventionTests {
 
     @Test
     void shouldIncludeContentWhenEnabled() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", """
                 {"location": "Paris}""");
         context.setToolCallResult("rainy, 57°F");
@@ -102,7 +102,7 @@ class OpenLLMetryToolCallingObservationConventionTests {
 
     @Test
     void shouldHandleNullToolCallResult() {
-        properties.setIncludeToolCallContent(true);
+        properties.setCaptureToolCallContent(true);
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);

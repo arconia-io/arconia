@@ -101,7 +101,7 @@ class OpenTelemetryChatClientObservationConventionTests {
 
     @Test
     void shouldIncludeContentWhenCaptureContentIsSpanAttributes() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         var context = createContextWithMessages(
                 List.of(new SystemMessage("Be helpful"), new UserMessage("Hi")));
         setResponse(context, "Hello!", "stop");
@@ -123,8 +123,9 @@ class OpenTelemetryChatClientObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentWhenCaptureContentIsSpanEvents() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS);
+    void shouldNotIncludeContentWhenDestinationIsSpanEvents() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         var context = createContext("Hello");
         setResponse(context, "Hi there!", "stop");
 
@@ -137,7 +138,7 @@ class OpenTelemetryChatClientObservationConventionTests {
 
     @Test
     void shouldIncludeInputContentButNotOutputWhenNoResponse() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+        properties.setCaptureMessageContent(true);
         var context = createContextWithMessages(List.of(new UserMessage("Hi")));
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);

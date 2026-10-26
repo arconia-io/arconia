@@ -38,4 +38,10 @@ public final class OpenLLMetryChatModelObservationConvention extends OpenTelemet
         return keyValues;
     }
 
+    @Override
+    protected boolean recordsContentOnSpanAttributes() {
+        // OpenLLMetry records content on span attributes only.
+        return true;
+    }
+
 }

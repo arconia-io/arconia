@@ -33,7 +33,7 @@ public final class LangSmithChatClientObservationHandler implements ObservationH
 
     @Override
     public void onStop(ChatClientObservationContext context) {
-        if (!properties.isContentCaptureEnabled()) {
+        if (!properties.isCaptureMessageContent()) {
             return;
         }
         TracingObservationHandler.TracingContext tracingContext = context

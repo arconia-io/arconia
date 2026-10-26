@@ -141,7 +141,7 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenDisabled() {
-        properties.setIncludeToolDefinitions(false);
+        properties.setCaptureToolDefinitions(false);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -164,7 +164,7 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreNull() {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -183,7 +183,7 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreEmpty() {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
@@ -202,7 +202,7 @@ class OpenTelemetryChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeToolDefinitionsWhenEnabled() throws JSONException {
-        properties.setIncludeToolDefinitions(true);
+        properties.setCaptureToolDefinitions(true);
 
         ToolDefinition weatherTool = ToolDefinition.builder()
                 .name("get_weather")
@@ -230,6 +230,32 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldNotIncludeToolDefinitionsWhenDestinationIsNotSpanAttributes() {
+        properties.setCaptureToolDefinitions(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.LOG_EVENTS);
+
+        ToolDefinition weatherTool = ToolDefinition.builder()
+                .name("get_weather")
+                .description("Get weather")
+                .inputSchema("{}")
+                .build();
+
+        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
+                .model("mistral")
+                .toolCallbacks(new TestToolCallback(weatherTool))
+                .build();
+
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()));
+    }
+
+    @Test
     void shouldIncludeStreamAttributeWhenStreaming() {
         ChatOptions chatOptions = ChatOptions.builder().model("mistral").build();
         ChatModelObservationContext context = ChatModelObservationContext.builder()
@@ -254,7 +280,7 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentWhenCaptureContentIsNone() {
+    void shouldNotIncludeContentWhenCaptureMessageContentIsDisabled() {
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
 
@@ -266,8 +292,8 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldIncludeContentWhenCaptureContentIsSpanAttributes() throws JSONException {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_ATTRIBUTES);
+    void shouldIncludeContentWhenCaptureMessageContentIsEnabled() throws JSONException {
+        properties.setCaptureMessageContent(true);
         ChatModelObservationContext context = createContextWithMessages(
                 List.of(new SystemMessage("Be helpful"), new UserMessage("Hi")),
                 "mistral"
@@ -291,8 +317,9 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentWhenCaptureContentIsSpanEvents() {
-        properties.setCaptureContent(OpenTelemetryAiConventionsProperties.CaptureContentFormat.SPAN_EVENTS);
+    void shouldNotIncludeContentWhenDestinationIsSpanEvents() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
 

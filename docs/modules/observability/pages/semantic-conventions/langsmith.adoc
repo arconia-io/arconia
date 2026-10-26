@@ -2,9 +2,9 @@
 :page-aliases: observation:semantic-conventions/langsmith.adoc
 
 :flavor-value: langsmith
-:flavor-default-capture-content: span-events
-:flavor-default-include-tool-definitions: true
-:flavor-default-include-tool-call-content: true
+:flavor-default-capture-message-content: true
+:flavor-default-capture-tool-definitions: true
+:flavor-default-capture-tool-call-content: true
 
 Spring AI provides built-in instrumentation for models and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in the https://www.langchain.com/langsmith[LangSmith] platform.
 
@@ -87,7 +87,7 @@ The module provides semantic conventions for the following observation types:
 * Tool execution spans with input/output content.
 * Chat client spans with session tracking and input/output content.
 * Token usage for inference operations.
-* Input/output message content, captured as span attributes.
+* Input/output message content, captured as span events.
 
 Content capturing is enabled by default, matching the behavior of the official LangSmith SDKs.
 

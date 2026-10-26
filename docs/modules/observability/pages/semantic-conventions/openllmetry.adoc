@@ -2,9 +2,9 @@
 :page-aliases: observation:semantic-conventions/openllmetry.adoc
 
 :flavor-value: openllmetry
-:flavor-default-capture-content: span-attributes
-:flavor-default-include-tool-definitions: true
-:flavor-default-include-tool-call-content: true
+:flavor-default-capture-message-content: true
+:flavor-default-capture-tool-definitions: true
+:flavor-default-capture-tool-call-content: true
 
 Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop].
 

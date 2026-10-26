@@ -4,12 +4,11 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
-import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.util.JsonHelper;
-import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
@@ -45,16 +44,14 @@ public final class LangSmithChatModelObservationConvention extends OpenTelemetry
 
     @Override
     protected KeyValues requestTools(KeyValues keyValues, ChatModelObservationContext context) {
-        if (!getProperties().isIncludeToolDefinitions()) {
+        if (!getProperties().isCaptureToolDefinitions()) {
             return keyValues;
         }
-        if (!(context.getRequest().getOptions() instanceof ToolCallingChatOptions options)) {
+        var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
+        if (toolDefinitions.isEmpty()) {
             return keyValues;
         }
-        if (CollectionUtils.isEmpty(options.getToolCallbacks())) {
-            return keyValues;
-        }
-        return keyValues.and(LangSmithAttributes.TOOLS.getKey(), jsonHelper.toJson(buildToolDefinitions(options.getToolCallbacks())));
+        return keyValues.and(LangSmithAttributes.TOOLS.getKey(), jsonHelper.toJson(toolDefinitions));
     }
 
     @Override
