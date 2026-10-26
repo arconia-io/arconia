@@ -7,6 +7,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public final class OtlpTracingExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF));
         return builder.build();
@@ -82,6 +84,7 @@ public final class OtlpTracingExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry gRPC span exporter with endpoint: {}", connectionDetails.getTracesUrl(Protocol.GRPC));
         return builder.build();

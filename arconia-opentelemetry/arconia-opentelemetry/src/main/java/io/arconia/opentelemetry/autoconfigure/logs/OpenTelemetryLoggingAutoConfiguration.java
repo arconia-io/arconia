@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.logs;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -61,6 +62,7 @@ public final class OpenTelemetryLoggingAutoConfiguration {
             .setMaxQueueSize(properties.getProcessor().getMaxQueueSize());
         if (properties.getProcessor().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         return builder.build();
     }

@@ -7,6 +7,7 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
@@ -67,6 +68,7 @@ public final class OtlpMetricsExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf metric exporter with endpoint: {}", connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF));
         return builder.build();
@@ -91,6 +93,7 @@ public final class OtlpMetricsExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry gRPC metric exporter with endpoint: {}", connectionDetails.getMetricsUrl(Protocol.GRPC));
         return builder.build();

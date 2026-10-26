@@ -150,7 +150,7 @@ Configuration for the batch span processor.
 
 |`arconia.otel.traces.processor.metrics`
 |`false`
-|Whether to generate metrics for the span processor.
+|Whether to generate metrics for the span processor. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
 
 |`arconia.otel.traces.processor.schedule-delay`
 |`5s`
@@ -243,7 +243,7 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 
 |`arconia.otel.traces.exporter.otlp.metrics`
 |`false`
-|Whether to generate metrics for the exporter itself.
+|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
 
 |`arconia.otel.traces.exporter.otlp.protocol`
 |`http-protobuf`

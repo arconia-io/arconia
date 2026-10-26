@@ -135,7 +135,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 
 |`arconia.otel.metrics.exporter.otlp.metrics`
 |`false`
-|Whether to generate metrics for the exporter itself.
+|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`).
 
 |`arconia.otel.metrics.exporter.otlp.protocol`
 |`http-protobuf`

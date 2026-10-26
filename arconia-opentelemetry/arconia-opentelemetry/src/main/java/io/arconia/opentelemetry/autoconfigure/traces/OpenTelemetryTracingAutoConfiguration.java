@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -116,6 +117,7 @@ public final class OpenTelemetryTracingAutoConfiguration {
                 .setMaxQueueSize(properties.getProcessor().getMaxQueueSize());
         if (properties.getProcessor().isMetrics()) {
             meterProvider.ifAvailable(spanProcessorBuilder::setMeterProvider);
+            spanProcessorBuilder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         return spanProcessorBuilder.build();
     }

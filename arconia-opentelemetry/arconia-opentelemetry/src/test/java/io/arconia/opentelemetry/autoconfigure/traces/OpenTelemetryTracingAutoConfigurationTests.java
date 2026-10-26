@@ -1,11 +1,17 @@
 package io.arconia.opentelemetry.autoconfigure.traces;
 
+import java.util.concurrent.TimeUnit;
+
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -149,6 +155,27 @@ class OpenTelemetryTracingAutoConfigurationTests {
                 assertThat(context).getBeanNames(BatchSpanProcessor.class)
                         .hasSize(1)
                         .containsExactly("micrometerBatchSpanProcessor");
+            });
+    }
+
+    @Test
+    void otelSpanProcessorMetricsFollowSemanticConventions() {
+        InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+        SdkMeterProvider meterProvider = SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+        contextRunner
+            .withUserConfiguration(CustomSpanExporterConfiguration.class)
+            .withBean(MeterProvider.class, () -> meterProvider)
+            .withPropertyValues("arconia.otel.traces.processor.metrics=true")
+            .run(context -> {
+                assertThat(context).hasSingleBean(BatchSpanProcessor.class);
+                SdkTracerProvider tracerProvider = context.getBean(SdkTracerProvider.class);
+                tracerProvider.get("test").spanBuilder("test-span").startSpan().end();
+                tracerProvider.forceFlush().join(10, TimeUnit.SECONDS);
+                assertThat(metricReader.collectAllMetrics())
+                        .extracting(MetricData::getName)
+                        .isNotEmpty()
+                        .allMatch(name -> name.startsWith("otel.sdk."))
+                        .doesNotContain("queueSize");
             });
     }
 

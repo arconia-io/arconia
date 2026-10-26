@@ -7,6 +7,7 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public final class OtlpLoggingExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: {}", connectionDetails.getLogsUrl(Protocol.HTTP_PROTOBUF));
         return builder.build();
@@ -82,6 +84,7 @@ public final class OtlpLoggingExporterConfiguration {
         if (properties.getOtlp().isMetrics() != null && Boolean.TRUE.equals(properties.getOtlp().isMetrics())
                 || properties.getOtlp().isMetrics() == null && commonProperties.getOtlp().isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
+            builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry gRPC log exporter with endpoint: {}", connectionDetails.getLogsUrl(Protocol.GRPC));
         return builder.build();
