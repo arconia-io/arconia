@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters",
+      "defaultValue": [
+        "AWSAccessKeyId",
+        "Signature",
+        "X-Amz-Signature",
+        "X-Amz-Credential",
+        "X-Amz-Security-Token",
+        "sig",
+        "X-Goog-Signature"
+      ]
+    }
+  ]
+}

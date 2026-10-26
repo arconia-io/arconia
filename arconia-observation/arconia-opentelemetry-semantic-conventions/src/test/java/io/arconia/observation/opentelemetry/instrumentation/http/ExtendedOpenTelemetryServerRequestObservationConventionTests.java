@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
+import java.util.List;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
@@ -247,7 +249,7 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     @Test
     void urlQueryIncludedWhenEnabled() {
         var options = new OpenTelemetryHttpOptions();
-        options.setIncludeUrlQuery(true);
+        options.setCaptureUrlQuery(true);
         var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -260,9 +262,40 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
+    void urlQueryRedactsSensitiveValuesWhenEnabled() {
+        var options = new OpenTelemetryHttpOptions();
+        options.setCaptureUrlQuery(true);
+        var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setQueryString("file=report.pdf&X-Amz-Signature=abc123");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = conventionWithQuery.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("url.query", "file=report.pdf&X-Amz-Signature=REDACTED"));
+    }
+
+    @Test
+    void urlQueryRedactsConfiguredSensitiveParameters() {
+        var options = new OpenTelemetryHttpOptions();
+        options.setCaptureUrlQuery(true);
+        options.setSensitiveQueryParameters(List.of("token"));
+        var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setQueryString("token=abc&X-Amz-Signature=def");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = conventionWithQuery.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("url.query", "token=REDACTED&X-Amz-Signature=def"));
+    }
+
+    @Test
     void urlQueryAbsentWhenEnabledButNoQueryString() {
         var options = new OpenTelemetryHttpOptions();
-        options.setIncludeUrlQuery(true);
+        options.setCaptureUrlQuery(true);
         var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
 
         MockHttpServletRequest request = new MockHttpServletRequest();

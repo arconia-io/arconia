@@ -93,9 +93,13 @@ Semantic Conventions for HTTP Server are based on the support provided by the ht
 |	`true`
 |	Whether to enable HTTP semantic conventions.
 
-|	`arconia.observations.conventions.opentelemetry.http.include-url-query`
+|	`arconia.observations.conventions.opentelemetry.http.capture-url-query`
 |	`false`
-|	Whether to include the URL query string in the HTTP server observations. Disabled by default due to potential PII sensitivity.
+|	Whether to capture the URL query string in the HTTP server observations. Disabled by default due to potential PII sensitivity.
+
+|	`arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters`
+|	`AWSAccessKeyId`, `Signature`, `X-Amz-Signature`, `X-Amz-Credential`, `X-Amz-Security-Token`, `sig`, `X-Goog-Signature`
+|	Query parameters whose values are replaced by `REDACTED` when the URL query string is captured, matched case-sensitively. Setting it replaces the default list, and an empty list disables the redaction.
 |===
 
 == Errors

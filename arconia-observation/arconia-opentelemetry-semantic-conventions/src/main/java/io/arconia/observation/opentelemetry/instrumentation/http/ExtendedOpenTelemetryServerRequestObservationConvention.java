@@ -143,7 +143,7 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
         keyValues = clientAddress(keyValues, context);
         keyValues = serverAddress(keyValues, context);
         keyValues = serverPort(keyValues, context);
-        if (options.isIncludeUrlQuery()) {
+        if (options.isCaptureUrlQuery()) {
             keyValues = urlQuery(keyValues, context);
         }
         keyValues = userAgent(keyValues, context);
@@ -175,7 +175,7 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
         if (context.getCarrier() != null) {
             String queryString = context.getCarrier().getQueryString();
             if (queryString != null) {
-                return keyValues.and(UrlAttributes.URL_QUERY.getKey(), queryString);
+                return keyValues.and(UrlAttributes.URL_QUERY.getKey(), UrlQuerySanitizer.sanitize(queryString, options.getSensitiveQueryParameters()));
             }
         }
         return keyValues;
