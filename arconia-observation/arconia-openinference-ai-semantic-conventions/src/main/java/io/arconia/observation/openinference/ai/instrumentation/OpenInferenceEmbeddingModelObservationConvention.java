@@ -10,6 +10,7 @@ import com.arize.semconv.trace.SemanticConventions;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
@@ -19,8 +20,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 public final class OpenInferenceEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
-
-    private static final KeyValue MODEL_NONE = KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, KeyValue.NONE_VALUE);
 
     private final JsonHelper jsonHelper = new JsonHelper();
 
@@ -32,7 +31,9 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
 
     @Override
     public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
-        return KeyValues.of(aiOperationType(context), aiProvider(context), embeddingModelName(context));
+        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context));
+        String modelName = modelName(context);
+        return modelName != null ? keyValues.and(SemanticConventions.EMBEDDING_MODEL_NAME, modelName) : keyValues;
     }
 
     @Override
@@ -40,13 +41,13 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.EMBEDDING.getValue());
     }
 
-    private KeyValue embeddingModelName(EmbeddingModelObservationContext context) {
+    private @Nullable String modelName(EmbeddingModelObservationContext context) {
         if (context.getResponse() != null && StringUtils.hasText(context.getResponse().getMetadata().getModel())) {
-            return KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, context.getResponse().getMetadata().getModel());
+            return context.getResponse().getMetadata().getModel();
         } else if (context.getRequest().getOptions() != null && StringUtils.hasText(context.getRequest().getOptions().getModel())) {
-            return KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, context.getRequest().getOptions().getModel());
+            return context.getRequest().getOptions().getModel();
         }
-        return MODEL_NONE;
+        return null;
     }
 
     @Override

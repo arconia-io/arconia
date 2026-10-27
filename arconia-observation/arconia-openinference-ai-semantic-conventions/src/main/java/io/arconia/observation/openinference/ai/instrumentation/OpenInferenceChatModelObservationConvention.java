@@ -12,6 +12,7 @@ import com.arize.semconv.trace.SemanticConventions;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
@@ -34,8 +35,6 @@ import org.springframework.util.StringUtils;
  */
 public final class OpenInferenceChatModelObservationConvention extends DefaultChatModelObservationConvention {
 
-    private static final KeyValue MODEL_NONE = KeyValue.of(SemanticConventions.LLM_MODEL_NAME, KeyValue.NONE_VALUE);
-
     private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenInferenceOptions openInferenceOptions;
@@ -46,7 +45,9 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
 
     @Override
     public KeyValues getLowCardinalityKeyValues(ChatModelObservationContext context) {
-        return KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context), llmModelName(context));
+        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context));
+        String modelName = modelName(context);
+        return modelName != null ? keyValues.and(SemanticConventions.LLM_MODEL_NAME, modelName) : keyValues;
     }
 
     @Override
@@ -66,13 +67,13 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
                 OpenInferenceConventionsConverters.toLlmSystem(context.getOperationMetadata().provider()));
     }
 
-    private KeyValue llmModelName(ChatModelObservationContext context) {
+    private @Nullable String modelName(ChatModelObservationContext context) {
         if (context.getResponse() != null && StringUtils.hasText(context.getResponse().getMetadata().getModel())) {
-            return KeyValue.of(SemanticConventions.LLM_MODEL_NAME, context.getResponse().getMetadata().getModel());
+            return context.getResponse().getMetadata().getModel();
         } else if (context.getRequest().getOptions() != null && StringUtils.hasText(context.getRequest().getOptions().getModel())) {
-            return KeyValue.of(SemanticConventions.LLM_MODEL_NAME, context.getRequest().getOptions().getModel());
+            return context.getRequest().getOptions().getModel();
         }
-        return MODEL_NONE;
+        return null;
     }
 
     @Override
@@ -106,49 +107,38 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             return keyValues;
         }
 
-        List<Message> messages = new ArrayList<>(context.getRequest().getInstructions());
-        for (int i = 0; i < messages.size(); i++) {
-            Message message = messages.get(i);
-            keyValues = keyValues.and(
-                    SemanticConventions.LLM_INPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_ROLE,
-                    message.getMessageType().getValue()
-            );
-            keyValues = addMessageContent(keyValues,
-                    SemanticConventions.LLM_INPUT_MESSAGES + "." + i,
-                    message,
-                    openInferenceOptions.isHideInputText(),
-                    openInferenceOptions.isHideInputImages());
+        int i = 0;
+        for (Message message : context.getRequest().getInstructions()) {
+            if (message instanceof ToolResponseMessage toolResponseMessage) {
+                // Each tool response is a separate message, so the results of parallel tool calls are all recorded.
+                for (ToolResponseMessage.ToolResponse toolResponse : toolResponseMessage.getResponses()) {
+                    String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
+                    keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
+                            message.getMessageType().getValue());
+                    keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
+                            toolResponse.id());
+                    keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_NAME,
+                            toolResponse.name());
+                    keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
+                            openInferenceOptions.isHideInputText() ? OpenInferenceOptions.REDACTED_PLACEHOLDER
+                                    : Objects.requireNonNullElse(toolResponse.responseData(), ""));
+                    i++;
+                }
+                continue;
+            }
+
+            String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
+            keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
+                    message.getMessageType().getValue());
+            keyValues = addMessageContent(keyValues, messagePrefix, message,
+                    openInferenceOptions.isHideInputText(), openInferenceOptions.isHideInputImages());
 
             if (message instanceof AssistantMessage assistantMessage) {
                 List<AssistantMessage.ToolCall> toolCalls = new ArrayList<>(assistantMessage.getToolCalls());
-                String toolCallObservationPrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_TOOL_CALLS;
+                String toolCallObservationPrefix = messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALLS;
                 keyValues = addToolCalls(keyValues, toolCalls, toolCallObservationPrefix, openInferenceOptions.isHideInputText());
             }
-
-            if (message instanceof ToolResponseMessage toolResponseMessage) {
-                List<ToolResponseMessage.ToolResponse> toolResponses = toolResponseMessage.getResponses();
-                if (CollectionUtils.isEmpty(toolResponses)) {
-                    continue;
-                }
-                // Even though Spring AI supports parallel tool calling, OpenInference doesn't provide a way to
-                // include multiple tool call responses in the same message. So we only include the first response.
-                keyValues = keyValues.and(
-                        SemanticConventions.LLM_INPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
-                        toolResponses.getFirst().id()
-                );
-                // Since there is no structured support for tool call responses, we include the first response content
-                // as the main message content.
-                if (!openInferenceOptions.isHideInputText()) {
-                    keyValues = keyValues.and(
-                            SemanticConventions.LLM_INPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_CONTENT,
-                            toolResponses.getFirst().responseData()
-                    );
-                }
-                keyValues = keyValues.and(
-                        SemanticConventions.LLM_INPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_NAME,
-                        toolResponses.getFirst().name()
-                );
-            }
+            i++;
         }
 
         return keyValues;
@@ -360,21 +350,25 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         Object data = media.getData();
         if (data instanceof String url) {
             if (url.startsWith("data:") && url.contains(";base64,")) {
-                return truncateBase64DataUri(url);
+                return limitBase64DataUri(url);
             }
             return url;
         } else if (data instanceof byte[] bytes) {
             String base64 = Base64.getEncoder().encodeToString(bytes);
             String dataUri = "data:" + media.getMimeType() + ";base64," + base64;
-            return truncateBase64DataUri(dataUri);
+            return limitBase64DataUri(dataUri);
         }
         return "";
     }
 
-    private String truncateBase64DataUri(String dataUri) {
+    /**
+     * Redacts a base64 data URI longer than the configured maximum length, as the OpenInference
+     * specification requires. A truncated data URI would be invalid.
+     */
+    private String limitBase64DataUri(String dataUri) {
         long maxLength = openInferenceOptions.getBase64ImageMaxLength();
         if (maxLength > 0 && dataUri.length() > maxLength) {
-            return dataUri.substring(0, (int) maxLength);
+            return OpenInferenceOptions.REDACTED_PLACEHOLDER;
         }
         return dataUri;
     }

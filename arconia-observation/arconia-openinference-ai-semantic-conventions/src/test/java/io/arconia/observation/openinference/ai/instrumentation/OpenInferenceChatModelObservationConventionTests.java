@@ -92,6 +92,18 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldNotHaveModelNameWhenUnknown() {
+        Prompt prompt = Prompt.builder().content("Hey").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(prompt)
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        assertThat(observationConvention.getLowCardinalityKeyValues(context)).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(SemanticConventions.LLM_MODEL_NAME));
+    }
+
+    @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
         ChatOptions options = ChatOptions.builder().model("mistral").build();
         Prompt prompt = Prompt.builder().content("Hey").chatOptions(options).build();
@@ -282,6 +294,34 @@ class OpenInferenceChatModelObservationConventionTests {
 
 
     @Test
+    void shouldRecordEachParallelToolResponseAsMessage() {
+        List<Message> messages = List.of(
+                ToolResponseMessage.builder().responses(List.of(
+                        new ToolResponseMessage.ToolResponse("call_1", "weather_tool", "sunny"),
+                        new ToolResponseMessage.ToolResponse("call_2", "time_tool", "10:00")
+                )).build(),
+                new UserMessage("Thanks")
+        );
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_ROLE, "tool"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALL_ID, "call_1"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_NAME, "weather_tool"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT, "sunny"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_ROLE, "tool"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_TOOL_CALL_ID, "call_2"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_NAME, "time_tool"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_CONTENT, "10:00"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".2." + SemanticConventions.MESSAGE_ROLE, "user"),
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".2." + SemanticConventions.MESSAGE_CONTENT, "Thanks")
+        );
+    }
+
+    @Test
     void shouldUseMessageContentsForMultimodalInputMessages() {
         UserMessage userMessage = UserMessage.builder()
                 .text("What's in this image?")
@@ -415,7 +455,7 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldTruncateBase64ImageData() {
+    void shouldRedactBase64ImageDataLongerThanMaxLength() {
         byte[] imageBytes = new byte[50_000];
         UserMessage userMessage = UserMessage.builder()
                 .text("What's in this image?")
@@ -441,8 +481,8 @@ class OpenInferenceChatModelObservationConventionTests {
         KeyValues keyValues = limitedConvention.getHighCardinalityKeyValues(context);
         String imageUrl = findKeyValue(keyValues, imageUrlKey);
 
-        assertThat(imageUrl).hasSize(100);
-        assertThat(imageUrl).startsWith("data:image/png;base64,");
+        // A truncated data URI would be invalid, so the specification requires redacting it.
+        assertThat(imageUrl).isEqualTo(OpenInferenceOptions.REDACTED_PLACEHOLDER);
     }
 
     @Test

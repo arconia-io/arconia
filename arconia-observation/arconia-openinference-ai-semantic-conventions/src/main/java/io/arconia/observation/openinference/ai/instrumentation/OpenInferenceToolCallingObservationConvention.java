@@ -1,5 +1,8 @@
 package io.arconia.observation.openinference.ai.instrumentation;
 
+import java.util.List;
+import java.util.Map;
+
 import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.common.KeyValue;
@@ -8,12 +11,15 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.tool.observation.DefaultToolCallingObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
+import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.MimeTypeUtils;
 
 /**
  * {@link ToolCallingObservationConvention} for OpenInference.
  */
 public class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
+
+    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenInferenceOptions openInferenceOptions;
 
@@ -72,9 +78,24 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
         if (openInferenceOptions.isHideOutputs()) {
             return keyValues.and(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER)
                     .and(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
-        } else {
-            return keyValues.and(SemanticConventions.OUTPUT_VALUE, toolCallResult != null ? toolCallResult : "{}")
-                    .and(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE);
+        }
+        if (toolCallResult == null) {
+            return keyValues;
+        }
+        return keyValues.and(SemanticConventions.OUTPUT_VALUE, toolCallResult)
+                .and(SemanticConventions.OUTPUT_MIME_TYPE, isJson(toolCallResult)
+                        ? MimeTypeUtils.APPLICATION_JSON_VALUE : MimeTypeUtils.TEXT_PLAIN_VALUE);
+    }
+
+    /**
+     * Whether the value is a JSON object or array, as opposed to plain text such as a bare string.
+     */
+    private boolean isJson(String value) {
+        try {
+            Object parsed = jsonHelper.fromJson(value, Object.class);
+            return parsed instanceof Map || parsed instanceof List;
+        } catch (RuntimeException ex) {
+            return false;
         }
     }
 

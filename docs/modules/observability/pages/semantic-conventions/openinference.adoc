@@ -136,7 +136,7 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 
 |	`arconia.observations.conventions.openinference.ai.base64-image-max-length`
 |	`32 000`
-|	Maximum length of a base64-encoded image.
+|	Maximum length of a base64-encoded image. Longer images are redacted.
 
 |	`arconia.observations.conventions.openinference.ai.hide-choices`
 |	`false`

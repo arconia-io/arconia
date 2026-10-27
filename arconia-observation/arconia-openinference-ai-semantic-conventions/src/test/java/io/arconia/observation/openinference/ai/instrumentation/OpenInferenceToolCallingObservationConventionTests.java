@@ -73,6 +73,45 @@ class OpenInferenceToolCallingObservationConventionTests {
         JSONAssert.assertEquals(toolCallArguments, findKeyValue(keyValues, SemanticConventions.INPUT_VALUE), JSONCompareMode.LENIENT);
     }
 
+    @Test
+    void shouldHaveJsonOutputWhenResultIsJson() {
+        var context = createContext();
+        context.setToolCallResult("""
+                {"temperature": 14}""");
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, """
+                        {"temperature": 14}"""),
+                KeyValue.of(SemanticConventions.OUTPUT_MIME_TYPE, "application/json")
+        );
+    }
+
+    @Test
+    void shouldHaveTextOutputWhenResultIsPlainText() {
+        var context = createContext();
+        context.setToolCallResult("rainy, 57°F");
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, "rainy, 57°F"),
+                KeyValue.of(SemanticConventions.OUTPUT_MIME_TYPE, "text/plain")
+        );
+    }
+
+    @Test
+    void shouldNotHaveOutputWithoutResult() {
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(createContext());
+
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isIn(SemanticConventions.OUTPUT_VALUE, SemanticConventions.OUTPUT_MIME_TYPE));
+    }
+
+    private ToolCallingObservationContext createContext() {
+        return ToolCallingObservationContext.builder()
+                .toolDefinition(ToolDefinition.builder().name("weather").description("Get the weather").inputSchema("{}").build())
+                .toolCallArguments("{}")
+                .build();
+    }
+
     private String findKeyValue(KeyValues keyValues, String key) {
         return keyValues.stream()
                 .filter(kv -> Objects.equals(kv.getKey(), key))

@@ -20,6 +20,7 @@ class OpenInferenceConventionsConvertersTests {
             "BEDROCK_CONVERSE, aws",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, google",
+            "google_genai, google",
             "MISTRAL_AI, mistralai",
             "OPENAI, openai",
             "VERTEX_AI, google",
@@ -52,7 +53,10 @@ class OpenInferenceConventionsConvertersTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
+            "BEDROCK_CONVERSE, amazon",
             "DEEPSEEK, deepseek",
+            "GOOGLE_GENAI_AI, vertexai",
+            "google_genai, vertexai",
             "MISTRAL_AI, mistralai",
             "OPENAI, openai",
             "OLLAMA, ollama",
