@@ -36,7 +36,7 @@ class OpenLitChatClientObservationConventionTests {
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
-                KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM, "spring_ai")
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai")
         );
     }
 

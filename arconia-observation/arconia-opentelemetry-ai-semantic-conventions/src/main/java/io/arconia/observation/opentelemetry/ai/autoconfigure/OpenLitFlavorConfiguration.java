@@ -17,14 +17,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitImageModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "openlit")
@@ -51,8 +51,8 @@ class OpenLitFlavorConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ToolCallingObservationConvention.class)
-    OpenLitToolCallingObservationConvention toolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
-        return new OpenLitToolCallingObservationConvention(properties);
+    OpenTelemetryToolCallingObservationConvention toolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {
+        return new OpenTelemetryToolCallingObservationConvention(properties);
     }
 
     @Bean
@@ -79,8 +79,8 @@ class OpenLitFlavorConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(AdvisorObservationConvention.class)
-        OpenLitAdvisorObservationConvention advisorObservationConvention() {
-            return new OpenLitAdvisorObservationConvention();
+        OpenTelemetryAdvisorObservationConvention advisorObservationConvention() {
+            return new OpenTelemetryAdvisorObservationConvention();
         }
 
     }

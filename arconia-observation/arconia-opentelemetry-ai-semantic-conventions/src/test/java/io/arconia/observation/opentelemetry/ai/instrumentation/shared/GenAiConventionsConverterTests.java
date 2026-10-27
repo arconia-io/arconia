@@ -57,9 +57,10 @@ class GenAiConventionsConverterTests {
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gemini",
+            "google_genai_ai, gcp.gemini",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
-            "VERTEX_AI, vertex_ai",
+            "VERTEX_AI, gcp.vertex_ai",
             "anthropic, anthropic",
             "' ANTHROPIC ', anthropic",
             "'\tOPENAI\n', openai"

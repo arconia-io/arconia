@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.openlit;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
@@ -22,7 +23,7 @@ public final class OpenLitChatModelObservationConvention extends OpenTelemetryCh
 
     @Override
     protected KeyValue aiProvider(ChatModelObservationContext context) {
-        return KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM,
+        return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(),
                 GenAiConventionsConverter.toOpenLitProviderName(context.getOperationMetadata().provider()));
     }
 

@@ -61,25 +61,16 @@ public final class GenAiConventionsConverter {
     }
 
     /**
-     * Converts an {@link AiProvider} value to an OpenLIT {@code gen_ai.system} value.
+     * Converts an {@link AiProvider} value to a {@code gen_ai.provider.name} value recognized by OpenLIT.
+     * It differs from {@link #toProviderName(String)} only for Google GenAI, reported as {@code gcp.gemini},
+     * which OpenLIT recognizes, instead of {@code gcp.gen_ai}.
      */
     public static String toOpenLitProviderName(String aiProvider) {
         Assert.hasText(aiProvider, "aiProvider cannot be null or empty");
-        try {
-            AiProvider provider = AiProvider.valueOf(aiProvider.toUpperCase().strip());
-            return switch (provider) {
-                case AiProvider.ANTHROPIC -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.ANTHROPIC;
-                case AiProvider.BEDROCK_CONVERSE -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AWS_BEDROCK;
-                case AiProvider.DEEPSEEK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.DEEPSEEK;
-                case AiProvider.GOOGLE_GENAI_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEMINI;
-                case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
-                case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
-                case AiProvider.VERTEX_AI -> "vertex_ai";
-                default -> provider.value();
-            };
-        } catch (IllegalArgumentException e) {
-            return aiProvider;
+        if (AiProvider.GOOGLE_GENAI_AI.name().equalsIgnoreCase(aiProvider.strip())) {
+            return GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEMINI;
         }
+        return toProviderName(aiProvider);
     }
 
     /**

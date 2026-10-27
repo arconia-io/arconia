@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.openlit;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
@@ -18,7 +19,7 @@ public final class OpenLitEmbeddingModelObservationConvention extends OpenTeleme
 
     @Override
     protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
-        return KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM,
+        return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(),
                 GenAiConventionsConverter.toOpenLitProviderName(context.getOperationMetadata().provider()));
     }
 

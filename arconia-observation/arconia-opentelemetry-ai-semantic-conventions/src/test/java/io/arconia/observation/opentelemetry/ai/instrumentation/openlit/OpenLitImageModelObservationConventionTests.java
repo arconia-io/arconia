@@ -38,17 +38,9 @@ class OpenLitImageModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "image"),
-                KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM, "openai"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "openai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "dall-e-3")
         );
-    }
-
-    @Test
-    void shouldNotHaveOtelProviderNameKey() {
-        ImageModelObservationContext context = createContext("dall-e-3");
-
-        assertThat(convention.getLowCardinalityKeyValues(context)).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey()));
     }
 
     @Test

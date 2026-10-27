@@ -6,7 +6,6 @@ import org.springframework.ai.chat.client.observation.ChatClientObservationConte
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLIT flavor of {@link OpenTelemetryChatClientObservationConvention}.
@@ -17,12 +16,6 @@ public final class OpenLitChatClientObservationConvention extends OpenTelemetryC
 
     public OpenLitChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);
-    }
-
-    @Override
-    protected KeyValue aiProvider(ChatClientObservationContext context) {
-        return KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM,
-                GenAiConventionsConverter.toOpenLitProviderName(context.getOperationMetadata().provider()));
     }
 
     @Override

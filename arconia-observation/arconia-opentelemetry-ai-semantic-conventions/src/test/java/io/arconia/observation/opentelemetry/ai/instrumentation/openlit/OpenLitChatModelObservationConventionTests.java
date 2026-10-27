@@ -64,17 +64,9 @@ class OpenLitChatModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "chat"),
-                KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM, "spring_ai"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "mistral")
         );
-    }
-
-    @Test
-    void shouldNotHaveOtelProviderNameKey() {
-        ChatModelObservationContext context = createContext("mistral");
-
-        assertThat(convention.getLowCardinalityKeyValues(context)).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey()));
     }
 
     @Test

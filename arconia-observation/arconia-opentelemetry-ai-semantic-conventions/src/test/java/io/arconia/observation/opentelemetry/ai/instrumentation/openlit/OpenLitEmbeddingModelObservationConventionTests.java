@@ -46,17 +46,9 @@ class OpenLitEmbeddingModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "embeddings"),
-                KeyValue.of(OpenLitAttributes.GEN_AI_SYSTEM, "openai"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "openai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "text-embedding-3-small")
         );
-    }
-
-    @Test
-    void shouldNotHaveOtelProviderNameKey() {
-        EmbeddingModelObservationContext context = createContext("text-embedding-3-small");
-
-        assertThat(convention.getLowCardinalityKeyValues(context)).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey()));
     }
 
     @Test

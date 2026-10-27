@@ -27,17 +27,16 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmi
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitImageModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelLogEventObservationHandler;
@@ -476,7 +475,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenLitChatModelObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenLitEmbeddingModelObservationConvention.class);
-                    assertThat(context).hasSingleBean(OpenLitToolCallingObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenLitImageModelObservationConvention.class);
                 });
     }
@@ -495,7 +494,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenLitChatClientObservationConvention.class);
-                    assertThat(context).hasSingleBean(OpenLitAdvisorObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryAdvisorObservationConvention.class);
                 });
     }
 
@@ -506,7 +505,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenLitChatClientObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenLitAdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryAdvisorObservationConvention.class);
                 });
     }
 
@@ -541,7 +540,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withUserConfiguration(CustomToolCallingConventionConfig.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(ToolCallingObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenLitToolCallingObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryToolCallingObservationConvention.class);
                 });
     }
 
@@ -574,7 +573,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withUserConfiguration(CustomAdvisorConventionConfig.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(AdvisorObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenLitAdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryAdvisorObservationConvention.class);
                 });
     }
 
