@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -266,6 +267,59 @@ class OpenTelemetryResourceAutoConfigurationTests {
     }
 
     @Test
+    void attributeFilteringUsesLongestMatch() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.process=false",
+                "arconia.otel.resource.enable.process.pid=true"
+        ).run(context -> {
+            Resource resource = filter(context, "process.pid", "process.owner", "host.name");
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.pid"))).isNotNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("process.owner"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNotNull();
+        });
+    }
+
+    @Test
+    void attributeFilteringKeepsMoreSpecificEnabledNamesWhenAllDisabled() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.all=false",
+                "arconia.otel.resource.enable.service=true"
+        ).run(context -> {
+            Resource resource = filter(context, "service.name", "service.version", "host.name");
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isNotNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.version"))).isNotNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+        });
+    }
+
+    @Test
+    void attributeFilteringRemovesMoreSpecificDisabledNamesWhenAllEnabled() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.all=true",
+                "arconia.otel.resource.enable.host=false"
+        ).run(context -> {
+            Resource resource = filter(context, "host.name", "service.name");
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("service.name"))).isNotNull();
+        });
+    }
+
+    @Test
+    void attributeFilteringMatchesWholeSegments() {
+        contextRunner.withPropertyValues(
+                "arconia.otel.resource.enable.host=false"
+        ).run(context -> {
+            Resource resource = filter(context, "host.name", "hostname.alias");
+
+            assertThat(resource.getAttribute(AttributeKey.stringKey("host.name"))).isNull();
+            assertThat(resource.getAttribute(AttributeKey.stringKey("hostname.alias"))).isNotNull();
+        });
+    }
+
+    @Test
     void attributeFilteringNotAppliedWhenAllEnabled() {
         contextRunner.withPropertyValues(
                 "arconia.otel.resource.enable.all=true"
@@ -352,6 +406,16 @@ class OpenTelemetryResourceAutoConfigurationTests {
             return new GitProperties(properties);
         }
 
+    }
+
+    private static Resource filter(AssertableApplicationContext context, String... attributeKeys) {
+        OpenTelemetryResourceBuilderCustomizer customizer = context.getBean(OpenTelemetryResourceBuilderCustomizer.class);
+        ResourceBuilder builder = Resource.empty().toBuilder();
+        for (String attributeKey : attributeKeys) {
+            builder.put(attributeKey, "value");
+        }
+        customizer.customize(builder);
+        return builder.build();
     }
 
     @Configuration(proxyBeanMethods = false)

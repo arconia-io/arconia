@@ -121,7 +121,19 @@ arconia:
         service.instance.id: false
 ----
 
-The `all` special key can be used to enable or disable all attributes at once via configuration properties.
+Each key matches the attributes whose names start with it, compared by dot-separated segments, and the longest match wins. For example, the following configuration disables all the `process.*` attributes except `process.pid`.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    resource:
+      enable:
+        process: false
+        process.pid: true
+----
+
+The `all` special key can be used to enable or disable all the attributes not matched by a more specific key. For example, the following configuration disables all attributes except the `service.*` ones.
 
 [source,yaml]
 ----
@@ -130,6 +142,7 @@ arconia:
     resource:
       enable:
         all: false
+        service: true
 ----
 
 === OpenTelemetry Environment Variables

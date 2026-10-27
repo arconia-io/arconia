@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.resource;
 
+import java.util.Map;
+
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.semconv.SchemaUrls;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.BuildResourceContributor;
@@ -109,23 +112,29 @@ public final class OpenTelemetryResourceAutoConfiguration {
     @Bean
     OpenTelemetryResourceBuilderCustomizer filterAttributes(OpenTelemetryResourceProperties properties) {
         return builder -> {
-            var attributeKeysMap = properties.getEnable();
-
-            var allKeys = attributeKeysMap.get("all");
-            if (allKeys == null) {
-                attributeKeysMap.forEach((key, enabled) -> {
-                    if (!enabled) {
-                        builder.removeIf(attributeKey -> attributeKey.getKey().startsWith(key));
-                    }
-                });
-                return;
+            Map<String, Boolean> enable = properties.getEnable();
+            if (!enable.isEmpty()) {
+                builder.removeIf(attributeKey -> !isEnabled(enable, attributeKey.getKey()));
             }
-
-            if (!allKeys) {
-                builder.removeIf(attributeKey -> true);
-            }
-
         };
+    }
+
+    /**
+     * Whether the attribute with the given key is enabled, using the longest matching name, compared
+     * by dot-separated segments, and falling back to the {@code all} key, like the Spring Boot
+     * {@code management.metrics.enable} properties.
+     */
+    static boolean isEnabled(Map<String, Boolean> enable, String attributeKey) {
+        String name = attributeKey;
+        while (StringUtils.hasLength(name)) {
+            Boolean enabled = enable.get(name);
+            if (enabled != null) {
+                return enabled;
+            }
+            int lastDot = name.lastIndexOf('.');
+            name = (lastDot != -1) ? name.substring(0, lastDot) : "";
+        }
+        return enable.getOrDefault("all", true);
     }
 
 }

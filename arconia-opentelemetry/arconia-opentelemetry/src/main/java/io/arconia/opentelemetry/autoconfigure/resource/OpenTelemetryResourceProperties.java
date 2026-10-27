@@ -35,7 +35,8 @@ public class OpenTelemetryResourceProperties {
 
     /**
      * Whether resource attributes having keys starting with the specified name should be enabled.
-     * The longest match wins. The key {@code all} can be used to enable/disable all attributes.
+     * The longest match wins, comparing dot-separated segments. The key {@code all} can be used to
+     * enable/disable all the attributes not matched by a more specific name.
      */
     private final Map<String, Boolean> enable = new LinkedHashMap<>();
 
