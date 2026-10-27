@@ -229,6 +229,14 @@ Maven::
 
 Refer to the https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[Datasource Micrometer documentation] for configuration options and more details.
 
+[WARNING]
+====
+With Datasource Micrometer 2.3.0 and its OpenTelemetry support, the following operations fail because of the instrumentation, while they work without it:
+
+* executing a `Statement` batch without any statement added to it, which fails with an `IndexOutOfBoundsException`;
+* executing queries on PostgreSQL, MySQL, or MariaDB connections whose JDBC URL has no `//` after the driver name, such as the short form `jdbc:postgresql:mydb`, which fail with a `NullPointerException`.
+====
+
 === Known Deviations
 
 The Datasource Micrometer instrumentation currently deviates from the OpenTelemetry Semantic Conventions for Database in the following ways:
@@ -238,6 +246,9 @@ The Datasource Micrometer instrumentation currently deviates from the OpenTeleme
 * The `db.client.operation.duration` metric gets the `db.query.text` attribute, which the conventions make opt-in for metrics because of its potentially high cardinality.
 * The `db.query.summary` attribute and the span name of `INSERT ... VALUES` queries wrongly include a `SELECT` operation, and `db.operation.name` uses underscores for operations made of several words, such as `CREATE_TABLE`, instead of matching the query summary.
 * Each query is also recorded with the `jdbc.query` metric from Micrometer, in addition to `db.client.operation.duration`.
+* The `db.namespace` attribute is not recorded for Microsoft SQL Server.
+* The `db.system.name` attribute is set to `other_sql` for all the databases except PostgreSQL, MySQL, MariaDB, and Microsoft SQL Server, instead of the values the conventions define for the other databases, such as `h2database`, `oracle.db`, and `ibm.db2`.
+* The `db.operation.name` and `db.collection.name` attributes are extracted from the query text, which the conventions advise against for SQL databases. For queries on several tables, such as joins, `db.collection.name` holds only the first table.
 
 == Generative AI
 
