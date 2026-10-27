@@ -24,7 +24,7 @@
 
 - **Dev Services.** First-class support for development and testing modes in Spring Boot applications. Dev Services automatically provisions external services using containers, making local development and testing easier, more productive, and more fun.
 - **OpenTelemetry.** Unified observability for Spring Boot applications, combining full support for OpenTelemetry and Micrometer for logs, metrics, and traces.
-- **AI Observability.** Pluggable semantic conventions for AI observability, including OpenTelemetry, OpenInference, OpenLit, OpenLLMetry, and LangSmith, with integrations for platforms like Arize Phoenix, Grafana LGTM, and OpenLit.
+- **AI Observability.** Pluggable semantic conventions for AI observability, including OpenTelemetry, OpenInference, OpenLIT, OpenLLMetry, and LangSmith, with integrations for platforms like Arize Phoenix, Grafana LGTM, and OpenLIT.
 - **Docling.** AI-powered document processing, enabling structured content extraction from PDFs, Office files, and HTML documents for use in AI pipelines.
 - **Multitenancy.** Built-in support for multitenant applications, covering web, data, security, and configuration aspects.
 - **Data.** Extending Spring Data with support for additional databases and data access scenarios not covered out of the box.

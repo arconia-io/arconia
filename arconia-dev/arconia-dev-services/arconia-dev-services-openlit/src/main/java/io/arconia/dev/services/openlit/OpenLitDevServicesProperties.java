@@ -14,7 +14,7 @@ import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
- * Properties for the OpenLit Dev Services.
+ * Properties for the OpenLIT Dev Services.
  */
 @ConfigurationProperties(prefix = OpenLitDevServicesProperties.CONFIG_PREFIX)
 public class OpenLitDevServicesProperties implements DevServicesProperties {
@@ -48,7 +48,7 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     private List<String> networkAliases = new ArrayList<>();
 
     /**
-     * Fixed port for exposing the OpenLit UI to the host.
+     * Fixed port for exposing the OpenLIT UI to the host.
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int port = 0;

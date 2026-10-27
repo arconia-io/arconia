@@ -17,7 +17,7 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetail
 import io.arconia.testcontainers.openlit.OpenLitContainer;
 
 /**
- * Auto-configuration for OpenLit Dev Services.
+ * Auto-configuration for OpenLIT Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
@@ -42,7 +42,7 @@ public final class OpenLitDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("openlit")
-                    .description("OpenLit Dev Service")
+                    .description("OpenLIT Dev Service")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(OpenLitContainer.class, () -> createContainer(properties))
@@ -50,7 +50,7 @@ public final class OpenLitDevServicesAutoConfiguration {
                     .additionalPort(OpenLitContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .additionalPort(OpenLitContainer.OTLP_HTTP_PORT, properties.getOtlpHttpPort())
                     .discovery(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
-                    .link("OpenLit UI", OpenLitContainer.UI_PORT));
+                    .link("OpenLIT UI", OpenLitContainer.UI_PORT));
         }
 
     }

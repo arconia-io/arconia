@@ -111,7 +111,7 @@ In test mode, every test application context starts its own containers and stops
 
 Spring caches test application contexts, so the test classes sharing a context also share its containers. A test class with a different configuration gets its own context and starts its own set of containers: different properties, a different set of mocked beans (`@MockitoBean`), a test slice, or `@DirtiesContext` all lead to a new context. To keep the suite fast, put the configuration your tests share in an `application-test.yml` file or a common base class rather than on individual test classes, and consider starting containers in parallel (see xref:index.adoc#_startup_sequence[Startup Sequence]). The `spring.test.context.cache.maxSize` property limits how many contexts, and so how many sets of containers, are kept alive at once.
 
-The observability Dev Services (xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], and xref:openlit.adoc[OpenLit]) are skipped in test mode by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set the `arconia.dev.services.<service-name>.skip-in-tests` property to `false`. Prefer a configuration those tests share, such as a dedicated profile, over properties on each test class, which would start a new context and new containers for each of them:
+The observability Dev Services (xref:lgtm.adoc[Grafana LGTM], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], and xref:openlit.adoc[OpenLIT]) are skipped in test mode by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set the `arconia.dev.services.<service-name>.skip-in-tests` property to `false`. Prefer a configuration those tests share, such as a dedicated profile, over properties on each test class, which would start a new context and new containers for each of them:
 
 [source,yaml]
 ----
@@ -568,7 +568,7 @@ In AOT-processed tests (`spring.aot.enabled=true`), Dev Services are excluded fr
 ** xref:rabbitmq.adoc[RabbitMQ]
 * Observability
 ** xref:lgtm.adoc[Grafana LGTM]
-** xref:openlit.adoc[OpenLit]
+** xref:openlit.adoc[OpenLIT]
 ** xref:otel-collector.adoc[OpenTelemetry Collector]
 ** xref:phoenix.adoc[Phoenix]
 * xref:docling.adoc[Docling]

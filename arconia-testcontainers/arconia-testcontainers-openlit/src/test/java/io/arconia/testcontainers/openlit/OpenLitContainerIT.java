@@ -4,8 +4,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+
+import com.github.dockerjava.api.model.Container;
 
 import org.junit.jupiter.api.Test;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -63,8 +68,49 @@ class OpenLitContainerIT {
             var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
 
+            String networkId = container.getNetwork().getId();
+            List<String> containerIds = containersOnNetwork(networkId);
+            assertThat(containerIds).hasSize(2);
+
             container.stop();
+            assertThat(existingContainers(containerIds)).isEmpty();
+            assertThat(networkExists(networkId)).isFalse();
         }
+    }
+
+    @Test
+    void containerKeepsProvidedNetworkWhenStopped() {
+        try (var network = Network.newNetwork();
+                var container = new OpenLitContainer(IMAGE).withClickHouseImage(CLICKHOUSE_IMAGE).withNetwork(network)) {
+            container.start();
+            assertThat(container.getClickHouseLogs()).isNotEmpty();
+
+            container.stop();
+            assertThat(networkExists(network.getId())).isTrue();
+        }
+    }
+
+    private static List<String> containersOnNetwork(String networkId) {
+        return DockerClientFactory.instance().client().listContainersCmd()
+                .withNetworkFilter(List.of(networkId))
+                .exec()
+                .stream()
+                .map(Container::getId)
+                .toList();
+    }
+
+    private static List<Container> existingContainers(List<String> containerIds) {
+        return DockerClientFactory.instance().client().listContainersCmd()
+                .withShowAll(true)
+                .withIdFilter(containerIds)
+                .exec();
+    }
+
+    private static boolean networkExists(String networkId) {
+        return !DockerClientFactory.instance().client().listNetworksCmd()
+                .withIdFilter(networkId)
+                .exec()
+                .isEmpty();
     }
 
 }

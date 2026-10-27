@@ -19,8 +19,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Testcontainers OpenLit"
-                description = "Testcontainers OpenLit."
+                name = "Testcontainers OpenLIT"
+                description = "Testcontainers OpenLIT."
             }
         }
     }

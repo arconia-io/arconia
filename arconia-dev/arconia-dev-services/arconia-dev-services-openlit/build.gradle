@@ -31,8 +31,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             pom {
-                name = "Arconia Dev Services OpenLit"
-                description = "Arconia Dev Services OpenLit."
+                name = "Arconia Dev Services OpenLIT"
+                description = "Arconia Dev Services OpenLIT."
             }
         }
     }

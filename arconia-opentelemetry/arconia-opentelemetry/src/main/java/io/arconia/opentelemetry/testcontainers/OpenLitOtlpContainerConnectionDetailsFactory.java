@@ -12,7 +12,7 @@ import io.arconia.testcontainers.openlit.OpenLitContainer;
 
 /**
  * Factory for creating {@link OtlpConnectionDetails} for all OpenTelemetry signals
- * for OpenLit containers.
+ * for OpenLIT containers.
  */
 class OpenLitOtlpContainerConnectionDetailsFactory
         extends ContainerConnectionDetailsFactory<OpenLitContainer, OtlpConnectionDetails> {

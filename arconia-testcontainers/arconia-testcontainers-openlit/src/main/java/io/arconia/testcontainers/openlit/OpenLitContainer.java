@@ -3,6 +3,7 @@ package io.arconia.testcontainers.openlit;
 import java.time.Duration;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -13,15 +14,14 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * A {@link GenericContainer} for OpenLit.
+ * A {@link GenericContainer} for OpenLIT.
  * <p>
- * Manages an internal ClickHouse container, which OpenLit uses as its backend database.
- * The ClickHouse container is started automatically before OpenLit via Testcontainers'
- * dependency mechanism.
+ * Manages an internal ClickHouse container, which OpenLIT uses as its backend database.
+ * The ClickHouse container is started before OpenLIT and stopped together with it.
  * <p>
  * If a network is set on this container via {@link #withNetwork(Network)} before starting,
- * both OpenLit and its ClickHouse instance will join that network. Otherwise, a private
- * network is created automatically.
+ * both OpenLIT and its ClickHouse instance will join that network. Otherwise, a private
+ * network is created automatically, and it's removed when the container is stopped.
  */
 public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
@@ -39,7 +39,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     // keeping the container hash deterministic and allowing Testcontainers to find the existing container.
     private static final String REUSE_NETWORK_NAME = "arconia-openlit";
 
-    // The OpenLit image bundles the OpenTelemetry Collector but ships no configuration for it.
+    // The OpenLIT image bundles the OpenTelemetry Collector but ships no configuration for it.
     // This matches the configuration mounted by the upstream docker-compose assets, with values
     // substituted at configure() time rather than relying on the Collector's env var expansion.
     private static final String OTEL_COLLECTOR_CONFIG_TEMPLATE = """
@@ -96,11 +96,15 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
     private DockerImageName clickHouseImageName = DEFAULT_CLICKHOUSE_IMAGE_NAME;
 
+    private @Nullable ClickHouseContainer clickHouseContainer;
+
+    private @Nullable Network privateNetwork;
+
     public OpenLitContainer(DockerImageName imageName) {
         super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(UI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT);
-        // ClickHouse initialization and the Next.js startup make OpenLit slow to come up.
+        // ClickHouse initialization and the Next.js startup make OpenLIT slow to come up.
         // The OTLP endpoint is checked explicitly because a custom wait strategy replaces the default
         // port check. The Collector answers GET with 405 on the OTLP paths and starts the gRPC listener
         // together with the HTTP one. An HTTP check is used instead of a port check because the latter
@@ -121,23 +125,57 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     }
 
     @Override
+    public void start() {
+        if (clickHouseContainer == null) {
+            // A network set before starting, such as the one shared by the Arconia Dev Services,
+            // is used as it is and never closed here, since other containers may be attached to it.
+            Network network = getNetwork();
+            if (network == null) {
+                if (isShouldBeReused()) {
+                    network = resolveNamedNetwork();
+                }
+                else {
+                    network = Network.newNetwork();
+                    privateNetwork = network;
+                }
+                withNetwork(network);
+            }
+
+            clickHouseContainer = new ClickHouseContainer(
+                    clickHouseImageName.asCompatibleSubstituteFor("clickhouse/clickhouse-server"))
+                    .withNetwork(network)
+                    .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
+                    .withReuse(isShouldBeReused());
+        }
+        clickHouseContainer.start();
+        super.start();
+    }
+
+    /**
+     * Stops OpenLIT and its ClickHouse container, and removes the network created for them, if any.
+     */
+    @Override
+    public void stop() {
+        super.stop();
+        if (clickHouseContainer != null) {
+            clickHouseContainer.stop();
+            clickHouseContainer = null;
+        }
+        if (privateNetwork != null) {
+            privateNetwork.close();
+            privateNetwork = null;
+            setNetwork(null);
+        }
+    }
+
+    @Override
     protected void configure() {
         super.configure();
 
-        Network network = getNetwork();
-        if (network == null) {
-            network = isShouldBeReused() ? resolveNamedNetwork() : Network.newNetwork();
-            withNetwork(network);
+        ClickHouseContainer clickHouseContainer = this.clickHouseContainer;
+        if (clickHouseContainer == null) {
+            throw new IllegalStateException("The ClickHouse container is created when the OpenLIT container starts");
         }
-
-        ClickHouseContainer clickHouseContainer = new ClickHouseContainer(
-                clickHouseImageName.asCompatibleSubstituteFor("clickhouse/clickhouse-server"))
-                .withNetwork(network)
-                .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
-                .withReuse(isShouldBeReused());
-
-        clickHouseContainer.start();
-        dependsOn(clickHouseContainer);
 
         String otelCollectorConfig = OTEL_COLLECTOR_CONFIG_TEMPLATE.formatted(
                 CLICKHOUSE_NETWORK_ALIAS, clickHouseContainer.getDatabaseName(),
@@ -162,11 +200,22 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         env.putIfAbsent("SQLITE_DATABASE_URL", "file:/app/client/data/data.db");
         this.withTmpFs(Map.of("/app/client/data", "rw"));
 
-        // Demo account created by the OpenLit seed, used for automatic sign-in.
+        // Demo account created by the OpenLIT seed, used for automatic sign-in.
         env.putIfAbsent("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
         env.putIfAbsent("DEMO_ACCOUNT_PASSWORD", "openlituser");
 
         this.withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
+    }
+
+    /**
+     * Returns the logs of the internal ClickHouse container, useful when OpenLIT fails
+     * because of its database.
+     */
+    public String getClickHouseLogs() {
+        if (clickHouseContainer == null) {
+            throw new IllegalStateException("The ClickHouse container is created when the OpenLIT container starts");
+        }
+        return clickHouseContainer.getLogs();
     }
 
     public String getOpenLitUrl() {

@@ -1,9 +1,9 @@
-= OpenLit Dev Service
+= OpenLIT Dev Service
 :service-name: openlit
 
-A service providing https://openlit.io[OpenLit], an AI Observability and Evaluation platform based on OpenTelemetry, for development and testing purposes. It consists of:
+A service providing https://openlit.io[OpenLIT], an AI Observability and Evaluation platform based on OpenTelemetry, for development and testing purposes. It consists of:
 
-* https://openlit.io[OpenLit] for visualizing and exploring telemetry data from AI applications.
+* https://openlit.io[OpenLIT] for visualizing and exploring telemetry data from AI applications.
 * https://clickhouse.com[ClickHouse] as the backend database for storing telemetry data.
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
@@ -25,21 +25,21 @@ include::partial$running-application.adoc[]
 
 In test mode, the Dev Service is skipped by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set `arconia.dev.services.{service-name}.skip-in-tests` to `false`, preferably in a configuration shared by those tests, such as an `application-test.yml` file, so that they share one application context and one container (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
 
-By default, when running the application in dev mode, multiple applications running simultaneously use the same OpenLit Dev Service: the application connects to a running OpenLit Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+By default, when running the application in dev mode, multiple applications running simultaneously use the same OpenLIT Dev Service: the application connects to a running OpenLIT Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
-== Accessing OpenLit
+== Accessing OpenLIT
 
-The application logs will show you the URL where you can access the OpenLit UI.
+The application logs will show you the URL where you can access the OpenLIT UI.
 
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'openlit' is ready in container <container-id> (ghcr.io/openlit/openlit, localhost:<port>, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'openlit' links: OpenLit UI: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'openlit' links: OpenLIT UI: http://localhost:<port>
 ----
 
-The service is pre-configured with a demo account which is automatically authenticated when accessing OpenLit the first time. The credentials are: `user@openlit.io` (username) and `openlituser` (password).
+The service is pre-configured with a demo account which is automatically authenticated when accessing OpenLIT the first time. The credentials are: `user@openlit.io` (username) and `openlituser` (password).
 
-OpenLit restricts a few operations for the demo account, such as changing the database configuration and deleting API keys or prompts. If you need them, disable the automatic sign-in by setting the `DEMO_ACCOUNT_EMAIL` environment variable to an empty value and register a new user from the OpenLit login page.
+OpenLIT restricts a few operations for the demo account, such as changing the database configuration and deleting API keys or prompts. If you need them, disable the automatic sign-in by setting the `DEMO_ACCOUNT_EMAIL` environment variable to an empty value, and sign in with the same credentials from the OpenLIT login page: the restrictions only apply while the account is configured as the demo account.
 
 [source,yaml]
 ----
@@ -78,7 +78,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.port`
 | `0`
-| Fixed port for exposing the OpenLit UI port to the host. When it's 0 (default), a random available port is assigned dynamically.
+| Fixed port for exposing the OpenLIT UI port to the host. When it's 0 (default), a random available port is assigned dynamically.
 
 | `arconia.dev.services.{service-name}.resources`
 | `[]`
