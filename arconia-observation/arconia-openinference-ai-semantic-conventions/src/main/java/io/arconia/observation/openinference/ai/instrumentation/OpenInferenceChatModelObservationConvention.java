@@ -98,8 +98,6 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         keyValues = usageInputTokens(keyValues, context);
         keyValues = usageOutputTokens(keyValues, context);
         keyValues = usageTotalTokens(keyValues, context);
-        keyValues = usageCacheReadInputTokens(keyValues, context);
-        keyValues = usageCacheWriteInputTokens(keyValues, context);
 
         return keyValues;
     }
@@ -346,26 +344,6 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             return keyValues.and(
                     SemanticConventions.LLM_TOKEN_COUNT_TOTAL,
                     String.valueOf(context.getResponse().getMetadata().getUsage().getTotalTokens()));
-        }
-        return keyValues;
-    }
-
-    @Override
-    protected KeyValues usageCacheReadInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheReadInputTokens() != null) {
-            return keyValues.and(
-                    SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_READ,
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getCacheReadInputTokens()));
-        }
-        return keyValues;
-    }
-
-    @Override
-    protected KeyValues usageCacheWriteInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
-        if (context.getResponse() != null && context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens() != null) {
-            return keyValues.and(
-                    SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_WRITE,
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getCacheWriteInputTokens()));
         }
         return keyValues;
     }

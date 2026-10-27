@@ -188,11 +188,12 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, "1000"),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_COMPLETION, "500"),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, "1500"),
-                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_READ, "800"),
-                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_WRITE, "100"),
                 KeyValue.of(SemanticConventions.LLM_REQUEST_MODEL_NAME, "mistral"),
                 KeyValue.of(SemanticConventions.LLM_RESPONSE_MODEL_NAME, "mistral-42")
         );
+        // The cached input tokens are recorded as numbers by OpenInferenceChatModelObservationHandler.
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).noneSatisfy(kv ->
+                assertThat(kv.getKey()).startsWith(SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS));
     }
 
     @Test

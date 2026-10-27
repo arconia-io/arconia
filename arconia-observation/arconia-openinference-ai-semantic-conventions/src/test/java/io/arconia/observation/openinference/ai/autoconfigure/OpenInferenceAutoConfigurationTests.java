@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationConvention;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationHandler;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceToolCallingObservationConvention;
 
@@ -36,7 +37,17 @@ class OpenInferenceAutoConfigurationTests {
             assertThat(context).hasSingleBean(OpenInferenceChatModelObservationConvention.class);
             assertThat(context).hasSingleBean(OpenInferenceEmbeddingModelObservationConvention.class);
             assertThat(context).hasSingleBean(OpenInferenceToolCallingObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenInferenceChatModelObservationHandler.class);
         });
+    }
+
+    @Test
+    void doesNotRegisterObservationHandlerWhenOtelBridgeNotOnClasspath() {
+        contextRunner.withClassLoader(new FilteredClassLoader("io.micrometer.tracing.otel.bridge.OtelSpan"))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(OpenInferenceChatModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenInferenceChatModelObservationHandler.class);
+                });
     }
 
     @Test

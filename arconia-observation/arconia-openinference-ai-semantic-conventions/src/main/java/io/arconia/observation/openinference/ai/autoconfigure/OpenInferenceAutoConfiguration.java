@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationConvention;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationHandler;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceToolCallingObservationConvention;
 
@@ -41,6 +42,13 @@ public final class OpenInferenceAutoConfiguration {
     @ConditionalOnMissingBean(ChatModelObservationConvention.class)
     OpenInferenceChatModelObservationConvention chatModelObservationConvention(OpenInferenceProperties properties) {
         return new OpenInferenceChatModelObservationConvention(properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OpenInferenceChatModelObservationHandler.class)
+    @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
+    OpenInferenceChatModelObservationHandler chatModelObservationHandler() {
+        return new OpenInferenceChatModelObservationHandler();
     }
 
     @Bean
