@@ -64,6 +64,17 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
+    void shouldPercentDecodeResourceAttributeValues() {
+        var environment = new MockEnvironment()
+                .withProperty("otel.resource.attributes", "key1=a%2Cb%3Dc,key2=100%25,key3=a+b");
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(environment);
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
+                .isEqualTo(Map.of("key1", "a,b=c", "key2", "100%", "key3", "a+b"));
+    }
+
+    @Test
     void batchSpanProcessorShouldMapProperties() {
         var environment = new MockEnvironment()
                 .withProperty("otel.bsp.schedule.delay", "5000")

@@ -1,10 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.resource.contributor;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -84,18 +80,15 @@ public final class EnvironmentResourceContributor implements ResourceContributor
     }
 
     /**
-     * Compute the attributes from the {@link OpenTelemetryResourceProperties}.
-     * Values are URL-decoded since they are expected to be URL-encoded.
+     * Compute the attributes from the {@link OpenTelemetryResourceProperties}. Values are used as they are:
+     * only the {@code OTEL_RESOURCE_ATTRIBUTES} environment variable is percent-encoded, and it's decoded
+     * when mapped to the properties.
      *
      * @link <a href="https://opentelemetry.io/docs/specs/otel/resource/sdk/#specifying-resource-information-via-an-environment-variable">Resource Attributes</a>
      */
     private Attributes computeAttributes() {
-        Map<AttributeKey<String>, String> attributesMap = properties.getAttributes().entrySet().stream()
-                .map(e -> Map.entry(e.getKey(), URLDecoder.decode(e.getValue(), StandardCharsets.UTF_8)))
-                .collect(Collectors.toMap(e -> AttributeKey.stringKey(e.getKey()), Map.Entry::getValue));
-
         AttributesBuilder attributesBuilder = Attributes.builder();
-        attributesMap.forEach(attributesBuilder::put);
+        properties.getAttributes().forEach((key, value) -> attributesBuilder.put(AttributeKey.stringKey(key), value));
         return attributesBuilder.build();
     }
 

@@ -258,15 +258,19 @@ class EnvironmentResourceContributorTests {
     }
 
     @Test
-    void shouldDecodeUrlEncodedAttributeValues() {
-        properties.getAttributes().put("test.key", "encoded%20value");
+    void shouldUseAttributeValuesLiterally() {
+        properties.getAttributes().put("test.percent", "100%");
+        properties.getAttributes().put("test.plus", "a+b");
+        properties.getAttributes().put("test.encoded", "encoded%20value");
         EnvironmentResourceContributor contributor = new EnvironmentResourceContributor(environment, properties);
 
         contributor.contribute(resourceBuilder);
 
         ArgumentCaptor<Attributes> attributesCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(resourceBuilder).putAll(attributesCaptor.capture());
-        assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("test.key"))).isEqualTo("encoded value");
+        assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("test.percent"))).isEqualTo("100%");
+        assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("test.plus"))).isEqualTo("a+b");
+        assertThat(attributesCaptor.getValue().get(AttributeKey.stringKey("test.encoded"))).isEqualTo("encoded%20value");
     }
 
     @Test
