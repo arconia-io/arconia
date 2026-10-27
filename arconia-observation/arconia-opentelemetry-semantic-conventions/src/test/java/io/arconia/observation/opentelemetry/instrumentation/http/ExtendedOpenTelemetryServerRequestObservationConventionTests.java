@@ -248,12 +248,26 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     // HIGH CARDINALITY — url.query
 
     @Test
-    void urlQueryExcludedByDefault() {
+    void urlQueryCapturedByDefault() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setQueryString("foo=bar&sig=secret");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("url.query", "foo=bar&sig=REDACTED"));
+    }
+
+    @Test
+    void urlQueryExcludedWhenDisabled() {
+        OpenTelemetryHttpOptions options = new OpenTelemetryHttpOptions();
+        options.setCaptureUrlQuery(false);
+        var customConvention = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setQueryString("foo=bar&baz=qux");
         ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
 
-        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        KeyValues keyValues = customConvention.getHighCardinalityKeyValues(context);
 
         assertThat(keyValues.stream().noneMatch(kv -> "url.query".equals(kv.getKey()))).isTrue();
     }

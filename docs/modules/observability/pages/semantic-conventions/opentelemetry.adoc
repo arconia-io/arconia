@@ -175,8 +175,8 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 |	Whether to enable HTTP semantic conventions for HTTP servers and clients.
 
 |	`arconia.observations.conventions.opentelemetry.http.capture-url-query`
-|	`false`
-|	Whether to capture the URL query string in the HTTP server observations. Disabled by default due to potential PII sensitivity. The HTTP client observations always include it in `url.full`.
+|	`true`
+|	Whether to capture the URL query string in the HTTP server observations as `url.query`, with the values of the sensitive query parameters redacted. The HTTP client observations always include it in `url.full`.
 
 |	`arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters`
 |	`AWSAccessKeyId`, `Signature`, `X-Amz-Signature`, `X-Amz-Credential`, `X-Amz-Security-Token`, `sig`, `X-Goog-Signature`
