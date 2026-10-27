@@ -20,9 +20,8 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
 /**
- * JUnit {@link TestExecutionListener} to ensure
- * {@link MicrometerTracingOpenTelemetryContextStorageApplicationListener#addWrapper()} is called as
- * early as possible.
+ * JUnit {@link TestExecutionListener} to ensure the optional Micrometer tracing context-storage wrapper
+ * is added as early as possible.
  * <p>
  * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.0.1/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryEventPublisherBeansTestExecutionListener.java">OpenTelemetryEventPublisherBeansTestExecutionListener.java</a>
  * authored by Phillip Webb in the Spring Boot project.
@@ -31,7 +30,7 @@ public class MicrometerTracingOpenTelemetryContextStorageTextExecutionListener i
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {
-        MicrometerTracingOpenTelemetryContextStorageApplicationListener.addWrapper();
+        new MicrometerTracingOpenTelemetryContextStorageApplicationListener().addWrapperIfAvailable();
     }
 
 }
