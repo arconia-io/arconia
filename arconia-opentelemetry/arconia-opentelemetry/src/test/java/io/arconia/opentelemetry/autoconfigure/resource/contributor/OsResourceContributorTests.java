@@ -1,10 +1,17 @@
 package io.arconia.opentelemetry.autoconfigure.resource.contributor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.info.OsInfo;
@@ -28,9 +35,13 @@ class OsResourceContributorTests {
     @Mock
     private ResourceBuilder resourceBuilder;
 
+    @TempDir
+    Path tempDir;
+
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(contributor, "osInfo", osInfo);
+        ReflectionTestUtils.setField(contributor, "osReleasePaths", List.of(tempDir.resolve("etc-os-release"), tempDir.resolve("usr-lib-os-release")));
     }
 
     @Test
@@ -61,25 +72,59 @@ class OsResourceContributorTests {
     }
 
     @Test
-    void shouldContributeOsDescriptionWithAllAttributesWhenAvailable() {
+    void shouldContributeOsDescriptionWithNameAndVersionWhenAvailable() {
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("14.2.1");
-        when(osInfo.getArch()).thenReturn("aarch64");
 
         contributor.contribute(resourceBuilder);
 
-        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X [Version: 14.2.1, Architecture: aarch64]");
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X 14.2.1");
     }
 
     @Test
-    void shouldContributeOsDescriptionWithNameAndVersionWhenArchUnavailable() {
-        when(osInfo.getName()).thenReturn("Mac OS X");
-        when(osInfo.getVersion()).thenReturn("14.2.1");
-        when(osInfo.getArch()).thenReturn("");
+    void shouldContributeOsDescriptionFromOsReleaseOnLinux() throws IOException {
+        Files.writeString(tempDir.resolve("etc-os-release"), """
+                NAME="Ubuntu"
+                VERSION_ID="24.04"
+                PRETTY_NAME="Ubuntu 24.04.1 LTS"
+                ID=ubuntu
+                """);
+        when(osInfo.getName()).thenReturn("Linux");
 
         contributor.contribute(resourceBuilder);
 
-        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X [Version: 14.2.1]");
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Ubuntu 24.04.1 LTS");
+    }
+
+    @Test
+    void shouldContributeOsDescriptionFromFallbackOsReleaseOnLinux() throws IOException {
+        Files.writeString(tempDir.resolve("usr-lib-os-release"), "PRETTY_NAME='Debian GNU/Linux 12 (bookworm)'\n");
+        when(osInfo.getName()).thenReturn("Linux");
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Debian GNU/Linux 12 (bookworm)");
+    }
+
+    @Test
+    void shouldContributeOsDescriptionWithNameAndVersionOnLinuxWithoutOsRelease() {
+        when(osInfo.getName()).thenReturn("Linux");
+        when(osInfo.getVersion()).thenReturn("6.8.0");
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Linux 6.8.0");
+    }
+
+    @Test
+    void shouldIgnoreOsReleaseOnOtherOperatingSystems() throws IOException {
+        Files.writeString(tempDir.resolve("etc-os-release"), "PRETTY_NAME=\"Ubuntu 24.04.1 LTS\"\n");
+        when(osInfo.getName()).thenReturn("Mac OS X");
+        when(osInfo.getVersion()).thenReturn("14.2.1");
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X 14.2.1");
     }
 
     @Test
@@ -130,7 +175,6 @@ class OsResourceContributorTests {
 
     @Test
     void shouldContributeAllAttributesWhenAvailable() {
-        when(osInfo.getArch()).thenReturn("aarch64");
         when(osInfo.getName()).thenReturn("Mac OS X");
         when(osInfo.getVersion()).thenReturn("14.2.1");
 
@@ -139,7 +183,7 @@ class OsResourceContributorTests {
         verify(resourceBuilder).put(OsResourceContributor.OS_NAME, "Mac OS X");
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "darwin");
         verify(resourceBuilder).put(OsResourceContributor.OS_VERSION, "14.2.1");
-        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X [Version: 14.2.1, Architecture: aarch64]");
+        verify(resourceBuilder).put(OsResourceContributor.OS_DESCRIPTION, "Mac OS X 14.2.1");
     }
 
     @Test
@@ -158,6 +202,32 @@ class OsResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "windows");
+    }
+
+    @Test
+    void shouldContributeOsTypeForSolarisReportedAsSunOs() {
+        when(osInfo.getName()).thenReturn("SunOS");
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "solaris");
+    }
+
+    @Test
+    void shouldContributeOsTypeIndependentlyOfDefaultLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            // In Turkish, "I" lowercases to the dotless "ı", so "AIX" wouldn't match "aix"
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            when(osInfo.getName()).thenReturn("AIX");
+
+            contributor.contribute(resourceBuilder);
+
+            verify(resourceBuilder).put(OsResourceContributor.OS_TYPE, "aix");
+        }
+        finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

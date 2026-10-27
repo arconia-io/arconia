@@ -48,7 +48,10 @@ public final class ProcessResourceContributor implements ResourceContributor {
         if (StringUtils.hasText(processInfo.getOwner())) {
             builder.put(PROCESS_OWNER, processInfo.getOwner());
         }
-        builder.put(PROCESS_PARENT_PID, processInfo.getParentPid());
+        // Spring Boot reports -1 when the process has no parent.
+        if (processInfo.getParentPid() >= 0) {
+            builder.put(PROCESS_PARENT_PID, processInfo.getParentPid());
+        }
         builder.put(PROCESS_PID, processInfo.getPid());
         if (StringUtils.hasText(processInfo.getWorkingDirectory())) {
             builder.put(PROCESS_WORKING_DIRECTORY, processInfo.getWorkingDirectory());

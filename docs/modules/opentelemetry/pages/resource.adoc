@@ -71,7 +71,7 @@ By default, Arconia only adds stable attributes, with one exception: the `webeng
 
 |<<_git_resource_contributor,Git>>
 |No
-|Release candidate
+|Release candidate (the `vcs.ref` entity is in development)
 
 |<<_host_resource_contributor,Host>>
 |No
@@ -79,7 +79,7 @@ By default, Arconia only adds stable attributes, with one exception: the `webeng
 
 |<<_java_resource_contributor,Java>>
 |No
-|Release candidate
+|Release candidate (the `process.runtime` entity is in development)
 
 |<<_os_resource_contributor,OS>>
 |No
@@ -323,7 +323,7 @@ NOTE: For additional information about the Semantic Conventions, check out the h
 
 The `OsResourceContributor` contributes attributes to the `Resource` instance about the operating system the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`os.description`**: Additional description of the operating system the application is running on.
+* **`os.description`**: A human-readable description of the operating system the application is running on, like the one reported by `lsb_release` or `ver`. On Linux, it's the `PRETTY_NAME` from the `/etc/os-release` file (for example, `Ubuntu 24.04.1 LTS`). On the other operating systems, it's made of the operating system name and version (for example, `Mac OS X 15.6`).
 * **`os.name`**: The name of the operating system the application is running on.
 * **`os.type`**: The type of the operating system the application is running on.
 * **`os.version`**: The version of the operating system the application is running on.
@@ -350,7 +350,7 @@ The `ProcessResourceContributor` contributes attributes to the `Resource` instan
 
 * **`process.creation.time`**: The date and time the Java process was created, in ISO 8601 format.
 * **`process.owner`**: The username of the user that owns the Java process.
-* **`process.parent_pid`**: The parent process ID of the Java process.
+* **`process.parent_pid`**: The parent process ID of the Java process, if it has a parent.
 * **`process.pid`**: The process ID of the Java process.
 * **`process.working_directory`**: The working directory of the Java process.
 

@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.info.ProcessInfo;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -53,6 +54,15 @@ class ProcessResourceContributorTests {
         contributor.contribute(resourceBuilder);
 
         verify(resourceBuilder).put(ProcessResourceContributor.PROCESS_PARENT_PID, 1234L);
+    }
+
+    @Test
+    void shouldSkipParentPidWhenNoParent() {
+        when(processInfo.getParentPid()).thenReturn(-1L);
+
+        contributor.contribute(resourceBuilder);
+
+        verify(resourceBuilder, never()).put(eq(ProcessResourceContributor.PROCESS_PARENT_PID), anyLong());
     }
 
     @Test
