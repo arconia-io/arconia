@@ -137,15 +137,24 @@ public final class GenAiContent {
                         toolCall.id(), toolCall.name(), parseArguments(toolCall.arguments())));
             }
 
-            String finishReason = StringUtils.hasText(generation.getMetadata().getFinishReason())
-                    ? generation.getMetadata().getFinishReason()
-                    : null;
-
-            if (!parts.isEmpty() || finishReason != null) {
-                outputMessages.add(new OutputMessage(message.getMessageType().getValue(), parts, finishReason));
+            String reportedFinishReason = generation.getMetadata().getFinishReason();
+            if (!parts.isEmpty() || StringUtils.hasText(reportedFinishReason)) {
+                outputMessages.add(new OutputMessage(message.getMessageType().getValue(), parts,
+                        toFinishReason(reportedFinishReason, message)));
             }
         }
         return outputMessages;
+    }
+
+    /**
+     * Returns the finish reason required by the output messages schema, using the well-known values of the
+     * conventions. When the provider doesn't report one, it's inferred from the message: a tool call or a stop.
+     */
+    private static String toFinishReason(@Nullable String reportedFinishReason, AssistantMessage message) {
+        if (StringUtils.hasText(reportedFinishReason)) {
+            return GenAiConventionsConverter.toFinishReason(reportedFinishReason);
+        }
+        return message.getToolCalls().isEmpty() ? "stop" : "tool_call";
     }
 
     /**

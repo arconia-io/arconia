@@ -163,6 +163,16 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldNormalizeFinishReasons() {
+        ChatModelObservationContext context = createContext("gpt-5");
+        setResponse(context, "gpt-5", "Calling a tool", "TOOL_CALLS");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_FINISH_REASONS.getKey(), """
+                        ["tool_call"]"""));
+    }
+
+    @Test
     void shouldNotIncludeToolDefinitionsWhenDisabled() {
         properties.setCaptureToolDefinitions(false);
 

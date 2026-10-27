@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
+import java.util.Locale;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
@@ -99,6 +101,24 @@ public final class GenAiConventionsConverter {
         }
     }
 
+
+    /**
+     * Converts a finish reason reported by a model provider to the corresponding well-known value
+     * of the GenAI semantic conventions ({@code stop}, {@code length}, {@code content_filter},
+     * {@code tool_call}, {@code error}), returning the input for values without a corresponding one.
+     */
+    public static String toFinishReason(String finishReason) {
+        Assert.hasText(finishReason, "finishReason cannot be null or empty");
+        return switch (finishReason.toLowerCase(Locale.ROOT).strip()) {
+            case "stop", "end_turn", "stop_sequence" -> "stop";
+            case "length", "max_tokens", "model_length" -> "length";
+            case "content_filter", "content_filtered", "guardrail_intervened", "safety", "recitation", "blocklist",
+                 "prohibited_content", "spii" -> "content_filter";
+            case "tool_call", "tool_calls", "tool_use", "function_call" -> "tool_call";
+            case "error" -> "error";
+            default -> finishReason;
+        };
+    }
 
     /**
      * Removes the key values set to {@code none}, the placeholder Spring AI uses when a value isn't available,

@@ -152,4 +152,37 @@ class GenAiConventionsConverterTests {
                 .hasMessageContaining("aiOperationType cannot be null or empty");
     }
 
+
+    @ParameterizedTest
+    @CsvSource({
+            "STOP, stop",
+            "LENGTH, length",
+            "TOOL_CALLS, tool_call",
+            "CONTENT_FILTER, content_filter",
+            "end_turn, stop",
+            "stop_sequence, stop",
+            "max_tokens, length",
+            "tool_use, tool_call",
+            "MAX_TOKENS, length",
+            "SAFETY, content_filter",
+            "error, error",
+            "' stop ', stop"
+    })
+    void toFinishReasonShouldConvertWellKnownValues(String input, String expected) {
+        assertThat(GenAiConventionsConverter.toFinishReason(input)).isEqualTo(expected);
+    }
+
+    @Test
+    void toFinishReasonShouldReturnInputForUnknownValue() {
+        assertThat(GenAiConventionsConverter.toFinishReason("OTHER")).isEqualTo("OTHER");
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = { " ", "  " })
+    void toFinishReasonShouldThrowExceptionForEmptyInput(String input) {
+        assertThatThrownBy(() -> GenAiConventionsConverter.toFinishReason(input))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
 }

@@ -1,6 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -49,6 +50,28 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
     @Override
     public KeyValues getLowCardinalityKeyValues(ChatModelObservationContext context) {
         return GenAiConventionsConverter.withoutNoneValues(super.getLowCardinalityKeyValues(context));
+    }
+
+    /**
+     * Reports the finish reasons with the well-known values of the conventions, such as {@code stop} instead of
+     * the {@code STOP} reported by some providers.
+     */
+    @Override
+    protected KeyValues responseFinishReasons(KeyValues keyValues, ChatModelObservationContext context) {
+        if (context.getResponse() == null || CollectionUtils.isEmpty(context.getResponse().getResults())) {
+            return keyValues;
+        }
+        List<String> finishReasons = context.getResponse().getResults().stream()
+                .map(generation -> generation.getMetadata().getFinishReason())
+                .filter(StringUtils::hasText)
+                .map(GenAiConventionsConverter::toFinishReason)
+                .toList();
+        if (finishReasons.isEmpty()) {
+            return keyValues;
+        }
+        StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        finishReasons.forEach(finishReason -> joiner.add("\"" + finishReason + "\""));
+        return keyValues.and(GenAiIncubatingAttributes.GEN_AI_RESPONSE_FINISH_REASONS.getKey(), joiner.toString());
     }
 
     @Override

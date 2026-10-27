@@ -224,7 +224,7 @@ class GenAiContentTests {
     }
 
     @Test
-    void fromGenerationsShouldHandleMissingFinishReason() throws JSONException {
+    void fromGenerationsShouldInferStopWhenFinishReasonMissing() throws JSONException {
         Generation generation = new Generation(
                 AssistantMessage.builder().content("Hello").build()
         );
@@ -236,7 +236,47 @@ class GenAiContentTests {
                 [
                   {
                     "role": "assistant",
-                    "parts": [{"type": "text", "content": "Hello"}]
+                    "parts": [{"type": "text", "content": "Hello"}],
+                    "finish_reason": "stop"
+                  }
+                ]""", json, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void fromGenerationsShouldInferToolCallWhenFinishReasonMissing() throws JSONException {
+        Generation generation = new Generation(AssistantMessage.builder()
+                .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{}")))
+                .build());
+
+        var result = GenAiContent.fromGenerations(List.of(generation));
+
+        String json = jsonHelper.toJson(result);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "role": "assistant",
+                    "parts": [{"type": "tool_call", "id": "call_1", "name": "get_weather", "arguments": {}}],
+                    "finish_reason": "tool_call"
+                  }
+                ]""", json, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void fromGenerationsShouldNormalizeFinishReason() throws JSONException {
+        Generation generation = new Generation(
+                AssistantMessage.builder().content("Hello").build(),
+                ChatGenerationMetadata.builder().finishReason("STOP").build()
+        );
+
+        var result = GenAiContent.fromGenerations(List.of(generation));
+
+        String json = jsonHelper.toJson(result);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "role": "assistant",
+                    "parts": [{"type": "text", "content": "Hello"}],
+                    "finish_reason": "stop"
                   }
                 ]""", json, JSONCompareMode.STRICT);
     }
