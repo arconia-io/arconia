@@ -30,29 +30,7 @@ Set the convention flavor to `openlit`:
 arconia.observations.conventions.opentelemetry.ai.flavor=openlit
 ----
 
-Your application also needs OpenTelemetry configured for exporting traces and metrics, using either the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or the https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot OpenTelemetry support] (`spring-boot-starter-opentelemetry`). The recommended approach is the Arconia OpenTelemetry Spring Boot Starter:
-
-[tabs]
-======
-Gradle::
-+
-[source,groovy]
-----
-dependencies {
-  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
-}
-----
-
-Maven::
-+
-[source,xml]
-----
-<dependency>
-    <groupId>io.arconia</groupId>
-    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
-</dependency>
-----
-======
+include::partial$opentelemetry-setup.adoc[]
 
 === Dev Service
 

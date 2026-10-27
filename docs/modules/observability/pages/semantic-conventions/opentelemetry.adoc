@@ -7,7 +7,26 @@ OpenTelemetry Semantic Conventions are the standard for cloud-native observabili
 
 == Getting Started
 
-Add the Arconia OpenTelemetry Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+The conventions are provided by different modules, depending on the instrumentation they apply to:
+
+[cols="1,2,1"]
+|===
+|Area |Dependency |Conventions Stability
+
+|<<_jvm,JVM>>, <<_http,HTTP>>, <<_errors,Errors>>
+|`io.arconia:arconia-opentelemetry-semantic-conventions`
+|Stable
+
+|<<_database,Database>>
+|`net.ttddyy.observation:datasource-micrometer-spring-boot` and `net.ttddyy.observation:datasource-micrometer-opentelemetry`
+|Stable
+
+|<<_generative_ai,Generative AI>>
+|`io.arconia:arconia-opentelemetry-ai-semantic-conventions`
+|Development
+|===
+
+For the JVM, HTTP, and Errors conventions, add the Arconia OpenTelemetry Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
 
 [tabs]
 ======
@@ -31,113 +50,49 @@ Maven::
 ----
 ======
 
-Your application also needs OpenTelemetry configured for traces and metrics export, using either the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or the https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot OpenTelemetry support] (`spring-boot-starter-opentelemetry`). The recommended approach is the Arconia OpenTelemetry Spring Boot Starter:
-
-[tabs]
-======
-Gradle::
-+
-[source,groovy]
-----
-dependencies {
-  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
-}
-----
-
-Maven::
-+
-[source,xml]
-----
-<dependency>
-    <groupId>io.arconia</groupId>
-    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
-</dependency>
-----
-======
+include::partial$opentelemetry-setup.adoc[]
 
 If you use one of the available xref:dev-services:index.adoc[OpenTelemetry Dev Services] during development or testing, Arconia will configure OpenTelemetry automatically to export logs, metrics, and traces to the specific service based on the OpenTelemetry Semantic Conventions.
 
-== Stability
+== JVM
 
-The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. There are two exceptions: the `jvm.gc.cause` attribute of the `jvm.gc.duration` metric, which is still in development but kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>), and the `QUERY` value of the `http.request.method` attribute, which is still in development but part of the HTTP methods the stable conventions define as known by default.
+Provides semantic conventions for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification. They are based on the support provided by the https://micrometer.io[Micrometer Metrics] project, extended by Arconia to cover all the stable JVM metrics.
 
-The OpenTelemetry Semantic Conventions for <<_generative_ai,Generative AI>> are still in development, and they are provided by a separate module.
+[cols="1,2"]
+|===
+|Area |Metrics
+
+|Memory
+|`jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.memory.used_after_last_gc`
+
+|Garbage collection
+|`jvm.gc.duration`
+
+|Threads
+|`jvm.thread.count`
+
+|Class loading
+|`jvm.class.loaded`, `jvm.class.unloaded`, `jvm.class.count`
+
+|CPU
+|`jvm.cpu.time`, `jvm.cpu.count`, `jvm.cpu.recent_utilization`
+|===
+
+The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concurrent.phase.time` metrics from Micrometer, so it covers both garbage collection pauses and concurrent phases. The `jvm.gc.name` and `jvm.gc.cause` attributes tell them apart: for example, `G1 Young Generation` pauses versus `G1 Concurrent GC` phases (with cause `No GC`), or `ZGC Pauses` versus `ZGC Cycles`.
+
+The Micrometer `jvm.threads.live` metric is not published, since the `jvm.thread.count` metric replaces it: summed over the `jvm.thread.state` attribute, it counts the same live platform threads. The other Micrometer JVM metrics without an equivalent in the OpenTelemetry Semantic Conventions, such as `jvm.threads.daemon` and `jvm.threads.peak`, are kept.
 
 === Known Deviations
 
-Some differences from the stable conventions come from the Micrometer instrumentation and are tracked upstream:
+The Micrometer JVM instrumentation currently deviates from the OpenTelemetry Semantic Conventions for JVM in the following ways:
 
 * The `jvm.cpu.time` metric is reported in nanoseconds instead of seconds (https://github.com/micrometer-metrics/micrometer/issues/7703[micrometer#7703]).
 * The `jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.thread.count`, `jvm.class.count`, and `jvm.cpu.count` metrics are exported as gauges instead of non-monotonic sums (https://github.com/micrometer-metrics/micrometer/issues/7432[micrometer#7432]).
 * The `jvm.thread.count` metric doesn't have the `jvm.thread.daemon` attribute (https://github.com/micrometer-metrics/micrometer/issues/7702[micrometer#7702]).
 * The `jvm.memory.limit` metric is reported as `-1` for the memory pools without a defined maximum, such as Metaspace when no maximum size is configured, instead of not being reported.
-* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `{thread}`, and `{class}`. With the Micrometer OTLP registry, durations use `seconds` instead of `s` (https://github.com/micrometer-metrics/micrometer/issues/6988[micrometer#6988]). The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `{cpu}` and `1`.
-* The `.active` long task timers that Micrometer adds for each observation, such as `http.server.request.duration.active`, have no equivalent in the conventions and get the attribute values known when the operation starts. For example, HTTP server requests in progress have `http.response.status_code` set to `200`, the initial status of the response.
-* Spans ending without an error get the `Ok` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/890[tracing#890]). It affects most spans, such as the Generative AI ones, except the spans of HTTP server requests and the spans of HTTP client requests and database queries that have a parent span.
-* Attribute values are always strings, also for attributes defined as numbers, such as `http.response.status_code` and `server.port` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
+* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `{thread}`, and `{class}`. The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `{cpu}` and `1`.
 
-== Histograms
-
-The duration and token usage metrics defined by the OpenTelemetry Semantic Conventions are histograms. As in Spring Boot, their buckets are not published by default, to keep the number of time series low: only the count, sum, and maximum are exported, which is enough for throughput and average values. To compute percentiles, enable the histogram buckets for the metrics you need.
-
-You can use the bucket boundaries advised by the OpenTelemetry Semantic Conventions with the Spring Boot `management.metrics.distribution.slo` properties.
-
-[source,yaml]
-----
-management:
-  metrics:
-    distribution:
-      slo:
-        http.server.request.duration: 5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms
-----
-
-[cols="2,3"]
-|===
-|Metric |Advised Bucket Boundaries
-
-|`http.server.request.duration`, `http.client.request.duration`
-|`5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms`
-
-|`jvm.gc.duration`
-|`10ms,100ms,1000ms,10000ms`
-
-|`gen_ai.client.operation.duration`
-|`10ms,20ms,40ms,80ms,160ms,320ms,640ms,1280ms,2560ms,5120ms,10240ms,20480ms,40960ms,81920ms`
-
-|`gen_ai.client.token.usage`
-|`1,4,16,64,256,1024,4096,16384,65536,262144,1048576,4194304,16777216,67108864`
-|===
-
-Alternatively, you can publish exponential histograms, which adapt their buckets to the recorded values and don't need any boundaries. With the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter], select the exponential aggregation and enable the histograms with the Spring Boot `management.metrics.distribution.percentiles-histogram` properties.
-
-[source,yaml]
-----
-arconia:
-  otel:
-    metrics:
-      exporter:
-        histogram-aggregation: base2-exponential-bucket-histogram
-management:
-  metrics:
-    distribution:
-      percentiles-histogram:
-        http.server.request.duration: true
-----
-
-== JVM
-
-Provides semantic conventions for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification:
-
-* Memory metrics
-* Thread metrics
-* Class loader metrics
-* CPU/processor metrics.
-
-Semantic Conventions for JVM are based on the support provided by the https://micrometer.io[Micrometer Metrics] project, extended by Arconia to support additional stable conventions.
-
-The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concurrent.phase.time` metrics from Micrometer, so it covers both garbage collection pauses and concurrent phases. The `jvm.gc.name` and `jvm.gc.cause` attributes tell them apart: for example, `G1 Young Generation` pauses versus `G1 Concurrent GC` phases (with cause `No GC`), or `ZGC Pauses` versus `ZGC Cycles`.
-
-The Micrometer `jvm.threads.live` metric is not published, since the `jvm.thread.count` metric replaces it: summed over the `jvm.thread.state` attribute, it counts the same live platform threads. The other Micrometer JVM metrics without an equivalent in the OpenTelemetry Semantic Conventions, such as `jvm.threads.daemon` and `jvm.threads.peak`, are kept.
+=== Configuration Properties
 
 .JVM Configuration Properties
 |===
@@ -156,7 +111,7 @@ Spans of requests whose response status code signals an error get the `Error` st
 
 === HTTP Server
 
-Activated when the application is a servlet-based web application. Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to support additional stable conventions.
+Activated when the application is a servlet-based web application. The requests are reported with the `http.server.request.duration` metric and spans named after the request method and the matched route, such as `GET /users/\{id}`. The query string of the request is recorded as `url.query`, with the values of sensitive query parameters replaced by `REDACTED`. Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to support additional stable conventions.
 
 === HTTP Client
 
@@ -186,6 +141,8 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 == Errors
 
 Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the canonical class name of the error (for example, `com.example.OrderService.OrderNotFoundException` for a nested class), unless the convention for the observation already sets a more specific value, such as the status code of HTTP responses signaling an error (`5xx` for servers, `4xx` and `5xx` for clients), and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
+
+=== Configuration Properties
 
 .Errors Configuration Properties
 |===
@@ -308,3 +265,66 @@ The arguments and result of tool executions are always recorded as attributes of
 === Configuration Properties
 
 include::partial$opentelemetry-ai-config-props.adoc[]
+
+== Histograms
+
+The duration and token usage metrics defined by the OpenTelemetry Semantic Conventions are histograms. As in Spring Boot, their buckets are not published by default, to keep the number of time series low: only the count, sum, and maximum are exported, which is enough for throughput and average values. To compute percentiles, enable the histogram buckets for the metrics you need.
+
+You can use the bucket boundaries advised by the OpenTelemetry Semantic Conventions with the Spring Boot `management.metrics.distribution.slo` properties.
+
+[source,yaml]
+----
+management:
+  metrics:
+    distribution:
+      slo:
+        http.server.request.duration: 5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms
+----
+
+[cols="2,3"]
+|===
+|Metric |Advised Bucket Boundaries
+
+|`http.server.request.duration`, `http.client.request.duration`
+|`5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms`
+
+|`jvm.gc.duration`
+|`10ms,100ms,1000ms,10000ms`
+
+|`gen_ai.client.operation.duration`
+|`10ms,20ms,40ms,80ms,160ms,320ms,640ms,1280ms,2560ms,5120ms,10240ms,20480ms,40960ms,81920ms`
+
+|`gen_ai.client.token.usage`
+|`1,4,16,64,256,1024,4096,16384,65536,262144,1048576,4194304,16777216,67108864`
+|===
+
+Alternatively, you can publish exponential histograms, which adapt their buckets to the recorded values and don't need any boundaries. With the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter], select the exponential aggregation and enable the histograms with the Spring Boot `management.metrics.distribution.percentiles-histogram` properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    metrics:
+      exporter:
+        histogram-aggregation: base2-exponential-bucket-histogram
+management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.request.duration: true
+----
+
+== Stability
+
+The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. There are two exceptions: the `jvm.gc.cause` attribute of the `jvm.gc.duration` metric, which is still in development but kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>), and the `QUERY` value of the `http.request.method` attribute, which is still in development but part of the HTTP methods the stable conventions define as known by default.
+
+The OpenTelemetry Semantic Conventions for <<_generative_ai,Generative AI>> are still in development, and they are provided by a separate module.
+
+== Known Deviations
+
+Besides the deviations of each instrumentation, described in the sections above, some differences from the conventions come from Micrometer and apply to all the observations:
+
+* Attribute values are always strings, also for attributes defined as numbers, such as `http.response.status_code` and `server.port` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
+* Spans ending without an error get the `Ok` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/890[tracing#890]). It affects most spans, such as the Generative AI ones, except the spans of HTTP server requests and the spans of HTTP client requests and database queries that have a parent span.
+* With the Micrometer OTLP registry, durations use the `seconds` unit instead of `s` (https://github.com/micrometer-metrics/micrometer/issues/6988[micrometer#6988]).
+* The `.active` long task timers that Micrometer adds for each observation, such as `http.server.request.duration.active`, have no equivalent in the conventions and get the attribute values known when the operation starts. For example, HTTP server requests in progress have `http.response.status_code` set to `200`, the initial status of the response.
