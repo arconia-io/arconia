@@ -14,6 +14,7 @@ import org.springframework.http.server.observation.ServerRequestObservationConve
 
 import io.arconia.observation.opentelemetry.instrumentation.http.ExtendedOpenTelemetryServerRequestObservationConvention;
 import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryClientRequestObservationConvention;
+import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryHttpSpanStatusObservationHandler;
 
 /**
  * Auto-configuration for OpenTelemetry Semantic Conventions for HTTP.
@@ -29,6 +30,13 @@ import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryCl
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryConventionsProperties.CONFIG_PREFIX, value = "http.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(OpenTelemetryConventionsProperties.class)
 public final class HttpConventionsAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
+    OpenTelemetryHttpSpanStatusObservationHandler openTelemetryHttpSpanStatusObservationHandler() {
+        return new OpenTelemetryHttpSpanStatusObservationHandler();
+    }
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)

@@ -18,13 +18,15 @@ dependencies {
     optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework:spring-web"
     optional "jakarta.servlet:jakarta.servlet-api"
+    optional "io.micrometer:micrometer-tracing-bridge-otel"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "tools.jackson.core:jackson-databind"
     testImplementation "org.springframework:spring-web"
     testImplementation "org.springframework.boot:spring-boot-restclient"
     testImplementation "jakarta.servlet:jakarta.servlet-api"
-    testRuntimeOnly "io.micrometer:micrometer-tracing-bridge-otel"
+    testImplementation "io.micrometer:micrometer-tracing-bridge-otel"
+    testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testRuntimeOnly "org.springframework:spring-webmvc"
 }

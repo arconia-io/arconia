@@ -70,6 +70,7 @@ Some differences from the stable conventions come from the Micrometer instrument
 * The `jvm.cpu.time` metric is reported in nanoseconds instead of seconds (https://github.com/micrometer-metrics/micrometer/issues/7703[micrometer#7703]).
 * The `jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.thread.count`, `jvm.class.count`, and `jvm.cpu.count` metrics are exported as gauges instead of non-monotonic sums (https://github.com/micrometer-metrics/micrometer/issues/7432[micrometer#7432]).
 * The `jvm.thread.count` metric doesn't have the `jvm.thread.daemon` attribute (https://github.com/micrometer-metrics/micrometer/issues/7702[micrometer#7702]).
+* Spans ending without an error get the `Ok` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/890[tracing#890]).
 * Attribute values are always strings, also for attributes defined as numbers, such as `http.response.status_code` and `server.port` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
 
 == JVM
@@ -97,6 +98,8 @@ The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concur
 == HTTP
 
 Provides semantic conventions for HTTP server and client request observations, following the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP] specification.
+
+Spans of requests whose response status code signals an error get the `Error` status even when no exception was thrown: `5xx` for HTTP servers, `4xx` and `5xx` for HTTP clients. It requires the Micrometer Tracing OpenTelemetry bridge, which both the Arconia OpenTelemetry Spring Boot Starter and `spring-boot-starter-opentelemetry` include.
 
 === HTTP Server
 

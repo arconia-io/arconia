@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.autoconfigure;
 
+import io.micrometer.tracing.otel.bridge.OtelSpan;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.restclient.observation.ObservationRestClientCustomizer;
@@ -15,6 +17,7 @@ import org.springframework.http.server.observation.ServerRequestObservationConve
 
 import io.arconia.observation.opentelemetry.instrumentation.http.ExtendedOpenTelemetryServerRequestObservationConvention;
 import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryClientRequestObservationConvention;
+import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryHttpSpanStatusObservationHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,6 +78,30 @@ class HttpConventionsAutoConfigurationTests {
                     assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
                     assertThat(context).doesNotHaveBean(ClientRequestObservationConvention.class);
                 });
+    }
+
+    @Test
+    void registersSpanStatusHandler() {
+        nonWebContextRunner.run(context ->
+                assertThat(context).hasSingleBean(OpenTelemetryHttpSpanStatusObservationHandler.class));
+    }
+
+    @Test
+    void doesNotRegisterSpanStatusHandlerWhenOpenTelemetryTracingBridgeNotOnClasspath() {
+        webContextRunner
+                .withClassLoader(new FilteredClassLoader(OtelSpan.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class);
+                    assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
+                });
+    }
+
+    @Test
+    void doesNotRegisterSpanStatusHandlerWhenDisabled() {
+        webContextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.http.enabled=false")
+                .run(context ->
+                        assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class));
     }
 
     // Custom bean precedence
