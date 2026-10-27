@@ -21,11 +21,11 @@ import org.springframework.context.annotation.Configuration;
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAiAdvisorConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
@@ -344,6 +344,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     assertThat(context).hasSingleBean(LangSmithChatModelObservationConvention.class);
                     assertThat(context).hasSingleBean(LangSmithEmbeddingModelObservationConvention.class);
                     assertThat(context).hasSingleBean(LangSmithToolCallingObservationConvention.class);
+                    assertThat(context).hasSingleBean(LangSmithImageModelObservationConvention.class);
                 });
     }
 
@@ -381,7 +382,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
                 .run(context -> {
                     assertThat(context).hasSingleBean(LangSmithChatClientObservationConvention.class);
-                    assertThat(context).hasSingleBean(LangSmithChatClientObservationHandler.class);
                     assertThat(context).hasSingleBean(LangSmithAiAdvisorConvention.class);
                 });
     }
@@ -393,18 +393,8 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(LangSmithChatClientObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(LangSmithChatClientObservationHandler.class);
                     assertThat(context).doesNotHaveBean(LangSmithAiAdvisorConvention.class);
                 });
-    }
-
-    @Test
-    void langsmithFlavorDoesNotRegisterChatClientHandlerWhenOtelBridgeNotOnClasspath() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
-                .withClassLoader(new FilteredClassLoader("io.micrometer.tracing.otel.bridge.OtelSpan"))
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(LangSmithChatClientObservationHandler.class));
     }
 
     // Custom bean precedence (LangSmith flavor)

@@ -16,8 +16,12 @@ public final class LangSmithAttributes {
     /** The run type for the span. Values: llm, chain, tool, retriever, embedding, prompt, parser. */
     public static final AttributeKey<String> LANGSMITH_SPAN_KIND = stringKey("langsmith.span.kind");
 
-    /** Session identifier for grouping related traces. */
-    public static final AttributeKey<String> LANGSMITH_TRACE_SESSION_ID = stringKey("langsmith.trace.session_id");
+    /**
+     * Thread identifier for grouping the traces of a conversation, recorded as the {@code thread_id} metadata.
+     * <p>
+     * Note: {@code langsmith.trace.session_id} identifies the LangSmith project, not a conversation.
+     */
+    public static final AttributeKey<String> LANGSMITH_METADATA_THREAD_ID = stringKey("langsmith.metadata.thread_id");
 
     // GenAI attribute keys (used by LangSmith, differ from OTel naming)
 
@@ -31,27 +35,16 @@ public final class LangSmithAttributes {
     /** Total number of tokens used (input + output). */
     public static final AttributeKey<String> GEN_AI_USAGE_TOTAL_TOKENS = stringKey("gen_ai.usage.total_tokens");
 
-    /** The input prompt or arguments sent to the model or tool. */
+    /** The inputs of the run as JSON, such as the input messages of a model call or the arguments of a tool. */
     public static final AttributeKey<String> GEN_AI_PROMPT = stringKey("gen_ai.prompt");
 
-    /** The output completion or result from the model or tool. */
+    /** The outputs of the run as JSON, such as the output messages of a model call or the result of a tool. */
     public static final AttributeKey<String> GEN_AI_COMPLETION = stringKey("gen_ai.completion");
 
     // Tool attribute keys
 
     /** The list of tool definitions available to the GenAI model. */
     public static final AttributeKey<String> TOOLS = stringKey("tools");
-
-    // Event names
-
-    public static final String GEN_AI_SYSTEM_MESSAGE = "gen_ai.system.message";
-    public static final String GEN_AI_USER_MESSAGE = "gen_ai.user.message";
-    public static final String GEN_AI_ASSISTANT_MESSAGE = "gen_ai.assistant.message";
-    public static final String GEN_AI_TOOL_MESSAGE = "gen_ai.tool.message";
-
-    // Event attributes
-
-    public static final AttributeKey<String> GEN_AI_EVENT_CONTENT = stringKey("gen_ai.event.content");
 
     private LangSmithAttributes() {
     }

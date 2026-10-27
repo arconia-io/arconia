@@ -1,10 +1,16 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.langsmith;
 
+import java.util.List;
+import java.util.Objects;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
@@ -81,25 +87,37 @@ class LangSmithChatClientObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeContentEvenWhenCaptureContentIsSpanAttributes() {
+    void shouldIncludeContentAsPromptAndCompletionWhenEnabled() throws JSONException {
         properties.setCaptureMessageContent(true);
         var context = ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
-                        .prompt(new Prompt(java.util.List.of(new UserMessage("Hi"))))
+                        .prompt(new Prompt(List.of(new UserMessage("Hi"))))
                         .build())
                 .build();
         var chatResponse = ChatResponse.builder()
-                .generations(java.util.List.of(new Generation(
+                .generations(List.of(new Generation(
                         AssistantMessage.builder().content("Hello!").build(),
                         ChatGenerationMetadata.builder().finishReason("stop").build())))
                 .build();
         context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        JSONAssert.assertEquals("""
+                {"messages": [{"role": "user", "content": "Hi"}]}""",
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey()), JSONCompareMode.STRICT);
+        JSONAssert.assertEquals("""
+                {"messages": [{"role": "assistant", "content": "Hello!"}]}""",
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey()), JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldNotIncludeContentWhenDisabled() {
+        properties.setCaptureMessageContent(false);
+        var context = createContext("Hello");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT.getKey()));
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
     }
 
     @Test
@@ -113,7 +131,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_TRACE_SESSION_ID.getKey(), "session-42")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey(), "session-42")
         );
     }
 
@@ -123,10 +141,18 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.LANGSMITH_TRACE_SESSION_ID.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey()));
     }
 
     // Helpers
+
+    private String findKeyValue(KeyValues keyValues, String key) {
+        return keyValues.stream()
+                .filter(kv -> Objects.equals(kv.getKey(), key))
+                .findFirst()
+                .map(KeyValue::getValue)
+                .orElseThrow(() -> new AssertionError("Key not found: " + key));
+    }
 
     private ChatClientObservationContext createContext(String content) {
         return ChatClientObservationContext.builder()

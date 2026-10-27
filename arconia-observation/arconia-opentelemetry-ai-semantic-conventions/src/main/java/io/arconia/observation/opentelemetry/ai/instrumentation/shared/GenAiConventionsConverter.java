@@ -6,6 +6,7 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.observation.conventions.AiOperationType;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.util.Assert;
@@ -43,21 +44,20 @@ public final class GenAiConventionsConverter {
      */
     public static String toProviderName(String aiProvider) {
         Assert.hasText(aiProvider, "aiProvider cannot be null or empty");
-        try {
-            AiProvider provider = AiProvider.valueOf(aiProvider.toUpperCase().strip());
-            return switch (provider) {
-                case AiProvider.ANTHROPIC -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.ANTHROPIC;
-                case AiProvider.BEDROCK_CONVERSE -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AWS_BEDROCK;
-                case AiProvider.DEEPSEEK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.DEEPSEEK;
-                case AiProvider.GOOGLE_GENAI_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEN_AI;
-                case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
-                case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
-                case AiProvider.VERTEX_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_VERTEX_AI;
-                default -> provider.value();
-            };
-        } catch (IllegalArgumentException e) {
+        AiProvider provider = findProvider(aiProvider);
+        if (provider == null) {
             return aiProvider;
         }
+        return switch (provider) {
+            case AiProvider.ANTHROPIC -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.ANTHROPIC;
+            case AiProvider.BEDROCK_CONVERSE -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.AWS_BEDROCK;
+            case AiProvider.DEEPSEEK -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.DEEPSEEK;
+            case AiProvider.GOOGLE_GENAI_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEN_AI;
+            case AiProvider.MISTRAL_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.MISTRAL_AI;
+            case AiProvider.OPENAI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.OPENAI;
+            case AiProvider.VERTEX_AI -> GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_VERTEX_AI;
+            default -> provider.value();
+        };
     }
 
     /**
@@ -67,10 +67,37 @@ public final class GenAiConventionsConverter {
      */
     public static String toOpenLitProviderName(String aiProvider) {
         Assert.hasText(aiProvider, "aiProvider cannot be null or empty");
-        if (AiProvider.GOOGLE_GENAI_AI.name().equalsIgnoreCase(aiProvider.strip())) {
+        if (findProvider(aiProvider) == AiProvider.GOOGLE_GENAI_AI) {
             return GenAiIncubatingAttributes.GenAiProviderNameIncubatingValues.GCP_GEMINI;
         }
         return toProviderName(aiProvider);
+    }
+
+    /**
+     * Converts an {@link AiProvider} value to a {@code gen_ai.system} value recognized by LangSmith.
+     * It differs from {@link #toProviderName(String)} only for Google GenAI, reported as {@code google},
+     * as the LangSmith SDKs do, instead of {@code gcp.gen_ai}.
+     */
+    public static String toLangSmithProviderName(String aiProvider) {
+        Assert.hasText(aiProvider, "aiProvider cannot be null or empty");
+        if (findProvider(aiProvider) == AiProvider.GOOGLE_GENAI_AI) {
+            return "google";
+        }
+        return toProviderName(aiProvider);
+    }
+
+    /**
+     * Finds the {@link AiProvider} matching the given value, such as {@code google_genai}, or constant name.
+     * Spring AI reports the value, which doesn't always match the constant name.
+     */
+    private static @Nullable AiProvider findProvider(String aiProvider) {
+        String candidate = aiProvider.strip();
+        for (AiProvider provider : AiProvider.values()) {
+            if (provider.value().equalsIgnoreCase(candidate) || provider.name().equalsIgnoreCase(candidate)) {
+                return provider;
+            }
+        }
+        return null;
     }
 
     /**
@@ -81,9 +108,8 @@ public final class GenAiConventionsConverter {
         try {
             AiOperationType type = AiOperationType.valueOf(aiOperationType.toUpperCase().strip());
             return switch (type) {
-                case AiOperationType.CHAT, AiOperationType.TEXT_COMPLETION -> "llm";
+                case AiOperationType.CHAT, AiOperationType.TEXT_COMPLETION, AiOperationType.IMAGE -> "llm";
                 case AiOperationType.EMBEDDING -> "embedding";
-                case AiOperationType.IMAGE -> "image";
                 case AiOperationType.EXECUTE_TOOL -> "tool";
                 default -> "chain";
             };

@@ -22,6 +22,7 @@ class GenAiConventionsConverterTests {
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gen_ai",
+            "google_genai, gcp.gen_ai",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
             "VERTEX_AI, gcp.vertex_ai",
@@ -57,7 +58,7 @@ class GenAiConventionsConverterTests {
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gemini",
-            "google_genai_ai, gcp.gemini",
+            "google_genai, gcp.gemini",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
             "VERTEX_AI, gcp.vertex_ai",
@@ -120,6 +121,30 @@ class GenAiConventionsConverterTests {
                 .hasMessageContaining("aiOperationType cannot be null or empty");
     }
 
+    // toLangSmithProviderName
+
+    @ParameterizedTest
+    @CsvSource({
+            "ANTHROPIC, anthropic",
+            "GOOGLE_GENAI_AI, google",
+            "google_genai, google",
+            "OPENAI, openai",
+            "VERTEX_AI, gcp.vertex_ai"
+    })
+    void toLangSmithProviderNameShouldConvertValidValues(String input, String expected) {
+        String result = GenAiConventionsConverter.toLangSmithProviderName(input);
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = { " ", "  " })
+    void toLangSmithProviderNameShouldThrowExceptionForEmptyInput(String input) {
+        assertThatThrownBy(() -> GenAiConventionsConverter.toLangSmithProviderName(input))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("aiProvider cannot be null or empty");
+    }
+
     // toLangSmithSpanKind
 
     @ParameterizedTest
@@ -127,7 +152,7 @@ class GenAiConventionsConverterTests {
             "CHAT, llm",
             "TEXT_COMPLETION, llm",
             "EMBEDDING, embedding",
-            "IMAGE, image",
+            "IMAGE, llm",
             "chat, llm",
             "embedding, embedding",
             "' CHAT ', llm",

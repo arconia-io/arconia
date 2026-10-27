@@ -35,17 +35,18 @@ Configure the OTLP exporter to send traces to LangSmith, making sure you defined
 [source,properties]
 ----
 arconia.otel.exporter.otlp.endpoint=https://eu.api.smith.langchain.com/otel
-arconia.otel.exporter.otlp.headers=x-api-key=${LANGSMITH_API_KEY}
+arconia.otel.exporter.otlp.headers[x-api-key]=${LANGSMITH_API_KEY}
+arconia.otel.exporter.otlp.headers[Langsmith-Project]=my-project
 ----
 
-For US-hosted LangSmith, use `https://api.smith.langchain.com/otel` as the endpoint.
+For US-hosted LangSmith, use `https://api.smith.langchain.com/otel` as the endpoint. The `Langsmith-Project` header selects the LangSmith project receiving the traces, which is `default` when the header is not set.
 
 Alternatively, you can use the standard OpenTelemetry Environment Variables:
 
 [source,env]
 ----
 OTEL_EXPORTER_OTLP_ENDPOINT=https://eu.api.smith.langchain.com/otel
-OTEL_EXPORTER_OTLP_HEADERS="x-api-key=<your-langsmith-api-key>"
+OTEL_EXPORTER_OTLP_HEADERS="x-api-key=<your-langsmith-api-key>,Langsmith-Project=my-project"
 ----
 
 Since LangSmith supports only traces, you might want to disable the export of logs and metrics:
@@ -63,9 +64,10 @@ The module provides semantic conventions for the following observation types:
 * Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
 * Embedding model spans.
 * Tool execution spans with input/output content.
-* Chat client spans with session tracking and input/output content.
-* Token usage for inference operations.
-* Input/output message content, captured as span events.
+* Image model spans.
+* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as the `thread_id` metadata, so LangSmith groups the traces of a conversation into a thread.
+* Token usage for inference operations, including cached input tokens.
+* Input/output message content, captured as the `gen_ai.prompt` and `gen_ai.completion` span attributes, the way the LangSmith SDKs record the inputs and outputs of a run.
 
 Content capturing is enabled by default, matching the behavior of the official LangSmith SDKs.
 

@@ -37,7 +37,7 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
     @Override
     protected KeyValue aiProvider(ToolCallingObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
-                GenAiConventionsConverter.toProviderName(context.getOperationMetadata().provider()));
+                GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
     }
 
     private KeyValue langSmithSpanKind(ToolCallingObservationContext context) {

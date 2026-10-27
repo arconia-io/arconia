@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
@@ -128,9 +130,7 @@ class LangSmithChatModelObservationConventionTests {
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_FINISH_REASONS.getKey(), """
                         ["stop"]"""),
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_ID.getKey(), "resp-1"),
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS.getKey(), "1000"),
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(), "500")
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_RESPONSE_ID.getKey(), "resp-1")
         );
     }
 
@@ -146,19 +146,60 @@ class LangSmithChatModelObservationConventionTests {
                 assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey()));
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey()));
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey()));
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS.getKey()));
     }
 
     @Test
-    void shouldNotIncludeContentEvenWhenCaptureContentIsSpanAttributes() {
+    void shouldIncludeContentAsPromptAndCompletionWhenEnabled() throws JSONException {
         properties.setCaptureMessageContent(true);
+        AssistantMessage toolCallMessage = AssistantMessage.builder()
+                .content("")
+                .toolCalls(List.of(new AssistantMessage.ToolCall("call-1", "function", "weather", "{\"city\":\"Rome\"}")))
+                .build();
+        ToolResponseMessage toolResponseMessage = ToolResponseMessage.builder()
+                .responses(List.of(new ToolResponseMessage.ToolResponse("call-1", "weather", "sunny")))
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new SystemMessage("Be brief"), new UserMessage("Weather in Rome?"),
+                        toolCallMessage, toolResponseMessage), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        setResponse(context, "mistral-42", "It's sunny", "stop");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        // The assistant and tool messages of the conversation are inputs of the run.
+        JSONAssert.assertEquals("""
+                {"messages": [
+                  {"role": "system", "content": "Be brief"},
+                  {"role": "user", "content": "Weather in Rome?"},
+                  {"role": "assistant", "content": "", "tool_calls": [
+                    {"id": "call-1", "name": "weather", "args": "{\\"city\\":\\"Rome\\"}", "type": "tool_call"}
+                  ]},
+                  {"role": "tool", "tool_call_id": "call-1", "name": "weather", "content": "sunny"}
+                ]}""", findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey()), JSONCompareMode.STRICT);
+        JSONAssert.assertEquals("""
+                {"messages": [{"role": "assistant", "content": "It's sunny"}]}""",
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey()), JSONCompareMode.STRICT);
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
+    }
+
+    @Test
+    void shouldNotIncludeContentWhenDisabled() {
+        properties.setCaptureMessageContent(false);
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT.getKey()));
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
     }
 
     @Test

@@ -19,15 +19,14 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAiAdvisorConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
-import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "langsmith")
@@ -54,8 +53,8 @@ class LangSmithFlavorConfiguration {
     @Bean
     @ConditionalOnClass(ImageModelObservationConvention.class)
     @ConditionalOnMissingBean(ImageModelObservationConvention.class)
-    OpenTelemetryImageModelObservationConvention imageModelObservationConvention() {
-        return new OpenTelemetryImageModelObservationConvention();
+    LangSmithImageModelObservationConvention imageModelObservationConvention() {
+        return new LangSmithImageModelObservationConvention();
     }
 
     @Bean
@@ -73,8 +72,8 @@ class LangSmithFlavorConfiguration {
     @Bean
     @ConditionalOnMissingBean(LangSmithChatModelObservationHandler.class)
     @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-    LangSmithChatModelObservationHandler chatModelObservationHandler(OpenTelemetryAiConventionsProperties properties) {
-        return new LangSmithChatModelObservationHandler(properties);
+    LangSmithChatModelObservationHandler chatModelObservationHandler() {
+        return new LangSmithChatModelObservationHandler();
     }
 
     @Bean
@@ -92,13 +91,6 @@ class LangSmithFlavorConfiguration {
         @ConditionalOnMissingBean(ChatClientObservationConvention.class)
         LangSmithChatClientObservationConvention chatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
             return new LangSmithChatClientObservationConvention(properties);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean(LangSmithChatClientObservationHandler.class)
-        @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-        LangSmithChatClientObservationHandler chatClientObservationHandler(OpenTelemetryAiConventionsProperties properties) {
-            return new LangSmithChatClientObservationHandler(properties);
         }
 
         @Bean

@@ -25,7 +25,7 @@ public final class LangSmithEmbeddingModelObservationConvention extends OpenTele
     @Override
     protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
-                GenAiConventionsConverter.toProviderName(context.getOperationMetadata().provider()));
+                GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
     }
 
     private KeyValue langSmithSpanKind(EmbeddingModelObservationContext context) {
