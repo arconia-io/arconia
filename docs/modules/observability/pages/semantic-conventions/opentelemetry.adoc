@@ -134,6 +134,8 @@ Semantic Conventions for JVM are based on the support provided by the https://mi
 
 The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concurrent.phase.time` metrics from Micrometer, so it covers both garbage collection pauses and concurrent phases. The `jvm.gc.name` and `jvm.gc.cause` attributes tell them apart: for example, `G1 Young Generation` pauses versus `G1 Concurrent GC` phases (with cause `No GC`), or `ZGC Pauses` versus `ZGC Cycles`.
 
+The Micrometer `jvm.threads.live` metric is not published, since the `jvm.thread.count` metric replaces it: summed over the `jvm.thread.state` attribute, it counts the same live platform threads. The other Micrometer JVM metrics without an equivalent in the OpenTelemetry Semantic Conventions, such as `jvm.threads.daemon` and `jvm.threads.peak`, are kept.
+
 .JVM Configuration Properties
 |===
 |Property |Default |Description

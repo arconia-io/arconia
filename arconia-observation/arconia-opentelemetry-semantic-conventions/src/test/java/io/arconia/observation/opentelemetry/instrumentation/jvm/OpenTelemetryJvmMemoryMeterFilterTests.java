@@ -26,6 +26,22 @@ class OpenTelemetryJvmMemoryMeterFilterTests {
     }
 
     @Test
+    void deniesLiveThreads() {
+        Meter.Id id = new Meter.Id("jvm.threads.live", Tags.empty(), "threads", null, Meter.Type.GAUGE);
+
+        assertThat(filter.accept(id)).isEqualTo(MeterFilterReply.DENY);
+    }
+
+    @Test
+    void acceptsThreadMetersWithoutReplacement() {
+        Meter.Id daemon = new Meter.Id("jvm.threads.daemon", Tags.empty(), "threads", null, Meter.Type.GAUGE);
+        Meter.Id peak = new Meter.Id("jvm.threads.peak", Tags.empty(), "threads", null, Meter.Type.GAUGE);
+
+        assertThat(filter.accept(daemon)).isEqualTo(MeterFilterReply.NEUTRAL);
+        assertThat(filter.accept(peak)).isEqualTo(MeterFilterReply.NEUTRAL);
+    }
+
+    @Test
     void acceptsUnrelatedMeters() {
         Meter.Id id = new Meter.Id("jvm.memory.used",
                 Tags.of("area", "heap"),

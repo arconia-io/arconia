@@ -571,7 +571,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "jvm_threads_live{job=\"$job\", instance=\"$instance\"}",
+                        "expr": "sum(jvm_thread_count_threads{job=\"$job\", instance=\"$instance\"})",
                         "legendFormat": "__auto",
                         "range": false,
                         "instant": true
@@ -2248,7 +2248,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "jvm_threads_live{job=\"$job\", instance=\"$instance\"}",
+                        "expr": "sum(jvm_thread_count_threads{job=\"$job\", instance=\"$instance\"})",
                         "legendFormat": "Live",
                         "range": true,
                         "instant": false

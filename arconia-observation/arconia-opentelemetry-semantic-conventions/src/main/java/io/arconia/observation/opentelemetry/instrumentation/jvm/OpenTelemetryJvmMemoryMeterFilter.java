@@ -10,7 +10,8 @@ import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.opentelemetry.semconv.JvmAttributes;
 
 /**
- * Filter to map missing Micrometer JVM memory metrics to OpenTelemetry semantic conventions.
+ * Filter to map the Micrometer JVM metrics not covered by the Micrometer OpenTelemetry conventions
+ * to the OpenTelemetry semantic conventions, and to deny the ones the conventions replace.
  */
 public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
 
@@ -21,6 +22,10 @@ public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
     @Override
     public MeterFilterReply accept(Meter.Id id) {
         if ("jvm.memory.usage.after.gc".equals(id.getName())) {
+            return MeterFilterReply.DENY;
+        }
+        // Replaced by 'jvm.thread.count', which counts the same live platform threads by state.
+        if ("jvm.threads.live".equals(id.getName())) {
             return MeterFilterReply.DENY;
         }
         return MeterFilterReply.NEUTRAL;
