@@ -33,6 +33,12 @@ public class OpenInferenceOptions {
     private boolean hideLlmInvocationParameters = false;
 
     /**
+     * Whether to hide the definitions of the tools available to the model.
+     * They are also hidden when hiding all inputs.
+     */
+    private boolean hideLlmTools = false;
+
+    /**
      * Whether to hide all inputs.
      */
     private boolean hideInputs = false;
@@ -110,6 +116,14 @@ public class OpenInferenceOptions {
 
     public void setHideLlmInvocationParameters(boolean hideLlmInvocationParameters) {
         this.hideLlmInvocationParameters = hideLlmInvocationParameters;
+    }
+
+    public boolean isHideLlmTools() {
+        return hideLlmTools;
+    }
+
+    public void setHideLlmTools(boolean hideLlmTools) {
+        this.hideLlmTools = hideLlmTools;
     }
 
     public boolean isHideInputs() {

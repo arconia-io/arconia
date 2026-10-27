@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -19,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OpenInferenceEnvironmentPostProcessorIT {
 
-    private static final String PREFIX = OpenInferenceProperties.CONFIG_PREFIX + ".options";
+    private static final String PREFIX = OpenInferenceProperties.CONFIG_PREFIX;
 
     private SpringApplication application;
 
@@ -41,6 +42,12 @@ class OpenInferenceEnvironmentPostProcessorIT {
             assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-inputs")).isEqualTo("true");
             assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-outputs")).isEqualTo("true");
             assertThat(context.getEnvironment().getProperty(PREFIX + ".base64-image-max-length")).isEqualTo("64000");
+
+            OpenInferenceProperties properties = Binder.get(context.getEnvironment())
+                    .bindOrCreate(OpenInferenceProperties.CONFIG_PREFIX, OpenInferenceProperties.class);
+            assertThat(properties.isHideInputs()).isTrue();
+            assertThat(properties.isHideOutputs()).isTrue();
+            assertThat(properties.getBase64ImageMaxLength()).isEqualTo(64000);
         }
         finally {
             System.clearProperty("OPENINFERENCE_HIDE_INPUTS");

@@ -187,8 +187,72 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT, "Spring AI is a framework..."),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, "1000"),
                 KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_COMPLETION, "500"),
-                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, "1500")
+                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, "1500"),
+                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_READ, "800"),
+                KeyValue.of(SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_WRITE, "100"),
+                KeyValue.of(SemanticConventions.LLM_REQUEST_MODEL_NAME, "mistral"),
+                KeyValue.of(SemanticConventions.LLM_RESPONSE_MODEL_NAME, "mistral-42")
         );
+    }
+
+    @Test
+    void shouldHaveInputAndOutputValues() throws JSONException {
+        List<Message> messages = List.of(
+                new SystemMessage("You are a helpful assistant"),
+                new UserMessage("What's the weather in Rome?"),
+                AssistantMessage.builder()
+                        .content("")
+                        .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "weather", "{\"city\":\"Rome\"}")))
+                        .build(),
+                ToolResponseMessage.builder()
+                        .responses(List.of(new ToolResponseMessage.ToolResponse("call_1", "weather", "sunny")))
+                        .build()
+        );
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(messages, ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
+                .generations(List.of(new Generation(AssistantMessage.builder().content("It's sunny").build())))
+                .build());
+
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+        JSONAssert.assertEquals("""
+                {"messages": [
+                  {"role": "system", "content": "You are a helpful assistant"},
+                  {"role": "user", "content": "What's the weather in Rome?"},
+                  {"role": "assistant", "content": "", "tool_calls": [
+                    {"id": "call_1", "type": "function", "function": {"name": "weather", "arguments": "{\\"city\\":\\"Rome\\"}"}}
+                  ]},
+                  {"role": "tool", "tool_call_id": "call_1", "name": "weather", "content": "sunny"}
+                ]}""", findKeyValue(keyValues, SemanticConventions.INPUT_VALUE), JSONCompareMode.STRICT);
+        JSONAssert.assertEquals("""
+                {"messages": [{"role": "assistant", "content": "It's sunny"}]}""",
+                findKeyValue(keyValues, SemanticConventions.OUTPUT_VALUE), JSONCompareMode.STRICT);
+        assertThat(keyValues).contains(
+                KeyValue.of(SemanticConventions.INPUT_MIME_TYPE, "application/json"),
+                KeyValue.of(SemanticConventions.OUTPUT_MIME_TYPE, "application/json"));
+    }
+
+    @Test
+    void shouldRedactInputAndOutputValues() {
+        OpenInferenceOptions options = new OpenInferenceOptions();
+        options.setHideInputs(true);
+        options.setHideOutputs(true);
+        var convention = new OpenInferenceChatModelObservationConvention(options);
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .metadata(ChatResponseMetadata.builder().model("mistral-42").usage(new TestUsage()).build())
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hello").build())))
+                .build());
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER),
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER));
     }
 
     @Test
@@ -242,10 +306,33 @@ class OpenInferenceChatModelObservationConventionTests {
         JSONAssert.assertEquals(toolSchema0, findKeyValue(keyValues, SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_JSON_SCHEMA), JSONCompareMode.LENIENT);
 
         assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_NAME, "get_weather"),
+                KeyValue.of(SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_DESCRIPTION, "Get the current weather in a location"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_ID, "call_1"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_FUNCTION_NAME, "get_weather"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0." + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON, "{\"location\":\"New York\"}")
         );
+    }
+
+    @Test
+    void shouldRedactToolsWhenHideLlmTools() {
+        OpenInferenceOptions options = new OpenInferenceOptions();
+        options.setHideLlmTools(true);
+        var convention = new OpenInferenceChatModelObservationConvention(options);
+        ToolDefinition weatherTool = ToolDefinition.builder().name("get_weather").description("Get the weather").inputSchema("{}").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), ToolCallingChatOptions.builder()
+                        .model("mistral").toolCallbacks(new TestToolCallback(weatherTool)).build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(KeyValue.of(SemanticConventions.LLM_TOOLS, OpenInferenceOptions.REDACTED_PLACEHOLDER));
+        assertThat(keyValues).noneSatisfy(kv ->
+                assertThat(kv.getKey()).startsWith(SemanticConventions.LLM_TOOLS + ".0."));
+        // The input messages are not affected.
+        assertThat(keyValues).contains(
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT, "Hi"));
     }
 
     @Test
@@ -421,7 +508,8 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
                 KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "Transcribe this audio"),
                 KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"),
-                KeyValue.of(prefix + ".1." + "message_content.audio" + "." + SemanticConventions.AUDIO_URL, "https://example.com/audio.mp3")
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_URL, "https://example.com/audio.mp3"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_MIME_TYPE, "audio/mpeg")
         );
     }
 
@@ -610,6 +698,16 @@ class OpenInferenceChatModelObservationConventionTests {
         @Override
         public Integer getTotalTokens() {
             return 1500;
+        }
+
+        @Override
+        public Long getCacheReadInputTokens() {
+            return 800L;
+        }
+
+        @Override
+        public Long getCacheWriteInputTokens() {
+            return 100L;
         }
 
         @Override

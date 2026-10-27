@@ -15,6 +15,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
     void tracesShouldMapProperties() {
         var environment = new MockEnvironment()
                 .withProperty("OPENINFERENCE_HIDE_LLM_INVOCATION_PARAMETERS", "true")
+                .withProperty("OPENINFERENCE_HIDE_LLM_TOOLS", "true")
                 .withProperty("OPENINFERENCE_HIDE_INPUTS", "true")
                 .withProperty("OPENINFERENCE_HIDE_OUTPUTS", "true")
                 .withProperty("OPENINFERENCE_HIDE_INPUT_MESSAGES", "true")
@@ -30,8 +31,9 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenInferenceEnvironmentPropertyAdapters.traces(environment);
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX;
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-llm-invocation-parameters")).isEqualTo(true);
+        assertThat(adapter.getArconiaProperties().get(prefix + ".hide-llm-tools")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-inputs")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-outputs")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-input-messages")).isEqualTo(true);
@@ -53,7 +55,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenInferenceEnvironmentPropertyAdapters.traces(environment);
 
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX + ".options";
+        String prefix = OpenInferenceProperties.CONFIG_PREFIX;
         assertThat(adapter.getArconiaProperties().containsKey(prefix + ".hide-llm-invocation-parameters")).isTrue();
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-llm-invocation-parameters")).isEqualTo(false);
     }

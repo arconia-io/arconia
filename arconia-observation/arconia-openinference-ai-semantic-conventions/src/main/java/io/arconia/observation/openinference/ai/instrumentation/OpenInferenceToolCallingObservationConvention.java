@@ -13,6 +13,7 @@ import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link ToolCallingObservationConvention} for OpenInference.
@@ -47,6 +48,8 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
     public KeyValues getHighCardinalityKeyValues(ToolCallingObservationContext context) {
         var keyValues = KeyValues.empty();
         keyValues = toolDefinitionDescription(keyValues, context);
+        keyValues = toolParameters(keyValues, context);
+        keyValues = toolId(keyValues, context);
         keyValues = toolCallArguments(keyValues, context);
         keyValues = toolCallResult(keyValues, context);
         return keyValues;
@@ -58,6 +61,21 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
         return keyValues.and(
                 SemanticConventions.TOOL_DESCRIPTION,
                 toolDescription);
+    }
+
+    private KeyValues toolParameters(KeyValues keyValues, ToolCallingObservationContext context) {
+        String inputSchema = context.getToolDefinition().inputSchema();
+        if (!StringUtils.hasText(inputSchema)) {
+            return keyValues;
+        }
+        return keyValues.and(SemanticConventions.TOOL_PARAMETERS, inputSchema);
+    }
+
+    private KeyValues toolId(KeyValues keyValues, ToolCallingObservationContext context) {
+        if (!StringUtils.hasText(context.getToolCallId())) {
+            return keyValues;
+        }
+        return keyValues.and(SemanticConventions.TOOL_ID, context.getToolCallId());
     }
 
     private KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {

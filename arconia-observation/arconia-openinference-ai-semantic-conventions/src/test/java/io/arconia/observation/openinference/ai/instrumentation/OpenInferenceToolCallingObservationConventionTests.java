@@ -74,6 +74,23 @@ class OpenInferenceToolCallingObservationConventionTests {
     }
 
     @Test
+    void shouldHaveToolIdAndParameters() {
+        var context = ToolCallingObservationContext.builder()
+                .toolDefinition(ToolDefinition.builder().name("weather").description("Get the weather")
+                        .inputSchema("""
+                                {"type":"object","properties":{"city":{"type":"string"}}}""").build())
+                .toolCallArguments("{}")
+                .toolCallId("call_1")
+                .build();
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.TOOL_ID, "call_1"),
+                KeyValue.of(SemanticConventions.TOOL_PARAMETERS, """
+                        {"type":"object","properties":{"city":{"type":"string"}}}""")
+        );
+    }
+
+    @Test
     void shouldHaveJsonOutputWhenResultIsJson() {
         var context = createContext();
         context.setToolCallResult("""

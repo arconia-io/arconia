@@ -18,6 +18,7 @@ class OpenInferenceOptionsTests {
         assertThat(options.isHideEmbeddingsText()).isFalse();
         assertThat(options.isHideEmbeddingsVectors()).isFalse();
         assertThat(options.isHideLlmInvocationParameters()).isFalse();
+        assertThat(options.isHideLlmTools()).isFalse();
         assertThat(options.isHideInputs()).isFalse();
         assertThat(options.isHideInputImages()).isFalse();
         assertThat(options.isHideInputMessages()).isFalse();
@@ -38,6 +39,7 @@ class OpenInferenceOptionsTests {
         options.setHideEmbeddingsText(true);
         options.setHideEmbeddingsVectors(true);
         options.setHideLlmInvocationParameters(true);
+        options.setHideLlmTools(true);
         options.setHideInputs(true);
         options.setHideInputImages(true);
         options.setHideInputMessages(true);
@@ -52,6 +54,7 @@ class OpenInferenceOptionsTests {
         assertThat(options.isHideEmbeddingsText()).isTrue();
         assertThat(options.isHideEmbeddingsVectors()).isTrue();
         assertThat(options.isHideLlmInvocationParameters()).isTrue();
+        assertThat(options.isHideLlmTools()).isTrue();
         assertThat(options.isHideInputs()).isTrue();
         assertThat(options.isHideInputImages()).isTrue();
         assertThat(options.isHideInputMessages()).isTrue();
