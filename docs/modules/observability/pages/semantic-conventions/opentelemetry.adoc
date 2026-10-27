@@ -248,7 +248,7 @@ The Datasource Micrometer instrumentation currently deviates from the OpenTeleme
 * Each query is also recorded with the `jdbc.query` metric from Micrometer, in addition to `db.client.operation.duration`.
 * The `db.namespace` attribute is not recorded for Microsoft SQL Server.
 * The `db.system.name` attribute is set to `other_sql` for all the databases except PostgreSQL, MySQL, MariaDB, and Microsoft SQL Server, instead of the values the conventions define for the other databases, such as `h2database`, `oracle.db`, and `ibm.db2`.
-* The `db.operation.name` and `db.collection.name` attributes are extracted from the query text, which the conventions advise against for SQL databases. For queries on several tables, such as joins, `db.collection.name` holds only the first table.
+* The `db.operation.name` and `db.collection.name` attributes are extracted from the query text, which the conventions advise against for SQL databases.
 
 == Generative AI
 
