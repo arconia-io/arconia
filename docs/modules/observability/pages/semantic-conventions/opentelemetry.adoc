@@ -273,6 +273,15 @@ The module supports multiple convention _flavors_. The default `opentelemetry` f
 
 Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the <<_errors,error conventions>> are active.
 
+=== Known Deviations
+
+The Spring AI observations currently deviate from the OpenTelemetry Semantic Conventions for Generative AI in the following ways:
+
+* Chat model and embedding model spans have the `INTERNAL` span kind instead of `CLIENT`, since the Spring AI observations don't describe them as calls to a remote service.
+* The `server.address` and `server.port` attributes are not recorded, since the Spring AI observations don't expose the endpoint of the model provider.
+* System instructions are recorded in `gen_ai.input.messages` as messages with the `system` role, also for model providers that accept them separately from the chat history, such as Anthropic and Google Gemini, for which the conventions recommend the `gen_ai.system_instructions` attribute.
+* Attribute values are always strings, also for attributes defined as numbers or arrays, such as `gen_ai.usage.input_tokens` and `gen_ai.request.stop_sequences` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
+
 === Content Capturing
 
 Model calls and tool executions can carry sensitive data, so capturing their content is opt-in. Three properties enable it: `capture-message-content` for the input and output messages of model calls, `capture-tool-definitions` for the definitions of the tools available to the model, and `capture-tool-call-content` for the arguments and result of tool executions.
