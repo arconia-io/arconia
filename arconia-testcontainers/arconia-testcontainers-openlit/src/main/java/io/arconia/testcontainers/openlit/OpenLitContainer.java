@@ -67,7 +67,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 ttl: 730h
                 logs_table_name: otel_logs
                 traces_table_name: otel_traces
-                metrics_table_name: otel_metrics
                 timeout: 5s
                 retry_on_failure:
                   enabled: true

@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class OpenLitContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse("ghcr.io/openlit/openlit:2.1.0");
-    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.9-distroless");
+    private static final DockerImageName IMAGE = DockerImageName.parse("ghcr.io/openlit/openlit:2.1.1");
+    private static final DockerImageName CLICKHOUSE_IMAGE = DockerImageName.parse("clickhouse/clickhouse-server:26.10-distroless");
 
     // Minimal OTLP/JSON payload with a single span.
     private static final String TRACES_PAYLOAD = """

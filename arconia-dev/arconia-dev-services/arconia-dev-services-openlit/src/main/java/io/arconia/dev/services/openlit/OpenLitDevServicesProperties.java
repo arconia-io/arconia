@@ -29,12 +29,12 @@ public class OpenLitDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "ghcr.io/openlit/openlit:2.1.0";
+    private String imageName = "ghcr.io/openlit/openlit:2.1.1";
 
     /**
      * Full name of the container image used for the internal ClickHouse instance.
      */
-    private String clickhouseImageName = "clickhouse/clickhouse-server:26.9-distroless";
+    private String clickhouseImageName = "clickhouse/clickhouse-server:26.10-distroless";
 
     /**
      * Environment variables to set in the service.
