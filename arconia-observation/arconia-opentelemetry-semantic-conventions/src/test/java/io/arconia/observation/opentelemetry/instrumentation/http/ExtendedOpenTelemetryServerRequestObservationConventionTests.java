@@ -393,12 +393,12 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
 
     @Test
     void methodOriginalPresentForUnknownMethod() {
-        MockHttpServletRequest request = new MockHttpServletRequest("QUERY", "/api/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("PROPFIND", "/api/users");
         ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "_OTHER"));
         assertThat(convention.getHighCardinalityKeyValues(context))
-                .contains(KeyValue.of("http.request.method_original", "QUERY"));
+                .contains(KeyValue.of("http.request.method_original", "PROPFIND"));
     }
 
     @Test
@@ -410,6 +410,17 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
         assertThat(convention.getHighCardinalityKeyValues(context))
                 .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
         assertThat(convention.getContextualName(context)).isEqualTo("CONNECT");
+    }
+
+    @Test
+    void queryIsKnownMethod() {
+        MockHttpServletRequest request = new MockHttpServletRequest("QUERY", "/api/users");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "QUERY"));
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
+        assertThat(convention.getContextualName(context)).isEqualTo("QUERY");
     }
 
     static class OrderNotFoundException extends RuntimeException {

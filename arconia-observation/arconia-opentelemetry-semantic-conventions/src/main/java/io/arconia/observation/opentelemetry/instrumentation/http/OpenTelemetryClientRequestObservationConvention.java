@@ -36,10 +36,14 @@ public class OpenTelemetryClientRequestObservationConvention extends DefaultClie
 
     private static final String REDACTED_USER_INFO = UrlQuerySanitizer.REDACTED + ":" + UrlQuerySanitizer.REDACTED;
 
+    /**
+     * The methods the conventions define as known by default. The {@code QUERY} value is still in development,
+     * so the stable semantic conventions library has no constant for it.
+     */
     private static final Set<String> KNOWN_METHODS = Set.of(HttpRequestMethodValues.CONNECT, HttpRequestMethodValues.DELETE,
             HttpRequestMethodValues.GET, HttpRequestMethodValues.HEAD, HttpRequestMethodValues.OPTIONS,
             HttpRequestMethodValues.PATCH, HttpRequestMethodValues.POST, HttpRequestMethodValues.PUT,
-            HttpRequestMethodValues.TRACE);
+            HttpRequestMethodValues.TRACE, "QUERY");
 
     private final OpenTelemetryHttpOptions options;
 

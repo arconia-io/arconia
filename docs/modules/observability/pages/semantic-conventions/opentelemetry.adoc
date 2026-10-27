@@ -59,7 +59,7 @@ If you use one of the available xref:dev-services:index.adoc[OpenTelemetry Dev S
 
 == Stability
 
-The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. The only exception is the `jvm.gc.cause` attribute of the `jvm.gc.duration` metric, which is still in development but kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>).
+The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. There are two exceptions: the `jvm.gc.cause` attribute of the `jvm.gc.duration` metric, which is still in development but kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>), and the `QUERY` value of the `http.request.method` attribute, which is still in development but part of the HTTP methods the stable conventions define as known by default.
 
 The OpenTelemetry Semantic Conventions for <<_generative_ai,Generative AI>> are still in development, and they are provided by a separate module.
 

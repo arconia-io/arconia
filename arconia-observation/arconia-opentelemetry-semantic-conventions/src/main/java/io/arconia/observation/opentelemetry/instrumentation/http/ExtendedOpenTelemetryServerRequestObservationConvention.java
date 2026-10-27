@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
+import java.util.Set;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.ClientAttributes;
@@ -22,6 +24,12 @@ import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryE
 public class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
 
     private static final String ROOT_ROUTE = "/";
+
+    /**
+     * The methods the conventions define as known by default, missing from Spring's {@code HttpMethod}.
+     * The {@code QUERY} value is still in development, so the stable semantic conventions library has no constant for it.
+     */
+    private static final Set<String> ADDITIONAL_KNOWN_METHODS = Set.of(HttpAttributes.HttpRequestMethodValues.CONNECT, "QUERY");
 
     private final OpenTelemetryHttpOptions options;
 
@@ -122,12 +130,13 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
     }
 
     /**
-     * Treats {@code CONNECT} as a known method, which the conventions list but Spring's {@code HttpMethod} doesn't.
+     * Treats {@code CONNECT} and {@code QUERY} as known methods, which the conventions define as known by default
+     * but Spring's {@code HttpMethod} doesn't list.
      */
     @Override
     protected @Nullable String getMethodValue(ServerRequestObservationContext context) {
-        if (context.getCarrier() != null && HttpAttributes.HttpRequestMethodValues.CONNECT.equals(context.getCarrier().getMethod())) {
-            return HttpAttributes.HttpRequestMethodValues.CONNECT;
+        if (context.getCarrier() != null && ADDITIONAL_KNOWN_METHODS.contains(context.getCarrier().getMethod())) {
+            return context.getCarrier().getMethod();
         }
         return super.getMethodValue(context);
     }

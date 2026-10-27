@@ -92,6 +92,15 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
+    void queryIsKnownMethod() {
+        ClientRequestObservationContext context = context(HttpMethod.valueOf("QUERY"), "https://example.com");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.request.method", "QUERY"));
+        assertThat(convention.getHighCardinalityKeyValues(context)).noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
+        assertThat(convention.getContextualName(context)).isEqualTo("QUERY");
+    }
+
+    @Test
     void unknownMethodIsOther() {
         ClientRequestObservationContext context = context(HttpMethod.valueOf("CUSTOM"), "https://example.com");
 
