@@ -31,7 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Unit tests for {@link OpenTelemetryHttpSpanStatusObservationHandler}.
  * <p>
  * Spans not in error are asserted as not {@code Error} rather than unset, because the Micrometer Tracing
- * OpenTelemetry bridge sets the {@code Ok} status on every span ending without an error.
+ * OpenTelemetry bridge sets the {@code Ok} status on spans started without a parent, like the ones in these tests,
+ * when they end without an error.
  */
 class OpenTelemetryHttpSpanStatusObservationHandlerTests {
 
