@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.opentelemetry.semconv.JvmAttributes;
@@ -12,6 +13,10 @@ import io.opentelemetry.semconv.JvmAttributes;
  * Filter to map missing Micrometer JVM memory metrics to OpenTelemetry semantic conventions.
  */
 public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
+
+    private static final String JVM_GC_DURATION = "jvm.gc.duration";
+
+    private static final String JVM_GC_DURATION_DESCRIPTION = "Duration of JVM garbage collection actions.";
 
     @Override
     public MeterFilterReply accept(Meter.Id id) {
@@ -38,7 +43,9 @@ public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
                     })
                     .toList();
 
-            return id.withName("jvm.gc.duration").replaceTags(mappedTags);
+            // Both timers get the description of the 'jvm.gc.duration' metric: the Micrometer OTLP registry exports
+            // meters with the same name but different descriptions as separate metrics.
+            return new Meter.Id(JVM_GC_DURATION, Tags.of(mappedTags), id.getBaseUnit(), JVM_GC_DURATION_DESCRIPTION, id.getType());
         }
         return id;
     }

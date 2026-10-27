@@ -63,6 +63,21 @@ class OpenTelemetryJvmMemoryMeterFilterTests {
     }
 
     @Test
+    void mapsGcPauseAndConcurrentPhaseTimeToSameDescription() {
+        Meter.Id pause = new Meter.Id("jvm.gc.pause", Tags.empty(), "seconds", "Time spent in GC pause", Meter.Type.TIMER);
+        Meter.Id concurrent = new Meter.Id("jvm.gc.concurrent.phase.time", Tags.empty(), "seconds",
+                "Time spent in concurrent phase", Meter.Type.TIMER);
+
+        Meter.Id mappedPause = filter.map(pause);
+        Meter.Id mappedConcurrent = filter.map(concurrent);
+
+        assertThat(mappedPause.getDescription()).isEqualTo("Duration of JVM garbage collection actions.");
+        assertThat(mappedConcurrent.getDescription()).isEqualTo(mappedPause.getDescription());
+        assertThat(mappedPause.getBaseUnit()).isEqualTo("seconds");
+        assertThat(mappedPause.getType()).isEqualTo(Meter.Type.TIMER);
+    }
+
+    @Test
     void preservesUnrelatedTagsOnGcMeters() {
         Meter.Id id = new Meter.Id("jvm.gc.pause",
                 Tags.of("gc", "G1", "action", "end of minor GC", "custom", "value"),
