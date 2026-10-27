@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-present the original author or authors.
+ * Copyright 2025-2026 Arconia Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,170 +16,87 @@
 
 package io.arconia.opentelemetry.autoconfigure.traces.bridge;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.micrometer.tracing.otel.bridge.EventPublishingContextWrapper;
-import io.micrometer.tracing.otel.bridge.OtelTracer.EventPublisher;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextStorage;
-import io.opentelemetry.context.Scope;
-
-import org.jspecify.annotations.Nullable;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.context.event.ApplicationStartingEvent;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.GenericApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.util.ClassUtils;
 
 /**
- * {@link ApplicationListener} to add an OpenTelemetry {@link ContextStorage} wrapper for
- * {@link EventPublisher} bean support. A single {@link ContextStorage} wrapper is added
- * on the {@link ApplicationStartingEvent} then updated with {@link EventPublisher} beans
- * as needed.
- * <p>
- * The {@link #addWrapper()} method may also be called directly if the
- * {@link ApplicationStartingEvent} isn't called early enough or isn't fired.
- * <p>
- * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.0.1/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryEventPublisherBeansApplicationListener.java">OpenTelemetryEventPublisherBeansApplicationListener.java</a>
- * authored by Phillip Webb in the Spring Boot project.
+ * Loads the Micrometer tracing bridge listener only when its optional bridge dependency is present.
  */
-class MicrometerTracingOpenTelemetryContextStorageApplicationListener implements GenericApplicationListener {
+public class MicrometerTracingOpenTelemetryContextStorageApplicationListener implements GenericApplicationListener {
 
-	private static final AtomicBoolean added = new AtomicBoolean();
+    private static final String MICROMETER_EVENT_PUBLISHER_CLASS =
+            "io.micrometer.tracing.otel.bridge.OtelTracer$EventPublisher";
 
-	@Override
-	public int getOrder() {
-		return Ordered.HIGHEST_PRECEDENCE;
-	}
+    private static final String DELEGATE_CLASS = "io.arconia.opentelemetry.autoconfigure.traces.bridge."
+            + "MicrometerTracingOpenTelemetryContextStorageApplicationListenerDelegate";
 
-	@Override
-	public boolean supportsEventType(ResolvableType eventType) {
-		Class<?> type = eventType.getRawClass();
-		return (type != null) && (ApplicationStartingEvent.class.isAssignableFrom(type)
-				|| ContextRefreshedEvent.class.isAssignableFrom(type)
-				|| ContextClosedEvent.class.isAssignableFrom(type));
-	}
+    private final ClassLoader classLoader;
 
-	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
-		if (event instanceof ApplicationStartingEvent) {
-			addWrapper();
-		}
-		if (event instanceof ContextRefreshedEvent contextRefreshedEvent) {
-			ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
-			List<EventPublishingContextWrapper> publishers = applicationContext
-				.getBeansOfType(EventPublisher.class, true, false)
-				.values()
-				.stream()
-				.map(EventPublishingContextWrapper::new)
-				.toList();
-			Wrapper.instance.put(applicationContext, publishers);
-		}
-		if (event instanceof ContextClosedEvent contextClosedEvent) {
-			Wrapper.instance.remove(contextClosedEvent.getApplicationContext());
-		}
-	}
+    private volatile ListenerDelegate delegate;
 
-	/**
-	 * {@link ContextStorage#addWrapper(java.util.function.Function) Add} the
-	 * {@link ContextStorage} wrapper to ensure that {@link EventPublisher
-	 * EventPublishers} are propagated correctly.
-	 */
-	public static void addWrapper() {
-		if (added.compareAndSet(false, true)) {
-			Wrapper.instance.addWrapper();
-		}
-	}
+    private volatile boolean delegateInitialized;
 
-	/**
-	 * Single instance class used to add the wrapper and manage the {@link EventPublisher} beans.
-	 */
-	static final class Wrapper {
+    public MicrometerTracingOpenTelemetryContextStorageApplicationListener() {
+        this.classLoader = getClass().getClassLoader();
+    }
 
-		static final Wrapper instance = new Wrapper();
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
 
-		private final MultiValueMap<ApplicationContext, EventPublishingContextWrapper> beans = new LinkedMultiValueMap<>();
+    @Override
+    public boolean supportsEventType(ResolvableType eventType) {
+        Class<?> type = eventType.getRawClass();
+        return (type != null) && (ApplicationStartingEvent.class.isAssignableFrom(type)
+                || ContextRefreshedEvent.class.isAssignableFrom(type)
+                || ContextClosedEvent.class.isAssignableFrom(type));
+    }
 
-		private volatile @Nullable ContextStorage storageDelegate;
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        ListenerDelegate delegate = getDelegateIfAvailable();
+        if (delegate != null) {
+            delegate.onApplicationEvent(event);
+        }
+    }
 
-		private Wrapper() {}
+    /**
+     * Adds the optional Micrometer tracing context-storage wrapper when the bridge is present.
+     */
+    public void addWrapperIfAvailable() {
+        ListenerDelegate delegate = getDelegateIfAvailable();
+        if (delegate != null) {
+            delegate.addWrapper();
+        }
+    }
 
-		private void addWrapper() {
-			ContextStorage.addWrapper(Storage::new);
-		}
+    private ListenerDelegate getDelegateIfAvailable() {
+        if (!this.delegateInitialized) {
+            synchronized (this) {
+                if (!this.delegateInitialized) {
+                    if (ClassUtils.isPresent(MICROMETER_EVENT_PUBLISHER_CLASS, this.classLoader)) {
+                        Class<?> delegateClass = ClassUtils.resolveClassName(DELEGATE_CLASS, this.classLoader);
+                        this.delegate = (ListenerDelegate) BeanUtils.instantiateClass(delegateClass);
+                    }
+                    this.delegateInitialized = true;
+                }
+            }
+        }
+        return this.delegate;
+    }
 
-		void put(ApplicationContext applicationContext, List<EventPublishingContextWrapper> publishers) {
-			synchronized (this) {
-				this.beans.addAll(applicationContext, publishers);
-				this.storageDelegate = null;
-			}
-		}
+    interface ListenerDelegate extends GenericApplicationListener {
 
-		void remove(ApplicationContext applicationContext) {
-			synchronized (this) {
-				this.beans.remove(applicationContext);
-				this.storageDelegate = null;
-			}
-		}
+        void addWrapper();
 
-		ContextStorage getStorageDelegate(ContextStorage parent) {
-			ContextStorage delegate = this.storageDelegate;
-			if (delegate == null) {
-				synchronized (this) {
-					delegate = this.storageDelegate;
-					if (delegate == null) {
-						delegate = parent;
-						for (List<EventPublishingContextWrapper> publishers : this.beans.values()) {
-							for (EventPublishingContextWrapper publisher : publishers) {
-								delegate = publisher.apply(delegate);
-							}
-						}
-						this.storageDelegate = delegate;
-					}
-				}
-			}
-			return delegate;
-		}
-
-		/**
-		 * {@link ContextStorage} that delegates to the {@link EventPublisher} beans.
-		 */
-		class Storage implements ContextStorage {
-
-			private final ContextStorage parent;
-
-			Storage(ContextStorage parent) {
-				this.parent = parent;
-			}
-
-			@Override
-			public Scope attach(Context toAttach) {
-				return getDelegate().attach(toAttach);
-			}
-
-			@Override
-			public @Nullable Context current() {
-				return getDelegate().current();
-			}
-
-			@Override
-			public Context root() {
-				return getDelegate().root();
-			}
-
-			private ContextStorage getDelegate() {
-				return getStorageDelegate(this.parent);
-			}
-
-		}
-
-	}
+    }
 
 }
