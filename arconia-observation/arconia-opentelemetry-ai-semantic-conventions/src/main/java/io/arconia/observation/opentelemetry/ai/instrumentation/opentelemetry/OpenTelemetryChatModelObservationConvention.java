@@ -47,6 +47,11 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
     }
 
     @Override
+    public KeyValues getLowCardinalityKeyValues(ChatModelObservationContext context) {
+        return GenAiConventionsConverter.withoutNoneValues(super.getLowCardinalityKeyValues(context));
+    }
+
+    @Override
     public String getContextualName(ChatModelObservationContext context) {
         ChatOptions options = context.getRequest().getOptions();
         String operationName = GenAiConventionsConverter.toOperationName(context.getOperationMetadata().operationType());

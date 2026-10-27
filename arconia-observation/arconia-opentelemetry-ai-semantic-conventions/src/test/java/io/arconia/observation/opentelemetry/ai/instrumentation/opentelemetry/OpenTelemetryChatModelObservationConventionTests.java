@@ -82,6 +82,29 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldOmitModelsWhenNotAvailable() {
+        Prompt prompt = Prompt.builder().content("Hey").build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(prompt)
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context))
+                .noneMatch(keyValue -> KeyValue.NONE_VALUE.equals(keyValue.getValue()))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey()))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey()));
+    }
+
+    @Test
+    void shouldOmitResponseModelWithoutResponse() {
+        ChatModelObservationContext context = createContext("mistral");
+
+        assertThat(convention.getLowCardinalityKeyValues(context))
+                .contains(KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "mistral"))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey()));
+    }
+
+    @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");

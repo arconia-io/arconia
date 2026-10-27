@@ -53,6 +53,16 @@ class OpenTelemetryEmbeddingModelObservationConventionTests {
     }
 
     @Test
+    void shouldOmitModelsWhenNotAvailable() {
+        EmbeddingModelObservationContext context = createContext(null);
+
+        assertThat(convention.getLowCardinalityKeyValues(context))
+                .noneMatch(keyValue -> KeyValue.NONE_VALUE.equals(keyValue.getValue()))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey()))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey()));
+    }
+
+    @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
         EmbeddingModelObservationContext context = createContext("text-embedding-3-small");
         setResponse(context, "text-embedding-3-small-v2");

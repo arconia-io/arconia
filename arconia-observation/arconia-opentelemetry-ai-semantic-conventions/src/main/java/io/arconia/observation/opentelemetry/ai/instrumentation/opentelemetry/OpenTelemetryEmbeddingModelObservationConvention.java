@@ -20,6 +20,11 @@ public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmb
     }
 
     @Override
+    public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
+        return GenAiConventionsConverter.withoutNoneValues(super.getLowCardinalityKeyValues(context));
+    }
+
+    @Override
     public String getContextualName(EmbeddingModelObservationContext context) {
         EmbeddingOptions options = context.getRequest().getOptions();
         String operationName = GenAiConventionsConverter.toOperationName(context.getOperationMetadata().operationType());

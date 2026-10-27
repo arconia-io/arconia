@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
+import io.micrometer.common.KeyValue;
+import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.observation.conventions.AiOperationType;
@@ -95,6 +97,17 @@ public final class GenAiConventionsConverter {
         } catch (IllegalArgumentException e) {
             return "chain";
         }
+    }
+
+
+    /**
+     * Removes the key values set to {@code none}, the placeholder Spring AI uses when a value isn't available,
+     * such as the model of a failed request: the conventions require such attributes only when available.
+     */
+    public static KeyValues withoutNoneValues(KeyValues keyValues) {
+        return KeyValues.of(keyValues.stream()
+                .filter(keyValue -> !KeyValue.NONE_VALUE.equals(keyValue.getValue()))
+                .toList());
     }
 
 }

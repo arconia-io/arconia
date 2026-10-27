@@ -18,6 +18,11 @@ public class OpenTelemetryImageModelObservationConvention extends DefaultImageMo
     }
 
     @Override
+    public KeyValues getLowCardinalityKeyValues(ImageModelObservationContext context) {
+        return GenAiConventionsConverter.withoutNoneValues(super.getLowCardinalityKeyValues(context));
+    }
+
+    @Override
     protected KeyValue aiOperationType(ImageModelObservationContext context) {
         return KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(),
                 GenAiConventionsConverter.toOperationName(context.getOperationMetadata().operationType()));

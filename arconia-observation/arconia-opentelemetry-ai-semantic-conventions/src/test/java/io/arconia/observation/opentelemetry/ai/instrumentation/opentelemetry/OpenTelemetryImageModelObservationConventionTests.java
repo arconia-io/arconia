@@ -51,6 +51,15 @@ class OpenTelemetryImageModelObservationConventionTests {
     }
 
     @Test
+    void shouldOmitRequestModelWhenNotAvailable() {
+        ImageModelObservationContext context = createContext(null);
+
+        assertThat(convention.getLowCardinalityKeyValues(context))
+                .noneMatch(keyValue -> KeyValue.NONE_VALUE.equals(keyValue.getValue()))
+                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey()));
+    }
+
+    @Test
     void shouldHaveHighCardinalityKeyValuesWithRequestParams() {
         ImagePrompt prompt = new ImagePrompt("A sunset over the ocean",
                 ImageOptionsBuilder.builder()
