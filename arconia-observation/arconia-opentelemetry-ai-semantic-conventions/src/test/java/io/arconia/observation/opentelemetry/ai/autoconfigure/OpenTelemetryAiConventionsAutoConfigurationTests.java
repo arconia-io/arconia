@@ -34,7 +34,6 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitIm
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
@@ -231,7 +230,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry")
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenLLMetryChatModelObservationConvention.class);
-                    assertThat(context).hasSingleBean(OpenLLMetryEmbeddingModelObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryEmbeddingModelObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenLLMetryToolCallingObservationConvention.class);
                 });
     }
@@ -295,7 +294,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withUserConfiguration(CustomEmbeddingModelConventionConfig.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(EmbeddingModelObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenLLMetryEmbeddingModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryEmbeddingModelObservationConvention.class);
                 });
     }
 

@@ -4,7 +4,6 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
-import org.springframework.ai.observation.conventions.AiProvider;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 
@@ -21,11 +20,6 @@ public final class OpenLLMetryAdvisorObservationConvention extends OpenTelemetry
                 traceloopEntityName(context),
                 traceloopSpanKind(context)
         );
-    }
-
-    @Override
-    protected KeyValue aiProvider(AdvisorObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM, AiProvider.SPRING_AI.value());
     }
 
     private KeyValue traceloopEntityName(AdvisorObservationContext context) {

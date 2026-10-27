@@ -7,7 +7,6 @@ import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLLMetry flavor of {@link OpenTelemetryToolCallingObservationConvention}.
@@ -28,12 +27,6 @@ public final class OpenLLMetryToolCallingObservationConvention extends OpenTelem
                 traceloopEntityName(context),
                 traceloopSpanKind()
         );
-    }
-
-    @Override
-    protected KeyValue aiProvider(ToolCallingObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM,
-                GenAiConventionsConverter.toProviderName(context.getOperationMetadata().provider()));
     }
 
     private KeyValue traceloopEntityName(ToolCallingObservationContext context) {

@@ -1,13 +1,11 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry;
 
-import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLLMetry flavor of {@link OpenTelemetryChatModelObservationConvention}.
@@ -18,14 +16,6 @@ public final class OpenLLMetryChatModelObservationConvention extends OpenTelemet
 
     public OpenLLMetryChatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);
-    }
-
-    // LOW CARDINALITY
-
-    @Override
-    protected KeyValue aiProvider(ChatModelObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM,
-                GenAiConventionsConverter.toProviderName(context.getOperationMetadata().provider()));
     }
 
     // HIGH CARDINALITY

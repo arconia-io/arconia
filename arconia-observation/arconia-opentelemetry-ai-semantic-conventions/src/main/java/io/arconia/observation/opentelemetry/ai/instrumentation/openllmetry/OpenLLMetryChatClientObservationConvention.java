@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.messages.Message;
@@ -13,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLLMetry flavor of {@link OpenTelemetryChatClientObservationConvention}.
@@ -39,12 +39,6 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     }
 
     @Override
-    protected KeyValue aiProvider(ChatClientObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM,
-                GenAiConventionsConverter.toProviderName(context.getOperationMetadata().provider()));
-    }
-
-    @Override
     protected KeyValue stream(ChatClientObservationContext context) {
         return KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, String.valueOf(context.isStream()));
     }
@@ -59,6 +53,19 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     }
 
     // HIGH CARDINALITY
+
+    @Override
+    protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
+        // Recorded both as gen_ai.conversation.id, as the Traceloop SDK does for conversations,
+        // and as the session_id association property, which Traceloop uses to group sessions.
+        KeyValues withConversationId = super.conversationId(keyValues, context);
+        return withConversationId.stream()
+                .filter(keyValue -> GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey().equals(keyValue.getKey()))
+                .findFirst()
+                .map(keyValue -> withConversationId.and(
+                        OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID, keyValue.getValue()))
+                .orElse(withConversationId);
+    }
 
     @Override
     protected KeyValues inputMessages(KeyValues keyValues, ChatClientObservationContext context) {

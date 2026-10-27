@@ -75,7 +75,7 @@ class OpenLLMetryChatModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "chat"),
-                KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM, "spring_ai"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "mistral")
         );
     }

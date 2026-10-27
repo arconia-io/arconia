@@ -33,14 +33,10 @@ public final class OpenLLMetryAttributes {
     /** Association properties for correlating traces (e.g. user ID, session ID). */
     public static final String TRACELOOP_ASSOCIATION_PROPERTIES = "traceloop.association.properties";
 
-    // LLM (not in upstream OTel spec)
+    /** The session the trace belongs to, as an association property. */
+    public static final String TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID = TRACELOOP_ASSOCIATION_PROPERTIES + ".session_id";
 
-    /**
-     * The GenAI system / provider name.
-     * <p>
-     * Note: OpenLLMetry uses {@code gen_ai.system} (legacy naming), not {@code gen_ai.provider.name}.
-     */
-    public static final String GEN_AI_SYSTEM = "gen_ai.system";
+    // LLM (not in upstream OTel spec)
 
     public static final String GEN_AI_IS_STREAMING = "gen_ai.is_streaming";
 

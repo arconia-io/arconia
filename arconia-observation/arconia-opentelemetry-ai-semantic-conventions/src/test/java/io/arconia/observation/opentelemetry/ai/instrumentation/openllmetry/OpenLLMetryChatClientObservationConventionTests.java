@@ -42,7 +42,7 @@ class OpenLLMetryChatClientObservationConventionTests {
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
-                KeyValue.of(OpenLLMetryAttributes.GEN_AI_SYSTEM, "spring_ai"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, "false"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "chat_client"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TraceloopSpanKind.WORKFLOW.getValue())
@@ -75,7 +75,8 @@ class OpenLLMetryChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(), "session-42")
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(), "session-42"),
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID, "session-42")
         );
     }
 
@@ -85,7 +86,8 @@ class OpenLLMetryChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey()));
+                assertThat(kv.getKey()).isIn(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(),
+                        OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID));
     }
 
     @Test

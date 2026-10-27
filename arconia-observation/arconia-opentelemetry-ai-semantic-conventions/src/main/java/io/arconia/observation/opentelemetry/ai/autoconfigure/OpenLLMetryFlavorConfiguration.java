@@ -20,10 +20,10 @@ import org.springframework.context.annotation.Configuration;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenLLMetryToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 
 @Configuration(proxyBeanMethods = false)
@@ -38,8 +38,8 @@ class OpenLLMetryFlavorConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(EmbeddingModelObservationConvention.class)
-    OpenLLMetryEmbeddingModelObservationConvention embeddingModelObservationConvention() {
-        return new OpenLLMetryEmbeddingModelObservationConvention();
+    OpenTelemetryEmbeddingModelObservationConvention embeddingModelObservationConvention() {
+        return new OpenTelemetryEmbeddingModelObservationConvention();
     }
 
     @Bean
