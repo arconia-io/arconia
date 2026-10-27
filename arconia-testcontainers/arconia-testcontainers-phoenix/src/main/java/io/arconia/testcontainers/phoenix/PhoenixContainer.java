@@ -20,7 +20,16 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(GRPC_PORT, HTTP_PORT);
-        this.waitingFor(Wait.forLogMessage(".*Application startup complete.*", 1));
+        // Phoenix serves HTTP requests once its startup has completed, including the OTLP gRPC server,
+        // and the readiness endpoint also checks the database.
+        this.waitingFor(Wait.forHttp("/readyz").forPort(HTTP_PORT).forStatusCode(200));
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        // Disables the telemetry pixels of the Phoenix UI. User-provided values take precedence.
+        getEnvMap().putIfAbsent("PHOENIX_TELEMETRY_ENABLED", "false");
     }
 
     public String getPhoenixUrl() {

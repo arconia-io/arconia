@@ -13,7 +13,7 @@ public final class Images {
 
     public static final String OPENLIT = "ghcr.io/openlit/openlit:2.1.1";
 
-    public static final String PHOENIX = "arizephoenix/phoenix:version-20.21-nonroot";
+    public static final String PHOENIX = "arizephoenix/phoenix:version-20.26-nonroot";
 
     private Images() {
     }
