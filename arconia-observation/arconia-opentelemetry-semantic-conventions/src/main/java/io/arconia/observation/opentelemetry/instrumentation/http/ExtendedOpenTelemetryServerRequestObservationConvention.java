@@ -78,10 +78,22 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
         if (context.getCarrier() != null) {
             String protocol = context.getCarrier().getProtocol();
             if (protocol != null && protocol.startsWith("HTTP/")) {
-                return keyValues.and(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), protocol.substring(5));
+                return keyValues.and(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), toProtocolVersion(protocol.substring(5)));
             }
         }
         return keyValues;
+    }
+
+    /**
+     * Reports HTTP/2 and HTTP/3 as {@code 2} and {@code 3}, as in the conventions, since servlet containers
+     * such as Tomcat report them as {@code HTTP/2.0} and {@code HTTP/3.0}.
+     */
+    private static String toProtocolVersion(String version) {
+        return switch (version) {
+            case "2.0" -> "2";
+            case "3.0" -> "3";
+            default -> version;
+        };
     }
 
     private KeyValues urlScheme(KeyValues keyValues, ServerRequestObservationContext context) {

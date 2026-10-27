@@ -119,6 +119,28 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
+    void networkProtocolVersionForHttp2ReportedWithMinorVersion() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setProtocol("HTTP/2.0");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "2"));
+    }
+
+    @Test
+    void networkProtocolVersionForHttp3ReportedWithMinorVersion() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setProtocol("HTTP/3.0");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "3"));
+    }
+
+    @Test
     void networkProtocolVersionForHttp3() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setProtocol("HTTP/3");
