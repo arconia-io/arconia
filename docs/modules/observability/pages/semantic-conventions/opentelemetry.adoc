@@ -176,6 +176,16 @@ Maven::
 
 Refer to the https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[Datasource Micrometer documentation] for configuration options and more details.
 
+=== Known Deviations
+
+The Datasource Micrometer instrumentation currently deviates from the OpenTelemetry Semantic Conventions for Database in the following ways:
+
+* Failed queries don't get the `db.response.status_code` attribute, and the `db.client.operation.duration` metric doesn't get the `error.type` attribute. Arconia records `error.type` on the spans (see <<_errors,Errors>>).
+* The `server.port` attribute is recorded also for the default port of the database, and as `-1` when the connection URL doesn't specify a port. The `db.client.operation.duration` metric also gets `network.peer.address` and `network.peer.port` from the connection URL.
+* The `db.client.operation.duration` metric gets the `db.query.text` attribute, which the conventions make opt-in for metrics because of its potentially high cardinality.
+* The `db.query.summary` attribute and the span name of `INSERT ... VALUES` queries wrongly include a `SELECT` operation, and `db.operation.name` uses underscores for operations made of several words, such as `CREATE_TABLE`, instead of matching the query summary.
+* Each query is also recorded with the `jdbc.query` metric from Micrometer, in addition to `db.client.operation.duration`.
+
 == Generative AI
 
 :flavor-value: opentelemetry
