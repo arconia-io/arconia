@@ -42,6 +42,11 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
     }
 
     @Override
+    public String getName() {
+        return GenAiAttributes.GEN_AI_CLIENT_OPERATION_DURATION;
+    }
+
+    @Override
     public String getContextualName(ChatModelObservationContext context) {
         ChatOptions options = context.getRequest().getOptions();
         String operationName = GenAiConventionsConverter.toOperationName(context.getOperationMetadata().operationType());

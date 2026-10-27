@@ -31,7 +31,7 @@ class OpenLitEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(OpenLitEmbeddingModelObservationConvention.DEFAULT_NAME);
+                .isEqualTo("gen_ai.client.operation.duration");
     }
 
     @Test

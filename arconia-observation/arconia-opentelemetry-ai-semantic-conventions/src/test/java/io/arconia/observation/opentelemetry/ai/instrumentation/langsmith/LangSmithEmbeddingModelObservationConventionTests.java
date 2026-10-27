@@ -31,7 +31,7 @@ class LangSmithEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(LangSmithEmbeddingModelObservationConvention.DEFAULT_NAME);
+                .isEqualTo("gen_ai.client.operation.duration");
     }
 
     @Test

@@ -49,7 +49,7 @@ class OpenLLMetryChatModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(OpenLLMetryChatModelObservationConvention.DEFAULT_NAME);
+                .isEqualTo("gen_ai.client.operation.duration");
     }
 
     @Test

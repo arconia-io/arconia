@@ -50,7 +50,7 @@ class OpenTelemetryChatModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(OpenTelemetryChatModelObservationConvention.DEFAULT_NAME);
+                .isEqualTo("gen_ai.client.operation.duration");
     }
 
     @Test

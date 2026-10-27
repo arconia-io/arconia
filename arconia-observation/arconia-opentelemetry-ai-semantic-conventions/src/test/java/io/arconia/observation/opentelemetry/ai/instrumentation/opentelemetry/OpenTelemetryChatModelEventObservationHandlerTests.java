@@ -102,7 +102,7 @@ class OpenTelemetryChatModelEventObservationHandlerTests {
 
         ObservationRegistry registry = ObservationRegistry.create();
         registry.observationConfig().observationHandler(handler);
-        Observation.createNotStarted("gen_ai.client.operation", () -> context, registry).start().stop();
+        Observation.createNotStarted("gen_ai.client.operation.duration", () -> context, registry).start().stop();
         span.end();
 
         assertThat(spanExporter.getFinishedSpanItems()).hasSize(1);

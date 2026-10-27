@@ -23,6 +23,11 @@ public final class GenAiAttributes {
     // Metric names
 
     /**
+     * Duration of GenAI operations.
+     */
+    public static final String GEN_AI_CLIENT_OPERATION_DURATION = "gen_ai.client.operation.duration";
+
+    /**
      * Number of input and output tokens used.
      */
     public static final String GEN_AI_CLIENT_TOKEN_USAGE = "gen_ai.client.token.usage";

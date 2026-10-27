@@ -7,9 +7,15 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.image.observation.DefaultImageModelObservationConvention;
 import org.springframework.ai.image.observation.ImageModelObservationContext;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 public class OpenTelemetryImageModelObservationConvention extends DefaultImageModelObservationConvention {
+
+    @Override
+    public String getName() {
+        return GenAiAttributes.GEN_AI_CLIENT_OPERATION_DURATION;
+    }
 
     @Override
     protected KeyValue aiOperationType(ImageModelObservationContext context) {

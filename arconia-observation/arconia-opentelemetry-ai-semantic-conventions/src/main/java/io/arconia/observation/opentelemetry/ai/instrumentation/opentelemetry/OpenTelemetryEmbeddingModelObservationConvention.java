@@ -9,9 +9,15 @@ import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObserva
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 import org.springframework.util.StringUtils;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
+
+    @Override
+    public String getName() {
+        return GenAiAttributes.GEN_AI_CLIENT_OPERATION_DURATION;
+    }
 
     @Override
     public String getContextualName(EmbeddingModelObservationContext context) {
