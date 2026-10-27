@@ -129,7 +129,7 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 
 == Errors
 
-Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the fully qualified class name of the error, unless the convention for the observation already sets a more specific value, and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
+Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the fully qualified class name of the error, unless the convention for the observation already sets a more specific value, such as the status code of HTTP responses signaling an error (`5xx` for servers, `4xx` and `5xx` for clients), and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
 
 .Errors Configuration Properties
 |===

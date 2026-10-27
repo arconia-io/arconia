@@ -36,9 +36,21 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void errorTypeIsExceptionTypeForServerErrorWithException() {
+    void errorTypeIsStatusCodeForServerErrorWithException() {
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(500);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+        context.setError(new IllegalStateException("boom"));
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", "500"));
+    }
+
+    @Test
+    void errorTypeIsExceptionTypeForExceptionWithoutServerErrorStatus() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(200);
         ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
         context.setError(new IllegalStateException("boom"));
 

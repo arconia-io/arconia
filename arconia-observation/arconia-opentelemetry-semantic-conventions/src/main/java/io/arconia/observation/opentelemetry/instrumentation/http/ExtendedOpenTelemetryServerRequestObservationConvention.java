@@ -90,12 +90,12 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
     }
 
     /**
-     * Reports the response status code as the error type when the response signals a server error
-     * without an exception being thrown, as the conventions require.
+     * Reports the response status code as the error type when the response signals a server error,
+     * also when an exception was thrown, otherwise the fully qualified class name of the error, if any.
      */
     @Override
     protected KeyValue exception(ServerRequestObservationContext context) {
-        if (context.getError() == null && context.getResponse() != null) {
+        if (context.getResponse() != null) {
             int status = context.getResponse().getStatus();
             if (status >= 500 && status < 600) {
                 return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status));
