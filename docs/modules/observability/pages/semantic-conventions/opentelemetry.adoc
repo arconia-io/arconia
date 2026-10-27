@@ -73,6 +73,54 @@ Some differences from the stable conventions come from the Micrometer instrument
 * Spans started without a parent outside of an HTTP request, such as the span of a database connection opened at application startup, get the `Ok` status when they end without an error, instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/890[tracing#890]). The spans of HTTP requests and their child spans aren't affected.
 * Attribute values are always strings, also for attributes defined as numbers, such as `http.response.status_code` and `server.port` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
 
+== Histograms
+
+The duration and token usage metrics defined by the OpenTelemetry Semantic Conventions are histograms. As in Spring Boot, their buckets are not published by default, to keep the number of time series low: only the count, sum, and maximum are exported, which is enough for throughput and average values. To compute percentiles, enable the histogram buckets for the metrics you need.
+
+You can use the bucket boundaries advised by the OpenTelemetry Semantic Conventions with the Spring Boot `management.metrics.distribution.slo` properties.
+
+[source,yaml]
+----
+management:
+  metrics:
+    distribution:
+      slo:
+        http.server.request.duration: 5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms
+----
+
+[cols="2,3"]
+|===
+|Metric |Advised Bucket Boundaries
+
+|`http.server.request.duration`, `http.client.request.duration`
+|`5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms`
+
+|`jvm.gc.duration`
+|`10ms,100ms,1000ms,10000ms`
+
+|`gen_ai.client.operation.duration`
+|`10ms,20ms,40ms,80ms,160ms,320ms,640ms,1280ms,2560ms,5120ms,10240ms,20480ms,40960ms,81920ms`
+
+|`gen_ai.client.token.usage`
+|`1,4,16,64,256,1024,4096,16384,65536,262144,1048576,4194304,16777216,67108864`
+|===
+
+Alternatively, you can publish exponential histograms, which adapt their buckets to the recorded values and don't need any boundaries. With the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter], select the exponential aggregation and enable the histograms with the Spring Boot `management.metrics.distribution.percentiles-histogram` properties.
+
+[source,yaml]
+----
+arconia:
+  otel:
+    metrics:
+      exporter:
+        histogram-aggregation: base2-exponential-bucket-histogram
+management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.request.duration: true
+----
+
 == JVM
 
 Provides semantic conventions for JVM metrics, following the stable https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/[OpenTelemetry Semantic Conventions for JVM] specification:
