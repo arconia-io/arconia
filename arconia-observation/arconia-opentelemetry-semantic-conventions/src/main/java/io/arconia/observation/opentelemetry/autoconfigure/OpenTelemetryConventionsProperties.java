@@ -42,7 +42,7 @@ public class OpenTelemetryConventionsProperties {
     public static class Http extends OpenTelemetryHttpOptions {
 
         /**
-         * Whether to enable HTTP semantic conventions.
+         * Whether to enable HTTP semantic conventions for HTTP servers and clients.
          */
         private boolean enabled = true;
 

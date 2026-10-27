@@ -2,15 +2,19 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.restclient.observation.ObservationRestClientCustomizer;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.observation.ClientRequestObservationConvention;
+import org.springframework.http.client.observation.DefaultClientRequestObservationConvention;
 import org.springframework.http.server.observation.OpenTelemetryServerRequestObservationConvention;
 import org.springframework.http.server.observation.ServerRequestObservationConvention;
 
 import io.arconia.observation.opentelemetry.instrumentation.http.ExtendedOpenTelemetryServerRequestObservationConvention;
+import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryClientRequestObservationConvention;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,30 +33,48 @@ class HttpConventionsAutoConfigurationTests {
 
     @Test
     void activatesInServletWebContext() {
-        webContextRunner.run(context ->
-                assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class));
+        webContextRunner.run(context -> {
+            assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenTelemetryClientRequestObservationConvention.class);
+        });
     }
 
     @Test
-    void doesNotActivateInNonWebContext() {
-        nonWebContextRunner.run(context ->
-                assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class));
+    void activatesOnlyClientConventionInNonWebContext() {
+        nonWebContextRunner.run(context -> {
+            assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenTelemetryClientRequestObservationConvention.class);
+        });
     }
 
     @Test
     void doesNotActivateWhenDisabled() {
         webContextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.http.enabled=false")
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class));
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(ClientRequestObservationConvention.class);
+                });
     }
 
     @Test
     void doesNotActivateWhenSpringWebNotOnClasspath() {
         webContextRunner
                 .withClassLoader(new FilteredClassLoader(OpenTelemetryServerRequestObservationConvention.class))
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class));
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(ClientRequestObservationConvention.class);
+                });
+    }
+
+    @Test
+    void activatesOnlyServerConventionWhenSpringBootRestClientNotOnClasspath() {
+        webContextRunner
+                .withClassLoader(new FilteredClassLoader(ObservationRestClientCustomizer.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(ClientRequestObservationConvention.class);
+                });
     }
 
     // Custom bean precedence
@@ -67,6 +89,16 @@ class HttpConventionsAutoConfigurationTests {
                 });
     }
 
+    @Test
+    void customClientRequestObservationConventionTakesPrecedence() {
+        nonWebContextRunner
+                .withUserConfiguration(CustomClientRequestConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ClientRequestObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryClientRequestObservationConvention.class);
+                });
+    }
+
     // Custom bean configurations
 
     @Configuration(proxyBeanMethods = false)
@@ -74,6 +106,14 @@ class HttpConventionsAutoConfigurationTests {
         @Bean
         ServerRequestObservationConvention serverRequestObservationConvention() {
             return new OpenTelemetryServerRequestObservationConvention();
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomClientRequestConventionConfig {
+        @Bean
+        ClientRequestObservationConvention clientRequestObservationConvention() {
+            return new DefaultClientRequestObservationConvention();
         }
     }
 
