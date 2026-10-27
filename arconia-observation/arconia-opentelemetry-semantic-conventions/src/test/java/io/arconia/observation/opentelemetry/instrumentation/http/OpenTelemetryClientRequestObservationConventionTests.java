@@ -1,7 +1,9 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -19,7 +21,9 @@ import org.springframework.http.client.observation.ClientRequestObservationConte
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 /**
@@ -132,6 +137,14 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
+    void errorTypeIsCauseOfResourceAccessException() {
+        ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com");
+        context.setError(new ResourceAccessException("I/O error", new UnknownHostException("example.com")));
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("error.type", "java.net.UnknownHostException"));
+    }
+
+    @Test
     void errorTypeIsNoneForRedirect() {
         ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com");
         context.setResponse(new MockClientHttpResponse(new byte[0], HttpStatus.FOUND));
@@ -210,6 +223,29 @@ class OpenTelemetryClientRequestObservationConventionTests {
 
     @Test
     void appliesToRestClientRequestEndingWithErrorStatus() {
+        Observation.Context context = observeRestClientCall(withStatus(HttpStatus.SERVICE_UNAVAILABLE),
+                HttpServerErrorException.class);
+
+        assertThat(context.getName()).isEqualTo("http.client.request.duration");
+        assertThat(context.getContextualName()).isEqualTo("GET");
+        assertThat(context.getLowCardinalityKeyValues()).contains(
+                KeyValue.of("error.type", "503"),
+                KeyValue.of("http.request.method", "GET"),
+                KeyValue.of("http.response.status_code", "503"),
+                KeyValue.of("uri", "/users/{id}"));
+        assertThat(context.getHighCardinalityKeyValues()).contains(KeyValue.of("url.full", "https://example.com/users/42"));
+    }
+
+    @Test
+    void appliesToRestClientRequestFailingWithIoError() {
+        Observation.Context context = observeRestClientCall(withException(new ConnectException("Connection refused")),
+                ResourceAccessException.class);
+
+        assertThat(context.getLowCardinalityKeyValues()).contains(KeyValue.of("error.type", "java.net.ConnectException"));
+        assertThat(context.getLowCardinalityKeyValues()).noneMatch(kv -> "http.response.status_code".equals(kv.getKey()));
+    }
+
+    private Observation.Context observeRestClientCall(ResponseCreator response, Class<? extends Exception> expectedException) {
         AtomicReference<Observation.Context> observed = new AtomicReference<>();
         ObservationRegistry registry = ObservationRegistry.create();
         registry.observationConfig().observationHandler(new ObservationHandler<>() {
@@ -225,21 +261,12 @@ class OpenTelemetryClientRequestObservationConventionTests {
         });
         RestClient.Builder builder = RestClient.builder().observationRegistry(registry).observationConvention(convention);
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        server.expect(requestTo("https://example.com/users/42")).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
+        server.expect(requestTo("https://example.com/users/42")).andRespond(response);
         RestClient restClient = builder.build();
 
         assertThatThrownBy(() -> restClient.get().uri("https://example.com/users/{id}", 42).retrieve().toBodilessEntity())
-                .isInstanceOf(HttpServerErrorException.class);
-
-        Observation.Context context = observed.get();
-        assertThat(context.getName()).isEqualTo("http.client.request.duration");
-        assertThat(context.getContextualName()).isEqualTo("GET");
-        assertThat(context.getLowCardinalityKeyValues()).contains(
-                KeyValue.of("error.type", "503"),
-                KeyValue.of("http.request.method", "GET"),
-                KeyValue.of("http.response.status_code", "503"),
-                KeyValue.of("uri", "/users/{id}"));
-        assertThat(context.getHighCardinalityKeyValues()).contains(KeyValue.of("url.full", "https://example.com/users/42"));
+                .isInstanceOf(expectedException);
+        return observed.get();
     }
 
     private static ClientRequestObservationContext context(HttpMethod method, String url) {

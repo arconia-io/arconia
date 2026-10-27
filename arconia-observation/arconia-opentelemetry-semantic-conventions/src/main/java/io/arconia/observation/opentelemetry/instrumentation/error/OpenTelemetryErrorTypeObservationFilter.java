@@ -9,7 +9,7 @@ import io.opentelemetry.semconv.ErrorAttributes;
  * {@link ObservationFilter} recording the {@code error.type} attribute on observations ending in an error,
  * as a low cardinality key value so that it applies to both the span and the metrics of the observation.
  * <p>
- * The attribute holds the fully qualified class name of the error, unless the observation convention already
+ * The attribute holds the canonical class name of the error, unless the observation convention already
  * set it. It's not recorded when the observation succeeds, so the {@code none} value some conventions use
  * for successful operations is removed.
  *
@@ -32,7 +32,7 @@ public final class OpenTelemetryErrorTypeObservationFilter implements Observatio
         }
 
         if (errorType == null || KeyValue.NONE_VALUE.equals(errorType.getValue())) {
-            context.addLowCardinalityKeyValue(KeyValue.of(ERROR_TYPE, error.getClass().getName()));
+            context.addLowCardinalityKeyValue(KeyValue.of(ERROR_TYPE, OpenTelemetryErrorTypes.of(error)));
         }
         return context;
     }

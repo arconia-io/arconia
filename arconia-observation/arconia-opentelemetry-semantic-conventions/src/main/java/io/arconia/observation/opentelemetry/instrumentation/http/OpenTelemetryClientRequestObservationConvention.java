@@ -16,6 +16,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.observation.ClientRequestObservationContext;
 import org.springframework.http.client.observation.DefaultClientRequestObservationConvention;
+import org.springframework.web.client.ResourceAccessException;
+
+import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypes;
 
 /**
  * Observation convention for HTTP client requests following the OpenTelemetry Semantic Conventions,
@@ -76,7 +79,9 @@ public class OpenTelemetryClientRequestObservationConvention extends DefaultClie
 
     /**
      * Reports the response status code as the error type when the response signals an error,
-     * otherwise the fully qualified class name of the error, if any.
+     * otherwise the canonical class name of the error, if any. The {@link ResourceAccessException}
+     * that Spring Framework uses to wrap any I/O error is unwrapped, since it doesn't help classify the failure,
+     * as the conventions allow.
      */
     @Override
     protected KeyValue exception(ClientRequestObservationContext context) {
@@ -84,8 +89,12 @@ public class OpenTelemetryClientRequestObservationConvention extends DefaultClie
         if (status != null && status >= 400) {
             return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status));
         }
-        if (context.getError() != null) {
-            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), context.getError().getClass().getName());
+        Throwable error = context.getError();
+        if (error != null) {
+            if (error instanceof ResourceAccessException && error.getCause() != null) {
+                error = error.getCause();
+            }
+            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), OpenTelemetryErrorTypes.of(error));
         }
         return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), KeyValue.NONE_VALUE);
     }

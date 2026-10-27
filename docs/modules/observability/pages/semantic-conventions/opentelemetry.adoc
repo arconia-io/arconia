@@ -160,7 +160,7 @@ Activated when the application is a servlet-based web application. Semantic Conv
 
 === HTTP Client
 
-Activated for the `RestClient` and `RestTemplate` instances built from the builders auto-configured by Spring Boot. The requests are reported with the `http.client.request.duration` metric and spans named after the request method, such as `GET`. The full URL of the request is recorded as `url.full`, with the credentials and the values of sensitive query parameters replaced by `REDACTED`.
+Activated for the `RestClient` and `RestTemplate` instances built from the builders auto-configured by Spring Boot. The requests are reported with the `http.client.request.duration` metric and spans named after the request method, such as `GET`. The full URL of the request is recorded as `url.full`, with the credentials and the values of sensitive query parameters replaced by `REDACTED`. When the request fails without a response, `error.type` holds the class name of the I/O error, such as `java.net.ConnectException`, instead of the `ResourceAccessException` that Spring Framework wraps it in.
 
 The `outcome` and `uri` attributes from Spring Framework are kept, since the OpenTelemetry Semantic Conventions don't define a stable equivalent for them. The `uri` attribute holds the path of the URI template used for the request, such as `/users/\{id}`, and lets you break down the client metrics by endpoint.
 
@@ -185,7 +185,7 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 
 == Errors
 
-Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the fully qualified class name of the error, unless the convention for the observation already sets a more specific value, such as the status code of HTTP responses signaling an error (`5xx` for servers, `4xx` and `5xx` for clients), and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
+Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the canonical class name of the error (for example, `com.example.OrderService.OrderNotFoundException` for a nested class), unless the convention for the observation already sets a more specific value, such as the status code of HTTP responses signaling an error (`5xx` for servers, `4xx` and `5xx` for clients), and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
 
 .Errors Configuration Properties
 |===

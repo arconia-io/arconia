@@ -14,6 +14,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.server.observation.OpenTelemetryServerRequestObservationConvention;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
+import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypes;
+
 /**
  * Extends OpenTelemetryServerRequestObservationConvention to provide the missing OpenTelemetry-compatible observation for HTTP requests.
  */
@@ -91,7 +93,7 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
 
     /**
      * Reports the response status code as the error type when the response signals a server error,
-     * also when an exception was thrown, otherwise the fully qualified class name of the error, if any.
+     * also when an exception was thrown, otherwise the canonical class name of the error, if any.
      */
     @Override
     protected KeyValue exception(ServerRequestObservationContext context) {
@@ -100,6 +102,9 @@ public class ExtendedOpenTelemetryServerRequestObservationConvention extends Ope
             if (status >= 500 && status < 600) {
                 return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status));
             }
+        }
+        if (context.getError() != null) {
+            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), OpenTelemetryErrorTypes.of(context.getError()));
         }
         return super.exception(context);
     }

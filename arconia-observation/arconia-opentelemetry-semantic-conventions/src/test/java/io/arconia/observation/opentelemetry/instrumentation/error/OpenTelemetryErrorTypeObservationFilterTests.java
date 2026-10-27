@@ -36,6 +36,17 @@ class OpenTelemetryErrorTypeObservationFilterTests {
         }
 
         @Test
+        void shouldRecordCanonicalNameOfNestedErrorClass() {
+            Observation.Context context = new Observation.Context();
+            context.setError(new OrderNotFoundException());
+
+            filter.map(context);
+
+            assertThat(context.getLowCardinalityKeyValue("error.type")).isEqualTo(KeyValue.of("error.type",
+                    "io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypeObservationFilterTests.OrderNotFoundException"));
+        }
+
+        @Test
         void shouldKeepErrorTypeSetByConvention() {
             Observation.Context context = new Observation.Context();
             context.setError(new IllegalStateException());
@@ -110,6 +121,9 @@ class OpenTelemetryErrorTypeObservationFilterTests {
             assertThat(timer.getId().getTag("error.type")).isNull();
         }
 
+    }
+
+    static class OrderNotFoundException extends RuntimeException {
     }
 
 }

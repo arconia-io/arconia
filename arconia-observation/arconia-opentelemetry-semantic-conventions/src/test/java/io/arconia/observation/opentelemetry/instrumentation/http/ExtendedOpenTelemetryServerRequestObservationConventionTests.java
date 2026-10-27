@@ -60,6 +60,19 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
+    void errorTypeIsCanonicalNameOfNestedExceptionWithoutServerErrorStatus() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(404);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+        context.setError(new OrderNotFoundException());
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type",
+                "io.arconia.observation.opentelemetry.instrumentation.http.ExtendedOpenTelemetryServerRequestObservationConventionTests.OrderNotFoundException"));
+    }
+
+    @Test
     void errorTypeIsNoneForClientError() {
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(404);
@@ -375,6 +388,9 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
         assertThat(convention.getHighCardinalityKeyValues(context))
                 .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
         assertThat(convention.getContextualName(context)).isEqualTo("CONNECT");
+    }
+
+    static class OrderNotFoundException extends RuntimeException {
     }
 
 }
