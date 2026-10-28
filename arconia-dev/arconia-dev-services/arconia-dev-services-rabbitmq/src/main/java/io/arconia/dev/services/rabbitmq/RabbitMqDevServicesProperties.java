@@ -36,7 +36,7 @@ public class RabbitMqDevServicesProperties implements DevServicesProperties, Ssl
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "rabbitmq:4.3-management-alpine";
+    private String imageName = "rabbitmq:4.4-management-alpine";
 
     /**
      * Environment variables to set in the service.
