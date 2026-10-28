@@ -11,6 +11,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import io.floci.testcontainers.FlociContainer;
@@ -37,6 +39,10 @@ import io.arconia.testcontainers.redis.RedisContainer;
  * Langfuse is initialized with an organization, a project with API keys, and a user, so that
  * telemetry data can be sent and explored right away.
  * <p>
+ * The OTLP endpoint is exposed through a proxy in Floci (see {@link #getOtlpTracesUrl()}), because
+ * the Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2 (h2c), as the
+ * JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters.
+ * <p>
  * If a network is set on this container via {@link #withNetwork(Network)} before starting,
  * Langfuse and the containers it needs join that network. Otherwise, a private network is
  * created automatically, and it's removed when the container is stopped.
@@ -55,6 +61,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private static final DockerImageName DEFAULT_FLOCI_IMAGE_NAME = DockerImageName.parse("floci/floci");
 
+    private static final String LANGFUSE_NETWORK_ALIAS = "langfuse";
     private static final String POSTGRES_NETWORK_ALIAS = "langfuse-postgres";
     private static final String CLICKHOUSE_NETWORK_ALIAS = "langfuse-clickhouse";
     private static final String REDIS_NETWORK_ALIAS = "langfuse-redis";
@@ -70,7 +77,9 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     public static final int HTTP_PORT = 3000;
 
-    public static final String OTLP_PATH = "/api/public/otel";
+    private static final String OTLP_TRACES_PATH = "/api/public/otel/v1/traces";
+
+    private static final Pattern API_ID_PATTERN = Pattern.compile("\"apiId\"\\s*:\\s*\"([^\"]+)\"");
 
     public static final String DEFAULT_PUBLIC_KEY = "pk-lf-arconia";
 
@@ -101,6 +110,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     private @Nullable FlociContainer flociContainer;
 
     private @Nullable Network privateNetwork;
+
+    private @Nullable String otlpProxyApiId;
 
     public LangfuseContainer(DockerImageName imageName) {
         super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
@@ -171,6 +182,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 }
                 withNetwork(network);
             }
+            withNetworkAliases(LANGFUSE_NETWORK_ALIAS);
             createContainers(network);
         }
 
@@ -187,6 +199,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         getEnvMap().forEach(worker::withEnv);
         worker.start();
         super.start();
+        otlpProxyApiId = createOtlpProxy(floci);
     }
 
     /**
@@ -203,6 +216,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         clickHouseContainer = null;
         redisContainer = null;
         flociContainer = null;
+        otlpProxyApiId = null;
         if (privateNetwork != null) {
             privateNetwork.close();
             privateNetwork = null;
@@ -219,10 +233,15 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     }
 
     /**
-     * Returns the base URL of the OTLP/HTTP endpoint, to which the signal path (e.g. {@code /v1/traces}) is appended.
+     * Returns the URL of the OTLP/HTTP endpoint for traces, which is the only signal Langfuse accepts.
+     * <p>
+     * It's a proxy in Floci to the Langfuse endpoint, since the Langfuse server closes plaintext HTTP
+     * connections that request an upgrade to HTTP/2 (h2c), as the JDK HTTP client does by default.
      */
-    public String getOtlpUrl() {
-        return getLangfuseUrl() + OTLP_PATH;
+    public String getOtlpTracesUrl() {
+        FlociContainer floci = requireContainer(flociContainer);
+        return "http://%s:%d/_aws/execute-api/%s/v1/traces".formatted(floci.getHost(),
+                floci.getMappedPort(FlociContainer.PORT), requireContainer(otlpProxyApiId));
     }
 
     public String getPublicKey() {
@@ -255,10 +274,13 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withNetwork(network)
                 .withNetworkAliases(REDIS_NETWORK_ALIAS)
                 .withReuse(reuse);
-        // Only the S3 service is needed, as blob storage for the ingested events and media.
+        // Only S3 is needed, as blob storage for the ingested events and media,
+        // and API Gateway, as a proxy for the OTLP endpoint.
         flociContainer = new FlociContainer(flociImageName.asCompatibleSubstituteFor("floci/floci"))
                 .disableAllServices()
                 .withS3Config(s3 -> s3.enabled(true))
+                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
+                .withApiGatewayV2Config(apiGateway -> apiGateway.enabled(true))
                 .withNetwork(network)
                 .withNetworkAliases(FLOCI_NETWORK_ALIAS)
                 .withReuse(reuse);
@@ -322,19 +344,44 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
      */
     private static void createBucket(FlociContainer floci) {
         URI bucketUri = URI.create("http://%s:%d/%s".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT), BUCKET_NAME));
+        HttpResponse<String> response = send(HttpRequest.newBuilder(bucketUri).PUT(HttpRequest.BodyPublishers.noBody()).build(),
+                "create the Langfuse bucket in Floci");
+        if (response.statusCode() >= 300 && response.statusCode() != 409) {
+            throw new IllegalStateException("Failed to create the Langfuse bucket in Floci (HTTP %d): %s"
+                    .formatted(response.statusCode(), response.body()));
+        }
+    }
+
+    /**
+     * Creates an HTTP API in Floci that proxies requests to the OTLP endpoint for traces of Langfuse,
+     * and returns its ID. Floci forwards requests over HTTP/1.1 without the request path, hence the
+     * full endpoint URL as target.
+     */
+    private static String createOtlpProxy(FlociContainer floci) {
+        URI apisUri = URI.create("http://%s:%d/v2/apis".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT)));
+        String api = """
+                {"name":"langfuse-otlp","protocolType":"HTTP","target":"http://%s:%d%s"}"""
+                .formatted(LANGFUSE_NETWORK_ALIAS, HTTP_PORT, OTLP_TRACES_PATH);
+        HttpResponse<String> response = send(HttpRequest.newBuilder(apisUri)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(api))
+                .build(), "create the OTLP proxy in Floci");
+        Matcher matcher = API_ID_PATTERN.matcher(response.body());
+        if (response.statusCode() >= 300 || !matcher.find()) {
+            throw new IllegalStateException("Failed to create the OTLP proxy in Floci (HTTP %d): %s"
+                    .formatted(response.statusCode(), response.body()));
+        }
+        return matcher.group(1);
+    }
+
+    private static HttpResponse<String> send(HttpRequest request, String action) {
         try (HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()) {
-            HttpResponse<String> response = httpClient.send(
-                    HttpRequest.newBuilder(bucketUri).PUT(HttpRequest.BodyPublishers.noBody()).build(),
-                    HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 300 && response.statusCode() != 409) {
-                throw new IllegalStateException("Failed to create the Langfuse bucket in Floci (HTTP %d): %s"
-                        .formatted(response.statusCode(), response.body()));
-            }
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while creating the Langfuse bucket in Floci", ex);
+            throw new IllegalStateException("Interrupted while trying to " + action, ex);
         } catch (IOException ex) {
-            throw new IllegalStateException("Failed to create the Langfuse bucket in Floci", ex);
+            throw new IllegalStateException("Failed to " + action, ex);
         }
     }
 

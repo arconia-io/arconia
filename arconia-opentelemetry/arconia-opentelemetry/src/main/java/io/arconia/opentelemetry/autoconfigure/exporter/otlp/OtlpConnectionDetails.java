@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
+import java.util.Map;
+
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 
 /**
@@ -12,5 +14,13 @@ public interface OtlpConnectionDetails extends ConnectionDetails {
 
     int DEFAULT_GRPC_PORT = 4317;
     int DEFAULT_HTTP_PORT = 4318;
+
+    /**
+     * Headers to include in each request to the endpoint, such as the credentials required by the backend.
+     * Headers configured via properties take precedence over these.
+     */
+    default Map<String, String> getHeaders() {
+        return Map.of();
+    }
 
 }

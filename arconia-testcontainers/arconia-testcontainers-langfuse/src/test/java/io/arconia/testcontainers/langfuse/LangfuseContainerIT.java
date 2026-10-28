@@ -65,13 +65,14 @@ class LangfuseContainerIT {
 
             var httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
             long now = Instant.now().toEpochMilli() * 1_000_000;
-            var exportRequest = HttpRequest.newBuilder(URI.create(container.getOtlpUrl() + "/v1/traces"))
+            var exportRequest = HttpRequest.newBuilder(URI.create(container.getOtlpTracesUrl()))
                     .header("Content-Type", "application/json")
                     .header("Authorization", container.getBasicAuthHeader())
                     .header("x-langfuse-ingestion-version", "4")
                     .POST(HttpRequest.BodyPublishers.ofString(TRACES_PAYLOAD.formatted(TRACE_ID, now, now + 1_000_000_000L)))
                     .build();
-            var exportResponse = httpClient.send(exportRequest, HttpResponse.BodyHandlers.ofString());
+            // The default JDK client requests an upgrade to HTTP/2, as the OpenTelemetry Java exporters do.
+            var exportResponse = HttpClient.newHttpClient().send(exportRequest, HttpResponse.BodyHandlers.ofString());
             assertThat(exportResponse.statusCode()).as(exportResponse.body()).isBetween(200, 299);
 
             // The worker processes the ingested span asynchronously.
