@@ -33,7 +33,7 @@ public class MySqlDevServicesProperties implements JdbcDevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "mysql:26.7";
+    private String imageName = "mysql:26.10";
 
     /**
      * Environment variables to set in the service.
