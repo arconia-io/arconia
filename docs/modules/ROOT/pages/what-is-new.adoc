@@ -7,7 +7,6 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
-* The new xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs https://langfuse.com[Langfuse] for exploring the traces of AI applications, together with the containers it needs, and sends the traces of the application to it with no configuration. It signs you in to the Langfuse UI as `arconia@example.com` (password `password`), and it's skipped in test mode by default, like the other observability Dev Services.
 * Test slices now pick up the Dev Service of their technology with no further configuration: `@JdbcTest`, `@DataJdbcTest`, `@DataJpaTest`, and `@JooqTest` for the JDBC Dev Services, `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest`. For the JDBC slices, the Dev Service replaces the embedded database Spring Boot would otherwise configure; disable the Dev Service for a test with its `enabled` property to get the embedded database back. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
 * The observability Dev Services (Grafana LGTM, OpenTelemetry Collector, Phoenix, and OpenLIT) are now skipped in test mode by default, since most tests have no use for a telemetry backend. Set `arconia.dev.services.<service-name>.skip-in-tests` to `false` for the tests that verify the telemetry the application exports. Learn more about xref:dev-services:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode].
 * When the application process exits, the containers it kept across Spring Boot DevTools restarts are now stopped, instead of being left to the Testcontainers resource reaper a few seconds later. Another application can no longer connect to a container that is about to disappear. Containers kept by the `testcontainers` reuse strategy are still left running. Learn more about xref:dev-services:index.adoc#_lifecycle_management[Lifecycle Management].
@@ -37,6 +36,10 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 * An application connecting to an Elasticsearch Dev Service started by another application now uses the password configured through the `ELASTIC_PASSWORD` environment variable, as the application that started it does.
 * The Elasticsearch Dev Service now runs with a heap of 512 MB to 1 GB (`ES_JAVA_OPTS=-Xms512m -Xmx1g`), instead of the fixed 2 GB Testcontainers configures. Override it through the `environment` property.
+
+=== Langfuse
+
+* The new xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs https://langfuse.com[Langfuse] for exploring the traces of AI applications, together with the containers it needs, and sends the traces of the application to it with no configuration. It signs you in to the Langfuse UI as `arconia@example.com` (password `password`), and it's skipped in test mode by default, like the other observability Dev Services.
 
 === LLDAP
 
