@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseAdvisorObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatClientObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAiAdvisorConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
@@ -563,6 +566,73 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(AdvisorObservationConvention.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryAdvisorObservationConvention.class);
+                });
+    }
+
+    // -------------------------------------------------------------------------
+    // Langfuse flavor
+    // -------------------------------------------------------------------------
+
+    @Test
+    void langfuseFlavorActivatesWhenFlavorSet() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LangfuseChatModelObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryEmbeddingModelObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryImageModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void langfuseFlavorDoesNotActivateOtelOnlyBeans() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .run(context ->
+                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
+    }
+
+    @Test
+    void langfuseFlavorRegistersChatClientBeansWhenChatClientOnClasspath() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(LangfuseChatClientObservationConvention.class);
+                    assertThat(context).hasSingleBean(LangfuseAdvisorObservationConvention.class);
+                });
+    }
+
+    @Test
+    void langfuseFlavorDoesNotRegisterChatClientBeansWhenChatClientNotOnClasspath() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(LangfuseChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(LangfuseAdvisorObservationConvention.class);
+                });
+    }
+
+    @Test
+    void langfuseFlavorCustomChatModelConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .withUserConfiguration(CustomChatModelConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ChatModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(LangfuseChatModelObservationConvention.class);
+                });
+    }
+
+    @Test
+    void langfuseFlavorCustomAdvisorConventionTakesPrecedence() {
+        contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
+                .withUserConfiguration(CustomAdvisorConventionConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(AdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(LangfuseAdvisorObservationConvention.class);
                 });
     }
 

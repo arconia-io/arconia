@@ -30,7 +30,7 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
 @ConditionalOnClass({ ChatModelObservationConvention.class, EmbeddingModelObservationConvention.class, ToolCallingObservationConvention.class })
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(OpenTelemetryAiConventionsProperties.class)
-@Import({ OpenTelemetryFlavorConfiguration.class, OpenLLMetryFlavorConfiguration.class, LangSmithFlavorConfiguration.class, OpenLitFlavorConfiguration.class })
+@Import({ OpenTelemetryFlavorConfiguration.class, OpenLLMetryFlavorConfiguration.class, LangSmithFlavorConfiguration.class, OpenLitFlavorConfiguration.class, LangfuseFlavorConfiguration.class })
 public final class OpenTelemetryAiConventionsAutoConfiguration {
 
     @Bean

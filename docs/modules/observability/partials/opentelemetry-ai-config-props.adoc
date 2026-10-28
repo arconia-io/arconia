@@ -8,7 +8,7 @@
 
 |	`arconia.observations.conventions.opentelemetry.ai.flavor`
 |	`opentelemetry`
-|	The convention flavor to apply. Accepted values: `opentelemetry`, `openlit`, `openllmetry`, `langsmith`.
+|	The convention flavor to apply. Accepted values: `opentelemetry`, `openlit`, `openllmetry`, `langsmith`, `langfuse`.
 
 |	`arconia.observations.conventions.opentelemetry.ai.capture-message-content`
 |	`{flavor-default-capture-message-content}` (when flavor is `{flavor-value}`)

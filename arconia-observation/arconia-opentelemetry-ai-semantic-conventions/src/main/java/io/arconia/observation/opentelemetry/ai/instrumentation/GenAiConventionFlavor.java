@@ -34,6 +34,13 @@ public enum GenAiConventionFlavor {
      *
      * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
      */
-    OPENLIT
+    OPENLIT,
+
+    /**
+     * Langfuse semantic conventions, on top of the OpenTelemetry GenAI semantic conventions.
+     *
+     * @see <a href="https://langfuse.com/integrations/native/opentelemetry">Langfuse OpenTelemetry</a>
+     */
+    LANGFUSE
 
 }

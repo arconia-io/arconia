@@ -19,3 +19,4 @@
 ** xref:semantic-conventions/openlit.adoc[OpenLIT]
 ** xref:semantic-conventions/openllmetry.adoc[OpenLLMetry]
 ** xref:semantic-conventions/langsmith.adoc[LangSmith]
+** xref:semantic-conventions/langfuse.adoc[Langfuse]

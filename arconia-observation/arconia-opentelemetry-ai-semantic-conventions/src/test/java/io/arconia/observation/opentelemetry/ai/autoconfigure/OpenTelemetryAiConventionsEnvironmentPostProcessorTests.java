@@ -93,6 +93,17 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
     }
 
     @Test
+    void langfuseFlavorShouldHaveContentDefaults() {
+        var environment = new MockEnvironment()
+                .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "langfuse");
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
+    }
+
+    @Test
     void flavorMatchingShouldBeCaseInsensitive() {
         var environment = new MockEnvironment()
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "OpenLLMetry");

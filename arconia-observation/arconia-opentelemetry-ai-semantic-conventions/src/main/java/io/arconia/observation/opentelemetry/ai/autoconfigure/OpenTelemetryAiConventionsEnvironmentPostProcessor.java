@@ -40,7 +40,7 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentP
         String flavor = environment.getProperty(FLAVOUR_KEY, "opentelemetry").toLowerCase();
 
         Map<String, Object> defaults = switch (flavor) {
-            case "openllmetry", "openlit", "langsmith" -> Map.of(
+            case "openllmetry", "openlit", "langsmith", "langfuse" -> Map.of(
                     CAPTURE_MESSAGE_CONTENT_KEY, "true",
                     CAPTURE_TOOL_DEFINITIONS_KEY, "true",
                     CAPTURE_TOOL_CALL_CONTENT_KEY, "true"

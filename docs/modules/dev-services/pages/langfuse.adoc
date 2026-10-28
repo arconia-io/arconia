@@ -11,6 +11,8 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 * xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
 
+For Spring AI applications, use it together with the xref:observability:semantic-conventions/langfuse.adoc[Langfuse Semantic Conventions].
+
 Langfuse accepts traces only, via OTLP with the HTTP/Protobuf protocol. While the Dev Service is active, logs and metrics are not exported.
 
 [NOTE]
