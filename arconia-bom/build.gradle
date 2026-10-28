@@ -72,6 +72,7 @@ dependencies {
         api project(":spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
         api project(":spring-boot-starters:arconia-spring-boot-starter")
 
+        api project(":arconia-testcontainers:arconia-testcontainers-langfuse")
         api project(":arconia-testcontainers:arconia-testcontainers-openlit")
         api project(":arconia-testcontainers:arconia-testcontainers-phoenix")
         api project(":arconia-testcontainers:arconia-testcontainers-redis")
