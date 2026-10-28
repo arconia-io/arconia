@@ -32,7 +32,7 @@ public class KafkaDevServicesProperties implements DevServicesProperties, SslDev
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "apache/kafka-native:4.3.1";
+    private String imageName = "apache/kafka-native:4.4.0";
 
     /**
      * Environment variables to set in the service.
