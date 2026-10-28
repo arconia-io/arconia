@@ -1,12 +1,17 @@
 package io.arconia.testcontainers.langfuse;
 
+import java.net.CookieManager;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.github.dockerjava.api.model.Container;
 
@@ -92,6 +97,28 @@ class LangfuseContainerIT {
             assertThat(observationsResponse).isNotNull();
             assertThat(observationsResponse.statusCode()).as(observationsResponse.body()).isEqualTo(200);
             assertThat(observationsResponse.body()).contains("test-span");
+
+            // The initial user can sign in to the UI, also with a random port, since the sign-in page
+            // doesn't follow the redirect to the NEXTAUTH_URL.
+            var browser = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_1_1)
+                    .cookieHandler(new CookieManager())
+                    .build();
+            var csrfResponse = browser.send(HttpRequest.newBuilder(URI.create(container.getLangfuseUrl() + "/api/auth/csrf")).GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            Matcher csrfToken = Pattern.compile("\"csrfToken\"\\s*:\\s*\"([^\"]+)\"").matcher(csrfResponse.body());
+            assertThat(csrfToken.find()).as(csrfResponse.body()).isTrue();
+            String form = "csrfToken=%s&email=%s&password=%s&json=true".formatted(csrfToken.group(1),
+                    URLEncoder.encode(LangfuseContainer.DEFAULT_USER_EMAIL, StandardCharsets.UTF_8),
+                    URLEncoder.encode(LangfuseContainer.DEFAULT_USER_PASSWORD, StandardCharsets.UTF_8));
+            var signInResponse = browser.send(HttpRequest.newBuilder(URI.create(container.getLangfuseUrl() + "/api/auth/callback/credentials"))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(form))
+                    .build(), HttpResponse.BodyHandlers.ofString());
+            assertThat(signInResponse.statusCode()).as(signInResponse.body()).isEqualTo(200);
+            var sessionResponse = browser.send(HttpRequest.newBuilder(URI.create(container.getLangfuseUrl() + "/api/auth/session")).GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            assertThat(sessionResponse.body()).contains(LangfuseContainer.DEFAULT_USER_EMAIL);
 
             // The containers Langfuse needs are removed together with it.
             String networkId = container.getNetwork().getId();

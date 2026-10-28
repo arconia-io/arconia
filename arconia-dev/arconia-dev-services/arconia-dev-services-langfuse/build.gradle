@@ -1,0 +1,41 @@
+plugins {
+    id "code-quality-conventions"
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-opentelemetry:arconia-opentelemetry")
+    api project(":arconia-testcontainers:arconia-testcontainers-langfuse")
+    api "org.springframework.boot:spring-boot-autoconfigure"
+
+    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation "io.opentelemetry:opentelemetry-exporter-otlp"
+    testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev Services Langfuse"
+                description = "Arconia Dev Services Langfuse."
+            }
+        }
+    }
+}

@@ -1,0 +1,146 @@
+= Langfuse Dev Service
+:service-name: langfuse
+
+A service providing https://langfuse.com[Langfuse], an open-source LLM engineering platform for tracing, evaluating, and debugging AI applications, for development and testing purposes. It consists of:
+
+* https://langfuse.com[Langfuse] for exploring the traces of AI applications, with the worker processing the ingested data.
+* https://www.postgresql.org[PostgreSQL], https://clickhouse.com[ClickHouse], and https://redis.io[Redis] as the Langfuse backends.
+* xref:floci.adoc[Floci] as the S3-compatible storage for the ingested events and as a proxy for the OTLP endpoint.
+
+It works with Spring Boot libraries that support OpenTelemetry, including:
+
+* xref:opentelemetry:index.adoc[Arconia OpenTelemetry].
+
+Langfuse accepts traces only, via OTLP with the HTTP/Protobuf protocol. While the Dev Service is active, logs and metrics are not exported.
+
+[NOTE]
+====
+This Dev Service is mutually exclusive with other OpenTelemetry dev services. If more than one is active at the same time, the application will fail at startup with a clear error message. Disable all but one by setting `arconia.dev.services.<name>.enabled=false`.
+====
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Running the Application
+
+include::partial$running-application.adoc[]
+
+In test mode, the Dev Service is skipped by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set `arconia.dev.services.{service-name}.skip-in-tests` to `false`, preferably in a configuration shared by those tests, such as an `application-test.yml` file, so that they share one application context and one set of containers (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
+
+By default, when running the application in dev mode, multiple applications running simultaneously use the same Langfuse Dev Service: the application connects to a running Langfuse Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a set of containers for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+
+Starting Langfuse takes longer than most Dev Services, since it runs six containers and applies its database migrations at startup.
+
+== Accessing Langfuse
+
+The application logs will show you the URL where you can access the Langfuse UI.
+
+[source,logs]
+----
+...i.a.d.s.startup  : Dev Service 'langfuse' is ready in container <container-id> (langfuse/langfuse, localhost:<port>, reuse-strategy: framework)
+...i.a.d.s.startup  : Dev Service 'langfuse' links: Langfuse UI: http://localhost:<port>
+----
+
+Sign in with the user created when Langfuse starts: `arconia@example.com` (email) and `password` (password). The traces of the application are in the `Arconia` project.
+
+The application sends its traces to Langfuse authenticated with the API keys of the project, `pk-lf-arconia` (public key) and `sk-lf-arconia` (secret key). Use the `public-key` and `secret-key` properties to change them.
+
+=== Why the traces go through a proxy
+
+The Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2, as the JDK HTTP client does by default, including the one the OpenTelemetry exporters use in Arconia. For this reason, the traces are sent to a proxy in Floci, which forwards them to Langfuse over HTTP/1.1. Arconia configures the exporter to use the proxy automatically, so no configuration is needed on your side.
+
+=== Customizing Langfuse
+
+The organization, project, and user created when Langfuse starts are configured via the Langfuse environment variables, which you can override with the `environment` property. For example, to sign in with a different user:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      langfuse:
+        environment:
+          LANGFUSE_INIT_USER_EMAIL: me@example.com
+          LANGFUSE_INIT_USER_PASSWORD: my-password
+----
+
+Langfuse processes the ingested traces after a delay, which the Dev Service shortens from 15 seconds to 1 second, so that the traces are visible right away. Set the `LANGFUSE_INGESTION_QUEUE_DELAY_MS` environment variable to change it.
+
+== Configuring the Dev Service
+
+You can configure the Dev Service via configuration properties.
+
+|===
+|Property |Default |Description
+
+| `arconia.dev.services.{service-name}.enabled`
+| `true`
+| Whether the dev service is enabled.
+
+| `arconia.dev.services.{service-name}.image-name`
+| `langfuse/langfuse`
+| Full name of the container image used in the dev service.
+
+| `arconia.dev.services.{service-name}.worker-image-name`
+| `langfuse/langfuse-worker`
+| Full name of the container image used for the Langfuse worker.
+
+| `arconia.dev.services.{service-name}.postgres-image-name`
+| `postgres`
+| Full name of the container image used for the internal PostgreSQL instance.
+
+| `arconia.dev.services.{service-name}.clickhouse-image-name`
+| `clickhouse/clickhouse-server`
+| Full name of the container image used for the internal ClickHouse instance.
+
+| `arconia.dev.services.{service-name}.redis-image-name`
+| `redis`
+| Full name of the container image used for the internal Redis instance.
+
+| `arconia.dev.services.{service-name}.floci-image-name`
+| `floci/floci`
+| Full name of the container image used for the internal Floci instance, providing the S3-compatible storage and the proxy for the OTLP endpoint.
+
+| `arconia.dev.services.{service-name}.public-key`
+| `pk-lf-arconia`
+| Public key of the API keys of the Langfuse project, used to authenticate the telemetry data sent to Langfuse.
+
+| `arconia.dev.services.{service-name}.secret-key`
+| `sk-lf-arconia`
+| Secret key of the API keys of the Langfuse project, used to authenticate the telemetry data sent to Langfuse.
+
+| `arconia.dev.services.{service-name}.environment`
+| `{}`
+| Environment variables to set in the service.
+
+| `arconia.dev.services.{service-name}.network-aliases`
+| `[]`
+| Additional hostnames the dev service container is reachable by on the shared network, next to the name of the dev service. Only applicable when the shared network is enabled.
+
+| `arconia.dev.services.{service-name}.port`
+| `0`
+| Fixed port for exposing the Langfuse UI and API to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+| `arconia.dev.services.{service-name}.resources`
+| `[]`
+| Resources from the classpath or host filesystem to copy into the container. They can be files or directories that will be copied to the specified destination path inside the container at startup and are immutable (read-only).
+
+| `arconia.dev.services.{service-name}.reuse-strategy`
+| `framework`
+| Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
+
+| `arconia.dev.services.{service-name}.startup-timeout`
+| `300s`
+| Maximum waiting time for the service to start, counted from the container start.
+
+| `arconia.dev.services.{service-name}.skip-in-tests`
+| `true`
+| Whether the dev service is skipped in test mode, where the application rarely needs a telemetry backend. Set it to false for tests that verify the telemetry the application exports.
+
+| `arconia.dev.services.{service-name}.volumes`
+| `[]`
+| Files or directories to mount from the host filesystem into the container. They are mounted at the specified destination path inside the container at startup and are mutable (read-write). Changes in either the host or the container will be immediately reflected in the other.
+|===
+
+include::partial$disabling-dev-service.adoc[]
