@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "java-test-fixtures"
     id "nullability-conventions"

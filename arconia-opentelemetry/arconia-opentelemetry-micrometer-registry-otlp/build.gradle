@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "sbom-conventions"
     id "release-conventions"
@@ -11,9 +10,9 @@ dependencies {
 
     api project(":arconia-core")
     api "org.springframework.boot:spring-boot-micrometer-metrics"
-    api "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional "org.springframework.boot:spring-boot-autoconfigure"
     optional("io.micrometer:micrometer-registry-otlp")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

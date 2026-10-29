@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "nullability-conventions"
     id "sbom-conventions"
@@ -10,7 +9,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oidc")
     api "org.springframework.boot:spring-boot-autoconfigure"
 

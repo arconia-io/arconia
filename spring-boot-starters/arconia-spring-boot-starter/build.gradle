@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "sbom-conventions"
     id "release-conventions"
@@ -8,7 +7,7 @@ plugins {
 dependencies {
     api project(":arconia-spring-boot")
 
-    implementation "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-starter"
 }
 
 publishing {

@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "nullability-conventions"
     id "sbom-conventions"
@@ -11,7 +10,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    api project(":arconia-core")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-jdbc"
 

@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "sbom-conventions"
     id "release-conventions"
@@ -9,16 +8,14 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-spring-boot")
     api project(":arconia-observation:arconia-observation")
     api "com.arize:openinference-semantic-conventions:${openInferenceVersion}"
     api "org.springframework.ai:spring-ai-model"
 
-    implementation "tools.jackson.core:jackson-databind"
 
-    implementation "org.springframework.boot:spring-boot-starter"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework.ai:spring-ai-client-chat"
     optional "io.micrometer:micrometer-tracing-bridge-otel"
 

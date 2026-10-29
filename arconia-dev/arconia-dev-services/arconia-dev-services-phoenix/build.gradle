@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "nullability-conventions"
     id "sbom-conventions"
@@ -26,7 +25,6 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
 }
 

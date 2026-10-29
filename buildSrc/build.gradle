@@ -10,7 +10,6 @@ repositories {
 
 ext {
     set("cycloneDxVersion", '3.5.1')
-    set("graalvmToolsVersion", '1.1.17')
     set("springBootVersion", '4.1.2')
     set("dependencyManagementVersion", '1.1.7')
     set("errorPronePluginVersion", '5.1.1')
@@ -20,7 +19,6 @@ ext {
 dependencies {
     implementation "org.cyclonedx:cyclonedx-gradle-plugin:${cycloneDxVersion}"
     implementation "io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}"
-    implementation "org.graalvm.buildtools:native-gradle-plugin:${graalvmToolsVersion}"
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     implementation "net.ltgt.errorprone:net.ltgt.errorprone.gradle.plugin:${errorPronePluginVersion}"
     implementation "net.ltgt.nullaway:net.ltgt.nullaway.gradle.plugin:${nullAwayPluginVersion}"

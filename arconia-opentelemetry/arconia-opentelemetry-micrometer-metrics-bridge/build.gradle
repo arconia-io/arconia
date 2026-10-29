@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "sbom-conventions"
     id "release-conventions"
@@ -15,9 +14,10 @@ dependencies {
         exclude group: "io.opentelemetry", module: "opentelemetry-api-incubator"
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
-    api "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot-micrometer-metrics"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

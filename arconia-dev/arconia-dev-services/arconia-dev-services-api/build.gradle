@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "nullability-conventions"
     id "sbom-conventions"
@@ -10,7 +9,6 @@ dependencies {
     api "org.jspecify:jspecify"
 
     implementation project(":arconia-core")
-    implementation "org.springframework:spring-core"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

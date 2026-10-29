@@ -1,5 +1,4 @@
 plugins {
-    id "code-quality-conventions"
     id "java-conventions"
     id "sbom-conventions"
     id "release-conventions"
@@ -14,9 +13,11 @@ dependencies {
     api("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0") {
         exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-incubator"
     }
-    api "org.springframework.boot:spring-boot-starter"
+    api "org.springframework.boot:spring-boot"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional "ch.qos.logback:logback-classic"
+    optional "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
