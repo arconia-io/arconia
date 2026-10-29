@@ -11,7 +11,7 @@ import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObse
 /**
  * {@link AdvisorObservationConvention} for OpenInference.
  */
-public class OpenInferenceAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
+public final class OpenInferenceAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
 
     @Override
     protected KeyValue aiOperationType(AdvisorObservationContext context) {

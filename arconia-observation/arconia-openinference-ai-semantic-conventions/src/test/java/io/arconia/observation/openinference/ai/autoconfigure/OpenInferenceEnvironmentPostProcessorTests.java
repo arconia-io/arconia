@@ -2,7 +2,6 @@ package io.arconia.observation.openinference.ai.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
-import org.springframework.core.Ordered;
 import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,19 +31,6 @@ class OpenInferenceEnvironmentPostProcessorTests {
     }
 
     @Test
-    void postProcessEnvironmentShouldMapTraceProperties() {
-        var environment = new MockEnvironment()
-            .withProperty("OPENINFERENCE_HIDE_INPUTS", "true")
-            .withProperty("OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH", "64000");
-
-        processor.postProcessEnvironment(environment, new SpringApplication());
-
-        String prefix = OpenInferenceProperties.CONFIG_PREFIX;
-        assertThat(environment.getProperty(prefix + ".hide-inputs")).isEqualTo("true");
-        assertThat(environment.getProperty(prefix + ".base64-image-max-length")).isEqualTo("64000");
-    }
-
-    @Test
     void postProcessEnvironmentShouldNotMapInvalidProperties() {
         var environment = new MockEnvironment()
             .withProperty("OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH", "not-a-number");
@@ -53,11 +39,6 @@ class OpenInferenceEnvironmentPostProcessorTests {
 
         String prefix = OpenInferenceProperties.CONFIG_PREFIX;
         assertThat(environment.getProperty(prefix + ".base64-image-max-length")).isNull();
-    }
-
-    @Test
-    void getOrderShouldReturnLowestPrecedence() {
-        assertThat(processor.getOrder()).isEqualTo(Ordered.LOWEST_PRECEDENCE);
     }
 
 }

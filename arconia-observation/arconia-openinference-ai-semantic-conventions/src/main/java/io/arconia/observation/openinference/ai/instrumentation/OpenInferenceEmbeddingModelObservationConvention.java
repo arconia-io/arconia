@@ -15,10 +15,14 @@ import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
+import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
 import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+/**
+ * {@link EmbeddingModelObservationConvention} for OpenInference.
+ */
 public final class OpenInferenceEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
     private final JsonHelper jsonHelper = new JsonHelper();

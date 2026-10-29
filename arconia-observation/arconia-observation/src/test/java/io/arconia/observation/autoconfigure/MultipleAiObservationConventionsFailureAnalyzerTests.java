@@ -16,7 +16,7 @@ class MultipleAiObservationConventionsFailureAnalyzerTests {
             new MultipleAiObservationConventionsFailureAnalyzer();
 
     @Test
-    void shouldProduceActionableFailureAnalysis() {
+    void shouldProvideInstructionsWhenConflictDetected() {
         var exception = new MultipleAiObservationConventionsException(List.of("openinference", "opentelemetry"));
 
         FailureAnalysis analysis = analyzer.analyze(exception, exception);

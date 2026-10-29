@@ -13,14 +13,10 @@ import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContr
 /**
  * A {@link ResourceContributor} that contributes resource attributes based on the OpenInference specification.
  */
-public class OpenInferenceResourceContributor implements ResourceContributor {
+public final class OpenInferenceResourceContributor implements ResourceContributor {
 
     @Nullable
     private final String projectName;
-
-    public OpenInferenceResourceContributor() {
-        this(null);
-    }
 
     public OpenInferenceResourceContributor(@Nullable String projectName) {
         this.projectName = projectName;

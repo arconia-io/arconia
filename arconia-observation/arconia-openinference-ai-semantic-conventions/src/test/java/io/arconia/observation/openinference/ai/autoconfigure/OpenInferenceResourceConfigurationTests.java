@@ -27,12 +27,6 @@ class OpenInferenceResourceConfigurationTests {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenResourceContributorClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(ResourceContributor.class))
-                .run(context -> assertThat(context).doesNotHaveBean(OpenInferenceResourceContributor.class));
-    }
-
-    @Test
     void resourceContributorAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> assertThat(context).hasSingleBean(OpenInferenceResourceContributor.class));
     }

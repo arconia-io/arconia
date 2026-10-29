@@ -34,7 +34,6 @@ public class OpenInferenceOptions {
 
     /**
      * Whether to hide the definitions of the tools available to the model.
-     * They are also hidden when hiding all inputs.
      */
     private boolean hideLlmTools = false;
 

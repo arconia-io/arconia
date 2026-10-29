@@ -5,10 +5,10 @@ import org.springframework.boot.diagnostics.FailureAnalysis;
 import org.springframework.boot.diagnostics.FailureAnalyzer;
 
 /**
- * A {@link FailureAnalyzer} that provides actionable feedback
- * when multiple AI observation convention modules are detected.
+ * A {@link FailureAnalyzer} that provides instructions on how to solve
+ * the conflict when multiple AI observation convention modules are detected.
  */
-public class MultipleAiObservationConventionsFailureAnalyzer
+public final class MultipleAiObservationConventionsFailureAnalyzer
         extends AbstractFailureAnalyzer<MultipleAiObservationConventionsException> {
 
     @Override

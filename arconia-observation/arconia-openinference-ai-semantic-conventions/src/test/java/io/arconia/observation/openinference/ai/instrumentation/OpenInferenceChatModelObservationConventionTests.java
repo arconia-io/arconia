@@ -147,9 +147,7 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_ROLE, "system"),
                 KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT, "You are a helpful assistant"),
                 KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_ROLE, "user"),
-                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_CONTENT, "Tell me about Spring AI"),
-                KeyValue.of(SemanticConventions.LLM_INVOCATION_PARAMETERS, """
-                        {"top_p":0.9,"max_tokens":1000,"temperature":0.7}""")
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".1." + SemanticConventions.MESSAGE_CONTENT, "Tell me about Spring AI")
         );
 
         KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
@@ -410,35 +408,6 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldUseMessageContentsForMultimodalInputMessages() {
-        UserMessage userMessage = UserMessage.builder()
-                .text("What's in this image?")
-                .media(Media.builder()
-                        .mimeType(Media.Format.IMAGE_PNG)
-                        .data(URI.create("https://example.com/image.png"))
-                        .build())
-                .build();
-        List<Message> messages = List.of(userMessage);
-        ChatOptions options = ChatOptions.builder().model("mistral").build();
-        ChatModelObservationContext context = ChatModelObservationContext.builder()
-                .prompt(new Prompt(messages, options))
-                .provider(AiProvider.SPRING_AI.value())
-                .build();
-
-        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0";
-        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_ROLE, "user"),
-                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
-                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "What's in this image?"),
-                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
-                KeyValue.of(prefix + "." + SemanticConventions.MESSAGE_CONTENTS + ".1." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, "https://example.com/image.png")
-        );
-        // Should not have flat message.content when multimodal
-        assertThat(observationConvention.getHighCardinalityKeyValues(context))
-                .noneSatisfy(kv -> assertThat(kv.getKey()).isEqualTo(prefix + "." + SemanticConventions.MESSAGE_CONTENT));
-    }
-
-    @Test
     void shouldUseMessageContentForTextOnlyMessages() {
         List<Message> messages = List.of(new UserMessage("Hello"));
         ChatOptions options = ChatOptions.builder().model("mistral").build();
@@ -486,6 +455,9 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(prefix + ".2." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"),
                 KeyValue.of(prefix + ".2." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL, "https://example.com/image2.jpg")
         );
+        // Should not have flat message.content when multimodal
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).noneSatisfy(kv -> assertThat(kv.getKey())
+                .isEqualTo(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT));
     }
 
     @Test

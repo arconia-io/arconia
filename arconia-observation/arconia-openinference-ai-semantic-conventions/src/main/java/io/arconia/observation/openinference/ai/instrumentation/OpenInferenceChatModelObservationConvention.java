@@ -144,7 +144,6 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         int i = 0;
         for (Message message : context.getRequest().getInstructions()) {
             if (message instanceof ToolResponseMessage toolResponseMessage) {
-                // Each tool response is a separate message, so the results of parallel tool calls are all recorded.
                 for (ToolResponseMessage.ToolResponse toolResponse : toolResponseMessage.getResponses()) {
                     String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
                     keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
@@ -155,7 +154,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
                             toolResponse.name());
                     keyValues = keyValues.and(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
                             openInferenceOptions.isHideInputText() ? OpenInferenceOptions.REDACTED_PLACEHOLDER
-                                    : Objects.requireNonNullElse(toolResponse.responseData(), ""));
+                                    : toolResponse.responseData());
                     i++;
                 }
                 continue;
@@ -377,7 +376,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         messageMap.put("role", "tool");
         messageMap.put("tool_call_id", response.id());
         messageMap.put("name", response.name());
-        messageMap.put("content", Objects.requireNonNullElse(response.responseData(), ""));
+        messageMap.put("content", response.responseData());
         return messageMap;
     }
 

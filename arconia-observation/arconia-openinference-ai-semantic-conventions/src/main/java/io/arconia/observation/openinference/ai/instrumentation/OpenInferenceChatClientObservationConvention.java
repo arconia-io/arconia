@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link ChatClientObservationConvention} for OpenInference.
  */
-public class OpenInferenceChatClientObservationConvention extends DefaultChatClientObservationConvention {
+public final class OpenInferenceChatClientObservationConvention extends DefaultChatClientObservationConvention {
 
     private final OpenInferenceOptions openInferenceOptions;
 

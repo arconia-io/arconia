@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Exception thrown when multiple AI observation convention modules are detected on the classpath.
  */
-public class MultipleAiObservationConventionsException extends RuntimeException {
+public final class MultipleAiObservationConventionsException extends RuntimeException {
 
     private final List<String> conventionNames;
 

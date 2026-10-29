@@ -13,13 +13,15 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
  * Auto-configuration for observations.
  */
 @AutoConfiguration
-public class ObservationAutoConfiguration {
+public final class ObservationAutoConfiguration {
 
     @Bean
-    SmartInitializingSingleton observationConventionsValidator(
-            ObjectProvider<AiObservationConventionsProvider> providers) {
+    SmartInitializingSingleton observationConventionsValidator(ObjectProvider<AiObservationConventionsProvider> providers) {
         return () -> {
-            List<String> names = providers.orderedStream().map(AiObservationConventionsProvider::name).sorted().toList();
+            List<String> names = providers.orderedStream()
+                    .map(AiObservationConventionsProvider::name)
+                    .sorted()
+                    .toList();
             if (names.size() > 1) {
                 throw new MultipleAiObservationConventionsException(names);
             }

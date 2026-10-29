@@ -18,6 +18,8 @@ import org.springframework.ai.chat.observation.ChatModelObservationContext;
  * It records the cached input tokens as numbers directly on the OpenTelemetry span, since
  * Micrometer key values are always strings and Phoenix ignores the token count details
  * that aren't numbers when computing costs.
+ * <p>
+ * See <a href="https://github.com/micrometer-metrics/micrometer/issues/7433">micrometer#7433</a>.
  */
 public final class OpenInferenceChatModelObservationHandler implements ObservationHandler<ChatModelObservationContext> {
 

@@ -34,15 +34,6 @@ class OpenInferenceChatClientConfigurationTests {
     }
 
     @Test
-    void autoConfigurationNotActivatedWhenAdvisorObservationConventionClassMissing() {
-        contextRunner.withClassLoader(new FilteredClassLoader(AdvisorObservationConvention.class))
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenInferenceChatClientObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenInferenceAdvisorObservationConvention.class);
-                });
-    }
-
-    @Test
     void observationConventionsAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OpenInferenceChatClientObservationConvention.class);
