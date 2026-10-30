@@ -39,7 +39,9 @@ public final class OpenTelemetryChatModelEventObservationHandler implements Obse
         TracingObservationHandler.TracingContext tracingContext = context.get(TracingObservationHandler.TracingContext.class);
         Span span = MicrometerBridge.extractOtelSpan(tracingContext);
 
-        if (span == null) {
+        if (span == null || !span.isRecording()) {
+            // Events added to a span that isn't recording, such as an unsampled one, are dropped:
+            // serialising the messages for it would be wasted work.
             return;
         }
 

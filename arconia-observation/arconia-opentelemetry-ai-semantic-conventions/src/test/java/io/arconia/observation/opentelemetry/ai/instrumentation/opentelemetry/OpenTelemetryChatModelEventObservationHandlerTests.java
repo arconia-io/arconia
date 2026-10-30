@@ -69,6 +69,22 @@ class OpenTelemetryChatModelEventObservationHandlerTests {
     }
 
     @Test
+    void shouldNotAddEventWhenSpanIsNotRecording() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(InferenceContentDestination.SPAN_EVENTS);
+        ChatModelObservationContext context = createContext();
+        TracingObservationHandler.TracingContext tracingContext = new TracingObservationHandler.TracingContext();
+        tracingContext.setSpan(OtelSpan.fromOtel(Span.getInvalid()));
+        context.put(TracingObservationHandler.TracingContext.class, tracingContext);
+
+        ObservationRegistry registry = ObservationRegistry.create();
+        registry.observationConfig().observationHandler(handler);
+        Observation.createNotStarted("gen_ai.client.operation.duration", () -> context, registry).start().stop();
+
+        assertThat(spanExporter.getFinishedSpanItems()).isEmpty();
+    }
+
+    @Test
     void shouldAddEventWithMessages() {
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(InferenceContentDestination.SPAN_EVENTS);

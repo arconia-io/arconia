@@ -1,6 +1,9 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -17,6 +20,15 @@ import org.springframework.util.Assert;
  */
 public final class GenAiConventionsConverter {
 
+    /**
+     * Spring AI reports the value of an operation type or provider, such as {@code google_genai}, which doesn't
+     * always match the constant name. Both are indexed once, in lower case, so that a lookup is a map access
+     * rather than a scan or an exception for the unknown values that custom providers report.
+     */
+    private static final Map<String, AiOperationType> OPERATION_TYPES = index(AiOperationType.values(), AiOperationType::value);
+
+    private static final Map<String, AiProvider> PROVIDERS = index(AiProvider.values(), AiProvider::value);
+
     private GenAiConventionsConverter() {}
 
     /**
@@ -24,19 +36,18 @@ public final class GenAiConventionsConverter {
      */
     public static String toOperationName(String aiOperationType) {
         Assert.hasText(aiOperationType, "aiOperationType cannot be null or empty");
-        try {
-            AiOperationType type = AiOperationType.valueOf(aiOperationType.strip().toUpperCase(Locale.ROOT));
-            return switch (type) {
-                case AiOperationType.CHAT -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.CHAT;
-                case AiOperationType.EMBEDDING -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EMBEDDINGS;
-                case AiOperationType.IMAGE -> AiOperationType.IMAGE.value();
-                case AiOperationType.TEXT_COMPLETION -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.TEXT_COMPLETION;
-                case AiOperationType.EXECUTE_TOOL -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EXECUTE_TOOL;
-                default -> type.value();
-            };
-        } catch (IllegalArgumentException e) {
+        AiOperationType type = findOperationType(aiOperationType);
+        if (type == null) {
             return aiOperationType;
         }
+        return switch (type) {
+            case AiOperationType.CHAT -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.CHAT;
+            case AiOperationType.EMBEDDING -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EMBEDDINGS;
+            case AiOperationType.IMAGE -> AiOperationType.IMAGE.value();
+            case AiOperationType.TEXT_COMPLETION -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.TEXT_COMPLETION;
+            case AiOperationType.EXECUTE_TOOL -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EXECUTE_TOOL;
+            default -> type.value();
+        };
     }
 
     /**
@@ -88,16 +99,28 @@ public final class GenAiConventionsConverter {
 
     /**
      * Finds the {@link AiProvider} matching the given value, such as {@code google_genai}, or constant name.
-     * Spring AI reports the value, which doesn't always match the constant name.
      */
     private static @Nullable AiProvider findProvider(String aiProvider) {
-        String candidate = aiProvider.strip();
-        for (AiProvider provider : AiProvider.values()) {
-            if (provider.value().equalsIgnoreCase(candidate) || provider.name().equalsIgnoreCase(candidate)) {
-                return provider;
-            }
+        return PROVIDERS.get(aiProvider.strip().toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Finds the {@link AiOperationType} matching the given value, such as {@code execute_tool}, or constant name.
+     */
+    private static @Nullable AiOperationType findOperationType(String aiOperationType) {
+        return OPERATION_TYPES.get(aiOperationType.strip().toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Indexes the constants of an enum by their lower-case value and name.
+     */
+    private static <E extends Enum<E>> Map<String, E> index(E[] constants, Function<E, String> value) {
+        Map<String, E> index = new HashMap<>();
+        for (E constant : constants) {
+            index.put(value.apply(constant).toLowerCase(Locale.ROOT), constant);
+            index.put(constant.name().toLowerCase(Locale.ROOT), constant);
         }
-        return null;
+        return Map.copyOf(index);
     }
 
     /**
@@ -105,17 +128,16 @@ public final class GenAiConventionsConverter {
      */
     public static String toLangSmithSpanKind(String aiOperationType) {
         Assert.hasText(aiOperationType, "aiOperationType cannot be null or empty");
-        try {
-            AiOperationType type = AiOperationType.valueOf(aiOperationType.strip().toUpperCase(Locale.ROOT));
-            return switch (type) {
-                case AiOperationType.CHAT, AiOperationType.TEXT_COMPLETION, AiOperationType.IMAGE -> "llm";
-                case AiOperationType.EMBEDDING -> "embedding";
-                case AiOperationType.EXECUTE_TOOL -> "tool";
-                default -> "chain";
-            };
-        } catch (IllegalArgumentException e) {
+        AiOperationType type = findOperationType(aiOperationType);
+        if (type == null) {
             return "chain";
         }
+        return switch (type) {
+            case AiOperationType.CHAT, AiOperationType.TEXT_COMPLETION, AiOperationType.IMAGE -> "llm";
+            case AiOperationType.EMBEDDING -> "embedding";
+            case AiOperationType.EXECUTE_TOOL -> "tool";
+            default -> "chain";
+        };
     }
 
 
