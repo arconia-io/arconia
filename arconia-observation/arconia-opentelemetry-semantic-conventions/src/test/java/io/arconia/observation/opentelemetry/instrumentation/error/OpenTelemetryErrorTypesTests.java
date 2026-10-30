@@ -10,14 +10,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenTelemetryErrorTypesTests {
 
     @Test
-    void usesCanonicalNameOfTopLevelClass() {
+    void usesClassNameOfTopLevelClass() {
         assertThat(OpenTelemetryErrorTypes.of(new IllegalStateException())).isEqualTo("java.lang.IllegalStateException");
     }
 
     @Test
-    void usesCanonicalNameOfNestedClass() {
+    void usesBinaryNameOfNestedClass() {
         assertThat(OpenTelemetryErrorTypes.of(new NestedException()))
-                .isEqualTo("io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypesTests.NestedException");
+                .isEqualTo("io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypesTests$NestedException");
     }
 
     @Test

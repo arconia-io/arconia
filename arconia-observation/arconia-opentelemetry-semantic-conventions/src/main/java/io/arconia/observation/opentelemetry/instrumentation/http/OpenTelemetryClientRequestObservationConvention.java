@@ -83,7 +83,7 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
 
     /**
      * Reports the response status code as the error type when the response signals an error,
-     * otherwise the canonical class name of the error, if any. The {@link ResourceAccessException}
+     * otherwise the class name of the error, if any. The {@link ResourceAccessException}
      * that Spring Framework uses to wrap any I/O error is unwrapped, since it doesn't help classify the failure,
      * as the conventions allow.
      */

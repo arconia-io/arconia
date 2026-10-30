@@ -48,10 +48,34 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void errorTypeIsExceptionTypeForExceptionWithoutServerErrorStatus() {
+    void errorTypeIsNoneForHandledExceptionAnsweredWithClientError() {
+        // Spring MVC exposes the exceptions it handled, such as validation failures answered with a 400 status.
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(400);
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+        context.setError(new IllegalArgumentException("invalid"));
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", KeyValue.NONE_VALUE));
+    }
+
+    @Test
+    void errorTypeIsNoneForHandledExceptionAnsweredWithSuccess() {
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(200);
         ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
+        context.setError(new IllegalStateException("boom"));
+
+        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("error.type", KeyValue.NONE_VALUE));
+    }
+
+    @Test
+    void errorTypeIsExceptionTypeWithoutResponse() {
+        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), new MockHttpServletResponse());
+        context.setResponse(null);
         context.setError(new IllegalStateException("boom"));
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);

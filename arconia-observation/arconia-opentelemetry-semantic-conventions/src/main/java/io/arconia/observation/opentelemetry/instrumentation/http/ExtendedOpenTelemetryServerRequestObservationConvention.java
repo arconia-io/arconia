@@ -112,16 +112,19 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
     }
 
     /**
-     * Reports the response status code as the error type when the response signals a server error,
-     * also when an exception was thrown, otherwise the canonical class name of the error, if any.
+     * Reports the response status code as the error type when the response signals a server error, also when
+     * an exception was thrown, and no error type for any other response. Spring MVC hands the observation the
+     * exceptions it already handled, such as a validation failure answered with a 400 status: the request
+     * completed with a status code, which is all the conventions want recorded for it. The class name of the
+     * error is reported only when the request failed before a response was produced.
      */
     @Override
     protected KeyValue exception(ServerRequestObservationContext context) {
         if (context.getResponse() != null) {
             int status = context.getResponse().getStatus();
-            if (status >= 500 && status < 600) {
-                return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status));
-            }
+            return status >= 500 && status < 600
+                    ? KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), String.valueOf(status))
+                    : KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), KeyValue.NONE_VALUE);
         }
         if (context.getError() != null) {
             return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), OpenTelemetryErrorTypes.of(context.getError()));

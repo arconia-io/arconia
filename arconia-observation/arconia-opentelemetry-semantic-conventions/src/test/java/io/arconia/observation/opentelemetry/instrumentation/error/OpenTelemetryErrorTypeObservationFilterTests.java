@@ -47,15 +47,15 @@ class OpenTelemetryErrorTypeObservationFilterTests {
         }
 
         @Test
-        void shouldReplaceNoneErrorTypeWhenObservationEndsInError() {
+        void shouldRemoveNoneErrorTypeWhenConventionReportsNoErrorForObservationEndingInError() {
+            // An HTTP request answering a handled exception with a status code carries the error, but completed.
             Observation.Context context = new Observation.Context();
             context.setError(new IllegalStateException());
             context.addLowCardinalityKeyValue(KeyValue.of("error.type", KeyValue.NONE_VALUE));
 
             filter.map(context);
 
-            assertThat(context.getLowCardinalityKeyValue("error.type"))
-                    .isEqualTo(KeyValue.of("error.type", "java.lang.IllegalStateException"));
+            assertThat(context.getLowCardinalityKeyValue("error.type")).isNull();
         }
 
         @Test
