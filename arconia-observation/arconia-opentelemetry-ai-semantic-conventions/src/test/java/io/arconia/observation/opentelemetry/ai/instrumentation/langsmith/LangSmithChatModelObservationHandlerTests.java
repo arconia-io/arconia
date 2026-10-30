@@ -20,6 +20,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.DefaultUsage;
+import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -68,6 +69,15 @@ class LangSmithChatModelObservationHandlerTests {
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS)).isEqualTo(100L);
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS)).isNull();
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_CREATION_INPUT_TOKENS)).isNull();
+    }
+
+    @Test
+    void shouldNotSetTokenUsageWhenNotReported() {
+        SpanData span = observe(createContext(new EmptyUsage()));
+
+        assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS)).isNull();
+        assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS)).isNull();
+        assertThat(span.getAttributes().get(GEN_AI_USAGE_TOTAL_TOKENS)).isNull();
     }
 
     @Test

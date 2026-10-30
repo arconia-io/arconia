@@ -197,6 +197,21 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldOmitTokenCountsWhenUsageIsNotReported() {
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .metadata(ChatResponseMetadata.builder().model("mistral-42").build())
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hello").build())))
+                .build());
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).noneSatisfy(kv ->
+                assertThat(kv.getKey()).startsWith("llm.token_count."));
+    }
+
+    @Test
     void shouldHaveInputAndOutputValues() throws JSONException {
         List<Message> messages = List.of(
                 new SystemMessage("You are a helpful assistant"),

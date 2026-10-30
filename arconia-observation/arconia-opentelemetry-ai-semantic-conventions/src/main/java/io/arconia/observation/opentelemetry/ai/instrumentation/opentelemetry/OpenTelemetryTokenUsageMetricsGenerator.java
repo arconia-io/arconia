@@ -10,9 +10,11 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.observation.Observation;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.metadata.Usage;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 
 final class OpenTelemetryTokenUsageMetricsGenerator {
 
@@ -23,25 +25,31 @@ final class OpenTelemetryTokenUsageMetricsGenerator {
     private OpenTelemetryTokenUsageMetricsGenerator() {}
 
     static void inputTokens(Usage usage, Observation.Context context, MeterRegistry meterRegistry) {
-        DistributionSummary.builder(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
-                .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
-                        GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT)
-                .description(DESCRIPTION)
-                .baseUnit(BASE_UNIT)
-                .tags(createTags(context))
-                .register(meterRegistry)
-                .record(usage.getPromptTokens());
+        record(GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT, usage,
+                usage.getPromptTokens(), context, meterRegistry);
     }
 
     static void outputTokens(Usage usage, Observation.Context context, MeterRegistry meterRegistry) {
+        record(GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT, usage,
+                usage.getCompletionTokens(), context, meterRegistry);
+    }
+
+    /**
+     * Records the token count of the given type, skipping it when the provider didn't report the usage:
+     * a sample of zero tokens would inflate the count of the histogram and skew its distribution.
+     */
+    private static void record(String tokenType, Usage usage, @Nullable Integer tokens,
+            Observation.Context context, MeterRegistry meterRegistry) {
+        if (!GenAiUsage.isReported(usage) || tokens == null) {
+            return;
+        }
         DistributionSummary.builder(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
-                .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
-                        GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT)
+                .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(), tokenType)
                 .description(DESCRIPTION)
                 .baseUnit(BASE_UNIT)
                 .tags(createTags(context))
                 .register(meterRegistry)
-                .record(usage.getCompletionTokens());
+                .record(tokens);
     }
 
     private static List<Tag> createTags(Observation.Context context) {

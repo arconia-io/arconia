@@ -6,8 +6,10 @@ import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.MicrometerBridge;
 
 /**
@@ -28,14 +30,25 @@ public final class LangSmithEmbeddingModelObservationHandler implements Observat
             return;
         }
         var usage = context.getResponse().getMetadata().getUsage();
-        span.setAttribute(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS, Long.valueOf(usage.getPromptTokens()));
-        span.setAttribute(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey(),
-                Long.valueOf(usage.getTotalTokens()));
+        if (!GenAiUsage.isReported(usage)) {
+            return;
+        }
+        setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), usage.getPromptTokens());
+        setTokens(span, LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey(), usage.getTotalTokens());
     }
 
     @Override
     public boolean supportsContext(Observation.Context context) {
         return context instanceof EmbeddingModelObservationContext;
+    }
+
+    /**
+     * Sets a token count on the span, skipping counts the usage doesn't carry.
+     */
+    private static void setTokens(Span span, String key, @Nullable Integer tokens) {
+        if (tokens != null) {
+            span.setAttribute(key, tokens.longValue());
+        }
     }
 
 }

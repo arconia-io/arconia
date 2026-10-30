@@ -11,6 +11,7 @@ import io.micrometer.common.KeyValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.EmbeddingRequest;
@@ -147,6 +148,20 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.EMBEDDING_INVOCATION_PARAMETERS, """
                         {"dimensions":3}""")
         );
+    }
+
+    @Test
+    void shouldOmitTokenCountsWhenUsageIsNotReported() {
+        EmbeddingRequest request = new EmbeddingRequest(List.of("Embed this text"), EmbeddingOptions.builder().model("mistral").build());
+        EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
+                .embeddingRequest(request)
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(new EmbeddingResponse(List.of(new Embedding(new float[]{0.1f, 0.2f, 0.3f}, 0)),
+                new EmbeddingResponseMetadata("mistral-42", new EmptyUsage())));
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).noneSatisfy(kv ->
+                assertThat(kv.getKey()).startsWith("llm.token_count."));
     }
 
     @Test

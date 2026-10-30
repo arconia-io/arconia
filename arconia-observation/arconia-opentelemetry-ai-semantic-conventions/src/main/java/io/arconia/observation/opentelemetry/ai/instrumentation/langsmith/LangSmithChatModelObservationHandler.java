@@ -6,8 +6,10 @@ import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.MicrometerBridge;
 
 /**
@@ -28,11 +30,12 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
             return;
         }
         var usage = context.getResponse().getMetadata().getUsage();
-        span.setAttribute(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS, Long.valueOf(usage.getPromptTokens()));
-        span.setAttribute(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS,
-                Long.valueOf(usage.getCompletionTokens()));
-        span.setAttribute(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey(),
-                Long.valueOf(usage.getTotalTokens()));
+        if (!GenAiUsage.isReported(usage)) {
+            return;
+        }
+        setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), usage.getPromptTokens());
+        setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey(), usage.getCompletionTokens());
+        setTokens(span, LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey(), usage.getTotalTokens());
         if (usage.getCacheReadInputTokens() != null) {
             span.setAttribute(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS,
                     usage.getCacheReadInputTokens());
@@ -46,6 +49,15 @@ public final class LangSmithChatModelObservationHandler implements ObservationHa
     @Override
     public boolean supportsContext(Observation.Context context) {
         return context instanceof ChatModelObservationContext;
+    }
+
+    /**
+     * Sets a token count on the span, skipping counts the usage doesn't carry.
+     */
+    private static void setTokens(Span span, String key, @Nullable Integer tokens) {
+        if (tokens != null) {
+            span.setAttribute(key, tokens.longValue());
+        }
     }
 
 }

@@ -11,6 +11,8 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.ai.chat.metadata.EmptyUsage;
+import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
@@ -143,22 +145,32 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
 
     @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
-        if (context.getResponse() != null) {
-            return keyValues.and(
-                    SemanticConventions.LLM_TOKEN_COUNT_PROMPT,
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getPromptTokens()));
+        Usage usage = reportedUsage(context);
+        if (usage != null && usage.getPromptTokens() != null) {
+            return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, String.valueOf(usage.getPromptTokens()));
         }
         return keyValues;
     }
 
     @Override
     protected KeyValues usageTotalTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
-        if (context.getResponse() != null) {
-            return keyValues.and(
-                    SemanticConventions.LLM_TOKEN_COUNT_TOTAL,
-                    String.valueOf(context.getResponse().getMetadata().getUsage().getTotalTokens()));
+        Usage usage = reportedUsage(context);
+        if (usage != null && usage.getTotalTokens() != null) {
+            return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, String.valueOf(usage.getTotalTokens()));
         }
         return keyValues;
+    }
+
+    /**
+     * Returns the token usage of the response when the provider reported it. Spring AI falls back to
+     * {@link EmptyUsage} when it didn't, and its zeros would show up as free calls in the token counts.
+     */
+    private static @Nullable Usage reportedUsage(EmbeddingModelObservationContext context) {
+        if (context.getResponse() == null) {
+            return null;
+        }
+        Usage usage = context.getResponse().getMetadata().getUsage();
+        return usage instanceof EmptyUsage ? null : usage;
     }
 
 }

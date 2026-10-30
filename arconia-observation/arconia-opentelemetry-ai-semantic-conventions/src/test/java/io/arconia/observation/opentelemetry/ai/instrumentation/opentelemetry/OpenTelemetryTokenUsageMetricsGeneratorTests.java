@@ -11,7 +11,9 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.chat.metadata.Usage;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -88,6 +90,44 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
                 .summary();
 
         assertThat(summary).isNotNull();
+    }
+
+    @Test
+    void shouldNotRecordWhenUsageIsNotReported() {
+        Observation.Context context = new Observation.Context();
+
+        OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new EmptyUsage(), context, meterRegistry);
+        OpenTelemetryTokenUsageMetricsGenerator.outputTokens(new EmptyUsage(), context, meterRegistry);
+
+        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE).summaries()).isEmpty();
+    }
+
+    @Test
+    void shouldNotRecordTokensTheUsageDoesNotCarry() {
+        Observation.Context context = new Observation.Context();
+
+        OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new InputOnlyUsage(), context, meterRegistry);
+        OpenTelemetryTokenUsageMetricsGenerator.outputTokens(new InputOnlyUsage(), context, meterRegistry);
+
+        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+                .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
+                        GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT)
+                .summary()).isNotNull();
+        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+                .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
+                        GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT)
+                .summary()).isNull();
+    }
+
+    static class InputOnlyUsage implements Usage {
+        @Override
+        @NonNull
+        public Integer getPromptTokens() { return 1000; }
+        @Override
+        @SuppressWarnings("NullAway")
+        public @Nullable Integer getCompletionTokens() { return null; }
+        @Override
+        public @Nullable Object getNativeUsage() { return null; }
     }
 
     static class TestUsage implements Usage {
