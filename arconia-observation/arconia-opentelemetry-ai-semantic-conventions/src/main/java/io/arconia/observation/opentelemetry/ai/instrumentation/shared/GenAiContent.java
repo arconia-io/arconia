@@ -174,8 +174,7 @@ public final class GenAiContent {
             toolDefinition.put("type", "function");
             toolDefinition.put("name", toolCallback.getToolDefinition().name());
             toolDefinition.put("description", toolCallback.getToolDefinition().description());
-            toolDefinition.put("parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallback.getToolDefinition().inputSchema(),
-                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of()));
+            toolDefinition.put("parameters", parseInputSchema(toolCallback.getToolDefinition().inputSchema()));
             toolDefinitions.add(toolDefinition);
         }
         return toolDefinitions;
@@ -198,10 +197,33 @@ public final class GenAiContent {
         }
     }
 
-    private static Map<String, Object> parseArguments(String arguments) {
-        return StringUtils.hasText(arguments)
-                ? Objects.requireNonNullElse(jsonHelper.fromJson(arguments, new ParameterizedTypeReference<>() {}), Map.of())
-                : Map.of();
+    /**
+     * Parses the arguments of a tool call into the JSON value they represent, an empty object when there are none.
+     * Arguments that aren't valid JSON, such as a tool call truncated by the model, are recorded as the original
+     * string: the observation describes the model call, it must never fail it.
+     */
+    private static Object parseArguments(String arguments) {
+        if (!StringUtils.hasText(arguments)) {
+            return Map.of();
+        }
+        try {
+            return Objects.requireNonNullElse(jsonHelper.fromJson(arguments, Object.class), Map.of());
+        } catch (RuntimeException ex) {
+            return arguments;
+        }
+    }
+
+    /**
+     * Parses the input schema of a tool into the JSON object it represents, recording a schema that isn't
+     * valid JSON as the original string rather than failing the observation.
+     */
+    private static Object parseInputSchema(String inputSchema) {
+        try {
+            return Objects.requireNonNullElse(jsonHelper.fromJson(inputSchema,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of());
+        } catch (RuntimeException ex) {
+            return inputSchema;
+        }
     }
 
 }

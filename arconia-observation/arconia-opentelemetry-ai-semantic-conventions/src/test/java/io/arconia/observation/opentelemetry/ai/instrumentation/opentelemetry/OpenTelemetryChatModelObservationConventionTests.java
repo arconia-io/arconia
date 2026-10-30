@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.json.JSONException;
@@ -232,6 +234,41 @@ class OpenTelemetryChatModelObservationConventionTests {
                 [{"type": "function", "name": "get_weather", "description": "Get weather",
                   "parameters": {"type": "object", "properties": {"location": {"type": "string"}}}}]""",
                 toolDefs, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldNotFailObservationOnMalformedContent() {
+        properties.setCaptureMessageContent(true);
+        properties.setCaptureToolDefinitions(true);
+
+        ToolDefinition weatherTool = ToolDefinition.builder()
+                .name("get_weather")
+                .description("Get weather")
+                .inputSchema("location: string")
+                .build();
+        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
+                .model("mistral")
+                .toolCallbacks(new TestToolCallback(weatherTool))
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder()
+                        .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"Par")))
+                        .build())))
+                .build());
+
+        ObservationRegistry registry = ObservationRegistry.create();
+        registry.observationConfig().observationHandler(observationContext -> true);
+
+        Observation.createNotStarted(convention, () -> context, registry).observe(() -> {});
+
+        assertThat(findKeyValue(context.getHighCardinalityKeyValues(), GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()))
+                .contains("\"parameters\":\"location: string\"");
+        assertThat(findKeyValue(context.getHighCardinalityKeyValues(), GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()))
+                .contains("\"arguments\":\"{\\\"location\\\":\\\"Par\"");
     }
 
     @Test

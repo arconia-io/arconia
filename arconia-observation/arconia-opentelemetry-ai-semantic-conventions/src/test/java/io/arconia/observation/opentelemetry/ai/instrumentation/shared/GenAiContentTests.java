@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.json.JSONException;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -15,6 +16,9 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.content.Media;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.util.JsonHelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -278,6 +282,96 @@ class GenAiContentTests {
                   {"role": "assistant", "parts": [{"type": "text", "content": "Answer 1"}], "finish_reason": "stop"},
                   {"role": "assistant", "parts": [{"type": "text", "content": "Answer 2"}], "finish_reason": "stop"}
                 ]""", json, JSONCompareMode.STRICT);
+    }
+
+
+    @Nested
+    class MalformedContent {
+
+        @Test
+        void fromMessagesShouldKeepTruncatedArgumentsAsString() throws JSONException {
+            AssistantMessage assistantMessage = AssistantMessage.builder()
+                    .toolCalls(List.of(
+                            new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"Par")
+                    ))
+                    .build();
+
+            var result = GenAiContent.fromMessages(List.of(assistantMessage));
+
+            String json = jsonHelper.toJson(result);
+            JSONAssert.assertEquals("""
+                    [
+                      {
+                        "role": "assistant",
+                        "parts": [
+                          {"type": "tool_call", "id": "call_1", "name": "get_weather", "arguments": "{\\"location\\":\\"Par"}
+                        ]
+                      }
+                    ]""", json, JSONCompareMode.STRICT);
+        }
+
+        @Test
+        void fromGenerationsShouldKeepNonObjectArgumentsAsJson() throws JSONException {
+            Generation generation = new Generation(AssistantMessage.builder()
+                    .toolCalls(List.of(
+                            new AssistantMessage.ToolCall("call_1", "function", "get_weather", "[\"Paris\", \"Rome\"]")
+                    ))
+                    .build());
+
+            var result = GenAiContent.fromGenerations(List.of(generation));
+
+            String json = jsonHelper.toJson(result);
+            JSONAssert.assertEquals("""
+                    [
+                      {
+                        "role": "assistant",
+                        "parts": [
+                          {"type": "tool_call", "id": "call_1", "name": "get_weather", "arguments": ["Paris", "Rome"]}
+                        ],
+                        "finish_reason": "tool_call"
+                      }
+                    ]""", json, JSONCompareMode.STRICT);
+        }
+
+        @Test
+        void toolDefinitionsShouldKeepInvalidSchemaAsString() throws JSONException {
+            ToolDefinition weatherTool = ToolDefinition.builder()
+                    .name("get_weather")
+                    .description("Get weather")
+                    .inputSchema("location: string")
+                    .build();
+            ToolCallingChatOptions options = ToolCallingChatOptions.builder()
+                    .toolCallbacks(new TestToolCallback(weatherTool))
+                    .build();
+
+            var result = GenAiContent.toolDefinitions(options);
+
+            String json = jsonHelper.toJson(result);
+            JSONAssert.assertEquals("""
+                    [{"type": "function", "name": "get_weather", "description": "Get weather", "parameters": "location: string"}]""",
+                    json, JSONCompareMode.STRICT);
+        }
+
+    }
+
+    private static final class TestToolCallback implements ToolCallback {
+
+        private final ToolDefinition toolDefinition;
+
+        private TestToolCallback(ToolDefinition toolDefinition) {
+            this.toolDefinition = toolDefinition;
+        }
+
+        @Override
+        public ToolDefinition getToolDefinition() {
+            return toolDefinition;
+        }
+
+        @Override
+        public String call(String toolInput) {
+            return "";
+        }
+
     }
 
 }

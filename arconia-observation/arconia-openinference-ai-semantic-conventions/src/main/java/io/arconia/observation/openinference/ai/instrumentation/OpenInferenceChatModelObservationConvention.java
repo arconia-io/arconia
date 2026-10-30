@@ -230,9 +230,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             toolDefinition.put("function", Map.of(
                     "name", toolCallbacks.get(i).getToolDefinition().name(),
                     "description", toolCallbacks.get(i).getToolDefinition().description(),
-                    "parameters", Objects.requireNonNullElse(jsonHelper.fromJson(toolCallbacks.get(i).getToolDefinition().inputSchema(),
-                            new ParameterizedTypeReference<Map<String, Object>>() {
-                            }), Map.of())
+                    "parameters", toolParameters(toolCallbacks.get(i).getToolDefinition().inputSchema())
             ));
             String toolPrefix = SemanticConventions.LLM_TOOLS + "." + i + ".";
             keyValues = keyValues.and(toolPrefix + SemanticConventions.TOOL_NAME,
@@ -245,6 +243,19 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         }
 
         return keyValues;
+    }
+
+    /**
+     * Parses the input schema of a tool into the JSON object it represents, recording a schema that isn't
+     * valid JSON as the original string rather than failing the observation.
+     */
+    private Object toolParameters(String inputSchema) {
+        try {
+            return Objects.requireNonNullElse(jsonHelper.fromJson(inputSchema,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of());
+        } catch (RuntimeException ex) {
+            return inputSchema;
+        }
     }
 
     // Response

@@ -10,6 +10,8 @@ import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -332,6 +334,56 @@ class OpenInferenceChatModelObservationConventionTests {
         // The input messages are not affected.
         assertThat(keyValues).contains(
                 KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENT, "Hi"));
+    }
+
+    @Test
+    void shouldKeepInvalidToolSchemaAsString() throws JSONException {
+        ToolDefinition weatherTool = ToolDefinition.builder()
+                .name("get_weather")
+                .description("Get the weather")
+                .inputSchema("location: string")
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), ToolCallingChatOptions.builder()
+                        .model("mistral").toolCallbacks(new TestToolCallback(weatherTool)).build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+
+        JSONAssert.assertEquals("""
+                {"type":"function","function":{"name":"get_weather","description":"Get the weather","parameters":"location: string"}}""",
+                findKeyValue(keyValues, SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_JSON_SCHEMA),
+                JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldNotFailObservationOnMalformedContent() {
+        ToolDefinition weatherTool = ToolDefinition.builder()
+                .name("get_weather")
+                .description("Get the weather")
+                .inputSchema("location: string")
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hi")), ToolCallingChatOptions.builder()
+                        .model("mistral").toolCallbacks(new TestToolCallback(weatherTool)).build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder()
+                        .toolCalls(List.of(new AssistantMessage.ToolCall("call_1", "function", "get_weather", "{\"location\":\"Par")))
+                        .build())))
+                .build());
+
+        ObservationRegistry registry = ObservationRegistry.create();
+        registry.observationConfig().observationHandler(observationContext -> true);
+
+        Observation.createNotStarted(observationConvention, () -> context, registry).observe(() -> {});
+
+        assertThat(context.getHighCardinalityKeyValues()).contains(
+                KeyValue.of(SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_NAME, "get_weather"),
+                KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0."
+                        + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON, "{\"location\":\"Par"));
     }
 
     @Test
