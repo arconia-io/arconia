@@ -5,6 +5,9 @@ plugins {
     id "release-conventions"
 }
 
+// TEMPORARY: CVE fixes in amqp-client. Remove once Spring Boot 4.1.x upgrades (spring-projects/spring-boot#52296)
+ext['rabbit-amqp-client.version'] = '5.37.0'
+
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
