@@ -9,16 +9,14 @@ import java.util.List;
 public class OpenTelemetryHttpOptions {
 
     /**
-     * Whether to capture the URL query string of HTTP server requests as a high-cardinality attribute,
-     * with the values of the sensitive query parameters redacted. HTTP client requests always include it
-     * in the full URL.
+     * Whether to capture the URL query string of the HTTP server observations as url.query, with the values
+     * of the sensitive query parameters redacted. The HTTP client observations always include it in url.full.
      */
     private boolean captureUrlQuery = true;
 
     /**
-     * Query parameters whose values are replaced by 'REDACTED' in the URL attributes of HTTP server and client requests,
-     * matched case-sensitively.
-     * Setting it replaces the default list. An empty list disables the redaction.
+     * Query parameters whose values are replaced by REDACTED in the URL query string of the HTTP server and client
+     * observations, matched case-sensitively. Setting it replaces the default list, and an empty list disables the redaction.
      */
     private List<String> sensitiveQueryParameters = new ArrayList<>(List.of("AWSAccessKeyId", "Signature",
             "X-Amz-Signature", "X-Amz-Credential", "X-Amz-Security-Token", "sig", "X-Goog-Signature"));

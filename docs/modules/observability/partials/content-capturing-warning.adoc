@@ -1,0 +1,4 @@
+[WARNING]
+====
+The captured content, such as prompts, completions, tool arguments and results, and tool definitions, can contain personal or confidential data. Review what your application sends to the models before exporting the telemetry to a shared backend, and turn the capturing off where that data must not leave the application.
+====

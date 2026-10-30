@@ -14,12 +14,13 @@ public class OpenInferenceProperties extends OpenInferenceOptions {
     public static final String CONFIG_PREFIX = "arconia.observations.conventions.openinference.ai";
 
     /**
-     * Whether to enable OpenInference semantic conventions.
+     * Whether to enable the OpenInference AI Semantic Conventions module.
      */
     private boolean enabled = true;
 
     /**
      * Name of the project in the OpenInference backend where to send the telemetry data.
+     * If not set, the service.name resource attribute is used.
      */
     @Nullable
     private String projectName;

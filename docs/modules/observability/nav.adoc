@@ -6,10 +6,11 @@
 ** xref:opentelemetry:traces.adoc[Traces]
 ** xref:opentelemetry:instrumentation.adoc[Instrumentation]
 ** Dev Services
-*** xref:dev-services:phoenix.adoc[Arize Phoenix]
 *** xref:dev-services:lgtm.adoc[Grafana LGTM]
 *** xref:dev-services:langfuse.adoc[Langfuse]
+*** xref:dev-services:openlit.adoc[OpenLIT]
 *** xref:dev-services:otel-collector.adoc[OpenTelemetry Collector]
+*** xref:dev-services:phoenix.adoc[Phoenix]
 ** xref:opentelemetry:migration.adoc[Migration Guides]
 *** xref:opentelemetry:migration/migration-opentelemetry.adoc[OpenTelemetry Spring Boot Starter]
 *** xref:opentelemetry:migration/migration-spring-boot.adoc[Spring Boot OpenTelemetry/OTLP]

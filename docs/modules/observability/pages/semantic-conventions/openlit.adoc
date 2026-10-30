@@ -70,7 +70,7 @@ The application logs will show you the URL where you can access the OpenLIT UI.
 
 The credentials for the pre-configured demo account are: `user@openlit.io` (username) and `openlituser` (password).
 
-When the Dev Service is active, Arconia configures OpenTelemetry automatically to export logs, metrics, and traces to OpenLIT based on the OpenLIT Semantic Conventions. No additional OTLP configuration is needed for local development.
+When the Dev Service is active, Arconia configures OpenTelemetry automatically to export logs, metrics, and traces to OpenLIT. No additional OTLP configuration is needed for local development. The conventions come from the `openlit` flavor set above, which the Dev Service doesn't select for you.
 
 === OpenLIT
 
@@ -92,17 +92,22 @@ OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-openlit-api-key>"
 
 == Features
 
-The module provides OpenLIT-compatible semantic conventions for all Spring AI observation types.
+The module provides OpenLIT-compatible semantic conventions for the following observation types:
 
 * Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
 * Embedding model spans.
 * Image model spans.
 * Tool execution spans with input/output content.
+* Advisor spans, following the OpenTelemetry Semantic Conventions.
 * Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the chat client span and on the spans nested in it.
 * Token usage metrics.
 * Input/output message content, captured as span attributes.
 
-Content capturing is enabled by default, matching the behavior of the official OpenLIT SDKs.
+Content capturing is enabled by default, matching the behavior of the official OpenLIT SDKs. Set the `capture-*` properties below to `false` to turn it off.
+
+include::partial$content-capturing-warning.adoc[]
+
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the xref:semantic-conventions/opentelemetry.adoc#_errors[error conventions] of the Arconia OpenTelemetry Semantic Conventions module are also on the classpath.
 
 == Configuration Properties
 

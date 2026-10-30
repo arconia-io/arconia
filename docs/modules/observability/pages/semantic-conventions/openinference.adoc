@@ -1,7 +1,7 @@
 = OpenInference Semantic Conventions
 :page-aliases: observation:semantic-conventions/openinference.adoc, observability:generative-ai.adoc, observability:ai.adoc
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://arize.com/docs/phoenix[Arize Phoenix] and https://arize.com/products/ax/[Arize AX].
+Spring AI provides built-in instrumentation for models, tools, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://arize.com/docs/phoenix[Arize Phoenix] and https://arize.com/products/ax/[Arize AX].
 
 Arconia provides a Phoenix Dev Service you can use during development and testing. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
 
@@ -100,10 +100,16 @@ You can also set the project name to control how traces are grouped in Phoenix:
 arconia.observations.conventions.openinference.ai.project-name=my-app
 ----
 
-[NOTE]
-====
-Since Phoenix only supports OpenTelemetry traces, configure your application to disable the export of logs and metrics when targeting a Phoenix instance or export them to a different backend.
-====
+The project name is the `openinference.project.name` resource attribute, which Arconia contributes through the xref:opentelemetry:resource.adoc[resource support] of the Arconia OpenTelemetry Spring Boot Starter, using the service name when the property is not set. With the Spring Boot OpenTelemetry support, set the resource attribute directly instead, otherwise Phoenix files the traces under its `default` project:
+
+[source,properties]
+----
+management.opentelemetry.resource-attributes.openinference.project.name=my-app
+----
+
+Since Phoenix only supports traces, you might want to disable the export of logs and metrics, or export them to a different backend:
+
+include::partial$otlp-traces-only.adoc[]
 
 == Features
 
@@ -112,11 +118,16 @@ The module provides semantic conventions for the following observation types:
 * Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences), the requested and response models, and the available tools.
 * Embedding model spans with dimension tracking.
 * Tool execution spans with the tool call ID, the parameters definition, and the arguments and result.
+* Advisor spans, recorded as chains, or as guardrails when the name of the advisor contains `guardrail`.
 * Chat client observations. The conversation ID of the chat memory is recorded as `session.id` on the chat client span and on the spans nested in it, the way the OpenInference instrumentations record a session.
-* Token usage, including cached input tokens.
+* Token usage, including the cached input tokens, which are recorded as numbers on the span when the Micrometer Tracing OpenTelemetry bridge is present.
 * Input/output message content, captured as span attributes, both as structured messages and as the `input.value` and `output.value` JSON documents.
 
-Content capturing is enabled by default, according to the OpenInference Semantic Conventions specification.
+Content capturing is enabled by default, according to the OpenInference Semantic Conventions specification. Use the `hide-*` properties below to leave out what must not be recorded.
+
+include::partial$content-capturing-warning.adoc[]
+
+The properties follow the OpenInference configuration, and Arconia hides more than the reference instrumentations in two cases, on purpose: `input.value` is hidden also by `hide-input-messages` and `hide-input-text`, since it carries the input messages, and the arguments of tool calls are hidden also by `hide-input-text` and `hide-output-text`, since they are text produced by the model.
 
 == Configuration Properties
 
@@ -126,65 +137,106 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 |===
 |Property |Default |Description
 
-|	`arconia.observations.conventions.openinference.ai.enabled`
-|	`true`
-|	Whether to enable the OpenInference AI Semantic Conventions module.
+| `arconia.observations.conventions.openinference.ai.enabled`
+| `true`
+| Whether to enable the OpenInference AI Semantic Conventions module.
 
-|	`arconia.observations.conventions.openinference.ai.project-name`
-|	-
-|	Name of the project in the OpenInference backend where to send the telemetry data. If not defined, the application name will be used as the project name.
+| `arconia.observations.conventions.openinference.ai.project-name`
+| -
+| Name of the project in the OpenInference backend where to send the telemetry data. If not set, the `service.name` resource attribute is used.
 
-|	`arconia.observations.conventions.openinference.ai.base64-image-max-length`
-|	`32 000`
-|	Maximum length of a base64-encoded image. Longer images are redacted.
+| `arconia.observations.conventions.openinference.ai.base64-image-max-length`
+| `32000`
+| Maximum length of a base64-encoded image. Longer images are redacted.
 
-|	`arconia.observations.conventions.openinference.ai.hide-embeddings-text`
-|	`false`
-|	Whether to hide all embedding text.
+| `arconia.observations.conventions.openinference.ai.hide-embeddings-text`
+| `false`
+| Whether to hide all embedding text.
 
-|	`arconia.observations.conventions.openinference.ai.hide-embeddings-vectors`
-|	`false`
-|	Whether to hide all embedding vectors.
+| `arconia.observations.conventions.openinference.ai.hide-embeddings-vectors`
+| `false`
+| Whether to hide the dimension summary recorded in place of embedding vectors, which are never recorded.
 
-|	`arconia.observations.conventions.openinference.ai.hide-llm-invocation-parameters`
-|	`false`
-|	Whether to hide the LLM invocation parameters.
+| `arconia.observations.conventions.openinference.ai.hide-llm-invocation-parameters`
+| `false`
+| Whether to hide the LLM invocation parameters.
 
-|	`arconia.observations.conventions.openinference.ai.hide-llm-tools`
-|	`false`
-|	Whether to hide the definitions of the tools available to the model. They are also hidden when hiding all inputs.
+| `arconia.observations.conventions.openinference.ai.hide-llm-tools`
+| `false`
+| Whether to hide the definitions of the tools available to the model. They are also hidden when hiding all inputs.
 
-|	`arconia.observations.conventions.openinference.ai.hide-inputs`
-|	`false`
-|	Whether to hide all inputs.
+| `arconia.observations.conventions.openinference.ai.hide-inputs`
+| `false`
+| Whether to hide all inputs.
 
-|	`arconia.observations.conventions.openinference.ai.hide-input-images`
-|	`false`
-|	Whether to hide all images from the input messages.
+| `arconia.observations.conventions.openinference.ai.hide-input-images`
+| `false`
+| Whether to hide all images from the input messages.
 
-|	`arconia.observations.conventions.openinference.ai.hide-input-messages`
-|	`false`
-|	Whether to hide all input messages.
+| `arconia.observations.conventions.openinference.ai.hide-input-messages`
+| `false`
+| Whether to hide all input messages.
 
-|	`arconia.observations.conventions.openinference.ai.hide-input-text`
-|	`false`
-|	Whether to hide all texts from the input messages.
+| `arconia.observations.conventions.openinference.ai.hide-input-text`
+| `false`
+| Whether to hide all texts from the input messages.
 
-|	`arconia.observations.conventions.openinference.ai.hide-outputs`
-|	`false`
-|	Whether to hide all outputs.
+| `arconia.observations.conventions.openinference.ai.hide-outputs`
+| `false`
+| Whether to hide all outputs.
 
-|	`arconia.observations.conventions.openinference.ai.hide-output-text`
-|	`false`
-|	Whether to hide all texts from the output messages.
+| `arconia.observations.conventions.openinference.ai.hide-output-text`
+| `false`
+| Whether to hide all texts from the output messages.
 
-|	`arconia.observations.conventions.openinference.ai.hide-output-messages`
-|	`false`
-|	Whether to hide all output messages.
+| `arconia.observations.conventions.openinference.ai.hide-output-messages`
+| `false`
+| Whether to hide all output messages.
 |===
 
 == Environment Variables
 
 Arconia supports the https://arize-ai.github.io/openinference/spec/configuration.html[OpenInference Environment Variable Specification] for configuring the OpenInference semantic conventions. If both the OpenInference Environment Variables and the Arconia configuration properties are set, the OpenInference Environment Variables will take precedence.
+
+[cols="2,2"]
+|===
+|Environment Variable |Configuration Property
+
+|`OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH`
+|`arconia.observations.conventions.openinference.ai.base64-image-max-length`
+
+|`OPENINFERENCE_HIDE_EMBEDDINGS_TEXT`
+|`arconia.observations.conventions.openinference.ai.hide-embeddings-text`
+
+|`OPENINFERENCE_HIDE_EMBEDDINGS_VECTORS`
+|`arconia.observations.conventions.openinference.ai.hide-embeddings-vectors`
+
+|`OPENINFERENCE_HIDE_LLM_INVOCATION_PARAMETERS`
+|`arconia.observations.conventions.openinference.ai.hide-llm-invocation-parameters`
+
+|`OPENINFERENCE_HIDE_LLM_TOOLS`
+|`arconia.observations.conventions.openinference.ai.hide-llm-tools`
+
+|`OPENINFERENCE_HIDE_INPUTS`
+|`arconia.observations.conventions.openinference.ai.hide-inputs`
+
+|`OPENINFERENCE_HIDE_INPUT_IMAGES`
+|`arconia.observations.conventions.openinference.ai.hide-input-images`
+
+|`OPENINFERENCE_HIDE_INPUT_MESSAGES`
+|`arconia.observations.conventions.openinference.ai.hide-input-messages`
+
+|`OPENINFERENCE_HIDE_INPUT_TEXT`
+|`arconia.observations.conventions.openinference.ai.hide-input-text`
+
+|`OPENINFERENCE_HIDE_OUTPUTS`
+|`arconia.observations.conventions.openinference.ai.hide-outputs`
+
+|`OPENINFERENCE_HIDE_OUTPUT_MESSAGES`
+|`arconia.observations.conventions.openinference.ai.hide-output-messages`
+
+|`OPENINFERENCE_HIDE_OUTPUT_TEXT`
+|`arconia.observations.conventions.openinference.ai.hide-output-text`
+|===
 
 The `OPENINFERENCE_HIDE_PROMPTS` and `OPENINFERENCE_HIDE_CHOICES` variables don't apply: they hide the prompts and choices of the completions API, which Spring AI doesn't use. Its models call the chat completions API, whose input and output messages the other variables hide. The `OPENINFERENCE_HIDE_RETRIEVAL_DOCUMENTS` and `OPENINFERENCE_BLOB_UPLOADER` variables have no equivalent either, since Arconia doesn't instrument retrieval nor upload blobs.

@@ -15,7 +15,7 @@ The https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] are
 
 == Getting Started
 
-Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project.
 
 include::partial$opentelemetry-ai-dependency.adoc[]
 
@@ -50,23 +50,24 @@ OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-traceloop-api-key>"
 
 Since Traceloop supports only traces, you might want to disable the export of logs and metrics:
 
-[source,properties]
-----
-arconia.otel.logs.exporter.type=none
-arconia.otel.metrics.exporter.type=none
-----
+include::partial$otlp-traces-only.adoc[]
 
 == Features
 
-The module provides OpenLLMetry-compatible semantic conventions for all Spring AI observation types.
+The module provides OpenLLMetry-compatible semantic conventions for the following observation types:
 
 * Chat model, embedding model, and image model spans following the OpenTelemetry Semantic Conventions for Generative AI, as the current OpenLLMetry instrumentations do.
 * Tool execution spans with input/output content.
+* Advisor spans, recorded as Traceloop tasks.
 * Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` and as the `session_id` association property (`traceloop.association.properties.session_id`), on the chat client span and on the spans nested in it.
 * Token usage for inference operations, including the total and the cached input tokens.
 * Input/output message content, captured as span attributes.
 
-Content capturing is enabled by default, matching the behavior of the official OpenLLMetry SDKs.
+Content capturing is enabled by default, matching the behavior of the official OpenLLMetry SDKs. Set the `capture-*` properties below to `false` to turn it off.
+
+include::partial$content-capturing-warning.adoc[]
+
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the xref:semantic-conventions/opentelemetry.adoc#_errors[error conventions] of the Arconia OpenTelemetry Semantic Conventions module are also on the classpath.
 
 == Configuration Properties
 

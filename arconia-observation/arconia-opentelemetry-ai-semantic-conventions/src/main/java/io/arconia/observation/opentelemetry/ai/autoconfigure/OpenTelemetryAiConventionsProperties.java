@@ -13,40 +13,37 @@ public class OpenTelemetryAiConventionsProperties {
     public static final String CONFIG_PREFIX = "arconia.observations.conventions.opentelemetry.ai";
 
     /**
-     * Whether to enable GenAI semantic conventions.
+     * Whether to enable the OpenTelemetry AI Semantic Conventions module.
      */
     private boolean enabled = true;
 
     /**
-     * The convention flavor to use for GenAI observations.
+     * The convention flavor to apply. Accepted values: opentelemetry, openlit, openllmetry, langsmith, langfuse.
      */
     private GenAiConventionFlavor flavor = GenAiConventionFlavor.OPENTELEMETRY;
 
     /**
-     * Whether to capture the input and output messages of an inference observation.
-     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
-     * the other flavors do.
+     * Whether to capture the input and output messages of model calls. The default depends on the flavor:
+     * the opentelemetry flavor doesn't capture them, the other flavors do.
      */
     private boolean captureMessageContent = false;
 
     /**
-     * Whether to capture the tool definitions of an inference observation.
-     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
-     * the other flavors do.
+     * Whether to capture the definitions of the tools available to the model in model calls. The default depends
+     * on the flavor: the opentelemetry flavor doesn't capture them, the other flavors do.
      */
     private boolean captureToolDefinitions = false;
 
     /**
-     * Whether to capture the tool content (arguments and result) of a tool execution observation.
-     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
-     * the other flavors do.
+     * Whether to capture the arguments and result of tool executions. The default depends on the flavor:
+     * the opentelemetry flavor doesn't capture them, the other flavors do.
      */
     private boolean captureToolCallContent = false;
 
     /**
-     * Where to record the captured content of an inference observation (messages and tool definitions).
-     * Only the {@code opentelemetry} flavor supports it. The other flavors record the content
-     * where their platform expects it.
+     * Where to record the captured messages and tool definitions of model calls. Only the opentelemetry flavor
+     * supports it, the other flavors record the content where their platform expects it.
+     * Accepted values: span-attributes, span-events, log-events.
      */
     private InferenceContentDestination inferenceContentDestination = InferenceContentDestination.SPAN_ATTRIBUTES;
 

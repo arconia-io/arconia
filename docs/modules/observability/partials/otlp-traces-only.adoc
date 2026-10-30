@@ -1,0 +1,5 @@
+[source,properties]
+----
+arconia.otel.logs.exporter.type=none
+arconia.otel.metrics.exporter.type=none
+----

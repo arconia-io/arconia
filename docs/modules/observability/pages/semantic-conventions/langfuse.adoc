@@ -86,11 +86,7 @@ OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic <base64-encoded-api-keys>,x-lang
 
 Since Langfuse supports only traces via OTLP with the HTTP/Protobuf protocol, you might want to disable the export of logs and metrics:
 
-[source,properties]
-----
-arconia.otel.logs.exporter.type=none
-arconia.otel.metrics.exporter.type=none
-----
+include::partial$otlp-traces-only.adoc[]
 
 == Features
 
@@ -104,7 +100,11 @@ The `langfuse` flavor records the same attributes as the xref:semantic-conventio
 
 The input and output messages are always recorded as span attributes, since Langfuse accepts traces only.
 
-Content capturing is enabled by default, matching the behavior of the official Langfuse SDKs.
+Content capturing is enabled by default, matching the behavior of the official Langfuse SDKs. Set the `capture-*` properties below to `false` to turn it off.
+
+include::partial$content-capturing-warning.adoc[]
+
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the xref:semantic-conventions/opentelemetry.adoc#_errors[error conventions] of the Arconia OpenTelemetry Semantic Conventions module are also on the classpath.
 
 == Configuration Properties
 

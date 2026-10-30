@@ -15,7 +15,7 @@ The https://docs.langchain.com/langsmith/trace-with-opentelemetry[LangSmith Sema
 
 == Getting Started
 
-Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project. The module auto-activates when present on the classpath.
+Add the Arconia OpenTelemetry AI Semantic Conventions dependency to your project.
 
 include::partial$opentelemetry-ai-dependency.adoc[]
 
@@ -29,6 +29,8 @@ arconia.observations.conventions.opentelemetry.ai.flavor=langsmith
 ----
 
 include::partial$opentelemetry-setup.adoc[]
+
+=== LangSmith
 
 Configure the OTLP exporter to send traces to LangSmith, making sure you defined your LangSmith API Key in a `LANGSMITH_API_KEY` environment variable:
 
@@ -51,11 +53,7 @@ OTEL_EXPORTER_OTLP_HEADERS="x-api-key=<your-langsmith-api-key>,Langsmith-Project
 
 Since LangSmith supports only traces, you might want to disable the export of logs and metrics:
 
-[source,properties]
-----
-arconia.otel.logs.exporter.type=none
-arconia.otel.metrics.exporter.type=none
-----
+include::partial$otlp-traces-only.adoc[]
 
 == Features
 
@@ -70,7 +68,11 @@ The module provides semantic conventions for the following observation types:
 * Token usage for inference operations, including cached input tokens.
 * Input/output message content, captured as the `gen_ai.prompt` and `gen_ai.completion` span attributes, the way the LangSmith SDKs record the inputs and outputs of a run.
 
-Content capturing is enabled by default, matching the behavior of the official LangSmith SDKs.
+Content capturing is enabled by default, matching the behavior of the official LangSmith SDKs. Set the `capture-*` properties below to `false` to turn it off.
+
+include::partial$content-capturing-warning.adoc[]
+
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the xref:semantic-conventions/opentelemetry.adoc#_errors[error conventions] of the Arconia OpenTelemetry Semantic Conventions module are also on the classpath.
 
 == Configuration Properties
 

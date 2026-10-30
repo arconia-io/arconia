@@ -98,9 +98,9 @@ The Micrometer JVM instrumentation currently deviates from the OpenTelemetry Sem
 |===
 |Property |Default |Description
 
-|	`arconia.observations.conventions.opentelemetry.jvm.enabled`
-|	`true`
-|	Whether to enable JVM semantic conventions.
+| `arconia.observations.conventions.opentelemetry.jvm.enabled`
+| `true`
+| Whether to enable JVM semantic conventions.
 |===
 
 == HTTP
@@ -108,6 +108,8 @@ The Micrometer JVM instrumentation currently deviates from the OpenTelemetry Sem
 Provides semantic conventions for HTTP server and client request observations, following the stable https://opentelemetry.io/docs/specs/semconv/http/[OpenTelemetry Semantic Conventions for HTTP] specification.
 
 Spans of requests whose response status code signals an error get the `Error` status even when no exception was thrown: `5xx` for HTTP servers, `4xx` and `5xx` for HTTP clients. It requires the Micrometer Tracing OpenTelemetry bridge, which both the Arconia OpenTelemetry Spring Boot Starter and `spring-boot-starter-opentelemetry` include.
+
+The conventions cover the servlet web stack and the blocking HTTP clients. The reactive web stack and `WebClient` keep the Spring Framework conventions, since Arconia doesn't support the reactive stack. This includes the streaming calls that Spring AI makes with `WebClient`.
 
 === HTTP Server
 
@@ -125,17 +127,17 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 |===
 |Property |Default |Description
 
-|	`arconia.observations.conventions.opentelemetry.http.enabled`
-|	`true`
-|	Whether to enable HTTP semantic conventions for HTTP servers and clients.
+| `arconia.observations.conventions.opentelemetry.http.enabled`
+| `true`
+| Whether to enable HTTP semantic conventions for HTTP servers and clients.
 
-|	`arconia.observations.conventions.opentelemetry.http.capture-url-query`
-|	`true`
-|	Whether to capture the URL query string in the HTTP server observations as `url.query`, with the values of the sensitive query parameters redacted. The HTTP client observations always include it in `url.full`.
+| `arconia.observations.conventions.opentelemetry.http.capture-url-query`
+| `true`
+| Whether to capture the URL query string of the HTTP server observations as `url.query`, with the values of the sensitive query parameters redacted. The HTTP client observations always include it in `url.full`.
 
-|	`arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters`
-|	`AWSAccessKeyId`, `Signature`, `X-Amz-Signature`, `X-Amz-Credential`, `X-Amz-Security-Token`, `sig`, `X-Goog-Signature`
-|	Query parameters whose values are replaced by `REDACTED` in the URL query string of the HTTP server and client observations, matched case-sensitively. Setting it replaces the default list, and an empty list disables the redaction.
+| `arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters`
+| `AWSAccessKeyId`, `Signature`, `X-Amz-Signature`, `X-Amz-Credential`, `X-Amz-Security-Token`, `sig`, `X-Goog-Signature`
+| Query parameters whose values are replaced by `REDACTED` in the URL query string of the HTTP server and client observations, matched case-sensitively. Setting it replaces the default list, and an empty list disables the redaction.
 |===
 
 == Errors
@@ -148,9 +150,9 @@ Records the stable `error.type` attribute on every observation ending in an erro
 |===
 |Property |Default |Description
 
-|	`arconia.observations.conventions.opentelemetry.error.enabled`
-|	`true`
-|	Whether to enable error semantic conventions, recording the `error.type` attribute on observations ending in an error.
+| `arconia.observations.conventions.opentelemetry.error.enabled`
+| `true`
+| Whether to enable error semantic conventions, recording the `error.type` attribute on observations ending in an error.
 |===
 
 == Database
@@ -234,12 +236,13 @@ The module supports multiple convention _flavors_. The default `opentelemetry` f
 * Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
 * Embedding model spans with dimension tracking.
 * Tool execution spans.
+* Advisor spans.
 * Chat client spans, reported as agent invocations (`invoke_agent`). The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the agent invocation span and on the model, tool, and advisor spans nested in it, since the conventions require it on every span where it's available.
 * Operation duration metrics (`gen_ai.client.operation.duration`) for chat, embedding, and image model calls.
 * Token usage metrics (`gen_ai.client.token.usage`).
 * Input/output message content, captured as span attributes, span events, or log events.
 
-Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the <<_errors,error conventions>> are active.
+Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the <<_errors,error conventions>> are active. They belong to the Arconia OpenTelemetry Semantic Conventions module, which the Generative AI module doesn't depend on: add both dependencies to get them.
 
 === Known Deviations
 

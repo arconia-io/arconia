@@ -28,7 +28,7 @@ public class OpenInferenceOptions {
     private boolean hideLlmInvocationParameters = false;
 
     /**
-     * Whether to hide the definitions of the tools available to the model.
+     * Whether to hide the definitions of the tools available to the model. They are also hidden when hiding all inputs.
      */
     private boolean hideLlmTools = false;
 
