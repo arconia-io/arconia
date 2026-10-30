@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PhoenixContainerIT {
 
     private static final DockerImageName IMAGE = DockerImageName
-            .parse("arizephoenix/phoenix:version-20.26-nonroot");
+            .parse("arizephoenix/phoenix:version-20.27-nonroot");
 
     @Test
     void containerStartsAndStopsSuccessfully() throws Exception {
