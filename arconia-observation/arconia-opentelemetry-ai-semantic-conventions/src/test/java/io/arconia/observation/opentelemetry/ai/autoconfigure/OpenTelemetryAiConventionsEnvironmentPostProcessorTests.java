@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
+import java.util.Locale;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.Ordered;
@@ -101,6 +103,32 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
         assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
         assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("true");
         assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("true");
+    }
+
+    @Test
+    void flavorMatchingShouldNotDependOnDefaultLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            var environment = new MockEnvironment()
+                    .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "OPENLIT");
+            processor.postProcessEnvironment(environment, new SpringApplication());
+
+            assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("true");
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    @Test
+    void unknownFlavorShouldHaveConservativeDefaults() {
+        var environment = new MockEnvironment()
+                .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "unknown");
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
+        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("false");
     }
 
     @Test

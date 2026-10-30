@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 
 import java.util.List;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
@@ -15,8 +16,15 @@ import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvm
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMeterConventions;
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadMeterConventions;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.simple.SimpleMetricsExportAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.jvm.JvmMetricsAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.system.SystemMetricsAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JvmConventionsAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(JvmConventionsAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(JvmConventionsAutoConfiguration.class))
+            .withBean(MeterRegistry.class, SimpleMeterRegistry::new);
 
     // Activation / deactivation
 
@@ -57,6 +66,39 @@ class JvmConventionsAutoConfigurationTests {
                     assertThat(context).doesNotHaveBean(OpenTelemetryJvmThreadMeterConventions.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassLoadingMeterConventions.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryJvmCpuMeterConventions.class);
+                });
+    }
+
+    @Test
+    void doesNotActivateWithoutMeterRegistry() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(JvmConventionsAutoConfiguration.class))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMetrics.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMeterFilter.class);
+                });
+    }
+
+    // Spring Boot JVM metrics
+
+    @Test
+    void replacesSpringBootJvmMetricsWithOpenTelemetryConventions() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(MetricsAutoConfiguration.class,
+                        SimpleMetricsExportAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class,
+                        JvmConventionsAutoConfiguration.class, JvmMetricsAutoConfiguration.class,
+                        SystemMetricsAutoConfiguration.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(JvmMemoryMetrics.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMetrics.class);
+                    MeterRegistry meterRegistry = context.getBean(MeterRegistry.class);
+                    assertThat(meterRegistry.find("jvm.memory.used_after_last_gc").gauge()).isNotNull();
+                    assertThat(meterRegistry.find("jvm.thread.count").gauge()).isNotNull();
+                    assertThat(meterRegistry.find("jvm.class.loaded").functionCounter()).isNotNull();
+                    assertThat(meterRegistry.find("jvm.cpu.time").functionCounter()).isNotNull();
+                    assertThat(meterRegistry.find("jvm.memory.usage.after.gc").gauge()).isNull();
+                    assertThat(meterRegistry.find("jvm.threads.live").gauge()).isNull();
                 });
     }
 

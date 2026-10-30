@@ -26,6 +26,7 @@ dependencies {
     testImplementation "jakarta.servlet:jakarta.servlet-api"
     testImplementation "io.micrometer:micrometer-tracing-bridge-otel"
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
+    testImplementation "org.springframework.boot:spring-boot-micrometer-metrics"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testRuntimeOnly "org.springframework:spring-webmvc"
 }

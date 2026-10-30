@@ -24,22 +24,22 @@ public class OpenTelemetryAiConventionsProperties {
 
     /**
      * Whether to capture the input and output messages of an inference observation.
-     * The actual default depends on the configured flavor and is set by
-     * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
+     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
+     * the other flavors do.
      */
     private boolean captureMessageContent = false;
 
     /**
      * Whether to capture the tool definitions of an inference observation.
-     * The actual default depends on the configured flavor and is set by
-     * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
+     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
+     * the other flavors do.
      */
     private boolean captureToolDefinitions = false;
 
     /**
      * Whether to capture the tool content (arguments and result) of a tool execution observation.
-     * The actual default depends on the configured flavor and is set by
-     * {@link OpenTelemetryAiConventionsEnvironmentPostProcessor}.
+     * The actual default depends on the configured flavor: the opentelemetry flavor doesn't capture it,
+     * the other flavors do.
      */
     private boolean captureToolCallContent = false;
 

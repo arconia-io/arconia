@@ -41,6 +41,15 @@ public enum GenAiConventionFlavor {
      *
      * @see <a href="https://langfuse.com/integrations/native/opentelemetry">Langfuse OpenTelemetry</a>
      */
-    LANGFUSE
+    LANGFUSE;
+
+    /**
+     * Whether the flavor captures the content of model calls and tool executions unless configured otherwise.
+     * The OpenTelemetry flavor doesn't, as the conventions require, while the other flavors follow the
+     * instrumentations of their platform, which capture it.
+     */
+    public boolean capturesContentByDefault() {
+        return this != OPENTELEMETRY;
+    }
 
 }

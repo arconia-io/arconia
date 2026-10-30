@@ -1,5 +1,6 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -8,14 +9,16 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 
 /**
- * Injects flavor-specific default property values at the lowest priority so that
- * any user-configured value always takes precedence.
+ * Injects the default values of the content capturing properties for the configured flavor at the lowest
+ * priority, so that any user-configured value takes precedence.
  * <p>
- * OpenTelemetry defaults to the conservative OTel baseline, capturing no content.
- * OpenLLMetry, OpenLIT, and LangSmith capture all content by default, each recording it
- * where its platform expects it.
+ * Whether a flavor captures content by default is defined by {@link GenAiConventionFlavor}: the OpenTelemetry
+ * flavor doesn't, the other flavors do, each recording it where its platform expects it.
  */
 class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
@@ -37,22 +40,31 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessor implements EnvironmentP
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Assert.notNull(environment, "environment cannot be null");
 
-        String flavor = environment.getProperty(FLAVOUR_KEY, "opentelemetry").toLowerCase();
-
-        Map<String, Object> defaults = switch (flavor) {
-            case "openllmetry", "openlit", "langsmith", "langfuse" -> Map.of(
-                    CAPTURE_MESSAGE_CONTENT_KEY, "true",
-                    CAPTURE_TOOL_DEFINITIONS_KEY, "true",
-                    CAPTURE_TOOL_CALL_CONTENT_KEY, "true"
-            );
-            default -> Map.of(
-                    CAPTURE_MESSAGE_CONTENT_KEY, "false",
-                    CAPTURE_TOOL_DEFINITIONS_KEY, "false",
-                    CAPTURE_TOOL_CALL_CONTENT_KEY, "false"
-            );
-        };
+        String capturesContent = String.valueOf(flavor(environment).capturesContentByDefault());
+        Map<String, Object> defaults = Map.of(
+                CAPTURE_MESSAGE_CONTENT_KEY, capturesContent,
+                CAPTURE_TOOL_DEFINITIONS_KEY, capturesContent,
+                CAPTURE_TOOL_CALL_CONTENT_KEY, capturesContent
+        );
 
         environment.getPropertySources().addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, defaults));
+    }
+
+    /**
+     * Resolves the configured flavor the way the flavor configurations match it, ignoring case.
+     * An unknown value falls back to the OpenTelemetry flavor and its conservative defaults,
+     * leaving the binding of the property to report the invalid value.
+     */
+    private static GenAiConventionFlavor flavor(ConfigurableEnvironment environment) {
+        String flavor = environment.getProperty(FLAVOUR_KEY);
+        if (!StringUtils.hasText(flavor)) {
+            return GenAiConventionFlavor.OPENTELEMETRY;
+        }
+        try {
+            return GenAiConventionFlavor.valueOf(flavor.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return GenAiConventionFlavor.OPENTELEMETRY;
+        }
     }
 
     @Override

@@ -10,7 +10,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
+import org.springframework.ai.chat.observation.ChatModelMeterObservationHandler;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
+import org.springframework.ai.embedding.observation.EmbeddingModelMeterObservationHandler;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
 import org.springframework.ai.image.observation.ImageModelObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
@@ -58,7 +60,7 @@ import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link OpenTelemetryAiConventionsAutoConfiguration}.
- * Covers all four flavors: opentelemetry (default), openllmetry, langsmith, and openlit.
+ * Covers all the flavors: opentelemetry (default), openllmetry, langsmith, openlit, and langfuse.
  */
 class OpenTelemetryAiConventionsAutoConfigurationTests {
 
@@ -676,6 +678,40 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=" + flavor)
                 .run(context -> assertThat(context.getBean(GenAiConversationIdObservationHandler.class).getAttributeKeys())
                         .as(flavor).containsExactlyElementsOf(keys)));
+    }
+
+    // -------------------------------------------------------------------------
+    // Shared defaults
+    // -------------------------------------------------------------------------
+
+    @Test
+    void eachFlavorRegistersOneConventionPerObservationType() {
+        for (String flavor : List.of("opentelemetry", "openllmetry", "langsmith", "openlit", "langfuse")) {
+            contextRunner
+                    .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=" + flavor)
+                    .run(context -> {
+                        assertThat(context).as(flavor).hasSingleBean(ChatModelObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(EmbeddingModelObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(ImageModelObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(ToolCallingObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(ChatClientObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(AdvisorObservationConvention.class);
+                        assertThat(context).as(flavor).hasSingleBean(ChatModelMeterObservationHandler.class);
+                        assertThat(context).as(flavor).hasSingleBean(EmbeddingModelMeterObservationHandler.class);
+                    });
+        }
+    }
+
+    @Test
+    void doesNotRegisterMeterHandlersWithoutMeterRegistry() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(OpenTelemetryAiConventionsAutoConfiguration.class))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(OpenTelemetryChatModelObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(ChatModelMeterObservationHandler.class);
+                    assertThat(context).doesNotHaveBean(EmbeddingModelMeterObservationHandler.class);
+                });
     }
 
 }

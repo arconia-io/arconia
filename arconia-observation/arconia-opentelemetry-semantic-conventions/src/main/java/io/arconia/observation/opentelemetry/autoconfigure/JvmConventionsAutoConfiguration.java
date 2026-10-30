@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 
 import java.util.List;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
@@ -14,6 +15,7 @@ import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvm
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadMeterConventions;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +28,14 @@ import io.arconia.observation.opentelemetry.instrumentation.jvm.OpenTelemetryJvm
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics/">OpenTelemetry Semantic Conventions for JVM metrics</a>
  */
-@AutoConfiguration(beforeName = {
+@AutoConfiguration(afterName = {
+        "org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration",
+        "org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration"
+}, beforeName = {
         "org.springframework.boot.micrometer.metrics.autoconfigure.jvm.JvmMetricsAutoConfiguration",
         "org.springframework.boot.micrometer.metrics.autoconfigure.system.SystemMetricsAutoConfiguration"
 })
+@ConditionalOnBean(MeterRegistry.class)
 @ConditionalOnBooleanProperty(prefix = OpenTelemetryConventionsProperties.CONFIG_PREFIX, value = "jvm.enabled", matchIfMissing = true)
 public final class JvmConventionsAutoConfiguration {
 
