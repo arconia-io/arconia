@@ -18,6 +18,19 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    constraints {
+        // TEMPORARY: CVE fix in guava, which pulsar-client pins to a vulnerable version and Spring Boot does not manage.
+        api("com.google.guava:guava:33.7.2-jre") {
+            because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
+        }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
 }
 
 publishing {

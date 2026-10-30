@@ -22,6 +22,13 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     implementation "net.ltgt.errorprone:net.ltgt.errorprone.gradle.plugin:${errorPronePluginVersion}"
     implementation "net.ltgt.nullaway:net.ltgt.nullaway.gradle.plugin:${nullAwayPluginVersion}"
+
+    constraints {
+        // TEMPORARY: CVE fix in guava, pulled in by the CycloneDX plugin via maven-core. Remove once the plugin upgrades it.
+        implementation("com.google.guava:guava:33.7.2-jre") {
+            because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
+        }
+    }
 }
 
 gradlePlugin {
