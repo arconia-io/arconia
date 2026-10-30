@@ -23,10 +23,17 @@ dependencies {
     implementation "net.ltgt.errorprone:net.ltgt.errorprone.gradle.plugin:${errorPronePluginVersion}"
     implementation "net.ltgt.nullaway:net.ltgt.nullaway.gradle.plugin:${nullAwayPluginVersion}"
 
+    // TEMPORARY: CVE fixes in Jackson 2, which the CycloneDX plugin pins to 2.22.2. Remove once the plugin upgrades it.
+    implementation platform("com.fasterxml.jackson:jackson-bom:2.22.4")
+
     constraints {
         // TEMPORARY: CVE fix in guava, pulled in by the CycloneDX plugin via maven-core. Remove once the plugin upgrades it.
         implementation("com.google.guava:guava:33.7.2-jre") {
             because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
+        }
+        // TEMPORARY: CVE fix in commons-lang3, pulled in by the Spring Boot plugin via commons-compress. Aligned with the version Spring Boot manages.
+        implementation("org.apache.commons:commons-lang3:3.20.0") {
+            because "GHSA-j288-q9x7-2f5v (fixed in 3.18.0)"
         }
     }
 }
