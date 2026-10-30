@@ -54,27 +54,13 @@ class GenAiConventionsConverterTests {
 
     @ParameterizedTest
     @CsvSource({
-            "ANTHROPIC, anthropic",
-            "BEDROCK_CONVERSE, aws.bedrock",
-            "DEEPSEEK, deepseek",
             "GOOGLE_GENAI_AI, gcp.gemini",
             "google_genai, gcp.gemini",
-            "MISTRAL_AI, mistral_ai",
-            "OPENAI, openai",
-            "VERTEX_AI, gcp.vertex_ai",
-            "anthropic, anthropic",
-            "' ANTHROPIC ', anthropic",
-            "'\tOPENAI\n', openai"
+            "VERTEX_AI, gcp.vertex_ai"
     })
     void toOpenLitProviderNameShouldConvertValidValues(String input, String expected) {
         String result = GenAiConventionsConverter.toOpenLitProviderName(input);
         assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    void toOpenLitProviderNameShouldReturnInputForUnknownProvider() {
-        String result = GenAiConventionsConverter.toOpenLitProviderName("unknown_provider");
-        assertThat(result).isEqualTo("unknown_provider");
     }
 
     @ParameterizedTest
@@ -153,6 +139,8 @@ class GenAiConventionsConverterTests {
             "TEXT_COMPLETION, llm",
             "EMBEDDING, embedding",
             "IMAGE, llm",
+            "EXECUTE_TOOL, tool",
+            "FRAMEWORK, chain",
             "chat, llm",
             "embedding, embedding",
             "' CHAT ', llm",

@@ -25,11 +25,7 @@ public final class LangSmithAttributes {
 
     // GenAI attribute keys (used by LangSmith, differ from OTel naming)
 
-    /**
-     * The GenAI system / provider name.
-     * <p>
-     * Note: LangSmith uses {@code gen_ai.system} (older naming), not {@code gen_ai.provider.name}.
-     */
+    /** The GenAI system / provider name. */
     public static final AttributeKey<String> GEN_AI_SYSTEM = stringKey("gen_ai.system");
 
     /** Total number of tokens used (input + output). */

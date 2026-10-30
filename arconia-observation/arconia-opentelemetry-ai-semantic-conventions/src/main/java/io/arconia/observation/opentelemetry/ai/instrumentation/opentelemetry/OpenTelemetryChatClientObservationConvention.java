@@ -37,10 +37,6 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
         this.properties = properties;
     }
 
-    protected OpenTelemetryAiConventionsProperties getProperties() {
-        return properties;
-    }
-
     @Override
     public String getContextualName(ChatClientObservationContext context) {
         return GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.INVOKE_AGENT;

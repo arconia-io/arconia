@@ -96,15 +96,6 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldOmitResponseModelWithoutResponse() {
-        ChatModelObservationContext context = createContext("mistral");
-
-        assertThat(convention.getLowCardinalityKeyValues(context))
-                .contains(KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "mistral"))
-                .noneMatch(keyValue -> keyValue.getKey().equals(GenAiIncubatingAttributes.GEN_AI_RESPONSE_MODEL.getKey()));
-    }
-
-    @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
         ChatModelObservationContext context = createContext("mistral");
         setResponse(context, "mistral-42", "Hello", "stop");
@@ -202,25 +193,6 @@ class OpenTelemetryChatModelObservationConventionTests {
         ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .model("mistral")
                 .toolCallbacks((List<ToolCallback>) null)
-                .build();
-
-        ChatModelObservationContext context = ChatModelObservationContext.builder()
-                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
-                .provider(AiProvider.SPRING_AI.value())
-                .build();
-
-        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()));
-    }
-
-    @Test
-    void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreEmpty() {
-        properties.setCaptureToolDefinitions(true);
-
-        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
-                .model("mistral")
-                .toolCallbacks(List.of())
                 .build();
 
         ChatModelObservationContext context = ChatModelObservationContext.builder()

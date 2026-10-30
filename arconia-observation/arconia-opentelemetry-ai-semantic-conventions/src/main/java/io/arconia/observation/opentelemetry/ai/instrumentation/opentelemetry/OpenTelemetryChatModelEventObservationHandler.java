@@ -19,7 +19,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttri
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.MicrometerBridge;
 
-public class OpenTelemetryChatModelEventObservationHandler implements ObservationHandler<ChatModelObservationContext> {
+public final class OpenTelemetryChatModelEventObservationHandler implements ObservationHandler<ChatModelObservationContext> {
 
     private final JsonHelper jsonHelper = new JsonHelper();
 

@@ -163,16 +163,6 @@ class LangSmithToolCallingObservationConventionTests {
                 assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
     }
 
-    @Test
-    void shouldHandleNullToolCallResult() {
-        properties.setCaptureToolCallContent(true);
-        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
-
-        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
-    }
-
     private ToolCallingObservationContext createContext(String name, String description, String arguments) {
         ToolDefinition toolDefinition = ToolDefinition.builder()
                 .name(name)

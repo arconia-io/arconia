@@ -57,6 +57,7 @@ class HttpConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(ServerRequestObservationConvention.class);
                     assertThat(context).doesNotHaveBean(ClientRequestObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class);
                 });
     }
 
@@ -94,14 +95,6 @@ class HttpConventionsAutoConfigurationTests {
                     assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class);
                     assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
                 });
-    }
-
-    @Test
-    void doesNotRegisterSpanStatusHandlerWhenDisabled() {
-        webContextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.http.enabled=false")
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class));
     }
 
     // Custom bean precedence

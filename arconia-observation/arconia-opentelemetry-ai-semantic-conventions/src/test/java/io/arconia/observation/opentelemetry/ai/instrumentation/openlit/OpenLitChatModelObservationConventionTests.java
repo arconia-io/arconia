@@ -70,6 +70,18 @@ class OpenLitChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldUseOpenLitProviderNameForGoogleGenAi() {
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(Prompt.builder().content("Hey").chatOptions(ChatOptions.builder().model("gemini").build()).build())
+                .provider(AiProvider.GOOGLE_GENAI_AI.value())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "gcp.gemini")
+        );
+    }
+
+    @Test
     void shouldUseIsStreamKeyWhenStreaming() {
         ChatOptions chatOptions = ChatOptions.builder().model("mistral").build();
         ChatModelObservationContext context = ChatModelObservationContext.builder()
@@ -174,6 +186,18 @@ class OpenLitChatModelObservationConventionTests {
                 [
                   {"role": "assistant", "parts": [{"type": "text", "content": "Hello!"}], "finish_reason": "stop"}
                 ]""", outputJson, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
+        ChatModelObservationContext context = createContext("mistral");
+        setResponse(context, "mistral-42", "Hello!", "stop");
+
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
     }
 
     @Test

@@ -18,7 +18,7 @@ import org.springframework.http.server.observation.ServerRequestObservationConte
  * {@code 5xx} for server spans, {@code 4xx} and {@code 5xx} for client spans.
  * <p>
  * When an exception was recorded, the tracing handler already sets the {@code Error} status.
- * This handler must be registered after the tracing handler, so that it runs before the span ends.
+ * This handler must be registered after the tracing handler so that it runs before the span ends.
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-spans/#status">HTTP Span Status</a>
  */

@@ -44,6 +44,18 @@ class OpenLitImageModelObservationConventionTests {
     }
 
     @Test
+    void shouldUseOpenLitProviderNameForGoogleGenAi() {
+        ImageModelObservationContext context = ImageModelObservationContext.builder()
+                .imagePrompt(new ImagePrompt("A sunset over the ocean", ImageOptionsBuilder.builder().model("imagen").build()))
+                .provider(AiProvider.GOOGLE_GENAI_AI.value())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "gcp.gemini")
+        );
+    }
+
+    @Test
     void shouldUseImageSizeKeyWithUnderscoreSeparator() {
         ImagePrompt prompt = new ImagePrompt("A sunset over the ocean",
                 ImageOptionsBuilder.builder()

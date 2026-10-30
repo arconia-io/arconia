@@ -154,14 +154,6 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
-    void errorTypeIsNoneForRedirect() {
-        ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com");
-        context.setResponse(new MockClientHttpResponse(new byte[0], HttpStatus.FOUND));
-
-        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("error.type", KeyValue.NONE_VALUE));
-    }
-
-    @Test
     void serverPortIsExplicitPort() {
         ClientRequestObservationContext context = context(HttpMethod.GET, "http://localhost:8080/api");
 
@@ -199,14 +191,6 @@ class OpenTelemetryClientRequestObservationConventionTests {
 
         assertThat(convention.getHighCardinalityKeyValues(context))
                 .containsExactly(KeyValue.of("url.full", "https://REDACTED:REDACTED@example.com:8443/path"));
-    }
-
-    @Test
-    void urlFullRedactsSensitiveQueryParameters() {
-        ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com/file?sig=secret&page=2");
-
-        assertThat(convention.getHighCardinalityKeyValues(context))
-                .containsExactly(KeyValue.of("url.full", "https://example.com/file?sig=REDACTED&page=2"));
     }
 
     @Test

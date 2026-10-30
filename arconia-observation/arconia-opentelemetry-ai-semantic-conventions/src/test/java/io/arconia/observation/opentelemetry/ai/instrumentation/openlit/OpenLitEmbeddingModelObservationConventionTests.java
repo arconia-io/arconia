@@ -52,6 +52,18 @@ class OpenLitEmbeddingModelObservationConventionTests {
     }
 
     @Test
+    void shouldUseOpenLitProviderNameForGoogleGenAi() {
+        EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
+                .embeddingRequest(new EmbeddingRequest(List.of("Hello world"), EmbeddingOptions.builder().model("gemini-embedding").build()))
+                .provider(AiProvider.GOOGLE_GENAI_AI.value())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "gcp.gemini")
+        );
+    }
+
+    @Test
     void shouldHaveLowCardinalityKeyValuesWithResponse() {
         EmbeddingModelObservationContext context = createContext("text-embedding-3-small");
         setResponse(context, "text-embedding-3-small-v2");

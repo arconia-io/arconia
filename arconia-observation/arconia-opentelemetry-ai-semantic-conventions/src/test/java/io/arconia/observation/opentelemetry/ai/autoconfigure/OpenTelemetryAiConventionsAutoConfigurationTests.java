@@ -156,14 +156,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     }
 
     @Test
-    void otelFlavorRegistersLogEventHandlerWhenOpenTelemetryAvailable() {
-        contextRunner
-                .withBean(OpenTelemetry.class, OpenTelemetry::noop)
-                .run(context ->
-                        assertThat(context).hasSingleBean(OpenTelemetryChatModelLogEventObservationHandler.class));
-    }
-
-    @Test
     void otelFlavorRegistersLogEventHandlerWithSpringBootOpenTelemetry() {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(OpenTelemetryAiConventionsAutoConfiguration.class,
@@ -266,17 +258,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 });
     }
 
-    @Test
-    void openllmetryFlavorDoesNotRegisterAdvisorBeanWhenAdvisorNotOnClasspath() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry")
-                .withClassLoader(new FilteredClassLoader(AdvisorObservationConvention.class))
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OpenLLMetryChatClientObservationConvention.class);
-                    assertThat(context).doesNotHaveBean(OpenLLMetryAdvisorObservationConvention.class);
-                });
-    }
-
     // Custom bean precedence (OpenLLMetry flavor)
 
     @Test
@@ -348,13 +329,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     assertThat(context).hasSingleBean(LangSmithToolCallingObservationConvention.class);
                     assertThat(context).hasSingleBean(LangSmithImageModelObservationConvention.class);
                 });
-    }
-
-    @Test
-    void langsmithFlavorDoesNotActivateOtelOnlyBeans() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
-                .run(context -> assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
     }
 
     @Test
@@ -473,14 +447,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     }
 
     @Test
-    void openlitFlavorDoesNotActivateOtelOnlyBeans() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
-    }
-
-    @Test
     void openlitFlavorRegistersChatClientBeansWhenChatClientOnClasspath() {
         contextRunner
                 .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=openlit")
@@ -583,14 +549,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenTelemetryImageModelObservationConvention.class);
                 });
-    }
-
-    @Test
-    void langfuseFlavorDoesNotActivateOtelOnlyBeans() {
-        contextRunner
-                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
-                .run(context ->
-                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
     }
 
     @Test

@@ -37,7 +37,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.Micrometer
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/general/events/">OpenTelemetry Semantic Conventions for Events</a>
  */
-public class OpenTelemetryChatModelLogEventObservationHandler implements ObservationHandler<ChatModelObservationContext> {
+public final class OpenTelemetryChatModelLogEventObservationHandler implements ObservationHandler<ChatModelObservationContext> {
 
     static final String INSTRUMENTATION_SCOPE_NAME = "io.arconia.observation.opentelemetry.ai";
 

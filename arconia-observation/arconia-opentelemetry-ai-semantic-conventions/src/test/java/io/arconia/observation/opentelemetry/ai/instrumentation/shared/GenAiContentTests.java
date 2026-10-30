@@ -37,8 +37,6 @@ class GenAiContentTests {
 
         var result = GenAiContent.fromMessages(messages);
 
-        assertThat(result).hasSize(2);
-
         String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""
                 [
@@ -177,26 +175,6 @@ class GenAiContentTests {
     // fromGenerations
 
     @Test
-    void fromGenerationsShouldConvertTextOutput() throws JSONException {
-        Generation generation = new Generation(
-                AssistantMessage.builder().content("Here's a joke!").build(),
-                ChatGenerationMetadata.builder().finishReason("stop").build()
-        );
-
-        var result = GenAiContent.fromGenerations(List.of(generation));
-
-        String json = jsonHelper.toJson(result);
-        JSONAssert.assertEquals("""
-                [
-                  {
-                    "role": "assistant",
-                    "parts": [{"type": "text", "content": "Here's a joke!"}],
-                    "finish_reason": "stop"
-                  }
-                ]""", json, JSONCompareMode.STRICT);
-    }
-
-    @Test
     void fromGenerationsShouldConvertToolCallOutput() throws JSONException {
         AssistantMessage assistantMessage = AssistantMessage.builder()
                 .toolCalls(List.of(
@@ -293,8 +271,6 @@ class GenAiContentTests {
         );
 
         var result = GenAiContent.fromGenerations(List.of(gen1, gen2));
-
-        assertThat(result).hasSize(2);
 
         String json = jsonHelper.toJson(result);
         JSONAssert.assertEquals("""

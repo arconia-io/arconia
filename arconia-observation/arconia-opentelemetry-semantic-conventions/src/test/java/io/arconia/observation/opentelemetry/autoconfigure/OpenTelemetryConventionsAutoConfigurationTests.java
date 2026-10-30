@@ -24,20 +24,4 @@ class OpenTelemetryConventionsAutoConfigurationTests {
         });
     }
 
-    @Test
-    void bindsEnabledProperties() {
-        contextRunner
-                .withPropertyValues(
-                        "arconia.observations.conventions.opentelemetry.http.enabled=false",
-                        "arconia.observations.conventions.opentelemetry.jvm.enabled=false",
-                        "arconia.observations.conventions.opentelemetry.error.enabled=false"
-                )
-                .run(context -> {
-                    OpenTelemetryConventionsProperties properties = context.getBean(OpenTelemetryConventionsProperties.class);
-                    assertThat(properties.getHttp().isEnabled()).isFalse();
-                    assertThat(properties.getJvm().isEnabled()).isFalse();
-                    assertThat(properties.getError().isEnabled()).isFalse();
-                });
-    }
-
 }

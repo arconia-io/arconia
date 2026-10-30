@@ -10,13 +10,13 @@ import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,7 +49,7 @@ class OpenLitChatClientObservationConventionTests {
                 KeyValue.of(OpenLitAttributes.GEN_AI_REQUEST_IS_STREAM, "false")
         );
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_REQUEST_STREAM.getKey()));
+                assertThat(kv.getKey()).isEqualTo("spring.ai.chat.client.stream"));
     }
 
     @Test
@@ -98,9 +98,21 @@ class OpenLitChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith("gen_ai.prompt"));
+                assertThat(kv.getKey()).startsWith(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).startsWith("gen_ai.completion"));
+                assertThat(kv.getKey()).startsWith(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
+    }
+
+    @Test
+    void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
+        var context = createContext("Hello");
+        setResponse(context, "Hello!");
+
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
     }
 
     // Helpers

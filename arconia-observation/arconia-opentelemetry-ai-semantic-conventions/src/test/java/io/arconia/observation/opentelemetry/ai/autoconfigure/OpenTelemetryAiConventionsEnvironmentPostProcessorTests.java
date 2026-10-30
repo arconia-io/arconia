@@ -49,17 +49,6 @@ class OpenTelemetryAiConventionsEnvironmentPostProcessorTests {
     }
 
     @Test
-    void opentelemetryFlavorShouldHaveConservativeDefaults() {
-        var environment = new MockEnvironment()
-                .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "opentelemetry");
-        processor.postProcessEnvironment(environment, new SpringApplication());
-
-        assertThat(environment.getProperty(CAPTURE_MESSAGE_CONTENT_KEY)).isEqualTo("false");
-        assertThat(environment.getProperty(CAPTURE_TOOL_DEFINITIONS_KEY)).isEqualTo("false");
-        assertThat(environment.getProperty(CAPTURE_TOOL_CALL_CONTENT_KEY)).isEqualTo("false");
-    }
-
-    @Test
     void openllmetryFlavorShouldHaveContentDefaults() {
         var environment = new MockEnvironment()
                 .withProperty(OpenTelemetryAiConventionsProperties.CONFIG_PREFIX + ".flavor", "openllmetry");

@@ -12,8 +12,7 @@ final class UrlQuerySanitizer {
 
     static final String REDACTED = "REDACTED";
 
-    private UrlQuerySanitizer() {
-    }
+    private UrlQuerySanitizer() {}
 
     /**
      * Returns the query string with the values of the given sensitive parameters replaced by {@value #REDACTED},

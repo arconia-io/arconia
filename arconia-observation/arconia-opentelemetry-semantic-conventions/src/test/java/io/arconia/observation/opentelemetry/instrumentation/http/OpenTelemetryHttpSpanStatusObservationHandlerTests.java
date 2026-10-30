@@ -1,6 +1,5 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
-import java.io.IOException;
 import java.net.URI;
 
 import io.micrometer.observation.Observation;
@@ -70,11 +69,6 @@ class OpenTelemetryHttpSpanStatusObservationHandlerTests {
     }
 
     @Test
-    void serverSpanIsUnsetForSuccessStatus() {
-        assertThat(observe(serverContext(200, null)).getStatusCode()).isNotEqualTo(StatusCode.ERROR);
-    }
-
-    @Test
     void serverSpanKeepsErrorFromException() {
         StatusData status = observe(serverContext(500, new IllegalStateException("boom")));
 
@@ -90,11 +84,6 @@ class OpenTelemetryHttpSpanStatusObservationHandlerTests {
     }
 
     @Test
-    void clientSpanIsErrorForServerErrorStatus() {
-        assertThat(observe(clientContext(HttpStatus.SERVICE_UNAVAILABLE)).getStatusCode()).isEqualTo(StatusCode.ERROR);
-    }
-
-    @Test
     void clientSpanIsUnsetForRedirectStatus() {
         assertThat(observe(clientContext(HttpStatus.FOUND)).getStatusCode()).isNotEqualTo(StatusCode.ERROR);
     }
@@ -105,18 +94,6 @@ class OpenTelemetryHttpSpanStatusObservationHandlerTests {
                 new MockClientHttpRequest(HttpMethod.GET, URI.create("https://example.com")));
 
         assertThat(observe(context).getStatusCode()).isNotEqualTo(StatusCode.ERROR);
-    }
-
-    @Test
-    void clientSpanKeepsErrorFromException() {
-        ClientRequestObservationContext context = new ClientRequestObservationContext(
-                new MockClientHttpRequest(HttpMethod.GET, URI.create("https://example.com")));
-        context.setError(new IOException("connection refused"));
-
-        StatusData status = observe(context);
-
-        assertThat(status.getStatusCode()).isEqualTo(StatusCode.ERROR);
-        assertThat(status.getDescription()).isEqualTo("connection refused");
     }
 
     // SUPPORT

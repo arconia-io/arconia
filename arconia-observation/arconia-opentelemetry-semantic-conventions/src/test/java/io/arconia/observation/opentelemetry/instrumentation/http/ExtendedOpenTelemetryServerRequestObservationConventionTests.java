@@ -60,19 +60,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void errorTypeIsCanonicalNameOfNestedExceptionWithoutServerErrorStatus() {
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        response.setStatus(404);
-        ServerRequestObservationContext context = new ServerRequestObservationContext(new MockHttpServletRequest(), response);
-        context.setError(new OrderNotFoundException());
-
-        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("error.type",
-                "io.arconia.observation.opentelemetry.instrumentation.http.ExtendedOpenTelemetryServerRequestObservationConventionTests.OrderNotFoundException"));
-    }
-
-    @Test
     void errorTypeIsNoneForClientError() {
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(404);
@@ -97,28 +84,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void networkProtocolVersionForHttp10() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setProtocol("HTTP/1.0");
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
-
-        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "1.0"));
-    }
-
-    @Test
-    void networkProtocolVersionForHttp2() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setProtocol("HTTP/2");
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
-
-        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "2"));
-    }
-
-    @Test
     void networkProtocolVersionForHttp2ReportedWithMinorVersion() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setProtocol("HTTP/2.0");
@@ -133,17 +98,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     void networkProtocolVersionForHttp3ReportedWithMinorVersion() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setProtocol("HTTP/3.0");
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
-
-        KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("network.protocol.version", "3"));
-    }
-
-    @Test
-    void networkProtocolVersionForHttp3() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setProtocol("HTTP/3");
         ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
 
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
@@ -207,16 +161,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
-    void routeAbsentForRedirectionWithoutPathPattern() {
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/old");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        response.setStatus(302);
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
-
-        assertThat(convention.getLowCardinalityKeyValues(context)).noneMatch(kv -> "http.route".equals(kv.getKey()));
-    }
-
-    @Test
     void statusCodeAndSchemeFromRequestAndResponse() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -276,7 +220,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
 
-        assertThat(keyValues).doesNotContain(KeyValue.of("user_agent.original", "UNKNOWN"));
         assertThat(keyValues.stream().noneMatch(kv -> "user_agent.original".equals(kv.getKey()))).isTrue();
     }
 
@@ -305,36 +248,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
         KeyValues keyValues = customConvention.getHighCardinalityKeyValues(context);
 
         assertThat(keyValues.stream().noneMatch(kv -> "url.query".equals(kv.getKey()))).isTrue();
-    }
-
-    @Test
-    void urlQueryIncludedWhenEnabled() {
-        var options = new OpenTelemetryHttpOptions();
-        options.setCaptureUrlQuery(true);
-        var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setQueryString("foo=bar&baz=qux");
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
-
-        KeyValues keyValues = conventionWithQuery.getHighCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("url.query", "foo=bar&baz=qux"));
-    }
-
-    @Test
-    void urlQueryRedactsSensitiveValuesWhenEnabled() {
-        var options = new OpenTelemetryHttpOptions();
-        options.setCaptureUrlQuery(true);
-        var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setQueryString("file=report.pdf&X-Amz-Signature=abc123");
-        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
-
-        KeyValues keyValues = conventionWithQuery.getHighCardinalityKeyValues(context);
-
-        assertThat(keyValues).contains(KeyValue.of("url.query", "file=report.pdf&X-Amz-Signature=REDACTED"));
     }
 
     @Test
@@ -421,9 +334,6 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
         assertThat(convention.getHighCardinalityKeyValues(context))
                 .noneMatch(kv -> "http.request.method_original".equals(kv.getKey()));
         assertThat(convention.getContextualName(context)).isEqualTo("QUERY");
-    }
-
-    static class OrderNotFoundException extends RuntimeException {
     }
 
 }

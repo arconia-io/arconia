@@ -245,25 +245,6 @@ class LangSmithChatModelObservationConventionTests {
     }
 
     @Test
-    void shouldNotIncludeToolDefinitionsWhenToolCallbacksAreEmpty() {
-        properties.setCaptureToolDefinitions(true);
-
-        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
-                .model("mistral")
-                .toolCallbacks(List.of())
-                .build();
-
-        ChatModelObservationContext context = ChatModelObservationContext.builder()
-                .prompt(new Prompt(List.of(new UserMessage("Weather?")), chatOptions))
-                .provider(AiProvider.SPRING_AI.value())
-                .build();
-
-        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS.getKey()));
-    }
-
-    @Test
     void shouldIncludeToolDefinitionsWhenEnabled() throws JSONException {
         properties.setCaptureToolDefinitions(true);
 

@@ -21,7 +21,7 @@ import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryE
 /**
  * Extends OpenTelemetryServerRequestObservationConvention to provide the missing OpenTelemetry-compatible observation for HTTP requests.
  */
-public class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
+public final class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
 
     private static final String ROOT_ROUTE = "/";
 

@@ -38,7 +38,9 @@ class OpenLLMetryToolCallingObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_NAME.getKey(), "get_weather"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), "function"),
-                KeyValue.of("spring.ai.kind", "tool_call")
+                KeyValue.of("spring.ai.kind", "tool_call"),
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "get_weather"),
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, "tool")
         );
     }
 

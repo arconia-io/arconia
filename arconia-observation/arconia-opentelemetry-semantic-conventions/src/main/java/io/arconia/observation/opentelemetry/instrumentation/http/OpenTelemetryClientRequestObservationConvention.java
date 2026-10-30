@@ -30,7 +30,7 @@ import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryE
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span">HTTP Client Spans</a>
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpclientrequestduration">HTTP Client Metrics</a>
  */
-public class OpenTelemetryClientRequestObservationConvention extends DefaultClientRequestObservationConvention {
+public final class OpenTelemetryClientRequestObservationConvention extends DefaultClientRequestObservationConvention {
 
     private static final String NAME = "http.client.request.duration";
 
