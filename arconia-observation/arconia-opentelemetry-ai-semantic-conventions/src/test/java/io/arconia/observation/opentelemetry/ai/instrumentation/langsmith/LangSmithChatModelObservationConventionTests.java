@@ -176,7 +176,7 @@ class LangSmithChatModelObservationConventionTests {
                   {"role": "system", "content": "Be brief"},
                   {"role": "user", "content": "Weather in Rome?"},
                   {"role": "assistant", "content": "", "tool_calls": [
-                    {"id": "call-1", "name": "weather", "args": "{\\"city\\":\\"Rome\\"}", "type": "tool_call"}
+                    {"id": "call-1", "name": "weather", "args": {"city": "Rome"}, "type": "tool_call"}
                   ]},
                   {"role": "tool", "tool_call_id": "call-1", "name": "weather", "content": "sunny"}
                 ]}""", findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey()), JSONCompareMode.STRICT);

@@ -112,7 +112,7 @@ The module provides semantic conventions for the following observation types:
 * Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences), the requested and response models, and the available tools.
 * Embedding model spans with dimension tracking.
 * Tool execution spans with the tool call ID, the parameters definition, and the arguments and result.
-* Chat client observations (including conversation ID tracking via chat memory).
+* Chat client observations. The conversation ID of the chat memory is recorded as `session.id` on the chat client span and on the spans nested in it, the way the OpenInference instrumentations record a session.
 * Token usage, including cached input tokens.
 * Input/output message content, captured as span attributes, both as structured messages and as the `input.value` and `output.value` JSON documents.
 

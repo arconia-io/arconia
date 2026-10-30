@@ -9,7 +9,6 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.util.JsonHelper;
@@ -20,6 +19,7 @@ import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConv
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversations;
 
 /**
  * Base {@link ChatClientObservationConvention} implementing OpenTelemetry Semantic Conventions for Generative AI,
@@ -86,14 +86,10 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
 
     @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
-        if (CollectionUtils.isEmpty(context.getRequest().context())) {
-            return keyValues;
-        }
-        var conversationIdValue = context.getRequest().context().get(ChatMemory.CONVERSATION_ID);
-        if (!(conversationIdValue instanceof String conversationId) || !StringUtils.hasText(conversationId)) {
-            return keyValues;
-        }
-        return keyValues.and(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(), conversationId);
+        String conversationId = GenAiConversations.conversationId(context);
+        return conversationId != null
+                ? keyValues.and(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(), conversationId)
+                : keyValues;
     }
 
     protected KeyValues inputMessages(KeyValues keyValues, ChatClientObservationContext context) {

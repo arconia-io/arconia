@@ -12,6 +12,8 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
+
 /**
  * Builds the inputs and outputs of LangSmith runs from Spring AI messages, as a {@code messages} list
  * in the format LangSmith renders as a conversation.
@@ -72,7 +74,7 @@ final class LangSmithMessages {
                 Map<String, Object> toolCallMap = new LinkedHashMap<>();
                 toolCallMap.put("id", toolCall.id());
                 toolCallMap.put("name", toolCall.name());
-                toolCallMap.put("args", toolCall.arguments());
+                toolCallMap.put("args", GenAiContent.toolCallArguments(toolCall.arguments()));
                 toolCallMap.put("type", "tool_call");
                 toolCalls.add(toolCallMap);
             }

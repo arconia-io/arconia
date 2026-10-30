@@ -62,7 +62,7 @@ The module provides OpenLLMetry-compatible semantic conventions for all Spring A
 
 * Chat model, embedding model, and image model spans following the OpenTelemetry Semantic Conventions for Generative AI, as the current OpenLLMetry instrumentations do.
 * Tool execution spans with input/output content.
-* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` and as the `session_id` association property (`traceloop.association.properties.session_id`).
+* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` and as the `session_id` association property (`traceloop.association.properties.session_id`), on the chat client span and on the spans nested in it.
 * Token usage for inference operations, including the total and the cached input tokens.
 * Input/output message content, captured as span attributes.
 

@@ -98,7 +98,7 @@ The module provides OpenLIT-compatible semantic conventions for all Spring AI ob
 * Embedding model spans.
 * Image model spans.
 * Tool execution spans with input/output content.
-* Chat client spans with session tracking and input/output content.
+* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the chat client span and on the spans nested in it.
 * Token usage metrics.
 * Input/output message content, captured as span attributes.
 

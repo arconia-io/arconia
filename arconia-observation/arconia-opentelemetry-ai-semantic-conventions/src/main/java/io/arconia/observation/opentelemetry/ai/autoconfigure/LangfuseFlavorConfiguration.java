@@ -1,7 +1,9 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
-import io.micrometer.core.instrument.MeterRegistry;
+import java.util.List;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelMeterObservationHandler;
@@ -25,6 +27,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "langfuse")
@@ -81,6 +84,13 @@ class LangfuseFlavorConfiguration {
         @ConditionalOnMissingBean(AdvisorObservationConvention.class)
         LangfuseAdvisorObservationConvention advisorObservationConvention() {
             return new LangfuseAdvisorObservationConvention();
+        }
+
+
+        @Bean
+        @ConditionalOnMissingBean(GenAiConversationIdObservationHandler.class)
+        GenAiConversationIdObservationHandler conversationIdObservationHandler() {
+            return new GenAiConversationIdObservationHandler(List.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey()));
         }
 
     }

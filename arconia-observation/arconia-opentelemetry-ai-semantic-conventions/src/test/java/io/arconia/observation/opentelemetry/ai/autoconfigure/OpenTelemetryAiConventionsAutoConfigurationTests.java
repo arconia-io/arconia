@@ -1,5 +1,8 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
+import java.util.List;
+import java.util.Map;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -48,6 +51,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -134,6 +138,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
     void otelFlavorRegistersChatClientBeansWhenChatClientOnClasspath() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(OpenTelemetryChatClientObservationConvention.class);
+                    assertThat(context).hasSingleBean(GenAiConversationIdObservationHandler.class);
         });
     }
 
@@ -143,6 +148,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenTelemetryChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -244,6 +250,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenLLMetryChatClientObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenLLMetryAdvisorObservationConvention.class);
+                    assertThat(context).hasSingleBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -255,6 +262,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenLLMetryChatClientObservationConvention.class);
                     assertThat(context).doesNotHaveBean(OpenLLMetryAdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -359,6 +367,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(LangSmithChatClientObservationConvention.class);
                     assertThat(context).hasSingleBean(LangSmithAiAdvisorConvention.class);
+                    assertThat(context).hasSingleBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -370,6 +379,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(LangSmithChatClientObservationConvention.class);
                     assertThat(context).doesNotHaveBean(LangSmithAiAdvisorConvention.class);
+                    assertThat(context).doesNotHaveBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -453,6 +463,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(OpenLitChatClientObservationConvention.class);
                     assertThat(context).hasSingleBean(OpenTelemetryAdvisorObservationConvention.class);
+                    assertThat(context).hasSingleBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -464,6 +475,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(OpenLitChatClientObservationConvention.class);
                     assertThat(context).doesNotHaveBean(OpenTelemetryAdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -558,6 +570,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).hasSingleBean(LangfuseChatClientObservationConvention.class);
                     assertThat(context).hasSingleBean(LangfuseAdvisorObservationConvention.class);
+                    assertThat(context).hasSingleBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -569,6 +582,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(LangfuseChatClientObservationConvention.class);
                     assertThat(context).doesNotHaveBean(LangfuseAdvisorObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(GenAiConversationIdObservationHandler.class);
                 });
     }
 
@@ -644,6 +658,24 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
         ImageModelObservationConvention imageModelObservationConvention() {
             return mock(ImageModelObservationConvention.class);
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Conversation id propagation
+    // -------------------------------------------------------------------------
+
+    @Test
+    void conversationIdObservationHandlerUsesTheKeysOfTheFlavor() {
+        Map<String, List<String>> keysByFlavor = Map.of(
+                "opentelemetry", List.of("gen_ai.conversation.id"),
+                "openlit", List.of("gen_ai.conversation.id"),
+                "openllmetry", List.of("gen_ai.conversation.id", "traceloop.association.properties.session_id"),
+                "langsmith", List.of("langsmith.metadata.thread_id"),
+                "langfuse", List.of("gen_ai.conversation.id"));
+        keysByFlavor.forEach((flavor, keys) -> contextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=" + flavor)
+                .run(context -> assertThat(context.getBean(GenAiConversationIdObservationHandler.class).getAttributeKeys())
+                        .as(flavor).containsExactlyElementsOf(keys)));
     }
 
 }

@@ -6,16 +6,15 @@ import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversations;
 
 /**
  * LangSmith flavor of {@link OpenTelemetryChatClientObservationConvention}.
@@ -52,14 +51,10 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
 
     @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
-        if (CollectionUtils.isEmpty(context.getRequest().context())) {
-            return keyValues;
-        }
-        var conversationIdValue = context.getRequest().context().get(ChatMemory.CONVERSATION_ID);
-        if (!(conversationIdValue instanceof String conversationId) || !StringUtils.hasText(conversationId)) {
-            return keyValues;
-        }
-        return keyValues.and(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey(), conversationId);
+        String conversationId = GenAiConversations.conversationId(context);
+        return conversationId != null
+                ? keyValues.and(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey(), conversationId)
+                : keyValues;
     }
 
     @Override

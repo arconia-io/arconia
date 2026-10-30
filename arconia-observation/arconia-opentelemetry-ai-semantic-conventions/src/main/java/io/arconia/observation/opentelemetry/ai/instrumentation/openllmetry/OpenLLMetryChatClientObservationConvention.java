@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversations;
 
 /**
  * OpenLLMetry flavor of {@link OpenTelemetryChatClientObservationConvention}.
@@ -58,13 +59,11 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
         // Recorded both as gen_ai.conversation.id, as the Traceloop SDK does for conversations,
         // and as the session_id association property, which Traceloop uses to group sessions.
-        KeyValues withConversationId = super.conversationId(keyValues, context);
-        return withConversationId.stream()
-                .filter(keyValue -> GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey().equals(keyValue.getKey()))
-                .findFirst()
-                .map(keyValue -> withConversationId.and(
-                        OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID, keyValue.getValue()))
-                .orElse(withConversationId);
+        String conversationId = GenAiConversations.conversationId(context);
+        return conversationId != null
+                ? keyValues.and(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(), conversationId)
+                        .and(OpenLLMetryAttributes.TRACELOOP_ASSOCIATION_PROPERTIES_SESSION_ID, conversationId)
+                : keyValues;
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.arize.semconv.trace.SemanticConventions;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.client.observation.DefaultChatClientObservationConvention;
@@ -43,17 +44,21 @@ public final class OpenInferenceChatClientObservationConvention extends DefaultC
 
     @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
+        String conversationId = conversationId(context);
+        return conversationId != null ? keyValues.and(SemanticConventions.SESSION_ID, conversationId) : keyValues;
+    }
+
+    /**
+     * Returns the conversation id of the chat memory the chat client call belongs to, which OpenInference
+     * records as the session, or null when the call isn't part of a conversation.
+     */
+    static @Nullable String conversationId(ChatClientObservationContext context) {
         if (CollectionUtils.isEmpty(context.getRequest().context())) {
-            return keyValues;
+            return null;
         }
-
         var conversationIdValue = context.getRequest().context().get(ChatMemory.CONVERSATION_ID);
-
-        if (!(conversationIdValue instanceof String conversationId) || !StringUtils.hasText(conversationId)) {
-            return keyValues;
-        }
-
-        return keyValues.and(SemanticConventions.SESSION_ID, conversationId);
+        return conversationIdValue instanceof String conversationId && StringUtils.hasText(conversationId)
+                ? conversationId : null;
     }
 
     private KeyValues input(KeyValues keyValues, ChatClientObservationContext context) {

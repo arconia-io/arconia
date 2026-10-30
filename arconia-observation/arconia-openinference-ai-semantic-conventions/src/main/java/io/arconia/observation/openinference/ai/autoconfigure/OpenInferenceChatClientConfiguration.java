@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceAdvisorObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatClientObservationConvention;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceConversationIdObservationHandler;
 
 /**
  * Auto-configuration for OpenInference Chat Client instrumentation in Spring AI.
@@ -27,6 +28,12 @@ class OpenInferenceChatClientConfiguration {
     @ConditionalOnMissingBean(AdvisorObservationConvention.class)
     OpenInferenceAdvisorObservationConvention openInferenceAdvisorObservationConvention() {
         return new OpenInferenceAdvisorObservationConvention();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OpenInferenceConversationIdObservationHandler.class)
+    OpenInferenceConversationIdObservationHandler conversationIdObservationHandler() {
+        return new OpenInferenceConversationIdObservationHandler();
     }
 
 }

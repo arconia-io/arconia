@@ -6,6 +6,7 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.ai.model.observation.ModelObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChat
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationHandler;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceToolCallingObservationConvention;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatClientObservationConvention;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceConversationIdObservationHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -143,6 +146,23 @@ class OpenInferenceAutoConfigurationTests {
             return customToolCallingObservationConvention;
         }
 
+    }
+
+    @Test
+    void registersConversationIdObservationHandlerWithChatClient() {
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(OpenInferenceChatClientObservationConvention.class);
+            assertThat(context).hasSingleBean(OpenInferenceConversationIdObservationHandler.class);
+        });
+    }
+
+    @Test
+    void doesNotRegisterConversationIdObservationHandlerWhenChatClientNotOnClasspath() {
+        contextRunner.withClassLoader(new FilteredClassLoader(ChatClientObservationConvention.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OpenInferenceChatClientObservationConvention.class);
+                    assertThat(context).doesNotHaveBean(OpenInferenceConversationIdObservationHandler.class);
+                });
     }
 
 }

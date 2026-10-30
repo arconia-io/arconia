@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
+import java.util.List;
+
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
@@ -27,6 +29,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmi
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAttributes;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX, name = "flavor", havingValue = "langsmith")
@@ -97,6 +101,12 @@ class LangSmithFlavorConfiguration {
         @ConditionalOnMissingBean(AdvisorObservationConvention.class)
         LangSmithAiAdvisorConvention advisorObservationConvention() {
             return new LangSmithAiAdvisorConvention();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(GenAiConversationIdObservationHandler.class)
+        GenAiConversationIdObservationHandler conversationIdObservationHandler() {
+            return new GenAiConversationIdObservationHandler(List.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey()));
         }
 
     }

@@ -234,7 +234,7 @@ The module supports multiple convention _flavors_. The default `opentelemetry` f
 * Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
 * Embedding model spans with dimension tracking.
 * Tool execution spans.
-* Chat client spans, reported as agent invocations (`invoke_agent`) with conversation ID tracking via chat memory.
+* Chat client spans, reported as agent invocations (`invoke_agent`). The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the agent invocation span and on the model, tool, and advisor spans nested in it, since the conventions require it on every span where it's available.
 * Operation duration metrics (`gen_ai.client.operation.duration`) for chat, embedding, and image model calls.
 * Token usage metrics (`gen_ai.client.token.usage`).
 * Input/output message content, captured as span attributes, span events, or log events.

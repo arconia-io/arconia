@@ -65,7 +65,8 @@ The module provides semantic conventions for the following observation types:
 * Embedding model spans.
 * Tool execution spans with input/output content.
 * Image model spans.
-* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as the `thread_id` metadata, so LangSmith groups the traces of a conversation into a thread.
+* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as the `thread_id` metadata on the chat client span and on the spans nested in it, which LangSmith reads from every run to group a conversation into a thread and to total its tokens and costs.
+* Advisor spans, recorded as chains.
 * Token usage for inference operations, including cached input tokens.
 * Input/output message content, captured as the `gen_ai.prompt` and `gen_ai.completion` span attributes, the way the LangSmith SDKs record the inputs and outputs of a run.
 

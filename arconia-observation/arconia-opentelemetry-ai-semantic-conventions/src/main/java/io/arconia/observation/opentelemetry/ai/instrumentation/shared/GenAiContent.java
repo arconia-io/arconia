@@ -113,7 +113,7 @@ public final class GenAiContent {
             if (message instanceof AssistantMessage assistantMessage) {
                 for (AssistantMessage.ToolCall toolCall : assistantMessage.getToolCalls()) {
                     parts.add(new ToolCallRequestPart(
-                            toolCall.id(), toolCall.name(), parseArguments(toolCall.arguments())));
+                            toolCall.id(), toolCall.name(), toolCallArguments(toolCall.arguments())));
                 }
             }
 
@@ -144,7 +144,7 @@ public final class GenAiContent {
 
             for (AssistantMessage.ToolCall toolCall : message.getToolCalls()) {
                 parts.add(new ToolCallRequestPart(
-                        toolCall.id(), toolCall.name(), parseArguments(toolCall.arguments())));
+                        toolCall.id(), toolCall.name(), toolCallArguments(toolCall.arguments())));
             }
 
             String reportedFinishReason = generation.getMetadata().getFinishReason();
@@ -217,11 +217,11 @@ public final class GenAiContent {
     }
 
     /**
-     * Parses the arguments of a tool call into the JSON value they represent, an empty object when there are none.
-     * Arguments that aren't valid JSON, such as a tool call truncated by the model, are recorded as the original
+     * Converts the arguments of a tool call into the JSON value they represent, an empty object when there are none.
+     * Arguments that aren't valid JSON, such as a tool call truncated by the model, are returned as the original
      * string: the observation describes the model call, it must never fail it.
      */
-    private static Object parseArguments(String arguments) {
+    public static Object toolCallArguments(String arguments) {
         if (!StringUtils.hasText(arguments)) {
             return Map.of();
         }
