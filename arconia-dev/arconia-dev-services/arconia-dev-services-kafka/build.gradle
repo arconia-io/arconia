@@ -21,9 +21,12 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     constraints {
-        // TEMPORARY: CVE fixes in snappy-java, which kafka-clients still pins to 1.1.10.7 and Spring Boot does not manage.
+        // TEMPORARY: CVE fixes in compression libraries that kafka-clients pins to vulnerable versions and Spring Boot does not manage.
         api("org.xerial.snappy:snappy-java:1.1.10.12") {
             because "GHSA-q233-g92q-qxp6, GHSA-gwq9-9ffj-mvrv, GHSA-xqrx-qh46-34m7 (fixed in 1.1.10.9)"
+        }
+        api("at.yawk.lz4:lz4-java:1.12.1") {
+            because "GHSA-mcr4-qmvw-px4g, GHSA-343h-94h5-c4wr, GHSA-gm45-99xc-r7wv (fixed in 1.11.4), GHSA-48mj-8f7c-7qfm (fixed in 1.12.1)"
         }
     }
 }
