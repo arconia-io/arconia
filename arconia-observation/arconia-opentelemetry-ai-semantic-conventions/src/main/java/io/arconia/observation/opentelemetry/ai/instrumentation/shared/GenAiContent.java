@@ -34,6 +34,12 @@ import org.springframework.util.StringUtils;
  */
 public final class GenAiContent {
 
+    /**
+     * Maximum length of the base64 content of a blob part. Larger media is recorded without its content,
+     * to bound the size of the spans and events that carry the messages.
+     */
+    public static final int BLOB_CONTENT_MAX_LENGTH = 32_000;
+
     private static final JsonHelper jsonHelper = new JsonHelper();
 
     private GenAiContent() {}
@@ -63,10 +69,14 @@ public final class GenAiContent {
         }
     }
 
+    /**
+     * Binary data sent inline to the model. The content is left out when it's longer than
+     * {@link #BLOB_CONTENT_MAX_LENGTH}, keeping the modality and MIME type that describe it.
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record BlobPart(String type, String modality,
-            @JsonProperty("mime_type") String mimeType, String content) implements MessagePart {
-        public BlobPart(String modality, String mimeType, String content) {
+            @JsonProperty("mime_type") String mimeType, @Nullable String content) implements MessagePart {
+        public BlobPart(String modality, String mimeType, @Nullable String content) {
             this("blob", modality, mimeType, content);
         }
     }
@@ -190,11 +200,20 @@ public final class GenAiContent {
             String mimeType = media.getMimeType().toString();
             Object data = media.getData();
             if (data instanceof byte[] bytes) {
-                parts.add(new BlobPart(modality, mimeType, Base64.getEncoder().encodeToString(bytes)));
+                parts.add(new BlobPart(modality, mimeType, encodeWithinLimit(bytes)));
             } else {
                 parts.add(new UriPart(modality, mimeType, data.toString()));
             }
         }
+    }
+
+    /**
+     * Encodes the bytes in base64 when the result fits in {@link #BLOB_CONTENT_MAX_LENGTH}, computing the
+     * encoded length upfront so that media too large to record is never encoded in the first place.
+     */
+    private static @Nullable String encodeWithinLimit(byte[] bytes) {
+        int encodedLength = 4 * ((bytes.length + 2) / 3);
+        return encodedLength <= BLOB_CONTENT_MAX_LENGTH ? Base64.getEncoder().encodeToString(bytes) : null;
     }
 
     /**

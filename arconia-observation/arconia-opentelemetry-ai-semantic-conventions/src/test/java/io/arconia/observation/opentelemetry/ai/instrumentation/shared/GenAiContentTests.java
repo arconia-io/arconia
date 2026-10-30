@@ -171,6 +171,49 @@ class GenAiContentTests {
     }
 
     @Test
+    void fromMessagesShouldLeaveOutBlobContentAboveMaxLength() throws JSONException {
+        byte[] imageBytes = new byte[GenAiContent.BLOB_CONTENT_MAX_LENGTH];
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(imageBytes)
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        String json = jsonHelper.toJson(result);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "role": "user",
+                    "parts": [
+                      {"type": "text", "content": "Describe this"},
+                      {"type": "blob", "modality": "image", "mime_type": "image/png"}
+                    ]
+                  }
+                ]""", json, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void fromMessagesShouldKeepBlobContentUpToMaxLength() {
+        byte[] imageBytes = new byte[GenAiContent.BLOB_CONTENT_MAX_LENGTH / 4 * 3];
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(imageBytes)
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        assertThat(result.getFirst().parts().get(1)).isInstanceOfSatisfying(GenAiContent.BlobPart.class, part ->
+                assertThat(part.content()).hasSize(GenAiContent.BLOB_CONTENT_MAX_LENGTH));
+    }
+
+    @Test
     void fromMessagesShouldReturnEmptyForEmptyList() {
         var result = GenAiContent.fromMessages(List.of());
         assertThat(result).isEmpty();

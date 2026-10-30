@@ -472,16 +472,21 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             }
             return url;
         } else if (data instanceof byte[] bytes) {
-            String base64 = Base64.getEncoder().encodeToString(bytes);
-            String dataUri = "data:" + media.getMimeType() + ";base64," + base64;
-            return limitBase64DataUri(dataUri);
+            String prefix = "data:" + media.getMimeType() + ";base64,";
+            long maxLength = openInferenceOptions.getBase64ImageMaxLength();
+            int encodedLength = 4 * ((bytes.length + 2) / 3);
+            if (maxLength > 0 && prefix.length() + encodedLength > maxLength) {
+                return OpenInferenceOptions.REDACTED_PLACEHOLDER;
+            }
+            return prefix + Base64.getEncoder().encodeToString(bytes);
         }
         return "";
     }
 
     /**
      * Redacts a base64 data URI longer than the configured maximum length, as the OpenInference
-     * specification requires. A truncated data URI would be invalid.
+     * specification requires. A truncated data URI would be invalid. Binary media is checked before
+     * being encoded, see {@link #resolveMediaUrl(Media)}.
      */
     private String limitBase64DataUri(String dataUri) {
         long maxLength = openInferenceOptions.getBase64ImageMaxLength();

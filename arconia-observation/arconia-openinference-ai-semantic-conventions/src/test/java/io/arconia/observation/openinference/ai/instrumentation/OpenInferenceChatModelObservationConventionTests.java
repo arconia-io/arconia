@@ -583,6 +583,35 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldKeepBase64ImageDataUpToMaxLength() {
+        // "data:image/png;base64," is 22 characters and 3 bytes encode to 4.
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(new byte[] {1, 2, 3})
+                        .build())
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(userMessage), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        String imageUrlKey = SemanticConventions.LLM_INPUT_MESSAGES + ".0."
+                + SemanticConventions.MESSAGE_CONTENTS + ".1."
+                + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL;
+
+        OpenInferenceOptions exactOptions = new OpenInferenceOptions();
+        exactOptions.setBase64ImageMaxLength(26);
+        assertThat(findKeyValue(new OpenInferenceChatModelObservationConvention(exactOptions)
+                .getHighCardinalityKeyValues(context), imageUrlKey)).isEqualTo("data:image/png;base64,AQID");
+
+        OpenInferenceOptions shortOptions = new OpenInferenceOptions();
+        shortOptions.setBase64ImageMaxLength(25);
+        assertThat(findKeyValue(new OpenInferenceChatModelObservationConvention(shortOptions)
+                .getHighCardinalityKeyValues(context), imageUrlKey)).isEqualTo(OpenInferenceOptions.REDACTED_PLACEHOLDER);
+    }
+
+    @Test
     void shouldRedactBase64ImageDataLongerThanMaxLength() {
         byte[] imageBytes = new byte[50_000];
         UserMessage userMessage = UserMessage.builder()
