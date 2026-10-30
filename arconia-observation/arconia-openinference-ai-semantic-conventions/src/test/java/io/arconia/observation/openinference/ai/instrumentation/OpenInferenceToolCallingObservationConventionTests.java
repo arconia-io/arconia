@@ -28,7 +28,7 @@ class OpenInferenceToolCallingObservationConventionTests {
     @Test
     void name() {
         assertThat(observationConvention.getName())
-                .isEqualTo(OpenInferenceToolCallingObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.tool");
     }
 
     @Test

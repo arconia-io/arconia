@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.image.ImageOptionsBuilder;
 import org.springframework.ai.image.ImagePrompt;
 import org.springframework.ai.image.observation.ImageModelObservationContext;
-import org.springframework.ai.observation.conventions.AiObservationAttributes;
 import org.springframework.ai.observation.conventions.AiProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,9 +75,9 @@ class OpenTelemetryImageModelObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(AiObservationAttributes.REQUEST_IMAGE_RESPONSE_FORMAT.value(), "url"),
-                KeyValue.of(AiObservationAttributes.REQUEST_IMAGE_SIZE.value(), "1024x1024"),
-                KeyValue.of(AiObservationAttributes.REQUEST_IMAGE_STYLE.value(), "vivid")
+                KeyValue.of("gen_ai.request.image.response_format", "url"),
+                KeyValue.of("gen_ai.request.image.size", "1024x1024"),
+                KeyValue.of("gen_ai.request.image.style", "vivid")
         );
     }
 

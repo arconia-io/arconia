@@ -26,7 +26,7 @@ class OpenInferenceChatClientConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(AdvisorObservationConvention.class)
-    OpenInferenceAdvisorObservationConvention openInferenceAdvisorObservationConvention() {
+    OpenInferenceAdvisorObservationConvention advisorObservationConvention() {
         return new OpenInferenceAdvisorObservationConvention();
     }
 

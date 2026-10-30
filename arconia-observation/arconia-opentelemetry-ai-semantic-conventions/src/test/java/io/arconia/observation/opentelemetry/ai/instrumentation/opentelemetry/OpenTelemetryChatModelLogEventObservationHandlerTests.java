@@ -27,6 +27,7 @@ import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.ai.tool.function.FunctionToolCallback;
@@ -209,7 +210,7 @@ class OpenTelemetryChatModelLogEventObservationHandlerTests {
 
     private ChatModelObservationContext createContext(ToolCallingChatOptions options) {
         ChatModelObservationContext context = ChatModelObservationContext.builder()
-                .prompt(new org.springframework.ai.chat.prompt.Prompt(List.of(new UserMessage("What's the weather in Paris?")), options))
+                .prompt(new Prompt(List.of(new UserMessage("What's the weather in Paris?")), options))
                 .provider(AiProvider.SPRING_AI.value())
                 .build();
         context.setResponse(ChatResponse.builder()

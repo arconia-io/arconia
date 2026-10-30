@@ -22,7 +22,7 @@ class OpenInferenceAdvisorObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(observationConvention.getName())
-                .isEqualTo(OpenInferenceAdvisorObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.advisor");
     }
 
     @Test

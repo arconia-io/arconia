@@ -30,7 +30,7 @@ class OpenInferenceChatClientObservationConventionTests {
     @Test
     void name() {
         assertThat(observationConvention.getName())
-                .isEqualTo(OpenInferenceChatClientObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.chat.client");
     }
 
     @Test

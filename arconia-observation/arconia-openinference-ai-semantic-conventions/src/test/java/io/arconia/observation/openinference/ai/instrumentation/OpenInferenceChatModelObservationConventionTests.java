@@ -50,7 +50,7 @@ class OpenInferenceChatModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(observationConvention.getName())
-            .isEqualTo(OpenInferenceChatModelObservationConvention.DEFAULT_NAME);
+            .isEqualTo("gen_ai.client.operation");
     }
 
     @Test

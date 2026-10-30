@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link ToolCallingObservationConvention} for OpenInference.
  */
-public class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
+public final class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
 
     private final OpenInferenceOptions openInferenceOptions;

@@ -16,7 +16,6 @@ import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.EmbeddingResponseMetadata;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
-import org.springframework.ai.observation.conventions.AiObservationAttributes;
 import org.springframework.ai.observation.conventions.AiProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,7 +97,7 @@ class OpenTelemetryEmbeddingModelObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), "100"),
-                KeyValue.of(AiObservationAttributes.USAGE_TOTAL_TOKENS.value(), "100")
+                KeyValue.of("gen_ai.usage.total_tokens", "100")
         );
     }
 

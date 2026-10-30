@@ -69,7 +69,7 @@ public final class JvmConventionsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(JvmCpuMeterConventions.class)
-    OpenTelemetryJvmCpuMeterConventions jmcCpuMeterConventions() {
+    OpenTelemetryJvmCpuMeterConventions jvmCpuMeterConventions() {
         return new OpenTelemetryJvmCpuMeterConventions(Tags.empty());
     }
 

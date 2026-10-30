@@ -21,7 +21,7 @@ class OpenLLMetryAdvisorObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(OpenLLMetryAdvisorObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.advisor");
     }
 
     @Test

@@ -2,6 +2,8 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langfuse;
 
 import java.util.List;
 
+import io.micrometer.common.KeyValue;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -26,6 +28,24 @@ class LangfuseChatModelObservationConventionTests {
     private final OpenTelemetryAiConventionsProperties properties = new OpenTelemetryAiConventionsProperties();
 
     private final LangfuseChatModelObservationConvention convention = new LangfuseChatModelObservationConvention(properties);
+
+    @Test
+    void shouldHaveName() {
+        assertThat(convention.getName()).isEqualTo("gen_ai.client.operation.duration");
+    }
+
+    @Test
+    void shouldHaveLowCardinalityKeyValues() {
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hello")), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of("gen_ai.operation.name", "chat"),
+                KeyValue.of("gen_ai.provider.name", "spring_ai"),
+                KeyValue.of("gen_ai.request.model", "mistral"));
+    }
 
     @Test
     void shouldRecordContentOnSpanAttributesWhateverTheDestination() {

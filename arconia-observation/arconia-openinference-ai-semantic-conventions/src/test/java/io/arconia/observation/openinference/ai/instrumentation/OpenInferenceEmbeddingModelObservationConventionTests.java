@@ -34,7 +34,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(observationConvention.getName())
-            .isEqualTo(OpenInferenceEmbeddingModelObservationConvention.DEFAULT_NAME);
+            .isEqualTo("gen_ai.client.operation");
     }
 
     @Test

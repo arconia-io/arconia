@@ -20,7 +20,7 @@ class LangSmithAdvisorObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(LangSmithAdvisorObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.advisor");
     }
 
     @Test

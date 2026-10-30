@@ -20,7 +20,7 @@ class OpenTelemetryAdvisorObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(OpenTelemetryAdvisorObservationConvention.DEFAULT_NAME);
+                .isEqualTo("spring.ai.advisor");
     }
 
     @Test

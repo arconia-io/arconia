@@ -30,7 +30,6 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.StructuredOutputChatOptions;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
-import org.springframework.ai.observation.conventions.AiObservationAttributes;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -151,7 +150,7 @@ class OpenTelemetryChatModelObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(), "500"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), "1000"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey(), "500"),
-                KeyValue.of(AiObservationAttributes.USAGE_TOTAL_TOKENS.value(), "1500")
+                KeyValue.of("gen_ai.usage.total_tokens", "1500")
         );
     }
 

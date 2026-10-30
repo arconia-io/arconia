@@ -30,6 +30,17 @@ class LangfuseChatClientObservationConventionTests {
     private final LangfuseChatClientObservationConvention convention = new LangfuseChatClientObservationConvention(properties);
 
     @Test
+    void shouldHaveLowCardinalityKeyValues() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder().prompt(new Prompt(List.of(new UserMessage("Hello")))).build())
+                .build();
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of("gen_ai.operation.name", "invoke_agent"),
+                KeyValue.of("gen_ai.provider.name", "spring_ai"));
+    }
+
+    @Test
     void shouldRecordConversationIdAlsoAsSessionId() {
         var context = ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
