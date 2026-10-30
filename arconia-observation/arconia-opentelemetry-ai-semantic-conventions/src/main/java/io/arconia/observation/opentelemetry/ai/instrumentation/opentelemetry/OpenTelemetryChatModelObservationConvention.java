@@ -133,10 +133,14 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
 
     // Request
 
+    /**
+     * Records the tool definitions when they are captured on span attributes, otherwise keeps the tool names
+     * Spring AI records by default: the names aren't content, and they still tell which tools a call could use.
+     */
     @Override
     protected KeyValues requestTools(KeyValues keyValues, ChatModelObservationContext context) {
         if (!properties.isCaptureToolDefinitions() || !recordsContentOnSpanAttributes()) {
-            return keyValues;
+            return super.requestTools(keyValues, context);
         }
         var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
         if (toolDefinitions.isEmpty()) {

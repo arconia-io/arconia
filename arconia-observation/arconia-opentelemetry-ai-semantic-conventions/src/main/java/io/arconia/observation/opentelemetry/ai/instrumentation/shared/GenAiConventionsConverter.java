@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
 
 /**
  * Converters from Spring AI observation conventions to GenAI semantic convention values,
- * covering all supported flavors (OpenTelemetry, OpenLLMetry, LangSmith, OpenLIT).
+ * covering all the flavors (OpenTelemetry, OpenLLMetry, LangSmith, OpenLIT, Langfuse).
  */
 public final class GenAiConventionsConverter {
 
@@ -25,7 +25,7 @@ public final class GenAiConventionsConverter {
     public static String toOperationName(String aiOperationType) {
         Assert.hasText(aiOperationType, "aiOperationType cannot be null or empty");
         try {
-            AiOperationType type = AiOperationType.valueOf(aiOperationType.toUpperCase().strip());
+            AiOperationType type = AiOperationType.valueOf(aiOperationType.strip().toUpperCase(Locale.ROOT));
             return switch (type) {
                 case AiOperationType.CHAT -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.CHAT;
                 case AiOperationType.EMBEDDING -> GenAiIncubatingAttributes.GenAiOperationNameIncubatingValues.EMBEDDINGS;
@@ -106,7 +106,7 @@ public final class GenAiConventionsConverter {
     public static String toLangSmithSpanKind(String aiOperationType) {
         Assert.hasText(aiOperationType, "aiOperationType cannot be null or empty");
         try {
-            AiOperationType type = AiOperationType.valueOf(aiOperationType.toUpperCase().strip());
+            AiOperationType type = AiOperationType.valueOf(aiOperationType.strip().toUpperCase(Locale.ROOT));
             return switch (type) {
                 case AiOperationType.CHAT, AiOperationType.TEXT_COMPLETION, AiOperationType.IMAGE -> "llm";
                 case AiOperationType.EMBEDDING -> "embedding";

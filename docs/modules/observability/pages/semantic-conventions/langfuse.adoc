@@ -99,7 +99,7 @@ The `langfuse` flavor records the same attributes as the xref:semantic-conventio
 * Chat model calls become generations, with the model, its parameters, the token usage, and the input and output messages. Langfuse computes their costs from the model and the token usage.
 * Embedding model calls become embeddings, and image model calls become generations.
 * Tool executions become tool calls, with their arguments and result.
-* Chat client calls become agents, grouped into a Langfuse session by the conversation ID of the chat memory, recorded as `gen_ai.conversation.id` on the agent span and on the spans nested in it.
+* Chat client calls become agents, grouped into a Langfuse session by the conversation ID of the chat memory, recorded as `gen_ai.conversation.id` and `session.id` on the agent span and on the spans nested in it.
 * Advisors become chains, through the `langfuse.observation.type` attribute, since Langfuse doesn't derive the chain type from the OpenTelemetry Semantic Conventions.
 
 The input and output messages are always recorded as span attributes, since Langfuse accepts traces only.

@@ -64,8 +64,6 @@ class OpenInferenceEnvironmentPostProcessorIT {
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-input-images")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-input-text")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-output-text")).isEqualTo("true");
-        assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-prompts")).isEqualTo("true");
-        assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-choices")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-llm-invocation-parameters")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-embeddings-text")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-embeddings-vectors")).isEqualTo("true");

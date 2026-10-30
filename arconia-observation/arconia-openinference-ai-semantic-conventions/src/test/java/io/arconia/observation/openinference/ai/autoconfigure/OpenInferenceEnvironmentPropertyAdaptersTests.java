@@ -22,9 +22,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
                 .withProperty("OPENINFERENCE_HIDE_OUTPUT_MESSAGES", "true")
                 .withProperty("OPENINFERENCE_HIDE_INPUT_IMAGES", "true")
                 .withProperty("OPENINFERENCE_HIDE_INPUT_TEXT", "true")
-                .withProperty("OPENINFERENCE_HIDE_PROMPTS", "true")
                 .withProperty("OPENINFERENCE_HIDE_OUTPUT_TEXT", "true")
-                .withProperty("OPENINFERENCE_HIDE_CHOICES", "true")
                 .withProperty("OPENINFERENCE_HIDE_EMBEDDINGS_TEXT", "true")
                 .withProperty("OPENINFERENCE_HIDE_EMBEDDINGS_VECTORS", "true")
                 .withProperty("OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH", "64000");
@@ -40,9 +38,7 @@ class OpenInferenceEnvironmentPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-output-messages")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-input-images")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-input-text")).isEqualTo(true);
-        assertThat(adapter.getArconiaProperties().get(prefix + ".hide-prompts")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-output-text")).isEqualTo(true);
-        assertThat(adapter.getArconiaProperties().get(prefix + ".hide-choices")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-embeddings-text")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".hide-embeddings-vectors")).isEqualTo(true);
         assertThat(adapter.getArconiaProperties().get(prefix + ".base64-image-max-length")).isEqualTo(64000);

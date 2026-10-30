@@ -37,7 +37,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
 
     @Override
     public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
-        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context));
+        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context));
         String modelName = modelName(context);
         return modelName != null ? keyValues.and(SemanticConventions.EMBEDDING_MODEL_NAME, modelName) : keyValues;
     }
@@ -45,6 +45,17 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
     @Override
     protected KeyValue aiOperationType(EmbeddingModelObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.EMBEDDING.getValue());
+    }
+
+    @Override
+    protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
+        return KeyValue.of(SemanticConventions.LLM_PROVIDER,
+                OpenInferenceConventionsConverters.toLlmProvider(context.getOperationMetadata().provider()));
+    }
+
+    private KeyValue llmSystem(EmbeddingModelObservationContext context) {
+        return KeyValue.of(SemanticConventions.LLM_SYSTEM,
+                OpenInferenceConventionsConverters.toLlmSystem(context.getOperationMetadata().provider()));
     }
 
     private @Nullable String modelName(EmbeddingModelObservationContext context) {

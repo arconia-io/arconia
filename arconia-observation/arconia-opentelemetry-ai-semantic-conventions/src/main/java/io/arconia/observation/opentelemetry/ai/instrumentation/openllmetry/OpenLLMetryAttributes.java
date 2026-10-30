@@ -18,12 +18,6 @@ public final class OpenLLMetryAttributes {
     /** The name of the entity (e.g. a function or a module). */
     public static final String TRACELOOP_ENTITY_NAME = "traceloop.entity.name";
 
-    /** The path of the entity in the workflow hierarchy. */
-    public static final String TRACELOOP_ENTITY_PATH = "traceloop.entity.path";
-
-    /** The version of the entity. */
-    public static final String TRACELOOP_ENTITY_VERSION = "traceloop.entity.version";
-
     /** The input to the entity. */
     public static final String TRACELOOP_ENTITY_INPUT = "traceloop.entity.input";
 
@@ -46,8 +40,7 @@ public final class OpenLLMetryAttributes {
         WORKFLOW("workflow"),
         TASK("task"),
         AGENT("agent"),
-        TOOL("tool"),
-        SESSION("session");
+        TOOL("tool");
 
         private final String value;
 

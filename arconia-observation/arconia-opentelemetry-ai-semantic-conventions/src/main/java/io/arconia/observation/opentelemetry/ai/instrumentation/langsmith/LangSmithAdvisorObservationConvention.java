@@ -13,7 +13,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
-public final class LangSmithAiAdvisorConvention extends OpenTelemetryAdvisorObservationConvention {
+public final class LangSmithAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override
     public KeyValues getLowCardinalityKeyValues(AdvisorObservationContext context) {

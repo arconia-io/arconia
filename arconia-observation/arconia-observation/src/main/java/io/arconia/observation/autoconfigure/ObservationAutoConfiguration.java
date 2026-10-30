@@ -20,6 +20,7 @@ public final class ObservationAutoConfiguration {
         return () -> {
             List<String> names = providers.orderedStream()
                     .map(AiObservationConventionsProvider::name)
+                    .distinct()
                     .sorted()
                     .toList();
             if (names.size() > 1) {

@@ -18,7 +18,6 @@ import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.EmbeddingResponseMetadata;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
-import org.springframework.ai.embedding.observation.EmbeddingModelObservationDocumentation;
 import org.springframework.ai.observation.conventions.AiProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,7 +72,8 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
         assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
                 KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral"),
-                KeyValue.of(EmbeddingModelObservationDocumentation.LowCardinalityKeyNames.AI_PROVIDER, "spring_ai")
+                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
+                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai")
         );
     }
 
@@ -92,7 +92,8 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
         assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
                 KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral-42"),
-                KeyValue.of(EmbeddingModelObservationDocumentation.LowCardinalityKeyNames.AI_PROVIDER, "spring_ai")
+                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
+                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai")
         );
     }
 

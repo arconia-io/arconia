@@ -44,6 +44,7 @@ class OpenLLMetryChatClientObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, "false"),
+                KeyValue.of("traceloop.workflow.name", "chat_client"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "chat_client"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TraceloopSpanKind.WORKFLOW.getValue())
         );

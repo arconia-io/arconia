@@ -13,17 +13,12 @@ public class OpenInferenceOptions {
     private long base64ImageMaxLength = 32_000;
 
     /**
-     * Whether to hide all LLM choices.
-     */
-    private boolean hideChoices = false;
-
-    /**
      * Whether to hide all embedding text.
      */
     private boolean hideEmbeddingsText = false;
 
     /**
-     * Whether to hide all embedding vectors.
+     * Whether to hide the dimension summary recorded in place of embedding vectors, which are never recorded.
      */
     private boolean hideEmbeddingsVectors = false;
 
@@ -48,7 +43,7 @@ public class OpenInferenceOptions {
     private boolean hideInputImages = false;
 
     /**
-     * Whether to hide all inputs messages.
+     * Whether to hide all input messages.
      */
     private boolean hideInputMessages = false;
 
@@ -58,7 +53,7 @@ public class OpenInferenceOptions {
     private boolean hideInputText = false;
 
     /**
-     * Whether to hide all output messages.
+     * Whether to hide all outputs.
      */
     private boolean hideOutputs = false;
 
@@ -72,25 +67,12 @@ public class OpenInferenceOptions {
      */
     private boolean hideOutputMessages = false;
 
-    /**
-     * Whether to hide all LLM prompts.
-     */
-    private boolean hidePrompts = false;
-
     public long getBase64ImageMaxLength() {
         return base64ImageMaxLength;
     }
 
     public void setBase64ImageMaxLength(long base64ImageMaxLength) {
         this.base64ImageMaxLength = base64ImageMaxLength;
-    }
-
-    public boolean isHideChoices() {
-        return hideChoices;
-    }
-
-    public void setHideChoices(boolean hideChoices) {
-        this.hideChoices = hideChoices;
     }
 
     public boolean isHideEmbeddingsText() {
@@ -179,14 +161,6 @@ public class OpenInferenceOptions {
 
     public void setHideOutputMessages(boolean hideOutputMessages) {
         this.hideOutputMessages = hideOutputMessages;
-    }
-
-    public boolean isHidePrompts() {
-        return hidePrompts;
-    }
-
-    public void setHidePrompts(boolean hidePrompts) {
-        this.hidePrompts = hidePrompts;
     }
 
 }

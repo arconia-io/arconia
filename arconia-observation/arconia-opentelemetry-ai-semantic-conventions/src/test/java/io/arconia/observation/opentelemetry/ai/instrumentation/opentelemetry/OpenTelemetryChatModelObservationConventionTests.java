@@ -186,6 +186,8 @@ class OpenTelemetryChatModelObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey()));
+        // The tool names Spring AI records by default stay, since they aren't content.
+        assertThat(keyValues).contains(KeyValue.of("spring.ai.model.request.tool.names", "[\"something\"]"));
     }
 
     @Test

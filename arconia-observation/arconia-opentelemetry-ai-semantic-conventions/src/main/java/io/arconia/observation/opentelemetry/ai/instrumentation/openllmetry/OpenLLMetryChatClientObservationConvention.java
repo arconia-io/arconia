@@ -34,6 +34,7 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     @Override
     public KeyValues getLowCardinalityKeyValues(ChatClientObservationContext context) {
         return super.getLowCardinalityKeyValues(context).and(
+                traceloopWorkflowName(context),
                 traceloopEntityName(context),
                 traceloopSpanKind(context)
         );
@@ -42,6 +43,13 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     @Override
     protected KeyValue stream(ChatClientObservationContext context) {
         return KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, String.valueOf(context.isStream()));
+    }
+
+    /**
+     * The chat client call is the workflow Traceloop groups the nested spans under, named after the entity.
+     */
+    private KeyValue traceloopWorkflowName(ChatClientObservationContext context) {
+        return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_WORKFLOW_NAME, "chat_client");
     }
 
     private KeyValue traceloopEntityName(ChatClientObservationContext context) {

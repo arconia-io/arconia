@@ -31,6 +31,16 @@ class ObservationAutoConfigurationTests {
     }
 
     @Test
+    void noFailureWhenParentContextHasTheSameConventionsProvider() {
+        new ApplicationContextRunner()
+            .withBean("provider", AiObservationConventionsProvider.class, () -> AiObservationConventionsProvider.of("openinference"))
+            .run(parent -> contextRunner
+                .withParent(parent)
+                .withBean("provider", AiObservationConventionsProvider.class, () -> AiObservationConventionsProvider.of("openinference"))
+                .run(context -> assertThat(context).hasNotFailed()));
+    }
+
+    @Test
     void failsWithMultipleConventionsProviders() {
         contextRunner
             .withBean("provider1", AiObservationConventionsProvider.class, () -> AiObservationConventionsProvider.of("openinference"))

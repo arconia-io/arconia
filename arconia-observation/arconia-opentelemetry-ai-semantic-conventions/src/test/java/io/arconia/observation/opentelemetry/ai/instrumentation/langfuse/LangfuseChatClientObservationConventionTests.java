@@ -7,11 +7,13 @@ import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
+import io.micrometer.common.KeyValue;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties.InferenceContentDestination;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -26,6 +28,20 @@ class LangfuseChatClientObservationConventionTests {
     private final OpenTelemetryAiConventionsProperties properties = new OpenTelemetryAiConventionsProperties();
 
     private final LangfuseChatClientObservationConvention convention = new LangfuseChatClientObservationConvention(properties);
+
+    @Test
+    void shouldRecordConversationIdAlsoAsSessionId() {
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(new Prompt(List.of(new UserMessage("Hello"))))
+                        .context(ChatMemory.CONVERSATION_ID, "session-42")
+                        .build())
+                .build();
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of("gen_ai.conversation.id", "session-42"),
+                KeyValue.of("session.id", "session-42"));
+    }
 
     @Test
     void shouldRecordContentOnSpanAttributesWhateverTheDestination() {

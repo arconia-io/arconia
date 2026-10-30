@@ -6,7 +6,6 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.micrometer.tracing.otel.bridge.OtelSpan;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -34,9 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class LangSmithEmbeddingModelObservationHandlerTests {
 
-    private static final AttributeKey<Long> GEN_AI_USAGE_TOTAL_TOKENS =
-            AttributeKey.longKey(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey());
-
     private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     private final SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
@@ -55,7 +51,7 @@ class LangSmithEmbeddingModelObservationHandlerTests {
         SpanData span = observe(createContext(new DefaultUsage(100, 0, 100)));
 
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS)).isEqualTo(100L);
-        assertThat(span.getAttributes().get(GEN_AI_USAGE_TOTAL_TOKENS)).isEqualTo(100L);
+        assertThat(span.getAttributes().get(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS)).isEqualTo(100L);
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS)).isNull();
     }
 
@@ -64,7 +60,7 @@ class LangSmithEmbeddingModelObservationHandlerTests {
         SpanData span = observe(createContext(new EmptyUsage()));
 
         assertThat(span.getAttributes().get(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS)).isNull();
-        assertThat(span.getAttributes().get(GEN_AI_USAGE_TOTAL_TOKENS)).isNull();
+        assertThat(span.getAttributes().get(LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS)).isNull();
     }
 
     @Test

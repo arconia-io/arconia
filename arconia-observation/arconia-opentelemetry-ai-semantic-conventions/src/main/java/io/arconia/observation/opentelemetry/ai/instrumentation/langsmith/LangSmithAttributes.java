@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langsmith;
 
 import io.opentelemetry.api.common.AttributeKey;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
@@ -29,7 +30,7 @@ public final class LangSmithAttributes {
     public static final AttributeKey<String> GEN_AI_SYSTEM = stringKey("gen_ai.system");
 
     /** Total number of tokens used (input + output). */
-    public static final AttributeKey<String> GEN_AI_USAGE_TOTAL_TOKENS = stringKey("gen_ai.usage.total_tokens");
+    public static final AttributeKey<Long> GEN_AI_USAGE_TOTAL_TOKENS = longKey("gen_ai.usage.total_tokens");
 
     /** The inputs of the run as JSON, such as the input messages of a model call or the arguments of a tool. */
     public static final AttributeKey<String> GEN_AI_PROMPT = stringKey("gen_ai.prompt");

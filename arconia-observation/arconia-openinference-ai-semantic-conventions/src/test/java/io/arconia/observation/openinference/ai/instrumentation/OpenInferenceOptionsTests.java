@@ -14,7 +14,6 @@ class OpenInferenceOptionsTests {
         OpenInferenceOptions options = new OpenInferenceOptions();
 
         assertThat(options.getBase64ImageMaxLength()).isEqualTo(32_000);
-        assertThat(options.isHideChoices()).isFalse();
         assertThat(options.isHideEmbeddingsText()).isFalse();
         assertThat(options.isHideEmbeddingsVectors()).isFalse();
         assertThat(options.isHideLlmInvocationParameters()).isFalse();
@@ -26,7 +25,6 @@ class OpenInferenceOptionsTests {
         assertThat(options.isHideOutputs()).isFalse();
         assertThat(options.isHideOutputText()).isFalse();
         assertThat(options.isHideOutputMessages()).isFalse();
-        assertThat(options.isHidePrompts()).isFalse();
     }
 
 }

@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAiAdvisorConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
@@ -82,8 +82,8 @@ class LangSmithFlavorConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(AdvisorObservationConvention.class)
-        LangSmithAiAdvisorConvention advisorObservationConvention() {
-            return new LangSmithAiAdvisorConvention();
+        LangSmithAdvisorObservationConvention advisorObservationConvention() {
+            return new LangSmithAdvisorObservationConvention();
         }
 
         @Bean

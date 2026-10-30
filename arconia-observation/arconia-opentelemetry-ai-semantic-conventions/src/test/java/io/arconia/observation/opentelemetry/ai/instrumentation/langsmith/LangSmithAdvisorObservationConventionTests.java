@@ -11,16 +11,16 @@ import org.springframework.ai.chat.prompt.Prompt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link LangSmithAiAdvisorConvention}.
+ * Unit tests for {@link LangSmithAdvisorObservationConvention}.
  */
 class LangSmithAdvisorObservationConventionTests {
 
-    private final LangSmithAiAdvisorConvention convention = new LangSmithAiAdvisorConvention();
+    private final LangSmithAdvisorObservationConvention convention = new LangSmithAdvisorObservationConvention();
 
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo(LangSmithAiAdvisorConvention.DEFAULT_NAME);
+                .isEqualTo(LangSmithAdvisorObservationConvention.DEFAULT_NAME);
     }
 
     @Test

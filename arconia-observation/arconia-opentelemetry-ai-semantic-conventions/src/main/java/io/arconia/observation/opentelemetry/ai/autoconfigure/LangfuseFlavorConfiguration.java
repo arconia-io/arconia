@@ -3,6 +3,7 @@ package io.arconia.observation.opentelemetry.ai.autoconfigure;
 import java.util.List;
 
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
@@ -49,7 +50,9 @@ class LangfuseFlavorConfiguration {
         @Bean
         @ConditionalOnMissingBean(GenAiConversationIdObservationHandler.class)
         GenAiConversationIdObservationHandler conversationIdObservationHandler() {
-            return new GenAiConversationIdObservationHandler(List.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey()));
+            // Langfuse sets the session of a trace from session.id on any span, from gen_ai.conversation.id only on the root span.
+            return new GenAiConversationIdObservationHandler(List.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(),
+                    SessionIncubatingAttributes.SESSION_ID.getKey()));
         }
 
     }

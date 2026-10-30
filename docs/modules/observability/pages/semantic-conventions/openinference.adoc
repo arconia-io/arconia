@@ -138,10 +138,6 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 |	`32 000`
 |	Maximum length of a base64-encoded image. Longer images are redacted.
 
-|	`arconia.observations.conventions.openinference.ai.hide-choices`
-|	`false`
-|	Whether to hide all LLM choices.
-
 |	`arconia.observations.conventions.openinference.ai.hide-embeddings-text`
 |	`false`
 |	Whether to hide all embedding text.
@@ -185,12 +181,10 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 |	`arconia.observations.conventions.openinference.ai.hide-output-messages`
 |	`false`
 |	Whether to hide all output messages.
-
-|	`arconia.observations.conventions.openinference.ai.hide-prompts`
-|	`false`
-|	Whether to hide all LLM prompts.
 |===
 
 == Environment Variables
 
 Arconia supports the https://arize-ai.github.io/openinference/spec/configuration.html[OpenInference Environment Variable Specification] for configuring the OpenInference semantic conventions. If both the OpenInference Environment Variables and the Arconia configuration properties are set, the OpenInference Environment Variables will take precedence.
+
+The `OPENINFERENCE_HIDE_PROMPTS` and `OPENINFERENCE_HIDE_CHOICES` variables don't apply: they hide the prompts and choices of the completions API, which Spring AI doesn't use. Its models call the chat completions API, whose input and output messages the other variables hide. The `OPENINFERENCE_HIDE_RETRIEVAL_DOCUMENTS` and `OPENINFERENCE_BLOB_UPLOADER` variables have no equivalent either, since Arconia doesn't instrument retrieval nor upload blobs.
