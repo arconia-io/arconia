@@ -19,6 +19,13 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-kafka"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    constraints {
+        // TEMPORARY: CVE fixes in snappy-java, which kafka-clients still pins to 1.1.10.7 and Spring Boot does not manage.
+        api("org.xerial.snappy:snappy-java:1.1.10.12") {
+            because "GHSA-q233-g92q-qxp6, GHSA-gwq9-9ffj-mvrv, GHSA-xqrx-qh46-34m7 (fixed in 1.1.10.9)"
+        }
+    }
 }
 
 publishing {
