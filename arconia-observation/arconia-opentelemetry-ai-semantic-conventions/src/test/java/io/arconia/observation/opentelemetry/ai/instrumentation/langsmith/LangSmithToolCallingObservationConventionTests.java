@@ -123,7 +123,19 @@ class LangSmithToolCallingObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
         JSONAssert.assertEquals("""
-                {"output": "{}"}""", completion, JSONCompareMode.STRICT);
+                {"output": null}""", completion, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldWrapMalformedObjectResultAsString() throws JSONException {
+        properties.setCaptureToolCallContent(true);
+        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
+        context.setToolCallResult("{\"temperature\": \"57°F\"");
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        JSONAssert.assertEquals("""
+                {"output": "{\\"temperature\\": \\"57°F\\""}""", completion, JSONCompareMode.STRICT);
     }
 
     @Test

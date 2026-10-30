@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.arize.semconv.trace.SemanticConventions;
+import tools.jackson.databind.util.RawValue;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -29,7 +30,6 @@ import org.springframework.ai.content.MediaContent;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.JsonHelper;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
@@ -247,16 +247,11 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
     }
 
     /**
-     * Parses the input schema of a tool into the JSON object it represents, recording a schema that isn't
-     * valid JSON as the original string rather than failing the observation.
+     * Embeds the input schema of a tool in the tool definition as it is, since it's already JSON.
+     * A schema that isn't valid JSON is recorded as a string rather than failing the observation.
      */
-    private Object toolParameters(String inputSchema) {
-        try {
-            return Objects.requireNonNullElse(jsonHelper.fromJson(inputSchema,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of());
-        } catch (RuntimeException ex) {
-            return inputSchema;
-        }
+    private static Object toolParameters(String inputSchema) {
+        return OpenInferenceJson.isValid(inputSchema) ? new RawValue(inputSchema) : inputSchema;
     }
 
     // Response

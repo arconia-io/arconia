@@ -103,7 +103,10 @@ public final class OpenTelemetryChatModelLogEventObservationHandler implements O
         if (properties.isCaptureToolDefinitions()) {
             var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
             if (!toolDefinitions.isEmpty()) {
-                logRecord.setAttribute(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(), toValue(jsonMapper.valueToTree(toolDefinitions)));
+                // The tool definitions embed the input schemas as raw JSON, so they are serialised and read back
+                // into the tree the structured attribute is built from: this is the one place that needs the tree.
+                JsonNode tree = jsonMapper.readTree(jsonMapper.writeValueAsString(toolDefinitions));
+                logRecord.setAttribute(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(), toValue(tree));
             }
         }
 

@@ -13,7 +13,7 @@ dependencies {
     api "com.arize:openinference-semantic-conventions:${openInferenceVersion}"
     api "org.springframework.ai:spring-ai-model"
 
-
+    implementation "tools.jackson.core:jackson-databind"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-autoconfigure"

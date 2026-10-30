@@ -1,7 +1,5 @@
 package io.arconia.observation.openinference.ai.instrumentation;
 
-import java.util.List;
-import java.util.Map;
 
 import com.arize.semconv.trace.SemanticConventions;
 
@@ -11,7 +9,6 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.tool.observation.DefaultToolCallingObservationConvention;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
-import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
@@ -20,7 +17,6 @@ import org.springframework.util.StringUtils;
  */
 public class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
-    private final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenInferenceOptions openInferenceOptions;
 
@@ -106,15 +102,12 @@ public class OpenInferenceToolCallingObservationConvention extends DefaultToolCa
     }
 
     /**
-     * Whether the value is a JSON object or array, as opposed to plain text such as a bare string.
+     * Whether the value looks like a JSON object or array, as opposed to plain text such as a bare string.
+     * It only picks the MIME type of the output, so the first and last characters are enough to tell:
+     * parsing a tool result, which can be large, would be wasted work.
      */
-    private boolean isJson(String value) {
-        try {
-            Object parsed = jsonHelper.fromJson(value, Object.class);
-            return parsed instanceof Map || parsed instanceof List;
-        } catch (RuntimeException ex) {
-            return false;
-        }
+    private static boolean isJson(String value) {
+        return OpenInferenceJson.isObjectOrArray(value);
     }
 
 }

@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import tools.jackson.databind.util.RawValue;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -21,7 +22,6 @@ import org.springframework.ai.content.MediaContent;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.util.JsonHelper;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -169,7 +169,8 @@ public final class GenAiContent {
 
     /**
      * Converts the tools available to the model in a request into tool definitions,
-     * returning an empty list when the request has no tools.
+     * returning an empty list when the request has no tools. The {@code parameters} of each definition
+     * hold the input schema of the tool as raw JSON, to be serialised as it is.
      *
      * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-tool-definitions.json">Tool Definitions Schema</a>
      */
@@ -184,7 +185,7 @@ public final class GenAiContent {
             toolDefinition.put("type", "function");
             toolDefinition.put("name", toolCallback.getToolDefinition().name());
             toolDefinition.put("description", toolCallback.getToolDefinition().description());
-            toolDefinition.put("parameters", parseInputSchema(toolCallback.getToolDefinition().inputSchema()));
+            toolDefinition.put("parameters", rawInputSchema(toolCallback.getToolDefinition().inputSchema()));
             toolDefinitions.add(toolDefinition);
         }
         return toolDefinitions;
@@ -233,16 +234,11 @@ public final class GenAiContent {
     }
 
     /**
-     * Parses the input schema of a tool into the JSON object it represents, recording a schema that isn't
-     * valid JSON as the original string rather than failing the observation.
+     * Embeds the input schema of a tool in the tool definition as it is, since it's already JSON.
+     * A schema that isn't valid JSON is recorded as a string rather than failing the observation.
      */
-    private static Object parseInputSchema(String inputSchema) {
-        try {
-            return Objects.requireNonNullElse(jsonHelper.fromJson(inputSchema,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}), Map.of());
-        } catch (RuntimeException ex) {
-            return inputSchema;
-        }
+    private static Object rawInputSchema(String inputSchema) {
+        return GenAiJson.isValid(inputSchema) ? new RawValue(inputSchema) : inputSchema;
     }
 
 }
