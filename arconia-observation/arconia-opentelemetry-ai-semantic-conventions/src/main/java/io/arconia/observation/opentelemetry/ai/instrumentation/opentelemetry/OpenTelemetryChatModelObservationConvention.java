@@ -30,7 +30,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  */
 public class OpenTelemetryChatModelObservationConvention extends DefaultChatModelObservationConvention {
 
-    private final JsonHelper jsonHelper = new JsonHelper();
+    protected final JsonHelper jsonHelper = new JsonHelper();
 
     private final OpenTelemetryAiConventionsProperties properties;
 

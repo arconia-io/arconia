@@ -8,7 +8,6 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -22,8 +21,6 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
 public final class LangSmithChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
-
-    private final JsonHelper jsonHelper = new JsonHelper();
 
     public LangSmithChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);

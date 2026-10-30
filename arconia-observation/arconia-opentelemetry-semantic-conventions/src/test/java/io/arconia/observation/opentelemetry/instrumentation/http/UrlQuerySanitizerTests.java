@@ -40,6 +40,24 @@ class UrlQuerySanitizerTests {
     }
 
     @Test
+    void matchesWholeKeysOnly() {
+        assertThat(UrlQuerySanitizer.sanitize("signature=a&sigma=b&xsig=c&sig=d", defaultSensitiveParameters))
+                .isEqualTo("signature=a&sigma=b&xsig=c&sig=REDACTED");
+    }
+
+    @Test
+    void ignoresSensitiveNamesInsideValues() {
+        assertThat(UrlQuerySanitizer.sanitize("q=sig%3D1&note=sig=x&sig=", defaultSensitiveParameters))
+                .isEqualTo("q=sig%3D1&note=sig=x&sig=REDACTED");
+    }
+
+    @Test
+    void returnsTheQueryItselfWhenNothingIsRedacted() {
+        String query = "q=OpenTelemetry&page=2";
+        assertThat(UrlQuerySanitizer.sanitize(query, defaultSensitiveParameters)).isSameAs(query);
+    }
+
+    @Test
     void keepsEmptyQuery() {
         assertThat(UrlQuerySanitizer.sanitize("", defaultSensitiveParameters)).isEmpty();
     }

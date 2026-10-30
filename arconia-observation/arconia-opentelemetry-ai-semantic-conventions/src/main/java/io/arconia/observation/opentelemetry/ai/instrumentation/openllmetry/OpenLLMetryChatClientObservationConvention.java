@@ -8,7 +8,6 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -22,8 +21,6 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
 public final class OpenLLMetryChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
-
-    private final JsonHelper jsonHelper = new JsonHelper();
 
     public OpenLLMetryChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {
         super(properties);

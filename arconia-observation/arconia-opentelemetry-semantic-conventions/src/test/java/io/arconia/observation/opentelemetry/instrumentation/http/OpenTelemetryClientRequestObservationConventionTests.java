@@ -205,6 +205,22 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
+    void urlFullRedactsCredentialsAndQueryAndKeepsFragment() {
+        ClientRequestObservationContext context = context(HttpMethod.GET, "https://user:p%40ss@example.com:8443/a/b?sig=x&q=1#frag");
+
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .containsExactly(KeyValue.of("url.full", "https://REDACTED:REDACTED@example.com:8443/a/b?sig=REDACTED&q=1#frag"));
+    }
+
+    @Test
+    void urlFullRedactsCredentialsWithoutPath() {
+        ClientRequestObservationContext context = context(HttpMethod.GET, "https://user:secret@example.com?sig=x");
+
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .containsExactly(KeyValue.of("url.full", "https://REDACTED:REDACTED@example.com?sig=REDACTED"));
+    }
+
+    @Test
     void urlFullKeepsEncoding() {
         ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com/a%20b?q=a%26b&sig=x%3Dy");
 
