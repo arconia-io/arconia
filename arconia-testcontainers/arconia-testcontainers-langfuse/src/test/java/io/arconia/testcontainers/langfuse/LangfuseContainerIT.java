@@ -28,8 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class LangfuseContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse("langfuse/langfuse:4.71");
-    private static final String WORKER_IMAGE = "langfuse/langfuse-worker:4.71";
+    private static final DockerImageName IMAGE = DockerImageName.parse("langfuse/langfuse:4.72");
+    private static final String WORKER_IMAGE = "langfuse/langfuse-worker:4.72";
     private static final String POSTGRES_IMAGE = "postgres:18.6-alpine";
     private static final String CLICKHOUSE_IMAGE = "clickhouse/clickhouse-server:26.10-distroless";
     private static final String REDIS_IMAGE = "redis:8.10-alpine";

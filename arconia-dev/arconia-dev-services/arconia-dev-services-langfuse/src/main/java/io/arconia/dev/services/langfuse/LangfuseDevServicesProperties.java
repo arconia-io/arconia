@@ -29,12 +29,12 @@ public class LangfuseDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "langfuse/langfuse:4.71";
+    private String imageName = "langfuse/langfuse:4.72";
 
     /**
      * Full name of the container image used for the Langfuse worker.
      */
-    private String workerImageName = "langfuse/langfuse-worker:4.71";
+    private String workerImageName = "langfuse/langfuse-worker:4.72";
 
     /**
      * Full name of the container image used for the internal PostgreSQL instance.

@@ -9,9 +9,9 @@ public final class Images {
 
     public static final String FLOCI = "floci/floci:2.3.0";
 
-    public static final String LANGFUSE = "langfuse/langfuse:4.71";
+    public static final String LANGFUSE = "langfuse/langfuse:4.72";
 
-    public static final String LANGFUSE_WORKER = "langfuse/langfuse-worker:4.71";
+    public static final String LANGFUSE_WORKER = "langfuse/langfuse-worker:4.72";
 
     public static final String LGTM = "grafana/otel-lgtm:0.38.1";
 
