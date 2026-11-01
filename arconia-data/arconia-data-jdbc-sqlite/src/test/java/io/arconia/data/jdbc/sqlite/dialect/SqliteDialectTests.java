@@ -83,6 +83,11 @@ class SqliteDialectTests {
     }
 
     @Test
+    void shouldNotSupportUpsert() {
+        assertThat(dialect.getUpsertRenderContext().supportsUpsert()).isFalse();
+    }
+
+    @Test
     void shouldRegisterReadingConverters() {
         assertThat(dialect.getConverters())
                 .containsExactlyInAnyOrder(

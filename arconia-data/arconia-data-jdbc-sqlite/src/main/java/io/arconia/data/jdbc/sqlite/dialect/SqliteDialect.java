@@ -10,6 +10,8 @@ import org.springframework.data.relational.core.dialect.LimitClause;
 import org.springframework.data.relational.core.dialect.LockClause;
 import org.springframework.data.relational.core.sql.IdentifierProcessing;
 import org.springframework.data.relational.core.sql.LockOptions;
+import org.springframework.data.relational.core.sql.render.UpsertRenderContext;
+import org.springframework.data.relational.core.sql.render.UpsertRenderContexts;
 
 /**
  * SQL {@link Dialect} for SQLite.
@@ -112,6 +114,17 @@ public class SqliteDialect extends AbstractDialect {
     @Override
     public boolean supportsSingleQueryLoading() {
         return false;
+    }
+
+    /**
+     * SQLite does not support the {@code MERGE} statement that Spring Data falls back to for
+     * upserts, and Spring Data does not allow dialects to contribute their own upsert syntax.
+     *
+     * @see <a href="https://github.com/spring-projects/spring-data-relational/issues/2304">spring-data-relational#2304</a>
+     */
+    @Override
+    public UpsertRenderContext getUpsertRenderContext() {
+        return UpsertRenderContexts.UNSUPPORTED;
     }
 
 }

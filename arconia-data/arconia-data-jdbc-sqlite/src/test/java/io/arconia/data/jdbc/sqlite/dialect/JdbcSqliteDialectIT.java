@@ -31,6 +31,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration tests for {@link JdbcSqliteDialect} against a real SQLite database, with the
@@ -204,6 +205,18 @@ class JdbcSqliteDialectIT {
             bookRepository.save(book("A"));
 
             assertThat(bookRepository.findByTitle("A")).hasSize(1);
+        }
+
+    }
+
+    @Nested
+    class Upsert {
+
+        @Test
+        void shouldRejectUpsert() {
+            assertThatThrownBy(() -> template.upsert(new Book(1L, "A", true, null, null, null, Set.of())))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Upsert is not supported by dialect");
         }
 
     }
