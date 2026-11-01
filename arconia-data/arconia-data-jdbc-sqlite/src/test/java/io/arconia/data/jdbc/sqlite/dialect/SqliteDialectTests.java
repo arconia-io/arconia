@@ -30,7 +30,7 @@ class SqliteDialectTests {
     void shouldRenderOffset() {
         LimitClause limit = dialect.limit();
 
-        assertThat(limit.getOffset(10)).isEqualTo("OFFSET 10");
+        assertThat(limit.getOffset(10)).isEqualTo("LIMIT -1 OFFSET 10");
     }
 
     @Test

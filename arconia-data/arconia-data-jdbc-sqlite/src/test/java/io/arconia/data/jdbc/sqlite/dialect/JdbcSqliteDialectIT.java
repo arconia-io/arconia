@@ -23,6 +23,7 @@ import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.data.jdbc.core.dialect.JdbcDialect;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.data.relational.core.sql.LockMode;
 import org.springframework.data.relational.repository.Lock;
 import org.springframework.data.repository.ListCrudRepository;
@@ -85,6 +86,13 @@ class JdbcSqliteDialectIT {
             List<Book> books = template.findAll(Book.class, PageRequest.of(1, 2, Sort.by("title"))).getContent();
 
             assertThat(books).extracting(Book::title).containsExactly("C", "D");
+        }
+
+        @Test
+        void shouldApplyOffsetWithoutLimit() {
+            List<Book> books = template.findAll(Query.empty().sort(Sort.by("title")).offset(3), Book.class);
+
+            assertThat(books).extracting(Book::title).containsExactly("D", "E");
         }
 
     }

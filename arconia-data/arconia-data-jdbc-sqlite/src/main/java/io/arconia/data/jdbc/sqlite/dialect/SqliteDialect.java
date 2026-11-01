@@ -27,9 +27,12 @@ public class SqliteDialect extends AbstractDialect {
             return "LIMIT %d".formatted(limit);
         }
 
+        /**
+         * SQLite accepts {@code OFFSET} only after {@code LIMIT}, where a negative limit means no limit.
+         */
         @Override
         public String getOffset(long offset) {
-            return "OFFSET %d".formatted(offset);
+            return "LIMIT -1 OFFSET %d".formatted(offset);
         }
 
         @Override
