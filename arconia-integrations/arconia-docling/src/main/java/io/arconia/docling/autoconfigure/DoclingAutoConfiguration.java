@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.boot.restclient.autoconfigure.RestClientAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestClient;
@@ -32,9 +33,11 @@ public final class DoclingAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DoclingServeApi.class)
-    DoclingServeClient doclingServeApi(ObjectProvider<RestClient.Builder> restClientBuilder, DoclingServeConnectionDetails connectionDetails, DoclingProperties properties) {
+    DoclingServeClient doclingServeApi(ObjectProvider<RestClient.Builder> restClientBuilder, ObjectProvider<HttpClientSettings> httpClientSettings,
+            DoclingServeConnectionDetails connectionDetails, DoclingProperties properties) {
         return DoclingServeClient.builder()
                 .restClientBuilder(restClientBuilder.getIfAvailable(RestClient::builder))
+                .httpClientSettings(httpClientSettings.getIfAvailable(HttpClientSettings::defaults))
                 .baseUrl(connectionDetails.getBaseUrl())
                 .apiKey(connectionDetails.getApiKey())
                 .connectTimeout(properties.getConnectTimeout())

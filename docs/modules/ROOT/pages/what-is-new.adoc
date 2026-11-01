@@ -73,6 +73,7 @@ The following changes affect the custom Dev Services you build on the Arconia De
 == Docling
 
 * The async operations of the Docling client, such as `convertSourceAsync`, now return the result of the task. Previously, they returned an empty response without waiting for the task to complete. They poll the task status as configured by the new `arconia.docling.async-poll-interval` and `arconia.docling.async-timeout` properties, or by the `asyncPollInterval` and `asyncTimeout` options of the client builders, which are no longer ignored. Learn more about the xref:integrations:docling.adoc#_configuration[Docling configuration].
+* The auto-configured Docling client now applies the Spring Boot `spring.http.clients.*` settings, such as the SSL bundle and the redirect strategy, so it can connect to a Docling Serve instance whose certificate is signed by a private certificate authority. Previously, only the connect and read timeouts were applied. Learn more about the xref:integrations:docling.adoc#_configuration[Docling configuration].
 * Polling the status of a task and clearing the stored results now send the `wait` and `older_then` durations in seconds, as Docling Serve expects.
 
 == Multitenancy

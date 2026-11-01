@@ -8,7 +8,9 @@ import ai.docling.serve.api.DoclingServeApiConfig;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.boot.restclient.autoconfigure.RestClientAutoConfiguration;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -132,6 +134,15 @@ class DoclingAutoConfigurationTests {
                     DoclingServeConnectionDetails connectionDetails = context.getBean(DoclingServeConnectionDetails.class);
                     assertThat(connectionDetails.getBaseUrl()).isEqualTo(URI.create("http://custom-connection:7777"));
                 });
+    }
+
+    @Test
+    void doclingClientUsesHttpClientSettings() {
+        SslBundle sslBundle = mock(SslBundle.class);
+        when(sslBundle.getOptions()).thenThrow(new IllegalStateException("SSL bundle used"));
+
+        contextRunner.withBean(HttpClientSettings.class, () -> HttpClientSettings.ofSslBundle(sslBundle))
+                .run(context -> assertThat(context).getFailure().rootCause().hasMessage("SSL bundle used"));
     }
 
     @Test

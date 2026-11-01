@@ -242,6 +242,7 @@ public class DoclingServeClient implements DoclingServeApi {
     public static class Builder {
 
         private RestClient.Builder restClientBuilder = RestClient.builder();
+        private HttpClientSettings httpClientSettings = HttpClientSettings.defaults();
         @Nullable
         private URI baseUrl;
         @Nullable
@@ -259,6 +260,15 @@ public class DoclingServeClient implements DoclingServeApi {
 
         public Builder restClientBuilder(RestClient.Builder restClientBuilder) {
             this.restClientBuilder = restClientBuilder;
+            return this;
+        }
+
+        /**
+         * Settings for the underlying HTTP client, such as the SSL bundle and the redirect strategy.
+         * The connect and read timeouts of this builder take precedence over the ones in the settings.
+         */
+        public Builder httpClientSettings(HttpClientSettings httpClientSettings) {
+            this.httpClientSettings = httpClientSettings;
             return this;
         }
 
@@ -319,6 +329,7 @@ public class DoclingServeClient implements DoclingServeApi {
 
         public DoclingServeClient build() {
             Assert.notNull(restClientBuilder, "restClientBuilder cannot be null");
+            Assert.notNull(httpClientSettings, "httpClientSettings cannot be null");
             URI baseUrl = this.baseUrl;
             Assert.notNull(baseUrl, "baseUrl cannot be null");
             boolean plainHttp = "http".equalsIgnoreCase(baseUrl.getScheme());
@@ -344,9 +355,7 @@ public class DoclingServeClient implements DoclingServeApi {
                                     builder.version(HttpClient.Version.HTTP_1_1);
                                 }
                             })
-                            .build(HttpClientSettings.defaults()
-                                    .withConnectTimeout(connectTimeout)
-                                    .withReadTimeout(readTimeout)));
+                            .build(httpClientSettings.withTimeouts(connectTimeout, readTimeout)));
 
             if (StringUtils.hasText(apiKey)) {
                 restClientBuilder.defaultHeader(DoclingProperties.API_KEY_HEADER_NAME, apiKey);

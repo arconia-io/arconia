@@ -159,6 +159,8 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |Whether to pretty-print the JSON bodies of the logged requests and responses.
 |===
 
+The client also applies the Spring Boot `spring.http.clients.*` settings, such as the SSL bundle used to trust the certificate of a Docling Serve instance served over HTTPS (`spring.http.clients.ssl.bundle`) and the redirect strategy (`spring.http.clients.redirects`). The `arconia.docling.connect-timeout` and `arconia.docling.read-timeout` properties take precedence over the Spring Boot timeouts. Learn more about https://docs.spring.io/spring-boot/reference/io/rest-client.html#io.rest-client.clienthttprequestfactory.configuration[global HTTP client configuration] in the Spring Boot documentation.
+
 == Actuator
 
 === Health Indicator
