@@ -35,12 +35,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
-import io.arconia.docling.autoconfigure.DoclingProperties;
-
 /**
  * Client interface for interacting with the Docling Serve API.
  */
 public class DoclingServeClient implements DoclingServeApi {
+
+    public static final String API_KEY_HEADER_NAME = "X-Api-Key";
 
     private final RestClient restClient;
     private final DoclingServeApiConfig config;
@@ -358,7 +358,7 @@ public class DoclingServeClient implements DoclingServeApi {
                             .build(httpClientSettings.withTimeouts(connectTimeout, readTimeout)));
 
             if (StringUtils.hasText(apiKey)) {
-                restClientBuilder.defaultHeader(DoclingProperties.API_KEY_HEADER_NAME, apiKey);
+                restClientBuilder.defaultHeader(API_KEY_HEADER_NAME, apiKey);
             }
 
             restClientBuilder.defaultStatusHandler(ValidationErrorHandler.STATUS::equals, new ValidationErrorHandler());

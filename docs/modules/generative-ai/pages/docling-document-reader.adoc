@@ -99,6 +99,13 @@ Maven::
 ----
 ======
 
+By default, the Dev Service enables the Docling UI. The application logs will show you the URL where you can access that, together with the URLs of the OpenAPI, and Scalar documentation of the Docling Serve API.
+
+[source,logs]
+----
+...i.a.d.s.startup  : Dev Service 'docling' links: Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs, Docling Scalar: http://localhost:<port>/scalar
+----
+
 === Ingesting Documents with Docling
 
 Given a `story.pdf` file, you can build a data ingestion pipeline as follows:
@@ -133,9 +140,62 @@ public class IngestionPipeline {
 
 The `DoclingDocumentReader` will use Docling to process the file, transform it into smaller chunks, and build a resulting collection of Spring AI's Documents. Finally, you can use Spring AI's `VectorStore` API to convert the documents into embeddings and store them into a vector database.
 
+Docling Serve downloads the URL sources itself, from its own network. If the URLs come from the users of your application, validate them before passing them to the reader so that they can't point Docling Serve to internal services.
+
 All the files and URLs of a reader are sent to Docling Serve in a single request. If Docling Serve can't convert one of them, the reader throws an `IllegalStateException` listing the sources that failed and the reasons, without returning the chunks of the other sources.
 
+The reader waits for Docling Serve to process all the sources within the `arconia.docling.read-timeout`. For larger batches, split the sources across several readers.
+
 NOTE: For more information on how to build a data ingestion pipeline in Spring AI, check out the https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[dedicated documentation].
+
+=== Customizing the Reader
+
+The reader accepts files as Spring `Resource` objects and documents to download as URLs, and you can combine them in the same reader. You can also customize how Docling converts and chunks them, and add metadata to every resulting document.
+
+[source,java]
+----
+DoclingDocumentReader reader = DoclingDocumentReader.builder()
+        .doclingServeApi(doclingServeApi)
+        .files(new ClassPathResource("story.pdf"))
+        .urls("https://docs.arconia.io/arconia/latest/integrations/docling/")
+        .convertOptions(ConvertDocumentOptions.builder()
+                .doOcr(false)
+                .build())
+        .chunkerOptions(HybridChunkerOptions.builder()
+                .maxTokens(512)
+                .build())
+        .metadata(Map.of("collection", "stories"))
+        .build();
+----
+
+By default, the reader uses the hierarchical chunker, which creates one chunk for each element of the document structure, such as a paragraph or a list. The hybrid chunker refines those chunks to fit the token limit of your embedding model.
+
+Each resulting document carries the following metadata, besides the one you provide. You can refer to the keys via the `DocumentMetadata` enumeration.
+
+[cols="1,3"]
+|===
+|Key |Description
+
+|`file_name`
+|Name of the source file.
+
+|`headings`
+|Headings of the section the chunk belongs to, if any.
+
+|`page_numbers`
+|Pages the chunk comes from, if any.
+
+|`binary_hash`
+|Hash of the source file, which identifies the same file across ingestions.
+
+|`mime_type`
+|MIME type of the source file.
+
+|`uri`
+|URI of the source, when Docling Serve reports one.
+|===
+
+To build the documents differently, you can pass your own `DoclingDocumentParser` to the reader via `documentParser()`.
 
 === Running the Application
 

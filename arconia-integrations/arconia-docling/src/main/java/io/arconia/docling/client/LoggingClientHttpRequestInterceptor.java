@@ -18,8 +18,6 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StreamUtils;
 
-import io.arconia.docling.autoconfigure.DoclingProperties;
-
 /**
  * Logs the requests sent to the Docling Serve API and the responses received from it,
  * masking the API key and any Authorization header.
@@ -103,7 +101,7 @@ final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInte
 
     private static boolean shouldMask(String headerName) {
         return HttpHeaders.AUTHORIZATION.equalsIgnoreCase(headerName)
-                || DoclingProperties.API_KEY_HEADER_NAME.equalsIgnoreCase(headerName);
+                || DoclingServeClient.API_KEY_HEADER_NAME.equalsIgnoreCase(headerName);
     }
 
 }

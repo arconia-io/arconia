@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import ai.docling.serve.api.chunk.response.Chunk;
 
@@ -50,7 +49,6 @@ public final class DefaultDoclingDocumentParser implements DoclingDocumentParser
             }
 
             documents.add(Document.builder()
-                    .id(UUID.randomUUID().toString())
                     .text(chunk.getText())
                     .metadata(metadata)
                     .build());

@@ -1,6 +1,7 @@
 package io.arconia.ai.document.docling;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -113,7 +114,7 @@ public final class DoclingDocumentReader implements DocumentReader {
             try {
                 base64File = Base64.getEncoder().encodeToString(file.getContentAsByteArray());
             } catch (IOException e) {
-                throw new RuntimeException("Error reading file: " + file.getFilename(), e);
+                throw new UncheckedIOException("Error reading file: " + file.getFilename(), e);
             }
             sources.add(FileSource.builder()
                     .filename(file.getFilename() != null ? file.getFilename() : "file")
@@ -133,6 +134,7 @@ public final class DoclingDocumentReader implements DocumentReader {
     }
 
     public static class Builder {
+
         @Nullable
         private DoclingServeApi doclingServeApi;
         private ConvertDocumentOptions convertOptions = ConvertDocumentOptions.builder().build();

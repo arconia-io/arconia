@@ -22,7 +22,6 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 
-import io.arconia.docling.autoconfigure.DoclingProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,7 +51,7 @@ class LoggingClientHttpRequestInterceptorTests {
         var interceptor = new LoggingClientHttpRequestInterceptor(true, false, false);
         var request = new MockClientHttpRequest(HttpMethod.POST, URI.create("http://localhost:5001/v1/convert/source"));
         request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        request.getHeaders().set(DoclingProperties.API_KEY_HEADER_NAME, "super-secret-key");
+        request.getHeaders().set(DoclingServeClient.API_KEY_HEADER_NAME, "super-secret-key");
 
         interceptor.intercept(request, "{\"a\":1}".getBytes(StandardCharsets.UTF_8), jsonResponse("{\"status\":\"ok\"}"));
 
@@ -71,7 +70,7 @@ class LoggingClientHttpRequestInterceptorTests {
     void masksShortApiKeyAndAuthorizationHeader() throws IOException {
         var interceptor = new LoggingClientHttpRequestInterceptor(true, false, false);
         var request = new MockClientHttpRequest(HttpMethod.GET, URI.create("http://localhost:5001/health"));
-        request.getHeaders().set(DoclingProperties.API_KEY_HEADER_NAME, "abc");
+        request.getHeaders().set(DoclingServeClient.API_KEY_HEADER_NAME, "abc");
         request.getHeaders().setBearerAuth("token-value");
 
         interceptor.intercept(request, new byte[0], jsonResponse("{}"));

@@ -12,8 +12,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "arconia.docling")
 public class DoclingProperties {
 
-    public static final String API_KEY_HEADER_NAME = "X-Api-Key";
-
     /**
      * Base URL for the Docling Serve API.
      */
@@ -32,6 +30,7 @@ public class DoclingProperties {
 
     /**
      * Timeout for receiving a response from the Docling Serve API.
+     * For longer conversions, use the async operations.
      */
     private Duration readTimeout = Duration.ofMinutes(2);
 
@@ -47,11 +46,14 @@ public class DoclingProperties {
 
     /**
      * Whether to log the requests sent to the Docling Serve API.
+     * The API key is masked and the bodies are truncated to 4000 characters.
      */
     private boolean logRequests = false;
 
     /**
      * Whether to log the responses received from the Docling Serve API.
+     * The bodies are truncated to 4000 characters, and non-JSON bodies,
+     * such as zip archives, are not logged.
      */
     private boolean logResponses = false;
 

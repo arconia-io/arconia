@@ -97,11 +97,11 @@ Maven::
 ----
 ======
 
-By default, the Dev Service is configured to expose the Docling Serve UI on a specific port. The application logs will show you the URL where you can access that.
+By default, the Dev Service enables the Docling UI. The application logs will show you the URL where you can access that, together with the URLs of the OpenAPI, and Scalar documentation of the Docling Serve API.
 
 [source,logs]
 ----
-... Docling Serve UI: http://localhost:<port>/ui
+...i.a.d.s.startup  : Dev Service 'docling' links: Docling UI: http://localhost:<port>/ui, Docling OpenAPI: http://localhost:<port>/docs, Docling Scalar: http://localhost:<port>/scalar
 ----
 
 === Running the Application
@@ -111,8 +111,6 @@ When using the Arconia Dev Services, you can keep running your application as yo
 include::ROOT:partial$app-run.adoc[]
 
 NOTE: Unlike the lower-level Testcontainers support in Spring Boot, Arconia doesn't require special tasks to run your application when using Dev Services (`./gradlew bootTestRun` or `./mvnw spring-boot:test-run`) nor requires you to define a separate `@SpringBootApplication` class for configuring Testcontainers.
-
-The application logs will show you the URL where you can access the Docling Serve UI for interactive document conversion.
 
 == Configuration
 
@@ -136,7 +134,7 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 
 |`arconia.docling.read-timeout`
 |`2m`
-|Timeout for receiving a response from the Docling Serve API. It matches the time Docling Serve waits for a synchronous conversion to complete (`DOCLING_SERVE_MAX_SYNC_WAIT`, 2 minutes by default). For longer conversions, use the async operations.
+|Timeout for receiving a response from the Docling Serve API. For longer conversions, use the async operations.
 
 |`arconia.docling.async-poll-interval`
 |`2s`
@@ -178,7 +176,7 @@ When Spring Boot Actuator is present on the classpath, Arconia automatically con
 
 When enabled, the health status will be included in the actuator `/health` endpoint response, showing whether the Docling Serve API is reachable and operational.
 
-When health details are shown, the response also includes the `location` of the Docling Serve instance (its base URL). In case of failure, the response includes the `status` reported by Docling Serve or the `error` that prevented the check from completing.
+When health details are shown, the response also includes the `location` of the Docling Serve instance (its base URL, without any credentials it carries). In case of failure, the response includes the `status` reported by Docling Serve or the `error` that prevented the check from completing.
 
 [source,json]
 ----
@@ -210,10 +208,10 @@ public class DocumentService {
 
     public String convertWebPage(String url) {
         ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-                .source(HttpSource.builder().url(url).build())
+                .source(HttpSource.builder().url(URI.create(url)).build())
                 .build();
 
-        InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingServeApi.convertSource(request);
+        InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingClient.convertSource(request);
         return response.getDocument().getMarkdownContent();
     }
 }
@@ -221,7 +219,9 @@ public class DocumentService {
 
 === Building a Client Manually
 
-Arconia registers a `DoclingServeApiProvider`, so the standard `DoclingServeApi.builder()` entry point from Docling Java resolves to the Arconia client as well. That's useful outside the Spring context, for example in tests, or to create a modified copy of the auto-configured client via `config().toBuilder()`.
+Arconia registers a `DoclingServeApiProvider`, so the standard `DoclingServeApi.builder()` entry point from Docling Java resolves to the Arconia client as well. That's useful outside the Spring context, for example, in tests, or to create a modified copy of the auto-configured client via `config().toBuilder()`.
+
+A client built this way only carries the options of `DoclingServeApiConfig`. It doesn't get the Spring Boot customizations of the auto-configured client, such as the `spring.http.clients.*` settings, the `RestClient` customizers, and the observations. When you build a new client with `DoclingServeApi.builder()`, its timeouts default to the Docling Java ones (5 seconds to connect, 30 seconds to read).
 
 [source,java]
 ----
@@ -297,16 +297,21 @@ ConvertDocumentResponse response = doclingClient.convertSource(request);
 
 === Error Handling
 
-When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`.
+When Docling Serve can't convert a source, for example, because the URL can't be reached or the file is corrupted, the request still succeeds: the response reports a `failure` status and the errors.
+
+[source,java]
+----
+InBodyConvertDocumentResponse response = (InBodyConvertDocumentResponse) doclingClient.convertSource(request);
+if ("failure".equals(response.getStatus())) {
+    response.getErrors().forEach(error -> log.warn("Conversion failed: {}", error.getErrorMessage()));
+}
+----
+
+When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`. An async operation fails with a `TimeoutException` when the task doesn't complete within `asyncTimeout`, and with an `IllegalStateException` when Docling Serve reports that the task failed.
 
 [source,java]
 ----
 try {
-    ConvertDocumentRequest request = ConvertDocumentRequest.builder()
-            .source(HttpSource.builder()
-                .url(URI.create("https://invalid-url.com/document.pdf"))
-                .build())
-            .build();
     ConvertDocumentResponse response = doclingClient.convertSource(request);
 } catch (ValidationException ex) {
     ex.getValidationError().getErrorDetails()
