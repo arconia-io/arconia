@@ -71,6 +71,18 @@ final class LgtmDashboards {
 
     private static final String OPENTELEMETRY_JVM_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.jvm.enabled";
 
+    private static final String OPENTELEMETRY_HTTP_CONVENTIONS_CLASS = "io.arconia.observation.opentelemetry.autoconfigure.HttpConventionsAutoConfiguration";
+
+    private static final String OPENTELEMETRY_HTTP_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.http.enabled";
+
+    private static final String SPRING_MVC_CLASS = "org.springframework.web.servlet.DispatcherServlet";
+
+    private static final String SPRING_WEBFLUX_CLASS = "org.springframework.web.reactive.DispatcherHandler";
+
+    private static final String REST_CLIENT_OBSERVATION_CLASS = "org.springframework.boot.restclient.observation.ObservationRestClientCustomizer";
+
+    private static final String WEB_CLIENT_OBSERVATION_CLASS = "org.springframework.boot.webclient.observation.ObservationWebClientCustomizer";
+
     private static final String OPENTELEMETRY_AI_CONVENTIONS_CLASS = "io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsAutoConfiguration";
 
     private static final String OPENTELEMETRY_AI_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.ai.enabled";
@@ -80,6 +92,12 @@ final class LgtmDashboards {
     static final List<BuiltInDashboard> BUILT_IN = List.of(
             new BuiltInDashboard("jvm-micrometer.json", openTelemetryJvmConventions().negate()),
             new BuiltInDashboard("jvm-opentelemetry.json", openTelemetryJvmConventions()),
+            new BuiltInDashboard("http-server-micrometer.json",
+                    openTelemetryHttpServerConventions().negate().and(classPresent(SPRING_MVC_CLASS).or(classPresent(SPRING_WEBFLUX_CLASS)))),
+            new BuiltInDashboard("http-server-opentelemetry.json", openTelemetryHttpServerConventions()),
+            new BuiltInDashboard("http-client-micrometer.json",
+                    openTelemetryHttpClientConventions().negate().and(classPresent(REST_CLIENT_OBSERVATION_CLASS).or(classPresent(WEB_CLIENT_OBSERVATION_CLASS)))),
+            new BuiltInDashboard("http-client-opentelemetry.json", openTelemetryHttpClientConventions()),
             new BuiltInDashboard("logging.json", classPresent(LOGBACK_CLASS)),
             new BuiltInDashboard("genai-opentelemetry.json", openTelemetryAiConventions()));
 
@@ -204,6 +222,25 @@ final class LgtmDashboards {
 
     private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryJvmConventions() {
         return classPresent(OPENTELEMETRY_JVM_CONVENTIONS_CLASS).and(propertyEnabled(OPENTELEMETRY_JVM_CONVENTIONS_PROPERTY));
+    }
+
+    /**
+     * The OpenTelemetry HTTP server conventions apply to Spring MVC only: Spring WebFlux keeps the Micrometer ones.
+     */
+    private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryHttpServerConventions() {
+        return openTelemetryHttpConventions().and(classPresent(SPRING_MVC_CLASS));
+    }
+
+    /**
+     * The OpenTelemetry HTTP client conventions apply to {@code RestClient} and {@code RestTemplate} only:
+     * {@code WebClient} keeps the Micrometer ones.
+     */
+    private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryHttpClientConventions() {
+        return openTelemetryHttpConventions().and(classPresent(REST_CLIENT_OBSERVATION_CLASS));
+    }
+
+    private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryHttpConventions() {
+        return classPresent(OPENTELEMETRY_HTTP_CONVENTIONS_CLASS).and(propertyEnabled(OPENTELEMETRY_HTTP_CONVENTIONS_PROPERTY));
     }
 
     private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryAiConventions() {

@@ -18,6 +18,7 @@ import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsAutoConfiguration;
+import io.arconia.observation.opentelemetry.autoconfigure.HttpConventionsAutoConfiguration;
 import io.arconia.observation.opentelemetry.autoconfigure.JvmConventionsAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +71,82 @@ class LgtmDashboardsTests {
             assertThat(dashboards.dashboards().keySet())
                     .contains("jvm-micrometer.json")
                     .doesNotContain("jvm-opentelemetry.json");
+        }
+
+        @Test
+        void openTelemetryHttpDashboardsWhenOpenTelemetryConventionsPresent() {
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .contains("http-server-opentelemetry.json", "http-client-opentelemetry.json")
+                    .doesNotContain("http-server-micrometer.json", "http-client-micrometer.json");
+        }
+
+        @Test
+        void micrometerHttpDashboardsWhenOpenTelemetryConventionsAbsent() {
+            var resourceLoader = new DefaultResourceLoader(new FilteredClassLoader(HttpConventionsAutoConfiguration.class));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .contains("http-server-micrometer.json", "http-client-micrometer.json")
+                    .doesNotContain("http-server-opentelemetry.json", "http-client-opentelemetry.json");
+        }
+
+        @Test
+        void micrometerHttpDashboardsWhenOpenTelemetryHttpConventionsDisabled() {
+            var environment = new MockEnvironment()
+                    .withProperty("arconia.observations.conventions.opentelemetry.http.enabled", "false");
+
+            var dashboards = LgtmDashboards.collect(environment, resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .contains("http-server-micrometer.json", "http-client-micrometer.json")
+                    .doesNotContain("http-server-opentelemetry.json", "http-client-opentelemetry.json");
+        }
+
+        @Test
+        void micrometerHttpServerDashboardForSpringWebFlux() {
+            var resourceLoader = new DefaultResourceLoader(new FilteredClassLoader("org.springframework.web.servlet"));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .contains("http-server-micrometer.json")
+                    .doesNotContain("http-server-opentelemetry.json");
+        }
+
+        @Test
+        void noHttpServerDashboardWithoutWebFramework() {
+            var resourceLoader = new DefaultResourceLoader(
+                    new FilteredClassLoader("org.springframework.web.servlet", "org.springframework.web.reactive"));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .doesNotContain("http-server-micrometer.json", "http-server-opentelemetry.json");
+        }
+
+        @Test
+        void micrometerHttpClientDashboardForWebClient() {
+            var resourceLoader = new DefaultResourceLoader(new FilteredClassLoader("org.springframework.boot.restclient"));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .contains("http-client-micrometer.json")
+                    .doesNotContain("http-client-opentelemetry.json");
+        }
+
+        @Test
+        void noHttpClientDashboardWithoutObservedHttpClient() {
+            var resourceLoader = new DefaultResourceLoader(
+                    new FilteredClassLoader("org.springframework.boot.restclient", "org.springframework.boot.webclient"));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet())
+                    .doesNotContain("http-client-micrometer.json", "http-client-opentelemetry.json");
         }
 
         @Test

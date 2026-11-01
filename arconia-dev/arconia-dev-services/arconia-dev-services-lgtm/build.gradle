@@ -20,6 +20,11 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "jakarta.servlet:jakarta.servlet-api"
+    testRuntimeOnly "org.springframework:spring-webflux"
+    testRuntimeOnly "org.springframework:spring-webmvc"
+    testRuntimeOnly "org.springframework.boot:spring-boot-restclient"
+    testRuntimeOnly "org.springframework.boot:spring-boot-webclient"
 }
 
 dependencyManagement {

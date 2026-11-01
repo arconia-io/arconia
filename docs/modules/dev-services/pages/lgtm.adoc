@@ -83,6 +83,22 @@ The Dev Service provisions Grafana with dashboards for Spring Boot applications,
 | Same as above.
 | When the JVM metrics follow the OpenTelemetry semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc[Arconia OpenTelemetry Semantic Conventions] module is on the classpath and its JVM conventions are enabled.
 
+| HTTP Server (`http-server-micrometer.json`)
+| Requests handled by the application: traffic, error rate, and duration by route and status code, and the most recent failed requests with links to their traces.
+| For Spring MVC and Spring WebFlux applications whose HTTP metrics follow the Micrometer conventions, the Spring Boot default.
+
+| HTTP Server (`http-server-opentelemetry.json`)
+| Same as above.
+| For Spring MVC applications whose HTTP metrics follow the OpenTelemetry semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc#_http[Arconia OpenTelemetry Semantic Conventions] module is on the classpath and its HTTP conventions are enabled. Spring WebFlux keeps the Micrometer conventions.
+
+| HTTP Client (`http-client-micrometer.json`)
+| Requests sent by the application to other services: traffic, failure rate, and duration by server and status code, and the most recent failed requests with links to their traces.
+| For applications using `RestClient`, `RestTemplate`, or `WebClient` whose HTTP metrics follow the Micrometer conventions, the Spring Boot default.
+
+| HTTP Client (`http-client-opentelemetry.json`)
+| Same as above.
+| For applications using `RestClient` or `RestTemplate` whose HTTP metrics follow the OpenTelemetry semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc#_http[Arconia OpenTelemetry Semantic Conventions] module is on the classpath and its HTTP conventions are enabled. `WebClient` keeps the Micrometer conventions, so its requests don't appear in this dashboard.
+
 | Logging (`logging.json`)
 | Log events by level, and the application logs with links to their traces.
 | When Logback is on the classpath, the Spring Boot default.
