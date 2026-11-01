@@ -20,6 +20,7 @@ import ai.docling.serve.api.convert.request.source.FileSource;
 import ai.docling.serve.api.convert.request.source.HttpSource;
 import ai.docling.serve.api.convert.request.source.Source;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentReader;
 import org.springframework.core.io.Resource;
@@ -42,6 +43,7 @@ public final class DoclingDocumentReader implements DocumentReader {
         Assert.notNull(doclingServeApi, "doclingServeApi cannot be null");
         Assert.notNull(convertOptions, "convertOptions cannot be null");
         Assert.notNull(chunkerOptions, "chunkerOptions cannot be null");
+        Assert.notNull(documentParser, "documentParser cannot be null");
         Assert.notNull(metadata, "metadata cannot be null");
         Assert.noNullElements(metadata.keySet(), "metadata cannot contain null keys");
         Assert.noNullElements(metadata.values(), "metadata cannot contain null values");
@@ -112,6 +114,7 @@ public final class DoclingDocumentReader implements DocumentReader {
     }
 
     public static class Builder {
+        @Nullable
         private DoclingServeApi doclingServeApi;
         private ConvertDocumentOptions convertOptions = ConvertDocumentOptions.builder().build();
         private ChunkerOptions chunkerOptions = HierarchicalChunkerOptions.builder().build();
@@ -174,6 +177,7 @@ public final class DoclingDocumentReader implements DocumentReader {
         }
 
         public DoclingDocumentReader build() {
+            Assert.notNull(doclingServeApi, "doclingServeApi cannot be null");
             return new DoclingDocumentReader(doclingServeApi, convertOptions, chunkerOptions, documentParser, metadata, files, urls);
         }
 

@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import ai.docling.serve.api.chunk.response.Chunk;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.document.Document;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -42,18 +43,10 @@ public final class DefaultDoclingDocumentParser implements DoclingDocumentParser
                 metadata.put(DocumentMetadata.PAGE_NUMBERS.value(), chunk.getPageNumbers());
             }
 
-            if (chunk.getMetadata().get(DOCLING_ORIGIN) != null && chunk.getMetadata().get(DOCLING_ORIGIN) instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, String> origin = (Map<String, String>) chunk.getMetadata().get("origin");
-                if (origin.get(DOCLING_BINARY_HASH) != null) {
-                    metadata.put(DocumentMetadata.BINARY_HASH.value(), origin.get(DOCLING_BINARY_HASH));
-                }
-                if (origin.get(DOCLING_MIME_TYPE) != null) {
-                    metadata.put(DocumentMetadata.MIME_TYPE.value(), origin.get(DOCLING_MIME_TYPE));
-                }
-                if (origin.get(DOCLING_URI) != null) {
-                    metadata.put(DocumentMetadata.URI.value(), origin.get(DOCLING_URI));
-                }
+            if (chunk.getMetadata().get(DOCLING_ORIGIN) instanceof Map<?, ?> origin) {
+                putIfPresent(metadata, DocumentMetadata.BINARY_HASH, origin.get(DOCLING_BINARY_HASH));
+                putIfPresent(metadata, DocumentMetadata.MIME_TYPE, origin.get(DOCLING_MIME_TYPE));
+                putIfPresent(metadata, DocumentMetadata.URI, origin.get(DOCLING_URI));
             }
 
             documents.add(Document.builder()
@@ -64,7 +57,12 @@ public final class DefaultDoclingDocumentParser implements DoclingDocumentParser
         }
 
         return documents;
+    }
 
+    private static void putIfPresent(Map<String, Object> metadata, DocumentMetadata key, @Nullable Object value) {
+        if (value != null) {
+            metadata.put(key.value(), value);
+        }
     }
 
 }

@@ -54,6 +54,17 @@ class DoclingDocumentReaderTests {
     }
 
     @Test
+    void builderWhenDocumentParserIsNullThenThrow() {
+        assertThatThrownBy(() -> DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .documentParser(null)
+                .files(createMockResource())
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("documentParser cannot be null");
+    }
+
+    @Test
     void builderWhenChunkerOptionsIsNullThenThrow() {
         assertThatThrownBy(() -> DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
