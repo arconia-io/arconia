@@ -1,25 +1,40 @@
 = Profiles
 
-When developing Spring Boot applications, it's common to define specific configurations for different environments, such as development, test, and production. Spring Boot provides a powerful way to manage these configurations using https://docs.spring.io/spring-boot/reference/features/profiles.html[profiles].
+Applications usually need different settings during development and in tests, such as a local database, more detailed logging, or test-only beans. Spring Boot supports that with https://docs.spring.io/spring-boot/reference/features/profiles.html[profiles], but you have to activate the right profile in every place you launch the application from:
 
-Frequently, developers need custom configurations when running applications in development or when running tests. This necessity has become so routine that it's almost considered boilerplate code to define these configurations in every project.
+* the IntelliJ IDEA run configuration, which has its own setting for the active profiles and doesn't use the ones configured in your Gradle or Maven build;
+* the Gradle build, once for the `bootRun` task and once for the `test` task, or the Maven build, in the Spring Boot Maven Plugin and in the Surefire Plugin;
+* the VS Code launch configuration, and its separate configuration for running tests;
+* the tests, for example with `@ActiveProfiles("test")` on each test class.
 
-Arconia enhances the developer experience by building on top of Spring Boot. It provides these common configurations out of the box, allowing developers to focus more on writing application logic and less on repetitive setup tasks.
+Each of these places is easy to forget, differs between team members, and has to be repeated in every project.
 
-By default, the Arconia Spring Boot Starter provides two profiles that are enabled automatically in certain conditions:
+Arconia activates the profile for you, based on the xref:core-features/bootstrap-mode.adoc[bootstrap mode]:
 
-* `dev`: Enabled when running the application in dev mode.
-* `test`: Enabled when running the application in test mode.
+* `dev` when the application runs in dev mode;
+* `test` when it runs in test mode.
+
+You only need to put your settings in `application-dev.yml` and `application-test.yml`. They apply wherever you run the application or its tests, from any IDE or build tool, with no further configuration. In prod mode, no profile is activated.
+
+.src/main/resources/application-dev.yml
+[source,yaml]
+----
+logging:
+  level:
+    com.example: debug
+----
+
+The profiles activated by Arconia come before the ones you activate yourself, for example with `spring.profiles.active`, so your own profile-specific configuration files still take precedence.
 
 == How Profiles Are Activated
 
 Arconia activates the mode-specific profiles right before Spring Boot loads the application configuration. As a result, profile-specific configuration files (such as `application-dev.yml`) are loaded as part of the standard Spring Boot configuration flow, including when configuration is imported from external sources (such as Spring Cloud Config Server or HashiCorp Vault via `spring.config.import`).
 
-NOTE: The mode-specific profiles become active profiles. As in standard Spring Boot, activating any profile means the default profiles (`spring.profiles.default`) no longer apply. If you rely on `spring.profiles.default`, list those profiles in `arconia.dev.profiles`/`arconia.test.profiles` or disable the automatic activation.
+NOTE: The mode-specific profiles become active profiles, so, as in Spring Boot, the default profiles (`spring.profiles.default`) no longer apply. If you rely on them, add them to `arconia.dev.profiles` and `arconia.test.profiles`, or disable the automatic activation.
 
 == Customizing the Profiles
 
-Each organization may have its own set of custom profiles to manage development, test, and production configurations. For example, instead of having a `dev` profile, you may have a `local` profile where you define the configuration to use when running the application in dev mode. That's why Arconia makes these profiles configurable.
+You can choose which profiles each mode activates. For example, your team may use a `local` profile instead of `dev` for the configuration to use during development.
 
 Since the profiles must be activated before the application configuration is loaded, the profile settings cannot be defined in regular application configuration files like `application.yml`. They are supported in the following locations, in decreasing order of precedence:
 
@@ -28,7 +43,7 @@ Since the profiles must be activated before the application configuration is loa
 * environment variables (e.g. `ARCONIA_DEV_PROFILES=local`);
 * the `META-INF/arconia-bootstrap.properties` file.
 
-If any of these properties is found in the application configuration, Arconia logs a warning at startup since the value would otherwise be silently ignored.
+If any of these properties is found in the application configuration, Arconia logs a warning at startup, since the value would otherwise be silently ignored.
 
 === The Bootstrap Configuration File
 
@@ -40,11 +55,11 @@ arconia.dev.profiles=local
 arconia.test.profiles=integration
 ----
 
-The file uses the Java Properties format and supports only the bootstrap settings listed on this page. It is read once, before the application configuration is loaded, so it doesn't support placeholders or profile-specific variants. When multiple files are present, the first one found on the classpath is used: for example, a file in `src/test/resources` takes precedence over the one in `src/main/resources` when running tests. The xref:core-features/bootstrap-mode.adoc[bootstrap mode] itself cannot be set in this file: the file is static and checked in with the application, whereas the mode describes the launch context.
+The file uses the Java Properties format and supports only the profile settings listed on this page. It's read before the application configuration is loaded, so there are no profile-specific variants of it. When multiple files are present, the first one found on the classpath is used: for example, a file in `src/test/resources` takes precedence over the one in `src/main/resources` when running tests. The xref:core-features/bootstrap-mode.adoc[bootstrap mode] itself cannot be set in this file, since the file is checked in with the application, whereas the mode describes how the application is launched.
 
-== Enabling/Disabling Profiles
+== Disabling the Automatic Activation
 
-The profiles are enabled by default based on the application bootstrap mode. You can disable the automatic activation via the `arconia.bootstrap.profiles.enabled` property, for example in the bootstrap configuration file:
+You can disable the automatic activation of the profiles via the `arconia.bootstrap.profiles.enabled` property, for example in the bootstrap configuration file:
 
 [source,properties]
 ----

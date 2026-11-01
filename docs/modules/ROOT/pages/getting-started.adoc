@@ -49,7 +49,7 @@ Arconia is modular: you only add what you need on top of your standard Spring Bo
 | Module | Description
 
 | xref:core-features/index.adoc[Core Features]
-| Bootstrap mode, profiles, and other foundational capabilities.
+| Detects whether the application runs during development, in tests, or in production, and activates the matching profiles and features.
 
 | xref:dev-services:index.adoc[Dev Services]
 | Automatic provisioning of containerized services for development and testing.

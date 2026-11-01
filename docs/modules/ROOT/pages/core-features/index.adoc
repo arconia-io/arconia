@@ -1,10 +1,13 @@
 = Core Features
 
-This section provides information on using the core features and capabilities of Arconia.
+Arconia knows whether your application is running during development, in tests, or in production, and adapts to it with no configuration:
+
+* xref:core-features/bootstrap-mode.adoc[Bootstrap Mode] detects how the application is launched. It's the single switch that tells every Arconia feature, such as Dev Services, where the application is running.
+* xref:core-features/profiles.adoc[Profiles] activates the `dev` and `test` profiles in the matching mode, wherever you launch the application from, so you don't have to configure them in each IDE, build tool, and test class.
 
 == Dependencies
 
-To get started with Arconia, add the Arconia Spring Boot Starter dependency to your project.
+Add the Arconia Spring Boot Starter dependency to your project. The other Arconia starters already include it.
 
 [tabs]
 ======
@@ -28,35 +31,4 @@ Maven::
 ----
 ======
 
-Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is highly recommended to use the BOM to ensure that all dependencies are compatible.
-
-[tabs]
-======
-Gradle::
-+
-[source,groovy,subs="attributes"]
-----
-dependencyManagement {
-	imports {
-		mavenBom "io.arconia:arconia-bom:{page-component-version}"
-	}
-}
-----
-
-Maven::
-+
-[source,xml,subs="attributes,verbatim"]
-----
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>io.arconia</groupId>
-            <artifactId>arconia-bom</artifactId>
-            <version>{page-component-version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-----
-======
+Manage its version with the Arconia BOM, as described in xref:getting-started.adoc#_dependency_management[Getting Started].
