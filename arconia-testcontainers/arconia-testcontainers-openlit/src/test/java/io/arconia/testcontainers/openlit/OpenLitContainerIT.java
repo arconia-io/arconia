@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 
 import com.github.dockerjava.api.model.Container;
 
@@ -81,9 +82,12 @@ class OpenLitContainerIT {
     @Test
     void containerKeepsProvidedNetworkWhenStopped() {
         try (var network = Network.newNetwork();
-                var container = new OpenLitContainer(IMAGE).withClickHouseImage(CLICKHOUSE_IMAGE).withNetwork(network)) {
+                var container = new OpenLitContainer(IMAGE).withClickHouseImage(CLICKHOUSE_IMAGE).withNetwork(network)
+                        .withTmpFs(Map.of("/tmp/user", "rw"))) {
             container.start();
             assertThat(container.getClickHouseLogs()).isNotEmpty();
+            // A user-provided tmpfs is kept next to the one for the OpenLIT data.
+            assertThat(container.getTmpFsMapping()).containsKeys("/tmp/user", "/app/client/data");
 
             container.stop();
             assertThat(networkExists(network.getId())).isTrue();

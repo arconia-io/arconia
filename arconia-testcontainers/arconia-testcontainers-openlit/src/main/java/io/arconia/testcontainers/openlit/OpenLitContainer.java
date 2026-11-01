@@ -1,6 +1,7 @@
 package io.arconia.testcontainers.openlit;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
@@ -141,10 +142,12 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 withNetwork(network);
             }
 
-            clickHouseContainer = new ClickHouseContainer(clickHouseImageName)
+            ClickHouseContainer clickHouse = new ClickHouseContainer(clickHouseImageName)
                     .withNetwork(network)
                     .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
                     .withReuse(isShouldBeReused());
+            configureOpenLit(clickHouse);
+            clickHouseContainer = clickHouse;
         }
         clickHouseContainer.start();
         super.start();
@@ -167,18 +170,13 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         }
     }
 
-    @Override
-    protected void configure() {
-        super.configure();
-
-        ClickHouseContainer clickHouseContainer = this.clickHouseContainer;
-        if (clickHouseContainer == null) {
-            throw new IllegalStateException("The ClickHouse container is created when the OpenLIT container starts");
-        }
-
+    /**
+     * Configures OpenLIT to connect to the given ClickHouse container. User-provided values take precedence.
+     */
+    private void configureOpenLit(ClickHouseContainer clickHouse) {
         String otelCollectorConfig = OTEL_COLLECTOR_CONFIG_TEMPLATE.formatted(
-                CLICKHOUSE_NETWORK_ALIAS, clickHouseContainer.getDatabaseName(),
-                clickHouseContainer.getUsername(), clickHouseContainer.getPassword());
+                CLICKHOUSE_NETWORK_ALIAS, clickHouse.getDatabaseName(),
+                clickHouse.getUsername(), clickHouse.getPassword());
 
         Map<String, String> env = getEnvMap();
 
@@ -189,15 +187,21 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         // Sets the port on which ClickHouse listens.
         env.putIfAbsent("INIT_DB_PORT", "8123");
         // Sets the name of the database in Clickhouse to be used by OpenLIT.
-        env.putIfAbsent("INIT_DB_DATABASE", clickHouseContainer.getDatabaseName());
+        env.putIfAbsent("INIT_DB_DATABASE", clickHouse.getDatabaseName());
         // Sets the username for authenticating with ClickHouse.
-        env.putIfAbsent("INIT_DB_USERNAME", clickHouseContainer.getUsername());
+        env.putIfAbsent("INIT_DB_USERNAME", clickHouse.getUsername());
         // Sets the password for authenticating with ClickHouse.
-        env.putIfAbsent("INIT_DB_PASSWORD", clickHouseContainer.getPassword());
+        env.putIfAbsent("INIT_DB_PASSWORD", clickHouse.getPassword());
 
         // Sets the location where SQLITE data is stored.
         env.putIfAbsent("SQLITE_DATABASE_URL", "file:/app/client/data/data.db");
-        this.withTmpFs(Map.of("/app/client/data", "rw"));
+        // Merged into the existing mapping, since setting it replaces any tmpfs configured by the user.
+        Map<String, String> tmpFs = new HashMap<>();
+        if (getTmpFsMapping() != null) {
+            tmpFs.putAll(getTmpFsMapping());
+        }
+        tmpFs.putIfAbsent("/app/client/data", "rw");
+        this.withTmpFs(tmpFs);
 
         // Demo account created by the OpenLIT seed, used for automatic sign-in.
         env.putIfAbsent("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
