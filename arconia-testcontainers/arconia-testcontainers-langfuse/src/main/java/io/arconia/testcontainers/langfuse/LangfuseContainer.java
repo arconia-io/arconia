@@ -10,10 +10,8 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import io.floci.testcontainers.FlociContainer;
 
@@ -114,18 +112,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private DockerImageName flociImageName = DEFAULT_FLOCI_IMAGE_NAME;
 
-    private @Nullable GenericContainer<?> workerContainer;
-
-    private @Nullable PostgreSQLContainer postgresContainer;
-
-    private @Nullable ClickHouseContainer clickHouseContainer;
-
-    private @Nullable RedisContainer redisContainer;
-
-    private @Nullable FlociContainer flociContainer;
+    // The containers Langfuse needs, created when it starts and stopped together with it.
+    private List<GenericContainer<?>> dependencies = List.of();
 
     private @Nullable Network privateNetwork;
-
 
     public LangfuseContainer(DockerImageName imageName) {
         super(imageName);
@@ -183,36 +173,60 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     @Override
     public void start() {
-        if (postgresContainer == null) {
-            // A network set before starting, such as the one shared by the Arconia Dev Services,
-            // is used as it is and never closed here, since other containers may be attached to it.
-            Network network = getNetwork();
-            if (network == null) {
-                if (isShouldBeReused()) {
-                    network = resolveNamedNetwork();
-                } else {
-                    network = Network.newNetwork();
-                    privateNetwork = network;
-                }
-                withNetwork(network);
-            }
-            withNetworkAliases(LANGFUSE_NETWORK_ALIAS);
-            createContainers(network);
+        if (getContainerId() != null) {
+            return;
         }
 
-        PostgreSQLContainer postgres = requireContainer(postgresContainer);
-        ClickHouseContainer clickHouse = requireContainer(clickHouseContainer);
-        FlociContainer floci = requireContainer(flociContainer);
+        // A network set before starting, such as the one shared by the Arconia Dev Services,
+        // is used as it is and never closed here, since other containers may be attached to it.
+        Network network = getNetwork();
+        if (network == null) {
+            if (isShouldBeReused()) {
+                network = resolveNamedNetwork();
+            } else {
+                network = Network.newNetwork();
+                privateNetwork = network;
+            }
+            withNetwork(network);
+        }
+        withNetworkAliases(LANGFUSE_NETWORK_ALIAS);
 
-        Startables.deepStart(postgres, clickHouse, requireContainer(redisContainer), floci).join();
+        boolean reuse = isShouldBeReused();
+        PostgreSQLContainer postgres = new PostgreSQLContainer(postgresImageName)
+                .withNetwork(network)
+                .withNetworkAliases(POSTGRES_NETWORK_ALIAS)
+                .withReuse(reuse);
+        ClickHouseContainer clickHouse = new ClickHouseContainer(clickHouseImageName)
+                .withNetwork(network)
+                .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
+                .withReuse(reuse);
+        RedisContainer redis = new RedisContainer(redisImageName)
+                .withNetwork(network)
+                .withNetworkAliases(REDIS_NETWORK_ALIAS)
+                .withReuse(reuse);
+        // Only S3 is needed, as blob storage for the ingested events and media,
+        // and API Gateway, as a proxy for the OTLP endpoint.
+        FlociContainer floci = new FlociContainer(flociImageName)
+                .disableAllServices()
+                .withS3Config(s3 -> s3.enabled(true))
+                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
+                .withApiGatewayV2Config(apiGateway -> apiGateway.enabled(true))
+                .withNetwork(network)
+                .withNetworkAliases(FLOCI_NETWORK_ALIAS)
+                .withReuse(reuse);
+        // The worker processes the ingested data, while the web application serves the UI and the APIs.
+        GenericContainer<?> worker = new GenericContainer<>(workerImageName)
+                .withNetwork(network)
+                .withReuse(reuse);
+        dependencies = List.of(worker, postgres, clickHouse, redis, floci);
+
+        Startables.deepStart(postgres, clickHouse, redis, floci).join();
         createBucket(floci);
         configureLangfuseEnvironment(postgres, clickHouse, floci);
         // The OTLP proxy is created before Langfuse starts, since its location is recorded in the labels.
         withLabel(OTLP_TRACES_PORT_LABEL, String.valueOf(floci.getMappedPort(FlociContainer.PORT)));
         withLabel(OTLP_TRACES_PATH_LABEL, "/_aws/execute-api/%s/v1/traces".formatted(findOrCreateOtlpProxy(floci)));
 
-        // The worker processes the ingested data, while the web application serves the UI and the APIs.
-        GenericContainer<?> worker = requireContainer(workerContainer);
         getEnvMap().forEach(worker::withEnv);
         worker.start();
         super.start();
@@ -224,14 +238,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     @Override
     public void stop() {
         super.stop();
-        for (GenericContainer<?> container : dependencies()) {
-            container.stop();
-        }
-        workerContainer = null;
-        postgresContainer = null;
-        clickHouseContainer = null;
-        redisContainer = null;
-        flociContainer = null;
+        dependencies.forEach(GenericContainer::stop);
+        dependencies = List.of();
         if (privateNetwork != null) {
             privateNetwork.close();
             privateNetwork = null;
@@ -254,8 +262,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
      * connections that request an upgrade to HTTP/2 (h2c), as the JDK HTTP client does by default.
      */
     public String getOtlpTracesUrl() {
-        return "http://%s:%s%s".formatted(getHost(), requireContainer(getLabels().get(OTLP_TRACES_PORT_LABEL)),
-                requireContainer(getLabels().get(OTLP_TRACES_PATH_LABEL)));
+        return "http://%s:%s%s".formatted(getHost(), requireStarted(getLabels().get(OTLP_TRACES_PORT_LABEL)),
+                requireStarted(getLabels().get(OTLP_TRACES_PATH_LABEL)));
     }
 
     public String getPublicKey() {
@@ -272,35 +280,6 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     public String getBasicAuthHeader() {
         String credentials = getPublicKey() + ":" + getSecretKey();
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private void createContainers(Network network) {
-        boolean reuse = isShouldBeReused();
-        postgresContainer = new PostgreSQLContainer(postgresImageName)
-                .withNetwork(network)
-                .withNetworkAliases(POSTGRES_NETWORK_ALIAS)
-                .withReuse(reuse);
-        clickHouseContainer = new ClickHouseContainer(clickHouseImageName)
-                .withNetwork(network)
-                .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
-                .withReuse(reuse);
-        redisContainer = new RedisContainer(redisImageName)
-                .withNetwork(network)
-                .withNetworkAliases(REDIS_NETWORK_ALIAS)
-                .withReuse(reuse);
-        // Only S3 is needed, as blob storage for the ingested events and media,
-        // and API Gateway, as a proxy for the OTLP endpoint.
-        flociContainer = new FlociContainer(flociImageName)
-                .disableAllServices()
-                .withS3Config(s3 -> s3.enabled(true))
-                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
-                .withApiGatewayV2Config(apiGateway -> apiGateway.enabled(true))
-                .withNetwork(network)
-                .withNetworkAliases(FLOCI_NETWORK_ALIAS)
-                .withReuse(reuse);
-        workerContainer = new GenericContainer<>(workerImageName)
-                .withNetwork(network)
-                .withReuse(reuse);
     }
 
     /**
@@ -409,18 +388,11 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         }
     }
 
-    private List<GenericContainer<?>> dependencies() {
-        return Stream.of(workerContainer, postgresContainer, clickHouseContainer, redisContainer, flociContainer)
-                .<GenericContainer<?>>map(container -> container)
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    private static <T> T requireContainer(@Nullable T container) {
-        if (container == null) {
-            throw new IllegalStateException("The containers needed by Langfuse are created when the Langfuse container starts");
+    private static <T> T requireStarted(@Nullable T value) {
+        if (value == null) {
+            throw new IllegalStateException("The OTLP proxy is created when the Langfuse container starts");
         }
-        return container;
+        return value;
     }
 
     // Finds the named Docker network if it already exists, otherwise creates it.
