@@ -138,6 +138,14 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |`30s`
 |Timeout for receiving a response from the Docling Serve API.
 
+|`arconia.docling.async-poll-interval`
+|`2s`
+|Interval between two status checks of a task submitted by an async operation.
+
+|`arconia.docling.async-timeout`
+|`5m`
+|Maximum time to wait for a task submitted by an async operation to complete.
+
 |`arconia.docling.log-requests`
 |`false`
 |Whether to log the requests sent to the Docling Serve API. The API key is masked.
@@ -225,7 +233,7 @@ DoclingServeApi slowerClient = doclingClient.config().toBuilder()
         .build();
 ----
 
-The async operations of the Arconia client don't poll for the task status, so the `asyncPollInterval` and `asyncTimeout` options are ignored with a warning. They run on virtual threads unless you pass your own `asyncExecutor`. To customize the underlying `RestClient`, use `DoclingServeClient.builder()` directly.
+The async operations submit a task to Docling Serve, poll its status every `asyncPollInterval` (2 seconds by default) until it completes, and then fetch its result. If the task doesn't complete within `asyncTimeout` (5 minutes by default), the operation fails with a `TimeoutException`. They run on virtual threads unless you pass your own `asyncExecutor`. To customize the underlying `RestClient`, use `DoclingServeClient.builder()` directly.
 
 === Converting HTTP Sources
 

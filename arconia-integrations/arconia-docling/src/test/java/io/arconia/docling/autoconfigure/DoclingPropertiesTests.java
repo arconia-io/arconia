@@ -19,6 +19,8 @@ class DoclingPropertiesTests {
         assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(5));
         assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(properties.getAsyncPollInterval()).isEqualTo(Duration.ofSeconds(2));
+        assertThat(properties.getAsyncTimeout()).isEqualTo(Duration.ofMinutes(5));
         assertThat(properties.isLogRequests()).isFalse();
         assertThat(properties.isLogResponses()).isFalse();
         assertThat(properties.isPrettyPrint()).isFalse();
@@ -34,10 +36,14 @@ class DoclingPropertiesTests {
         properties.setBaseUrl(newUrl);
         properties.setConnectTimeout(newConnectTimeout);
         properties.setReadTimeout(newReadTimeout);
+        properties.setAsyncPollInterval(Duration.ofMillis(500));
+        properties.setAsyncTimeout(Duration.ofMinutes(30));
 
         assertThat(properties.getBaseUrl()).isEqualTo(newUrl);
         assertThat(properties.getConnectTimeout()).isEqualTo(newConnectTimeout);
         assertThat(properties.getReadTimeout()).isEqualTo(newReadTimeout);
+        assertThat(properties.getAsyncPollInterval()).isEqualTo(Duration.ofMillis(500));
+        assertThat(properties.getAsyncTimeout()).isEqualTo(Duration.ofMinutes(30));
     }
 
 }

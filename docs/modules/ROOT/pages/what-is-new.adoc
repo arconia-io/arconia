@@ -70,6 +70,11 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 * The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].
 
+== Docling
+
+* The async operations of the Docling client, such as `convertSourceAsync`, now return the result of the task. Previously, they returned an empty response without waiting for the task to complete. They poll the task status as configured by the new `arconia.docling.async-poll-interval` and `arconia.docling.async-timeout` properties, or by the `asyncPollInterval` and `asyncTimeout` options of the client builders, which are no longer ignored. Learn more about the xref:integrations:docling.adoc#_configuration[Docling configuration].
+* Polling the status of a task and clearing the stored results now send the `wait` and `older_then` durations in seconds, as Docling Serve expects.
+
 == Multitenancy
 
 * Tenant resolution is now a chain. The `arconia.multitenancy.resolution.http.resolution-mode` property accepts a list of modes, consulted in order until one resolves a tenant, so that `subdomain, header` reads the tenant from the subdomain when the host matches and from the header otherwise. A custom `HttpRequestTenantResolver` bean still replaces the configured chain, and the new `CompositeHttpRequestTenantResolver` lets it combine custom and built-in resolvers. A resolver may now throw an `InvalidTenantIdentifierException` for input that is present but unusable, which stops the chain. Learn more about xref:multitenancy:web.adoc#_http_tenant_resolution[HTTP Tenant Resolution] and the xref:multitenancy:architecture.adoc[Architecture].

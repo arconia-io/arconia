@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.DoclingServeApiConfig;
-import ai.docling.serve.api.spi.DoclingServeApiProvider.Unsupported;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,13 +52,15 @@ class DoclingServeClientProviderTests {
     }
 
     @Test
-    void unsupportedOptionsAreDeclared() {
-        DoclingServeClientProvider provider = new DoclingServeClientProvider();
+    void asyncOptionsArePassedOn() {
+        DoclingServeApi api = DoclingServeApi.builder()
+                .baseUrl("http://localhost:5001")
+                .asyncPollInterval(Duration.ofMillis(500))
+                .asyncTimeout(Duration.ofMinutes(1))
+                .build();
 
-        assertThat(provider.unsupportedOptions()).containsOnlyKeys(
-                DoclingServeApiConfig.ASYNC_POLL_INTERVAL,
-                DoclingServeApiConfig.ASYNC_TIMEOUT);
-        assertThat(provider.unsupportedOptions().values()).containsOnly(Unsupported.WARN);
+        assertThat(api.config().asyncPollInterval()).isEqualTo(Duration.ofMillis(500));
+        assertThat(api.config().asyncTimeout()).isEqualTo(Duration.ofMinutes(1));
     }
 
 }

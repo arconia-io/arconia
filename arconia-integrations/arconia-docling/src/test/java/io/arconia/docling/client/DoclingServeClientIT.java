@@ -8,6 +8,8 @@ import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
 import ai.docling.serve.api.chunk.request.HybridChunkDocumentRequest;
 import ai.docling.serve.api.chunk.response.ChunkDocumentResponse;
+import ai.docling.serve.api.clear.request.ClearResultsRequest;
+import ai.docling.serve.api.clear.response.ClearResponse;
 import ai.docling.serve.api.convert.request.ConvertDocumentRequest;
 import ai.docling.serve.api.convert.request.options.ConvertDocumentOptions;
 import ai.docling.serve.api.convert.request.options.TableFormerMode;
@@ -213,6 +215,57 @@ class DoclingServeClientIT {
         if (response.getProcessingTime() != null) {
             assertThat(response.getProcessingTime()).isPositive();
         }
+    }
+
+    @Test
+    void shouldConvertFileSourceAsynchronously() throws IOException {
+        ConvertDocumentRequest request = ConvertDocumentRequest.builder()
+                .source(storyFileSource())
+                .build();
+
+        ConvertDocumentResponse response = doclingServeApi.convertSourceAsync(request).toCompletableFuture().join();
+
+        assertThat(response).isInstanceOf(InBodyConvertDocumentResponse.class);
+        InBodyConvertDocumentResponse inBodyResponse = (InBodyConvertDocumentResponse) response;
+        assertThat(inBodyResponse.getDocument().getFilename()).isEqualTo("story.pdf");
+        assertThat(inBodyResponse.getDocument().getMarkdownContent()).isNotEmpty();
+    }
+
+    @Test
+    void shouldChunkFileSourceWithHierarchicalChunkerAsynchronously() throws IOException {
+        HierarchicalChunkDocumentRequest request = HierarchicalChunkDocumentRequest.builder()
+                .source(storyFileSource())
+                .build();
+
+        ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(request).toCompletableFuture().join();
+
+        assertThat(response.getChunks()).isNotEmpty();
+    }
+
+    @Test
+    void shouldChunkFileSourceWithHybridChunkerAsynchronously() throws IOException {
+        HybridChunkDocumentRequest request = HybridChunkDocumentRequest.builder()
+                .source(storyFileSource())
+                .build();
+
+        ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHybridChunkerAsync(request).toCompletableFuture().join();
+
+        assertThat(response.getChunks()).isNotEmpty();
+    }
+
+    @Test
+    void shouldClearResults() {
+        ClearResponse response = doclingServeApi.clearResults(ClearResultsRequest.builder().build());
+
+        assertThat(response.getStatus()).isEqualTo("ok");
+    }
+
+    private static FileSource storyFileSource() throws IOException {
+        byte[] content = new ClassPathResource("story.pdf").getContentAsByteArray();
+        return FileSource.builder()
+                .filename("story.pdf")
+                .base64String(Base64.getEncoder().encodeToString(content))
+                .build();
     }
 
     private static DoclingServeApi createDoclingServeApi() {

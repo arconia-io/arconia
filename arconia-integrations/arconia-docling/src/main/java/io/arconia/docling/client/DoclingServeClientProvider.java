@@ -1,9 +1,7 @@
 package io.arconia.docling.client;
 
-import java.util.Map;
 import java.util.concurrent.Executor;
 
-import ai.docling.serve.api.ConfigOption;
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.DoclingServeApiConfig;
 import ai.docling.serve.api.spi.DoclingServeApiProvider;
@@ -21,6 +19,8 @@ public final class DoclingServeClientProvider implements DoclingServeApiProvider
                 .apiKey(config.apiKey())
                 .connectTimeout(config.connectTimeout())
                 .readTimeout(config.readTimeout())
+                .asyncPollInterval(config.asyncPollInterval())
+                .asyncTimeout(config.asyncTimeout())
                 .logRequests(config.logRequests())
                 .logResponses(config.logResponses())
                 .prettyPrint(config.prettyPrint());
@@ -32,15 +32,6 @@ public final class DoclingServeClientProvider implements DoclingServeApiProvider
         }
 
         return builder.build();
-    }
-
-    @Override
-    public Map<ConfigOption<?>, Unsupported> unsupportedOptions() {
-        // The async operations don't poll for task status.
-        return Map.of(
-                DoclingServeApiConfig.ASYNC_POLL_INTERVAL, Unsupported.WARN,
-                DoclingServeApiConfig.ASYNC_TIMEOUT, Unsupported.WARN
-        );
     }
 
 }

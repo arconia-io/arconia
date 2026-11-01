@@ -59,6 +59,20 @@ class DoclingServeClientTests {
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("readTimeout must be positive");
+
+        assertThatThrownBy(() -> DoclingServeClient.builder()
+                .baseUrl("http://localhost:5001")
+                .asyncPollInterval(Duration.ZERO)
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("asyncPollInterval must be positive");
+
+        assertThatThrownBy(() -> DoclingServeClient.builder()
+                .baseUrl("http://localhost:5001")
+                .asyncTimeout(Duration.ofSeconds(-1))
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("asyncTimeout must be positive");
     }
 
     @Test
@@ -73,6 +87,8 @@ class DoclingServeClientTests {
         assertThat(config.isExplicitlySet(DoclingServeApiConfig.API_KEY)).isFalse();
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofSeconds(5));
         assertThat(config.readTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(config.asyncPollInterval()).isEqualTo(Duration.ofSeconds(2));
+        assertThat(config.asyncTimeout()).isEqualTo(Duration.ofMinutes(5));
         assertThat(config.asyncExecutor()).isNotNull();
         assertThat(config.logRequests()).isFalse();
         assertThat(config.logResponses()).isFalse();
@@ -111,6 +127,8 @@ class DoclingServeClientTests {
                 .apiKey("secret")
                 .connectTimeout(Duration.ofSeconds(10))
                 .readTimeout(Duration.ofSeconds(60))
+                .asyncPollInterval(Duration.ofSeconds(1))
+                .asyncTimeout(Duration.ofMinutes(10))
                 .build();
 
         DoclingServeApiConfig expected = DoclingServeApi.builder()
@@ -118,6 +136,8 @@ class DoclingServeClientTests {
                 .apiKey("secret")
                 .connectTimeout(Duration.ofSeconds(10))
                 .readTimeout(Duration.ofSeconds(60))
+                .asyncPollInterval(Duration.ofSeconds(1))
+                .asyncTimeout(Duration.ofMinutes(10))
                 .asyncExecutor(Objects.requireNonNull(client.config().asyncExecutor()))
                 .logRequests(false)
                 .logResponses(false)

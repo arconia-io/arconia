@@ -39,6 +39,8 @@ public final class DoclingAutoConfiguration {
                 .apiKey(connectionDetails.getApiKey())
                 .connectTimeout(properties.getConnectTimeout())
                 .readTimeout(properties.getReadTimeout())
+                .asyncPollInterval(properties.getAsyncPollInterval())
+                .asyncTimeout(properties.getAsyncTimeout())
                 .logRequests(properties.isLogRequests())
                 .logResponses(properties.isLogResponses())
                 .prettyPrint(properties.isPrettyPrint())

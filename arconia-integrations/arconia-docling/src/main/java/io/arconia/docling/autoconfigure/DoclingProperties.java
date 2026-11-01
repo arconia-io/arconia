@@ -36,6 +36,16 @@ public class DoclingProperties {
     private Duration readTimeout = Duration.ofSeconds(30);
 
     /**
+     * Interval between two status checks of a task submitted by an async operation.
+     */
+    private Duration asyncPollInterval = Duration.ofSeconds(2);
+
+    /**
+     * Maximum time to wait for a task submitted by an async operation to complete.
+     */
+    private Duration asyncTimeout = Duration.ofMinutes(5);
+
+    /**
      * Whether to log the requests sent to the Docling Serve API.
      */
     private boolean logRequests = false;
@@ -81,6 +91,22 @@ public class DoclingProperties {
 
     public void setReadTimeout(Duration readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public Duration getAsyncPollInterval() {
+        return asyncPollInterval;
+    }
+
+    public void setAsyncPollInterval(Duration asyncPollInterval) {
+        this.asyncPollInterval = asyncPollInterval;
+    }
+
+    public Duration getAsyncTimeout() {
+        return asyncTimeout;
+    }
+
+    public void setAsyncTimeout(Duration asyncTimeout) {
+        this.asyncTimeout = asyncTimeout;
     }
 
     public boolean isLogRequests() {
