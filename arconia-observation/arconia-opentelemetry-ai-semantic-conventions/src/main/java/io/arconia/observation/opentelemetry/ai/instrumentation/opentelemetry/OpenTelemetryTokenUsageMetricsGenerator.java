@@ -9,18 +9,14 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.observation.Observation;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.metadata.Usage;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 
 final class OpenTelemetryTokenUsageMetricsGenerator {
-
-    private static final String DESCRIPTION = "Number of input and output tokens used.";
-
-    private static final String BASE_UNIT = "{token}";
 
     private OpenTelemetryTokenUsageMetricsGenerator() {}
 
@@ -40,13 +36,13 @@ final class OpenTelemetryTokenUsageMetricsGenerator {
      */
     private static void record(String tokenType, Usage usage, @Nullable Integer tokens,
             Observation.Context context, MeterRegistry meterRegistry) {
-        if (!GenAiUsage.isReported(usage) || tokens == null) {
+        if (GenAiUsage.isUnreported(usage) || tokens == null) {
             return;
         }
-        DistributionSummary.builder(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        DistributionSummary.builder(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(), tokenType)
-                .description(DESCRIPTION)
-                .baseUnit(BASE_UNIT)
+                .description(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_DESCRIPTION)
+                .baseUnit(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_UNIT)
                 .tags(createTags(context))
                 .register(meterRegistry)
                 .record(tokens);

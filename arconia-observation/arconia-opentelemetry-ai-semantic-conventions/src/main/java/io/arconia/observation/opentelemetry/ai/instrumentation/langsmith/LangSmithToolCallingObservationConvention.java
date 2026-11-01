@@ -6,10 +6,10 @@ import java.util.Map;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
-import tools.jackson.databind.util.RawValue;
-
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.ai.util.JsonHelper;
+
+import tools.jackson.databind.util.RawValue;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;

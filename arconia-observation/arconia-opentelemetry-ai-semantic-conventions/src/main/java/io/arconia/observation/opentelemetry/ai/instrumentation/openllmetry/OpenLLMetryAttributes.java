@@ -34,12 +34,9 @@ public final class OpenLLMetryAttributes {
 
     public static final String GEN_AI_IS_STREAMING = "gen_ai.is_streaming";
 
-    public static final String GEN_AI_USAGE_TOTAL_TOKENS = "gen_ai.usage.total_tokens";
-
     public enum TraceloopSpanKind {
         WORKFLOW("workflow"),
         TASK("task"),
-        AGENT("agent"),
         TOOL("tool");
 
         private final String value;

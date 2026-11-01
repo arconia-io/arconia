@@ -16,6 +16,7 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,6 +106,7 @@ class OpenLitChatClientObservationConventionTests {
 
     @Test
     void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.OPENLIT);
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         var context = createContext("Hello");

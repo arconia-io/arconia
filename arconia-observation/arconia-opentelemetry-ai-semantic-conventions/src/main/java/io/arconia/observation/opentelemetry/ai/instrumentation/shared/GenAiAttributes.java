@@ -5,32 +5,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
- * OpenTelemetry GenAI semantic convention attribute keys, event names, and metric names
- * that are part of the specification but not yet included in the Java OTel SDK.
+ * OpenTelemetry GenAI semantic convention attribute keys that are part of the specification
+ * but not yet included in the OpenTelemetry semantic conventions for Java.
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OTel GenAI Semantic Conventions</a>
  */
 public final class GenAiAttributes {
-
-    // Event names
-
-    /**
-     * Details of a GenAI inference operation, including input and output messages.
-     */
-    public static final String GEN_AI_CLIENT_INFERENCE_OPERATION_DETAILS =
-            "gen_ai.client.inference.operation.details";
-
-    // Metric names
-
-    /**
-     * Duration of GenAI operations.
-     */
-    public static final String GEN_AI_CLIENT_OPERATION_DURATION = "gen_ai.client.operation.duration";
-
-    /**
-     * Number of input and output tokens used.
-     */
-    public static final String GEN_AI_CLIENT_TOKEN_USAGE = "gen_ai.client.token.usage";
 
     // Attribute keys
 

@@ -55,12 +55,6 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
     }
 
     @Override
-    protected boolean recordsContentOnSpanAttributes() {
-        // LangSmith records content on span attributes only.
-        return true;
-    }
-
-    @Override
     protected KeyValues inputMessages(KeyValues keyValues, ChatClientObservationContext context) {
         List<Message> messages = context.getRequest().prompt().getInstructions();
         if (CollectionUtils.isEmpty(messages)) {

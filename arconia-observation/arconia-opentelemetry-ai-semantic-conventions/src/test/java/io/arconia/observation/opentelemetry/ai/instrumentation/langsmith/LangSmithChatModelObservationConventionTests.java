@@ -223,6 +223,8 @@ class LangSmithChatModelObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS.getKey()));
+        assertThat(keyValues).anySatisfy(kv ->
+                assertThat(kv.getKey()).isEqualTo("spring.ai.model.request.tool.names"));
     }
 
     @Test

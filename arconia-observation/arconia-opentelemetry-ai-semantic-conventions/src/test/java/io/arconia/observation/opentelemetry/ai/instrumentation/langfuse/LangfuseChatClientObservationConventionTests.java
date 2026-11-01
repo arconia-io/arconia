@@ -2,20 +2,22 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langfuse;
 
 import java.util.List;
 
+import io.micrometer.common.KeyValue;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
-import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
-import io.micrometer.common.KeyValue;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties.InferenceContentDestination;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +58,7 @@ class LangfuseChatClientObservationConventionTests {
 
     @Test
     void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.LANGFUSE);
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(InferenceContentDestination.LOG_EVENTS);
         var context = ChatClientObservationContext.builder()

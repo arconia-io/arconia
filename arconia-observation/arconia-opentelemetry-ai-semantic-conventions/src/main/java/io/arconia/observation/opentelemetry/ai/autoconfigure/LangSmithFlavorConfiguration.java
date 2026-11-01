@@ -18,10 +18,9 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmi
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithImageModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithTokenUsageObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
 
@@ -57,17 +56,10 @@ class LangSmithFlavorConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(LangSmithChatModelObservationHandler.class)
+    @ConditionalOnMissingBean(LangSmithTokenUsageObservationHandler.class)
     @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-    LangSmithChatModelObservationHandler chatModelObservationHandler() {
-        return new LangSmithChatModelObservationHandler();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(LangSmithEmbeddingModelObservationHandler.class)
-    @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-    LangSmithEmbeddingModelObservationHandler embeddingModelObservationHandler() {
-        return new LangSmithEmbeddingModelObservationHandler();
+    LangSmithTokenUsageObservationHandler tokenUsageObservationHandler() {
+        return new LangSmithTokenUsageObservationHandler();
     }
 
     @Configuration(proxyBeanMethods = false)

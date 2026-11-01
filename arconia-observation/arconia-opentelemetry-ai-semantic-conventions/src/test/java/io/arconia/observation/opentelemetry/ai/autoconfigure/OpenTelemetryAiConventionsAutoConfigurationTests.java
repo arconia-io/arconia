@@ -27,14 +27,12 @@ import org.springframework.context.annotation.Configuration;
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithChatModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithEmbeddingModelObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithImageModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithTokenUsageObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langsmith.LangSmithToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.openlit.OpenLitChatModelObservationConvention;
@@ -47,7 +45,6 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry.OpenL
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
-import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelLogEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelMeterObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingMeterObservationHandler;
@@ -82,7 +79,6 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                 assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
                 assertThat(context).hasSingleBean(OpenTelemetryChatModelMeterObservationHandler.class);
                 assertThat(context).hasSingleBean(OpenTelemetryEmbeddingMeterObservationHandler.class);
-                assertThat(context).hasSingleBean(OpenTelemetryChatModelEventObservationHandler.class);
             });
         }
 
@@ -166,21 +162,21 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
         }
 
         @Test
-        void otelFlavorRegistersLogEventHandlerWithSpringBootOpenTelemetry() {
+        void otelFlavorRegistersEventHandlerWithSpringBootOpenTelemetry() {
             new ApplicationContextRunner()
                     .withConfiguration(AutoConfigurations.of(OpenTelemetryAiConventionsAutoConfiguration.class,
                             OpenTelemetrySdkAutoConfiguration.class))
                     .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
                     .run(context -> {
                         assertThat(context).hasSingleBean(OpenTelemetry.class);
-                        assertThat(context).hasSingleBean(OpenTelemetryChatModelLogEventObservationHandler.class);
+                        assertThat(context).hasSingleBean(OpenTelemetryChatModelEventObservationHandler.class);
                     });
         }
 
         @Test
-        void otelFlavorDoesNotRegisterLogEventHandlerWhenOpenTelemetryNotAvailable() {
+        void otelFlavorDoesNotRegisterEventHandlerWhenOpenTelemetryNotAvailable() {
             contextRunner.run(context ->
-                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelLogEventObservationHandler.class));
+                    assertThat(context).doesNotHaveBean(OpenTelemetryChatModelEventObservationHandler.class));
         }
 
         // Custom bean precedence (OTel flavor)
@@ -352,8 +348,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
             contextRunner
                     .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
                     .run(context -> {
-                        assertThat(context).hasSingleBean(LangSmithChatModelObservationHandler.class);
-                        assertThat(context).hasSingleBean(LangSmithEmbeddingModelObservationHandler.class);
+                        assertThat(context).hasSingleBean(LangSmithTokenUsageObservationHandler.class);
                     });
         }
 
@@ -363,8 +358,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langsmith")
                     .withClassLoader(new FilteredClassLoader("io.micrometer.tracing.otel.bridge.OtelSpan"))
                     .run(context -> {
-                        assertThat(context).doesNotHaveBean(LangSmithChatModelObservationHandler.class);
-                        assertThat(context).doesNotHaveBean(LangSmithEmbeddingModelObservationHandler.class);
+                        assertThat(context).doesNotHaveBean(LangSmithTokenUsageObservationHandler.class);
                     });
         }
 
@@ -568,7 +562,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
             contextRunner
                     .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=langfuse")
                     .run(context -> {
-                        assertThat(context).hasSingleBean(LangfuseChatModelObservationConvention.class);
+                        assertThat(context).hasSingleBean(OpenTelemetryChatModelObservationConvention.class);
                         assertThat(context).hasSingleBean(OpenTelemetryEmbeddingModelObservationConvention.class);
                         assertThat(context).hasSingleBean(OpenTelemetryToolCallingObservationConvention.class);
                         assertThat(context).hasSingleBean(OpenTelemetryImageModelObservationConvention.class);
@@ -605,7 +599,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     .withUserConfiguration(CustomChatModelConventionConfig.class)
                     .run(context -> {
                         assertThat(context).hasSingleBean(ChatModelObservationConvention.class);
-                        assertThat(context).doesNotHaveBean(LangfuseChatModelObservationConvention.class);
+                        assertThat(context).doesNotHaveBean(OpenTelemetryChatModelObservationConvention.class);
                     });
         }
 
@@ -633,7 +627,7 @@ class OpenTelemetryAiConventionsAutoConfigurationTests {
                     "openlit", List.of("gen_ai.conversation.id"),
                     "openllmetry", List.of("gen_ai.conversation.id", "traceloop.association.properties.session_id"),
                     "langsmith", List.of("langsmith.metadata.thread_id"),
-                    "langfuse", List.of("gen_ai.conversation.id", "session.id"));
+                    "langfuse", List.of("gen_ai.conversation.id"));
             keysByFlavor.forEach((flavor, keys) -> contextRunner
                     .withPropertyValues("arconia.observations.conventions.opentelemetry.ai.flavor=" + flavor)
                     .run(context -> assertThat(context.getBean(GenAiConversationIdObservationHandler.class).getAttributeKeys())

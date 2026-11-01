@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelEventObservationHandler;
-import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelLogEventObservationHandler;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
 
@@ -36,17 +35,10 @@ class OpenTelemetryFlavorConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(OpenTelemetryChatModelEventObservationHandler.class)
-    @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-    OpenTelemetryChatModelEventObservationHandler chatModelEventObservationHandler(OpenTelemetryAiConventionsProperties properties) {
-        return new OpenTelemetryChatModelEventObservationHandler(properties);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(OpenTelemetryChatModelLogEventObservationHandler.class)
     @ConditionalOnBean(OpenTelemetry.class)
     @ConditionalOnClass(name = "io.micrometer.tracing.otel.bridge.OtelSpan")
-    OpenTelemetryChatModelLogEventObservationHandler chatModelLogEventObservationHandler(OpenTelemetryAiConventionsProperties properties, OpenTelemetry openTelemetry) {
-        return new OpenTelemetryChatModelLogEventObservationHandler(properties, openTelemetry);
+    OpenTelemetryChatModelEventObservationHandler chatModelEventObservationHandler(OpenTelemetryAiConventionsProperties properties, OpenTelemetry openTelemetry) {
+        return new OpenTelemetryChatModelEventObservationHandler(properties, openTelemetry);
     }
 
     @Configuration(proxyBeanMethods = false)

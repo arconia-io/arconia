@@ -6,6 +6,7 @@ import java.util.StringJoiner;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
@@ -44,7 +45,7 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
 
     @Override
     public String getName() {
-        return GenAiAttributes.GEN_AI_CLIENT_OPERATION_DURATION;
+        return GenAiIncubatingMetrics.GEN_AI_CLIENT_OPERATION_DURATION_NAME;
     }
 
     @Override
@@ -104,20 +105,15 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
     public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
         keyValues = outputType(keyValues, context);
-        if (properties.isCaptureMessageContent() && recordsContentOnSpanAttributes()) {
+        if (properties.capturesMessageContent() && recordsContentOnSpanAttributes()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
         }
         return keyValues;
     }
 
-    /**
-     * Whether the captured inference content is recorded on the span attributes,
-     * as opposed to an event. Flavors recording content on span attributes only override it.
-     */
-    protected boolean recordsContentOnSpanAttributes() {
-        return properties.getInferenceContentDestination()
-                == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
+    private boolean recordsContentOnSpanAttributes() {
+        return properties.contentDestination() == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
     }
 
     private KeyValues outputType(KeyValues keyValues, ChatModelObservationContext context) {
@@ -139,7 +135,7 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
      */
     @Override
     protected KeyValues requestTools(KeyValues keyValues, ChatModelObservationContext context) {
-        if (!properties.isCaptureToolDefinitions() || !recordsContentOnSpanAttributes()) {
+        if (!properties.capturesToolDefinitions() || !recordsContentOnSpanAttributes()) {
             return super.requestTools(keyValues, context);
         }
         var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());

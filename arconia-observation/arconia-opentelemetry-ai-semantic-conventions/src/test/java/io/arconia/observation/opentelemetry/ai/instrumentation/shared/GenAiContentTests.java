@@ -171,7 +171,47 @@ class GenAiContentTests {
     }
 
     @Test
-    void fromMessagesShouldLeaveOutBlobContentAboveMaxLength() throws JSONException {
+    void fromMessagesShouldRecordBase64DataUriAsBlob() throws JSONException {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data("data:image/png;base64,AQIDBA==")
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        String json = jsonHelper.toJson(result);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "role": "user",
+                    "parts": [
+                      {"type": "text", "content": "Describe this"},
+                      {"type": "blob", "modality": "image", "mime_type": "image/png", "content": "AQIDBA=="}
+                    ]
+                  }
+                ]""", json, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void fromMessagesShouldLeaveOutBase64DataUriAboveMaxLength() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data("data:image/png;base64," + "A".repeat(GenAiContent.BLOB_CONTENT_MAX_LENGTH + 1))
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        assertThat(result.getFirst().parts()).containsExactly(new GenAiContent.TextPart("Describe this"));
+    }
+
+    @Test
+    void fromMessagesShouldLeaveOutBlobAboveMaxLength() throws JSONException {
         byte[] imageBytes = new byte[GenAiContent.BLOB_CONTENT_MAX_LENGTH];
         UserMessage userMessage = UserMessage.builder()
                 .text("Describe this")
@@ -189,8 +229,7 @@ class GenAiContentTests {
                   {
                     "role": "user",
                     "parts": [
-                      {"type": "text", "content": "Describe this"},
-                      {"type": "blob", "modality": "image", "mime_type": "image/png"}
+                      {"type": "text", "content": "Describe this"}
                     ]
                   }
                 ]""", json, JSONCompareMode.STRICT);

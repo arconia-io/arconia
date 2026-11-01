@@ -8,15 +8,14 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.chat.metadata.Usage;
-
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +41,7 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
 
         OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new TestUsage(), context, meterRegistry);
 
-        DistributionSummary summary = meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        DistributionSummary summary = meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
                         GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT)
                 .summary();
@@ -61,7 +60,7 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
 
         OpenTelemetryTokenUsageMetricsGenerator.outputTokens(new TestUsage(), context, meterRegistry);
 
-        DistributionSummary summary = meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        DistributionSummary summary = meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
                         GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT)
                 .summary();
@@ -83,7 +82,7 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
 
         OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new TestUsage(), context, meterRegistry);
 
-        DistributionSummary summary = meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        DistributionSummary summary = meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "chat")
                 .tag(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "openai")
                 .tag(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "gpt-4")
@@ -99,7 +98,7 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
         OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new EmptyUsage(), context, meterRegistry);
         OpenTelemetryTokenUsageMetricsGenerator.outputTokens(new EmptyUsage(), context, meterRegistry);
 
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE).summaries()).isEmpty();
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME).summaries()).isEmpty();
     }
 
     @Test
@@ -109,11 +108,11 @@ class OpenTelemetryTokenUsageMetricsGeneratorTests {
         OpenTelemetryTokenUsageMetricsGenerator.inputTokens(new InputOnlyUsage(), context, meterRegistry);
         OpenTelemetryTokenUsageMetricsGenerator.outputTokens(new InputOnlyUsage(), context, meterRegistry);
 
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
                         GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT)
                 .summary()).isNotNull();
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(),
                         GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT)
                 .summary()).isNull();

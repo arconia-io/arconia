@@ -58,22 +58,15 @@ public class OpenTelemetryChatClientObservationConvention extends DefaultChatCli
     public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
         var keyValues = super.getHighCardinalityKeyValues(context);
         keyValues = requestModel(keyValues, context);
-        if (properties.isCaptureMessageContent() && recordsContentOnSpanAttributes()) {
+        if (properties.capturesMessageContent() && recordsContentOnSpanAttributes()) {
             keyValues = inputMessages(keyValues, context);
             keyValues = outputMessages(keyValues, context);
         }
         return keyValues;
     }
 
-    /**
-     * Whether the captured content is recorded on the span attributes. The conventions define no event
-     * for agent invocations, so the content is recorded only when the inference content goes to span
-     * attributes too. When it goes to events, the model calls already carry it.
-     * Flavors recording content on span attributes only override it.
-     */
-    protected boolean recordsContentOnSpanAttributes() {
-        return properties.getInferenceContentDestination()
-                == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
+    private boolean recordsContentOnSpanAttributes() {
+        return properties.contentDestination() == OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_ATTRIBUTES;
     }
 
     protected KeyValues requestModel(KeyValues keyValues, ChatClientObservationContext context) {

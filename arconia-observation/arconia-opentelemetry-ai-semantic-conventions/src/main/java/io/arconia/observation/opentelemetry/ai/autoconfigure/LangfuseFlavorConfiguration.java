@@ -3,7 +3,6 @@ package io.arconia.observation.opentelemetry.ai.autoconfigure;
 import java.util.List;
 
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
@@ -15,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseAdvisorObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatClientObservationConvention;
-import io.arconia.observation.opentelemetry.ai.instrumentation.langfuse.LangfuseChatModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversationIdObservationHandler;
 
 /**
@@ -27,8 +26,8 @@ class LangfuseFlavorConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ChatModelObservationConvention.class)
-    LangfuseChatModelObservationConvention chatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
-        return new LangfuseChatModelObservationConvention(properties);
+    OpenTelemetryChatModelObservationConvention chatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {
+        return new OpenTelemetryChatModelObservationConvention(properties);
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -50,9 +49,7 @@ class LangfuseFlavorConfiguration {
         @Bean
         @ConditionalOnMissingBean(GenAiConversationIdObservationHandler.class)
         GenAiConversationIdObservationHandler conversationIdObservationHandler() {
-            // Langfuse sets the session of a trace from session.id on any span, from gen_ai.conversation.id only on the root span.
-            return new GenAiConversationIdObservationHandler(List.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey(),
-                    SessionIncubatingAttributes.SESSION_ID.getKey()));
+            return new GenAiConversationIdObservationHandler(List.of(GenAiIncubatingAttributes.GEN_AI_CONVERSATION_ID.getKey()));
         }
 
     }

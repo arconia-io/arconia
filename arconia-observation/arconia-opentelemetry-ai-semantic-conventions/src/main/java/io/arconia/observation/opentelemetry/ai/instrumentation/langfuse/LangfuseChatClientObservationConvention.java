@@ -1,7 +1,8 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.langfuse;
 
-import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 import io.micrometer.common.KeyValues;
+import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
+
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
@@ -30,11 +31,6 @@ public final class LangfuseChatClientObservationConvention extends OpenTelemetry
         return conversationId != null
                 ? super.conversationId(keyValues, context).and(SessionIncubatingAttributes.SESSION_ID.getKey(), conversationId)
                 : keyValues;
-    }
-
-    @Override
-    protected boolean recordsContentOnSpanAttributes() {
-        return true;
     }
 
 }

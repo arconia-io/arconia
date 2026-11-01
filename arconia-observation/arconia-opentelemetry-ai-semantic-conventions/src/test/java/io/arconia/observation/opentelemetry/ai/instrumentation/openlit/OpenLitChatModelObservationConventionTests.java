@@ -33,6 +33,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -190,6 +191,7 @@ class OpenLitChatModelObservationConventionTests {
 
     @Test
     void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.OPENLIT);
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         ChatModelObservationContext context = createContext("mistral");

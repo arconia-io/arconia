@@ -1,5 +1,6 @@
 package io.arconia.observation.opentelemetry.ai.autoconfigure;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
@@ -26,19 +27,22 @@ public class OpenTelemetryAiConventionsProperties {
      * Whether to capture the input and output messages of model calls. The default depends on the flavor:
      * the opentelemetry flavor doesn't capture them, the other flavors do.
      */
-    private boolean captureMessageContent = false;
+    @Nullable
+    private Boolean captureMessageContent;
 
     /**
      * Whether to capture the definitions of the tools available to the model in model calls. The default depends
      * on the flavor: the opentelemetry flavor doesn't capture them, the other flavors do.
      */
-    private boolean captureToolDefinitions = false;
+    @Nullable
+    private Boolean captureToolDefinitions;
 
     /**
      * Whether to capture the arguments and result of tool executions. The default depends on the flavor:
      * the opentelemetry flavor doesn't capture them, the other flavors do.
      */
-    private boolean captureToolCallContent = false;
+    @Nullable
+    private Boolean captureToolCallContent;
 
     /**
      * Where to record the captured messages and tool definitions of model calls. Only the opentelemetry flavor
@@ -63,27 +67,27 @@ public class OpenTelemetryAiConventionsProperties {
         this.flavor = flavor;
     }
 
-    public boolean isCaptureMessageContent() {
+    public @Nullable Boolean getCaptureMessageContent() {
         return captureMessageContent;
     }
 
-    public void setCaptureMessageContent(boolean captureMessageContent) {
+    public void setCaptureMessageContent(@Nullable Boolean captureMessageContent) {
         this.captureMessageContent = captureMessageContent;
     }
 
-    public boolean isCaptureToolDefinitions() {
+    public @Nullable Boolean getCaptureToolDefinitions() {
         return captureToolDefinitions;
     }
 
-    public void setCaptureToolDefinitions(boolean captureToolDefinitions) {
+    public void setCaptureToolDefinitions(@Nullable Boolean captureToolDefinitions) {
         this.captureToolDefinitions = captureToolDefinitions;
     }
 
-    public boolean isCaptureToolCallContent() {
+    public @Nullable Boolean getCaptureToolCallContent() {
         return captureToolCallContent;
     }
 
-    public void setCaptureToolCallContent(boolean captureToolCallContent) {
+    public void setCaptureToolCallContent(@Nullable Boolean captureToolCallContent) {
         this.captureToolCallContent = captureToolCallContent;
     }
 
@@ -93,6 +97,41 @@ public class OpenTelemetryAiConventionsProperties {
 
     public void setInferenceContentDestination(InferenceContentDestination inferenceContentDestination) {
         this.inferenceContentDestination = inferenceContentDestination;
+    }
+
+    // The methods below resolve the effective settings. They aren't getters, so that they aren't bound as properties.
+
+    /**
+     * Whether the input and output messages of model calls are captured, by default when the flavor captures content.
+     */
+    public boolean capturesMessageContent() {
+        return orFlavorDefault(captureMessageContent);
+    }
+
+    /**
+     * Whether the tool definitions of model calls are captured, by default when the flavor captures content.
+     */
+    public boolean capturesToolDefinitions() {
+        return orFlavorDefault(captureToolDefinitions);
+    }
+
+    /**
+     * Whether the arguments and result of tool executions are captured, by default when the flavor captures content.
+     */
+    public boolean capturesToolCallContent() {
+        return orFlavorDefault(captureToolCallContent);
+    }
+
+    /**
+     * Returns where the captured content of model calls is recorded: the configured destination for the
+     * opentelemetry flavor, the span attributes for the other flavors, which record it where their platform expects it.
+     */
+    public InferenceContentDestination contentDestination() {
+        return flavor == GenAiConventionFlavor.OPENTELEMETRY ? inferenceContentDestination : InferenceContentDestination.SPAN_ATTRIBUTES;
+    }
+
+    private boolean orFlavorDefault(@Nullable Boolean value) {
+        return value != null ? value : flavor.capturesContentByDefault();
     }
 
     /**

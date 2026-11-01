@@ -20,7 +20,7 @@ import org.springframework.util.Assert;
  * <p>
  * The OpenTelemetry GenAI semantic conventions require the conversation id on every span where it's available,
  * and the backends of the other flavors group a conversation by reading it from every span. Spring AI only
- * carries it in the chat client request, so the chat client convention records it on its own span and this
+ * carries it in the chat client request, so the chat client convention records it on its own span, and this
  * handler copies it to the model, tool, and advisor spans below, under the attribute keys of the flavor.
  */
 public final class GenAiConversationIdObservationHandler implements ObservationHandler<Observation.Context> {

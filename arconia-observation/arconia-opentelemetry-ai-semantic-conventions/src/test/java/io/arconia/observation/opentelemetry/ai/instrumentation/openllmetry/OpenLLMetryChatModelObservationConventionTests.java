@@ -33,6 +33,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,7 +135,7 @@ class OpenLLMetryChatModelObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS.getKey(), "500"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), "1000"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey(), "500"),
-                KeyValue.of(OpenLLMetryAttributes.GEN_AI_USAGE_TOTAL_TOKENS, "1500")
+                KeyValue.of("gen_ai.usage.total_tokens", "1500")
         );
     }
 
@@ -253,6 +254,7 @@ class OpenLLMetryChatModelObservationConventionTests {
 
     @Test
     void shouldIncludeContentRegardlessOfInferenceContentDestination() {
+        properties.setFlavor(GenAiConventionFlavor.OPENLLMETRY);
         properties.setCaptureMessageContent(true);
         properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.SPAN_EVENTS);
         ChatModelObservationContext context = createContext("mistral");

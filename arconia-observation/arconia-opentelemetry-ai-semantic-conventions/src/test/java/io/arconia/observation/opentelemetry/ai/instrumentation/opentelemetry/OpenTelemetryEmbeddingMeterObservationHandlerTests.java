@@ -5,6 +5,7 @@ import java.util.List;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.metadata.DefaultUsage;
@@ -18,7 +19,6 @@ import org.springframework.ai.embedding.EmbeddingResponseMetadata;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 import org.springframework.ai.observation.conventions.AiProvider;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,10 +41,10 @@ class OpenTelemetryEmbeddingMeterObservationHandlerTests {
     void shouldRecordTokenUsageAsDistributionSummaries() {
         handler.onStop(createContext(new DefaultUsage(100, 20, 120)));
 
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(), GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.INPUT)
                 .summary()).isNotNull().satisfies(summary -> assertThat(summary.totalAmount()).isEqualTo(100));
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE)
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME)
                 .tag(GenAiIncubatingAttributes.GEN_AI_TOKEN_TYPE.getKey(), GenAiIncubatingAttributes.GenAiTokenTypeIncubatingValues.OUTPUT)
                 .summary()).isNull();
     }
@@ -53,14 +53,14 @@ class OpenTelemetryEmbeddingMeterObservationHandlerTests {
     void shouldNotRecordTokenUsageWhenNotReported() {
         handler.onStop(createContext(new EmptyUsage()));
 
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE).summaries()).isEmpty();
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME).summaries()).isEmpty();
     }
 
     @Test
     void shouldNotRecordTokenUsageWithoutResponse() {
         handler.onStop(createContextWithoutResponse());
 
-        assertThat(meterRegistry.find(GenAiAttributes.GEN_AI_CLIENT_TOKEN_USAGE).summaries()).isEmpty();
+        assertThat(meterRegistry.find(GenAiIncubatingMetrics.GEN_AI_CLIENT_TOKEN_USAGE_NAME).summaries()).isEmpty();
     }
 
     // Helpers

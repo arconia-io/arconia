@@ -43,10 +43,13 @@ public final class LangSmithChatModelObservationConvention extends OpenTelemetry
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
 
+    /**
+     * Records the tool definitions when they are captured, otherwise keeps the tool names Spring AI records by default.
+     */
     @Override
     protected KeyValues requestTools(KeyValues keyValues, ChatModelObservationContext context) {
-        if (!getProperties().isCaptureToolDefinitions()) {
-            return keyValues;
+        if (!getProperties().capturesToolDefinitions()) {
+            return super.requestTools(keyValues, context);
         }
         var toolDefinitions = GenAiContent.toolDefinitions(context.getRequest().getOptions());
         if (toolDefinitions.isEmpty()) {
@@ -88,12 +91,6 @@ public final class LangSmithChatModelObservationConvention extends OpenTelemetry
         // LangSmith requires integer cache creation tokens, but Micrometer only supports Strings.
         // Therefore, the token usage is captured via OpenTelemetry APIs directly.
         return keyValues;
-    }
-
-    @Override
-    protected boolean recordsContentOnSpanAttributes() {
-        // LangSmith records content on span attributes only.
-        return true;
     }
 
     @Override

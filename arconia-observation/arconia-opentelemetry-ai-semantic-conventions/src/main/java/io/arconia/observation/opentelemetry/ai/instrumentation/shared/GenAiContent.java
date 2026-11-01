@@ -35,8 +35,8 @@ import org.springframework.util.StringUtils;
 public final class GenAiContent {
 
     /**
-     * Maximum length of the base64 content of a blob part. Larger media is recorded without its content,
-     * to bound the size of the spans and events that carry the messages.
+     * Maximum length of the base64 content of a blob part. Larger media is left out, to bound the size of the spans
+     * and events that carry the messages: the conventions require a blob part to carry its content.
      */
     public static final int BLOB_CONTENT_MAX_LENGTH = 32_000;
 
@@ -69,14 +69,9 @@ public final class GenAiContent {
         }
     }
 
-    /**
-     * Binary data sent inline to the model. The content is left out when it's longer than
-     * {@link #BLOB_CONTENT_MAX_LENGTH}, keeping the modality and MIME type that describe it.
-     */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record BlobPart(String type, String modality,
-            @JsonProperty("mime_type") String mimeType, @Nullable String content) implements MessagePart {
-        public BlobPart(String modality, String mimeType, @Nullable String content) {
+            @JsonProperty("mime_type") String mimeType, String content) implements MessagePart {
+        public BlobPart(String modality, String mimeType, String content) {
             this("blob", modality, mimeType, content);
         }
     }
@@ -199,22 +194,30 @@ public final class GenAiContent {
         for (Media media : mediaContent.getMedia()) {
             String modality = media.getMimeType().getType();
             String mimeType = media.getMimeType().toString();
-            Object data = media.getData();
-            if (data instanceof byte[] bytes) {
-                parts.add(new BlobPart(modality, mimeType, encodeWithinLimit(bytes)));
-            } else {
-                parts.add(new UriPart(modality, mimeType, data.toString()));
+            if (media.getData() instanceof byte[] bytes) {
+                // The encoded length is computed upfront, so that media too large to record is never encoded.
+                if (4 * ((bytes.length + 2) / 3) <= BLOB_CONTENT_MAX_LENGTH) {
+                    parts.add(new BlobPart(modality, mimeType, Base64.getEncoder().encodeToString(bytes)));
+                }
+                continue;
+            }
+            String uri = media.getData().toString();
+            String content = base64DataUriContent(uri);
+            if (content == null) {
+                parts.add(new UriPart(modality, mimeType, uri));
+            } else if (content.length() <= BLOB_CONTENT_MAX_LENGTH) {
+                parts.add(new BlobPart(modality, mimeType, content));
             }
         }
     }
 
     /**
-     * Encodes the bytes in base64 when the result fits in {@link #BLOB_CONTENT_MAX_LENGTH}, computing the
-     * encoded length upfront so that media too large to record is never encoded in the first place.
+     * Returns the base64 content of a base64 data URI, which carries the media inline like bytes do,
+     * or null for any other URI.
      */
-    private static @Nullable String encodeWithinLimit(byte[] bytes) {
-        int encodedLength = 4 * ((bytes.length + 2) / 3);
-        return encodedLength <= BLOB_CONTENT_MAX_LENGTH ? Base64.getEncoder().encodeToString(bytes) : null;
+    private static @Nullable String base64DataUriContent(String uri) {
+        int separator = uri.indexOf(";base64,");
+        return uri.startsWith("data:") && separator >= 0 ? uri.substring(separator + ";base64,".length()) : null;
     }
 
     /**

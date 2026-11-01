@@ -29,16 +29,6 @@ class GenAiJsonTests {
     }
 
     @Test
-    void isObjectOrArrayShouldAcceptObjectsAndArraysOnly() {
-        assertThat(GenAiJson.isObjectOrArray(" {\"a\": 1} ")).isTrue();
-        assertThat(GenAiJson.isObjectOrArray("[1, 2]")).isTrue();
-        assertThat(GenAiJson.isObjectOrArray("rainy, 57°F")).isFalse();
-        assertThat(GenAiJson.isObjectOrArray("\"text\"")).isFalse();
-        assertThat(GenAiJson.isObjectOrArray("{")).isFalse();
-        assertThat(GenAiJson.isObjectOrArray("{\"a\": }")).isFalse();
-    }
-
-    @Test
     void isObjectShouldAcceptObjectsOnly() {
         assertThat(GenAiJson.isObject("{\"a\": 1}")).isTrue();
         assertThat(GenAiJson.isObject("[1, 2]")).isFalse();

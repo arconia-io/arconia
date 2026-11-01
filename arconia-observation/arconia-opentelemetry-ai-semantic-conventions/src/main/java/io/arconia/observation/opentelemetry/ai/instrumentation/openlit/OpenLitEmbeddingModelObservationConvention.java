@@ -7,8 +7,8 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 /**
  * OpenLIT flavor of {@link OpenTelemetryEmbeddingModelObservationConvention}.

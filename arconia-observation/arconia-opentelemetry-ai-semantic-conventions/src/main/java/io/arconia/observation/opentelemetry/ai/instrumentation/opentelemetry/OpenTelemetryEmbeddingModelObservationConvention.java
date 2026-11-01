@@ -3,20 +3,20 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 import org.springframework.util.StringUtils;
 
-import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
 public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
     @Override
     public String getName() {
-        return GenAiAttributes.GEN_AI_CLIENT_OPERATION_DURATION;
+        return GenAiIncubatingMetrics.GEN_AI_CLIENT_OPERATION_DURATION_NAME;
     }
 
     @Override

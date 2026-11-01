@@ -10,6 +10,7 @@ import io.micrometer.common.KeyValues;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.json.JSONException;
 import org.jspecify.annotations.NonNull;
@@ -35,6 +36,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +53,7 @@ class OpenTelemetryChatModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo("gen_ai.client.operation.duration");
+                .isEqualTo(GenAiIncubatingMetrics.GEN_AI_CLIENT_OPERATION_DURATION_NAME);
     }
 
     @Test
@@ -270,6 +272,23 @@ class OpenTelemetryChatModelObservationConventionTests {
                 .contains("\"parameters\":\"location: string\"");
         assertThat(findKeyValue(context.getHighCardinalityKeyValues(), GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()))
                 .contains("\"arguments\":\"{\\\"location\\\":\\\"Par\"");
+    }
+
+    @Test
+    void shouldRecordContentOnSpanAttributesForOtherFlavorsWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.LANGFUSE);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.LOG_EVENTS);
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(new UserMessage("Hello")), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hi!").build())))
+                .build());
+
+        assertThat(convention.getHighCardinalityKeyValues(context))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()))
+                .anySatisfy(keyValue -> assertThat(keyValue.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
     }
 
     @Test

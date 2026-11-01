@@ -7,6 +7,7 @@ import java.util.Map;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class OpenTelemetryEmbeddingModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo("gen_ai.client.operation.duration");
+                .isEqualTo(GenAiIncubatingMetrics.GEN_AI_CLIENT_OPERATION_DURATION_NAME);
     }
 
     @Test

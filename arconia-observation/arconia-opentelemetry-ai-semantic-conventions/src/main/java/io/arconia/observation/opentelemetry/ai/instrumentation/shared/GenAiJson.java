@@ -24,14 +24,6 @@ public final class GenAiJson {
     }
 
     /**
-     * Whether the text is a well-formed JSON object or array, as opposed to a scalar or plain text.
-     */
-    public static boolean isObjectOrArray(String value) {
-        JsonToken token = rootToken(value);
-        return token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY;
-    }
-
-    /**
      * Whether the text is a well-formed JSON object.
      */
     public static boolean isObject(String value) {

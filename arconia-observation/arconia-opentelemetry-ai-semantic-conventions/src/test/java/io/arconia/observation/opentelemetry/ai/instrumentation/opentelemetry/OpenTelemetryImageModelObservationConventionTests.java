@@ -3,6 +3,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry;
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.image.ImageOptionsBuilder;
@@ -23,7 +24,7 @@ class OpenTelemetryImageModelObservationConventionTests {
     @Test
     void shouldHaveName() {
         assertThat(convention.getName())
-                .isEqualTo("gen_ai.client.operation.duration");
+                .isEqualTo(GenAiIncubatingMetrics.GEN_AI_CLIENT_OPERATION_DURATION_NAME);
     }
 
     @Test

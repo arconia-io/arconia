@@ -60,7 +60,7 @@ public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCa
         var keyValues = KeyValues.empty();
         keyValues = toolDefinitionDescription(keyValues, context);
         keyValues = toolCallId(keyValues, context);
-        if (properties.isCaptureToolCallContent()) {
+        if (properties.capturesToolCallContent()) {
             keyValues = toolCallArguments(keyValues, context);
             keyValues = toolCallResult(keyValues, context);
         }
