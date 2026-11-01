@@ -248,7 +248,7 @@ public class DoclingServeClient implements DoclingServeApi {
         @Nullable
         private String apiKey;
         private Duration connectTimeout = Duration.ofSeconds(5);
-        private Duration readTimeout = Duration.ofSeconds(30);
+        private Duration readTimeout = Duration.ofMinutes(2);
         private Duration asyncPollInterval = Duration.ofSeconds(2);
         private Duration asyncTimeout = Duration.ofMinutes(5);
         private Executor asyncExecutor = Executors.newVirtualThreadPerTaskExecutor();

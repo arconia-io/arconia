@@ -86,7 +86,7 @@ class DoclingServeClientTests {
         assertThat(config.apiKey()).isNull();
         assertThat(config.isExplicitlySet(DoclingServeApiConfig.API_KEY)).isFalse();
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofSeconds(5));
-        assertThat(config.readTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(config.readTimeout()).isEqualTo(Duration.ofMinutes(2));
         assertThat(config.asyncPollInterval()).isEqualTo(Duration.ofSeconds(2));
         assertThat(config.asyncTimeout()).isEqualTo(Duration.ofMinutes(5));
         assertThat(config.asyncExecutor()).isNotNull();

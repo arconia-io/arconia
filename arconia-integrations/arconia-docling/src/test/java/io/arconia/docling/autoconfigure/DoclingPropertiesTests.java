@@ -18,7 +18,7 @@ class DoclingPropertiesTests {
 
         assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(5));
-        assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofMinutes(2));
         assertThat(properties.getAsyncPollInterval()).isEqualTo(Duration.ofSeconds(2));
         assertThat(properties.getAsyncTimeout()).isEqualTo(Duration.ofMinutes(5));
         assertThat(properties.isLogRequests()).isFalse();

@@ -135,8 +135,8 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |Timeout to establish a connection to the Docling Serve API.
 
 |`arconia.docling.read-timeout`
-|`30s`
-|Timeout for receiving a response from the Docling Serve API.
+|`2m`
+|Timeout for receiving a response from the Docling Serve API. It matches the time Docling Serve waits for a synchronous conversion to complete (`DOCLING_SERVE_MAX_SYNC_WAIT`, 2 minutes by default). For longer conversions, use the async operations.
 
 |`arconia.docling.async-poll-interval`
 |`2s`
@@ -148,11 +148,11 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 
 |`arconia.docling.log-requests`
 |`false`
-|Whether to log the requests sent to the Docling Serve API. The API key is masked.
+|Whether to log the requests sent to the Docling Serve API. The API key is masked and the bodies are truncated to 4000 characters.
 
 |`arconia.docling.log-responses`
 |`false`
-|Whether to log the responses received from the Docling Serve API. Non-JSON bodies, such as zip archives, are not logged.
+|Whether to log the responses received from the Docling Serve API. The bodies are truncated to 4000 characters, and non-JSON bodies, such as zip archives, are not logged.
 
 |`arconia.docling.pretty-print`
 |`false`

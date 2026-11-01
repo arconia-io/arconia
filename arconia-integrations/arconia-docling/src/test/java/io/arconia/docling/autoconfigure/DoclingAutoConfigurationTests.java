@@ -44,7 +44,7 @@ class DoclingAutoConfigurationTests {
             DoclingProperties properties = context.getBean(DoclingProperties.class);
             assertThat(properties.getBaseUrl()).isEqualTo(URI.create("http://localhost:5001"));
             assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(5));
-            assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofSeconds(30));
+            assertThat(properties.getReadTimeout()).isEqualTo(Duration.ofMinutes(2));
         });
     }
 

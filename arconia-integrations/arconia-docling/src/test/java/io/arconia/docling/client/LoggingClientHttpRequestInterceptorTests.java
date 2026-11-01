@@ -61,10 +61,43 @@ class LoggingClientHttpRequestInterceptorTests {
                     .startsWith("Request:")
                     .contains("POST")
                     .contains("http://localhost:5001/v1/convert/source")
-                    .contains("[X-Api-Key: su...ey]")
-                    .doesNotContain("super-secret-key")
+                    .contains("[X-Api-Key: ******]")
+                    .doesNotContain("super")
                     .contains("{\"a\":1}");
         });
+    }
+
+    @Test
+    void masksShortApiKeyAndAuthorizationHeader() throws IOException {
+        var interceptor = new LoggingClientHttpRequestInterceptor(true, false, false);
+        var request = new MockClientHttpRequest(HttpMethod.GET, URI.create("http://localhost:5001/health"));
+        request.getHeaders().set(DoclingProperties.API_KEY_HEADER_NAME, "abc");
+        request.getHeaders().setBearerAuth("token-value");
+
+        interceptor.intercept(request, new byte[0], jsonResponse("{}"));
+
+        assertThat(appender.list).singleElement().satisfies(event ->
+                assertThat(event.getFormattedMessage())
+                        .contains("[X-Api-Key: ******]")
+                        .contains("[Authorization: ******]")
+                        .doesNotContain("abc")
+                        .doesNotContain("token-value"));
+    }
+
+    @Test
+    void truncatesLongBodies() throws IOException {
+        var interceptor = new LoggingClientHttpRequestInterceptor(true, true, true);
+        var request = new MockClientHttpRequest(HttpMethod.POST, URI.create("http://localhost:5001/v1/convert/source"));
+        request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        String longJson = "{\"base64_string\":\"%s\"}".formatted("A".repeat(10_000));
+
+        interceptor.intercept(request, longJson.getBytes(StandardCharsets.UTF_8), jsonResponse(longJson));
+
+        assertThat(appender.list).hasSize(2).allSatisfy(event ->
+                assertThat(event.getFormattedMessage())
+                        .contains("A".repeat(3000))
+                        .doesNotContain("A".repeat(4000))
+                        .contains("... (%d more characters)".formatted(longJson.length() - 4000)));
     }
 
     @Test

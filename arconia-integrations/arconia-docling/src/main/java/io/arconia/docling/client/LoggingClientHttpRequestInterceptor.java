@@ -24,6 +24,9 @@ import io.arconia.docling.autoconfigure.DoclingProperties;
  * Logs the requests sent to the Docling Serve API and the responses received from it,
  * masking the API key and any Authorization header.
  * <p>
+ * Bodies are truncated, since a request carries each file source as a Base64 string
+ * and a response can carry whole converted documents.
+ * <p>
  * Response bodies are only readable when the {@code RestClient} buffers them.
  */
 final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
@@ -31,6 +34,10 @@ final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInte
     private static final Logger logger = LoggerFactory.getLogger(DoclingServeClient.class);
 
     private static final String BINARY_BODY = "<binary>";
+
+    private static final String MASKED_VALUE = "******";
+
+    private static final int MAX_BODY_LENGTH = 4000;
 
     private final boolean logRequests;
     private final boolean logResponses;
@@ -69,6 +76,9 @@ final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInte
     }
 
     private String body(@Nullable MediaType contentType, String body) {
+        if (body.length() > MAX_BODY_LENGTH) {
+            return "%s... (%d more characters)".formatted(body.substring(0, MAX_BODY_LENGTH), body.length() - MAX_BODY_LENGTH);
+        }
         if (!prettyPrint || body.isBlank() || !isJson(contentType)) {
             return body;
         }
@@ -86,7 +96,7 @@ final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInte
     private static String headers(HttpHeaders headers) {
         return headers.headerSet().stream()
                 .map(header -> "[%s: %s]".formatted(header.getKey(), String.join(", ", header.getValue().stream()
-                        .map(value -> shouldMask(header.getKey()) ? mask(value) : value)
+                        .map(value -> shouldMask(header.getKey()) ? MASKED_VALUE : value)
                         .toList())))
                 .collect(Collectors.joining(", "));
     }
@@ -94,13 +104,6 @@ final class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInte
     private static boolean shouldMask(String headerName) {
         return HttpHeaders.AUTHORIZATION.equalsIgnoreCase(headerName)
                 || DoclingProperties.API_KEY_HEADER_NAME.equalsIgnoreCase(headerName);
-    }
-
-    private static String mask(String value) {
-        if (value.length() <= 4) {
-            return value;
-        }
-        return value.substring(0, 2) + "..." + value.substring(value.length() - 2);
     }
 
 }

@@ -33,7 +33,7 @@ public class DoclingProperties {
     /**
      * Timeout for receiving a response from the Docling Serve API.
      */
-    private Duration readTimeout = Duration.ofSeconds(30);
+    private Duration readTimeout = Duration.ofMinutes(2);
 
     /**
      * Interval between two status checks of a task submitted by an async operation.
