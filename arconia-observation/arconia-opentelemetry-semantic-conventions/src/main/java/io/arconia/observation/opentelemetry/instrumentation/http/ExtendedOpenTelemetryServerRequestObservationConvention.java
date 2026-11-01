@@ -1,5 +1,10 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.micrometer.common.KeyValue;
@@ -16,10 +21,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.server.observation.OpenTelemetryServerRequestObservationConvention;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
-import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypes;
 
 /**
- * Extends OpenTelemetryServerRequestObservationConvention to provide the missing OpenTelemetry-compatible observation for HTTP requests.
+ * Provides the missing OpenTelemetry-compatible observation for HTTP requests.
  */
 public final class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
 
@@ -27,14 +31,22 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
 
     /**
      * The methods the conventions define as known by default, missing from Spring's {@code HttpMethod}.
-     * The {@code QUERY} value is still in development, so the stable semantic conventions library has no constant for it.
      */
     private static final Set<String> ADDITIONAL_KNOWN_METHODS = Set.of(HttpAttributes.HttpRequestMethodValues.CONNECT, "QUERY");
 
     private final OpenTelemetryHttpOptions options;
 
+    private final List<String> queryParametersToRedact;
+
+    private final Map<String, String> requestHeaderAttributeKeys;
+
+    private final Map<String, String> responseHeaderAttributeKeys;
+
     public ExtendedOpenTelemetryServerRequestObservationConvention(OpenTelemetryHttpOptions options) {
         this.options = options;
+        this.queryParametersToRedact = options.queryParametersToRedact();
+        this.requestHeaderAttributeKeys = options.requestHeaderAttributeKeys();
+        this.responseHeaderAttributeKeys = options.responseHeaderAttributeKeys();
     }
 
     /**
@@ -53,10 +65,6 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
 
     // LOW CARDINALITY
 
-    /**
-     * Records each attribute only when its value is available, as the conventions require,
-     * instead of the placeholder values used by Spring Framework.
-     */
     @Override
     public KeyValues getLowCardinalityKeyValues(ServerRequestObservationContext context) {
         var keyValues = KeyValues.of(exception(context), method(context), outcome(context));
@@ -92,10 +100,6 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         return keyValues;
     }
 
-    /**
-     * Reports HTTP/2 and HTTP/3 as {@code 2} and {@code 3}, as in the conventions, since servlet containers
-     * such as Tomcat report them as {@code HTTP/2.0} and {@code HTTP/3.0}.
-     */
     private static String toProtocolVersion(String version) {
         return switch (version) {
             case "2.0" -> "2";
@@ -111,13 +115,6 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         return keyValues;
     }
 
-    /**
-     * Reports the response status code as the error type when the response signals a server error, also when
-     * an exception was thrown, and no error type for any other response. Spring MVC hands the observation the
-     * exceptions it already handled, such as a validation failure answered with a 400 status: the request
-     * completed with a status code, which is all the conventions want recorded for it. The class name of the
-     * error is reported only when the request failed before a response was produced.
-     */
     @Override
     protected KeyValue exception(ServerRequestObservationContext context) {
         if (context.getResponse() != null) {
@@ -127,15 +124,11 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
                     : KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), KeyValue.NONE_VALUE);
         }
         if (context.getError() != null) {
-            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), OpenTelemetryErrorTypes.of(context.getError()));
+            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), context.getError().getClass().getName());
         }
         return super.exception(context);
     }
 
-    /**
-     * Treats {@code CONNECT} and {@code QUERY} as known methods, which the conventions define as known by default
-     * but Spring's {@code HttpMethod} doesn't list.
-     */
     @Override
     protected @Nullable String getMethodValue(ServerRequestObservationContext context) {
         if (context.getCarrier() != null && ADDITIONAL_KNOWN_METHODS.contains(context.getCarrier().getMethod())) {
@@ -151,10 +144,6 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         return keyValues;
     }
 
-    /**
-     * Records the original method only when it differs from {@code http.request.method},
-     * that is when the method is not a known one and is reported as {@code _OTHER}.
-     */
     private KeyValues methodOriginal(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null && getMethodValue(context) == null) {
             return keyValues.and(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod());
@@ -176,6 +165,8 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
             keyValues = urlQuery(keyValues, context);
         }
         keyValues = userAgent(keyValues, context);
+        keyValues = requestHeaders(keyValues, context);
+        keyValues = responseHeaders(keyValues, context);
         return keyValues;
     }
 
@@ -204,7 +195,7 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         if (context.getCarrier() != null) {
             String queryString = context.getCarrier().getQueryString();
             if (queryString != null) {
-                return keyValues.and(UrlAttributes.URL_QUERY.getKey(), UrlQuerySanitizer.sanitize(queryString, options.getSensitiveQueryParameters()));
+                return keyValues.and(UrlAttributes.URL_QUERY.getKey(), UrlQuerySanitizer.sanitize(queryString, queryParametersToRedact));
             }
         }
         return keyValues;
@@ -215,6 +206,32 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
             String userAgent = context.getCarrier().getHeader("User-Agent");
             if (userAgent != null) {
                 return keyValues.and(UserAgentAttributes.USER_AGENT_ORIGINAL.getKey(), userAgent);
+            }
+        }
+        return keyValues;
+    }
+
+    private KeyValues requestHeaders(KeyValues keyValues, ServerRequestObservationContext context) {
+        if (context.getCarrier() == null) {
+            return keyValues;
+        }
+        for (Map.Entry<String, String> header : requestHeaderAttributeKeys.entrySet()) {
+            Enumeration<String> values = context.getCarrier().getHeaders(header.getKey());
+            if (values != null && values.hasMoreElements()) {
+                keyValues = keyValues.and(header.getValue(), String.join(",", Collections.list(values)));
+            }
+        }
+        return keyValues;
+    }
+
+    private KeyValues responseHeaders(KeyValues keyValues, ServerRequestObservationContext context) {
+        if (context.getResponse() == null) {
+            return keyValues;
+        }
+        for (Map.Entry<String, String> header : responseHeaderAttributeKeys.entrySet()) {
+            Collection<String> values = context.getResponse().getHeaders(header.getKey());
+            if (!values.isEmpty()) {
+                keyValues = keyValues.and(header.getValue(), String.join(",", values));
             }
         }
         return keyValues;

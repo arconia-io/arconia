@@ -36,6 +36,17 @@ class OpenTelemetryErrorTypeObservationFilterTests {
         }
 
         @Test
+        void shouldRecordBinaryNameOfNestedErrorClass() {
+            Observation.Context context = new Observation.Context();
+            context.setError(new NestedException());
+
+            filter.map(context);
+
+            assertThat(context.getLowCardinalityKeyValue("error.type")).isEqualTo(KeyValue.of("error.type",
+                    "io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypeObservationFilterTests$NestedException"));
+        }
+
+        @Test
         void shouldKeepErrorTypeSetByConvention() {
             Observation.Context context = new Observation.Context();
             context.setError(new IllegalStateException());
@@ -102,6 +113,9 @@ class OpenTelemetryErrorTypeObservationFilterTests {
             assertThat(timer.getId().getTag("error.type")).isEqualTo("java.net.UnknownHostException");
         }
 
+    }
+
+    static class NestedException extends RuntimeException {
     }
 
 }

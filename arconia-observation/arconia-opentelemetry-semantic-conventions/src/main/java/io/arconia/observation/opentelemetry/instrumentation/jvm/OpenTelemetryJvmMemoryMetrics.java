@@ -19,8 +19,11 @@ import io.opentelemetry.semconv.JvmAttributes;
  */
 public final class OpenTelemetryJvmMemoryMetrics extends JvmMemoryMetrics {
 
+    private final Tags extraTags;
+
     public OpenTelemetryJvmMemoryMetrics(Iterable<? extends Tag> extraTags, JvmMemoryMeterConventions conventions) {
         super(extraTags, conventions);
+        this.extraTags = Tags.of(extraTags);
     }
 
     @Override
@@ -33,7 +36,7 @@ public final class OpenTelemetryJvmMemoryMetrics extends JvmMemoryMetrics {
                             MemoryUsage collectionUsage = pool.getCollectionUsage();
                             return collectionUsage != null ? collectionUsage.getUsed() : Double.NaN;
                         })
-                        .tags(Tags.of(
+                        .tags(extraTags.and(
                                 JvmAttributes.JVM_MEMORY_POOL_NAME.getKey(), memoryPoolBean.getName(),
                                 JvmAttributes.JVM_MEMORY_TYPE.getKey(), MemoryType.HEAP.equals(memoryPoolBean.getType()) ?
                                         JvmAttributes.JvmMemoryTypeValues.HEAP :

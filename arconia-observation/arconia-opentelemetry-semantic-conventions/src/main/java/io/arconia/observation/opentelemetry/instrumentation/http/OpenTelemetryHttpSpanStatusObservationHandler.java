@@ -48,8 +48,7 @@ public final class OpenTelemetryHttpSpanStatusObservationHandler implements Obse
     private static int getStatusCode(ClientHttpResponse response) {
         try {
             return response.getStatusCode().value();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             return -1;
         }
     }

@@ -17,12 +17,12 @@ class OpenTelemetryJvmMemoryMeterFilterTests {
     private final OpenTelemetryJvmMemoryMeterFilter filter = new OpenTelemetryJvmMemoryMeterFilter();
 
     @Test
-    void deniesMemoryUsageAfterGc() {
-        Meter.Id id = new Meter.Id("jvm.memory.usage.after.gc",
-                Tags.empty(),
-                null, null, Meter.Type.GAUGE);
+    void acceptsHeapPressureMetersWithoutReplacement() {
+        Meter.Id usageAfterGc = new Meter.Id("jvm.memory.usage.after.gc", Tags.empty(), null, null, Meter.Type.GAUGE);
+        Meter.Id gcOverhead = new Meter.Id("jvm.gc.overhead", Tags.empty(), null, null, Meter.Type.GAUGE);
 
-        assertThat(filter.accept(id)).isEqualTo(MeterFilterReply.DENY);
+        assertThat(filter.accept(usageAfterGc)).isEqualTo(MeterFilterReply.NEUTRAL);
+        assertThat(filter.accept(gcOverhead)).isEqualTo(MeterFilterReply.NEUTRAL);
     }
 
     @Test

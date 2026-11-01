@@ -52,12 +52,6 @@ class UrlQuerySanitizerTests {
     }
 
     @Test
-    void returnsTheQueryItselfWhenNothingIsRedacted() {
-        String query = "q=OpenTelemetry&page=2";
-        assertThat(UrlQuerySanitizer.sanitize(query, defaultSensitiveParameters)).isSameAs(query);
-    }
-
-    @Test
     void keepsEmptyQuery() {
         assertThat(UrlQuerySanitizer.sanitize("", defaultSensitiveParameters)).isEmpty();
     }

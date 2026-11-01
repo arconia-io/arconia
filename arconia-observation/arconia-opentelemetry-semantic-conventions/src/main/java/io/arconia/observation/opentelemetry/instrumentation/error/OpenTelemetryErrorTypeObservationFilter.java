@@ -9,7 +9,10 @@ import io.opentelemetry.semconv.ErrorAttributes;
  * {@link ObservationFilter} recording the {@code error.type} attribute on observations ending in an error,
  * as a low cardinality key value so that it applies to both the span and the metrics of the observation.
  * <p>
- * The attribute holds the class name of the error, unless the observation convention already set it.
+ * The attribute holds the fully qualified class name of the error, unless the observation convention already set it.
+ * It's the binary name the JVM uses, such as {@code com.example.OrderService$NotFoundException} for a nested class,
+ * which is the form Spring Framework and the OpenTelemetry Java instrumentation report too, so that the attribute
+ * can be aggregated across services.
  * The {@code none} value the Spring Framework conventions use when there is no error type to report
  * is always removed, since the conventions don't record the attribute for successful operations: a convention
  * reporting {@code none} for an observation carrying an error, such as an HTTP request that answered a handled
@@ -33,7 +36,7 @@ public final class OpenTelemetryErrorTypeObservationFilter implements Observatio
 
         Throwable error = context.getError();
         if (error != null) {
-            context.addLowCardinalityKeyValue(KeyValue.of(ERROR_TYPE, OpenTelemetryErrorTypes.of(error)));
+            context.addLowCardinalityKeyValue(KeyValue.of(ERROR_TYPE, error.getClass().getName()));
         }
         return context;
     }

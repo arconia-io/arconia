@@ -205,6 +205,39 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
+    void urlFullRedactsAdditionalSensitiveQueryParametersAlongsideTheDefaults() {
+        OpenTelemetryHttpOptions options = new OpenTelemetryHttpOptions();
+        options.setAdditionalSensitiveQueryParameters(List.of("token"));
+        var customConvention = new OpenTelemetryClientRequestObservationConvention(options);
+        ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com/file?token=secret&sig=other&q=1");
+
+        assertThat(customConvention.getHighCardinalityKeyValues(context))
+                .containsExactly(KeyValue.of("url.full", "https://example.com/file?token=REDACTED&sig=REDACTED&q=1"));
+    }
+
+    @Test
+    void capturesConfiguredRequestAndResponseHeaders() {
+        OpenTelemetryHttpOptions options = new OpenTelemetryHttpOptions();
+        options.setCaptureRequestHeaders(List.of("X-Request-Id"));
+        options.setCaptureResponseHeaders(List.of("Content-Type"));
+        var customConvention = new OpenTelemetryClientRequestObservationConvention(options);
+        MockClientHttpRequest request = new MockClientHttpRequest(HttpMethod.GET, URI.create("https://example.com/file"));
+        request.getHeaders().add("x-request-id", "42");
+        request.getHeaders().add("Authorization", "Bearer secret");
+        ClientRequestObservationContext context = new ClientRequestObservationContext(request);
+        MockClientHttpResponse response = new MockClientHttpResponse(new byte[0], HttpStatus.OK);
+        response.getHeaders().add("Content-Type", "application/json");
+        context.setResponse(response);
+
+        KeyValues keyValues = customConvention.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(
+                KeyValue.of("http.request.header.x-request-id", "42"),
+                KeyValue.of("http.response.header.content-type", "application/json"));
+        assertThat(keyValues.stream().map(KeyValue::getKey)).doesNotContain("http.request.header.authorization");
+    }
+
+    @Test
     void urlFullRedactsCredentialsAndQueryAndKeepsFragment() {
         ClientRequestObservationContext context = context(HttpMethod.GET, "https://user:p%40ss@example.com:8443/a/b?sig=x&q=1#frag");
 

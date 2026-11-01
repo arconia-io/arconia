@@ -2,6 +2,8 @@ package io.arconia.observation.opentelemetry.instrumentation.http;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.micrometer.common.KeyValue;
@@ -13,19 +15,16 @@ import io.opentelemetry.semconv.ServerAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.observation.ClientRequestObservationContext;
 import org.springframework.http.client.observation.DefaultClientRequestObservationConvention;
 import org.springframework.web.client.ResourceAccessException;
 
-import io.arconia.observation.opentelemetry.instrumentation.error.OpenTelemetryErrorTypes;
 
 /**
  * Observation convention for HTTP client requests following the OpenTelemetry Semantic Conventions,
  * applied to {@code RestClient} and {@code RestTemplate}.
- * <p>
- * The {@code outcome} and {@code uri} attributes from Spring Framework are kept, since the OpenTelemetry
- * Semantic Conventions don't define a stable equivalent for them.
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span">HTTP Client Spans</a>
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpclientrequestduration">HTTP Client Metrics</a>
@@ -37,19 +36,24 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
     private static final String REDACTED_USER_INFO = UrlQuerySanitizer.REDACTED + ":" + UrlQuerySanitizer.REDACTED;
 
     /**
-     * The methods the conventions define as known by default. The {@code QUERY} value is still in development,
-     * so the stable semantic conventions library has no constant for it.
+     * The methods the conventions define as known by default.
      */
     private static final Set<String> KNOWN_METHODS = Set.of(HttpRequestMethodValues.CONNECT, HttpRequestMethodValues.DELETE,
             HttpRequestMethodValues.GET, HttpRequestMethodValues.HEAD, HttpRequestMethodValues.OPTIONS,
             HttpRequestMethodValues.PATCH, HttpRequestMethodValues.POST, HttpRequestMethodValues.PUT,
             HttpRequestMethodValues.TRACE, "QUERY");
 
-    private final OpenTelemetryHttpOptions options;
+    private final List<String> queryParametersToRedact;
+
+    private final Map<String, String> requestHeaderAttributeKeys;
+
+    private final Map<String, String> responseHeaderAttributeKeys;
 
     public OpenTelemetryClientRequestObservationConvention(OpenTelemetryHttpOptions options) {
         super(NAME);
-        this.options = options;
+        this.queryParametersToRedact = options.queryParametersToRedact();
+        this.requestHeaderAttributeKeys = options.requestHeaderAttributeKeys();
+        this.responseHeaderAttributeKeys = options.responseHeaderAttributeKeys();
     }
 
     /**
@@ -66,9 +70,6 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
 
     // LOW CARDINALITY
 
-    /**
-     * Records each attribute only when its value is available, as the conventions require.
-     */
     @Override
     public KeyValues getLowCardinalityKeyValues(ClientRequestObservationContext context) {
         var keyValues = KeyValues.of(exception(context), outcome(context), uri(context));
@@ -79,12 +80,6 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
         return keyValues;
     }
 
-    /**
-     * Reports the response status code as the error type when the response signals an error,
-     * otherwise the class name of the error, if any. The {@link ResourceAccessException}
-     * that Spring Framework uses to wrap any I/O error is unwrapped, since it doesn't help classify the failure,
-     * as the conventions allow.
-     */
     @Override
     protected KeyValue exception(ClientRequestObservationContext context) {
         Integer status = getStatusCode(context);
@@ -96,7 +91,7 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
             if (error instanceof ResourceAccessException && error.getCause() != null) {
                 error = error.getCause();
             }
-            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), OpenTelemetryErrorTypes.of(error));
+            return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), error.getClass().getName());
         }
         return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), KeyValue.NONE_VALUE);
     }
@@ -152,13 +147,25 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
         var keyValues = KeyValues.empty();
         keyValues = methodOriginal(keyValues, context);
         keyValues = urlFull(keyValues, context);
+        if (context.getCarrier() != null) {
+            keyValues = headers(keyValues, context.getCarrier().getHeaders(), requestHeaderAttributeKeys);
+        }
+        if (context.getResponse() != null) {
+            keyValues = headers(keyValues, context.getResponse().getHeaders(), responseHeaderAttributeKeys);
+        }
         return keyValues;
     }
 
-    /**
-     * Records the original method only when it differs from {@code http.request.method},
-     * that is when the method is not a known one and is reported as {@code _OTHER}.
-     */
+    private static KeyValues headers(KeyValues keyValues, HttpHeaders headers, Map<String, String> headerAttributeKeys) {
+        for (Map.Entry<String, String> header : headerAttributeKeys.entrySet()) {
+            List<String> values = headers.get(header.getKey());
+            if (values != null && !values.isEmpty()) {
+                keyValues = keyValues.and(header.getValue(), String.join(",", values));
+            }
+        }
+        return keyValues;
+    }
+
     private KeyValues methodOriginal(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null && getMethodValue(context) == null) {
             return keyValues.and(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod().name());
@@ -200,7 +207,7 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
             sanitized.append(asciiUri.getRawPath());
         }
         if (asciiUri.getRawQuery() != null) {
-            sanitized.append('?').append(UrlQuerySanitizer.sanitize(asciiUri.getRawQuery(), options.getSensitiveQueryParameters()));
+            sanitized.append('?').append(UrlQuerySanitizer.sanitize(asciiUri.getRawQuery(), queryParametersToRedact));
         }
         if (asciiUri.getRawFragment() != null) {
             sanitized.append('#').append(asciiUri.getRawFragment());
@@ -208,10 +215,8 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
         return sanitized.toString();
     }
 
-    /**
-     * Returns the request method if it's a known one, otherwise {@code null}.
-     */
-    protected @Nullable String getMethodValue(ClientRequestObservationContext context) {
+    @Nullable
+    private String getMethodValue(ClientRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String method = context.getCarrier().getMethod().name();
             if (KNOWN_METHODS.contains(method)) {
@@ -226,8 +231,7 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
         if (response != null) {
             try {
                 return response.getStatusCode().value();
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 // The status code is not available
             }
         }

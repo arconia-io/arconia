@@ -291,6 +291,46 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
+    void urlQueryRedactsAdditionalSensitiveParametersAlongsideTheDefaults() {
+        var options = new OpenTelemetryHttpOptions();
+        options.setAdditionalSensitiveQueryParameters(List.of("token"));
+        var conventionWithQuery = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setQueryString("token=abc&X-Amz-Signature=def&q=1");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+
+        KeyValues keyValues = conventionWithQuery.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(KeyValue.of("url.query", "token=REDACTED&X-Amz-Signature=REDACTED&q=1"));
+    }
+
+    @Test
+    void capturesConfiguredRequestAndResponseHeaders() {
+        var options = new OpenTelemetryHttpOptions();
+        options.setCaptureRequestHeaders(List.of("X-Request-Id", "Accept"));
+        options.setCaptureResponseHeaders(List.of("Content-Type"));
+        var conventionWithHeaders = new ExtendedOpenTelemetryServerRequestObservationConvention(options);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("x-request-id", "42");
+        request.addHeader("Accept", "text/html");
+        request.addHeader("Accept", "application/json");
+        request.addHeader("Authorization", "Bearer secret");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.addHeader("Content-Type", "application/json");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
+
+        KeyValues keyValues = conventionWithHeaders.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).contains(
+                KeyValue.of("http.request.header.x-request-id", "42"),
+                KeyValue.of("http.request.header.accept", "text/html,application/json"),
+                KeyValue.of("http.response.header.content-type", "application/json"));
+        assertThat(keyValues.stream().map(KeyValue::getKey)).doesNotContain("http.request.header.authorization");
+    }
+
+    @Test
     void urlQueryAbsentWhenEnabledButNoQueryString() {
         var options = new OpenTelemetryHttpOptions();
         options.setCaptureUrlQuery(true);

@@ -80,17 +80,17 @@ Provides semantic conventions for JVM metrics, following the stable https://open
 
 The `jvm.gc.duration` metric replaces both the `jvm.gc.pause` and `jvm.gc.concurrent.phase.time` metrics from Micrometer, so it covers both garbage collection pauses and concurrent phases. The `jvm.gc.name` and `jvm.gc.cause` attributes tell them apart: for example, `G1 Young Generation` pauses versus `G1 Concurrent GC` phases (with cause `No GC`), or `ZGC Pauses` versus `ZGC Cycles`.
 
-The Micrometer `jvm.threads.live` metric is not published, since the `jvm.thread.count` metric replaces it: summed over the `jvm.thread.state` attribute, it counts the same live platform threads. The other Micrometer JVM metrics without an equivalent in the OpenTelemetry Semantic Conventions, such as `jvm.threads.daemon` and `jvm.threads.peak`, are kept.
+The Micrometer `jvm.threads.live` metric is not published, since the `jvm.thread.count` metric replaces it: summed over the `jvm.thread.state` attribute, it counts the same live platform threads.
 
 === Known Deviations
 
-The Micrometer JVM instrumentation currently deviates from the OpenTelemetry Semantic Conventions for JVM in the following ways:
+The JVM metrics currently deviate from the OpenTelemetry Semantic Conventions for JVM in the following ways, because of the Micrometer instrumentation they are based on:
 
 * The `jvm.cpu.time` metric is reported in nanoseconds instead of seconds (https://github.com/micrometer-metrics/micrometer/issues/7703[micrometer#7703]).
-* The `jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.thread.count`, `jvm.class.count`, and `jvm.cpu.count` metrics are exported as gauges instead of non-monotonic sums (https://github.com/micrometer-metrics/micrometer/issues/7432[micrometer#7432]).
+* The `jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.memory.used_after_last_gc`, `jvm.thread.count`, `jvm.class.count`, and `jvm.cpu.count` metrics are exported as gauges instead of non-monotonic sums (https://github.com/micrometer-metrics/micrometer/issues/7432[micrometer#7432]).
 * The `jvm.thread.count` metric doesn't have the `jvm.thread.daemon` attribute (https://github.com/micrometer-metrics/micrometer/issues/7702[micrometer#7702]).
 * The `jvm.memory.limit` metric is reported as `-1` for the memory pools without a defined maximum, such as Metaspace when no maximum size is configured, instead of not being reported.
-* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `{thread}`, and `{class}`. The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `{cpu}` and `1`.
+* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `{thread}`, and `{class}`. The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `{cpu}` and `1` (https://github.com/micrometer-metrics/micrometer/issues/8130[micrometer#8130]).
 
 === Configuration Properties
 
@@ -113,7 +113,11 @@ The conventions cover the servlet web stack and the blocking HTTP clients. The r
 
 === HTTP Server
 
-Activated when the application is a servlet-based web application. The requests are reported with the `http.server.request.duration` metric and spans named after the request method and the matched route, such as `GET /users/\{id}`. The query string of the request is recorded as `url.query`, with the values of sensitive query parameters replaced by `REDACTED`. Requests answered with a `5xx` status get `error.type` set to the status code. Requests answered with any other status don't get it, including when Spring MVC handled an exception to produce the response, such as a validation failure answered with `400`, since the request completed with a status code. Semantic Conventions for HTTP Server are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to support additional stable conventions.
+Activated when the application is a servlet-based web application. The conventions are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to cover additional stable conventions.
+
+The requests are reported with the `http.server.request.duration` metric and spans named after the request method and the matched route, such as `GET /users/\{id}`. The query string of the request is recorded as `url.query`, with the values of sensitive query parameters replaced by `REDACTED`.
+
+Requests answered with a `5xx` status get `error.type` set to the status code. Requests answered with any other status don't get it, even when Spring MVC handled an exception to produce the response, such as a validation failure answered with `400`, since the request completed with a status code.
 
 === HTTP Client
 
@@ -138,11 +142,29 @@ The `outcome` and `uri` attributes from Spring Framework are kept, since the Ope
 | `arconia.observations.conventions.opentelemetry.http.sensitive-query-parameters`
 | `AWSAccessKeyId`, `Signature`, `X-Amz-Signature`, `X-Amz-Credential`, `X-Amz-Security-Token`, `sig`, `X-Goog-Signature`
 | Query parameters whose values are replaced by `REDACTED` in the URL query string of the HTTP server and client observations, matched case-sensitively. Setting it replaces the default list, and an empty list disables the redaction.
+
+| `arconia.observations.conventions.opentelemetry.http.additional-sensitive-query-parameters`
+| -
+| Additional query parameters whose values are replaced by `REDACTED` in the URL query string of the HTTP server and client observations, on top of the sensitive query parameters, matched case-sensitively.
+
+| `arconia.observations.conventions.opentelemetry.http.capture-request-headers`
+| -
+| HTTP request headers to record on the HTTP server and client spans, matched case-insensitively. Avoid headers carrying sensitive information, such as Authorization.
+
+| `arconia.observations.conventions.opentelemetry.http.capture-response-headers`
+| -
+| HTTP response headers to record on the HTTP server and client spans, matched case-insensitively. Avoid headers carrying sensitive information, such as Set-Cookie.
 |===
 
 == Errors
 
-Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute holds the fully qualified class name of the error in the form the JVM uses (for example, `com.example.OrderService$OrderNotFoundException` for a nested class), the same form Spring Framework and the OpenTelemetry Java instrumentation report, unless the convention for the observation already sets a more specific value, such as the status code of HTTP responses signaling an error (`5xx` for servers, `4xx` and `5xx` for clients), and it's recorded on both the span and the metrics of the observation. It's not recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
+Records the stable `error.type` attribute on every observation ending in an error, following the https://opentelemetry.io/docs/specs/semconv/general/recording-errors/[OpenTelemetry Semantic Conventions for recording errors]. The attribute is recorded on both the span and the metrics of the observation.
+
+The attribute holds the fully qualified class name of the error in the form the JVM uses, such as `com.example.OrderService$OrderNotFoundException` for a nested class. It's the same form Spring Framework and the OpenTelemetry Java instrumentation report.
+
+When the convention of the observation sets a more specific value, that value is kept. For example, HTTP responses signaling an error get their status code: `5xx` for servers, `4xx` and `5xx` for clients.
+
+The attribute isn't recorded for successful operations, so the `none` value Spring Framework sets on successful HTTP server requests is removed.
 
 === Configuration Properties
 
@@ -229,18 +251,18 @@ include::partial$opentelemetry-ai-dependency.adoc[]
 
 include::partial$ai-conventions-activation.adoc[]
 
-The module supports multiple convention _flavors_. The default `opentelemetry` flavor targets standard OTel-compatible backends. For platform-specific setup using alternative conventions, refer to the dedicated pages: xref:semantic-conventions/openlit.adoc[OpenLIT Semantic Conventions], xref:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions], xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions], and xref:semantic-conventions/langfuse.adoc[Langfuse Semantic Conventions].
+The module supports multiple convention _flavors_. The default `opentelemetry` flavor targets standard OpenTelemetry-compatible backends. For platform-specific setup using alternative conventions, refer to the dedicated pages: xref:semantic-conventions/openlit.adoc[OpenLIT Semantic Conventions], xref:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions], xref:semantic-conventions/langsmith.adoc[LangSmith Semantic Conventions], and xref:semantic-conventions/langfuse.adoc[Langfuse Semantic Conventions].
 
 === Features
 
-* Chat model spans with full parameter tracking (e.g., temperature, max tokens, penalties, stop sequences).
-* Embedding model spans with dimension tracking.
+* Chat model spans, with the model and its parameters.
+* Embedding model spans, with the model and the number of dimensions.
 * Tool execution spans.
 * Advisor spans.
-* Chat client spans, reported as agent invocations (`invoke_agent`). The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the agent invocation span and on the model, tool, and advisor spans nested in it, since the conventions require it on every span where it's available.
-* Operation duration metrics (`gen_ai.client.operation.duration`) for chat, embedding, and image model calls.
-* Token usage metrics (`gen_ai.client.token.usage`).
-* Input/output message content, captured as span attributes, span events, or log events.
+* Chat client spans, recorded as agent invocations. The conversation ID of the chat memory is recorded on them and on the spans nested in them.
+* Operation duration metrics for chat, embedding, and image model calls.
+* Token usage metrics.
+* Input and output message content, captured as span attributes, span events, or log events.
 
 Model calls, embeddings, tool executions, and chat client calls ending in an error get the `error.type` attribute when the <<_errors,error conventions>> are active. They belong to the Arconia OpenTelemetry Semantic Conventions module, which the Generative AI module doesn't depend on: add both dependencies to get them.
 
@@ -261,11 +283,11 @@ The `inference-content-destination` property decides where the captured messages
 
 * `span-attributes` (default): as attributes of the model call span.
 * `log-events`: in a `gen_ai.client.inference.operation.details` event exported through the OpenTelemetry Logs API, as defined by the OpenTelemetry Semantic Conventions. The event carries the attributes of the model call span and the content in structured form, and it's correlated with the span. It's exported together with the other application logs, whether OpenTelemetry is configured by the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter] or by the Spring Boot OpenTelemetry support.
-* `span-events`: in a `gen_ai.client.inference.operation.details` event attached to the model call span. The OpenTelemetry Semantic Conventions don't define this option, but it suits backends that display span events alongside the trace.
+* `span-events`: in a `gen_ai.client.inference.operation.details` event attached to the model call span. The OpenTelemetry Semantic Conventions now record events through the Logs API, but up to version 1.27 they recorded the content as span events, which some backends still display alongside the trace.
 
 Binary media in messages, such as images sent as bytes, is recorded inline as base64 only when the encoded content is at most 32000 characters long. Larger media is recorded as a blob part without content, keeping its modality and MIME type, so that the size of spans and events stays bounded. Media referenced by URL is always recorded as a URI part.
 
-The arguments and result of tool executions are always recorded as attributes of the tool execution span, the only option the OpenTelemetry Semantic Conventions define for them. The same goes for the input and output messages of a chat client call, recorded on the agent invocation span: they are recorded only with the `span-attributes` destination, since with the other destinations the model calls of the chat client already carry them in their events.
+The arguments and result of tool executions are always recorded as attributes of the tool execution span. The same goes for the input and output messages of a chat client call, recorded on the agent invocation span: they are recorded only with the `span-attributes` destination, since with the other destinations the model calls of the chat client already carry them in their events.
 
 === Configuration Properties
 
@@ -321,7 +343,10 @@ management:
 
 == Stability
 
-The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. There are two exceptions: the `jvm.gc.cause` attribute of the `jvm.gc.duration` metric, which is still in development but kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>), and the `QUERY` value of the `http.request.method` attribute, which is still in development but part of the HTTP methods the stable conventions define as known by default.
+The OpenTelemetry Semantic Conventions module only adopts conventions declared stable by OpenTelemetry: the JVM metrics, the HTTP server and client spans and metrics, and the `error.type` attribute. It makes two exceptions:
+
+* The `jvm.gc.cause` attribute of the `jvm.gc.duration` metric is still in development, but it's kept because it tells garbage collection pauses and concurrent phases apart (see <<_jvm,JVM>>).
+* The `QUERY` value of the `http.request.method` attribute is still in development, but it's one of the HTTP methods the stable conventions define as known by default.
 
 The OpenTelemetry Semantic Conventions for <<_generative_ai,Generative AI>> are still in development, and they are provided by a separate module.
 
@@ -330,7 +355,7 @@ The OpenTelemetry Semantic Conventions for <<_generative_ai,Generative AI>> are 
 Besides the deviations of each instrumentation, described in the sections above, some differences from the conventions come from Micrometer and apply to all the observations:
 
 * Attribute values are always strings, also for attributes defined as numbers, such as `http.response.status_code` and `server.port` (https://github.com/micrometer-metrics/micrometer/issues/7433[micrometer#7433]).
-* Spans ending without an error get the `Ok` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/890[tracing#890]). It affects most spans, such as the Generative AI ones, except the spans of HTTP server requests and the spans of HTTP client requests and database queries that have a parent span.
+* Spans ending without an error get the `Ok` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it (https://github.com/micrometer-metrics/tracing/issues/1634[tracing#1634]). It affects most spans, such as the Generative AI ones. It doesn't affect the spans of HTTP server requests, nor the spans of HTTP client requests and database queries that have a parent span.
 * Spans of HTTP server requests that answer a handled exception with a status below `500`, such as a validation failure answered with `400`, get the `Error` status instead of being left unset, because the Micrometer Tracing OpenTelemetry bridge sets it whenever an exception is reported to the observation and the OpenTelemetry API doesn't allow unsetting it. The `error.type` attribute follows the conventions and isn't recorded.
 * With the Micrometer OTLP registry, durations use the `seconds` unit instead of `s` (https://github.com/micrometer-metrics/micrometer/issues/6988[micrometer#6988]).
 * The `.active` long task timers that Micrometer adds for each observation, such as `http.server.request.duration.active`, have no equivalent in the conventions and get the attribute values known when the operation starts. For example, HTTP server requests in progress have `http.response.status_code` set to `200`, the initial status of the response.

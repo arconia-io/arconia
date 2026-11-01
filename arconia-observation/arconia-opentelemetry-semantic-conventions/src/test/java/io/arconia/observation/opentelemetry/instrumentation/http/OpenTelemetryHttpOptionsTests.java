@@ -12,6 +12,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 /**
  * Unit tests for {@link OpenTelemetryHttpOptions}.
@@ -26,6 +27,25 @@ class OpenTelemetryHttpOptionsTests {
         List<String> metadataDefault = metadataDefaultValue(SENSITIVE_QUERY_PARAMETERS_PROPERTY);
 
         assertThat(metadataDefault).isEqualTo(new OpenTelemetryHttpOptions().getSensitiveQueryParameters());
+    }
+
+    @Test
+    void queryParametersToRedactAddsTheAdditionalOnesToTheSensitiveOnes() {
+        OpenTelemetryHttpOptions options = new OpenTelemetryHttpOptions();
+        options.setSensitiveQueryParameters(List.of("sig"));
+        options.setAdditionalSensitiveQueryParameters(List.of("token"));
+
+        assertThat(options.queryParametersToRedact()).containsExactly("sig", "token");
+    }
+
+    @Test
+    void headerAttributeKeysUseLowerCaseHeaderNames() {
+        OpenTelemetryHttpOptions options = new OpenTelemetryHttpOptions();
+        options.setCaptureRequestHeaders(List.of("X-Request-Id"));
+        options.setCaptureResponseHeaders(List.of("Content-Type"));
+
+        assertThat(options.requestHeaderAttributeKeys()).containsExactly(entry("x-request-id", "http.request.header.x-request-id"));
+        assertThat(options.responseHeaderAttributeKeys()).containsExactly(entry("content-type", "http.response.header.content-type"));
     }
 
     /**

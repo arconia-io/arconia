@@ -3,6 +3,7 @@ package io.arconia.observation.opentelemetry.instrumentation.jvm;
 import java.util.List;
 
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.BaseUnits;
 import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMeterConventions;
@@ -45,6 +46,18 @@ class OpenTelemetryJvmMemoryMetricsTests {
                     .isIn(JvmAttributes.JvmMemoryTypeValues.HEAP, JvmAttributes.JvmMemoryTypeValues.NON_HEAP);
             assertThat(gauge.getId().getBaseUnit()).isEqualTo(BaseUnits.BYTES);
         }
+    }
+
+    @Test
+    void addsExtraTagsToUsedAfterLastGcGauges() {
+        var conventions = new OpenTelemetryJvmMemoryMeterConventions(Tags.empty());
+        var metrics = new OpenTelemetryJvmMemoryMetrics(List.of(Tag.of("region", "eu")), conventions);
+
+        metrics.bindTo(meterRegistry);
+
+        assertThat(meterRegistry.find("jvm.memory.used_after_last_gc").gauges())
+                .isNotEmpty()
+                .allSatisfy(gauge -> assertThat(gauge.getId().getTag("region")).isEqualTo("eu"));
     }
 
     @Test

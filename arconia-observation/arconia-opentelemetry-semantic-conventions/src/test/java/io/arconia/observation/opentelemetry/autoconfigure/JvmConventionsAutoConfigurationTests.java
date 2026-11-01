@@ -97,7 +97,6 @@ class JvmConventionsAutoConfigurationTests {
                     assertThat(meterRegistry.find("jvm.thread.count").gauge()).isNotNull();
                     assertThat(meterRegistry.find("jvm.class.loaded").functionCounter()).isNotNull();
                     assertThat(meterRegistry.find("jvm.cpu.time").functionCounter()).isNotNull();
-                    assertThat(meterRegistry.find("jvm.memory.usage.after.gc").gauge()).isNull();
                     assertThat(meterRegistry.find("jvm.threads.live").gauge()).isNull();
                 });
     }
