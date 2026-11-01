@@ -39,7 +39,8 @@ import io.arconia.testcontainers.redis.RedisContainer;
  * <p>
  * The OTLP endpoint is exposed through a proxy in Floci (see {@link #getOtlpTracesUrl()}), because
  * the Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2 (h2c), as the
- * JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters.
+ * JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters
+ * (see <a href="https://github.com/open-telemetry/opentelemetry-java/issues/8982">opentelemetry-java#8982</a>).
  * <p>
  * If a network is set on this container via {@link #withNetwork(Network)} before starting,
  * Langfuse and the containers it needs join that network. Otherwise, a private network is
