@@ -1,0 +1,26 @@
+= Testcontainers
+
+Arconia provides https://testcontainers.com[Testcontainers] modules for services that Testcontainers doesn't cover with a module of its own. They work in any Java project using Testcontainers.
+
+[cols="1,2"]
+|===
+|Module |Container
+
+| xref:langfuse.adoc[`arconia-testcontainers-langfuse`]
+| `LangfuseContainer`, for tracing, evaluating, and debugging AI applications with https://langfuse.com[Langfuse].
+
+| xref:openlit.adoc[`arconia-testcontainers-openlit`]
+| `OpenLitContainer`, for observing AI applications with https://openlit.io[OpenLIT].
+
+| xref:phoenix.adoc[`arconia-testcontainers-phoenix`]
+| `PhoenixContainer`, for observing and evaluating AI applications with https://arize.com/docs/phoenix[Arize Phoenix].
+
+| xref:redis.adoc[`arconia-testcontainers-redis`]
+| `RedisContainer`, for https://redis.io[Redis].
+|===
+
+The versions of the modules are managed by the Arconia BOM (`io.arconia:arconia-bom`).
+
+The modules are annotated with https://jspecify.dev[JSpecify] nullness annotations, so that tools such as https://github.com/uber/NullAway[NullAway] and IntelliJ IDEA can check how your code uses them.
+
+TIP: In Spring Boot applications, the xref:dev-services:index.adoc[Arconia Dev Services] run the same containers with no code, both in dev mode and in tests, and connect the application to them.

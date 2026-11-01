@@ -1,0 +1,28 @@
+= Phoenix Testcontainers
+:module-name: phoenix
+
+A Testcontainers module providing `PhoenixContainer`, which runs https://arize.com/docs/phoenix[Arize Phoenix], an AI observability and evaluation platform based on OpenTelemetry and OpenInference.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Usage
+
+[source,java]
+----
+var phoenix = new PhoenixContainer(DockerImageName.parse("arizephoenix/phoenix:latest"));
+phoenix.start();
+----
+
+Phoenix accepts traces via OTLP, with the HTTP/Protobuf protocol on the port returned by `getHttpPort()` and the gRPC protocol on the one returned by `getGrpcPort()`. The UI is available at `getPhoenixUrl()`.
+
+Phoenix starts without authentication and with the telemetry of its UI turned off. Override them and any other https://arize.com/docs/phoenix/self-hosting/configuration[Phoenix configuration] via environment variables.
+
+[source,java]
+----
+var phoenix = new PhoenixContainer(DockerImageName.parse("arizephoenix/phoenix:latest"))
+        .withEnv("PHOENIX_ENABLE_AUTH", "true");
+----
+
+TIP: In Spring Boot applications, the xref:dev-services:phoenix.adoc[Phoenix Dev Service] runs this container with no code and sends the traces of the application to it.

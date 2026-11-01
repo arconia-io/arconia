@@ -85,7 +85,6 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The `arconia.otel.resource.enable` properties now work like Spring Boot's `management.metrics.enable`: the longest matching key wins.
 * When enabled, the metrics the OpenTelemetry SDK records about itself use the names of the semantic conventions, such as `otel.sdk.processor.span.processed`.
 * `OtlpConnectionDetails` can now provide the headers of the requests to the OTLP endpoint through the new `getHeaders()` method.
-* The new `arconia-testcontainers-langfuse` module lets Testcontainers tests send traces to Langfuse with `@ServiceConnection` on a `LangfuseContainer`.
 
 === OpenTelemetry Semantic Conventions
 
@@ -138,3 +137,11 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The new `hide-llm-tools` property hides the definitions of the tools available to the model.
 * The `hide-prompts` and `hide-choices` properties have been removed, together with their environment variables, since they apply to the completions API, which Spring AI doesn't use.
 * The documentation now covers sending traces to xref:observability:semantic-conventions/openinference.adoc#_arize_ax[Arize AX].
+
+== Testcontainers
+
+* The Arconia Testcontainers modules now have their own documentation, covering the Langfuse, OpenLIT, Phoenix, and Redis containers. Learn more about xref:testcontainers:index.adoc[Testcontainers].
+* The new `arconia-testcontainers-langfuse` module provides `LangfuseContainer`, which runs Langfuse together with the containers it needs. With Arconia OpenTelemetry, tests send traces to it by annotating the container with `@ServiceConnection`. Learn more about xref:testcontainers:langfuse.adoc[Langfuse Testcontainers].
+* `PhoenixContainer` now turns off the authentication that Phoenix 21 enables by default, so that Phoenix accepts traces without an API key. Learn more about xref:testcontainers:phoenix.adoc[Phoenix Testcontainers].
+* `OpenLitContainer` now requires OpenLIT 2.1.1 or later, the default of the OpenLIT Dev Service, which receives OTLP data with its built-in receiver instead of the OpenTelemetry Collector of the previous versions. Learn more about xref:testcontainers:openlit.adoc[OpenLIT Testcontainers].
+* `OpenLitContainer` now keeps the tmpfs mounts configured via `withTmpFs()`, and when it fails to start, it stops its ClickHouse container instead of leaving it running until the JVM exits.

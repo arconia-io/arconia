@@ -1,0 +1,50 @@
+= Langfuse Testcontainers
+:module-name: langfuse
+
+A Testcontainers module providing `LangfuseContainer`, which runs https://langfuse.com[Langfuse], an LLM engineering platform for tracing, evaluating, and debugging AI applications, together with the containers it needs.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Usage
+
+[source,java]
+----
+var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"));
+langfuse.start();
+----
+
+Langfuse accepts traces via OTLP with the HTTP/Protobuf protocol, at `getOtlpTracesUrl()`. Authenticate the requests with the `Authorization` header returned by `getBasicAuthHeader()`, built from the API keys of the Langfuse project, and send the `x-langfuse-ingestion-version` header with the value `4`, as Langfuse requires for OpenTelemetry exporters.
+
+[NOTE]
+====
+The OTLP endpoint is a proxy to Langfuse, since the Langfuse server closes the plaintext HTTP connections that request an upgrade to HTTP/2, as the JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters (https://github.com/open-telemetry/opentelemetry-java/issues/8982[opentelemetry-java#8982]).
+====
+
+Langfuse starts with an organization, a project, and a user, so that you can explore the traces right away. The UI is available at `getLangfuseUrl()`, where you sign in as `arconia@example.com` (email) and `password` (password). The traces are in the `Arconia` project.
+
+Override them and any other https://langfuse.com/self-hosting/configuration[Langfuse configuration] via environment variables, which apply to both the Langfuse web application and the worker. For example, set the API keys of the project.
+
+[source,java]
+----
+var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"))
+        .withEnv("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", "pk-lf-my-project")
+        .withEnv("LANGFUSE_INIT_PROJECT_SECRET_KEY", "sk-lf-my-project");
+----
+
+The Langfuse worker, PostgreSQL, ClickHouse, Redis, and https://floci.io[Floci] as the S3-compatible storage start before Langfuse and stop together with it. Set their images via the dedicated methods.
+
+[source,java]
+----
+var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"))
+        .withWorkerImage("langfuse/langfuse-worker:latest")
+        .withPostgresImage("postgres:latest")
+        .withClickHouseImage("clickhouse/clickhouse-server:latest")
+        .withRedisImage("redis:latest")
+        .withFlociImage("floci/floci:latest");
+----
+
+Langfuse and the containers it needs join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops.
+
+TIP: In Spring Boot applications, the xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs this container with no code and sends the traces of the application to it.

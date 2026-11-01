@@ -1,0 +1,38 @@
+= OpenLIT Testcontainers
+:module-name: openlit
+
+A Testcontainers module providing `OpenLitContainer`, which runs https://openlit.io[OpenLIT], an AI engineering platform based on OpenTelemetry, together with the ClickHouse database it stores the telemetry in.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Usage
+
+[source,java]
+----
+var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"));
+openLit.start();
+----
+
+OpenLIT accepts logs, metrics, and traces via OTLP, with the HTTP/Protobuf protocol at `getOtlpHttpUrl()` and the gRPC protocol at `getOtlpGrpcUrl()`. The container requires OpenLIT 2.1.1 or later, which receives OTLP data with its built-in receiver.
+
+The UI is available at `getOpenLitUrl()`, where you're signed in automatically with the demo account created by OpenLIT: `user@openlit.io` (email) and `openlituser` (password). OpenLIT restricts a few operations for the demo account, such as changing the database configuration. To sign in yourself instead, set the `DEMO_ACCOUNT_EMAIL` environment variable to an empty value.
+
+[source,java]
+----
+var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"))
+        .withEnv("DEMO_ACCOUNT_EMAIL", "");
+----
+
+The ClickHouse container starts before OpenLIT and stops together with it. Set its image via `withClickHouseImage()`.
+
+[source,java]
+----
+var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"))
+        .withClickHouseImage("clickhouse/clickhouse-server:latest");
+----
+
+OpenLIT and ClickHouse join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops.
+
+TIP: In Spring Boot applications, the xref:dev-services:openlit.adoc[OpenLIT Dev Service] runs this container with no code and sends the telemetry of the application to it.

@@ -1,0 +1,24 @@
+Add the module to your project.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy,subs="attributes"]
+----
+dependencies {
+  testImplementation "io.arconia:arconia-testcontainers-{module-name}"
+}
+----
+
+Maven::
++
+[source,xml,subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-testcontainers-{module-name}</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+======

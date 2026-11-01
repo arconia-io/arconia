@@ -1,0 +1,20 @@
+= Redis Testcontainers
+:module-name: redis
+
+A Testcontainers module providing `RedisContainer`, which runs https://redis.io[Redis], an in-memory data store.
+
+== Dependencies
+
+include::partial$dependencies.adoc[]
+
+== Usage
+
+[source,java]
+----
+var redis = new RedisContainer(DockerImageName.parse("redis:latest"));
+redis.start();
+----
+
+Redis accepts connections at `getRedisUrl()`, or on the port returned by `getRedisPort()`.
+
+TIP: In Spring Boot applications, the xref:dev-services:redis.adoc[Redis Dev Service] runs this container with no code and connects the application to it.
