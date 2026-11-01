@@ -88,11 +88,10 @@ class SqliteDialectTests {
     }
 
     @Test
-    void shouldRegisterReadingConverters() {
+    void shouldRegisterConverters() {
         assertThat(dialect.getConverters())
-                .containsExactlyInAnyOrder(
-                        NumberToBooleanConverter.INSTANCE,
-                        TimestampAtUtcToOffsetDateTimeConverter.INSTANCE);
+                .contains(NumberToBooleanConverter.INSTANCE)
+                .containsAll(TemporalConverters.converters());
     }
 
 }

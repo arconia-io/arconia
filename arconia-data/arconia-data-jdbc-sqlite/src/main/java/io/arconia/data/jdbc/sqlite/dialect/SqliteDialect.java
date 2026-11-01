@@ -2,6 +2,7 @@ package io.arconia.data.jdbc.sqlite.dialect;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.data.relational.core.dialect.AbstractDialect;
 import org.springframework.data.relational.core.dialect.Dialect;
@@ -80,6 +81,11 @@ public class SqliteDialect extends AbstractDialect {
         }
     };
 
+    private static final List<Object> CONVERTERS = Stream.concat(
+            Stream.of(NumberToBooleanConverter.INSTANCE),
+            TemporalConverters.converters().stream()
+    ).toList();
+
     @Override
     public LimitClause limit() {
         return LIMIT_CLAUSE;
@@ -102,10 +108,7 @@ public class SqliteDialect extends AbstractDialect {
 
     @Override
     public Collection<Object> getConverters() {
-        return List.of(
-                NumberToBooleanConverter.INSTANCE,
-                TimestampAtUtcToOffsetDateTimeConverter.INSTANCE
-        );
+        return CONVERTERS;
     }
 
     /**

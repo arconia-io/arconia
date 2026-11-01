@@ -1,7 +1,13 @@
 package io.arconia.data.jdbc.sqlite.dialect;
 
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,11 +33,14 @@ import org.springframework.data.relational.core.query.Query;
 import org.springframework.data.relational.core.sql.LockMode;
 import org.springframework.data.relational.repository.Lock;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.ListPagingAndSortingRepository;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Integration tests for {@link JdbcSqliteDialect} against a real SQLite database, with the
@@ -62,6 +71,9 @@ class JdbcSqliteDialectIT {
     @Autowired
     private JdbcDialect dialect;
 
+    @Autowired
+    private JdbcClient jdbcClient;
+
     @Test
     void shouldResolveSqliteDialect() {
         assertThat(dialect).isSameAs(JdbcSqliteDialect.INSTANCE);
@@ -77,14 +89,14 @@ class JdbcSqliteDialectIT {
 
         @Test
         void shouldApplyLimit() {
-            List<Book> books = template.findAll(Book.class, PageRequest.of(0, 2, Sort.by("title"))).getContent();
+            List<Book> books = bookRepository.findAll(PageRequest.of(0, 2, Sort.by("title"))).getContent();
 
             assertThat(books).extracting(Book::title).containsExactly("A", "B");
         }
 
         @Test
         void shouldApplyLimitAndOffset() {
-            List<Book> books = template.findAll(Book.class, PageRequest.of(1, 2, Sort.by("title"))).getContent();
+            List<Book> books = bookRepository.findAll(PageRequest.of(1, 2, Sort.by("title"))).getContent();
 
             assertThat(books).extracting(Book::title).containsExactly("C", "D");
         }
@@ -156,7 +168,7 @@ class JdbcSqliteDialectIT {
         @Test
         void shouldRoundTripValues() {
             UUID isbn = UUID.randomUUID();
-            LocalDateTime publishedAt = LocalDateTime.of(2026, 5, 31, 12, 34, 56, 123_456_789);
+            LocalDateTime publishedAt = LocalDateTime.of(2026, 7, 31, 12, 34, 56, 123_456_789);
             Book saved = bookRepository.save(new Book(null, "A", true, isbn, publishedAt, null, Set.of()));
 
             Book found = bookRepository.findById(saved.id()).orElseThrow();
@@ -171,6 +183,87 @@ class JdbcSqliteDialectIT {
             Book saved = bookRepository.save(new Book(null, "A", false, null, null, null, Set.of()));
 
             assertThat(bookRepository.findById(saved.id())).get().extracting(Book::available).isEqualTo(false);
+        }
+
+    }
+
+    @Nested
+    class Temporal {
+
+        private static final Instant INSTANT = Instant.parse("2026-07-31T10:34:56.123456789Z");
+
+        @Test
+        void shouldRoundTripTemporalValues() {
+            OffsetDateTime offsetDateTime = INSTANT.atOffset(ZoneOffset.ofHours(2));
+            Event saved = template.insert(new Event(null, INSTANT, offsetDateTime, LocalDateTime.of(2026, 7, 31, 12, 34),
+                    LocalDate.of(2026, 7, 31), LocalTime.of(12, 34, 56, 123_456_789)));
+
+            Event found = template.findById(saved.id(), Event.class);
+
+            assertThat(found).isNotNull();
+            assertThat(found.instant()).isEqualTo(INSTANT);
+            assertThat(found.offsetDateTime()).isEqualTo(INSTANT.atOffset(ZoneOffset.UTC));
+            assertThat(found.localDateTime()).isEqualTo(LocalDateTime.of(2026, 7, 31, 12, 34));
+            assertThat(found.localDate()).isEqualTo(LocalDate.of(2026, 7, 31));
+            assertThat(found.localTime()).isEqualTo(LocalTime.of(12, 34, 56, 123_456_789));
+        }
+
+        @Test
+        void shouldStoreUtcText() {
+            template.insert(new Event(null, INSTANT, INSTANT.atOffset(ZoneOffset.ofHours(2)), null, null, null));
+
+            assertThat(jdbcClient.sql("SELECT instant || '|' || offset_date_time FROM event").query(String.class).single())
+                    .isEqualTo("2026-07-31 10:34:56.123456789|2026-07-31 10:34:56.123456789");
+        }
+
+        @Test
+        void shouldSortTogetherWithSqliteTimestamps() {
+            jdbcClient.sql("INSERT INTO event (instant) VALUES ('2026-07-31 23:00:00')").update();
+            template.insert(new Event(null, Instant.parse("2026-07-31T01:00:00Z"), null, null, null, null));
+
+            List<Event> events = template.findAll(Event.class, Sort.by("instant"));
+
+            assertThat(events).extracting(Event::instant)
+                    .containsExactly(Instant.parse("2026-07-31T01:00:00Z"), Instant.parse("2026-07-31T23:00:00Z"));
+        }
+
+        @Test
+        void shouldCompareWithSqliteDateFunctions() {
+            template.insertAll(List.of(new Event(null, Instant.parse("2026-07-30T11:00:00Z"), null, null, null, null),
+                    new Event(null, Instant.parse("2026-07-31T10:00:00Z"), null, null, null, null)));
+
+            List<String> recent = jdbcClient.sql("SELECT instant FROM event WHERE instant > datetime('2026-07-31 12:00:00', '-1 day')")
+                    .query(String.class).list();
+
+            assertThat(recent).containsExactly("2026-07-31 10:00:00.000000000");
+        }
+
+        @Test
+        void shouldSortInstantsChronologically() {
+            Instant whole = Instant.parse("2026-07-31T10:34:56Z");
+            Instant fractional = Instant.parse("2026-07-31T10:34:56.5Z");
+            template.insertAll(List.of(new Event(null, fractional, null, null, null, null),
+                    new Event(null, whole, null, null, null, null)));
+
+            List<Event> events = template.findAll(Event.class, Sort.by("instant"));
+
+            assertThat(events).extracting(Event::instant).containsExactly(whole, fractional);
+        }
+
+        @Test
+        void shouldReadSqliteCurrentTimestamp() {
+            jdbcClient.sql("""
+                    INSERT INTO event (instant, offset_date_time, local_date_time, local_date, local_time)
+                    VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_DATE, CURRENT_TIME)
+                    """).update();
+
+            Event found = template.findAll(Event.class).get(0);
+
+            assertThat(found.instant()).isCloseTo(Instant.now(), within(1, ChronoUnit.MINUTES));
+            assertThat(found.offsetDateTime()).isEqualTo(found.instant().atOffset(ZoneOffset.UTC));
+            assertThat(found.localDateTime()).isEqualTo(LocalDateTime.ofInstant(found.instant(), ZoneOffset.UTC));
+            assertThat(found.localDate()).isNotNull();
+            assertThat(found.localTime()).isNotNull();
         }
 
     }
@@ -237,7 +330,10 @@ class JdbcSqliteDialectIT {
 
     record Author(String name) {}
 
-    interface BookRepository extends ListCrudRepository<Book, Long> {
+    record Event(@Id @Nullable Long id, @Nullable Instant instant, @Nullable OffsetDateTime offsetDateTime,
+            @Nullable LocalDateTime localDateTime, @Nullable LocalDate localDate, @Nullable LocalTime localTime) {}
+
+    interface BookRepository extends ListCrudRepository<Book, Long>, ListPagingAndSortingRepository<Book, Long> {
 
         @Lock(LockMode.PESSIMISTIC_WRITE)
         List<Book> findByTitle(String title);
