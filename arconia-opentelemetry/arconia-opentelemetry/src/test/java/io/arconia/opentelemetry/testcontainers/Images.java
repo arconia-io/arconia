@@ -21,7 +21,7 @@ public final class Images {
 
     public static final String POSTGRES = "postgres:18.6-alpine";
 
-    public static final String PHOENIX = "arizephoenix/phoenix:version-20.27-nonroot";
+    public static final String PHOENIX = "arizephoenix/phoenix:version-21.0-nonroot";
 
     public static final String REDIS = "redis:8.10-alpine";
 
