@@ -19,6 +19,7 @@ types:
 
 scopes:
   - core
+  - data
   - dev
   - docling
   - k8s
