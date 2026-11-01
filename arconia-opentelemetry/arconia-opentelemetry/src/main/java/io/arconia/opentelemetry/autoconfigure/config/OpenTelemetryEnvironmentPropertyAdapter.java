@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.boot.origin.Origin;
 import org.springframework.boot.origin.OriginTrackedValue;
+import org.springframework.boot.origin.PropertySourceOrigin;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.log.LogMessage;
@@ -39,6 +40,12 @@ import org.springframework.util.StringUtils;
 final class OpenTelemetryEnvironmentPropertyAdapter {
 
     private static final Pattern DURATION_PATTERN = Pattern.compile("^(\\d+)(ms|s|m|h)?$");
+
+    /**
+     * The specification allows to represent "no limit" as a very large duration,
+     * suggesting the maximum number of milliseconds representable by a 32-bit integer.
+     */
+    private static final Duration NO_TIMEOUT = Duration.ofMillis(Integer.MAX_VALUE);
 
     private final ConfigurableEnvironment environment;
 
@@ -66,14 +73,44 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
         if (StringUtils.hasText(value)) {
             T convertedValue = converter.apply(value.strip());
             if (convertedValue != null) {
-                arconiaProperties.put(arconiaKey, OriginTrackedValue.of(convertedValue, new OpenTelemetryPropertyOrigin(externalKey)));
+                Origin origin = new OpenTelemetryPropertyOrigin(externalKey, findOrigin(externalKey));
+                arconiaProperties.put(arconiaKey, OriginTrackedValue.of(convertedValue, origin));
             }
+        }
+        return this;
+    }
+
+    /**
+     * Reports that the property is ignored, if it's set.
+     */
+    OpenTelemetryEnvironmentPropertyAdapter ignoreProperty(String externalKey, String reason) {
+        Assert.hasText(externalKey, "externalKey cannot be null or empty");
+        Assert.hasText(reason, "reason cannot be null or empty");
+        if (StringUtils.hasText(environment.getProperty(externalKey))) {
+            logger.warn(LogMessage.format("Ignoring %s because %s", externalKey, reason));
         }
         return this;
     }
 
     OpenTelemetryEnvironmentPropertyAdapter mapString(String externalKey, String arconiaKey) {
         return mapProperty(externalKey, arconiaKey, value -> value);
+    }
+
+    /**
+     * Maps a boolean with the opposite meaning (e.g. a "disabled" flag to an "enabled" property).
+     * As defined by the specification, only {@code true} and {@code false} are valid, case-insensitively.
+     */
+    OpenTelemetryEnvironmentPropertyAdapter mapInverseBoolean(String externalKey, String arconiaKey) {
+        return mapProperty(externalKey, arconiaKey, value -> {
+            if ("true".equalsIgnoreCase(value)) {
+                return false;
+            }
+            if ("false".equalsIgnoreCase(value)) {
+                return true;
+            }
+            logUnsupportedValue(externalKey, value);
+            return null;
+        });
     }
 
     OpenTelemetryEnvironmentPropertyAdapter mapInteger(String externalKey, String arconiaKey) {
@@ -87,14 +124,21 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
         });
     }
 
-    OpenTelemetryEnvironmentPropertyAdapter mapDouble(String externalKey, String arconiaKey) {
+    /**
+     * Maps a double within the given range, bounds included.
+     */
+    OpenTelemetryEnvironmentPropertyAdapter mapDouble(String externalKey, String arconiaKey, double min, double max) {
         return mapProperty(externalKey, arconiaKey, value -> {
             try {
-                return Double.parseDouble(value);
+                double number = Double.parseDouble(value);
+                if (number >= min && number <= max) {
+                    return number;
+                }
             } catch (NumberFormatException ex) {
-                logUnsupportedValue(externalKey, value);
-                return null;
+                // Reported below.
             }
+            logUnsupportedValue(externalKey, value);
+            return null;
         });
     }
 
@@ -103,27 +147,16 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
      * The {@code ms}, {@code s}, {@code m}, and {@code h} units are also accepted.
      */
     OpenTelemetryEnvironmentPropertyAdapter mapDuration(String externalKey, String arconiaKey) {
+        return mapProperty(externalKey, arconiaKey, value -> parseDuration(externalKey, value));
+    }
+
+    /**
+     * Maps a timeout, which is a duration where zero means no limit, as defined by the specification.
+     */
+    OpenTelemetryEnvironmentPropertyAdapter mapTimeout(String externalKey, String arconiaKey) {
         return mapProperty(externalKey, arconiaKey, value -> {
-            Matcher matcher = DURATION_PATTERN.matcher(value);
-            if (!matcher.matches()) {
-                logUnsupportedValue(externalKey, value);
-                return null;
-            }
-            try {
-                long amount = Long.parseLong(matcher.group(1));
-                String unit = matcher.group(2);
-                // Without a unit, the value is in milliseconds.
-                return switch (unit == null ? "ms" : unit) {
-                    case "s" -> Duration.ofSeconds(amount);
-                    case "m" -> Duration.ofMinutes(amount);
-                    case "h" -> Duration.ofHours(amount);
-                    default -> Duration.ofMillis(amount);
-                };
-            } catch (NumberFormatException | ArithmeticException ex) {
-                // The value overflows a duration.
-                logUnsupportedValue(externalKey, value);
-                return null;
-            }
+            Duration timeout = parseDuration(externalKey, value);
+            return (timeout != null && timeout.isZero()) ? NO_TIMEOUT : timeout;
         });
     }
 
@@ -168,12 +201,20 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
     /**
      * Maps a comma-separated list of the values defined by the specification, matched
      * case-insensitively. Unsupported values are skipped and duplicates are removed.
+     * As defined by the specification, {@code none} results in an empty list.
      */
     <T> OpenTelemetryEnvironmentPropertyAdapter mapEnumList(String externalKey, String arconiaKey, Map<String, T> values) {
         Assert.notNull(values, "values cannot be null");
         return mapProperty(externalKey, arconiaKey, value -> {
+            List<String> items = List.of(StringUtils.tokenizeToStringArray(value.toLowerCase(Locale.ROOT), ","));
+            if (items.contains("none")) {
+                if (items.size() > 1) {
+                    logger.warn(LogMessage.format("Ignoring the other values of %s because it includes 'none'", externalKey));
+                }
+                return List.of();
+            }
             Set<T> convertedValues = new LinkedHashSet<>();
-            for (String item : StringUtils.tokenizeToStringArray(value.toLowerCase(Locale.ROOT), ",")) {
+            for (String item : items) {
                 T convertedValue = values.get(item);
                 if (convertedValue == null) {
                     logUnsupportedValue(externalKey, item);
@@ -203,6 +244,42 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
         return new OriginTrackedMapPropertySource(name, Map.copyOf(arconiaProperties));
     }
 
+    private @Nullable Duration parseDuration(String externalKey, String value) {
+        Matcher matcher = DURATION_PATTERN.matcher(value);
+        if (!matcher.matches()) {
+            logUnsupportedValue(externalKey, value);
+            return null;
+        }
+        try {
+            long amount = Long.parseLong(matcher.group(1));
+            String unit = matcher.group(2);
+            // Without a unit, the value is in milliseconds.
+            return switch (unit == null ? "ms" : unit) {
+                case "s" -> Duration.ofSeconds(amount);
+                case "m" -> Duration.ofMinutes(amount);
+                case "h" -> Duration.ofHours(amount);
+                default -> Duration.ofMillis(amount);
+            };
+        } catch (NumberFormatException | ArithmeticException ex) {
+            // The value overflows a duration.
+            logUnsupportedValue(externalKey, value);
+            return null;
+        }
+    }
+
+    /**
+     * Finds where the property is defined, e.g. the actual environment variable name,
+     * so that it can be reported when the adapted value cannot be bound.
+     */
+    private @Nullable Origin findOrigin(String externalKey) {
+        for (PropertySource<?> propertySource : environment.getPropertySources()) {
+            if (propertySource.containsProperty(externalKey)) {
+                return PropertySourceOrigin.get(propertySource, externalKey);
+            }
+        }
+        return null;
+    }
+
     private void logUnsupportedValue(String externalKey, String value) {
         logger.warn(LogMessage.format("Unsupported value for %s: %s", externalKey, value));
     }
@@ -210,11 +287,17 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
     /**
      * Origin of an Arconia property adapted from an OpenTelemetry property.
      */
-    private record OpenTelemetryPropertyOrigin(String externalKey) implements Origin {
+    private record OpenTelemetryPropertyOrigin(String externalKey, @Nullable Origin parent) implements Origin {
+
+        @Override
+        public @Nullable Origin getParent() {
+            return parent;
+        }
 
         @Override
         public String toString() {
-            return "Adapted from the OpenTelemetry property '%s'".formatted(externalKey);
+            String description = "Adapted from the OpenTelemetry property '%s'".formatted(externalKey);
+            return parent != null ? description + " (" + parent + ")" : description;
         }
 
     }

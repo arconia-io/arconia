@@ -14,6 +14,8 @@ import io.arconia.opentelemetry.autoconfigure.logs.OpenTelemetryLoggingPropertie
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.AggregationTemporalityStrategy;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceProperties;
 import io.arconia.opentelemetry.autoconfigure.traces.OpenTelemetryTracingProperties;
@@ -62,6 +64,17 @@ class OpenTelemetryEnvironmentPropertyAdapters {
             "gzip", Compression.GZIP,
             "none", Compression.NONE);
 
+    private static final Map<String, AggregationTemporalityStrategy> AGGREGATION_TEMPORALITIES = Map.of(
+            "cumulative", AggregationTemporalityStrategy.CUMULATIVE,
+            "delta", AggregationTemporalityStrategy.DELTA,
+            "lowmemory", AggregationTemporalityStrategy.LOW_MEMORY);
+
+    private static final Map<String, HistogramAggregationStrategy> HISTOGRAM_AGGREGATIONS = Map.of(
+            "explicit_bucket_histogram", HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM,
+            "base2_exponential_bucket_histogram", HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
+
+    private static final String SAMPLING_STRATEGY_KEY = OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy";
+
     /**
      * General SDK Configuration.
      * <p>
@@ -74,9 +87,9 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      */
     static OpenTelemetryEnvironmentPropertyAdapter general(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
-        return adapter
+        adapter
                 // OTEL_SDK_DISABLED
-                .mapProperty("otel.sdk.disabled", OpenTelemetryProperties.CONFIG_PREFIX + ".enabled", value -> !Boolean.parseBoolean(value))
+                .mapInverseBoolean("otel.sdk.disabled", OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")
                 // OTEL_RESOURCE_ATTRIBUTES
                 .mapMap("otel.resource.attributes", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes")
                 // OTEL_SERVICE_NAME
@@ -84,9 +97,15 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_PROPAGATORS
                 .mapEnumList("otel.propagators", "management.tracing.propagation.produce", PROPAGATION_TYPES)
                 // OTEL_TRACES_SAMPLER
-                .mapEnum("otel.tracer.sampler", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy", SAMPLING_STRATEGIES)
-                // OTEL_TRACES_SAMPLER_ARG
-                .mapDouble("otel.tracer.sampler.arg", "management.tracing.sampling.probability");
+                .mapEnum("otel.traces.sampler", SAMPLING_STRATEGY_KEY, SAMPLING_STRATEGIES);
+
+        // OTEL_TRACES_SAMPLER_ARG, only defined for the ratio-based samplers
+        Object samplingStrategy = adapter.getArconiaProperties().get(SAMPLING_STRATEGY_KEY);
+        if (samplingStrategy == SamplingStrategy.TRACE_ID_RATIO || samplingStrategy == SamplingStrategy.PARENT_BASED_TRACE_ID_RATIO) {
+            return adapter.mapDouble("otel.traces.sampler.arg", "management.tracing.sampling.probability", 0.0, 1.0);
+        }
+        return adapter.ignoreProperty("otel.traces.sampler.arg",
+                "it only applies to the traceidratio and parentbased_traceidratio samplers set via otel.traces.sampler");
     }
 
     /**
@@ -102,7 +121,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_BSP_SCHEDULE_DELAY
                 .mapDuration("otel.bsp.schedule.delay", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.schedule-delay")
                 // OTEL_BSP_EXPORT_TIMEOUT
-                .mapDuration("otel.bsp.export.timeout", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
+                .mapTimeout("otel.bsp.export.timeout", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
                 // OTEL_BSP_MAX_QUEUE_SIZE
                 .mapInteger("otel.bsp.max.queue.size", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.max-queue-size")
                 // OTEL_BSP_MAX_EXPORT_BATCH_SIZE
@@ -122,7 +141,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_BLRP_SCHEDULE_DELAY
                 .mapDuration("otel.blrp.schedule.delay", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.schedule-delay")
                 // OTEL_BLRP_EXPORT_TIMEOUT
-                .mapDuration("otel.blrp.export.timeout", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
+                .mapTimeout("otel.blrp.export.timeout", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
                 // OTEL_BLRP_MAX_QUEUE_SIZE
                 .mapInteger("otel.blrp.max.queue.size", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.max-queue-size")
                 // OTEL_BLRP_MAX_EXPORT_BATCH_SIZE
@@ -220,7 +239,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_METRIC_EXPORT_INTERVAL
                 .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".interval")
                 // OTEL_METRIC_EXPORT_TIMEOUT
-                .mapDuration("otel.metric.export.timeout", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout");
+                .mapTimeout("otel.metric.export.timeout", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout");
     }
 
     /**
@@ -263,7 +282,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_EXPORTER_OTLP_COMPRESSION
                 .mapEnum("otel.exporter.otlp.compression", OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.compression", COMPRESSIONS)
                 // OTEL_EXPORTER_OTLP_TIMEOUT
-                .mapDuration("otel.exporter.otlp.timeout", OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
+                .mapTimeout("otel.exporter.otlp.timeout", OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
 
                 // OTLP Exporter (Logs)
 
@@ -276,7 +295,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_EXPORTER_OTLP_LOGS_COMPRESSION
                 .mapEnum("otel.exporter.otlp.logs.compression", OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.compression", COMPRESSIONS)
                 // OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
-                .mapDuration("otel.exporter.otlp.logs.timeout", OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
+                .mapTimeout("otel.exporter.otlp.logs.timeout", OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
 
                 // OTLP Exporter (Metrics)
 
@@ -289,7 +308,11 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_EXPORTER_OTLP_METRICS_COMPRESSION
                 .mapEnum("otel.exporter.otlp.metrics.compression", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.compression", COMPRESSIONS)
                 // OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
-                .mapDuration("otel.exporter.otlp.metrics.timeout", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
+                .mapTimeout("otel.exporter.otlp.metrics.timeout", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout")
+                // OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+                .mapEnum("otel.exporter.otlp.metrics.temporality.preference", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".aggregation-temporality", AGGREGATION_TEMPORALITIES)
+                // OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+                .mapEnum("otel.exporter.otlp.metrics.default.histogram.aggregation", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".histogram-aggregation", HISTOGRAM_AGGREGATIONS)
 
                 // OTLP Exporter (Traces)
 
@@ -302,7 +325,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_EXPORTER_OTLP_TRACES_COMPRESSION
                 .mapEnum("otel.exporter.otlp.traces.compression", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.compression", COMPRESSIONS)
                 // OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
-                .mapDuration("otel.exporter.otlp.traces.timeout", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.timeout");
+                .mapTimeout("otel.exporter.otlp.traces.timeout", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.timeout");
     }
 
 }

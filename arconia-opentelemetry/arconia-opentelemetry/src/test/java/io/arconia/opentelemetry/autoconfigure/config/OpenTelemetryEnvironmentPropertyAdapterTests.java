@@ -11,9 +11,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.origin.OriginLookup;
+import org.springframework.boot.origin.PropertySourceOrigin;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
+import org.springframework.boot.support.SystemEnvironmentPropertySourceEnvironmentPostProcessor;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,18 +130,55 @@ class OpenTelemetryEnvironmentPropertyAdapterTests {
         void shouldMapDouble() {
             var environment = new MockEnvironment().withProperty("external.double", "0.5");
 
-            var adapter = adapter(environment).mapDouble("external.double", "arconia.double");
+            var adapter = adapter(environment).mapDouble("external.double", "arconia.double", 0.0, 1.0);
 
             assertThat(adapter.getArconiaProperties()).containsEntry("arconia.double", 0.5);
         }
 
-        @Test
-        void shouldSkipInvalidDouble() {
-            var environment = new MockEnvironment().withProperty("external.double", "invalid");
+        @ParameterizedTest
+        @ValueSource(strings = { "invalid", "-0.1", "1.1" })
+        void shouldSkipInvalidOrOutOfRangeDouble(String value, CapturedOutput output) {
+            var environment = new MockEnvironment().withProperty("external.double", value);
 
-            var adapter = adapter(environment).mapDouble("external.double", "arconia.double");
+            var adapter = adapter(environment).mapDouble("external.double", "arconia.double", 0.0, 1.0);
 
             assertThat(adapter.getArconiaProperties()).isEmpty();
+            assertThat(output).contains("Unsupported value for external.double: " + value);
+        }
+
+        @ParameterizedTest
+        @CsvSource({ "true, false", "True, false", "false, true", "FALSE, true" })
+        void shouldMapInverseBoolean(String value, boolean expected) {
+            var environment = new MockEnvironment().withProperty("external.disabled", value);
+
+            var adapter = adapter(environment).mapInverseBoolean("external.disabled", "arconia.enabled");
+
+            assertThat(adapter.getArconiaProperties()).containsEntry("arconia.enabled", expected);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "yes", "1", "on" })
+        void shouldSkipInvalidInverseBoolean(String value, CapturedOutput output) {
+            var environment = new MockEnvironment().withProperty("external.disabled", value);
+
+            var adapter = adapter(environment).mapInverseBoolean("external.disabled", "arconia.enabled");
+
+            assertThat(adapter.getArconiaProperties()).isEmpty();
+            assertThat(output).contains("Unsupported value for external.disabled: " + value);
+        }
+
+        @Test
+        void shouldReportIgnoredPropertyWhenSet(CapturedOutput output) {
+            var environment = new MockEnvironment().withProperty("external.ignored", "value");
+
+            var adapter = adapter(environment)
+                    .ignoreProperty("external.ignored", "it is not supported")
+                    .ignoreProperty("external.missing", "it is not supported");
+
+            assertThat(adapter.getArconiaProperties()).isEmpty();
+            assertThat(output)
+                    .contains("Ignoring external.ignored because it is not supported")
+                    .doesNotContain("external.missing");
         }
 
         @Test
@@ -191,6 +234,30 @@ class OpenTelemetryEnvironmentPropertyAdapterTests {
 
             assertThat(adapter.getArconiaProperties()).isEmpty();
             assertThat(output).contains("Unsupported value for external.duration: " + value);
+        }
+
+    }
+
+    @Nested
+    class Timeouts {
+
+        @ParameterizedTest
+        @CsvSource({ "0, PT596H31M23.647S", "0s, PT596H31M23.647S", "10000, PT10S" })
+        void shouldMapTimeout(String value, Duration expected) {
+            var environment = new MockEnvironment().withProperty("external.timeout", value);
+
+            var adapter = adapter(environment).mapTimeout("external.timeout", "arconia.timeout");
+
+            assertThat(adapter.getArconiaProperties()).containsEntry("arconia.timeout", expected);
+        }
+
+        @Test
+        void shouldSkipNegativeTimeout() {
+            var environment = new MockEnvironment().withProperty("external.timeout", "-1");
+
+            var adapter = adapter(environment).mapTimeout("external.timeout", "arconia.timeout");
+
+            assertThat(adapter.getArconiaProperties()).isEmpty();
         }
 
     }
@@ -277,6 +344,16 @@ class OpenTelemetryEnvironmentPropertyAdapterTests {
             assertThat(output).contains("Unsupported value for external.enums: third");
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = { "none", "NONE", "first,none" })
+        void shouldMapNoneEnumListToEmptyList(String value) {
+            var environment = new MockEnvironment().withProperty("external.enums", value);
+
+            var adapter = adapter(environment).mapEnumList("external.enums", "arconia.enums", VALUES);
+
+            assertThat(adapter.getArconiaProperties()).containsEntry("arconia.enums", List.of());
+        }
+
         @Test
         void shouldSkipEnumListWithoutSupportedValues() {
             var environment = new MockEnvironment().withProperty("external.enums", "third");
@@ -302,7 +379,26 @@ class OpenTelemetryEnvironmentPropertyAdapterTests {
             assertThat(propertySource.getName()).isEqualTo("test");
             assertThat(propertySource.getProperty("arconia.otel.resource.service-name")).isEqualTo("test-service");
             assertThat(((OriginLookup<String>) propertySource).getOrigin("arconia.otel.resource.service-name"))
-                    .hasToString("Adapted from the OpenTelemetry property 'otel.service.name'");
+                    .hasToString("Adapted from the OpenTelemetry property 'otel.service.name' (\"otel.service.name\" from property source \"mockProperties\")");
+        }
+
+        @Test
+        void shouldReportTheEnvironmentVariableAsTheOrigin() {
+            var environment = new StandardEnvironment();
+            environment.getPropertySources().replace(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                    new SystemEnvironmentPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                            Map.of("OTEL_SERVICE_NAME", "test-service")));
+            // Applied by Spring Boot to every application, to track the origin of environment variables.
+            new SystemEnvironmentPropertySourceEnvironmentPostProcessor().postProcessEnvironment(environment, new SpringApplication());
+
+            var propertySource = new OpenTelemetryEnvironmentPropertyAdapter(environment, LogFactory.getLog(getClass()))
+                    .mapString("otel.service.name", "arconia.otel.resource.service-name")
+                    .toPropertySource("test");
+
+            var origin = ((OriginLookup<String>) propertySource).getOrigin("arconia.otel.resource.service-name");
+            assertThat(origin).hasToString("Adapted from the OpenTelemetry property 'otel.service.name' (System Environment Property \"OTEL_SERVICE_NAME\")");
+            assertThat(origin.getParent()).isInstanceOfSatisfying(PropertySourceOrigin.class,
+                    parent -> assertThat(parent.getOrigin()).isInstanceOf(SystemEnvironmentOrigin.class));
         }
 
     }
