@@ -15,12 +15,14 @@ class OpenInferenceEnvironmentPropertyAdapters {
     /**
      * OpenInference tracing configuration.
      * <p>
-     * All the variables that apply to Spring AI are supported. {@code OPENINFERENCE_HIDE_PROMPTS} and
-     * {@code OPENINFERENCE_HIDE_CHOICES} aren't, since they hide the prompts and choices of the completions API,
-     * which Spring AI doesn't use: its models call the chat completions API, whose messages the other variables
-     * hide. {@code OPENINFERENCE_HIDE_RETRIEVAL_DOCUMENTS} and {@code OPENINFERENCE_BLOB_UPLOADER} have no
-     * equivalent either, as there is no retrieval instrumentation nor blob upload.
-     *
+     * All environment variables are supported except:
+     * <ul>
+     *   <li>{@code OPENINFERENCE_HIDE_PROMPTS}</li>
+     *   <li>{@code OPENINFERENCE_HIDE_CHOICES}</li>
+     *   <li>{@code OPENINFERENCE_HIDE_RETRIEVAL_DOCUMENTS}</li>
+     *   <li>{@code OPENINFERENCE_BLOB_UPLOADER}</li>
+     * </ul>
+     * <p>
      * @link <a href="https://arize-ai.github.io/openinference/spec/configuration.html">Tracing Configuration</a>
      */
     static PropertyAdapter traces(ConfigurableEnvironment environment) {

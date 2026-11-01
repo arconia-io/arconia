@@ -1,9 +1,6 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -19,15 +16,6 @@ import org.springframework.util.Assert;
  * covering all the flavors (OpenTelemetry, OpenLLMetry, LangSmith, OpenLIT, Langfuse).
  */
 public final class GenAiConventionsConverter {
-
-    /**
-     * Spring AI reports the value of an operation type or provider, such as {@code google_genai}, which doesn't
-     * always match the constant name. Both are indexed once, in lower case, so that a lookup is a map access
-     * rather than a scan or an exception for the unknown values that custom providers report.
-     */
-    private static final Map<String, AiOperationType> OPERATION_TYPES = index(AiOperationType.values(), AiOperationType::value);
-
-    private static final Map<String, AiProvider> PROVIDERS = index(AiProvider.values(), AiProvider::value);
 
     private GenAiConventionsConverter() {}
 
@@ -98,29 +86,29 @@ public final class GenAiConventionsConverter {
     }
 
     /**
-     * Finds the {@link AiProvider} matching the given value, such as {@code google_genai}, or constant name.
+     * Finds the {@link AiProvider} with the given value.
      */
     private static @Nullable AiProvider findProvider(String aiProvider) {
-        return PROVIDERS.get(aiProvider.strip().toLowerCase(Locale.ROOT));
+        String candidate = aiProvider.strip();
+        for (AiProvider provider : AiProvider.values()) {
+            if (provider.value().equalsIgnoreCase(candidate)) {
+                return provider;
+            }
+        }
+        return null;
     }
 
     /**
-     * Finds the {@link AiOperationType} matching the given value, such as {@code execute_tool}, or constant name.
+     * Finds the {@link AiOperationType} with the given value, such as {@code execute_tool}, which is what Spring AI reports.
      */
     private static @Nullable AiOperationType findOperationType(String aiOperationType) {
-        return OPERATION_TYPES.get(aiOperationType.strip().toLowerCase(Locale.ROOT));
-    }
-
-    /**
-     * Indexes the constants of an enum by their lower-case value and name.
-     */
-    private static <E extends Enum<E>> Map<String, E> index(E[] constants, Function<E, String> value) {
-        Map<String, E> index = new HashMap<>();
-        for (E constant : constants) {
-            index.put(value.apply(constant).toLowerCase(Locale.ROOT), constant);
-            index.put(constant.name().toLowerCase(Locale.ROOT), constant);
+        String candidate = aiOperationType.strip();
+        for (AiOperationType type : AiOperationType.values()) {
+            if (type.value().equalsIgnoreCase(candidate)) {
+                return type;
+            }
         }
-        return Map.copyOf(index);
+        return null;
     }
 
     /**

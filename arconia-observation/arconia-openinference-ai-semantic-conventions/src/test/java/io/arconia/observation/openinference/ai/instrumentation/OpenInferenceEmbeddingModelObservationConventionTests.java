@@ -38,7 +38,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     }
 
     @Test
-    void contextualNameWhenModelIsDefined() {
+    void contextualNameShouldBeCreateEmbeddings() {
         EmbeddingOptions options = EmbeddingOptions.builder().model("mistral").build();
         EmbeddingRequest request = new EmbeddingRequest(List.of(), options);
         EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
@@ -46,18 +46,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
                 .provider(AiProvider.SPRING_AI.value())
                 .build();
 
-        assertThat(observationConvention.getContextualName(context)).isEqualTo("embedding mistral");
-    }
-
-    @Test
-    void contextualNameWhenModelIsNotDefined() {
-        EmbeddingRequest request = new EmbeddingRequest(List.of(), EmbeddingOptions.builder().build());
-        EmbeddingModelObservationContext context = EmbeddingModelObservationContext.builder()
-                .embeddingRequest(request)
-                .provider(AiProvider.SPRING_AI.value())
-                .build();
-
-        assertThat(observationConvention.getContextualName(context)).isEqualTo("embedding");
+        assertThat(observationConvention.getContextualName(context)).isEqualTo("CreateEmbeddings");
     }
 
     @Test
@@ -69,11 +58,10 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
                 .provider(AiProvider.SPRING_AI.value())
                 .build();
 
-        assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
+        assertThat(observationConvention.getLowCardinalityKeyValues(context)).containsExactlyInAnyOrder(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
-                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral"),
-                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
-                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai")
+                KeyValue.of("gen_ai.system", "spring_ai"),
+                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral")
         );
     }
 
@@ -89,11 +77,10 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
         EmbeddingResponse response = new EmbeddingResponse(List.of(new Embedding(new float[]{4.2f}, 0)), responseMetadata);
         context.setResponse(response);
 
-        assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
+        assertThat(observationConvention.getLowCardinalityKeyValues(context)).containsExactlyInAnyOrder(
                 KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "EMBEDDING"),
-                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral-42"),
-                KeyValue.of(SemanticConventions.LLM_PROVIDER, "spring_ai"),
-                KeyValue.of(SemanticConventions.LLM_SYSTEM, "spring_ai")
+                KeyValue.of("gen_ai.system", "spring_ai"),
+                KeyValue.of(SemanticConventions.EMBEDDING_MODEL_NAME, "mistral-42")
         );
     }
 

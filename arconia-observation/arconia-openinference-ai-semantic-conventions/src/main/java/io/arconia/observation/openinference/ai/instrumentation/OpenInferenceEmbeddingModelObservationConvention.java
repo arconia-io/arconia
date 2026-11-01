@@ -36,8 +36,13 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
     }
 
     @Override
+    public String getContextualName(EmbeddingModelObservationContext context) {
+        return "CreateEmbeddings";
+    }
+
+    @Override
     public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
-        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context), llmSystem(context));
+        KeyValues keyValues = KeyValues.of(aiOperationType(context), aiProvider(context));
         String modelName = modelName(context);
         return modelName != null ? keyValues.and(SemanticConventions.EMBEDDING_MODEL_NAME, modelName) : keyValues;
     }
@@ -45,17 +50,6 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
     @Override
     protected KeyValue aiOperationType(EmbeddingModelObservationContext context) {
         return KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, SemanticConventions.OpenInferenceSpanKind.EMBEDDING.getValue());
-    }
-
-    @Override
-    protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
-        return KeyValue.of(SemanticConventions.LLM_PROVIDER,
-                OpenInferenceConventionsConverters.toLlmProvider(context.getOperationMetadata().provider()));
-    }
-
-    private KeyValue llmSystem(EmbeddingModelObservationContext context) {
-        return KeyValue.of(SemanticConventions.LLM_SYSTEM,
-                OpenInferenceConventionsConverters.toLlmSystem(context.getOperationMetadata().provider()));
     }
 
     private @Nullable String modelName(EmbeddingModelObservationContext context) {
@@ -157,7 +151,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
     @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
         Usage usage = reportedUsage(context);
-        if (usage != null && usage.getPromptTokens() != null) {
+        if (usage != null) {
             return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, String.valueOf(usage.getPromptTokens()));
         }
         return keyValues;
@@ -166,7 +160,7 @@ public final class OpenInferenceEmbeddingModelObservationConvention extends Defa
     @Override
     protected KeyValues usageTotalTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
         Usage usage = reportedUsage(context);
-        if (usage != null && usage.getTotalTokens() != null) {
+        if (usage != null) {
             return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, String.valueOf(usage.getTotalTokens()));
         }
         return keyValues;

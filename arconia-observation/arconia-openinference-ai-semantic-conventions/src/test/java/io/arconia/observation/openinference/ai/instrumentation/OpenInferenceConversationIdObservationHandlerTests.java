@@ -29,7 +29,6 @@ class OpenInferenceConversationIdObservationHandlerTests {
 
     private final OpenInferenceConversationIdObservationHandler handler = new OpenInferenceConversationIdObservationHandler();
 
-    // A registry without handlers hands out no-op observations, which don't expose their context.
     private final ObservationRegistry registry = ObservationRegistry.create();
 
     {

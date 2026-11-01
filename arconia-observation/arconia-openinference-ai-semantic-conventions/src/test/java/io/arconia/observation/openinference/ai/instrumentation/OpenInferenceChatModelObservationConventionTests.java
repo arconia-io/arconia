@@ -544,13 +544,62 @@ class OpenInferenceChatModelObservationConventionTests {
                 .build();
 
         String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS;
-        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(
                 KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"),
                 KeyValue.of(prefix + ".0." + SemanticConventions.MESSAGE_CONTENT_TEXT, "Transcribe this audio"),
                 KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"),
-                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_URL, "https://example.com/audio.mp3"),
-                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_MIME_TYPE, "audio/mpeg")
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_URL, "https://example.com/audio.mp3")
         );
+        assertThat(keyValues.stream().map(KeyValue::getKey))
+                .doesNotContain(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_MIME_TYPE);
+    }
+
+    @Test
+    void shouldUseMessageContentsWithVideoMedia() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this video")
+                .media(Media.builder()
+                        .mimeType(MimeType.valueOf("video/mp4"))
+                        .data(URI.create("gs://bucket/clip.mp4"))
+                        .build())
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(userMessage), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String prefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS;
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "video"),
+                KeyValue.of(prefix + ".1." + SemanticConventions.MESSAGE_CONTENT_VIDEO + "." + SemanticConventions.VIDEO_URL, "gs://bucket/clip.mp4")
+        );
+    }
+
+    @Test
+    void shouldUseMessageContentsWithDocumentMedia() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Summarize this report")
+                .media(Media.builder()
+                        .mimeType(MimeType.valueOf("application/pdf"))
+                        .data(new byte[] { 37, 80, 68, 70 })
+                        .build())
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(userMessage), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+
+        String documentPrefix = SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS
+                + ".1." + SemanticConventions.MESSAGE_CONTENT_DOCUMENT + ".";
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).contains(
+                KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_CONTENTS
+                        + ".1." + SemanticConventions.MESSAGE_CONTENT_TYPE, "document"),
+                KeyValue.of(documentPrefix + SemanticConventions.DOCUMENT_URL, "data:application/pdf;base64,JVBERg=="),
+                KeyValue.of(documentPrefix + SemanticConventions.DOCUMENT_MIME_TYPE, "application/pdf")
+        );
+        assertThat(keyValues.stream().map(KeyValue::getKey)).doesNotContain(documentPrefix + "document.name");
     }
 
     @Test

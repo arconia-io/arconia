@@ -54,13 +54,12 @@ final class OpenInferenceConventionsConverters {
     }
 
     /**
-     * Finds the {@link AiProvider} matching the given value, such as {@code google_genai}, or constant name.
-     * Spring AI reports the value, which doesn't always match the constant name.
+     * Finds the {@link AiProvider} with the given value.
      */
     private static @Nullable AiProvider findProvider(String aiProvider) {
         String candidate = aiProvider.strip();
         for (AiProvider provider : AiProvider.values()) {
-            if (provider.value().equalsIgnoreCase(candidate) || provider.name().equalsIgnoreCase(candidate)) {
+            if (provider.value().equalsIgnoreCase(candidate)) {
                 return provider;
             }
         }

@@ -21,7 +21,6 @@ class GenAiConventionsConverterTests {
             "ANTHROPIC, anthropic",
             "BEDROCK_CONVERSE, aws.bedrock",
             "DEEPSEEK, deepseek",
-            "GOOGLE_GENAI_AI, gcp.gen_ai",
             "google_genai, gcp.gen_ai",
             "MISTRAL_AI, mistral_ai",
             "OPENAI, openai",
@@ -54,7 +53,6 @@ class GenAiConventionsConverterTests {
 
     @ParameterizedTest
     @CsvSource({
-            "GOOGLE_GENAI_AI, gcp.gemini",
             "google_genai, gcp.gemini",
             "VERTEX_AI, gcp.vertex_ai"
     })
@@ -112,7 +110,6 @@ class GenAiConventionsConverterTests {
     @ParameterizedTest
     @CsvSource({
             "ANTHROPIC, anthropic",
-            "GOOGLE_GENAI_AI, google",
             "google_genai, google",
             "OPENAI, openai",
             "VERTEX_AI, gcp.vertex_ai"

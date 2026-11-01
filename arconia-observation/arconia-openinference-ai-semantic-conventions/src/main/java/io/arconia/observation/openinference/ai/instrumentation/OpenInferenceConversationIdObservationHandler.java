@@ -15,12 +15,11 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 
 /**
- * Observation handler that propagates the conversation id of a chat client call to the observations nested in it,
- * as the {@code session.id} attribute.
+ * Observation handler that propagates the conversation id of a chat client call to the observations nested in it.
  * <p>
- * The OpenInference instrumentations record the session on every span of a conversation. Spring AI only
+ * The OpenInference instrumentation records the session on every span of a conversation. Spring AI only
  * carries the conversation id in the chat client request, so the chat client convention records it on its
- * own span and this handler copies it to the model, tool, and advisor spans below.
+ * own span, and this handler copies it to the model, tool, and advisor spans below.
  */
 public final class OpenInferenceConversationIdObservationHandler implements ObservationHandler<Observation.Context> {
 

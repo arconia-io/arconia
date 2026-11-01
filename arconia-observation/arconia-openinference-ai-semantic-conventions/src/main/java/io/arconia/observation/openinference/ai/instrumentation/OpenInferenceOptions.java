@@ -8,7 +8,7 @@ public class OpenInferenceOptions {
     public static final String REDACTED_PLACEHOLDER = "__REDACTED__";
 
     /**
-     * Maximum length of a base64-encoded image. Longer images are redacted.
+     * Maximum length of a base64-encoded media in the messages, such as an image or a document. Longer media are redacted.
      */
     private long base64ImageMaxLength = 32_000;
 

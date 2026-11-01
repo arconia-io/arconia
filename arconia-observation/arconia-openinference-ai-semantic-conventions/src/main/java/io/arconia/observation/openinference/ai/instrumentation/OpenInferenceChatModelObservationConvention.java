@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.arize.semconv.trace.SemanticConventions;
-import tools.jackson.databind.util.RawValue;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -33,6 +32,8 @@ import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
+
+import tools.jackson.databind.util.RawValue;
 
 /**
  * {@link ChatModelObservationConvention} for OpenInference.
@@ -325,7 +326,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
     @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         Usage usage = reportedUsage(context);
-        if (usage != null && usage.getPromptTokens() != null) {
+        if (usage != null) {
             return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_PROMPT, String.valueOf(usage.getPromptTokens()));
         }
         return keyValues;
@@ -334,7 +335,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
     @Override
     protected KeyValues usageOutputTokens(KeyValues keyValues, ChatModelObservationContext context) {
         Usage usage = reportedUsage(context);
-        if (usage != null && usage.getCompletionTokens() != null) {
+        if (usage != null) {
             return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_COMPLETION, String.valueOf(usage.getCompletionTokens()));
         }
         return keyValues;
@@ -343,7 +344,7 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
     @Override
     protected KeyValues usageTotalTokens(KeyValues keyValues, ChatModelObservationContext context) {
         Usage usage = reportedUsage(context);
-        if (usage != null && usage.getTotalTokens() != null) {
+        if (usage != null) {
             return keyValues.and(SemanticConventions.LLM_TOKEN_COUNT_TOTAL, String.valueOf(usage.getTotalTokens()));
         }
         return keyValues;
@@ -428,30 +429,44 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         }
 
         for (Media media : ((MediaContent) message).getMedia()) {
-            String entryPrefix = contentsPrefix + "." + contentIndex;
-            String mediaType = media.getMimeType().getType();
+            addMediaContent(messageKeyValues, contentsPrefix + "." + contentIndex, media, hideImages);
+            contentIndex++;
+        }
+    }
 
-            if ("image".equals(mediaType)) {
-                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"));
-                if (hideImages) {
-                    messageKeyValues.add(KeyValue.of(
-                            entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL,
-                            OpenInferenceOptions.REDACTED_PLACEHOLDER));
-                } else {
-                    messageKeyValues.add(KeyValue.of(
-                            entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL,
-                            resolveMediaUrl(media)));
-                }
-                contentIndex++;
-            } else if ("audio".equals(mediaType)) {
-                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"));
+    /**
+     * Records a media content item with the content type matching its MIME type, and as a document when it's
+     * neither an image, an audio, nor a video, such as a PDF. As the OpenInference specification requires, audio
+     * and video have no MIME type attribute, since consumers infer it from the URL, and the document name isn't
+     * recorded, since Spring AI generates one when the request doesn't state it.
+     */
+    private void addMediaContent(List<KeyValue> messageKeyValues, String entryPrefix, Media media, boolean hideImages) {
+        String typeKey = entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE;
+        switch (media.getMimeType().getType()) {
+            case "image" -> {
+                messageKeyValues.add(KeyValue.of(typeKey, "image"));
+                messageKeyValues.add(KeyValue.of(
+                        entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL,
+                        hideImages ? OpenInferenceOptions.REDACTED_PLACEHOLDER : resolveMediaUrl(media)));
+            }
+            case "audio" -> {
+                messageKeyValues.add(KeyValue.of(typeKey, "audio"));
                 messageKeyValues.add(KeyValue.of(
                         entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_URL,
                         resolveMediaUrl(media)));
+            }
+            case "video" -> {
+                messageKeyValues.add(KeyValue.of(typeKey, "video"));
                 messageKeyValues.add(KeyValue.of(
-                        entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_MIME_TYPE,
+                        entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_VIDEO + "." + SemanticConventions.VIDEO_URL,
+                        resolveMediaUrl(media)));
+            }
+            default -> {
+                String documentPrefix = entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_DOCUMENT + ".";
+                messageKeyValues.add(KeyValue.of(typeKey, "document"));
+                messageKeyValues.add(KeyValue.of(documentPrefix + SemanticConventions.DOCUMENT_URL, resolveMediaUrl(media)));
+                messageKeyValues.add(KeyValue.of(documentPrefix + SemanticConventions.DOCUMENT_MIME_TYPE,
                         media.getMimeType().toString()));
-                contentIndex++;
             }
         }
     }

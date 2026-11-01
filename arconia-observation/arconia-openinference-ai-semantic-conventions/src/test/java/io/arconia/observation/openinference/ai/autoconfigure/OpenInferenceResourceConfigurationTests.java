@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceResourceContributor;
 import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAutoConfiguration;
-import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContributor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

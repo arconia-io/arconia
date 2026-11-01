@@ -1,24 +1,24 @@
 package io.arconia.observation.openinference.ai.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
 import org.springframework.ai.model.observation.ModelObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.ai.chat.client.observation.ChatClientObservationConvention;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatClientObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatModelObservationHandler;
+import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceConversationIdObservationHandler;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceEmbeddingModelObservationConvention;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceToolCallingObservationConvention;
-import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceChatClientObservationConvention;
-import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceConversationIdObservationHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
