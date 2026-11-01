@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.config;
 
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.Ordered;
@@ -20,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class OpenTelemetryEnvironmentPostProcessorTests {
 
-    private final OpenTelemetryEnvironmentPostProcessor processor = new OpenTelemetryEnvironmentPostProcessor();
+    private final OpenTelemetryEnvironmentPostProcessor processor = new OpenTelemetryEnvironmentPostProcessor(Supplier::get);
 
     @Test
     void postProcessEnvironmentShouldThrowExceptionWhenEnvironmentIsNull() {

@@ -1,14 +1,11 @@
 package io.arconia.opentelemetry.autoconfigure.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.Assert;
 
 /**
@@ -17,6 +14,16 @@ import org.springframework.util.Assert;
 class OpenTelemetryEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     private static final String PROPERTY_SOURCE_NAME = "opentelemetry-environment-variable-specification";
+
+    private final Log logger;
+
+    /**
+     * The logger is deferred until the logging system is initialized, since any message
+     * logged before that would be lost.
+     */
+    OpenTelemetryEnvironmentPostProcessor(DeferredLogFactory logFactory) {
+        this.logger = logFactory.getLog(OpenTelemetryEnvironmentPostProcessor.class);
+    }
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -27,20 +34,19 @@ class OpenTelemetryEnvironmentPostProcessor implements EnvironmentPostProcessor,
             return;
         }
 
-        Map<String,Object> arconiaProperties = new HashMap<>();
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.general(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.batchSpanProcessor(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.logRecordProcessor(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.attributeLimits(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.spanLimits(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.logRecordLimits(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.metrics(environment).getArconiaProperties());
-        arconiaProperties.putAll(OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(environment).getArconiaProperties());
+        // The order matters: more specific properties are mapped after the general ones, so they take precedence.
+        var adapter = new OpenTelemetryEnvironmentPropertyAdapter(environment, logger);
+        OpenTelemetryEnvironmentPropertyAdapters.general(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.batchSpanProcessor(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.logRecordProcessor(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.attributeLimits(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.spanLimits(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.logRecordLimits(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter);
 
-        MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, arconiaProperties);
-        MutablePropertySources propertySources = environment.getPropertySources();
-        propertySources.addFirst(propertySource);
+        environment.getPropertySources().addFirst(adapter.toPropertySource(PROPERTY_SOURCE_NAME));
     }
 
     @Override

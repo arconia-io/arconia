@@ -32,7 +32,7 @@ public class PropertyAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyAdapter.class);
 
-    private static final Pattern DURATION_PATTERN = Pattern.compile("^(\\d+)(ms|s|m|h)$");
+    private static final Pattern DURATION_PATTERN = Pattern.compile("^(\\d+)(ms|s|m|h)?$");
 
     private final Map<String, Object> arconiaProperties = new HashMap<>();
 
@@ -105,22 +105,23 @@ public class PropertyAdapter {
 
         public Builder mapDuration(String externalKey, String arconiaKey) {
             return mapProperty(externalKey, arconiaKey, value -> {
+                Matcher matcher = DURATION_PATTERN.matcher(value);
+                if (!matcher.matches()) {
+                    logUnsupportedValue(externalKey, value);
+                    return null;
+                }
                 try {
-                    Matcher matcher = DURATION_PATTERN.matcher(value);
-                    if (matcher.matches()) {
-                        long amount = Long.parseLong(matcher.group(1));
-                        String unit = matcher.group(2);
-                        return switch (unit) {
-                            case "ms" -> Duration.ofMillis(amount);
-                            case "s" -> Duration.ofSeconds(amount);
-                            case "m" -> Duration.ofMinutes(amount);
-                            case "h" -> Duration.ofHours(amount);
-                            default -> null;
-                        };
-                    }
-                    // Try parsing as milliseconds
-                    return Duration.ofMillis(Long.parseLong(value));
-                } catch (Exception e) {
+                    long amount = Long.parseLong(matcher.group(1));
+                    String unit = matcher.group(2);
+                    // Without a unit, the value is in milliseconds.
+                    return switch (unit == null ? "ms" : unit) {
+                        case "s" -> Duration.ofSeconds(amount);
+                        case "m" -> Duration.ofMinutes(amount);
+                        case "h" -> Duration.ofHours(amount);
+                        default -> Duration.ofMillis(amount);
+                    };
+                } catch (NumberFormatException | ArithmeticException ex) {
+                    // The value overflows a duration.
                     logUnsupportedValue(externalKey, value);
                     return null;
                 }
@@ -135,25 +136,23 @@ public class PropertyAdapter {
         }
 
         public Builder mapMap(String externalKey, String arconiaKey) {
-            return mapMap(externalKey, arconiaKey, null);
-        }
-
-        public Builder mapMap(String externalKey, String arconiaKey, @Nullable Function<Map<String,String>,Map<String,String>> postProcessor) {
             return mapProperty(externalKey, arconiaKey, value -> {
                 Map<String, String> propertyMap = new HashMap<>();
-                String[] keyValuePairs = StringUtils.tokenizeToStringArray(value, ",");
-                for (String pair : keyValuePairs) {
+                for (String pair : StringUtils.tokenizeToStringArray(value, ",")) {
+                    // Values are never logged, since they may hold secrets (e.g. authorization headers).
                     String[] entry = pair.split("=", 2);
-                    if (entry.length == 2 && StringUtils.hasText(entry[0]) && StringUtils.hasText(entry[1])) {
-                        propertyMap.put(entry[0].strip(), StringUtils.uriDecode(entry[1].strip(), StandardCharsets.UTF_8));
-                    } else {
-                        logger.warn("Invalid key-value pair in {}: {}", externalKey, pair);
+                    if (entry.length != 2 || !StringUtils.hasText(entry[0]) || !StringUtils.hasText(entry[1])) {
+                        logger.warn("Ignoring an invalid key-value pair in {}", externalKey);
+                        continue;
+                    }
+                    String key = entry[0].strip();
+                    try {
+                        propertyMap.put(key, StringUtils.uriDecode(entry[1].strip(), StandardCharsets.UTF_8));
+                    } catch (IllegalArgumentException ex) {
+                        logger.warn("Ignoring the '{}' entry in {} because its value is not correctly percent-encoded", key, externalKey);
                     }
                 }
-                if (postProcessor != null) {
-                    propertyMap = postProcessor.apply(propertyMap);
-                }
-                return CollectionUtils.isEmpty(propertyMap) ? null : propertyMap;
+                return propertyMap.isEmpty() ? null : propertyMap;
             });
         }
 

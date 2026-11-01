@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +19,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for {@link PropertyAdapter}.
  */
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class, OutputCaptureExtension.class })
 class PropertyAdapterTests {
 
     @Mock
@@ -330,6 +332,30 @@ class PropertyAdapterTests {
     }
 
     @Test
+    void shouldHandleNegativeDurationProperty() {
+        when(environment.getProperty("external.duration")).thenReturn("-5");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapDuration("external.duration", "arconia.duration")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .doesNotContainKey("arconia.duration");
+    }
+
+    @Test
+    void shouldHandleOverflowingDurationProperty() {
+        when(environment.getProperty("external.duration")).thenReturn("9223372036854775807h");
+
+        var adapter = PropertyAdapter.builder(environment)
+            .mapDuration("external.duration", "arconia.duration")
+            .build();
+
+        assertThat(adapter.getArconiaProperties())
+            .doesNotContainKey("arconia.duration");
+    }
+
+    @Test
     void shouldHandleNullInputForDuration() {
         when(environment.getProperty("external.duration")).thenReturn(null);
 
@@ -516,21 +542,6 @@ class PropertyAdapterTests {
     }
 
     @Test
-    void shouldProcessMapWithPostProcessor() {
-        when(environment.getProperty("external.map")).thenReturn("key1=value1,key2=value2");
-
-        var adapter = PropertyAdapter.builder(environment)
-            .mapMap("external.map", "arconia.map", map -> {
-                map.put("key3", "value3");
-                return map;
-            })
-            .build();
-
-        assertThat(adapter.getArconiaProperties())
-            .containsEntry("arconia.map", Map.of("key1", "value1", "key2", "value2", "key3", "value3"));
-    }
-
-    @Test
     void shouldHandleEmptyKeyValuePairsInMap() {
         when(environment.getProperty("external.map")).thenReturn("=value1,key2=");
 
@@ -591,31 +602,37 @@ class PropertyAdapterTests {
     }
 
     @Test
-    void shouldHandleNullMapFromPostProcessor() {
-        when(environment.getProperty("external.map")).thenReturn("key1=value1,key2=value2");
+    void shouldNotLogValueOfInvalidMapEntry(CapturedOutput output) {
+        when(environment.getProperty("external.map")).thenReturn("Authorization: Bearer secret-token,key2=value2");
 
         var adapter = PropertyAdapter.builder(environment)
-            .mapMap("external.map", "arconia.map", map -> null)
+            .mapMap("external.map", "arconia.map")
             .build();
 
         assertThat(adapter.getArconiaProperties())
-            .doesNotContainKey("arconia.map");
+            .containsEntry("arconia.map", Map.of("key2", "value2"));
+        assertThat(output)
+            .contains("Ignoring an invalid key-value pair in external.map")
+            .doesNotContain("secret-token");
     }
 
     @Test
-    void shouldHandleEmptyMapFromPostProcessor() {
-        when(environment.getProperty("external.map")).thenReturn("key1=value1,key2=value2");
+    void shouldSkipMapEntryWithInvalidPercentEncoding(CapturedOutput output) {
+        when(environment.getProperty("external.map")).thenReturn("key1=50%,key2=value%202");
 
         var adapter = PropertyAdapter.builder(environment)
-            .mapMap("external.map", "arconia.map", map -> Map.of())
+            .mapMap("external.map", "arconia.map")
             .build();
 
         assertThat(adapter.getArconiaProperties())
-            .doesNotContainKey("arconia.map");
+            .containsEntry("arconia.map", Map.of("key2", "value 2"));
+        assertThat(output)
+            .contains("Ignoring the 'key1' entry in external.map because its value is not correctly percent-encoded")
+            .doesNotContain("50%");
     }
 
     // ENUM
-    
+
     @Test
     void shouldMapEnum() {
         when(environment.getProperty("external.enum")).thenReturn("TEST_VALUE");

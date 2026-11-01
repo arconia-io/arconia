@@ -4,7 +4,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -42,7 +46,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.tracer.sampler", "traceidratio")
                 .withProperty("otel.tracer.sampler.arg", "0.5");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled")).isEqualTo(false);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
@@ -57,10 +61,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void generalShouldThrowExceptionWhenEnvironmentIsNull() {
+    void generalShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.general(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -68,7 +72,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
         var environment = new MockEnvironment()
                 .withProperty("otel.resource.attributes", "key1=a%2Cb%3Dc,key2=100%25,key3=a+b");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
                 .isEqualTo(Map.of("key1", "a,b=c", "key2", "100%", "key3", "a+b"));
@@ -82,7 +86,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.bsp.max.export.batch.size", "512")
                 .withProperty("otel.bsp.export.timeout", "30000");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.batchSpanProcessor(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.batchSpanProcessor(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.schedule-delay"))
                 .isEqualTo(Duration.ofSeconds(5));
@@ -95,10 +99,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void batchSpanProcessorShouldThrowExceptionWhenEnvironmentIsNull() {
+    void batchSpanProcessorShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.batchSpanProcessor(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -109,7 +113,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.blrp.max.export.batch.size", "512")
                 .withProperty("otel.blrp.export.timeout", "30000");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.logRecordProcessor(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.logRecordProcessor(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.schedule-delay"))
                 .isEqualTo(Duration.ofSeconds(5));
@@ -122,10 +126,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void logRecordProcessorShouldThrowExceptionWhenEnvironmentIsNull() {
+    void logRecordProcessorShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.logRecordProcessor(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -135,7 +139,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
             .withProperty("otel.attribute.value.length.limit", "100")
             .withProperty("otel.attribute.count.limit", "50");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.attributeLimits(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.attributeLimits(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
             .isEqualTo(100);
@@ -148,10 +152,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void attributeLimitsShouldThrowExceptionWhenEnvironmentIsNull() {
+    void attributeLimitsShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.attributeLimits(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -164,7 +168,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.event.attribute.count.limit", "100")
                 .withProperty("otel.link.attribute.count.limit", "100");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.spanLimits(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.spanLimits(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
                 .isEqualTo(100);
@@ -181,10 +185,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void spanLimitsShouldThrowExceptionWhenEnvironmentIsNull() {
+    void spanLimitsShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.spanLimits(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -193,7 +197,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.logrecord.attribute.value.length.limit", "100")
                 .withProperty("otel.logrecord.attribute.count.limit", "50");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.logRecordLimits(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.logRecordLimits(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".limits.max-attribute-value-length"))
                 .isEqualTo(100);
@@ -202,10 +206,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void logRecordLimitsShouldThrowExceptionWhenEnvironmentIsNull() {
+    void logRecordLimitsShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.logRecordLimits(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -215,7 +219,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .withProperty("otel.metrics.exporter", "otlp")
                 .withProperty("otel.traces.exporter", "otlp");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type"))
                 .isEqualTo(ExporterType.OTLP);
@@ -226,10 +230,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void exporterSelectionShouldThrowExceptionWhenEnvironmentIsNull() {
+    void exporterSelectionShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -239,7 +243,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
             .withProperty("otel.metric.export.interval", "60000")
             .withProperty("otel.metric.export.timeout", "60000");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.metrics(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter"))
             .isEqualTo(ExemplarFilter.ALWAYS_ON);
@@ -250,10 +254,10 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void metricsShouldThrowExceptionWhenEnvironmentIsNull() {
+    void metricsShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.metrics(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
     @Test
@@ -283,7 +287,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
             .withProperty("otel.exporter.otlp.traces.compression", "none")
             .withProperty("otel.exporter.otlp.traces.timeout", "20000");
 
-        var adapter = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(environment);
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment));
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.protocol"))
             .isEqualTo(Protocol.GRPC);
@@ -331,11 +335,135 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @Test
-    void otlpExporterShouldThrowExceptionWhenEnvironmentIsNull() {
+    void otlpExporterShouldThrowExceptionWhenAdapterIsNull() {
         assertThatThrownBy(() -> OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("environment cannot be null");
+                .hasMessage("adapter cannot be null");
     }
 
+    // VALUES
+
+    @ParameterizedTest
+    @CsvSource({
+            "console, CONSOLE",
+            "none, NONE",
+            "otlp, OTLP",
+            "CONSOLE, CONSOLE",
+            "' console ', CONSOLE",
+            "'\tconsole\n', CONSOLE"
+    })
+    void shouldMapSupportedExporterTypes(String input, ExporterType expected) {
+        var environment = new MockEnvironment().withProperty("otel.traces.exporter", input);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type"))
+                .isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "grpc, GRPC",
+            "http/protobuf, HTTP_PROTOBUF",
+            "HTTP/PROTOBUF, HTTP_PROTOBUF",
+            "' grpc ', GRPC"
+    })
+    void shouldMapSupportedProtocols(String input, Protocol expected) {
+        var environment = new MockEnvironment().withProperty("otel.exporter.otlp.protocol", input);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.protocol"))
+                .isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "gzip, GZIP",
+            "none, NONE",
+            "GZIP, GZIP",
+            "' none ', NONE"
+    })
+    void shouldMapSupportedCompressions(String input, Compression expected) {
+        var environment = new MockEnvironment().withProperty("otel.exporter.otlp.compression", input);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.compression"))
+                .isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "always_on, ALWAYS_ON",
+            "always_off, ALWAYS_OFF",
+            "traceidratio, TRACE_ID_RATIO",
+            "parentbased_always_on, PARENT_BASED_ALWAYS_ON",
+            "parentbased_always_off, PARENT_BASED_ALWAYS_OFF",
+            "parentbased_traceidratio, PARENT_BASED_TRACE_ID_RATIO",
+            "ALWAYS_ON, ALWAYS_ON",
+            "' always_on ', ALWAYS_ON"
+    })
+    void shouldMapSupportedSamplingStrategies(String input, SamplingStrategy expected) {
+        var environment = new MockEnvironment().withProperty("otel.tracer.sampler", input);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy"))
+                .isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "always_on, ALWAYS_ON",
+            "always_off, ALWAYS_OFF",
+            "trace_based, TRACE_BASED",
+            "TRACE_BASED, TRACE_BASED",
+            "' always_on ', ALWAYS_ON"
+    })
+    void shouldMapSupportedExemplarFilters(String input, ExemplarFilter expected) {
+        var environment = new MockEnvironment().withProperty("otel.metrics.exemplar.filter", input);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter"))
+                .isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "otel.traces.exporter",
+            "otel.exporter.otlp.protocol",
+            "otel.exporter.otlp.compression",
+            "otel.tracer.sampler",
+            "otel.metrics.exemplar.filter",
+            "otel.propagators"
+    })
+    void shouldSkipUnsupportedValues(String externalKey) {
+        var environment = new MockEnvironment().withProperty(externalKey, "invalid");
+        var adapter = adapter(environment);
+
+        OpenTelemetryEnvironmentPropertyAdapters.general(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.exporterSelection(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter);
+        OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter);
+
+        assertThat(adapter.getArconiaProperties()).isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldMapSupportedPropagatorsInOrderWithoutDuplicates() {
+        var environment = new MockEnvironment().withProperty("otel.propagators", " B3 , tracecontext,baggage,invalid,b3multi");
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
+
+        assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.produce"))
+                .containsExactly(PropagationType.B3, PropagationType.W3C, PropagationType.B3_MULTI);
+    }
+
+    private static OpenTelemetryEnvironmentPropertyAdapter adapter(MockEnvironment environment) {
+        return new OpenTelemetryEnvironmentPropertyAdapter(environment, LogFactory.getLog(OpenTelemetryEnvironmentPropertyAdaptersTests.class));
+    }
 
 }
