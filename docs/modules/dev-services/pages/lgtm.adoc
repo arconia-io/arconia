@@ -57,6 +57,8 @@ The application exports logs, metrics, and traces to the OpenTelemetry Collector
 
 Prometheus stores the metrics it receives via OTLP under names translated to its own conventions: for example, `jvm.memory.used` becomes `jvm_memory_used_bytes`, and the `service.name` and `service.instance.id` resource attributes become the `job` and `instance` labels. The Prometheus link in the application logs opens its UI, where you can check the metrics received and their names before using them in a dashboard.
 
+The Dev Service starts Prometheus with the `created-timestamp-zero-ingestion` feature, so that rates and totals also count the first value of each metric, such as the first call to an endpoint.
+
 == Exploring Telemetry
 
 Besides the dashboards, Grafana offers two ways to look at the telemetry of your application:
@@ -171,6 +173,8 @@ arconia:
 
 Each component accepts additional command line arguments from an environment variable: `PROMETHEUS_EXTRA_ARGS`, `LOKI_EXTRA_ARGS`, `TEMPO_EXTRA_ARGS`, and `OTELCOL_EXTRA_ARGS`. For deeper changes, replace the configuration file of a component with your own, copied into the container from the classpath or the host filesystem.
 
+The Dev Service already sets `PROMETHEUS_EXTRA_ARGS` to `--enable-feature=created-timestamp-zero-ingestion` and `TEMPO_EXTRA_ARGS` to `--query-frontend.mcp-server.enabled=true`. Setting either variable replaces its value, so include the default argument to keep its behavior.
+
 [source,yaml]
 ----
 arconia:
@@ -178,7 +182,7 @@ arconia:
     services:
       lgtm:
         environment:
-          PROMETHEUS_EXTRA_ARGS: "--storage.tsdb.retention.time=7d"
+          PROMETHEUS_EXTRA_ARGS: "--enable-feature=created-timestamp-zero-ingestion --storage.tsdb.retention.time=7d"
         resources:
           - source-path: otelcol-config.yaml
             container-path: /otel-lgtm/otelcol-config.yaml

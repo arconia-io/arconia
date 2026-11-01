@@ -53,6 +53,15 @@ public final class LgtmDevServicesAutoConfiguration {
 
     static final String TEMPO_MCP_SERVER_ARG = "--query-frontend.mcp-server.enabled=true";
 
+    /**
+     * Prometheus accepts extra command line arguments from this environment variable. Ingesting the start time
+     * of the OTLP metrics as a zero sample lets rates and increases count the first value of each series, which
+     * matters for the few calls of an application in development.
+     */
+    static final String PROMETHEUS_EXTRA_ARGS_ENV = "PROMETHEUS_EXTRA_ARGS";
+
+    static final String PROMETHEUS_START_TIME_ARG = "--enable-feature=created-timestamp-zero-ingestion";
+
     static final String GRAFANA_ADMIN_USER = "arconia";
 
     static final String GRAFANA_ADMIN_PASSWORD = "arconia";
@@ -63,6 +72,7 @@ public final class LgtmDevServicesAutoConfiguration {
         container.withEnv("GF_SECURITY_ADMIN_USER", GRAFANA_ADMIN_USER);
         container.withEnv("GF_SECURITY_ADMIN_PASSWORD", GRAFANA_ADMIN_PASSWORD);
         container.withEnv(TEMPO_EXTRA_ARGS_ENV, TEMPO_MCP_SERVER_ARG);
+        container.withEnv(PROMETHEUS_EXTRA_ARGS_ENV, PROMETHEUS_START_TIME_ARG);
         dashboards.applyTo(container);
         return container;
     }

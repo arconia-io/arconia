@@ -37,6 +37,11 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * An application connecting to an Elasticsearch Dev Service started by another application now uses the password configured through the `ELASTIC_PASSWORD` environment variable, as the application that started it does.
 * The Elasticsearch Dev Service now runs with a heap of 512 MB to 1 GB (`ES_JAVA_OPTS=-Xms512m -Xmx1g`), instead of the fixed 2 GB Testcontainers configures. Override it through the `environment` property.
 
+=== Grafana LGTM
+
+* A new GenAI dashboard shows the calls to chat and embedding models, their failures and durations, token usage, tool executions, `ChatClient` requests, and the most recent model calls with links to their traces. It's provisioned when the xref:observability:semantic-conventions/opentelemetry.adoc#_generative_ai[OpenTelemetry AI Semantic Conventions] module is on the classpath, whatever the flavor. Learn more about the xref:dev-services:lgtm.adoc#_grafana_dashboards[Grafana Dashboards].
+* Prometheus now counts the first value of each metric in rates and totals, such as the first call to an endpoint or a model, which previously only appeared from the second one. Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service].
+
 === Langfuse
 
 * The new xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs https://langfuse.com[Langfuse] for exploring the traces of AI applications, together with the containers it needs, and sends the traces of the application to it with no configuration. It signs you in to the Langfuse UI as `arconia@example.com` (password `password`), and it's skipped in test mode by default, like the other observability Dev Services.

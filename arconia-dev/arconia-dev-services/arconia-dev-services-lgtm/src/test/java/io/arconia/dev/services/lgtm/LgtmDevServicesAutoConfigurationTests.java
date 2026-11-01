@@ -86,6 +86,15 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     }
 
     @Test
+    void prometheusStartTimeIngestionEnabledInContainer() {
+        var properties = new LgtmDevServicesProperties();
+        var dashboards = LgtmDashboards.collect(new MockEnvironment(), new DefaultResourceLoader(), properties.getDashboards());
+        var container = LgtmDevServicesAutoConfiguration.createContainer(properties, dashboards);
+        assertThat(container.getEnvMap())
+                .containsEntry(LgtmDevServicesAutoConfiguration.PROMETHEUS_EXTRA_ARGS_ENV, LgtmDevServicesAutoConfiguration.PROMETHEUS_START_TIME_ARG);
+    }
+
+    @Test
     void grafanaAdminCredentialsConfiguredInContainer() {
         var properties = new LgtmDevServicesProperties();
         var dashboards = LgtmDashboards.collect(new MockEnvironment(), new DefaultResourceLoader(), properties.getDashboards());
