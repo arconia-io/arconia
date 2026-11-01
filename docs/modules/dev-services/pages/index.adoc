@@ -628,7 +628,7 @@ Response example:
     ],
     "containerInfo": {
       "id": "dbbda8272b5dc8d2ccfa48d3723756d767eef727322d9c35e0fd4c44ba60e967",
-      "imageName": "ghcr.io/docling-project/docling-serve:latest",
+      "imageName": "ghcr.io/docling-project/docling-serve-cpu:latest",
       "names": [
         "vigilant_hopper"
       ],
