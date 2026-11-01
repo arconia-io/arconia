@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jspecify.annotations.Nullable;
+import org.springframework.util.Assert;
 
 import io.arconia.core.support.Internal;
 
@@ -13,7 +13,7 @@ import io.arconia.core.support.Internal;
  * available before the application configuration is loaded: the mode-specific profile settings.
  * <p>
  * Unlike regular application configuration, the file is read once during the environment
- * preparation, so it only supports plain values (no placeholders, no profile-specific variants).
+ * preparation, so there are no profile-specific variants of it.
  * The bootstrap mode itself is not supported here: it describes the launch context, whereas
  * the file is static and shipped with the packaged application.
  */
@@ -44,17 +44,10 @@ public final class BootstrapConfigurationFile {
      * (e.g. contributed by different jars), the first one found on the classpath is used.
      * Returns empty properties when the file is not present.
      */
-    public static Properties load(@Nullable ClassLoader classLoader) throws IOException {
-        ClassLoader classLoaderToUse = classLoader;
-        if (classLoaderToUse == null) {
-            classLoaderToUse = Thread.currentThread().getContextClassLoader();
-        }
-        if (classLoaderToUse == null) {
-            classLoaderToUse = BootstrapConfigurationFile.class.getClassLoader();
-        }
-
+    public static Properties load(ClassLoader classLoader) throws IOException {
+        Assert.notNull(classLoader, "classLoader cannot be null");
         Properties properties = new Properties();
-        try (InputStream inputStream = classLoaderToUse.getResourceAsStream(LOCATION)) {
+        try (InputStream inputStream = classLoader.getResourceAsStream(LOCATION)) {
             if (inputStream != null) {
                 properties.load(inputStream);
             }

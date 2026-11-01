@@ -7,9 +7,10 @@ plugins {
 
 // The configuration metadata (META-INF/spring-configuration-metadata.json) is hand-maintained
 // because the bootstrap properties are resolved before the application configuration is loaded
-// and are not bound to @ConfigurationProperties classes. If the spring-boot-configuration-processor
-// is ever added back, move that content to META-INF/additional-spring-configuration-metadata.json
-// to avoid clashing with the generated file.
+// and are not bound to @ConfigurationProperties classes. The spring-boot-configuration-processor
+// wouldn't help: it only runs when a class carries one of the annotations it processes (such as
+// @ConfigurationProperties or @Configuration), and none in this module does.
+// BootstrapConfigurationMetadataTests keeps the metadata in sync with the code.
 dependencies {
     api project(":arconia-core")
     api "org.springframework.boot:spring-boot"

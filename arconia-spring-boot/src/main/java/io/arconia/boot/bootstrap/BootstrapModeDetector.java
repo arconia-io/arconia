@@ -1,7 +1,6 @@
 package io.arconia.boot.bootstrap;
 
 import java.io.File;
-import java.util.Locale;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -36,14 +35,18 @@ final class BootstrapModeDetector {
     }
 
     static BootstrapMode detect(StackTraceElement @Nullable [] stackTraceElements) {
-        if (cachedMode == null) {
+        // Read the volatile field once, so that a concurrent clearCache() cannot make this method return null.
+        BootstrapMode mode = cachedMode;
+        if (mode == null) {
             synchronized (LOCK) {
-                if (cachedMode == null) {
-                    cachedMode = doDetect(stackTraceElements);
+                mode = cachedMode;
+                if (mode == null) {
+                    mode = doDetect(stackTraceElements);
+                    cachedMode = mode;
                 }
             }
         }
-        return cachedMode;
+        return mode;
     }
 
     static void clearCache() {
@@ -54,14 +57,12 @@ final class BootstrapModeDetector {
         StackTraceElement[] stackTrace = (stackTraceElements == null || stackTraceElements.length == 0)
                 ? Thread.currentThread().getStackTrace() : stackTraceElements;
 
-        // 1. Check for an explicit mode: environment variable or JVM system property.
-        String modeProperty = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_"));
-        if (!StringUtils.hasText(modeProperty)) {
-            modeProperty = System.getProperty(BootstrapMode.PROPERTY_KEY);
-        }
-        if (StringUtils.hasText(modeProperty)) {
-            String normalizedMode = modeProperty.strip().toUpperCase(Locale.ROOT);
-            return BootstrapMode.isValid(normalizedMode) ? BootstrapMode.valueOf(normalizedMode) : BootstrapMode.PROD;
+        // 1. Check for an explicit mode: JVM system property or environment variable.
+        String modeProperty = BootstrapMode.getExplicitValue();
+        if (modeProperty != null) {
+            // An invalid value is reported by the environment post-processor activating the bootstrap profiles.
+            BootstrapMode mode = BootstrapMode.parse(modeProperty);
+            return mode != null ? mode : BootstrapMode.PROD;
         }
 
         // 2. Check the stack trace for known class prefixes that indicate a certain mode.

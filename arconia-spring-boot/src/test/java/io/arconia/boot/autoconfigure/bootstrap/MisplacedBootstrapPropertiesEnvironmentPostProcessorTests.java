@@ -75,7 +75,38 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location");
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (mockProperties)");
+    }
+
+    @Test
+    void shouldWarnWhenModePropertyHasUnresolvablePlaceholder(CapturedOutput output) {
+        var environment = new MockEnvironment().withProperty("arconia.bootstrap.mode", "${missing}");
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (mockProperties)");
+    }
+
+    @Test
+    void shouldNotWarnWhenModeIsSystemProperty(CapturedOutput output) {
+        var environment = new StandardEnvironment();
+        environment.getPropertySources().replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, new MapPropertySource(
+                StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, Map.of("arconia.bootstrap.mode", "dev")));
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(output).doesNotContain("arconia.bootstrap.mode");
+    }
+
+    @Test
+    void shouldWarnWhenModeIsAlsoInApplicationConfiguration(CapturedOutput output) {
+        var environment = environmentWithConfigFileProperties(Map.of("arconia.bootstrap.mode", "prod"));
+        environment.getPropertySources().replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, new MapPropertySource(
+                StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, Map.of("arconia.bootstrap.mode", "dev")));
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (" + CONFIG_FILE_SOURCE_NAME + ")");
     }
 
     @Test
@@ -86,7 +117,7 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location");
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (arconiaBootstrap)");
     }
 
     @Test
@@ -97,7 +128,7 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
 
         application.run("--arconia.bootstrap.mode=dev").close();
 
-        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location");
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (commandLineArgs)");
     }
 
     private static StandardEnvironment environmentWithConfigFileProperties(Map<String, Object> properties) {

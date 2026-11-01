@@ -1,6 +1,10 @@
 package io.arconia.boot.bootstrap;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,24 +13,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BootstrapModeTests {
 
-    @Test
-    void whenValidEnumValue() {
-        assertThat(BootstrapMode.isValid("DEV")).isTrue();
-        assertThat(BootstrapMode.isValid("TEST")).isTrue();
-        assertThat(BootstrapMode.isValid("PROD")).isTrue();
-        assertThat(BootstrapMode.isValid("dev")).isTrue();
-        assertThat(BootstrapMode.isValid("test")).isTrue();
-        assertThat(BootstrapMode.isValid("prod")).isTrue();
-        assertThat(BootstrapMode.isValid("\n dev")).isTrue();
-        assertThat(BootstrapMode.isValid(" test")).isTrue();
-        assertThat(BootstrapMode.isValid("prod   \n")).isTrue();
+    @ParameterizedTest
+    @CsvSource({ "DEV, DEV", "test, TEST", "Prod, PROD", "'\n dev', DEV", "'prod   \n', PROD" })
+    void shouldParseValidMode(String value, BootstrapMode expected) {
+        assertThat(BootstrapMode.parse(value)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "   ", "INVALID", "development" })
+    void shouldNotParseInvalidMode(String value) {
+        assertThat(BootstrapMode.parse(value)).isNull();
+    }
+
+    @ParameterizedTest
+    @CsvSource(nullValues = "null", value = {
+            "dev, test, dev",
+            "dev, null, dev",
+            "null, test, test",
+            "'  ', test, test",
+            "null, '', null",
+            "null, null, null"
+    })
+    void systemPropertyTakesPrecedenceOverEnvironmentVariable(String systemProperty, String environmentVariable, String expected) {
+        assertThat(BootstrapMode.getExplicitValue(systemProperty, environmentVariable)).isEqualTo(expected);
     }
 
     @Test
-    void whenInvalidEnumValue() {
-        assertThat(BootstrapMode.isValid("INVALID")).isFalse();
-        assertThat(BootstrapMode.isValid("")).isFalse();
-        assertThat(BootstrapMode.isValid(null)).isFalse();
+    void environmentVariableMatchesPropertyKey() {
+        assertThat(BootstrapMode.ENVIRONMENT_VARIABLE).isEqualTo(BootstrapMode.PROPERTY_KEY.toUpperCase().replace('.', '_'));
     }
 
 }

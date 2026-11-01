@@ -1,19 +1,19 @@
 package io.arconia.boot.autoconfigure.bootstrap;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import io.arconia.boot.bootstrap.BootstrapConfigurationFile;
 import io.arconia.boot.bootstrap.BootstrapMode;
@@ -74,24 +74,27 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
         }
     }
 
+    /**
+     * The bootstrap mode is only read from the JVM system properties and the environment variables,
+     * so it has no effect in any other property source.
+     */
     private void warnIfBootstrapModeMisplaced(ConfigurableEnvironment environment) {
-        String environmentVariableName = BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_");
-        String modeProperty;
-        try {
-            modeProperty = environment.getProperty(BootstrapMode.PROPERTY_KEY);
-        } catch (IllegalArgumentException ex) {
-            // Unresolvable placeholder in the property value: it is present (and misplaced) either way.
-            modeProperty = ex.getMessage();
+        for (PropertySource<?> propertySource : environment.getPropertySources()) {
+            if (isModeSource(propertySource) || ConfigurationPropertySources.isAttachedConfigurationPropertySource(propertySource)) {
+                continue;
+            }
+            if (propertySource.containsProperty(BootstrapMode.PROPERTY_KEY)) {
+                logger.warn(LogMessage.format("The '%s' property was found in an unsupported location (%s), where it has no effect "
+                        + "because the bootstrap mode describes the launch context and is determined before the application "
+                        + "configuration is loaded. Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.",
+                        BootstrapMode.PROPERTY_KEY, propertySource.getName(), BootstrapMode.PROPERTY_KEY, BootstrapMode.ENVIRONMENT_VARIABLE));
+            }
         }
-        if (StringUtils.hasText(modeProperty)
-                && !StringUtils.hasText(System.getProperty(BootstrapMode.PROPERTY_KEY))
-                && !StringUtils.hasText(System.getenv(environmentVariableName))) {
-            logger.warn(LogMessage.format("The '%s' property was found in an unsupported location, such as the application "
-                    + "configuration or the %s file, where it has no effect because the bootstrap mode describes "
-                    + "the launch context and is determined before the application configuration is loaded. "
-                    + "Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.",
-                    BootstrapMode.PROPERTY_KEY, BootstrapConfigurationFile.LOCATION, BootstrapMode.PROPERTY_KEY, environmentVariableName));
-        }
+    }
+
+    private static boolean isModeSource(PropertySource<?> propertySource) {
+        return StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME.equals(propertySource.getName())
+                || StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME.equals(propertySource.getName());
     }
 
     /**

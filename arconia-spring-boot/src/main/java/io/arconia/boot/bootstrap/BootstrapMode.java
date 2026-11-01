@@ -18,7 +18,15 @@ public enum BootstrapMode {
     TEST,
     PROD;
 
+    /**
+     * JVM system property to set the bootstrap mode explicitly.
+     */
     public static final String PROPERTY_KEY = "arconia.bootstrap.mode";
+
+    /**
+     * Environment variable to set the bootstrap mode explicitly.
+     */
+    public static final String ENVIRONMENT_VARIABLE = "ARCONIA_BOOTSTRAP_MODE";
 
     /**
      * Determines the application bootstrap mode with heuristics.
@@ -50,16 +58,34 @@ public enum BootstrapMode {
         BootstrapModeDetector.clearCache();
     }
 
-    static boolean isValid(@Nullable String modeProperty) {
-        if (!StringUtils.hasText(modeProperty)) {
-            return false;
-        }
+    /**
+     * Get the bootstrap mode set explicitly, as it was set, or {@code null} when it's not set.
+     */
+    @Internal
+    public static @Nullable String getExplicitValue() {
+        return getExplicitValue(System.getProperty(PROPERTY_KEY), System.getenv(ENVIRONMENT_VARIABLE));
+    }
 
+    static @Nullable String getExplicitValue(@Nullable String systemProperty, @Nullable String environmentVariable) {
+        if (StringUtils.hasText(systemProperty)) {
+            return systemProperty;
+        }
+        return StringUtils.hasText(environmentVariable) ? environmentVariable : null;
+    }
+
+    /**
+     * Parses a bootstrap mode, case-insensitively and ignoring surrounding whitespace.
+     * Returns {@code null} when the value is not a valid bootstrap mode.
+     */
+    @Internal
+    public static @Nullable BootstrapMode parse(@Nullable String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
         try {
-            BootstrapMode.valueOf(modeProperty.strip().toUpperCase(Locale.ROOT));
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
+            return BootstrapMode.valueOf(value.strip().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
         }
     }
 

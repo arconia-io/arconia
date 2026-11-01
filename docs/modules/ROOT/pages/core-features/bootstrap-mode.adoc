@@ -12,7 +12,7 @@ When in dev or test mode, Arconia automatically activates specific Spring profil
 
 == Setting the Bootstrap Mode
 
-Arconia relies on a series of heuristics to determine the current bootstrap mode. However, you can explicitly set the bootstrap mode using the `ARCONIA_BOOTSTRAP_MODE` environment variable or the `arconia.bootstrap.mode` JVM system property (`-Darconia.bootstrap.mode=dev`). If you use the https://arconia.io/docs/arconia-cli/latest/index.html[Arconia CLI] to work with your Spring Boot application, the CLI automatically sets the bootstrap mode for you when running (`arconia dev`) or testing (`arconia test`) your application.
+Arconia relies on a series of heuristics to determine the current bootstrap mode. However, you can explicitly set the bootstrap mode using the `ARCONIA_BOOTSTRAP_MODE` environment variable or the `arconia.bootstrap.mode` JVM system property (`-Darconia.bootstrap.mode=dev`). If both are set, the JVM system property takes precedence, as in the Spring Boot externalized configuration. If you use the https://arconia.io/docs/arconia-cli/latest/index.html[Arconia CLI] to work with your Spring Boot application, the CLI automatically sets the bootstrap mode for you when running (`arconia dev`) or testing (`arconia test`) your application.
 
 NOTE: The bootstrap mode describes the launch context, so it is not a regular application property: setting it in a configuration file (such as `application.yml` or `META-INF/arconia-bootstrap.properties`) or as a command line argument has no effect, and Arconia logs a warning if it finds it there. Only the environment variable and the JVM system property are supported, since the mode may be needed before the application arguments and configuration are available.
 

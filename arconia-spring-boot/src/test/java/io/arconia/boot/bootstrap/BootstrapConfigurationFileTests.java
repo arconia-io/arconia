@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link BootstrapConfigurationFile}.
@@ -32,8 +33,10 @@ class BootstrapConfigurationFileTests {
     }
 
     @Test
-    void shouldFallBackToContextClassLoaderWhenNull() throws IOException {
-        assertThat(BootstrapConfigurationFile.load(null)).isEmpty();
+    void shouldThrowWhenClassLoaderIsNull() {
+        assertThatThrownBy(() -> BootstrapConfigurationFile.load(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("classLoader cannot be null");
     }
 
     static ClassLoader classLoaderWithBootstrapFile(String content) {

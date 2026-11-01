@@ -1,11 +1,11 @@
 package io.arconia.boot.autoconfigure.bootstrap;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -67,16 +67,13 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         Binder binder = Binder.get(environment);
 
         Boolean profilesEnabled = binder.bind(BootstrapConfigurationFile.PROFILES_ENABLED_PROPERTY, Boolean.class).orElse(true);
-        List<String> devProfiles = binder.bind(BootstrapConfigurationFile.DEV_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(null);
-        List<String> testProfiles = binder.bind(BootstrapConfigurationFile.TEST_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(null);
-
         if (!profilesEnabled) {
             return;
         }
 
         List<String> modeProfiles = switch (mode) {
-            case DEV -> devProfiles != null ? devProfiles : List.of("dev");
-            case TEST -> testProfiles != null ? testProfiles : List.of("test");
+            case DEV -> binder.bind(BootstrapConfigurationFile.DEV_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(List.of("dev"));
+            case TEST -> binder.bind(BootstrapConfigurationFile.TEST_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(List.of("test"));
             // No additional profiles for prod mode
             case PROD -> List.of();
         };
@@ -84,33 +81,24 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         // Consider both the property-declared and the programmatically-set active profiles,
         // so already-active profiles are not activated twice.
         List<String> activeProfiles = List.of(environment.getActiveProfiles());
-        List<String> currentProfiles = new ArrayList<>(binder.bind(StandardEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, Bindable.listOf(String.class)).orElse(List.of()));
-        for (String profile : activeProfiles) {
-            if (!currentProfiles.contains(profile)) {
-                currentProfiles.add(profile);
-            }
-        }
+        Set<String> currentProfiles = new LinkedHashSet<>(binder.bind(StandardEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, Bindable.listOf(String.class)).orElse(List.of()));
+        currentProfiles.addAll(activeProfiles);
 
-        List<String> additionalProfiles = new ArrayList<>();
+        Set<String> mergedProfiles = new LinkedHashSet<>();
         for (String profile : modeProfiles) {
             if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
                 logger.debug(LogMessage.format("Adding active profile '%s' for the current bootstrap mode", profile));
-                additionalProfiles.add(profile);
+                mergedProfiles.add(profile);
             }
         }
 
-        if (additionalProfiles.isEmpty()) {
+        if (mergedProfiles.isEmpty()) {
             return;
         }
 
         // The mode profiles come first so that their profile-specific configuration files have
         // lower precedence than the ones for the profiles activated by the user.
-        List<String> mergedProfiles = new ArrayList<>(additionalProfiles);
-        for (String profile : activeProfiles) {
-            if (!mergedProfiles.contains(profile)) {
-                mergedProfiles.add(profile);
-            }
-        }
+        mergedProfiles.addAll(activeProfiles);
         environment.setActiveProfiles(mergedProfiles.toArray(String[]::new));
     }
 
@@ -120,11 +108,8 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
      * system is initialized.
      */
     private void logBootstrapMode(BootstrapMode mode) {
-        String explicitMode = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_"));
-        if (!StringUtils.hasText(explicitMode)) {
-            explicitMode = System.getProperty(BootstrapMode.PROPERTY_KEY);
-        }
-        if (StringUtils.hasText(explicitMode) && !isValidMode(explicitMode)) {
+        String explicitMode = BootstrapMode.getExplicitValue();
+        if (explicitMode != null && BootstrapMode.parse(explicitMode) == null) {
             logger.warn(LogMessage.format("Invalid %s property value: '%s'. Defaulting to PROD mode.",
                     BootstrapMode.PROPERTY_KEY, explicitMode));
         }
@@ -139,10 +124,6 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         } else {
             logger.info(LogMessage.format("The application is running in %s mode", mode.name().toLowerCase(Locale.ROOT)));
         }
-    }
-
-    private static boolean isValidMode(String value) {
-        return Arrays.stream(BootstrapMode.values()).anyMatch(mode -> mode.name().equalsIgnoreCase(value.strip()));
     }
 
     /**
