@@ -239,7 +239,7 @@ class DoclingServeClientIT {
 
         ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(request).toCompletableFuture().join();
 
-        assertThat(response.getChunks()).isNotEmpty();
+        assertThat(response.getChunks()).as("chunks of %s", response.getDocuments()).isNotEmpty();
     }
 
     @Test
@@ -250,7 +250,7 @@ class DoclingServeClientIT {
 
         ChunkDocumentResponse response = doclingServeApi.chunkSourceWithHybridChunkerAsync(request).toCompletableFuture().join();
 
-        assertThat(response.getChunks()).isNotEmpty();
+        assertThat(response.getChunks()).as("chunks of %s", response.getDocuments()).isNotEmpty();
     }
 
     @Test

@@ -66,6 +66,22 @@ class DoclingServeHealthIndicatorTests {
     }
 
     @Test
+    void whenBaseUrlHasCredentialsThenLocationOmitsThem() {
+        DoclingServeApiConfig config = DoclingServeApi.builder()
+                .baseUrl("https://user:secret@docling.example.net:5001/api")
+                .config();
+        when(doclingServeApi.config()).thenReturn(config);
+        when(doclingServeApi.health()).thenReturn(HealthCheckResponse.builder().status("ok").build());
+
+        DoclingServeHealthIndicator healthIndicator = new DoclingServeHealthIndicator(doclingServeApi);
+        Health.Builder builder = new Health.Builder();
+
+        healthIndicator.doHealthCheck(builder);
+
+        assertThat(builder.build().getDetails()).containsOnly(entry("location", "https://docling.example.net:5001/api"));
+    }
+
+    @Test
     void whenHealthCheckReturnsNonOkStatusThenHealthIsDown() {
         HealthCheckResponse healthCheckResponse = HealthCheckResponse.builder().status("unhealthy").build();
         when(doclingServeApi.config()).thenReturn(CONFIG);

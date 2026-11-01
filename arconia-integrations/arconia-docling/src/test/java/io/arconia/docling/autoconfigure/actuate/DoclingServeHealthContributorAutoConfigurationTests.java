@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.health.autoconfigure.contributor.CompositeHealthContributorConfiguration;
 import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.health.autoconfigure.contributor.HealthContributorAutoConfiguration;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthContributor;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.restclient.autoconfigure.RestClientAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -29,6 +31,19 @@ class DoclingServeHealthContributorAutoConfigurationTests {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(DoclingServeHealthIndicator.class).hasBean("doclingHealthContributor");
         });
+    }
+
+    @Test
+    void runWithCustomIndicatorShouldBackOff() {
+        contextRunner.withBean("doclingHealthIndicator", HealthIndicator.class, () -> () -> Health.up().build())
+                .run(context -> assertThat(context).doesNotHaveBean(DoclingServeHealthIndicator.class)
+                        .doesNotHaveBean("doclingHealthContributor"));
+    }
+
+    @Test
+    void runWithCustomContributorShouldBackOff() {
+        contextRunner.withBean("doclingHealthContributor", HealthIndicator.class, () -> () -> Health.up().build())
+                .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(DoclingServeHealthIndicator.class));
     }
 
     @Test

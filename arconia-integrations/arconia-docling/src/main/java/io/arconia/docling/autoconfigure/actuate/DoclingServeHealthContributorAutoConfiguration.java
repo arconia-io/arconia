@@ -31,7 +31,7 @@ public final class DoclingServeHealthContributorAutoConfiguration {
         }
 
         @Bean
-        @ConditionalOnMissingBean(name = { "doclingServeHealthIndicator", "doclingServeHealthContributor" })
+        @ConditionalOnMissingBean(name = { "doclingHealthIndicator", "doclingHealthContributor" })
         HealthContributor doclingHealthContributor(ConfigurableListableBeanFactory beanFactory) {
             return createContributor(beanFactory, DoclingServeApi.class);
         }

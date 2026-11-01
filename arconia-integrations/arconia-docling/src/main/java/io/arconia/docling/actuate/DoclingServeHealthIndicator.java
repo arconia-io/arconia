@@ -1,11 +1,14 @@
 package io.arconia.docling.actuate;
 
+import java.net.URI;
+
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.health.HealthCheckResponse;
 
 import org.springframework.boot.health.contributor.AbstractHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.util.Assert;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Health indicator for Docling Serve.
@@ -25,7 +28,7 @@ public final class DoclingServeHealthIndicator extends AbstractHealthIndicator {
     protected void doHealthCheck(Health.Builder builder) {
         Assert.notNull(builder, "builder cannot be null");
 
-        builder.withDetail("location", doclingServeApi.config().baseUrl().toString());
+        builder.withDetail("location", location(doclingServeApi.config().baseUrl()));
 
         try {
             HealthCheckResponse healthCheckResponse = doclingServeApi.health();
@@ -40,6 +43,13 @@ public final class DoclingServeHealthIndicator extends AbstractHealthIndicator {
         } catch (Exception e) {
             builder.down(e);
         }
+    }
+
+    /**
+     * The base URL without any credentials it may carry.
+     */
+    private static String location(URI baseUrl) {
+        return UriComponentsBuilder.fromUri(baseUrl).userInfo(null).build().toUriString();
     }
 
 }
