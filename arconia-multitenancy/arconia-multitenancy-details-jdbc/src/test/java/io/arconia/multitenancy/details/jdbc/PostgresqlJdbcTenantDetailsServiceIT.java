@@ -16,7 +16,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class PostgresqlJdbcTenantDetailsServiceIT extends BaseJdbcTenantDetailsServiceIT {
 
     @Container
-    static final PostgreSQLContainer postgresql = new PostgreSQLContainer("postgres:18.4-alpine");
+    static final PostgreSQLContainer postgresql = new PostgreSQLContainer("postgres:18.6-alpine");
 
     private final DataSource dataSource = new DriverManagerDataSource(postgresql.getJdbcUrl(),
             postgresql.getUsername(), postgresql.getPassword());
