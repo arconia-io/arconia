@@ -25,4 +25,4 @@ scopes:
   - multitenancy
   - obs
   - otel
-  - testcontainers
+  - tc

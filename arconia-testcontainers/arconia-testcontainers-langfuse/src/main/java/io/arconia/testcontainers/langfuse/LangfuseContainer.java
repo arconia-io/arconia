@@ -128,11 +128,11 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
 
     public LangfuseContainer(DockerImageName imageName) {
-        super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
+        super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(HTTP_PORT);
         // Langfuse runs its database migrations at startup, which makes it slow to come up.
-        waitingFor(Wait.forHttp("/api/public/health").forPort(HTTP_PORT).forStatusCode(200)
+        this.waitingFor(Wait.forHttp("/api/public/health").forPort(HTTP_PORT).forStatusCode(200)
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
@@ -276,21 +276,21 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private void createContainers(Network network) {
         boolean reuse = isShouldBeReused();
-        postgresContainer = new PostgreSQLContainer(postgresImageName.asCompatibleSubstituteFor("postgres"))
+        postgresContainer = new PostgreSQLContainer(postgresImageName)
                 .withNetwork(network)
                 .withNetworkAliases(POSTGRES_NETWORK_ALIAS)
                 .withReuse(reuse);
-        clickHouseContainer = new ClickHouseContainer(clickHouseImageName.asCompatibleSubstituteFor("clickhouse/clickhouse-server"))
+        clickHouseContainer = new ClickHouseContainer(clickHouseImageName)
                 .withNetwork(network)
                 .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
                 .withReuse(reuse);
-        redisContainer = new RedisContainer(redisImageName.asCompatibleSubstituteFor("redis"))
+        redisContainer = new RedisContainer(redisImageName)
                 .withNetwork(network)
                 .withNetworkAliases(REDIS_NETWORK_ALIAS)
                 .withReuse(reuse);
         // Only S3 is needed, as blob storage for the ingested events and media,
         // and API Gateway, as a proxy for the OTLP endpoint.
-        flociContainer = new FlociContainer(flociImageName.asCompatibleSubstituteFor("floci/floci"))
+        flociContainer = new FlociContainer(flociImageName)
                 .disableAllServices()
                 .withS3Config(s3 -> s3.enabled(true))
                 .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
@@ -298,7 +298,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withNetwork(network)
                 .withNetworkAliases(FLOCI_NETWORK_ALIAS)
                 .withReuse(reuse);
-        workerContainer = new GenericContainer<>(workerImageName.asCompatibleSubstituteFor("langfuse/langfuse-worker"))
+        workerContainer = new GenericContainer<>(workerImageName)
                 .withNetwork(network)
                 .withReuse(reuse);
     }
@@ -428,22 +428,18 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     // stays the same across JVM restarts and Testcontainers can recognise the existing container.
     private Network resolveNamedNetwork() {
         var client = DockerClientFactory.lazyClient();
-        var existing = client.listNetworksCmd()
+        String id = client.listNetworksCmd()
                 .withNameFilter(REUSE_NETWORK_NAME)
                 .exec()
                 .stream()
                 .filter(n -> REUSE_NETWORK_NAME.equals(n.getName()))
-                .toList();
-        String id;
-        if (!existing.isEmpty()) {
-            id = existing.getFirst().getId();
-        } else {
-            id = client.createNetworkCmd()
-                    .withName(REUSE_NETWORK_NAME)
-                    .withDriver("bridge")
-                    .exec()
-                    .getId();
-        }
+                .findFirst()
+                .map(n -> n.getId())
+                .orElseGet(() -> client.createNetworkCmd()
+                        .withName(REUSE_NETWORK_NAME)
+                        .withDriver("bridge")
+                        .exec()
+                        .getId());
         return new ExistingDockerNetwork(id);
     }
 

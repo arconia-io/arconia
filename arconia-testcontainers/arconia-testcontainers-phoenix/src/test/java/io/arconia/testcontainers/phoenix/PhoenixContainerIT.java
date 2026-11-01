@@ -26,11 +26,21 @@ class PhoenixContainerIT {
             container.start();
             assertThat(container.getCurrentContainerInfo().getState().getStatus())
                     .isEqualTo("running");
-            assertThat(container.getEnvMap()).containsEntry("PHOENIX_TELEMETRY_ENABLED", "false");
+            assertThat(container.getEnvMap())
+                    .containsEntry("PHOENIX_TELEMETRY_ENABLED", "false")
+                    .containsEntry("PHOENIX_ENABLE_AUTH", "false");
 
             var request = HttpRequest.newBuilder(URI.create(container.getPhoenixUrl() + "/readyz")).GET().build();
             var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).isEqualTo(200);
+
+            // An empty protobuf body is a valid OTLP export request without any span.
+            var exportRequest = HttpRequest.newBuilder(URI.create(container.getPhoenixUrl() + "/v1/traces"))
+                    .header("Content-Type", "application/x-protobuf")
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            var exportResponse = HttpClient.newHttpClient().send(exportRequest, HttpResponse.BodyHandlers.ofString());
+            assertThat(exportResponse.statusCode()).as(exportResponse.body()).isEqualTo(200);
 
             container.stop();
         }

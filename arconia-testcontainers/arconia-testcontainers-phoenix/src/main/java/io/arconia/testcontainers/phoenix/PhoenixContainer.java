@@ -30,6 +30,9 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
         super.configure();
         // Disables the telemetry pixels of the Phoenix UI. User-provided values take precedence.
         getEnvMap().putIfAbsent("PHOENIX_TELEMETRY_ENABLED", "false");
+        // Phoenix enables authentication by default when listening on a non-loopback address, as in the image,
+        // which would reject the telemetry data sent without an API key. User-provided values take precedence.
+        getEnvMap().putIfAbsent("PHOENIX_ENABLE_AUTH", "false");
     }
 
     public String getPhoenixUrl() {

@@ -18,7 +18,7 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(REDIS_PORT);
-        waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
+        this.waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
     }
 
     public String getRedisUrl() {

@@ -101,7 +101,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     private @Nullable Network privateNetwork;
 
     public OpenLitContainer(DockerImageName imageName) {
-        super(imageName.asCompatibleSubstituteFor(DEFAULT_IMAGE_NAME));
+        super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(UI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT);
         // ClickHouse initialization and the Next.js startup make OpenLIT slow to come up.
@@ -121,7 +121,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     }
 
     public OpenLitContainer withClickHouseImage(String imageName) {
-        return withClickHouseImage(DockerImageName.parse(imageName).asCompatibleSubstituteFor(DEFAULT_CLICKHOUSE_IMAGE_NAME));
+        return withClickHouseImage(DockerImageName.parse(imageName));
     }
 
     @Override
@@ -141,8 +141,7 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 withNetwork(network);
             }
 
-            clickHouseContainer = new ClickHouseContainer(
-                    clickHouseImageName.asCompatibleSubstituteFor("clickhouse/clickhouse-server"))
+            clickHouseContainer = new ClickHouseContainer(clickHouseImageName)
                     .withNetwork(network)
                     .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
                     .withReuse(isShouldBeReused());
@@ -247,22 +246,18 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     // stays the same across JVM restarts and Testcontainers can recognise the existing container.
     private Network resolveNamedNetwork() {
         var client = DockerClientFactory.lazyClient();
-        var existing = client.listNetworksCmd()
+        String id = client.listNetworksCmd()
                 .withNameFilter(REUSE_NETWORK_NAME)
                 .exec()
                 .stream()
                 .filter(n -> REUSE_NETWORK_NAME.equals(n.getName()))
-                .toList();
-        String id;
-        if (!existing.isEmpty()) {
-            id = existing.getFirst().getId();
-        } else {
-            id = client.createNetworkCmd()
-                    .withName(REUSE_NETWORK_NAME)
-                    .withDriver("bridge")
-                    .exec()
-                    .getId();
-        }
+                .findFirst()
+                .map(n -> n.getId())
+                .orElseGet(() -> client.createNetworkCmd()
+                        .withName(REUSE_NETWORK_NAME)
+                        .withDriver("bridge")
+                        .exec()
+                        .getId());
         return new ExistingDockerNetwork(id);
     }
 
