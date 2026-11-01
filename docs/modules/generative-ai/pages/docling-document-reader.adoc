@@ -133,6 +133,8 @@ public class IngestionPipeline {
 
 The `DoclingDocumentReader` will use Docling to process the file, transform it into smaller chunks, and build a resulting collection of Spring AI's Documents. Finally, you can use Spring AI's `VectorStore` API to convert the documents into embeddings and store them into a vector database.
 
+All the files and URLs of a reader are sent to Docling Serve in a single request. If Docling Serve can't convert one of them, the reader throws an `IllegalStateException` listing the sources that failed and the reasons, without returning the chunks of the other sources.
+
 NOTE: For more information on how to build a data ingestion pipeline in Spring AI, check out the https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[dedicated documentation].
 
 === Running the Application

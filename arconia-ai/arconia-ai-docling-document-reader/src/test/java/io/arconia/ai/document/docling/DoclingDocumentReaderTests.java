@@ -8,13 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 import ai.docling.serve.api.DoclingServeApi;
+import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
 import ai.docling.serve.api.chunk.request.options.HierarchicalChunkerOptions;
 import ai.docling.serve.api.chunk.request.options.HybridChunkerOptions;
 import ai.docling.serve.api.chunk.response.Chunk;
 import ai.docling.serve.api.chunk.response.ChunkDocumentResponse;
+import ai.docling.serve.api.chunk.response.ExportDocumentResponse;
 import ai.docling.serve.api.convert.request.options.ConvertDocumentOptions;
+import ai.docling.serve.api.convert.response.ErrorItem;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.ai.document.Document;
 import org.springframework.core.io.Resource;
 
@@ -22,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -319,6 +324,54 @@ class DoclingDocumentReaderTests {
         List<Document> documents = reader.get();
 
         assertThat(documents).isEqualTo(mockDocuments);
+    }
+
+    @Test
+    void builderCopiesTheListsItIsGiven() {
+        when(doclingServeApi.chunkSourceWithHierarchicalChunker(any())).thenReturn(ChunkDocumentResponse.builder().build());
+        List<URI> urls = new ArrayList<>(List.of(URI.create("https://example.com/file1.pdf")));
+
+        DoclingDocumentReader.Builder builder = DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .files(List.of(createMockResource()))
+                .files(createMockResource())
+                .urls(urls);
+        DoclingDocumentReader reader = builder.build();
+        urls.add(URI.create("https://example.com/file2.pdf"));
+        builder.urls("https://example.com/file3.pdf");
+
+        reader.get();
+
+        ArgumentCaptor<HierarchicalChunkDocumentRequest> request = ArgumentCaptor.forClass(HierarchicalChunkDocumentRequest.class);
+        verify(doclingServeApi).chunkSourceWithHierarchicalChunker(request.capture());
+        assertThat(request.getValue().getSources()).hasSize(3);
+        assertThat(request.getValue().isIncludeConvertedDoc()).isFalse();
+    }
+
+    @Test
+    void whenConversionFailsThenThrow() {
+        ChunkDocumentResponse response = ChunkDocumentResponse.builder()
+                .document(ai.docling.serve.api.chunk.response.Document.builder()
+                        .content(ExportDocumentResponse.builder().filename("broken.pdf").build())
+                        .status("failure")
+                        .error(ErrorItem.builder().errorMessage("could not load document").build())
+                        .build())
+                .document(ai.docling.serve.api.chunk.response.Document.builder()
+                        .content(ExportDocumentResponse.builder().filename("test.pdf").build())
+                        .status("success")
+                        .build())
+                .build();
+        when(doclingServeApi.chunkSourceWithHierarchicalChunker(any())).thenReturn(response);
+
+        DoclingDocumentReader reader = DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .files(createMockResource())
+                .build();
+
+        assertThatThrownBy(reader::get)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("broken.pdf: could not load document")
+                .hasMessageNotContaining("test.pdf");
     }
 
     private Resource createMockResource() {

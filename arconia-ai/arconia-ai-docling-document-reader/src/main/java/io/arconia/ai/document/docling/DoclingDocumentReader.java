@@ -7,6 +7,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
@@ -19,6 +20,7 @@ import ai.docling.serve.api.convert.request.options.ConvertDocumentOptions;
 import ai.docling.serve.api.convert.request.source.FileSource;
 import ai.docling.serve.api.convert.request.source.HttpSource;
 import ai.docling.serve.api.convert.request.source.Source;
+import ai.docling.serve.api.convert.response.ErrorItem;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.ai.document.Document;
@@ -30,6 +32,8 @@ import org.springframework.util.Assert;
  * A {@link DocumentReader} using Docling to read, convert, and chunk documents.
  */
 public final class DoclingDocumentReader implements DocumentReader {
+
+    private static final String FAILURE_STATUS = "failure";
 
     private final DoclingServeApi doclingServeApi;
     private final ConvertDocumentOptions convertOptions;
@@ -57,9 +61,9 @@ public final class DoclingDocumentReader implements DocumentReader {
         this.convertOptions = convertOptions;
         this.chunkerOptions = chunkerOptions;
         this.documentParser = documentParser;
-        this.metadata = metadata;
-        this.files = files;
-        this.urls = urls;
+        this.metadata = Map.copyOf(metadata);
+        this.files = List.copyOf(files);
+        this.urls = List.copyOf(urls);
     }
 
     @Override
@@ -72,18 +76,33 @@ public final class DoclingDocumentReader implements DocumentReader {
                             .sources(sources)
                             .options(convertOptions)
                             .chunkingOptions(hierarchicalChunkerOptions)
-                            .includeConvertedDoc(true)
                             .build());
             case HybridChunkerOptions hybridChunkerOptions -> doclingServeApi.chunkSourceWithHybridChunker(
                     HybridChunkDocumentRequest.builder()
                             .sources(sources)
                             .options(convertOptions)
                             .chunkingOptions(hybridChunkerOptions)
-                            .includeConvertedDoc(true)
                             .build());
         };
 
+        failOnConversionErrors(response);
         return documentParser.parse(response.getChunks(), metadata);
+    }
+
+    /**
+     * Docling Serve reports a source it could not convert in the response rather than with an error status,
+     * so returning the chunks alone would silently drop that source.
+     */
+    private static void failOnConversionErrors(ChunkDocumentResponse response) {
+        String failures = response.getDocuments().stream()
+                .filter(document -> FAILURE_STATUS.equals(document.getStatus()))
+                .map(document -> "%s: %s".formatted(document.getContent().getFilename(), document.getErrors().stream()
+                        .map(ErrorItem::getErrorMessage)
+                        .collect(Collectors.joining("; "))))
+                .collect(Collectors.joining(System.lineSeparator()));
+        if (!failures.isEmpty()) {
+            throw new IllegalStateException("Docling Serve failed to convert the following sources:%n%s".formatted(failures));
+        }
     }
 
     private List<Source> buildSources() {
@@ -153,7 +172,7 @@ public final class DoclingDocumentReader implements DocumentReader {
 
         public Builder files(List<Resource> files) {
             Assert.notNull(files, "files cannot be null");
-            this.files = files;
+            this.files = new ArrayList<>(files);
             return this;
         }
 
@@ -164,7 +183,7 @@ public final class DoclingDocumentReader implements DocumentReader {
 
         public Builder urls(List<URI> urls) {
             Assert.notNull(urls, "urls cannot be null");
-            this.urls = urls;
+            this.urls = new ArrayList<>(urls);
             return this;
         }
 
