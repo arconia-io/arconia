@@ -2,7 +2,7 @@ package io.arconia.multitenancy.core.cache;
 
 import org.springframework.cache.interceptor.KeyGenerator;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Cache key generator producing keys that are scoped to the current tenant,

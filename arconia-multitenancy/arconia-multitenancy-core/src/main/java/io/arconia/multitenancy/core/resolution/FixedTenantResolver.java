@@ -2,7 +2,7 @@ package io.arconia.multitenancy.core.resolution;
 
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Strategy to use a fixed value as the current tenant, regardless of the source context.

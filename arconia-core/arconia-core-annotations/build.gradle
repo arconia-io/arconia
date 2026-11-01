@@ -1,0 +1,17 @@
+plugins {
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Core Annotations"
+                description = "Arconia Core Annotations."
+            }
+        }
+    }
+}

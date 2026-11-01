@@ -1,6 +1,6 @@
 package io.arconia.dev.services.api.config;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Strategies for reusing a running container for a dev service, across applications

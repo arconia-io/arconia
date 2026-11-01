@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

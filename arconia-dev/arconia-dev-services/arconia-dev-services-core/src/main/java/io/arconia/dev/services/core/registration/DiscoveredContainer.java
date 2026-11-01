@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 
 /**

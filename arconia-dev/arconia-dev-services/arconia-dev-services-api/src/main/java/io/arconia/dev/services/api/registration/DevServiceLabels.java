@@ -2,7 +2,7 @@ package io.arconia.dev.services.api.registration;
 
 import java.util.UUID;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Labels applied to every container started by Arconia Dev Services,

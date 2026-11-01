@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.info.OsInfo;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes attributes about the host the application is running on,

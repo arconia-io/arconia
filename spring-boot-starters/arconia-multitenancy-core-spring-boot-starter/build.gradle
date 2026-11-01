@@ -9,7 +9,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    api project(":arconia-spring-boot")
+    api project(":arconia-core:arconia-core-bootstrap")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-starter"
 }

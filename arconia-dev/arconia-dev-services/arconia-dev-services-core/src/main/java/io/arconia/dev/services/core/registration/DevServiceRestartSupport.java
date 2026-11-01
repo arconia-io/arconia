@@ -18,7 +18,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapMode;
 
 /**
  * Keeps dev service containers across Spring Boot DevTools restarts by placing them in the

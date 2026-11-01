@@ -15,7 +15,8 @@ dependencies {
     constraints {
         api project(":arconia-ai:arconia-ai-docling-document-reader")
 
-        api project(":arconia-core")
+        api project(":arconia-core:arconia-core-annotations")
+        api project(":arconia-core:arconia-core-bootstrap")
 
         api project(":arconia-data:arconia-data-jdbc-sqlite")
 
@@ -63,8 +64,6 @@ dependencies {
         api project(":arconia-opentelemetry:arconia-opentelemetry-logback-bridge")
         api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge")
         api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp")
-
-        api project(":arconia-spring-boot")
 
         api project(":spring-boot-starters:arconia-docling-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-core-spring-boot-starter")

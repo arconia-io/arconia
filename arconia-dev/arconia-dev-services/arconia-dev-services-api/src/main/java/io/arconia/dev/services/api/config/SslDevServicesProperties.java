@@ -1,6 +1,6 @@
 package io.arconia.dev.services.api.config;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Properties of a dev service that supports SSL, implemented next to

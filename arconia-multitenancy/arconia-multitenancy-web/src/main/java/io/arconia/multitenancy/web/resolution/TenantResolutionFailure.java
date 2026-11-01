@@ -3,7 +3,7 @@ package io.arconia.multitenancy.web.resolution;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Describes why no tenant context could be established for an HTTP request.

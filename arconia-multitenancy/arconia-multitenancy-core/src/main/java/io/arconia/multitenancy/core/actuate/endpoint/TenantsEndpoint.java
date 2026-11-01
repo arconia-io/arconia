@@ -11,7 +11,7 @@ import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 

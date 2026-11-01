@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.core.ClaimAccessor;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
 
 /**

@@ -11,7 +11,8 @@ include 'arconia-bom'
 include 'arconia-ai:arconia-ai-docling-document-reader'
 
 // Core
-include 'arconia-core'
+include 'arconia-core:arconia-core-annotations'
+include 'arconia-core:arconia-core-bootstrap'
 
 // Data
 include 'arconia-data:arconia-data-jdbc-sqlite'
@@ -65,9 +66,6 @@ include 'arconia-opentelemetry:arconia-opentelemetry'
 include 'arconia-opentelemetry:arconia-opentelemetry-logback-bridge'
 include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge'
 include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp'
-
-// Spring Boot
-include 'arconia-spring-boot'
 
 // Spring Boot Starters
 include 'spring-boot-starters:arconia-docling-spring-boot-starter'

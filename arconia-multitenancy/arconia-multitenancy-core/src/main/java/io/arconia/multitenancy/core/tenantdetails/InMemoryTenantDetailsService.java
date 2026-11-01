@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * An implementation of {@link TenantDetailsService} backed by a fixed list of tenants

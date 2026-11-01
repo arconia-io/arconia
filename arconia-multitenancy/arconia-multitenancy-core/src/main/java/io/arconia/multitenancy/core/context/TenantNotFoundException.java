@@ -1,6 +1,6 @@
 package io.arconia.multitenancy.core.context;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Thrown when no tenant information is found in a given context.

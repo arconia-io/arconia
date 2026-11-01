@@ -1,6 +1,6 @@
 package io.arconia.dev.services.keycloak;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.oidc.OidcConnectionDetails;
 
 /**

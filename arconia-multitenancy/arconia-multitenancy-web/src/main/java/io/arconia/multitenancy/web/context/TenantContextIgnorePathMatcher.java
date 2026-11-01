@@ -12,7 +12,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Matches HTTP requests paths for which a tenant context is not attached.

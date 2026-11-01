@@ -6,7 +6,7 @@ import java.util.regex.PatternSyntaxException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Default {@link TenantIdentifierValidator} implementation, accepting identifiers that

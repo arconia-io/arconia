@@ -11,7 +11,7 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.util.Assert;
 import org.testcontainers.images.builder.Transferable;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * The certificates and keys of an {@link SslBundle} as PEM files to copy into a container, so

@@ -1,6 +1,6 @@
 package io.arconia.multitenancy.core.resolution;
 
-import io.arconia.core.support.Internal;
+import io.arconia.core.annotations.Internal;
 
 /**
  * Helpers for handling tenant identifiers that have not been validated yet.

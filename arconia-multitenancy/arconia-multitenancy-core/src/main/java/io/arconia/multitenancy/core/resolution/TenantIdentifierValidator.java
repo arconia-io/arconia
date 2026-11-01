@@ -1,6 +1,6 @@
 package io.arconia.multitenancy.core.resolution;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Strategy for validating the syntax of a tenant identifier before any attempt is made

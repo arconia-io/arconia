@@ -8,7 +8,7 @@ plugins {
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    api project(":arconia-spring-boot")
+    api project(":arconia-core:arconia-core-bootstrap")
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
 

@@ -40,8 +40,8 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
+import io.arconia.core.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;

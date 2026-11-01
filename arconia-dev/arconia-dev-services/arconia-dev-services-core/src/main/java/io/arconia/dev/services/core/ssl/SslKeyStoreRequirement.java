@@ -1,6 +1,6 @@
 package io.arconia.dev.services.core.ssl;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Whether a dev service with SSL enabled requires a key store, configured through its

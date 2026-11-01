@@ -16,7 +16,7 @@ import org.springframework.util.Assert;
 
 import tools.jackson.databind.json.JsonMapper;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Default {@link TenantResolutionFailureHandler} that writes an RFC 9457

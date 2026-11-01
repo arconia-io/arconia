@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 
-import io.arconia.boot.autoconfigure.bootstrap.ConditionalOnDevMode;
+import io.arconia.core.bootstrap.autoconfigure.ConditionalOnDevMode;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
 

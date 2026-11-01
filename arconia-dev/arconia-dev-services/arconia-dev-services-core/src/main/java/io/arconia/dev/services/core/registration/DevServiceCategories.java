@@ -1,6 +1,6 @@
 package io.arconia.dev.services.core.registration;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * The categories of mutually exclusive dev services: only one dev service per category can be

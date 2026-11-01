@@ -10,7 +10,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.context.TenantContext;
 
 /**

@@ -10,7 +10,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    api project(":arconia-core")
+    api project(":arconia-core:arconia-core-annotations")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-jdbc"
 

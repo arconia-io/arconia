@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-core")
+    api project(":arconia-core:arconia-core-annotations")
 
     implementation "org.springframework:spring-core"
 

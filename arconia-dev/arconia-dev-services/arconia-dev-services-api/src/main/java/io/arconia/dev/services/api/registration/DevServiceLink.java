@@ -2,7 +2,7 @@ package io.arconia.dev.services.api.registration;
 
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A link exposed by a dev service, such as a management console or a telemetry endpoint.

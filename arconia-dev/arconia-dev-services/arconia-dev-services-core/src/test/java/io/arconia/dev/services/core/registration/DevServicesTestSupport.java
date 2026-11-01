@@ -15,7 +15,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.core.TestDevServicesProperties;

@@ -13,7 +13,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core")
+    api project(":arconia-core:arconia-core-annotations")
     api "org.springframework:spring-context"
     api "io.micrometer:micrometer-observation"
 

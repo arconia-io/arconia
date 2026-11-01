@@ -2,7 +2,7 @@ package io.arconia.multitenancy.core.resolution;
 
 import org.jspecify.annotations.Nullable;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Strategy used to resolve the current tenant from a given source context.

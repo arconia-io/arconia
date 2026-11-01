@@ -1,6 +1,6 @@
 package io.arconia.multitenancy.core.observability;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * The cardinality of a tenant identifier key value in observations.

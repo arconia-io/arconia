@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServiceDefinition.Discovery;

@@ -10,7 +10,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Strategy used to resolve the current tenant from the path of an HTTP request.

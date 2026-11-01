@@ -2,7 +2,7 @@ package io.arconia.multitenancy.core.tenantdetails;
 
 import java.util.Map;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A {@link TenantDetailsService} that can also create tenants, for scenarios where the

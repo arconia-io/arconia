@@ -6,7 +6,7 @@ import io.micrometer.observation.ObservationFilter;
 
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.context.TenantContext;
 
 /**

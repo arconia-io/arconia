@@ -6,7 +6,7 @@ import org.slf4j.MDC;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.context.TenantContextAttachedEvent;
 import io.arconia.multitenancy.core.context.TenantContextClosedEvent;
 

@@ -6,7 +6,7 @@ import io.opentelemetry.semconv.TelemetryAttributes;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes information about the Arconia OpenTelemetry distribution.

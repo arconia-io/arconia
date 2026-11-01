@@ -3,7 +3,7 @@ package io.arconia.multitenancy.core.context;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Abstract superclass for all tenant-related events.

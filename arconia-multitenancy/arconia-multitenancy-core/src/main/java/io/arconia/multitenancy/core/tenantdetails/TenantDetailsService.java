@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Loads tenant-specific data. It is used throughout the framework as a tenant DAO.

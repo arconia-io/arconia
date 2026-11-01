@@ -6,7 +6,7 @@ import io.opentelemetry.semconv.ServiceAttributes;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes build information.

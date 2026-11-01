@@ -3,7 +3,7 @@ package io.arconia.dev.services.core.registration;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * {@link JdbcConnectionDetails} for connecting to a relational database dev service

@@ -17,7 +17,7 @@ import org.springframework.boot.info.SslInfo.BundleInfo;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;

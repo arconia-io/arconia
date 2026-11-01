@@ -2,7 +2,7 @@ package io.arconia.dev.services.oidc;
 
 import org.springframework.core.env.Environment;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 

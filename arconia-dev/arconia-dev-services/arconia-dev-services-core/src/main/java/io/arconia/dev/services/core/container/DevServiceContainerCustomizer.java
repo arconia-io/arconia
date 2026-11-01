@@ -2,7 +2,7 @@ package io.arconia.dev.services.core.container;
 
 import org.testcontainers.containers.Container;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Callback interface for customizing the container of a dev service before it is started.

@@ -2,7 +2,7 @@ package io.arconia.dev.services.core.registration;
 
 import java.util.List;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Exception thrown when multiple dev services in the same category are active simultaneously.

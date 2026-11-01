@@ -2,7 +2,7 @@ package io.arconia.dev.services.oidc;
 
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Details for connecting to an OpenID Connect provider dev service.

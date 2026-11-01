@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * SSL configuration of a dev service.

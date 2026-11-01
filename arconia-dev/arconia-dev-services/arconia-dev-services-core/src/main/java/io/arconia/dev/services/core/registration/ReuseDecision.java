@@ -4,7 +4,7 @@ import java.util.function.BooleanSupplier;
 
 import org.jspecify.annotations.Nullable;
 
-import io.arconia.boot.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 
 /**

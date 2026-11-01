@@ -1,0 +1,4 @@
+# Environment Post Processors
+org.springframework.boot.EnvironmentPostProcessor=\
+io.arconia.core.bootstrap.autoconfigure.BootstrapEnvironmentPostProcessor,\
+io.arconia.core.bootstrap.autoconfigure.MisplacedBootstrapPropertiesEnvironmentPostProcessor

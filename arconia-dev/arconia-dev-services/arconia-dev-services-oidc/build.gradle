@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-core")
+    api project(":arconia-core:arconia-core-annotations")
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
     api "org.springframework.boot:spring-boot-autoconfigure"
 

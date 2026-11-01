@@ -2,7 +2,7 @@ package io.arconia.dev.services.api.config;
 
 import org.springframework.util.Assert;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Mapping of a resource to be copied into a container at startup.

@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.util.StringUtils;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * A {@link ResourceContributor} that contributes attributes about the version control

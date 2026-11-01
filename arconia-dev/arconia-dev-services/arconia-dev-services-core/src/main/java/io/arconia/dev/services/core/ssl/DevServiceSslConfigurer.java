@@ -3,7 +3,7 @@ package io.arconia.dev.services.core.ssl;
 import org.springframework.boot.ssl.SslBundle;
 import org.testcontainers.containers.Container;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Configures the container of a dev service to use SSL with the given SSL bundle, before the

@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cache.interceptor.SimpleKeyGenerator;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.context.TenantNotFoundException;
 

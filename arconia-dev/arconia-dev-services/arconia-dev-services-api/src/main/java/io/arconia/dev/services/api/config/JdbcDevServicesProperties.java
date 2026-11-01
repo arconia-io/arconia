@@ -2,7 +2,7 @@ package io.arconia.dev.services.api.config;
 
 import java.util.List;
 
-import io.arconia.core.support.Incubating;
+import io.arconia.core.annotations.Incubating;
 
 /**
  * Base properties for dev services that use JDBC.
