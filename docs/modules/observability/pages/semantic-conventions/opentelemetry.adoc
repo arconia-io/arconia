@@ -90,7 +90,7 @@ The JVM metrics currently deviate from the OpenTelemetry Semantic Conventions fo
 * The `jvm.memory.used`, `jvm.memory.committed`, `jvm.memory.limit`, `jvm.memory.used_after_last_gc`, `jvm.thread.count`, `jvm.class.count`, and `jvm.cpu.count` metrics are exported as gauges instead of non-monotonic sums (https://github.com/micrometer-metrics/micrometer/issues/7432[micrometer#7432]).
 * The `jvm.thread.count` metric doesn't have the `jvm.thread.daemon` attribute (https://github.com/micrometer-metrics/micrometer/issues/7702[micrometer#7702]).
 * The `jvm.memory.limit` metric is reported as `-1` for the memory pools without a defined maximum, such as Metaspace when no maximum size is configured, instead of not being reported.
-* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `{thread}`, and `{class}`. The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `{cpu}` and `1` (https://github.com/micrometer-metrics/micrometer/issues/8130[micrometer#8130]).
+* Metrics use the units defined by Micrometer instead of the UCUM units required by the conventions: `bytes`, `threads`, and `classes` instead of `By`, `\{thread}`, and `\{class}`. The `jvm.cpu.count` and `jvm.cpu.recent_utilization` metrics have no unit, instead of `\{cpu}` and `1` (https://github.com/micrometer-metrics/micrometer/issues/8130[micrometer#8130]).
 
 === Configuration Properties
 

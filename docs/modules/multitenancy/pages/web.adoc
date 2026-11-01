@@ -145,7 +145,7 @@ A request carrying several cookies with that name is rejected, for the same reas
 
 === Path-Based Resolution
 
-The tenant can be resolved from a segment of the request path, so that `/tenants/acme/products` serves the tenant `acme`. Use the `path` mode and configure a pattern for the request path, where the `{tenant}` variable captures the tenant identifier.
+The tenant can be resolved from a segment of the request path, so that `/tenants/acme/products` serves the tenant `acme`. Use the `path` mode and configure a pattern for the request path, where the `\{tenant}` variable captures the tenant identifier.
 
 [source,yaml]
 ----
@@ -160,11 +160,11 @@ arconia:
 
 The pattern follows the same syntax as Spring MVC request mappings and is matched against the path within the application, so it keeps working when the application is deployed under a context path. The variable may carry an inline regular expression such as `/tenants/{tenant:[a-z]+}/**`. A request whose path does not match the pattern resolves no tenant.
 
-The resolver only extracts the identifier. It does not rewrite the path, so your handler mappings must still include the tenant segment, for example `@GetMapping("/tenants/{tenant}/products")`, or a gateway in front of the application must strip it.
+The resolver only extracts the identifier. It does not rewrite the path, so your handler mappings must still include the tenant segment, for example `@GetMapping("/tenants/\{tenant}/products")`, or a gateway in front of the application must strip it.
 
 === Subdomain-Based Resolution
 
-The tenant can also be resolved from the subdomain of the request, so that `acme.example.com` serves the tenant `acme`. Use the `subdomain` mode and configure a pattern for the request host, where the `{tenant}` variable captures the tenant identifier.
+The tenant can also be resolved from the subdomain of the request, so that `acme.example.com` serves the tenant `acme`. Use the `subdomain` mode and configure a pattern for the request host, where the `\{tenant}` variable captures the tenant identifier.
 
 [source,yaml]
 ----
@@ -177,11 +177,11 @@ arconia:
           pattern: "{tenant}.example.com"
 ----
 
-The pattern follows the same syntax as Spring MVC request mappings, with the dot as the separator, and is matched case-insensitively against the whole host. The variable may be embedded in a label, so `{tenant}-admin.example.com` serves the tenant `acme` at `acme-admin.example.com`, and it may carry an inline regular expression such as `{tenant:[a-z0-9-]+}.example.com`. A request whose host does not match the pattern resolves no tenant. The variable matches a single label, so nested subdomains such as `api.acme.example.com` never match the `{tenant}.example.com` pattern.
+The pattern follows the same syntax as Spring MVC request mappings, with the dot as the separator, and is matched case-insensitively against the whole host. The variable may be embedded in a label, so `\{tenant}-admin.example.com` serves the tenant `acme` at `acme-admin.example.com`, and it may carry an inline regular expression such as `{tenant:[a-z0-9-]+}.example.com`. A request whose host does not match the pattern resolves no tenant. The variable matches a single label, so nested subdomains such as `api.acme.example.com` never match the `\{tenant}.example.com` pattern.
 
 Host names are case-insensitive, so the host is lowercased before matching, and the resolved tenant identifier is always lowercase: `Acme.example.com` and `acme.example.com` both serve the tenant `acme`. Register tenants with lowercase identifiers when using this mode, because a tenant such as `Acme` can never be matched from a subdomain. This is the only mode that normalizes case. Identifiers resolved from headers, cookies, paths and tokens are used as they are.
 
-During local development, you can use the `{tenant}.localhost` pattern. Most browsers resolve `acme.localhost` to the loopback address without any extra setup, so `http://acme.localhost:8080` serves the tenant `acme`.
+During local development, you can use the `\{tenant}.localhost` pattern. Most browsers resolve `acme.localhost` to the loopback address without any extra setup, so `http://acme.localhost:8080` serves the tenant `acme`.
 
 [IMPORTANT]
 ====
@@ -326,11 +326,11 @@ The `oauth2` mode reads the tenant from the verified token, so the identity and 
 
 | `arconia.multitenancy.resolution.http.path.pattern`
 |
-| Pattern matched against the request path, containing a `{tenant}` variable that captures the tenant identifier, such as `/tenants/{tenant}/**`. Required when the `path` mode is used.
+| Pattern matched against the request path, containing a `\{tenant}` variable that captures the tenant identifier, such as `/tenants/\{tenant}/**`. Required when the `path` mode is used.
 
 | `arconia.multitenancy.resolution.http.subdomain.pattern`
 |
-| Pattern matched against the request host, containing a `{tenant}` variable that captures the tenant identifier, such as `{tenant}.example.com`. Required when the `subdomain` mode is used.
+| Pattern matched against the request host, containing a `\{tenant}` variable that captures the tenant identifier, such as `\{tenant}.example.com`. Required when the `subdomain` mode is used.
 
 | `arconia.multitenancy.resolution.http.oauth2.claim-name`
 | `tenant_id`
