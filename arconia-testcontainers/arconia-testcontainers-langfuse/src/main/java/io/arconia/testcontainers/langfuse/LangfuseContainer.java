@@ -220,16 +220,22 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withReuse(reuse);
         dependencies = List.of(worker, postgres, clickHouse, redis, floci);
 
-        Startables.deepStart(postgres, clickHouse, redis, floci).join();
-        createBucket(floci);
-        configureLangfuseEnvironment(postgres, clickHouse, floci);
-        // The OTLP proxy is created before Langfuse starts, since its location is recorded in the labels.
-        withLabel(OTLP_TRACES_PORT_LABEL, String.valueOf(floci.getMappedPort(FlociContainer.PORT)));
-        withLabel(OTLP_TRACES_PATH_LABEL, "/_aws/execute-api/%s/v1/traces".formatted(findOrCreateOtlpProxy(floci)));
+        try {
+            Startables.deepStart(postgres, clickHouse, redis, floci).join();
+            createBucket(floci);
+            configureLangfuseEnvironment(postgres, clickHouse, floci);
+            // The OTLP proxy is created before Langfuse starts, since its location is recorded in the labels.
+            withLabel(OTLP_TRACES_PORT_LABEL, String.valueOf(floci.getMappedPort(FlociContainer.PORT)));
+            withLabel(OTLP_TRACES_PATH_LABEL, "/_aws/execute-api/%s/v1/traces".formatted(findOrCreateOtlpProxy(floci)));
 
-        getEnvMap().forEach(worker::withEnv);
-        worker.start();
-        super.start();
+            getEnvMap().forEach(worker::withEnv);
+            worker.start();
+            super.start();
+        } catch (RuntimeException ex) {
+            // Nothing else stops the containers Langfuse needs when it fails to start.
+            stop();
+            throw ex;
+        }
     }
 
     /**

@@ -149,8 +149,14 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
             configureOpenLit(clickHouse);
             clickHouseContainer = clickHouse;
         }
-        clickHouseContainer.start();
-        super.start();
+        try {
+            clickHouseContainer.start();
+            super.start();
+        } catch (RuntimeException ex) {
+            // Nothing else stops the ClickHouse container when OpenLIT fails to start.
+            stop();
+            throw ex;
+        }
     }
 
     /**

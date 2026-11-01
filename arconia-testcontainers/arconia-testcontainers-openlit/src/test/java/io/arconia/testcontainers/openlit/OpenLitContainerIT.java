@@ -11,11 +11,13 @@ import com.github.dockerjava.api.model.Container;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration tests for {@link OpenLitContainer}.
@@ -91,6 +93,19 @@ class OpenLitContainerIT {
 
             container.stop();
             assertThat(networkExists(network.getId())).isTrue();
+        }
+    }
+
+    @Test
+    void containerStopsClickHouseWhenStartFails() {
+        try (var network = Network.newNetwork();
+                var container = new OpenLitContainer(IMAGE).withClickHouseImage(CLICKHOUSE_IMAGE).withNetwork(network)
+                        // Fails before the OpenLIT container is created, as a failed image pull does.
+                        .withCreateContainerCmdModifier(cmd -> {
+                            throw new IllegalStateException("Simulated failure");
+                        })) {
+            assertThatThrownBy(container::start).isInstanceOf(ContainerLaunchException.class);
+            assertThat(containersOnNetwork(network.getId())).isEmpty();
         }
     }
 
