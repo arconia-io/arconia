@@ -17,6 +17,7 @@ import org.springframework.mock.env.MockEnvironment;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsAutoConfiguration;
 import io.arconia.observation.opentelemetry.autoconfigure.JvmConventionsAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,6 +86,32 @@ class LgtmDashboardsTests {
             var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
 
             assertThat(dashboards.dashboards().keySet()).doesNotContain("logging.json");
+        }
+
+        @Test
+        void genAiDashboardWhenOpenTelemetryAiConventionsPresent() {
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet()).contains("genai-opentelemetry.json");
+        }
+
+        @Test
+        void noGenAiDashboardWhenOpenTelemetryAiConventionsAbsent() {
+            var resourceLoader = new DefaultResourceLoader(new FilteredClassLoader(OpenTelemetryAiConventionsAutoConfiguration.class));
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet()).doesNotContain("genai-opentelemetry.json");
+        }
+
+        @Test
+        void noGenAiDashboardWhenOpenTelemetryAiConventionsDisabled() {
+            var environment = new MockEnvironment()
+                    .withProperty("arconia.observations.conventions.opentelemetry.ai.enabled", "false");
+
+            var dashboards = LgtmDashboards.collect(environment, resourceLoader, options);
+
+            assertThat(dashboards.dashboards().keySet()).doesNotContain("genai-opentelemetry.json");
         }
 
         @Test

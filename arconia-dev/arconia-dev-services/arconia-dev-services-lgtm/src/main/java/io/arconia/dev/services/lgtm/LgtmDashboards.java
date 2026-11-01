@@ -71,12 +71,17 @@ final class LgtmDashboards {
 
     private static final String OPENTELEMETRY_JVM_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.jvm.enabled";
 
+    private static final String OPENTELEMETRY_AI_CONVENTIONS_CLASS = "io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsAutoConfiguration";
+
+    private static final String OPENTELEMETRY_AI_CONVENTIONS_PROPERTY = "arconia.observations.conventions.opentelemetry.ai.enabled";
+
     private static final String LOGBACK_CLASS = "ch.qos.logback.classic.LoggerContext";
 
     static final List<BuiltInDashboard> BUILT_IN = List.of(
             new BuiltInDashboard("jvm-micrometer.json", openTelemetryJvmConventions().negate()),
             new BuiltInDashboard("jvm-opentelemetry.json", openTelemetryJvmConventions()),
-            new BuiltInDashboard("logging.json", classPresent(LOGBACK_CLASS)));
+            new BuiltInDashboard("logging.json", classPresent(LOGBACK_CLASS)),
+            new BuiltInDashboard("genai-opentelemetry.json", openTelemetryAiConventions()));
 
     /**
      * Grafana environment variable pointing at the dashboard to open as the home page.
@@ -199,6 +204,10 @@ final class LgtmDashboards {
 
     private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryJvmConventions() {
         return classPresent(OPENTELEMETRY_JVM_CONVENTIONS_CLASS).and(propertyEnabled(OPENTELEMETRY_JVM_CONVENTIONS_PROPERTY));
+    }
+
+    private static BiPredicate<Environment, @Nullable ClassLoader> openTelemetryAiConventions() {
+        return classPresent(OPENTELEMETRY_AI_CONVENTIONS_CLASS).and(propertyEnabled(OPENTELEMETRY_AI_CONVENTIONS_PROPERTY));
     }
 
     private static BiPredicate<Environment, @Nullable ClassLoader> classPresent(String className) {

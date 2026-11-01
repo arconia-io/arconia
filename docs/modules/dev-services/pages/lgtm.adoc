@@ -84,6 +84,10 @@ The Dev Service provisions Grafana with dashboards for Spring Boot applications,
 | Logging (`logging.json`)
 | Log events by level, and the application logs with links to their traces.
 | When Logback is on the classpath, the Spring Boot default.
+
+| GenAI (`genai-opentelemetry.json`)
+| Calls to chat and embedding models, failures, durations, token usage, tool executions, ChatClient requests, and the most recent model calls with links to their traces.
+| When the Spring AI telemetry follows the OpenTelemetry GenAI semantic conventions, that is when the xref:observability:semantic-conventions/opentelemetry.adoc#_generative_ai[Arconia OpenTelemetry AI Semantic Conventions] module is on the classpath and enabled, whatever the flavor. Failed calls are identified by their `error.type` attribute, so they appear only when the xref:observability:semantic-conventions/opentelemetry.adoc#_errors[error conventions] are enabled too.
 |===
 
 Each dashboard lets you select the application and its instance, listing the most recently started instance first. The "Dashboards" menu next to the selectors switches between them, keeping the selection and the time range.
