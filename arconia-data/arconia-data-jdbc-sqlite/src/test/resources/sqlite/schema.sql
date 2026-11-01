@@ -20,3 +20,8 @@ CREATE TABLE event (
     local_date DATE,
     local_time TIME
 );
+
+CREATE TABLE product (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    price TEXT
+);

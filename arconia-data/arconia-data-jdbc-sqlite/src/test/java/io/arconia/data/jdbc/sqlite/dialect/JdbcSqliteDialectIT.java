@@ -1,5 +1,6 @@
 package io.arconia.data.jdbc.sqlite.dialect;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -185,6 +186,14 @@ class JdbcSqliteDialectIT {
             assertThat(bookRepository.findById(saved.id())).get().extracting(Book::available).isEqualTo(false);
         }
 
+        @Test
+        void shouldKeepDecimalPrecisionInTextColumn() {
+            BigDecimal price = new BigDecimal("12345678901234567890.123456789");
+            Product saved = template.insert(new Product(null, price));
+
+            assertThat(template.findById(saved.id(), Product.class)).extracting(Product::price).isEqualTo(price);
+        }
+
     }
 
     @Nested
@@ -329,6 +338,8 @@ class JdbcSqliteDialectIT {
     }
 
     record Author(String name) {}
+
+    record Product(@Id @Nullable Long id, BigDecimal price) {}
 
     record Event(@Id @Nullable Long id, @Nullable Instant instant, @Nullable OffsetDateTime offsetDateTime,
             @Nullable LocalDateTime localDateTime, @Nullable LocalDate localDate, @Nullable LocalTime localTime) {}

@@ -70,30 +70,63 @@ Maven::
 
 == Configuration
 
-Configure the data source to point at an SQLite database. The SQLite JDBC driver supports both file-based and in-memory databases.
+Configure the data source to point at an SQLite database file. The SQLite JDBC driver applies the https://www.sqlite.org/pragma.html[pragmas] set as parameters of the JDBC URL to each connection it opens.
 
-[tabs]
-======
-File-based::
-+
 [source,yaml]
 ----
 spring:
   datasource:
-    url: "jdbc:sqlite:./data/app.db"
+    url: "jdbc:sqlite:./data/app.db?journal_mode=WAL&synchronous=NORMAL&busy_timeout=5000&foreign_keys=true"
 ----
 
-In-memory::
-+
+The parameters in the example are recommended for applications serving concurrent requests.
+
+* `journal_mode=WAL` enables https://www.sqlite.org/wal.html[write-ahead logging], so that reading the database doesn't block writing to it and the other way around. SQLite still allows one writer at a time.
+* `synchronous=NORMAL` waits less often for the disk to confirm writes. In write-ahead logging mode, it keeps the database consistent, but the most recent transactions can be lost on a power failure or an operating system crash.
+* `busy_timeout` is how long, in milliseconds, a connection waits for another one to finish writing before failing with an `SQLITE_BUSY` error. The driver default is 3000.
+* `foreign_keys=true` enforces the foreign key constraints of the schema, which SQLite ignores by default.
+
+Spring Boot detects the JDBC URL and configures the data source automatically. Spring Data JDBC discovers the SQLite dialect contributed by this module via Spring's `spring.factories` mechanism, so no further wiring is required.
+
+=== In-Memory Databases
+
+SQLite creates a separate https://www.sqlite.org/inmemorydb.html[in-memory database] for each connection, so the connections of a pool don't see each other's data. To use an in-memory database, limit the pool to a single connection and keep that connection open for the lifetime of the application.
+
 [source,yaml]
 ----
 spring:
   datasource:
     url: "jdbc:sqlite::memory:"
+    hikari:
+      maximum-pool-size: 1
+      max-lifetime: 0
 ----
-======
 
-Spring Boot detects the JDBC URL and configures the data source automatically. Spring Data JDBC discovers the SQLite dialect contributed by this module via Spring's `spring.factories` mechanism, so no further wiring is required.
+For tests, consider a database file in a temporary directory instead, which works with the default pool configuration.
+
+=== Schema Initialization
+
+Spring Boot doesn't consider SQLite an embedded database, so it doesn't run the `schema.sql` and `data.sql` scripts by default. Enable them explicitly, or manage the schema with a database migration tool such as https://docs.spring.io/spring-boot/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway[Flyway].
+
+[source,yaml]
+----
+spring:
+  sql:
+    init:
+      mode: always
+----
+
+=== Deployment
+
+SQLite runs inside the application process and relies on file locks to coordinate access to the database file.
+
+* Keep the database file on a local disk. Network file systems don't implement file locks reliably, which can https://www.sqlite.org/useovernet.html[corrupt the database].
+* Run a single instance of the application against a database file, instead of several instances sharing it through a volume.
+* Back up the database with https://www.sqlite.org/lang_vacuum.html#vacuuminto[`VACUUM INTO`], which writes a consistent copy while the application keeps running, or replicate it continuously with a tool such as https://litestream.io[Litestream]. Copying the database file of a running application can https://www.sqlite.org/howtocorrupt.html#_backup_or_restore_while_a_transaction_is_active[produce a corrupt copy].
+
+=== Native Access
+
+The SQLite JDBC driver loads a native library. Starting from Java 24, the JVM prints a warning when a library calls restricted methods to do that, and future Java versions will block the call unless native access is enabled. Run the application with the `--enable-native-access=ALL-UNNAMED` JVM option to allow it.
 
 === Ahead-of-Time Processing
 
@@ -115,3 +148,51 @@ class JdbcConfiguration {
 
 }
 ----
+
+== Type Mapping
+
+SQLite has no dedicated types for dates, times, and booleans. The SQLite dialect maps them as follows.
+
+=== Dates and Times
+
+Values of the `java.time` types are stored as https://www.sqlite.org/datatype3.html#date_and_time_datatype[ISO-8601 text], in the format of the SQLite date and time functions such as `datetime()` and `CURRENT_TIMESTAMP`. SQLite compares them as text, so values written by the application and by SQLite sort and compare correctly together.
+
+|===
+| Java type | Stored value
+
+| `Instant`
+| `2026-07-31 10:34:56.123456789`
+
+| `OffsetDateTime`
+| `2026-07-31 10:34:56.123456789`
+
+| `LocalDateTime`
+| `2026-07-31 12:34:56.123456789`
+
+| `LocalDate`
+| `2026-07-31`
+
+| `LocalTime`
+| `12:34:56.123456789`
+|===
+
+SQLite treats every date and time as UTC, so `Instant` and `OffsetDateTime` values are converted to UTC. An `OffsetDateTime` is read back as the same instant with a UTC offset. When reading, the date and time can also be separated by `T`, the fraction can have any number of digits, and the value can end with an offset such as `+02:00` or `Z`. A value without an offset is read as UTC.
+
+The legacy `java.sql.Timestamp`, `java.sql.Date`, and `java.sql.Time` types aren't supported. Use the `java.time` types instead.
+
+=== Booleans
+
+Values of type `boolean` are stored as the integers `1` and `0`.
+
+=== Decimals
+
+SQLite stores a value in a column declared as `NUMERIC` or `DECIMAL` as a floating-point number when it has a fractional part, keeping https://www.sqlite.org/datatype3.html#type_affinity[about 15 significant digits]. To store `BigDecimal` values exactly, declare the column as `TEXT`.
+
+== Limitations
+
+Spring Data JDBC features that SQLite doesn't support behave as follows.
+
+* Pessimistic locking. Queries annotated with `@Lock` run without a lock clause, since SQLite has no row locks and allows one writer at a time. In write-ahead logging mode, a transaction that reads and then writes fails with an `SQLITE_BUSY_SNAPSHOT` error if another connection wrote to the database in the meantime, without waiting for the busy timeout. Add `transaction_mode=IMMEDIATE` to the JDBC URL to make each transaction wait for its turn to write when it starts, at the cost of running transactions one at a time.
+* Upserts. Calling `JdbcAggregateTemplate.upsert()` fails with an `IllegalArgumentException`, since Spring Data JDBC doesn't support upserts for third-party dialects (https://github.com/spring-projects/spring-data-relational/issues/2304[spring-data-relational#2304]).
+* Escaping `LIKE` patterns. Spring Data JDBC escapes the `%` and `_` characters in the values of derived queries such as `findByNameContaining`, but SQLite only honors the escape character when the query declares it with an `ESCAPE` clause, which Spring Data JDBC doesn't add. A value containing those characters matches no rows. Write such queries with `@Query` instead.
+* Sequences. Identifiers are generated by the database, for example, with an `INTEGER PRIMARY KEY` column.
