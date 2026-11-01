@@ -1,5 +1,7 @@
 package io.arconia.observation.openinference.ai.autoconfigure;
 
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.mock.env.MockEnvironment;
@@ -12,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class OpenInferenceEnvironmentPostProcessorTests {
 
-    private final OpenInferenceEnvironmentPostProcessor processor = new OpenInferenceEnvironmentPostProcessor();
+    private final OpenInferenceEnvironmentPostProcessor processor = new OpenInferenceEnvironmentPostProcessor(Supplier::get);
 
     @Test
     void postProcessEnvironmentShouldThrowExceptionWhenEnvironmentIsNull() {

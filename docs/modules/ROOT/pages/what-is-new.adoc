@@ -142,6 +142,7 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The new `hide-llm-tools` property hides the definitions of the tools available to the model.
 * The `hide-prompts` and `hide-choices` properties have been removed, together with their environment variables, since they apply to the completions API, which Spring AI doesn't use.
 * The documentation now covers sending traces to xref:observability:semantic-conventions/openinference.adoc#_arize_ax[Arize AX].
+* The boolean OpenInference environment variables now accept only `true` and `false`, as in the OpenInference reference implementation. Any other value, such as `yes`, is reported in the log and ignored, so the configuration property applies. Previously, it was silently treated as `false`, which overrode a `hide-` property set to `true`. Learn more about the xref:observability:semantic-conventions/openinference.adoc#_environment_variables[Environment Variables].
 
 == Testcontainers
 

@@ -292,6 +292,8 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 
 Arconia supports the https://arize-ai.github.io/openinference/spec/configuration.html[OpenInference Environment Variable Specification] for configuring the OpenInference semantic conventions. If both the OpenInference Environment Variables and the Arconia configuration properties are set, the OpenInference Environment Variables will take precedence.
 
+As in the OpenInference reference implementation, the boolean environment variables accept only `true` and `false`, in any case. Arconia logs a warning for any other value and ignores it, so the configuration property applies instead.
+
 [cols="2,2"]
 |===
 |Environment Variable |Configuration Property

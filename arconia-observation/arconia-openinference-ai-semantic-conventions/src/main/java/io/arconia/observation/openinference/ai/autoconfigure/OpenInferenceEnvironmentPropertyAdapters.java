@@ -1,9 +1,6 @@
 package io.arconia.observation.openinference.ai.autoconfigure;
 
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.Assert;
-
-import io.arconia.core.config.adapter.PropertyAdapter;
 
 /**
  * Provides adapters from OpenInference Environment Variable Specification to Arconia properties.
@@ -25,10 +22,10 @@ class OpenInferenceEnvironmentPropertyAdapters {
      * <p>
      * @link <a href="https://arize-ai.github.io/openinference/spec/configuration.html">Tracing Configuration</a>
      */
-    static PropertyAdapter traces(ConfigurableEnvironment environment) {
-        Assert.notNull(environment, "environment cannot be null");
+    static OpenInferenceEnvironmentPropertyAdapter traces(OpenInferenceEnvironmentPropertyAdapter adapter) {
+        Assert.notNull(adapter, "adapter cannot be null");
         String prefix = OpenInferenceProperties.CONFIG_PREFIX;
-        return PropertyAdapter.builder(environment)
+        return adapter
                 .mapBoolean("OPENINFERENCE_HIDE_LLM_INVOCATION_PARAMETERS", prefix + ".hide-llm-invocation-parameters")
                 .mapBoolean("OPENINFERENCE_HIDE_LLM_TOOLS", prefix + ".hide-llm-tools")
                 .mapBoolean("OPENINFERENCE_HIDE_INPUTS", prefix + ".hide-inputs")
@@ -40,8 +37,7 @@ class OpenInferenceEnvironmentPropertyAdapters {
                 .mapBoolean("OPENINFERENCE_HIDE_OUTPUT_TEXT", prefix + ".hide-output-text")
                 .mapBoolean("OPENINFERENCE_HIDE_EMBEDDINGS_TEXT", prefix + ".hide-embeddings-text")
                 .mapBoolean("OPENINFERENCE_HIDE_EMBEDDINGS_VECTORS", prefix + ".hide-embeddings-vectors")
-                .mapInteger("OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH", prefix + ".base64-image-max-length")
-                .build();
+                .mapInteger("OPENINFERENCE_BASE64_IMAGE_MAX_LENGTH", prefix + ".base64-image-max-length");
     }
 
 }
