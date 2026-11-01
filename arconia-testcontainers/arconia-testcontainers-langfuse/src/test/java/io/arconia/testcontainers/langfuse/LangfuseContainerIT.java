@@ -7,13 +7,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.dockerjava.api.model.Container;
+import io.floci.testcontainers.FlociContainer;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
@@ -58,6 +61,17 @@ class LangfuseContainerIT {
             """;
 
     @Test
+    void otlpProxyIsFoundWhenFlociIsReused() {
+        try (var floci = new FlociContainer(FLOCI_IMAGE).disableAllServices()
+                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))) {
+            floci.start();
+            // A reused Floci container already has the proxy, which keeps the labels of Langfuse the same.
+            String apiId = LangfuseContainer.findOrCreateOtlpProxy(floci);
+            assertThat(LangfuseContainer.findOrCreateOtlpProxy(floci)).isEqualTo(apiId);
+        }
+    }
+
+    @Test
     void containerStartsAndIngestsOtlpTraces() throws Exception {
         try (var container = new LangfuseContainer(IMAGE)
                 .withWorkerImage(WORKER_IMAGE)
@@ -97,6 +111,26 @@ class LangfuseContainerIT {
             assertThat(observationsResponse).isNotNull();
             assertThat(observationsResponse.statusCode()).as(observationsResponse.body()).isEqualTo(200);
             assertThat(observationsResponse.body()).contains("test-span");
+
+            // Media can be uploaded from the host, via the presigned URL returned by Langfuse.
+            byte[] media = { 1, 2, 3, 4 };
+            String mediaHash = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(media));
+            var mediaRequest = HttpRequest.newBuilder(URI.create(container.getLangfuseUrl() + "/api/public/media"))
+                    .header("Authorization", container.getBasicAuthHeader())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("""
+                            {"traceId":"%s","contentType":"image/png","contentLength":%d,"sha256Hash":"%s","field":"input"}"""
+                            .formatted(TRACE_ID, media.length, mediaHash)))
+                    .build();
+            var mediaResponse = httpClient.send(mediaRequest, HttpResponse.BodyHandlers.ofString());
+            Matcher uploadUrl = Pattern.compile("\"uploadUrl\"\\s*:\\s*\"([^\"]+)\"").matcher(mediaResponse.body());
+            assertThat(uploadUrl.find()).as(mediaResponse.body()).isTrue();
+            var uploadResponse = httpClient.send(HttpRequest.newBuilder(URI.create(uploadUrl.group(1)))
+                    .header("Content-Type", "image/png")
+                    .header("x-amz-checksum-sha256", mediaHash)
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(media))
+                    .build(), HttpResponse.BodyHandlers.ofString());
+            assertThat(uploadResponse.statusCode()).as(uploadResponse.body()).isBetween(200, 299);
 
             // The initial user can sign in to the UI, also with a random port, since the sign-in page
             // doesn't follow the redirect to the NEXTAUTH_URL.

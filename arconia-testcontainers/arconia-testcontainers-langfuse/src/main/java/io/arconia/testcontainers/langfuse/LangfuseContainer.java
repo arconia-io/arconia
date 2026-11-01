@@ -81,8 +81,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private static final Pattern API_ID_PATTERN = Pattern.compile("\"apiId\"\\s*:\\s*\"([^\"]+)\"");
 
+    // Floci lists each API with its ID followed by its name, as AWS does. Other fields can contain braces,
+    // such as the route selection expression, so the pair is matched rather than the whole object.
     private static final Pattern OTLP_PROXY_PATTERN = Pattern.compile(
-            "\\{[^{}]*\"apiId\"\\s*:\\s*\"([^\"]+)\"[^{}]*\"name\"\\s*:\\s*\"" + OTLP_PROXY_NAME + "\"[^{}]*}");
+            "\"apiId\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"name\"\\s*:\\s*\"" + OTLP_PROXY_NAME + "\"");
 
     /**
      * Label with the host port of the OTLP proxy for traces, so that other applications can discover it.
@@ -210,7 +212,6 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .disableAllServices()
                 .withS3Config(s3 -> s3.enabled(true))
                 .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
-                .withApiGatewayV2Config(apiGateway -> apiGateway.enabled(true))
                 .withNetwork(network)
                 .withNetworkAliases(FLOCI_NETWORK_ALIAS)
                 .withReuse(reuse);
@@ -323,9 +324,14 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
             env.putIfAbsent(prefix + "_REGION", floci.getRegion());
             env.putIfAbsent(prefix + "_ACCESS_KEY_ID", floci.getAccessKey());
             env.putIfAbsent(prefix + "_SECRET_ACCESS_KEY", floci.getSecretKey());
-            env.putIfAbsent(prefix + "_ENDPOINT", s3Endpoint);
             env.putIfAbsent(prefix + "_FORCE_PATH_STYLE", "true");
         }
+        env.putIfAbsent("LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT", s3Endpoint);
+        // Media is uploaded and downloaded from the host via presigned URLs, built with the external endpoint,
+        // while Langfuse itself reaches the storage via the internal endpoint.
+        env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT",
+                "http://%s:%d".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT)));
+        env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT", s3Endpoint);
         env.putIfAbsent("LANGFUSE_S3_EVENT_UPLOAD_PREFIX", "events/");
         env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_PREFIX", "media/");
 
@@ -360,7 +366,7 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
      * container, the same across restarts when reusing containers. Floci forwards requests over HTTP/1.1
      * without the request path, hence the full endpoint URL as target.
      */
-    private static String findOrCreateOtlpProxy(FlociContainer floci) {
+    static String findOrCreateOtlpProxy(FlociContainer floci) {
         URI apisUri = URI.create("http://%s:%d/v2/apis".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT)));
         HttpResponse<String> existing = send(HttpRequest.newBuilder(apisUri).GET().build(), "list the APIs in Floci");
         Matcher existingMatcher = OTLP_PROXY_PATTERN.matcher(existing.body());
