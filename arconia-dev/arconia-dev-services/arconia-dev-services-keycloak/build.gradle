@@ -9,12 +9,15 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+    api project(":arconia-core")
     api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oidc")
     api "org.springframework.boot:spring-boot-autoconfigure"
 
     api("com.github.dasniko:testcontainers-keycloak:${testcontainersKeycloakVersion}") {
         exclude group: "org.jboss.shrinkwrap"
     }
+
+    implementation "org.slf4j:slf4j-api"
 
     optional "org.springframework.boot:spring-boot-security-oauth2-client"
     optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"

@@ -20,6 +20,14 @@ dependencyManagement {
     }
 }
 
+// Every module declares its packages @NullMarked, so JSpecify is part of its API.
+// Modules without code, like the starters, don't need it.
+if (file("src/main/java").exists()) {
+    dependencies {
+        api "org.jspecify:jspecify"
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.release = 21
     options.compilerArgs.add("-parameters")

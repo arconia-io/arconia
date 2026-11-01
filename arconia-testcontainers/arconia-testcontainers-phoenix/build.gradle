@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    api "org.jspecify:jspecify"
     api "org.testcontainers:testcontainers"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

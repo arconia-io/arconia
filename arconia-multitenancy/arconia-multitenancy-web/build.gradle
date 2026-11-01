@@ -17,9 +17,10 @@ dependencies {
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-webmvc"
 
-    compileOnly "jakarta.servlet:jakarta.servlet-api"
-
+    implementation "org.slf4j:slf4j-api"
     implementation "tools.jackson.core:jackson-databind"
+
+    compileOnly "jakarta.servlet:jakarta.servlet-api"
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework.security:spring-security-oauth2-core"

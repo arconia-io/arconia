@@ -8,7 +8,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core")
     api "org.springframework.boot:spring-boot-micrometer-metrics"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")

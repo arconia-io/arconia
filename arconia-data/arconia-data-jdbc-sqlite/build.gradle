@@ -5,8 +5,6 @@ plugins {
 }
 
 dependencies {
-    api project(":arconia-core")
-
     api "org.springframework.boot:spring-boot-data-jdbc"
     api "org.xerial:sqlite-jdbc"
 

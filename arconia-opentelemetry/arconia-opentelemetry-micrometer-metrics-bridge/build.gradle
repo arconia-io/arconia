@@ -8,7 +8,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core")
     api "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
     api("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5") {
         exclude group: "io.opentelemetry", module: "opentelemetry-api-incubator"

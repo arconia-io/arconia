@@ -8,11 +8,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core")
     api "ai.docling:docling-serve-api"
-
     api "org.springframework.boot:spring-boot-jackson"
     api "org.springframework.boot:spring-boot-restclient"
+
+    implementation "org.slf4j:slf4j-api"
 
     optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework.boot:spring-boot-health"

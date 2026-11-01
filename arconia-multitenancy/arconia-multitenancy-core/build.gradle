@@ -15,6 +15,9 @@ dependencies {
 
     api project(":arconia-core")
     api "org.springframework:spring-context"
+    api "io.micrometer:micrometer-observation"
+
+    implementation "org.slf4j:slf4j-api"
 
     optional "org.springframework.boot:spring-boot-actuator"
     optional "org.springframework.boot:spring-boot-actuator-autoconfigure"

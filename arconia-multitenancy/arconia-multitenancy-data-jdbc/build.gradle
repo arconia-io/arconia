@@ -10,8 +10,11 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
+    api project(":arconia-core")
     api project(":arconia-multitenancy:arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-jdbc"
+
+    implementation "org.slf4j:slf4j-api"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "com.h2database:h2"

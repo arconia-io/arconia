@@ -8,7 +8,6 @@ plugins {
 dependencies {
     api project(":arconia-testcontainers:arconia-testcontainers-redis")
     api "io.floci:testcontainers-floci-aws:${flociVersion}"
-    api "org.jspecify:jspecify"
     api "org.testcontainers:testcontainers-clickhouse"
     api "org.testcontainers:testcontainers-postgresql"
 
