@@ -11,7 +11,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -32,64 +31,12 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
             DockerImageName.parse("clickhouse/clickhouse-server");
 
     private static final String CLICKHOUSE_NETWORK_ALIAS = "openlit-clickhouse";
-    private static final String OTEL_COLLECTOR_CONFIG_PATH = "/etc/otel/otel-collector-config.yaml";
 
     private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(2);
 
     // Named network used in reuse mode so the Docker network UUID is stable across JVM restarts,
     // keeping the container hash deterministic and allowing Testcontainers to find the existing container.
     private static final String REUSE_NETWORK_NAME = "arconia-openlit";
-
-    // The OpenLIT image bundles the OpenTelemetry Collector but ships no configuration for it.
-    // This matches the configuration mounted by the upstream docker-compose assets, with values
-    // substituted at configure() time rather than relying on the Collector's env var expansion.
-    private static final String OTEL_COLLECTOR_CONFIG_TEMPLATE = """
-            receivers:
-              otlp:
-                protocols:
-                  grpc:
-                    endpoint: 0.0.0.0:4317
-                  http:
-                    endpoint: 0.0.0.0:4318
-
-            processors:
-              batch:
-              memory_limiter:
-                limit_mib: 1500
-                spike_limit_mib: 512
-                check_interval: 5s
-
-            exporters:
-              clickhouse:
-                endpoint: tcp://%s:9000?dial_timeout=10s
-                database: %s
-                username: %s
-                password: %s
-                ttl: 730h
-                logs_table_name: otel_logs
-                traces_table_name: otel_traces
-                timeout: 5s
-                retry_on_failure:
-                  enabled: true
-                  initial_interval: 5s
-                  max_interval: 30s
-                  max_elapsed_time: 300s
-
-            service:
-              pipelines:
-                logs:
-                  receivers: [otlp]
-                  processors: [batch]
-                  exporters: [clickhouse]
-                traces:
-                  receivers: [otlp]
-                  processors: [memory_limiter, batch]
-                  exporters: [clickhouse]
-                metrics:
-                  receivers: [otlp]
-                  processors: [memory_limiter, batch]
-                  exporters: [clickhouse]
-            """;
 
     public static final int UI_PORT = 3000;
     public static final int OTLP_GRPC_PORT = 4317;
@@ -106,13 +53,12 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(UI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT);
         // ClickHouse initialization and the Next.js startup make OpenLIT slow to come up.
-        // The OTLP endpoint is checked explicitly because a custom wait strategy replaces the default
-        // port check. The Collector answers GET with 405 on the OTLP paths and starts the gRPC listener
-        // together with the HTTP one. An HTTP check is used instead of a port check because the latter
-        // aborts on any transient Docker API error.
+        // The OTLP receiver is checked explicitly because a custom wait strategy replaces the default
+        // port check. It serves both OTLP protocols from one process. An HTTP check is used instead of
+        // a port check because the latter aborts on any transient Docker API error.
         this.waitingFor(new WaitAllStrategy()
                 .withStrategy(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500))
-                .withStrategy(Wait.forHttp("/v1/traces").forPort(OTLP_HTTP_PORT).forStatusCode(405))
+                .withStrategy(Wait.forHttp("/health").forPort(OTLP_HTTP_PORT).forStatusCode(200))
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
@@ -180,10 +126,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
      * Configures OpenLIT to connect to the given ClickHouse container. User-provided values take precedence.
      */
     private void configureOpenLit(ClickHouseContainer clickHouse) {
-        String otelCollectorConfig = OTEL_COLLECTOR_CONFIG_TEMPLATE.formatted(
-                CLICKHOUSE_NETWORK_ALIAS, clickHouse.getDatabaseName(),
-                clickHouse.getUsername(), clickHouse.getPassword());
-
         Map<String, String> env = getEnvMap();
 
         env.putIfAbsent("TELEMETRY_ENABLED", "false");
@@ -212,8 +154,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         // Demo account created by the OpenLIT seed, used for automatic sign-in.
         env.putIfAbsent("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
         env.putIfAbsent("DEMO_ACCOUNT_PASSWORD", "openlituser");
-
-        this.withCopyToContainer(Transferable.of(otelCollectorConfig), OTEL_COLLECTOR_CONFIG_PATH);
     }
 
     /**
