@@ -1,7 +1,5 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 
 import io.micrometer.common.KeyValue;
@@ -61,37 +59,37 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
      */
     @Override
     public KeyValues getLowCardinalityKeyValues(ServerRequestObservationContext context) {
-        List<KeyValue> keyValues = new ArrayList<>(7);
-        keyValues.add(exception(context));
-        keyValues.add(method(context));
-        keyValues.add(outcome(context));
-        statusCode(keyValues, context);
-        route(keyValues, context);
-        networkProtocolVersion(keyValues, context);
-        urlScheme(keyValues, context);
-        return KeyValues.of(keyValues);
+        var keyValues = KeyValues.of(exception(context), method(context), outcome(context));
+        keyValues = statusCode(keyValues, context);
+        keyValues = route(keyValues, context);
+        keyValues = networkProtocolVersion(keyValues, context);
+        keyValues = urlScheme(keyValues, context);
+        return keyValues;
     }
 
-    private void statusCode(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues statusCode(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getResponse() != null) {
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), Integer.toString(context.getResponse().getStatus())));
+            return keyValues.and(HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), Integer.toString(context.getResponse().getStatus()));
         }
+        return keyValues;
     }
 
-    private void route(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues route(KeyValues keyValues, ServerRequestObservationContext context) {
         String pattern = context.getPathPattern();
         if (context.getCarrier() != null && pattern != null) {
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_ROUTE.getKey(), pattern.isEmpty() ? ROOT_ROUTE : pattern));
+            return keyValues.and(HttpAttributes.HTTP_ROUTE.getKey(), pattern.isEmpty() ? ROOT_ROUTE : pattern);
         }
+        return keyValues;
     }
 
-    private void networkProtocolVersion(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues networkProtocolVersion(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String protocol = context.getCarrier().getProtocol();
             if (protocol != null && protocol.startsWith("HTTP/")) {
-                keyValues.add(KeyValue.of(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), toProtocolVersion(protocol.substring(5))));
+                return keyValues.and(NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey(), toProtocolVersion(protocol.substring(5)));
             }
         }
+        return keyValues;
     }
 
     /**
@@ -106,10 +104,11 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         };
     }
 
-    private void urlScheme(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues urlScheme(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(UrlAttributes.URL_SCHEME.getKey(), context.getCarrier().getScheme()));
+            return keyValues.and(UrlAttributes.URL_SCHEME.getKey(), context.getCarrier().getScheme());
         }
+        return keyValues;
     }
 
     /**
@@ -145,73 +144,80 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
         return super.getMethodValue(context);
     }
 
-    private void urlPath(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues urlPath(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(UrlAttributes.URL_PATH.getKey(), context.getCarrier().getRequestURI()));
+            return keyValues.and(UrlAttributes.URL_PATH.getKey(), context.getCarrier().getRequestURI());
         }
+        return keyValues;
     }
 
     /**
      * Records the original method only when it differs from {@code http.request.method},
      * that is when the method is not a known one and is reported as {@code _OTHER}.
      */
-    private void methodOriginal(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues methodOriginal(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null && getMethodValue(context) == null) {
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod()));
+            return keyValues.and(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod());
         }
+        return keyValues;
     }
 
     // HIGH CARDINALITY
 
     @Override
     public KeyValues getHighCardinalityKeyValues(ServerRequestObservationContext context) {
-        List<KeyValue> keyValues = new ArrayList<>(7);
-        urlPath(keyValues, context);
-        methodOriginal(keyValues, context);
-        clientAddress(keyValues, context);
-        serverAddress(keyValues, context);
-        serverPort(keyValues, context);
+        var keyValues = KeyValues.empty();
+        keyValues = urlPath(keyValues, context);
+        keyValues = methodOriginal(keyValues, context);
+        keyValues = clientAddress(keyValues, context);
+        keyValues = serverAddress(keyValues, context);
+        keyValues = serverPort(keyValues, context);
         if (options.isCaptureUrlQuery()) {
-            urlQuery(keyValues, context);
+            keyValues = urlQuery(keyValues, context);
         }
-        userAgent(keyValues, context);
-        return KeyValues.of(keyValues);
+        keyValues = userAgent(keyValues, context);
+        return keyValues;
     }
 
-    private void clientAddress(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues clientAddress(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(ClientAttributes.CLIENT_ADDRESS.getKey(), context.getCarrier().getRemoteAddr()));
+            return keyValues.and(ClientAttributes.CLIENT_ADDRESS.getKey(), context.getCarrier().getRemoteAddr());
         }
+        return keyValues;
     }
 
-    private void serverAddress(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues serverAddress(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(ServerAttributes.SERVER_ADDRESS.getKey(), context.getCarrier().getServerName()));
+            return keyValues.and(ServerAttributes.SERVER_ADDRESS.getKey(), context.getCarrier().getServerName());
         }
+        return keyValues;
     }
 
-    private void serverPort(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues serverPort(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(ServerAttributes.SERVER_PORT.getKey(), Integer.toString(context.getCarrier().getServerPort())));
+            return keyValues.and(ServerAttributes.SERVER_PORT.getKey(), Integer.toString(context.getCarrier().getServerPort()));
         }
+        return keyValues;
     }
 
-    private void urlQuery(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues urlQuery(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String queryString = context.getCarrier().getQueryString();
             if (queryString != null) {
-                keyValues.add(KeyValue.of(UrlAttributes.URL_QUERY.getKey(), UrlQuerySanitizer.sanitize(queryString, options.getSensitiveQueryParameters())));
+                return keyValues.and(UrlAttributes.URL_QUERY.getKey(), UrlQuerySanitizer.sanitize(queryString, options.getSensitiveQueryParameters()));
             }
         }
+        return keyValues;
     }
 
-    private void userAgent(List<KeyValue> keyValues, ServerRequestObservationContext context) {
+    private KeyValues userAgent(KeyValues keyValues, ServerRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String userAgent = context.getCarrier().getHeader("User-Agent");
             if (userAgent != null) {
-                keyValues.add(KeyValue.of(UserAgentAttributes.USER_AGENT_ORIGINAL.getKey(), userAgent));
+                return keyValues.and(UserAgentAttributes.USER_AGENT_ORIGINAL.getKey(), userAgent);
             }
         }
+        return keyValues;
     }
 
 }

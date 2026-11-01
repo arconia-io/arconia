@@ -1,7 +1,5 @@
 package io.arconia.observation.opentelemetry.instrumentation.http;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
@@ -73,15 +71,12 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
      */
     @Override
     public KeyValues getLowCardinalityKeyValues(ClientRequestObservationContext context) {
-        List<KeyValue> keyValues = new ArrayList<>(7);
-        keyValues.add(exception(context));
-        method(keyValues, context);
-        statusCode(keyValues, context);
-        keyValues.add(outcome(context));
-        serverAddress(keyValues, context);
-        serverPort(keyValues, context);
-        keyValues.add(uri(context));
-        return KeyValues.of(keyValues);
+        var keyValues = KeyValues.of(exception(context), outcome(context), uri(context));
+        keyValues = method(keyValues, context);
+        keyValues = statusCode(keyValues, context);
+        keyValues = serverAddress(keyValues, context);
+        keyValues = serverPort(keyValues, context);
+        return keyValues;
     }
 
     /**
@@ -106,30 +101,33 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
         return KeyValue.of(ErrorAttributes.ERROR_TYPE.getKey(), KeyValue.NONE_VALUE);
     }
 
-    private void method(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues method(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null) {
             String method = getMethodValue(context);
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_REQUEST_METHOD.getKey(), method != null ? method : HttpRequestMethodValues.OTHER));
+            return keyValues.and(HttpAttributes.HTTP_REQUEST_METHOD.getKey(), method != null ? method : HttpRequestMethodValues.OTHER);
         }
+        return keyValues;
     }
 
-    private void statusCode(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues statusCode(KeyValues keyValues, ClientRequestObservationContext context) {
         Integer status = getStatusCode(context);
         if (status != null) {
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), String.valueOf(status)));
+            return keyValues.and(HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), String.valueOf(status));
         }
+        return keyValues;
     }
 
-    private void serverAddress(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues serverAddress(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null && context.getCarrier().getURI().getHost() != null) {
-            keyValues.add(KeyValue.of(ServerAttributes.SERVER_ADDRESS.getKey(), context.getCarrier().getURI().getHost()));
+            return keyValues.and(ServerAttributes.SERVER_ADDRESS.getKey(), context.getCarrier().getURI().getHost());
         }
+        return keyValues;
     }
 
     /**
      * Records the server port, falling back to the default port of the URL scheme when the URL doesn't specify one.
      */
-    private void serverPort(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues serverPort(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null) {
             URI uri = context.getCarrier().getURI();
             int port = uri.getPort();
@@ -141,35 +139,38 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
                 };
             }
             if (port != -1) {
-                keyValues.add(KeyValue.of(ServerAttributes.SERVER_PORT.getKey(), Integer.toString(port)));
+                return keyValues.and(ServerAttributes.SERVER_PORT.getKey(), Integer.toString(port));
             }
         }
+        return keyValues;
     }
 
     // HIGH CARDINALITY
 
     @Override
     public KeyValues getHighCardinalityKeyValues(ClientRequestObservationContext context) {
-        List<KeyValue> keyValues = new ArrayList<>(2);
-        methodOriginal(keyValues, context);
-        urlFull(keyValues, context);
-        return KeyValues.of(keyValues);
+        var keyValues = KeyValues.empty();
+        keyValues = methodOriginal(keyValues, context);
+        keyValues = urlFull(keyValues, context);
+        return keyValues;
     }
 
     /**
      * Records the original method only when it differs from {@code http.request.method},
      * that is when the method is not a known one and is reported as {@code _OTHER}.
      */
-    private void methodOriginal(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues methodOriginal(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null && getMethodValue(context) == null) {
-            keyValues.add(KeyValue.of(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod().name()));
+            return keyValues.and(HttpAttributes.HTTP_REQUEST_METHOD_ORIGINAL.getKey(), context.getCarrier().getMethod().name());
         }
+        return keyValues;
     }
 
-    private void urlFull(List<KeyValue> keyValues, ClientRequestObservationContext context) {
+    private KeyValues urlFull(KeyValues keyValues, ClientRequestObservationContext context) {
         if (context.getCarrier() != null) {
-            keyValues.add(KeyValue.of(UrlAttributes.URL_FULL.getKey(), sanitizeUrl(context.getCarrier().getURI())));
+            return keyValues.and(UrlAttributes.URL_FULL.getKey(), sanitizeUrl(context.getCarrier().getURI()));
         }
+        return keyValues;
     }
 
     /**

@@ -82,40 +82,38 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
 
     @Override
     public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
-        List<KeyValue> keyValues = new ArrayList<>();
+        var keyValues = KeyValues.empty();
 
         // Request
-        inputValue(keyValues, context);
-        llmInputMessages(keyValues, context);
-        llmInvocationParameters(keyValues, context);
-        llmRequestModelName(keyValues, context);
-        llmTools(keyValues, context);
+        keyValues = inputValue(keyValues, context);
+        keyValues = llmInputMessages(keyValues, context);
+        keyValues = llmInvocationParameters(keyValues, context);
+        keyValues = llmRequestModelName(keyValues, context);
+        keyValues = llmTools(keyValues, context);
 
         // Response
-        outputValue(keyValues, context);
-        llmOutputMessages(keyValues, context);
-        llmResponseModelName(keyValues, context);
-        KeyValues responseKeyValues = responseFinishReasons(KeyValues.empty(), context);
-        responseKeyValues = responseId(responseKeyValues, context);
-        responseKeyValues = usageInputTokens(responseKeyValues, context);
-        responseKeyValues = usageOutputTokens(responseKeyValues, context);
-        responseKeyValues = usageTotalTokens(responseKeyValues, context);
-        responseKeyValues.forEach(keyValues::add);
+        keyValues = outputValue(keyValues, context);
+        keyValues = llmOutputMessages(keyValues, context);
+        keyValues = llmResponseModelName(keyValues, context);
+        keyValues = responseFinishReasons(keyValues, context);
+        keyValues = responseId(keyValues, context);
+        keyValues = usageInputTokens(keyValues, context);
+        keyValues = usageOutputTokens(keyValues, context);
+        keyValues = usageTotalTokens(keyValues, context);
 
-        return KeyValues.of(keyValues);
+        return keyValues;
     }
 
     // Request
 
-    private void inputValue(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues inputValue(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideInputs() || openInferenceOptions.isHideInputMessages()
                 || openInferenceOptions.isHideInputText()) {
-            keyValues.add(KeyValue.of(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            keyValues.add(KeyValue.of(SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE));
-            return;
+            return keyValues.and(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER,
+                    SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
         }
         if (CollectionUtils.isEmpty(context.getRequest().getInstructions())) {
-            return;
+            return keyValues;
         }
         List<Map<String, Object>> messages = new ArrayList<>();
         for (Message message : context.getRequest().getInstructions()) {
@@ -125,38 +123,39 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
                 messages.add(messageValue(message));
             }
         }
-        keyValues.add(KeyValue.of(SemanticConventions.INPUT_VALUE, jsonHelper.toJson(Map.of("messages", messages))));
-        keyValues.add(KeyValue.of(SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE));
+        return keyValues.and(SemanticConventions.INPUT_VALUE, jsonHelper.toJson(Map.of("messages", messages)),
+                SemanticConventions.INPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE);
     }
 
-    private void llmRequestModelName(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmRequestModelName(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getRequest().getOptions() != null && StringUtils.hasText(context.getRequest().getOptions().getModel())) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_REQUEST_MODEL_NAME, context.getRequest().getOptions().getModel()));
+            return keyValues.and(SemanticConventions.LLM_REQUEST_MODEL_NAME, context.getRequest().getOptions().getModel());
         }
+        return keyValues;
     }
 
-    private void llmInputMessages(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmInputMessages(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideInputs() || openInferenceOptions.isHideInputMessages()) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_INPUT_MESSAGES, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            return;
+            return keyValues.and(SemanticConventions.LLM_INPUT_MESSAGES, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         }
 
         if (CollectionUtils.isEmpty(context.getRequest().getInstructions())) {
-            return;
+            return keyValues;
         }
 
+        List<KeyValue> messageKeyValues = new ArrayList<>();
         int i = 0;
         for (Message message : context.getRequest().getInstructions()) {
             if (message instanceof ToolResponseMessage toolResponseMessage) {
                 for (ToolResponseMessage.ToolResponse toolResponse : toolResponseMessage.getResponses()) {
                     String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
-                    keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
+                    messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
                             message.getMessageType().getValue()));
-                    keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
+                    messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
                             toolResponse.id()));
-                    keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_NAME,
+                    messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_NAME,
                             toolResponse.name()));
-                    keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
+                    messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
                             openInferenceOptions.isHideInputText() ? OpenInferenceOptions.REDACTED_PLACEHOLDER
                                     : toolResponse.responseData()));
                     i++;
@@ -165,28 +164,28 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             }
 
             String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
-            keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
+            messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
                     message.getMessageType().getValue()));
-            addMessageContent(keyValues, messagePrefix, message,
+            addMessageContent(messageKeyValues, messagePrefix, message,
                     openInferenceOptions.isHideInputText(), openInferenceOptions.isHideInputImages());
 
             if (message instanceof AssistantMessage assistantMessage) {
                 String toolCallObservationPrefix = messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALLS;
-                addToolCalls(keyValues, assistantMessage.getToolCalls(), toolCallObservationPrefix, openInferenceOptions.isHideInputText());
+                addToolCalls(messageKeyValues, assistantMessage.getToolCalls(), toolCallObservationPrefix, openInferenceOptions.isHideInputText());
             }
             i++;
         }
+        return keyValues.and(messageKeyValues);
     }
 
-    private void llmInvocationParameters(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmInvocationParameters(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideLlmInvocationParameters()) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_INVOCATION_PARAMETERS, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            return;
+            return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         }
 
         ChatOptions options = context.getRequest().getOptions();
         if (options == null) {
-            return;
+            return keyValues;
         }
 
         Map<String, Object> invocationParameters = new HashMap<>();
@@ -213,20 +212,20 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             invocationParameters.put("top_p", options.getTopP());
         }
 
-        keyValues.add(KeyValue.of(SemanticConventions.LLM_INVOCATION_PARAMETERS,  jsonHelper.toJson(invocationParameters)));
+        return keyValues.and(SemanticConventions.LLM_INVOCATION_PARAMETERS, jsonHelper.toJson(invocationParameters));
     }
 
-    private void llmTools(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmTools(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideInputs() || openInferenceOptions.isHideLlmTools()) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_TOOLS, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            return;
+            return keyValues.and(SemanticConventions.LLM_TOOLS, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         }
 
         if (!(context.getRequest().getOptions() instanceof ToolCallingChatOptions options)) {
-            return;
+            return keyValues;
         }
 
         List<ToolCallback> toolCallbacks = Objects.requireNonNullElse(options.getToolCallbacks(), List.of());
+        List<KeyValue> toolKeyValues = new ArrayList<>();
         for (int i = 0; i < toolCallbacks.size(); i++) {
             Map<String,Object> toolDefinition = new HashMap<>();
             toolDefinition.put("type", "function");
@@ -236,14 +235,15 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
                     "parameters", toolParameters(toolCallbacks.get(i).getToolDefinition().inputSchema())
             ));
             String toolPrefix = SemanticConventions.LLM_TOOLS + "." + i + ".";
-            keyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_NAME,
+            toolKeyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_NAME,
                     toolCallbacks.get(i).getToolDefinition().name()));
             if (StringUtils.hasText(toolCallbacks.get(i).getToolDefinition().description())) {
-                keyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_DESCRIPTION,
+                toolKeyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_DESCRIPTION,
                         toolCallbacks.get(i).getToolDefinition().description()));
             }
-            keyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_JSON_SCHEMA, jsonHelper.toJson(toolDefinition)));
+            toolKeyValues.add(KeyValue.of(toolPrefix + SemanticConventions.TOOL_JSON_SCHEMA, jsonHelper.toJson(toolDefinition)));
         }
+        return keyValues.and(toolKeyValues);
     }
 
     /**
@@ -256,56 +256,57 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
 
     // Response
 
-    private void outputValue(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues outputValue(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideOutputs() || openInferenceOptions.isHideOutputMessages()
                 || openInferenceOptions.isHideOutputText()) {
-            keyValues.add(KeyValue.of(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            keyValues.add(KeyValue.of(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE));
-            return;
+            return keyValues.and(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER,
+                    SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
         }
         if (context.getResponse() == null || CollectionUtils.isEmpty(context.getResponse().getResults())) {
-            return;
+            return keyValues;
         }
         List<Map<String, Object>> messages = new ArrayList<>();
         for (Generation generation : context.getResponse().getResults()) {
             messages.add(messageValue(generation.getOutput()));
         }
-        keyValues.add(KeyValue.of(SemanticConventions.OUTPUT_VALUE, jsonHelper.toJson(Map.of("messages", messages))));
-        keyValues.add(KeyValue.of(SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE));
+        return keyValues.and(SemanticConventions.OUTPUT_VALUE, jsonHelper.toJson(Map.of("messages", messages)),
+                SemanticConventions.OUTPUT_MIME_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE);
     }
 
-    private void llmResponseModelName(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmResponseModelName(KeyValues keyValues, ChatModelObservationContext context) {
         if (context.getResponse() != null && StringUtils.hasText(context.getResponse().getMetadata().getModel())) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_RESPONSE_MODEL_NAME, context.getResponse().getMetadata().getModel()));
+            return keyValues.and(SemanticConventions.LLM_RESPONSE_MODEL_NAME, context.getResponse().getMetadata().getModel());
         }
+        return keyValues;
     }
 
-    private void llmOutputMessages(List<KeyValue> keyValues, ChatModelObservationContext context) {
+    private KeyValues llmOutputMessages(KeyValues keyValues, ChatModelObservationContext context) {
         if (openInferenceOptions.isHideOutputs() || openInferenceOptions.isHideOutputMessages()) {
-            keyValues.add(KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES, OpenInferenceOptions.REDACTED_PLACEHOLDER));
-            return;
+            return keyValues.and(SemanticConventions.LLM_OUTPUT_MESSAGES, OpenInferenceOptions.REDACTED_PLACEHOLDER);
         }
 
         if (context.getResponse() == null || CollectionUtils.isEmpty(context.getResponse().getResults())) {
-            return;
+            return keyValues;
         }
 
         List<Generation> generations = context.getResponse().getResults();
+        List<KeyValue> messageKeyValues = new ArrayList<>();
         for (int i = 0; i < generations.size(); i++) {
             AssistantMessage message = generations.get(i).getOutput();
-            keyValues.add(KeyValue.of(
+            messageKeyValues.add(KeyValue.of(
                     SemanticConventions.LLM_OUTPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_ROLE,
                     message.getMessageType().getValue()
             ));
-            addMessageContent(keyValues,
+            addMessageContent(messageKeyValues,
                     SemanticConventions.LLM_OUTPUT_MESSAGES + "." + i,
                     message,
                     openInferenceOptions.isHideOutputText(),
                     false);
 
             String toolCallObservationPrefix = SemanticConventions.LLM_OUTPUT_MESSAGES + "." + i + "." + SemanticConventions.MESSAGE_TOOL_CALLS;
-            addToolCalls(keyValues, message.getToolCalls(), toolCallObservationPrefix, openInferenceOptions.isHideOutputText());
+            addToolCalls(messageKeyValues, message.getToolCalls(), toolCallObservationPrefix, openInferenceOptions.isHideOutputText());
         }
+        return keyValues.and(messageKeyValues);
     }
 
     @Override
@@ -394,18 +395,18 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return messageMap;
     }
 
-    private void addMessageContent(List<KeyValue> keyValues, String messagePrefix, Message message,
+    private void addMessageContent(List<KeyValue> messageKeyValues, String messagePrefix, Message message,
                                    boolean hideText, boolean hideImages) {
         boolean hasMedia = message instanceof MediaContent mediaContent
                 && !CollectionUtils.isEmpty(mediaContent.getMedia());
 
         if (!hasMedia) {
             if (hideText) {
-                keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
+                messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
                         OpenInferenceOptions.REDACTED_PLACEHOLDER));
                 return;
             }
-            keyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
+            messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
                     message.getText() != null ? message.getText() : ""));
             return;
         }
@@ -415,12 +416,12 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
 
         if (StringUtils.hasText(message.getText())) {
             String entryPrefix = contentsPrefix + "." + contentIndex;
-            keyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"));
+            messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "text"));
             if (hideText) {
-                keyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TEXT,
+                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TEXT,
                         OpenInferenceOptions.REDACTED_PLACEHOLDER));
             } else {
-                keyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TEXT,
+                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TEXT,
                         message.getText()));
             }
             contentIndex++;
@@ -431,23 +432,23 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             String mediaType = media.getMimeType().getType();
 
             if ("image".equals(mediaType)) {
-                keyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"));
+                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "image"));
                 if (hideImages) {
-                    keyValues.add(KeyValue.of(
+                    messageKeyValues.add(KeyValue.of(
                             entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL,
                             OpenInferenceOptions.REDACTED_PLACEHOLDER));
                 } else {
-                    keyValues.add(KeyValue.of(
+                    messageKeyValues.add(KeyValue.of(
                             entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL,
                             resolveMediaUrl(media)));
                 }
                 contentIndex++;
             } else if ("audio".equals(mediaType)) {
-                keyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"));
-                keyValues.add(KeyValue.of(
+                messageKeyValues.add(KeyValue.of(entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_TYPE, "audio"));
+                messageKeyValues.add(KeyValue.of(
                         entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_URL,
                         resolveMediaUrl(media)));
-                keyValues.add(KeyValue.of(
+                messageKeyValues.add(KeyValue.of(
                         entryPrefix + "." + SemanticConventions.MESSAGE_CONTENT_AUDIO + "." + SemanticConventions.AUDIO_MIME_TYPE,
                         media.getMimeType().toString()));
                 contentIndex++;
@@ -487,27 +488,27 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         return dataUri;
     }
 
-    private void addToolCalls(List<KeyValue> keyValues, List<AssistantMessage.ToolCall> toolCalls, String observationPrefix, boolean hideText) {
+    private void addToolCalls(List<KeyValue> messageKeyValues, List<AssistantMessage.ToolCall> toolCalls, String observationPrefix, boolean hideText) {
         if (CollectionUtils.isEmpty(toolCalls)) {
             return;
         }
         for (int t = 0; t < toolCalls.size(); t++) {
             AssistantMessage.ToolCall toolCall = toolCalls.get(t);
-            keyValues.add(KeyValue.of(
+            messageKeyValues.add(KeyValue.of(
                     observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_ID,
                     toolCall.id()
             ));
-            keyValues.add(KeyValue.of(
+            messageKeyValues.add(KeyValue.of(
                     observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_FUNCTION_NAME,
                     toolCall.name()
             ));
             if (hideText) {
-                keyValues.add(KeyValue.of(
+                messageKeyValues.add(KeyValue.of(
                         observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON,
                         OpenInferenceOptions.REDACTED_PLACEHOLDER
                 ));
             } else {
-                keyValues.add(KeyValue.of(
+                messageKeyValues.add(KeyValue.of(
                         observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON,
                         toolCall.arguments()
                 ));
