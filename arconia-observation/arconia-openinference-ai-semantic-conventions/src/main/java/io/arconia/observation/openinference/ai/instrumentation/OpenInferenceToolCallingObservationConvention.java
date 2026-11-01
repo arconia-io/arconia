@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
  */
 public final class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
-
     private final OpenInferenceOptions openInferenceOptions;
 
     public OpenInferenceToolCallingObservationConvention(OpenInferenceOptions openInferenceOptions) {
@@ -97,17 +96,8 @@ public final class OpenInferenceToolCallingObservationConvention extends Default
             return keyValues;
         }
         return keyValues.and(SemanticConventions.OUTPUT_VALUE, toolCallResult)
-                .and(SemanticConventions.OUTPUT_MIME_TYPE, isJson(toolCallResult)
+                .and(SemanticConventions.OUTPUT_MIME_TYPE, OpenInferenceJson.isObjectOrArray(toolCallResult)
                         ? MimeTypeUtils.APPLICATION_JSON_VALUE : MimeTypeUtils.TEXT_PLAIN_VALUE);
-    }
-
-    /**
-     * Whether the value looks like a JSON object or array, as opposed to plain text such as a bare string.
-     * It only picks the MIME type of the output, so the first and last characters are enough to tell:
-     * parsing a tool result, which can be large, would be wasted work.
-     */
-    private static boolean isJson(String value) {
-        return OpenInferenceJson.isObjectOrArray(value);
     }
 
 }

@@ -1,55 +1,56 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
-import tools.jackson.databind.json.JsonMapper;
-
-import org.springframework.util.StringUtils;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 /**
- * Cheap checks on JSON text, for content that is recorded as it is rather than parsed.
+ * Checks on JSON text that is recorded as it is rather than parsed into a tree.
  */
 public final class GenAiJson {
 
-    private static final JsonMapper jsonMapper = JsonMapper.builder().build();
+    private static final JsonFactory jsonFactory = new JsonFactory();
 
     private GenAiJson() {}
 
     /**
-     * Whether the text is well-formed JSON, checked by tokenizing it without building a tree:
-     * what matters is that it can be embedded in a JSON document as it is.
+     * Whether the text is a single well-formed JSON value, so that it can be embedded in a JSON document as it is.
      */
     public static boolean isValid(String value) {
-        if (!StringUtils.hasText(value)) {
-            return false;
-        }
-        try (JsonParser parser = jsonMapper.createParser(value)) {
-            while (parser.nextToken() != null) {
-                // Tokenizing the whole text is the validation.
-            }
-            return true;
-        } catch (JacksonException ex) {
-            return false;
-        }
+        return rootToken(value) != null;
     }
 
     /**
-     * Whether the text looks like a JSON object or array, judging by its first and last characters.
-     * It tells structured content from plain text without parsing it, which is enough to pick a MIME type.
+     * Whether the text is a well-formed JSON object or array, as opposed to a scalar or plain text.
      */
     public static boolean isObjectOrArray(String value) {
-        String trimmed = value.strip();
-        return trimmed.length() >= 2
-                && ((trimmed.charAt(0) == '{' && trimmed.charAt(trimmed.length() - 1) == '}')
-                || (trimmed.charAt(0) == '[' && trimmed.charAt(trimmed.length() - 1) == ']'));
+        JsonToken token = rootToken(value);
+        return token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY;
     }
 
     /**
-     * Whether the text looks like a JSON object, judging by its first and last characters.
+     * Whether the text is a well-formed JSON object.
      */
     public static boolean isObject(String value) {
-        String trimmed = value.strip();
-        return trimmed.length() >= 2 && trimmed.charAt(0) == '{' && trimmed.charAt(trimmed.length() - 1) == '}';
+        return rootToken(value) == JsonToken.START_OBJECT;
+    }
+
+    /**
+     * Returns the first token of the text if it is exactly one well-formed JSON value, and null otherwise.
+     */
+    private static @Nullable JsonToken rootToken(String value) {
+        try (JsonParser parser = jsonFactory.createParser(ObjectReadContext.empty(), value)) {
+            JsonToken token = parser.nextToken();
+            if (token == null || parser.skipChildren().nextToken() != null) {
+                return null;
+            }
+            return token;
+        } catch (JacksonException ex) {
+            return null;
+        }
     }
 
 }

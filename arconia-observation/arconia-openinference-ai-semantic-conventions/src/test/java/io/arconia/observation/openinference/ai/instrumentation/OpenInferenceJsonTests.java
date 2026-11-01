@@ -23,22 +23,19 @@ class OpenInferenceJsonTests {
         assertThat(OpenInferenceJson.isValid("{\"location\":\"Par")).isFalse();
         assertThat(OpenInferenceJson.isValid("location: string")).isFalse();
         assertThat(OpenInferenceJson.isValid("{} trailing")).isFalse();
+        assertThat(OpenInferenceJson.isValid("{} []")).isFalse();
         assertThat(OpenInferenceJson.isValid(" ")).isFalse();
+        assertThat(OpenInferenceJson.isValid("")).isFalse();
     }
 
     @Test
-    void isObjectOrArrayShouldJudgeByTheOuterCharacters() {
+    void isObjectOrArrayShouldAcceptObjectsAndArraysOnly() {
         assertThat(OpenInferenceJson.isObjectOrArray(" {\"a\": 1} ")).isTrue();
         assertThat(OpenInferenceJson.isObjectOrArray("[1, 2]")).isTrue();
         assertThat(OpenInferenceJson.isObjectOrArray("rainy, 57°F")).isFalse();
         assertThat(OpenInferenceJson.isObjectOrArray("\"text\"")).isFalse();
         assertThat(OpenInferenceJson.isObjectOrArray("{")).isFalse();
-    }
-
-    @Test
-    void isObjectShouldAcceptObjectsOnly() {
-        assertThat(OpenInferenceJson.isObject("{\"a\": 1}")).isTrue();
-        assertThat(OpenInferenceJson.isObject("[1, 2]")).isFalse();
+        assertThat(OpenInferenceJson.isObjectOrArray("{\"a\": }")).isFalse();
     }
 
 }

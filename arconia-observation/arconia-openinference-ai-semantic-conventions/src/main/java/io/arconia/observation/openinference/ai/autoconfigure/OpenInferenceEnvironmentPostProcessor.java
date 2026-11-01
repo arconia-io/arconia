@@ -1,8 +1,5 @@
 package io.arconia.observation.openinference.ai.autoconfigure;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.Ordered;
@@ -12,7 +9,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.Assert;
 
 /**
- * Converts OpenInference Environment Variables  to Arconia properties
+ * Converts OpenInference Environment Variables to Arconia properties.
  */
 class OpenInferenceEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
@@ -22,10 +19,8 @@ class OpenInferenceEnvironmentPostProcessor implements EnvironmentPostProcessor,
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Assert.notNull(environment, "environment cannot be null");
 
-        Map<String, Object> arconiaProperties = new HashMap<>(
+        MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME,
                 OpenInferenceEnvironmentPropertyAdapters.traces(environment).getArconiaProperties());
-
-        MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, arconiaProperties);
         MutablePropertySources propertySources = environment.getPropertySources();
         propertySources.addFirst(propertySource);
     }

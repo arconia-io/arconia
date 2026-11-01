@@ -65,6 +65,7 @@ class OpenInferenceEnvironmentPostProcessorIT {
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-input-text")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-output-text")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-llm-invocation-parameters")).isEqualTo("true");
+        assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-llm-tools")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-embeddings-text")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".hide-embeddings-vectors")).isEqualTo("true");
         assertThat(context.getEnvironment().getProperty(PREFIX + ".base64-image-max-length")).isEqualTo("64000");

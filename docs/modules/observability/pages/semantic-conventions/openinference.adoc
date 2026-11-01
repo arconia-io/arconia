@@ -127,7 +127,11 @@ Content capturing is enabled by default, according to the OpenInference Semantic
 
 include::partial$content-capturing-warning.adoc[]
 
-The properties follow the OpenInference configuration, and Arconia hides more than the reference instrumentations in two cases, on purpose: `input.value` is hidden also by `hide-input-messages` and `hide-input-text`, since it carries the input messages, and the arguments of tool calls are hidden also by `hide-input-text` and `hide-output-text`, since they are text produced by the model.
+The properties follow the OpenInference configuration. Arconia hides more than the reference instrumentations in three cases, on purpose:
+
+* `input.value` is hidden also by `hide-input-messages` and `hide-input-text`, since it carries the input messages.
+* The arguments of tool calls are hidden also by `hide-input-text` and `hide-output-text`, since they are text produced by the model.
+* The embedding text is hidden also by `hide-inputs`, and the embedding vector summary also by `hide-outputs`, since they are the input and output of an embedding model.
 
 == Configuration Properties
 
@@ -167,7 +171,7 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 
 | `arconia.observations.conventions.openinference.ai.hide-inputs`
 | `false`
-| Whether to hide all inputs.
+| Whether to hide all inputs, including the input messages, the tool definitions and the embedding text.
 
 | `arconia.observations.conventions.openinference.ai.hide-input-images`
 | `false`
@@ -183,7 +187,7 @@ You can configure the OpenInference Semantic Conventions via configuration prope
 
 | `arconia.observations.conventions.openinference.ai.hide-outputs`
 | `false`
-| Whether to hide all outputs.
+| Whether to hide all outputs, including the output messages and the embedding vector summary.
 
 | `arconia.observations.conventions.openinference.ai.hide-output-text`
 | `false`

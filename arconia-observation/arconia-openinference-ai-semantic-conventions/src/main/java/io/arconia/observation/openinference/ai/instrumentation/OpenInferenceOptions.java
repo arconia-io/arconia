@@ -33,7 +33,7 @@ public class OpenInferenceOptions {
     private boolean hideLlmTools = false;
 
     /**
-     * Whether to hide all inputs.
+     * Whether to hide all inputs, including the input messages, the tool definitions and the embedding text.
      */
     private boolean hideInputs = false;
 
@@ -53,7 +53,7 @@ public class OpenInferenceOptions {
     private boolean hideInputText = false;
 
     /**
-     * Whether to hide all outputs.
+     * Whether to hide all outputs, including the output messages and the embedding vector summary.
      */
     private boolean hideOutputs = false;
 

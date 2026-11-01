@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.diagnostics.FailureAnalysis;
-import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.boot.diagnostics.FailureAnalyzer;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,9 +19,8 @@ class MultipleAiObservationConventionsFailureAnalyzerTests {
 
     @Test
     void shouldBeRegisteredAsFailureAnalyzer() {
-        // Some Spring Boot analyzers need a bean factory to be instantiated and are skipped.
-        SpringFactoriesLoader.FailureHandler ignoreFailures = (factoryType, factoryImplementationName, failure) -> { };
-        assertThat(SpringFactoriesLoader.forDefaultResourceLocation().load(FailureAnalyzer.class, null, ignoreFailures))
+        SpringFactoriesLoader.FailureHandler failureHandler = (factoryType, factoryImplementationName, failure) -> { };
+        assertThat(SpringFactoriesLoader.forDefaultResourceLocation().load(FailureAnalyzer.class, null, failureHandler))
                 .anySatisfy(failureAnalyzer -> assertThat(failureAnalyzer)
                         .isInstanceOf(MultipleAiObservationConventionsFailureAnalyzer.class));
     }
