@@ -12,11 +12,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
- * Unit tests for {@link SqliteDialect}.
+ * Unit tests for {@link JdbcSqliteDialect}.
  */
-class SqliteDialectTests {
+class JdbcSqliteDialectTests {
 
-    private final SqliteDialect dialect = JdbcSqliteDialect.INSTANCE;
+    private final JdbcSqliteDialect dialect = JdbcSqliteDialect.INSTANCE;
 
     @Test
     void shouldRenderLimit() {
