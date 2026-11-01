@@ -5,11 +5,6 @@ Spring AI provides built-in instrumentation for models, tools, and agentic workf
 
 Arconia provides a Phoenix Dev Service you can use during development and testing. Check out the xref:dev-services:phoenix.adoc[Phoenix Dev Service] documentation for more details.
 
-[NOTE]
-====
-Arize AX provides a managed path for tracing, monitoring, and evaluating Arconia-based Spring AI applications. Check out the Arize AX documentation for the https://arize.com/docs/ax/integrations/java/arconia/arconia-tracing[Arconia integration] for more details.
-====
-
 [WARNING]
 ====
 The https://arize-ai.github.io/openinference/spec/[OpenInference Semantic Conventions] are still experimental, and they might change in the future.
@@ -77,13 +72,33 @@ When the Dev Service is active, Arconia configures OpenTelemetry automatically t
 
 === Arize Phoenix
 
+TIP: The https://arize.com/docs/phoenix/integrations/java/arconia/arconia-tracing[Arconia integration guide] in the Arize Phoenix documentation shows a complete example.
+
 To send telemetry to a hosted Arize Phoenix instance, configure the OTLP exporter with your endpoint:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        endpoint: https://<your-phoenix-endpoint>
+        headers:
+          Authorization: Bearer ${PHOENIX_API_KEY}
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.otel.exporter.otlp.endpoint=https://<your-phoenix-endpoint>
-arconia.otel.exporter.otlp.headers=Authorization=Bearer ${PHOENIX_API_KEY}
+arconia.otel.exporter.otlp.headers[Authorization]=Bearer ${PHOENIX_API_KEY}
 ----
+======
 
 Alternatively, you can use the standard OpenTelemetry environment variables:
 
@@ -95,21 +110,102 @@ OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-phoenix-api-key>"
 
 You can also set the project name to control how traces are grouped in Phoenix:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  observations:
+    conventions:
+      openinference:
+        ai:
+          project-name: my-app
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.observations.conventions.openinference.ai.project-name=my-app
 ----
+======
 
 The project name is the `openinference.project.name` resource attribute, which Arconia contributes through the xref:opentelemetry:resource.adoc[resource support] of the Arconia OpenTelemetry Spring Boot Starter, using the service name when the property is not set. With the Spring Boot OpenTelemetry support, set the resource attribute directly instead, otherwise Phoenix files the traces under its `default` project:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+management:
+  opentelemetry:
+    resource-attributes:
+      openinference.project.name: my-app
+----
+
+Properties::
++
 [source,properties]
 ----
 management.opentelemetry.resource-attributes.openinference.project.name=my-app
 ----
+======
 
 Since Phoenix only supports traces, you might want to disable the export of logs and metrics, or export them to a different backend:
 
 include::partial$otlp-traces-only.adoc[]
+
+=== Arize AX
+
+TIP: The https://arize.com/docs/ax/integrations/java/arconia/arconia-tracing[Arconia integration guide] in the Arize AX documentation shows a complete example.
+
+To send traces to https://arize.com[Arize AX], configure the OTLP exporter with the Arize endpoint, the gRPC protocol, and the API key and space ID of your Arize AX space, defined in the `ARIZE_API_KEY` and `ARIZE_SPACE_ID` environment variables:
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        protocol: grpc
+        endpoint: https://otlp.arize.com:443
+        headers:
+          authorization: ${ARIZE_API_KEY}
+          arize-space-id: ${ARIZE_SPACE_ID}
+          arize-interface: java
+----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.exporter.otlp.protocol=grpc
+arconia.otel.exporter.otlp.endpoint=https://otlp.arize.com:443
+arconia.otel.exporter.otlp.headers[authorization]=${ARIZE_API_KEY}
+arconia.otel.exporter.otlp.headers[arize-space-id]=${ARIZE_SPACE_ID}
+arconia.otel.exporter.otlp.headers[arize-interface]=java
+----
+======
+
+Alternatively, you can use the standard OpenTelemetry environment variables:
+
+[source,env]
+----
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.arize.com:443
+OTEL_EXPORTER_OTLP_HEADERS="authorization=<your-arize-api-key>,arize-space-id=<your-arize-space-id>,arize-interface=java"
+----
+
+Exporting over gRPC requires additional dependencies, as described in the xref:opentelemetry:index.adoc#_grpc[gRPC exporter] documentation.
+
+Arize AX files the traces under the project name configured as described for Phoenix. Since Arize AX also supports only traces, the same configuration to disable the export of logs and metrics applies.
 
 == Features
 

@@ -299,6 +299,10 @@ The duration and token usage metrics defined by the OpenTelemetry Semantic Conve
 
 You can use the bucket boundaries advised by the OpenTelemetry Semantic Conventions with the Spring Boot `management.metrics.distribution.slo` properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 management:
@@ -307,6 +311,14 @@ management:
       slo:
         http.server.request.duration: 5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms
 ----
+
+Properties::
++
+[source,properties]
+----
+management.metrics.distribution.slo.http.server.request.duration=5ms,10ms,25ms,50ms,75ms,100ms,250ms,500ms,750ms,1000ms,2500ms,5000ms,7500ms,10000ms
+----
+======
 
 [cols="2,3"]
 |===
@@ -327,6 +339,10 @@ management:
 
 Alternatively, you can publish exponential histograms, which adapt their buckets to the recorded values and don't need any boundaries. With the xref:opentelemetry:index.adoc[Arconia OpenTelemetry Spring Boot Starter], select the exponential aggregation and enable the histograms with the Spring Boot `management.metrics.distribution.percentiles-histogram` properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -340,6 +356,15 @@ management:
       percentiles-histogram:
         http.server.request.duration: true
 ----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram
+management.metrics.distribution.percentiles-histogram.http.server.request.duration=true
+----
+======
 
 == Stability
 

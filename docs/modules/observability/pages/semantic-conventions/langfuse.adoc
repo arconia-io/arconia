@@ -5,7 +5,7 @@
 :flavor-default-capture-tool-definitions: true
 :flavor-default-capture-tool-call-content: true
 
-Spring AI provides built-in instrumentation for models, tools, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export traces that https://langfuse.com[Langfuse] turns into its observations: generations, embeddings, tool calls, agents, and chains, with their inputs, outputs, token usage, and costs.
+Spring AI provides built-in instrumentation for models, tools, and agentic workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export traces that https://langfuse.com[Langfuse] turns into its observations: generations, embeddings, tool calls, agents, and chains, with their inputs, outputs, token usage, and costs.
 
 Langfuse ingests the https://opentelemetry.io/docs/specs/semconv/gen-ai/[OpenTelemetry Semantic Conventions for Generative AI], so the `langfuse` flavor builds on the xref:semantic-conventions/opentelemetry.adoc#_generative_ai[OpenTelemetry flavor] and only adds what Langfuse needs on top of it.
 
@@ -26,10 +26,27 @@ include::partial$ai-conventions-activation.adoc[]
 
 Set the convention flavor to `langfuse`:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  observations:
+    conventions:
+      opentelemetry:
+        ai:
+          flavor: langfuse
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.observations.conventions.opentelemetry.ai.flavor=langfuse
 ----
+======
 
 include::partial$opentelemetry-setup.adoc[]
 
@@ -67,12 +84,31 @@ When the Dev Service is active, Arconia configures OpenTelemetry automatically t
 
 To send traces to https://langfuse.com[Langfuse Cloud] or to your own Langfuse deployment, configure the OTLP exporter with the endpoint of your Langfuse instance and the API keys of your project, encoded as `base64(<public-key>:<secret-key>)` in a `LANGFUSE_AUTH` environment variable:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        endpoint: https://cloud.langfuse.com/api/public/otel
+        headers:
+          Authorization: Basic ${LANGFUSE_AUTH}
+          x-langfuse-ingestion-version: 4
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.otel.exporter.otlp.endpoint=https://cloud.langfuse.com/api/public/otel
 arconia.otel.exporter.otlp.headers[Authorization]=Basic ${LANGFUSE_AUTH}
 arconia.otel.exporter.otlp.headers[x-langfuse-ingestion-version]=4
 ----
+======
 
 For the US region of Langfuse Cloud, use `https://us.cloud.langfuse.com/api/public/otel` as the endpoint. Langfuse requires the `x-langfuse-ingestion-version` header from OpenTelemetry exporters.
 
@@ -95,8 +131,8 @@ The `langfuse` flavor records the same attributes as the xref:semantic-conventio
 * Chat model calls become generations, with the model, its parameters, the token usage, and the input and output messages. Langfuse computes their costs from the model and the token usage.
 * Embedding model calls become embeddings, and image model calls become generations.
 * Tool executions become tool calls, with their arguments and result.
-* Chat client calls become agents, grouped into a Langfuse session by the conversation ID of the chat memory, recorded as `gen_ai.conversation.id` and `session.id` on the agent span. The `gen_ai.conversation.id` attribute is also recorded on the spans nested in it.
-* Advisors become chains, through the `langfuse.observation.type` attribute, since Langfuse doesn't derive the chain type from the OpenTelemetry Semantic Conventions.
+* Chat client calls become agents, grouped into a Langfuse session by the conversation ID of the chat memory.
+* Advisors become chains, which Langfuse doesn't derive from the OpenTelemetry Semantic Conventions on its own.
 
 The input and output messages are always recorded as span attributes, since Langfuse accepts traces only.
 

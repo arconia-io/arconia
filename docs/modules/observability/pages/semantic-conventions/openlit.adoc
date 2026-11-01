@@ -6,7 +6,7 @@
 :flavor-default-capture-tool-definitions: true
 :flavor-default-capture-tool-call-content: true
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.openlit.io[OpenLIT Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace and metric visualization in platforms like https://openlit.io[OpenLIT].
+Spring AI provides built-in instrumentation for models, tools, and agentic workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://docs.openlit.io[OpenLIT Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace and metric visualization in platforms like https://openlit.io[OpenLIT].
 
 Arconia provides an OpenLIT Dev Service you can use during development and testing. Check out the xref:dev-services:openlit.adoc[OpenLIT Dev Service] documentation for more details.
 
@@ -25,10 +25,27 @@ include::partial$ai-conventions-activation.adoc[]
 
 Set the convention flavor to `openlit`:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  observations:
+    conventions:
+      opentelemetry:
+        ai:
+          flavor: openlit
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.observations.conventions.opentelemetry.ai.flavor=openlit
 ----
+======
 
 include::partial$opentelemetry-setup.adoc[]
 
@@ -76,11 +93,29 @@ When the Dev Service is active, Arconia configures OpenTelemetry automatically t
 
 To send telemetry to a hosted OpenLIT instance, configure the OTLP exporter with your endpoint and API key:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        endpoint: https://<your-openlit-endpoint>
+        headers:
+          Authorization: Bearer ${OPENLIT_API_KEY}
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.otel.exporter.otlp.endpoint=https://<your-openlit-endpoint>
-arconia.otel.exporter.otlp.headers=Authorization=Bearer ${OPENLIT_API_KEY}
+arconia.otel.exporter.otlp.headers[Authorization]=Bearer ${OPENLIT_API_KEY}
 ----
+======
 
 Alternatively, you can use the standard OpenTelemetry environment variables:
 
@@ -92,16 +127,14 @@ OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <your-openlit-api-key>"
 
 == Features
 
-The module provides OpenLIT-compatible semantic conventions for the following observation types:
+The `openlit` flavor records Spring AI observations for OpenLIT:
 
-* Chat model spans with full parameter tracking (temperature, max tokens, penalties, stop sequences, etc.).
-* Embedding model spans.
-* Image model spans.
-* Tool execution spans with input/output content.
-* Advisor spans, following the OpenTelemetry Semantic Conventions.
-* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` on the chat client span and on the spans nested in it.
+* Chat model calls, with the model, the parameters, the token usage, and the input and output messages.
+* Embedding and image model calls.
+* Tool executions, with their arguments and result.
+* Chat client calls, with their input and output. The conversation ID of the chat memory is recorded on them and on the spans nested in them.
+* Advisors, following the OpenTelemetry Semantic Conventions.
 * Token usage metrics.
-* Input/output message content, captured as span attributes.
 
 Content capturing is enabled by default, matching the behavior of the official OpenLIT SDKs. Set the `capture-*` properties below to `false` to turn it off.
 

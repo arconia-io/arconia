@@ -1,5 +1,24 @@
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    logs:
+      exporter:
+        type: none
+    metrics:
+      exporter:
+        type: none
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.otel.logs.exporter.type=none
 arconia.otel.metrics.exporter.type=none
 ----
+======

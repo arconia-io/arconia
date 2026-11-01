@@ -6,7 +6,7 @@
 :flavor-default-capture-tool-definitions: true
 :flavor-default-capture-tool-call-content: true
 
-Spring AI provides built-in instrumentation for models, vector stores, and workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop].
+Spring AI provides built-in instrumentation for models, tools, and agentic workflows based on the Micrometer APIs. Arconia lets you configure your Spring AI applications to export telemetry data adopting the https://traceloop.com/docs/openllmetry[OpenLLMetry Semantic Conventions] instead of the default Micrometer conventions, enabling rich trace visualization in platforms like https://www.traceloop.com[Traceloop].
 
 [WARNING]
 ====
@@ -23,10 +23,27 @@ include::partial$ai-conventions-activation.adoc[]
 
 Set the convention flavor to `openllmetry`:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  observations:
+    conventions:
+      opentelemetry:
+        ai:
+          flavor: openllmetry
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.observations.conventions.opentelemetry.ai.flavor=openllmetry
 ----
+======
 
 include::partial$opentelemetry-setup.adoc[]
 
@@ -34,11 +51,29 @@ include::partial$opentelemetry-setup.adoc[]
 
 Configure the OTLP exporter to send traces to https://www.traceloop.com[Traceloop], making sure you defined your Traceloop API Key in a `TRACELOOP_API_KEY` environment variable:
 
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        endpoint: https://api.traceloop.com
+        headers:
+          Authorization: Bearer ${TRACELOOP_API_KEY}
+----
+
+Properties::
++
 [source,properties]
 ----
 arconia.otel.exporter.otlp.endpoint=https://api.traceloop.com
-arconia.otel.exporter.otlp.headers=Authorization=Bearer ${TRACELOOP_API_KEY}
+arconia.otel.exporter.otlp.headers[Authorization]=Bearer ${TRACELOOP_API_KEY}
 ----
+======
 
 Alternatively, you can use the standard OpenTelemetry environment variables:
 
@@ -54,14 +89,13 @@ include::partial$otlp-traces-only.adoc[]
 
 == Features
 
-The module provides OpenLLMetry-compatible semantic conventions for the following observation types:
+The `openllmetry` flavor records Spring AI observations for Traceloop:
 
-* Chat model, embedding model, and image model spans following the OpenTelemetry Semantic Conventions for Generative AI, as the current OpenLLMetry instrumentations do.
-* Tool execution spans with input/output content.
-* Advisor spans, recorded as Traceloop tasks.
-* Chat client spans with input/output content. The conversation ID of the chat memory is recorded as `gen_ai.conversation.id` and as the `session_id` association property (`traceloop.association.properties.session_id`), on the chat client span and on the spans nested in it.
-* Token usage for inference operations, including the total and the cached input tokens.
-* Input/output message content, captured as span attributes.
+* Chat model, embedding model, and image model calls, following the OpenTelemetry Semantic Conventions for Generative AI, as the current OpenLLMetry instrumentations do.
+* Tool executions, with their arguments and result.
+* Chat client calls, recorded as Traceloop workflows with their input and output, and grouped into a Traceloop session by the conversation ID of the chat memory.
+* Advisors, recorded as Traceloop tasks.
+* Token usage, including the total and the cached input tokens.
 
 Content capturing is enabled by default, matching the behavior of the official OpenLLMetry SDKs. Set the `capture-*` properties below to `false` to turn it off.
 
