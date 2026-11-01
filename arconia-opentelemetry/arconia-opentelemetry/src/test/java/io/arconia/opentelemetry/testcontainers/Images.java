@@ -7,7 +7,7 @@ public final class Images {
 
     public static final String CLICKHOUSE = "clickhouse/clickhouse-server:26.10-distroless";
 
-    public static final String FLOCI = "floci/floci:2.3.0";
+    public static final String FLOCI = "floci/floci:2.4.0";
 
     public static final String LANGFUSE = "langfuse/langfuse:4.72";
 

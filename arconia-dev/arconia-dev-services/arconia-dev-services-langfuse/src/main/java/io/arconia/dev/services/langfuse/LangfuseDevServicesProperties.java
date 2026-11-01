@@ -55,7 +55,7 @@ public class LangfuseDevServicesProperties implements DevServicesProperties {
      * Full name of the container image used for the internal Floci instance,
      * providing the S3-compatible storage and the proxy for the OTLP endpoint.
      */
-    private String flociImageName = "floci/floci:2.3.0";
+    private String flociImageName = "floci/floci:2.4.0";
 
     /**
      * Public key of the API keys of the Langfuse project, used to authenticate the telemetry data sent to Langfuse.
