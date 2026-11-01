@@ -1,12 +1,15 @@
 package io.arconia.boot.autoconfigure.bootstrap;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.env.MockEnvironment;
@@ -21,7 +24,7 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
 
     private static final String CONFIG_FILE_SOURCE_NAME = "Config resource 'class path resource [application.yml]' via location 'optional:classpath:/'";
 
-    private final MisplacedBootstrapPropertiesEnvironmentPostProcessor processor = new MisplacedBootstrapPropertiesEnvironmentPostProcessor();
+    private final MisplacedBootstrapPropertiesEnvironmentPostProcessor processor = new MisplacedBootstrapPropertiesEnvironmentPostProcessor(Supplier::get);
 
     @Test
     void shouldWarnWhenProfilesPropertyInApplicationConfiguration(CapturedOutput output) {
@@ -86,10 +89,25 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
         assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location");
     }
 
+    @Test
+    void shouldLogWarningDuringApplicationStartup(CapturedOutput output) {
+        // Runs the full startup, where Spring Boot suppresses any logging until the logging system is initialized.
+        var application = new SpringApplication(TestConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+
+        application.run("--arconia.bootstrap.mode=dev").close();
+
+        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location");
+    }
+
     private static StandardEnvironment environmentWithConfigFileProperties(Map<String, Object> properties) {
         var environment = new StandardEnvironment();
         environment.getPropertySources().addLast(new MapPropertySource(CONFIG_FILE_SOURCE_NAME, properties));
         return environment;
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class TestConfig {
     }
 
 }

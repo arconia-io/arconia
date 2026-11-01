@@ -3,15 +3,21 @@ package io.arconia.boot.autoconfigure.bootstrap;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -27,10 +33,11 @@ import static org.mockito.Mockito.mock;
 /**
  * Unit tests for {@link BootstrapEnvironmentPostProcessor}.
  */
+@ExtendWith(OutputCaptureExtension.class)
 @TestMethodOrder(MethodOrderer.Random.class)
 class BootstrapEnvironmentPostProcessorTests {
 
-    private final BootstrapEnvironmentPostProcessor processor = new BootstrapEnvironmentPostProcessor();
+    private final BootstrapEnvironmentPostProcessor processor = new BootstrapEnvironmentPostProcessor(Supplier::get);
 
     @BeforeEach
     void setUp() {
@@ -59,6 +66,43 @@ class BootstrapEnvironmentPostProcessorTests {
         processor.postProcessEnvironment(environment, application);
 
         assertThat(environment.getActiveProfiles()).isEmpty();
+    }
+
+    @Test
+    void shouldLogBootstrapModeDuringApplicationStartup(CapturedOutput output) {
+        // Runs the full startup, where Spring Boot suppresses any logging until the logging system is initialized.
+        var application = new SpringApplication(TestConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+
+        application.run().close();
+
+        assertThat(output).contains("The application is running in test mode");
+    }
+
+    @Test
+    void shouldWarnWhenBootstrapModeIsInvalid(CapturedOutput output) {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "invalid");
+        try {
+            processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
+        } finally {
+            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+        }
+
+        assertThat(output).contains("Invalid arconia.bootstrap.mode property value: 'invalid'. Defaulting to PROD mode.");
+    }
+
+    @Test
+    void shouldWarnWhenBootstrapModeIsNotProdDuringAotProcessing(CapturedOutput output) {
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        System.setProperty(AbstractAotProcessor.AOT_PROCESSING, "true");
+        try {
+            processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
+        } finally {
+            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(AbstractAotProcessor.AOT_PROCESSING);
+        }
+
+        assertThat(output).contains("The bootstrap mode is set to DEV while Spring AOT processing is running.");
     }
 
     // DEV

@@ -3,14 +3,15 @@ package io.arconia.boot.autoconfigure.bootstrap;
 import java.util.List;
 import java.util.Locale;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
+import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
+import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -29,8 +30,6 @@ import io.arconia.boot.bootstrap.BootstrapMode;
  */
 class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(MisplacedBootstrapPropertiesEnvironmentPostProcessor.class);
-
     /**
      * How Spring Boot names the property sources loaded by the configuration data import.
      * See org.springframework.boot.context.config.StandardConfigDataLoader.
@@ -41,6 +40,16 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
             BootstrapConfigurationFile.PROFILES_ENABLED_PROPERTY,
             BootstrapConfigurationFile.DEV_PROFILES_PROPERTY,
             BootstrapConfigurationFile.TEST_PROFILES_PROPERTY);
+
+    private final Log logger;
+
+    /**
+     * The logger is deferred until the logging system is initialized, since any message
+     * logged before that would be lost.
+     */
+    MisplacedBootstrapPropertiesEnvironmentPostProcessor(DeferredLogFactory logFactory) {
+        this.logger = logFactory.getLog(MisplacedBootstrapPropertiesEnvironmentPostProcessor.class);
+    }
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -56,16 +65,16 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
             for (String propertyKey : BOOTSTRAP_PROPERTY_KEYS) {
                 // The indexed variant covers list values defined in YAML sequence form.
                 if (propertySource.containsProperty(propertyKey) || propertySource.containsProperty(propertyKey + "[0]")) {
-                    logger.warn("The '{}' property was found in {}, where it is not supported because the bootstrap "
+                    logger.warn(LogMessage.format("The '%s' property was found in %s, where it is not supported because the bootstrap "
                             + "profiles are activated before the application configuration is loaded. Supported locations: "
-                            + "the {} file, JVM system properties, environment variables, and command line arguments.",
-                            propertyKey, propertySource.getName(), BootstrapConfigurationFile.LOCATION);
+                            + "the %s file, JVM system properties, environment variables, and command line arguments.",
+                            propertyKey, propertySource.getName(), BootstrapConfigurationFile.LOCATION));
                 }
             }
         }
     }
 
-    private static void warnIfBootstrapModeMisplaced(ConfigurableEnvironment environment) {
+    private void warnIfBootstrapModeMisplaced(ConfigurableEnvironment environment) {
         String environmentVariableName = BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_");
         String modeProperty;
         try {
@@ -77,11 +86,11 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
         if (StringUtils.hasText(modeProperty)
                 && !StringUtils.hasText(System.getProperty(BootstrapMode.PROPERTY_KEY))
                 && !StringUtils.hasText(System.getenv(environmentVariableName))) {
-            logger.warn("The '{}' property was found in an unsupported location, such as the application "
-                    + "configuration or the {} file, where it has no effect because the bootstrap mode describes "
+            logger.warn(LogMessage.format("The '%s' property was found in an unsupported location, such as the application "
+                    + "configuration or the %s file, where it has no effect because the bootstrap mode describes "
                     + "the launch context and is determined before the application configuration is loaded. "
-                    + "Set it as a JVM system property (-D{}) or as an environment variable ({}) instead.",
-                    BootstrapMode.PROPERTY_KEY, BootstrapConfigurationFile.LOCATION, BootstrapMode.PROPERTY_KEY, environmentVariableName);
+                    + "Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.",
+                    BootstrapMode.PROPERTY_KEY, BootstrapConfigurationFile.LOCATION, BootstrapMode.PROPERTY_KEY, environmentVariableName));
         }
     }
 

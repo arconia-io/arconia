@@ -1,6 +1,7 @@
 package io.arconia.boot.bootstrap;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BootstrapConfigurationFileTests {
 
     @Test
-    void shouldLoadPropertiesWhenFilePresent() {
+    void shouldLoadPropertiesWhenFilePresent() throws IOException {
         var classLoader = classLoaderWithBootstrapFile("""
                 arconia.dev.profiles=local,debug
                 arconia.test.profiles=integration
@@ -26,12 +27,12 @@ class BootstrapConfigurationFileTests {
     }
 
     @Test
-    void shouldReturnEmptyPropertiesWhenFileAbsent() {
+    void shouldReturnEmptyPropertiesWhenFileAbsent() throws IOException {
         assertThat(BootstrapConfigurationFile.load(getClass().getClassLoader())).isEmpty();
     }
 
     @Test
-    void shouldFallBackToContextClassLoaderWhenNull() {
+    void shouldFallBackToContextClassLoaderWhenNull() throws IOException {
         assertThat(BootstrapConfigurationFile.load(null)).isEmpty();
     }
 

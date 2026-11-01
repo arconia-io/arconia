@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.arconia.core.support.Internal;
 
@@ -39,8 +37,6 @@ public final class BootstrapConfigurationFile {
      */
     public static final String TEST_PROFILES_PROPERTY = "arconia.test.profiles";
 
-    private static final Logger logger = LoggerFactory.getLogger(BootstrapConfigurationFile.class);
-
     private BootstrapConfigurationFile() {}
 
     /**
@@ -48,7 +44,7 @@ public final class BootstrapConfigurationFile {
      * (e.g. contributed by different jars), the first one found on the classpath is used.
      * Returns empty properties when the file is not present.
      */
-    public static Properties load(@Nullable ClassLoader classLoader) {
+    public static Properties load(@Nullable ClassLoader classLoader) throws IOException {
         ClassLoader classLoaderToUse = classLoader;
         if (classLoaderToUse == null) {
             classLoaderToUse = Thread.currentThread().getContextClassLoader();
@@ -62,8 +58,6 @@ public final class BootstrapConfigurationFile {
             if (inputStream != null) {
                 properties.load(inputStream);
             }
-        } catch (IOException ex) {
-            logger.warn("Failed to load the bootstrap configuration file from {}", LOCATION, ex);
         }
         return properties;
     }

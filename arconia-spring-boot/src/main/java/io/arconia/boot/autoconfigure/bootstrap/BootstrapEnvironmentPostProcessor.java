@@ -1,20 +1,25 @@
 package io.arconia.boot.autoconfigure.bootstrap;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.logging.DeferredLogFactory;
+import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -34,17 +39,28 @@ import io.arconia.boot.bootstrap.BootstrapMode;
  */
 class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(BootstrapEnvironmentPostProcessor.class);
-
     /**
      * Name of the property source holding the content of the bootstrap configuration file.
      */
     static final String PROPERTY_SOURCE_NAME = "arconiaBootstrap";
 
+    private final Log logger;
+
+    /**
+     * The logger is deferred until the logging system is initialized, since any message
+     * logged before that would be lost.
+     */
+    BootstrapEnvironmentPostProcessor(DeferredLogFactory logFactory) {
+        this.logger = logFactory.getLog(BootstrapEnvironmentPostProcessor.class);
+    }
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Assert.notNull(environment, "environment cannot be null");
         Assert.notNull(application, "application cannot be null");
+
+        BootstrapMode mode = BootstrapMode.detect();
+        logBootstrapMode(mode);
 
         addBootstrapConfigurationFile(environment, application);
 
@@ -58,20 +74,11 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
             return;
         }
 
-        List<String> modeProfiles = switch (BootstrapMode.detect()) {
-            case DEV -> {
-                logger.info("The application is running in dev mode");
-                yield devProfiles != null ? devProfiles : List.of("dev");
-            }
-            case TEST -> {
-                logger.info("The application is running in test mode");
-                yield testProfiles != null ? testProfiles : List.of("test");
-            }
-            case PROD -> {
-                // No additional profiles for prod mode
-                logger.debug("The application is running in prod mode");
-                yield List.of();
-            }
+        List<String> modeProfiles = switch (mode) {
+            case DEV -> devProfiles != null ? devProfiles : List.of("dev");
+            case TEST -> testProfiles != null ? testProfiles : List.of("test");
+            // No additional profiles for prod mode
+            case PROD -> List.of();
         };
 
         // Consider both the property-declared and the programmatically-set active profiles,
@@ -87,7 +94,7 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         List<String> additionalProfiles = new ArrayList<>();
         for (String profile : modeProfiles) {
             if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
-                logger.debug("Adding active profile '{}' for the current bootstrap mode", profile);
+                logger.debug(LogMessage.format("Adding active profile '%s' for the current bootstrap mode", profile));
                 additionalProfiles.add(profile);
             }
         }
@@ -108,15 +115,52 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
     }
 
     /**
+     * Reports the detected bootstrap mode, together with any problem with how it was set.
+     * The detection itself doesn't log, since it typically happens before the logging
+     * system is initialized.
+     */
+    private void logBootstrapMode(BootstrapMode mode) {
+        String explicitMode = System.getenv(BootstrapMode.PROPERTY_KEY.toUpperCase(Locale.ROOT).replace(".", "_"));
+        if (!StringUtils.hasText(explicitMode)) {
+            explicitMode = System.getProperty(BootstrapMode.PROPERTY_KEY);
+        }
+        if (StringUtils.hasText(explicitMode) && !isValidMode(explicitMode)) {
+            logger.warn(LogMessage.format("Invalid %s property value: '%s'. Defaulting to PROD mode.",
+                    BootstrapMode.PROPERTY_KEY, explicitMode));
+        }
+
+        if (mode != BootstrapMode.PROD && Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING)) {
+            logger.warn(LogMessage.format("The bootstrap mode is set to %s while Spring AOT processing is running. "
+                    + "The %s mode behavior will be baked into the AOT artifacts.", mode, mode));
+        }
+
+        if (mode == BootstrapMode.PROD) {
+            logger.debug("The application is running in prod mode");
+        } else {
+            logger.info(LogMessage.format("The application is running in %s mode", mode.name().toLowerCase(Locale.ROOT)));
+        }
+    }
+
+    private static boolean isValidMode(String value) {
+        return Arrays.stream(BootstrapMode.values()).anyMatch(mode -> mode.name().equalsIgnoreCase(value.strip()));
+    }
+
+    /**
      * Exposes the content of the bootstrap configuration file as a property source, below the
      * system and command line ones, so it participates in the binding of the bootstrap settings
      * and remains inspectable at runtime.
      */
-    private static void addBootstrapConfigurationFile(ConfigurableEnvironment environment, SpringApplication application) {
+    private void addBootstrapConfigurationFile(ConfigurableEnvironment environment, SpringApplication application) {
         if (environment.getPropertySources().contains(PROPERTY_SOURCE_NAME)) {
             return;
         }
-        Properties properties = BootstrapConfigurationFile.load(application.getClassLoader());
+        Properties properties;
+        try {
+            properties = BootstrapConfigurationFile.load(application.getClassLoader());
+        } catch (IOException ex) {
+            logger.warn(LogMessage.format("Failed to load the bootstrap configuration file from %s", BootstrapConfigurationFile.LOCATION), ex);
+            return;
+        }
         if (!properties.isEmpty()) {
             environment.getPropertySources().addLast(new PropertiesPropertySource(PROPERTY_SOURCE_NAME, properties));
         }

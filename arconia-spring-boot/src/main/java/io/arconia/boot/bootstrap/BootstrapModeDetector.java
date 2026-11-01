@@ -5,8 +5,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplicationAotProcessor;
 import org.springframework.core.NativeDetector;
 import org.springframework.util.ClassUtils;
@@ -14,10 +12,12 @@ import org.springframework.util.StringUtils;
 
 /**
  * Detects the application bootstrap mode based on various heuristics.
+ * <p>
+ * The detection doesn't log, since it typically runs before the logging system is
+ * initialized. The detected mode and any problem with an explicit one are reported
+ * by the environment post-processor activating the bootstrap profiles.
  */
 final class BootstrapModeDetector {
-
-    private static final Logger logger = LoggerFactory.getLogger(BootstrapModeDetector.class);
 
     private static final Set<String> TEST_CLASS_PREFIXES = Set.of(
         "org.junit.runners.",
@@ -40,7 +40,6 @@ final class BootstrapModeDetector {
             synchronized (LOCK) {
                 if (cachedMode == null) {
                     cachedMode = doDetect(stackTraceElements);
-                    logger.debug("Detected bootstrap mode: {}", cachedMode);
                 }
             }
         }
@@ -62,16 +61,7 @@ final class BootstrapModeDetector {
         }
         if (StringUtils.hasText(modeProperty)) {
             String normalizedMode = modeProperty.strip().toUpperCase(Locale.ROOT);
-            if (BootstrapMode.isValid(normalizedMode)) {
-                BootstrapMode mode = BootstrapMode.valueOf(normalizedMode);
-                if (mode != BootstrapMode.PROD && containsAotProcessor(stackTrace)) {
-                    logger.warn("The bootstrap mode is explicitly set to {} while Spring AOT processing is running. "
-                            + "The {} mode behavior will be baked into the AOT artifacts.", mode, mode);
-                }
-                return mode;
-            }
-            logger.warn("Invalid {} property value: '{}'. Defaulting to PROD mode.", BootstrapMode.PROPERTY_KEY, modeProperty);
-            return BootstrapMode.PROD;
+            return BootstrapMode.isValid(normalizedMode) ? BootstrapMode.valueOf(normalizedMode) : BootstrapMode.PROD;
         }
 
         // 2. Check the stack trace for known class prefixes that indicate a certain mode.
