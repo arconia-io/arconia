@@ -34,6 +34,17 @@ class DoclingServeClientTests {
     }
 
     @Test
+    void whenBaseUrlIsNotHttpThenThrow() {
+        assertThatThrownBy(() -> DoclingServeClient.builder().baseUrl("localhost:5001").build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("baseUrl must be an http or https URL");
+
+        assertThatThrownBy(() -> DoclingServeClient.builder().baseUrl("/docling").build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("baseUrl must be an http or https URL");
+    }
+
+    @Test
     void whenTimeoutIsNotPositiveThenThrow() {
         assertThatThrownBy(() -> DoclingServeClient.builder()
                 .baseUrl("http://localhost:5001")

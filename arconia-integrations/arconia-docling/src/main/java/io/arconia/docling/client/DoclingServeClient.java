@@ -285,7 +285,10 @@ public class DoclingServeClient implements DoclingServeApi {
 
         public DoclingServeClient build() {
             Assert.notNull(restClientBuilder, "restClientBuilder cannot be null");
+            URI baseUrl = this.baseUrl;
             Assert.notNull(baseUrl, "baseUrl cannot be null");
+            boolean plainHttp = "http".equalsIgnoreCase(baseUrl.getScheme());
+            Assert.isTrue(plainHttp || "https".equalsIgnoreCase(baseUrl.getScheme()), "baseUrl must be an http or https URL");
             Assert.notNull(connectTimeout, "connectTimeout cannot be null");
             Assert.notNull(readTimeout, "readTimeout cannot be null");
             Assert.notNull(asyncExecutor, "asyncExecutor cannot be null");
@@ -296,7 +299,7 @@ public class DoclingServeClient implements DoclingServeApi {
                     .baseUrl(baseUrl)
                     .requestFactory(ClientHttpRequestFactoryBuilder.jdk()
                             .withHttpClientCustomizer(builder -> {
-                                if (baseUrl.getScheme().equals("http")) {
+                                if (plainHttp) {
                                     // Docling Serve uses Python FastAPI which causes errors when called from JDK HttpClient.
                                     // The HttpClient uses HTTP 2 by default and then falls back to HTTP 1.1 if not supported.
                                     // However, the way FastAPI works results in the fallback not happening, making the call fail.
