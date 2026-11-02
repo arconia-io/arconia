@@ -2,8 +2,9 @@
 * xref:architecture.adoc[Architecture]
 * Core
 ** xref:tenant-context.adoc[Tenant Context]
-** xref:tenant-resolution.adoc[Tenant Resolution]
 ** xref:tenant-details.adoc[Tenant Details]
+** xref:caching.adoc[Caching]
 ** xref:observability.adoc[Observability]
 * xref:web.adoc[Web]
+** xref:tenant-resolution.adoc[Tenant Resolution]
 * xref:data-jdbc.adoc[Data JDBC]

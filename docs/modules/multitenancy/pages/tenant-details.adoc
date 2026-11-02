@@ -388,7 +388,7 @@ The `DefaultTenantVerifier` then reads tenants through a `CachingTenantDetailsSe
 
 IMPORTANT: A change to a tenant takes effect once its cache entry expires. In particular, a tenant you disable keeps being accepted for up to the time to live, so choose it according to how quickly a disabled tenant must lose access. Each application instance keeps its own cache, so with several replicas every one of them can keep accepting a disabled tenant for up to that time. When a disabled tenant must lose access immediately, leave caching disabled.
 
-Caching is disabled by default. Setting the time to live without Caffeine on the classpath fails at startup.
+Caching is disabled by default. Setting the time to live without Caffeine on the classpath fails at startup. This cache holds tenant details only; to keep cached application data apart per tenant, see xref:caching.adoc[Caching].
 
 .Tenant Details Cache Configuration Properties
 |===
