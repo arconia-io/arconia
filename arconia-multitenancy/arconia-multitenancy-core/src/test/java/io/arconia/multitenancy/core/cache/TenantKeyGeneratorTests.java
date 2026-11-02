@@ -10,11 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link DefaultTenantKeyGenerator}.
+ * Unit tests for {@link TenantKeyGenerator}.
  */
-class DefaultTenantKeyGeneratorTests {
+class TenantKeyGeneratorTests {
 
-    private final DefaultTenantKeyGenerator keyGenerator = new DefaultTenantKeyGenerator();
+    private final TenantKeyGenerator keyGenerator = new TenantKeyGenerator();
 
     @Test
     void whenSameTenantAndParametersThenSameCacheKey() {

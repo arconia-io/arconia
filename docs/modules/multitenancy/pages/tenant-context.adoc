@@ -140,9 +140,9 @@ class CustomTenantListener {
 
 == Tenant-Aware Caching
 
-Arconia Multitenancy provides tenant-aware cache key generation through the `TenantKeyGenerator` interface (an extension of Spring's `KeyGenerator`), ensuring cache isolation between tenants.
+Arconia Multitenancy provides tenant-aware cache key generation through `TenantKeyGenerator`, an implementation of Spring's `KeyGenerator`, ensuring cache isolation between tenants.
 
-A `DefaultTenantKeyGenerator` is auto-configured as a bean named `tenantKeyGenerator`. It generates cache keys by combining the current tenant identifier with the method parameters, so the same input for different tenants produces different cache entries. The target object and the method are not part of the key, which is also how Spring's own `SimpleKeyGenerator` behaves. Keys are therefore unique only within a given cache name. You can use it with Spring's `@Cacheable` annotation:
+A `TenantKeyGenerator` is auto-configured as a bean named `tenantKeyGenerator`. It generates cache keys by combining the current tenant identifier with the method parameters, so the same input for different tenants produces different cache entries. The target object and the method are not part of the key, which is also how Spring's own `SimpleKeyGenerator` behaves. Keys are therefore unique only within a given cache name. You can use it with Spring's `@Cacheable` annotation:
 
 [source,java]
 ----
@@ -164,16 +164,16 @@ Key generation requires a tenant context. When no tenant is bound, a `TenantNotF
 
 If a cache holds data that is genuinely the same for every tenant, give it its own cache name and leave it on Spring's default key generator, or wrap the work in `TenantContext.where()` so a tenant is bound.
 
-=== Custom TenantKeyGenerator
+=== Custom Tenant Key Generator
 
-You can provide your own `TenantKeyGenerator` bean to customize how tenant-aware cache keys are generated. It takes precedence over the auto-configured default:
+You can provide your own `KeyGenerator` bean named `tenantKeyGenerator` to customize how tenant-aware cache keys are generated. It replaces the auto-configured one, so the `@Cacheable` annotations referring to `tenantKeyGenerator` use it without changes:
 
 [source,java]
 ----
-import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
+import org.springframework.cache.interceptor.KeyGenerator;
 
 @Bean
-TenantKeyGenerator tenantKeyGenerator() {
+KeyGenerator tenantKeyGenerator() {
     return (target, method, params) -> {
         // Custom key generation logic
     };

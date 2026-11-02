@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -79,8 +80,18 @@ class MultitenancyCoreAutoConfigurationTests {
     @Test
     void tenantKeyGenerator() {
         contextRunner.run(context ->
-            assertThat(context).hasSingleBean(TenantKeyGenerator.class)
+            assertThat(context).hasSingleBean(TenantKeyGenerator.class).hasBean("tenantKeyGenerator")
         );
+    }
+
+    @Test
+    void tenantKeyGeneratorWhenCustomBeanWithSameNameThenReplaced() {
+        contextRunner.withBean("tenantKeyGenerator", KeyGenerator.class, () -> (target, method, params) -> "custom")
+            .run(context -> {
+                assertThat(context).doesNotHaveBean(TenantKeyGenerator.class);
+                assertThat(context.getBean("tenantKeyGenerator", KeyGenerator.class).generate(new Object(), Object.class.getMethod("toString")))
+                    .isEqualTo("custom");
+            });
     }
 
     @Test

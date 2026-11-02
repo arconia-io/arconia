@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
-import io.arconia.multitenancy.core.cache.DefaultTenantKeyGenerator;
 import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
 import io.arconia.multitenancy.core.context.TenantContextPropagatingTaskDecorator;
 import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
@@ -47,9 +46,9 @@ public final class MultitenancyCoreAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(TenantKeyGenerator.class)
-    DefaultTenantKeyGenerator tenantKeyGenerator() {
-        return new DefaultTenantKeyGenerator();
+    @ConditionalOnMissingBean(name = "tenantKeyGenerator")
+    TenantKeyGenerator tenantKeyGenerator() {
+        return new TenantKeyGenerator();
     }
 
 }
