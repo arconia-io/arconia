@@ -4,6 +4,7 @@ import io.micrometer.tracing.exporter.SpanExportingPredicate;
 import io.micrometer.tracing.exporter.SpanFilter;
 import io.micrometer.tracing.exporter.SpanReporter;
 import io.micrometer.tracing.otel.bridge.CompositeSpanExporter;
+import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.micrometer.tracing.autoconfigure.MicrometerTracingAutoConfiguration;
@@ -41,6 +43,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.propagation.OpenTelemetryPr
  */
 @AutoConfiguration(after = OpenTelemetryExporterAutoConfiguration.class,
         before = { MicrometerTracingAutoConfiguration.class, NoopTracerAutoConfiguration.class })
+@ConditionalOnClass(OtelTracer.class)
 @ConditionalOnOpenTelemetryTracing
 @EnableConfigurationProperties({OpenTelemetryTracingProperties.class, TracingProperties.class})
 @Import({

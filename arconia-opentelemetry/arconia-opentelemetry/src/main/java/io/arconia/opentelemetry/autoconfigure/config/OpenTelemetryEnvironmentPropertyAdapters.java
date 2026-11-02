@@ -126,7 +126,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_BSP_SCHEDULE_DELAY
                 .mapDuration("otel.bsp.schedule.delay", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.schedule-delay")
                 // OTEL_BSP_EXPORT_TIMEOUT
-                .mapTimeout("otel.bsp.export.timeout", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
+                .mapTimeout("otel.bsp.export.timeout", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.export-timeout")
                 // OTEL_BSP_MAX_QUEUE_SIZE
                 .mapInteger("otel.bsp.max.queue.size", OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.max-queue-size")
                 // OTEL_BSP_MAX_EXPORT_BATCH_SIZE
@@ -146,7 +146,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_BLRP_SCHEDULE_DELAY
                 .mapDuration("otel.blrp.schedule.delay", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.schedule-delay")
                 // OTEL_BLRP_EXPORT_TIMEOUT
-                .mapTimeout("otel.blrp.export.timeout", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.exporter-timeout")
+                .mapTimeout("otel.blrp.export.timeout", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.export-timeout")
                 // OTEL_BLRP_MAX_QUEUE_SIZE
                 .mapInteger("otel.blrp.max.queue.size", OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.max-queue-size")
                 // OTEL_BLRP_MAX_EXPORT_BATCH_SIZE

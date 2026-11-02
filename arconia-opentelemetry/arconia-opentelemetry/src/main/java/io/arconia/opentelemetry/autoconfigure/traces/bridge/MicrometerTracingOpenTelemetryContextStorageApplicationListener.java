@@ -35,6 +35,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.GenericApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -51,6 +52,10 @@ import org.springframework.util.MultiValueMap;
  * authored by Phillip Webb in the Spring Boot project.
  */
 class MicrometerTracingOpenTelemetryContextStorageApplicationListener implements GenericApplicationListener {
+
+	// The wrapper publishes events to the Micrometer Tracing bridge, which is an optional dependency.
+	private static final boolean BRIDGE_PRESENT = ClassUtils.isPresent("io.micrometer.tracing.otel.bridge.OtelTracer",
+			MicrometerTracingOpenTelemetryContextStorageApplicationListener.class.getClassLoader());
 
 	private static final AtomicBoolean added = new AtomicBoolean();
 
@@ -69,6 +74,9 @@ class MicrometerTracingOpenTelemetryContextStorageApplicationListener implements
 
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
+		if (!BRIDGE_PRESENT) {
+			return;
+		}
 		if (event instanceof ApplicationStartingEvent) {
 			addWrapper();
 		}
@@ -93,7 +101,7 @@ class MicrometerTracingOpenTelemetryContextStorageApplicationListener implements
 	 * EventPublishers} are propagated correctly.
 	 */
 	public static void addWrapper() {
-		if (added.compareAndSet(false, true)) {
+		if (BRIDGE_PRESENT && added.compareAndSet(false, true)) {
 			Wrapper.instance.addWrapper();
 		}
 	}

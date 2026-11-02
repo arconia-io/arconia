@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.traces;
 
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +39,16 @@ class OpenTelemetryTracingAutoConfigurationTests {
             .withBean(Clock.class, Clock::getDefault)
             .withBean(Resource.class, Resource::empty)
             .withBean(OpenTelemetry.class, OpenTelemetry::noop);
+
+    @Test
+    void autoConfigurationNotActivatedWithoutMicrometerTracingBridge() {
+        contextRunner
+            .withClassLoader(new FilteredClassLoader(OtelTracer.class))
+            .run(context -> {
+                assertThat(context).hasNotFailed();
+                assertThat(context).doesNotHaveBean(SdkTracerProvider.class);
+            });
+    }
 
     @Test
     void autoConfigurationNotActivatedWhenOpenTelemetryDisabled() {

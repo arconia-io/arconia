@@ -92,7 +92,8 @@ public final class OtlpMetricsExporterConfiguration {
             builder.setProxyOptions(proxyOptions);
         }
         if (config.isMetrics()) {
-            meterProvider.ifAvailable(builder::setMeterProvider);
+            // The meter provider is resolved on first use, since creating it requires this exporter.
+            builder.setMeterProvider(() -> meterProvider.getIfAvailable(MeterProvider::noop));
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         if (Threading.VIRTUAL.isActive(environment)) {
@@ -126,7 +127,8 @@ public final class OtlpMetricsExporterConfiguration {
             builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
         }
         if (config.isMetrics()) {
-            meterProvider.ifAvailable(builder::setMeterProvider);
+            // The meter provider is resolved on first use, since creating it requires this exporter.
+            builder.setMeterProvider(() -> meterProvider.getIfAvailable(MeterProvider::noop));
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
         logger.info("Configuring OpenTelemetry gRPC metric exporter with endpoint: {}", EffectiveOtlpExporterConfig.toLoggableUrl(url));

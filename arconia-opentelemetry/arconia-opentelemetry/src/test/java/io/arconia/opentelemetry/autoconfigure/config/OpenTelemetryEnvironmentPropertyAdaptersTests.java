@@ -104,8 +104,11 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .isEqualTo(2048);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.max-export-batch-size"))
                 .isEqualTo(512);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".processor.exporter-timeout"))
-                .isEqualTo(Duration.ofSeconds(30));
+        // Bound into the properties, so that a mapping to a property that doesn't exist fails.
+        OpenTelemetryTracingProperties properties = new Binder(ConfigurationPropertySources.from(adapter.toPropertySource("test")))
+                .bind(OpenTelemetryTracingProperties.CONFIG_PREFIX, OpenTelemetryTracingProperties.class)
+                .get();
+        assertThat(properties.getProcessor().getExportTimeout()).isEqualTo(Duration.ofSeconds(30));
     }
 
     @Test
@@ -131,8 +134,11 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
                 .isEqualTo(2048);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.max-export-batch-size"))
                 .isEqualTo(512);
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".processor.exporter-timeout"))
-                .isEqualTo(Duration.ofSeconds(30));
+        // Bound into the properties, so that a mapping to a property that doesn't exist fails.
+        OpenTelemetryLoggingProperties properties = new Binder(ConfigurationPropertySources.from(adapter.toPropertySource("test")))
+                .bind(OpenTelemetryLoggingProperties.CONFIG_PREFIX, OpenTelemetryLoggingProperties.class)
+                .get();
+        assertThat(properties.getProcessor().getExportTimeout()).isEqualTo(Duration.ofSeconds(30));
     }
 
     @Test

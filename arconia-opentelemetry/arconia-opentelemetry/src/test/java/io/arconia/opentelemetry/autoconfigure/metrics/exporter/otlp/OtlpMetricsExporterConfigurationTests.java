@@ -16,11 +16,14 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -265,6 +268,24 @@ class OtlpMetricsExporterConfigurationTests {
             .run(context -> {
                 OtlpGrpcMetricExporter exporter = context.getBean(OtlpGrpcMetricExporter.class);
                 assertThat(exporter.getDefaultAggregation(InstrumentType.HISTOGRAM)).isEqualTo(Aggregation.base2ExponentialBucketHistogram());
+            });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "http_protobuf", "grpc" })
+    void exporterMetricsDoNotCreateCycleWithMeterProvider(String protocol) {
+        new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(OpenTelemetryAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class,
+                OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
+            .withBean(Resource.class, Resource::empty)
+            .withPropertyValues(
+                "arconia.otel.metrics.exporter.otlp.metrics=true",
+                "arconia.otel.metrics.exporter.otlp.protocol=" + protocol
+            )
+            .run(context -> {
+                assertThat(context).hasNotFailed();
+                assertThat(context).hasSingleBean(SdkMeterProvider.class);
+                assertThat(context).hasSingleBean(MetricExporter.class);
             });
     }
 
