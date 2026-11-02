@@ -9,7 +9,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The `arconia-core` and `arconia-spring-boot` modules have been reorganized as `arconia-core-annotations`, holding the `@Incubating` and `@Internal` annotations without any Spring Boot dependency, and `arconia-core-bootstrap`, holding the bootstrap mode and profiles. Their packages have been renamed accordingly: `io.arconia.core.support` to `io.arconia.core.annotations`, `io.arconia.boot.bootstrap` to `io.arconia.core.bootstrap`, and `io.arconia.boot.autoconfigure.bootstrap` to `io.arconia.core.bootstrap.autoconfigure`, which includes `BootstrapMode` and `@ConditionalOnDevMode`. The xref:upgrading-arconia.adoc[upgrade recipe] applies the renames.
 * When the bootstrap mode is set both as the `arconia.bootstrap.mode` JVM system property and as the `ARCONIA_BOOTSTRAP_MODE` environment variable, the JVM system property now takes precedence, as in the Spring Boot externalized configuration. Previously, the environment variable won, including the one the Arconia CLI sets when running or testing an application. Learn more about the xref:core-features/bootstrap-mode.adoc#_setting_the_bootstrap_mode[Bootstrap Mode].
-* The startup message reporting the bootstrap mode and the warnings about misplaced bootstrap properties now appear in the application log. Previously, they were lost because they were logged before the logging system was initialized. A bootstrap mode set in an unsupported location, such as the application configuration, is now also reported when it's set correctly elsewhere too, since that value has no effect.
+* The startup message reporting the bootstrap mode and the warnings about misplaced bootstrap properties now appear in the application log. Previously, they were lost because they were logged before the logging system was initialized. A bootstrap mode set in an unsupported location, such as the application configuration, is now also reported when it's set correctly elsewhere, since that value has no effect.
+* The JSpecify nullability annotations of all Arconia modules are now enforced with NullAway at build time, so the null-safety contracts your IDE sees are verified rather than declared only. Previously, only the Dev Services modules were checked.
 
 == Data
 
@@ -21,7 +22,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
-* Test slices now pick up the Dev Service of their technology with no further configuration: `@JdbcTest`, `@DataJdbcTest`, `@DataJpaTest`, and `@JooqTest` for the JDBC Dev Services, `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest`. For the JDBC slices, the Dev Service replaces the embedded database Spring Boot would otherwise configure; disable the Dev Service for a test with its `enabled` property to get the embedded database back. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
+* Test slices now pick up the Dev Service of their technology with no further configuration: `@JdbcTest`, `@DataJdbcTest`, `@DataJpaTest`, and `@JooqTest` for the JDBC Dev Services, and `@DataMongoTest`, `@DataRedisTest`, `@DataElasticsearchTest`, and `@DataLdapTest` for the Dev Services of their technology. For the JDBC slices, the Dev Service replaces the embedded database Spring Boot would otherwise configure; disable the Dev Service for a test with its `enabled` property to get the embedded database back. Learn more on the page of each Dev Service, for example the xref:dev-services:postgresql.adoc#_running_the_application[PostgreSQL Dev Service].
 * The observability Dev Services (Grafana LGTM, OpenTelemetry Collector, Phoenix, and OpenLIT) are now skipped in test mode by default, since most tests have no use for a telemetry backend. Set `arconia.dev.services.<service-name>.skip-in-tests` to `false` for the tests that verify the telemetry the application exports. Learn more about xref:dev-services:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode].
 * When the application process exits, the containers it kept across Spring Boot DevTools restarts are now stopped, instead of being left to the Testcontainers resource reaper a few seconds later. Another application can no longer connect to a container that is about to disappear. Containers kept by the `testcontainers` reuse strategy are still left running. Learn more about xref:dev-services:index.adoc#_lifecycle_management[Lifecycle Management].
 * The startup message of a Dev Service now includes the host address of its main port, which is what you need to connect a tool on your machine to it, and only mentions the reuse strategy when a container is reused or the configured strategy could not be applied. Learn more about xref:dev-services:index.adoc#_startup_feedback[Startup Feedback].
@@ -58,6 +59,10 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * Prometheus now counts the first value of each metric in rates and totals, such as the first call to an endpoint or a model, which previously only appeared from the second one. Learn more about the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service].
 * The Grafana LGTM Dev Service can now serve SSL on its OTLP ports, so that the application exports telemetry to it over SSL, as it does with a collector secured with SSL. Learn more about xref:dev-services:lgtm.adoc#_using_ssl[Using SSL].
 
+=== Keycloak
+
+* The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. The xref:upgrading-arconia.adoc[upgrade recipe] renames the previous property. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].
+
 === Langfuse
 
 * The new xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs https://langfuse.com[Langfuse] for exploring the traces of AI applications, together with the containers it needs, and sends the traces of the application to it with no configuration. It signs you in to the Langfuse UI as `arconia@example.com` (password `password`), and it's skipped in test mode by default, like the other observability Dev Services.
@@ -82,10 +87,6 @@ The following changes affect the custom Dev Services you build on the Arconia De
 === Phoenix
 
 * The Phoenix Dev Service can now serve SSL, so that the application exports traces to it over SSL, as it does with a Phoenix deployment secured with SSL. Learn more about xref:dev-services:phoenix.adoc#_using_ssl[Using SSL].
-
-=== Keycloak
-
-* The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].
 
 == Docling
 
@@ -116,11 +117,13 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * `TenantContextIgnorePathMatcher` is no longer public and no longer registered as a bean. The paths to ignore are still configured with `arconia.multitenancy.resolution.http.filter.ignore-paths` and `additional-ignore-paths`. When building a `TenantContextFilter` yourself, pass them to `TenantContextFilter.builder().ignorePaths(...)` instead of `tenantContextIgnorePathMatcher(...)`.
 * Names across the multitenancy APIs are now consistent with their configuration properties. The `arconia.multitenancy.resolution.http.header.header-name` and `arconia.multitenancy.resolution.http.cookie.cookie-name` properties have become `header.name` and `cookie.name`. The builder methods and getters `tenantHeaderName`, `tenantCookieName`, `tenantClaimName` and `tenantIdentifierKey` have become `headerName`, `cookieName`, `claimName` and `keyName`, and `TenantContextFilter.builder().httpRequestTenantResolver(...)` has become `tenantResolver(...)`. The xref:upgrading-arconia.adoc[upgrade recipe] applies the renames.
 * `TenantDetails.attribute(key, type)` converts the attribute value to the requested type instead of casting it, so reading a number or a boolean works the same for tenants loaded from a database, where values are stored as text, and for tenants declared in configuration properties. Learn more about xref:multitenancy:tenant-details.adoc#_jdbc_based_tenant_details[JDBC-Based Tenant Details].
-* The tenant details health indicator has been removed. Spring Boot's `db` health indicator already reports whether the database holding the tenant details can be reached, and a missing tenant details table makes the tenant filter answer with `503 Service Unavailable` and log the cause. The `management.health.tenantdetails.enabled` property no longer has any effect.
+* The tenant details health indicator has been removed. Spring Boot's `db` health indicator already reports whether the database holding the tenant details can be reached, and a missing tenant details table makes the tenant filter answer with `503 Service Unavailable` and log the cause. The `management.health.tenantdetails.enabled` property no longer has any effect, and the xref:upgrading-arconia.adoc[upgrade recipe] comments it out.
 
 == Observability
 
 === OpenTelemetry
+
+==== Resource
 
 * The OpenTelemetry resource now identifies Arconia as the distribution in use and declares the schema URL of the semantic conventions it follows. Learn more about the xref:opentelemetry:resource.adoc#_distro_resource_contributor[Distro Resource Contributor].
 * The new `arconia.otel.resource.deployment-environment-name` property sets the `deployment.environment.name` attribute, such as `production` or `staging`.
@@ -128,30 +131,45 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The resource contributors now report values as the OpenTelemetry Semantic Conventions define them, such as `amd64` instead of `x86_64` for `host.arch`. Learn more about the xref:opentelemetry:resource.adoc#_resource_contributors[Resource Contributors].
 * The values of the `arconia.otel.resource.attributes` properties are now used as they are, as in Spring Boot. Previously, a `%` character prevented the application from starting.
 * The `arconia.otel.resource.enable` properties now work like Spring Boot's `management.metrics.enable`: the longest matching key wins.
-* When enabled, the metrics the OpenTelemetry SDK records about itself use the names of the semantic conventions, such as `otel.sdk.processor.span.processed`.
-* `OtlpConnectionDetails` can now provide the headers of the requests to the OTLP endpoint through the new `getHeaders()` method.
+
+==== Environment Variables
+
 * The `OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG` environment variables now configure the sampler. Previously, they were ignored. As the specification requires, the sampler argument only applies to the `traceidratio` and `parentbased_traceidratio` samplers and must be between 0 and 1. When it's not set, the ratio is 1, unless `management.tracing.sampling.probability` is set. Learn more about the xref:opentelemetry:index.adoc#_opentelemetry_environment_variables[OpenTelemetry Environment Variables].
 * The OpenTelemetry environment variables now follow the specification more closely. A timeout of `0` means no limit, `OTEL_PROPAGATORS=none` disables the propagation, and values of `OTEL_SDK_DISABLED` other than `true` and `false` are reported and ignored.
 * The propagators set with `OTEL_PROPAGATORS` now apply both to the trace context the application sends and to the one it receives. Previously, the application still accepted all the supported formats from incoming requests.
 * The `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE` and `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION` environment variables are now supported.
 * The warnings about invalid OpenTelemetry environment variables now appear in the application log. Previously, they were lost because they were logged before the logging system was initialized. They never include the values of headers and resource attributes, and a value that isn't correctly percent-encoded is skipped instead of preventing the application from starting. When a value can't be bound, the error names the environment variable it comes from.
-* Histograms now use the bucket boundaries advised by their instrumentation, such as the ones defined by the semantic conventions. Previously, they always used the default boundaries, which suit durations in milliseconds. The `arconia.otel.metrics.exporter.histogram-aggregation` property now sets the default aggregation of the OTLP metrics exporter.
-* The `arconia.otel.metrics.exemplars.enabled` property has been removed, since setting it to `false` didn't disable the exemplars. Set `arconia.otel.metrics.exemplars.filter` to `always-off` instead. The xref:upgrading-arconia.adoc[upgrade recipe] migrates the property.
-* The tracing context is now propagated whatever the type of traces exporter. Previously, with the `console` or `none` exporter, incoming trace context was ignored and none was sent to other services, so an application not exporting traces broke the traces passing through it. Learn more about xref:opentelemetry:traces.adoc#_propagation[Propagation].
-* The Micrometer OTLP registry now sends the headers provided by the OTLP connection details, such as the credentials of a backend, and applies the OTLP connection and request timeouts. Previously, it ignored them.
-* The Micrometer Metrics Registry OTLP now records exemplars, linking measurements to the trace in which they were recorded, as Spring Boot does. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer OTLP] registry.
-* The Micrometer OTLP registry only supports HTTP/Protobuf, so the application now fails to start with an explanation when the metrics exporter is configured to use gRPC. Previously, the registry sent HTTP requests to the gRPC endpoint and the metrics were lost. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer OTLP] registry.
-* The Logback OpenTelemetry Bridge now forwards logs with the `console` logs exporter too. Previously, it only forwarded them when exporting via OTLP. When logs aren't exported, it no longer holds the first log events in memory waiting for an exporter.
-* The Logback OpenTelemetry Bridge now registers a single appender when an application is started several times in the same JVM, such as in tests. Previously, each start added another appender, so each log event was exported several times.
+
+==== OTLP Exporters
+
+* The OTLP exporters now send telemetry over HTTP/1.1 with the new `arconia-opentelemetry-exporter-sender-http` module, which the Arconia OpenTelemetry Spring Boot Starter includes instead of the JDK sender of the OpenTelemetry project. Previously, the requests to plaintext endpoints asked to upgrade the connection to HTTP/2, and the servers and proxies rejecting the upgrade closed the connection, so the telemetry was lost. The Micrometer Metrics Registry OTLP connects the same way. You can still use another sender, such as the one based on OkHttp. If you excluded `opentelemetry-exporter-sender-jdk` from the starter to use another sender, exclude `arconia-opentelemetry-exporter-sender-http` instead. The xref:upgrading-arconia.adoc[upgrade recipe] updates the exclusion in Maven builds. Learn more about xref:opentelemetry:index.adoc#_http[HTTP].
 * The OTLP exporters, including the Micrometer Metrics Registry OTLP, can now trust a certificate authority or authenticate with a client certificate through a Spring Boot SSL bundle, configured with the new `arconia.otel.exporter.otlp.ssl.bundle` property or per signal. `OtlpConnectionDetails` can provide an SSL bundle through the new `getSslBundle()` method, and the Testcontainers service connections use HTTPS when the container has one. Learn more about xref:opentelemetry:index.adoc#_tls[TLS].
 * The `OTEL_EXPORTER_OTLP_CERTIFICATE`, `OTEL_EXPORTER_OTLP_CLIENT_KEY`, and `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE` environment variables, and their signal-specific variants, are now supported. They configure a Spring Boot SSL bundle for the OTLP exporters. Learn more about xref:opentelemetry:index.adoc#_tls[TLS].
 * You can configure a proxy for the OTLP exporters, including the Micrometer Metrics Registry OTLP, with the new `arconia.otel.exporter.otlp.proxy.*` properties, or per signal. Without it, the exporters keep using the proxy configured for the JVM, such as with the `https.proxyHost` system property. Learn more about xref:opentelemetry:index.adoc#_proxy[Proxy].
-* The `arconia.otel.<signal>.exporter.otlp.retry.*` properties are now part of the configuration metadata, so IDEs complete and describe them. The description of `max-attempts` now states that it counts the original request and must be between 2 and 5, as the OpenTelemetry SDK requires.
-* Enabling the metrics of the OTLP metrics exporter with `arconia.otel.metrics.exporter.otlp.metrics` no longer makes the application fail to start.
-* An application without the Micrometer Tracing OpenTelemetry bridge on the classpath no longer fails to start. Tracing with OpenTelemetry is then not configured, since it relies on the bridge.
-* The retry settings of a signal now fall back one by one to the common ones under `arconia.otel.exporter.otlp.retry.*`, like the other exporter settings. Previously, setting any retry property for a signal reset the others to their defaults for that signal, ignoring the common ones.
-* The OTLP exporters now send telemetry over HTTP/1.1 with the new `arconia-opentelemetry-exporter-sender-http` module, which the Arconia OpenTelemetry Spring Boot Starter includes instead of the JDK sender of the OpenTelemetry project. Previously, the requests to plaintext endpoints asked to upgrade the connection to HTTP/2, and the servers and proxies rejecting the upgrade closed the connection, so the telemetry was lost. The Micrometer Metrics Registry OTLP connects the same way. You can still use another sender, such as the one based on OkHttp. If you excluded `opentelemetry-exporter-sender-jdk` from the starter to use another sender, exclude `arconia-opentelemetry-exporter-sender-http` instead. The xref:upgrading-arconia.adoc[upgrade recipe] updates the exclusion in Maven builds. Learn more about xref:opentelemetry:index.adoc#_http[HTTP].
 * When virtual threads are enabled with the `spring.threads.virtual.enabled` property, the OTLP exporters send telemetry on virtual threads.
+* `OtlpConnectionDetails` can now provide the headers of the requests to the OTLP endpoint through the new `getHeaders()` method.
+* The `arconia.otel.<signal>.exporter.otlp.retry.*` properties are now part of the configuration metadata, so IDEs complete and describe them. The description of `max-attempts` now states that it counts the original request and must be between 2 and 5, as the OpenTelemetry SDK requires.
+* The retry settings of a signal now fall back one by one to the common ones under `arconia.otel.exporter.otlp.retry.*`, like the other exporter settings. Previously, setting any retry property for a signal reset the others to their defaults for that signal, ignoring the common ones.
+
+==== Traces
+
+* The tracing context is now propagated whatever the type of traces exporter. Previously, with the `console` or `none` exporter, incoming trace context was ignored and none was sent to other services, so an application not exporting traces broke the traces passing through it. Learn more about xref:opentelemetry:traces.adoc#_propagation[Propagation].
+* An application without the Micrometer Tracing OpenTelemetry bridge on the classpath no longer fails to start. Tracing with OpenTelemetry is then not configured, since it relies on the bridge.
+
+==== Metrics
+
+* Histograms now use the bucket boundaries advised by their instrumentation, such as the ones defined by the semantic conventions. Previously, they always used the default boundaries, which suit durations in milliseconds. The `arconia.otel.metrics.exporter.histogram-aggregation` property now sets the default aggregation of the OTLP metrics exporter.
+* The `arconia.otel.metrics.exemplars.enabled` property has been removed, since setting it to `false` didn't disable the exemplars. Set `arconia.otel.metrics.exemplars.filter` to `always-off` instead. The xref:upgrading-arconia.adoc[upgrade recipe] migrates the property.
+* When enabled, the metrics the OpenTelemetry SDK records about itself use the names of the semantic conventions, such as `otel.sdk.processor.span.processed`.
+* Enabling the metrics of the OTLP metrics exporter with `arconia.otel.metrics.exporter.otlp.metrics` no longer makes the application fail to start.
+* The Micrometer Metrics Registry OTLP now sends the headers provided by the OTLP connection details, such as the credentials of a backend, and applies the OTLP connection and request timeouts. Previously, it ignored them.
+* The Micrometer Metrics Registry OTLP now records exemplars, linking measurements to the trace in which they were recorded, as Spring Boot does. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP].
+* The Micrometer Metrics Registry OTLP only supports HTTP/Protobuf, so the application now fails to start with an explanation when the metrics exporter is configured to use gRPC. Previously, the registry sent HTTP requests to the gRPC endpoint and the metrics were lost. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP].
+
+==== Logs
+
+* The Logback OpenTelemetry Bridge now forwards logs with the `console` logs exporter too. Previously, it only forwarded them when exporting via OTLP. When logs aren't exported, it no longer holds the first log events in memory waiting for an exporter.
+* The Logback OpenTelemetry Bridge now registers a single appender when an application is started several times in the same JVM, such as in tests. Previously, each start added another appender, so each log event was exported several times.
 
 === OpenTelemetry Semantic Conventions
 
@@ -197,12 +215,12 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 === OpenInference Semantic Conventions
 
-* Model calls now record their input and output documents, the requested and response models, the cached input tokens, so that Phoenix includes them in the cost, and the available tools. Video and document content, such as PDFs, is also recorded, and the results of parallel tool calls are all recorded instead of only the first one.
+* Model calls now record their input and output documents, the requested and response models, and the available tools. They also record the cached input tokens, which Phoenix includes in the cost. Video and document content, such as PDFs, is also recorded, and the results of parallel tool calls are all recorded instead of only the first one.
 * Tool executions now record the tool call ID and the parameters definition of the tool.
 * Base64 media longer than `arconia.observations.conventions.openinference.ai.base64-image-max-length` is now redacted, as the OpenInference specification requires, instead of being truncated into an invalid data URI.
 * Google GenAI calls are now reported with the OpenInference provider and system values, model names are omitted when unknown, and embedding spans are named `CreateEmbeddings`, as the specification requires.
 * The new `hide-llm-tools` property hides the definitions of the tools available to the model.
-* The `hide-prompts` and `hide-choices` properties have been removed, together with their environment variables, since they apply to the completions API, which Spring AI doesn't use.
+* The `hide-prompts` and `hide-choices` properties have been removed, together with their environment variables, since they apply to the completions API, which Spring AI doesn't use. The xref:upgrading-arconia.adoc[upgrade recipe] comments out the properties.
 * The documentation now covers sending traces to xref:observability:semantic-conventions/openinference.adoc#_arize_ax[Arize AX].
 * The boolean OpenInference environment variables now accept only `true` and `false`, as in the OpenInference reference implementation. Any other value, such as `yes`, is reported in the log and ignored, so the configuration property applies. Previously, it was silently treated as `false`, which overrode a `hide-` property set to `true`. Learn more about the xref:observability:semantic-conventions/openinference.adoc#_environment_variables[Environment Variables].
 
