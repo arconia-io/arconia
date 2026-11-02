@@ -63,6 +63,7 @@ include 'arconia-observation:arconia-opentelemetry-semantic-conventions'
 
 // Observability
 include 'arconia-opentelemetry:arconia-opentelemetry'
+include 'arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http'
 include 'arconia-opentelemetry:arconia-opentelemetry-logback-bridge'
 include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge'
 include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp'

@@ -1,0 +1,37 @@
+plugins {
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api "io.opentelemetry:opentelemetry-sdk-common"
+
+    implementation project(":arconia-opentelemetry:arconia-opentelemetry")
+    implementation "io.opentelemetry:opentelemetry-api"
+    implementation "org.slf4j:slf4j-api"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation("io.opentelemetry:opentelemetry-exporter-otlp") {
+        exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
+    }
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry Exporter Sender HTTP"
+                description = "Arconia OpenTelemetry Exporter Sender HTTP."
+            }
+        }
+    }
+}
