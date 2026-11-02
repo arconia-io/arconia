@@ -46,9 +46,8 @@ public class OtlpExporterConfig {
     /**
      * Configuration for retrying failed requests.
      */
-    @Nullable
     @NestedConfigurationProperty
-    private RetryConfig retry;
+    private final SignalRetryConfig retry = new SignalRetryConfig();
 
     /**
      * Configuration for securing the connection with TLS.
@@ -118,13 +117,8 @@ public class OtlpExporterConfig {
         this.compression = compression;
     }
 
-    @Nullable
-    public RetryConfig getRetry() {
+    public SignalRetryConfig getRetry() {
         return retry;
-    }
-
-    public void setRetry(RetryConfig retry) {
-        this.retry = retry;
     }
 
     public SslConfig getSsl() {

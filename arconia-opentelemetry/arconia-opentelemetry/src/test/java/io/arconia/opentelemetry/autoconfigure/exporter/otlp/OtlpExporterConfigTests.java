@@ -23,7 +23,10 @@ class OtlpExporterConfigTests {
         assertThat(config.getConnectTimeout()).isNull();
         assertThat(config.getProtocol()).isNull();
         assertThat(config.getCompression()).isNull();
-        assertThat(config.getRetry()).isNull();
+        assertThat(config.getRetry().getMaxAttempts()).isNull();
+        assertThat(config.getRetry().getBackoffConfig().getFirstBackoff()).isNull();
+        assertThat(config.getRetry().getBackoffConfig().getMaxBackoff()).isNull();
+        assertThat(config.getRetry().getBackoffConfig().getMultiplier()).isNull();
         assertThat(config.getHeaders()).isEmpty();
         assertThat(config.isMetrics()).isNull();
     }
@@ -44,7 +47,7 @@ class OtlpExporterConfigTests {
         config.setProtocol(Protocol.GRPC);
         config.setCompression(Compression.NONE);
 
-        config.setRetry(new RetryConfig());
+        config.getRetry().setMaxAttempts(3);
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer token123");
@@ -58,7 +61,7 @@ class OtlpExporterConfigTests {
         assertThat(config.getConnectTimeout()).isEqualTo(connectTimeout);
         assertThat(config.getProtocol()).isEqualTo(Protocol.GRPC);
         assertThat(config.getCompression()).isEqualTo(Compression.NONE);
-        assertThat(config.getRetry()).isNotNull();
+        assertThat(config.getRetry().getMaxAttempts()).isEqualTo(3);
         assertThat(config.getHeaders())
                 .isNotNull()
                 .hasSize(2)

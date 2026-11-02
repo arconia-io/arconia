@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
@@ -11,6 +12,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTraci
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -296,6 +298,25 @@ class OtlpTracingExporterConfigurationTests {
     void httpProtobufExporterUsesDefaultExecutorWhenVirtualThreadsDisabled() {
         contextRunner
             .run(context -> assertThat(executorService(context.getBean(OtlpHttpSpanExporter.class))).isNull());
+    }
+
+    @Test
+    void signalRetrySettingsCombineWithCommonOnes() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.retry.backoff-config.max-backoff=30s",
+                "arconia.otel.traces.exporter.otlp.retry.max-attempts=3"
+            )
+            .run(context -> {
+                RetryPolicy retryPolicy = retryPolicy(context.getBean(OtlpHttpSpanExporter.class));
+                assertThat(retryPolicy.getMaxAttempts()).isEqualTo(3);
+                assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(30));
+            });
+    }
+
+    private static RetryPolicy retryPolicy(Object exporter) {
+        Object builder = ReflectionTestUtils.getField(exporter, "builder");
+        return (RetryPolicy) ReflectionTestUtils.getField(builder, "retryPolicy");
     }
 
     private static @Nullable ExecutorService executorService(Object exporter) {

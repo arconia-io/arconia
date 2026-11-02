@@ -87,8 +87,18 @@ public final class EffectiveOtlpExporterConfig {
     }
 
     public RetryPolicy getRetryPolicy() {
-        RetryConfig retry = signalProperties.getRetry();
-        return RetryConfig.buildRetryPolicy(retry != null ? retry : commonProperties.getOtlp().getRetry());
+        SignalRetryConfig retry = signalProperties.getRetry();
+        RetryConfig commonRetry = commonProperties.getOtlp().getRetry();
+        Integer maxAttempts = retry.getMaxAttempts();
+        Duration firstBackoff = retry.getBackoffConfig().getFirstBackoff();
+        Duration maxBackoff = retry.getBackoffConfig().getMaxBackoff();
+        Double multiplier = retry.getBackoffConfig().getMultiplier();
+        return RetryPolicy.builder()
+                .setMaxAttempts(maxAttempts != null ? maxAttempts : commonRetry.getMaxAttempts())
+                .setInitialBackoff(firstBackoff != null ? firstBackoff : commonRetry.getBackoffConfig().getFirstBackoff())
+                .setMaxBackoff(maxBackoff != null ? maxBackoff : commonRetry.getBackoffConfig().getMaxBackoff())
+                .setBackoffMultiplier(multiplier != null ? multiplier : commonRetry.getBackoffConfig().getMultiplier())
+                .build();
     }
 
     public MemoryMode getMemoryMode() {

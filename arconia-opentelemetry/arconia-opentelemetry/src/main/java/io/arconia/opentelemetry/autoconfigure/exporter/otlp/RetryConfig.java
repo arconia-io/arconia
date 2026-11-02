@@ -2,8 +2,6 @@ package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
 import java.time.Duration;
 
-import io.opentelemetry.sdk.common.export.RetryPolicy;
-
 /**
  * Configuration for retrying failed requests.
  */
@@ -69,15 +67,6 @@ public class RetryConfig {
             this.multiplier = multiplier;
         }
 
-    }
-
-    public static RetryPolicy buildRetryPolicy(RetryConfig retryConfig) {
-        return RetryPolicy.builder()
-                .setMaxAttempts(retryConfig.getMaxAttempts())
-                .setInitialBackoff(retryConfig.getBackoffConfig().getFirstBackoff())
-                .setMaxBackoff(retryConfig.getBackoffConfig().getMaxBackoff())
-                .setBackoffMultiplier(retryConfig.getBackoffConfig().getMultiplier())
-                .build();
     }
 
 }

@@ -160,20 +160,48 @@ class EffectiveOtlpExporterConfigTests {
 
         @Test
         void usesCommonRetry() {
-            commonProperties.getOtlp().getRetry().setMaxAttempts(3);
+            RetryConfig commonRetry = commonProperties.getOtlp().getRetry();
+            commonRetry.setMaxAttempts(3);
+            commonRetry.getBackoffConfig().setFirstBackoff(Duration.ofSeconds(2));
+            commonRetry.getBackoffConfig().setMaxBackoff(Duration.ofSeconds(20));
+            commonRetry.getBackoffConfig().setMultiplier(2.0);
 
-            assertThat(config.getRetryPolicy().getMaxAttempts()).isEqualTo(3);
+            RetryPolicy retryPolicy = config.getRetryPolicy();
+
+            assertThat(retryPolicy.getMaxAttempts()).isEqualTo(3);
+            assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofSeconds(2));
+            assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(20));
+            assertThat(retryPolicy.getBackoffMultiplier()).isEqualTo(2.0);
         }
 
         @Test
         void signalRetryTakesPrecedence() {
-            RetryConfig retry = new RetryConfig();
+            commonProperties.getOtlp().getRetry().setMaxAttempts(3);
+            SignalRetryConfig retry = signalProperties.getRetry();
             retry.setMaxAttempts(2);
-            signalProperties.setRetry(retry);
+            retry.getBackoffConfig().setFirstBackoff(Duration.ofMillis(500));
+            retry.getBackoffConfig().setMaxBackoff(Duration.ofSeconds(10));
+            retry.getBackoffConfig().setMultiplier(3.0);
 
             RetryPolicy retryPolicy = config.getRetryPolicy();
 
             assertThat(retryPolicy.getMaxAttempts()).isEqualTo(2);
+            assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofMillis(500));
+            assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(10));
+            assertThat(retryPolicy.getBackoffMultiplier()).isEqualTo(3.0);
+        }
+
+        @Test
+        void unsetSignalRetrySettingsFallBackToCommon() {
+            commonProperties.getOtlp().getRetry().getBackoffConfig().setMaxBackoff(Duration.ofSeconds(30));
+            signalProperties.getRetry().setMaxAttempts(3);
+
+            RetryPolicy retryPolicy = config.getRetryPolicy();
+
+            assertThat(retryPolicy.getMaxAttempts()).isEqualTo(3);
+            assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(30));
+            assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofSeconds(1));
+            assertThat(retryPolicy.getBackoffMultiplier()).isEqualTo(1.5);
         }
 
     }
