@@ -1,10 +1,14 @@
 package io.arconia.multitenancy.core.autoconfigure;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +17,7 @@ import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
 import io.arconia.multitenancy.core.resolution.TenantIdentifierValidator;
 import io.arconia.multitenancy.core.resolution.TenantVerifier;
 import io.arconia.multitenancy.core.tenantdetails.InMemoryTenantDetailsService;
+import io.arconia.multitenancy.core.tenantdetails.Tenant;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetails;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 
@@ -79,6 +84,82 @@ class TenantDetailsConfigurationTests {
         contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context -> {
             assertThat(context).hasSingleBean(TenantVerifier.class);
         });
+    }
+
+    @Test
+    void tenantVerifierWhenCacheTimeToLiveThenLookupsAreCached() {
+        contextRunner.withUserConfiguration(CountingTenantDetailsServiceConfiguration.class)
+            .withPropertyValues("arconia.multitenancy.details.cache.time-to-live=1m")
+            .run(context -> {
+                var verifier = context.getBean(TenantVerifier.class);
+                var service = context.getBean(CountingTenantDetailsService.class);
+
+                verifier.verify("acme");
+                verifier.verify("acme");
+
+                assertThat(service.lookups).hasValue(1);
+            });
+    }
+
+    @Test
+    void tenantVerifierWhenNoCacheTimeToLiveThenLookupsAreNotCached() {
+        contextRunner.withUserConfiguration(CountingTenantDetailsServiceConfiguration.class).run(context -> {
+            var verifier = context.getBean(TenantVerifier.class);
+            var service = context.getBean(CountingTenantDetailsService.class);
+
+            verifier.verify("acme");
+            verifier.verify("acme");
+
+            assertThat(service.lookups).hasValue(2);
+        });
+    }
+
+    @Test
+    void tenantVerifierWhenCacheTimeToLiveAndNoCaffeineThenFail() {
+        contextRunner.withUserConfiguration(CountingTenantDetailsServiceConfiguration.class)
+            .withClassLoader(new FilteredClassLoader(Caffeine.class))
+            .withPropertyValues("arconia.multitenancy.details.cache.time-to-live=1m")
+            .run(context -> {
+                assertThat(context).hasFailed();
+                assertThat(context).getFailure()
+                    .rootCause()
+                    .hasMessageContaining("'arconia.multitenancy.details.cache.time-to-live' property is set, but Caffeine is not on the classpath");
+            });
+    }
+
+    @Test
+    void tenantsEndpointServiceIsNotCached() {
+        contextRunner.withUserConfiguration(CountingTenantDetailsServiceConfiguration.class)
+            .withPropertyValues("arconia.multitenancy.details.cache.time-to-live=1m")
+            .run(context -> assertThat(context.getBean(TenantDetailsService.class))
+                .isInstanceOf(CountingTenantDetailsService.class));
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CountingTenantDetailsServiceConfiguration {
+
+        @Bean
+        CountingTenantDetailsService countingTenantDetailsService() {
+            return new CountingTenantDetailsService();
+        }
+
+    }
+
+    static class CountingTenantDetailsService implements TenantDetailsService {
+
+        final AtomicInteger lookups = new AtomicInteger();
+
+        @Override
+        public List<? extends TenantDetails> loadAllTenants() {
+            return List.of();
+        }
+
+        @Override
+        public TenantDetails loadTenantByIdentifier(String identifier) {
+            lookups.incrementAndGet();
+            return Tenant.builder().identifier(identifier).build();
+        }
+
     }
 
     @Configuration(proxyBeanMethods = false)

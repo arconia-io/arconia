@@ -313,6 +313,72 @@ TenantVerifier tenantVerifier() {
 }
 ----
 
+=== Caching Tenant Lookups
+
+The verifier looks up the tenant on every request. With the xref:_jdbc_based_tenant_details[JDBC-based tenant details] or any other remote store, that is one query per request. To serve repeated lookups from memory, add Caffeine to your project and set a time to live:
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
+</dependency>
+----
+======
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  multitenancy:
+    details:
+      cache:
+        time-to-live: 30s
+----
+
+Properties::
++
+[source,properties]
+----
+arconia.multitenancy.details.cache.time-to-live=30s
+----
+======
+
+The `DefaultTenantVerifier` then reads tenants through a `CachingTenantDetailsService`. Only tenants that exist are cached, including disabled ones. An identifier that matches no tenant is looked up every time, so that arbitrary identifiers sent by clients cannot push known tenants out of the cache and a newly created tenant is accepted right away. The xref:_tenants_endpoint[tenants endpoint] and your own code keep reading the `TenantDetailsService` directly.
+
+IMPORTANT: A change to a tenant takes effect once its cache entry expires. In particular, a tenant you disable keeps being accepted for up to the time to live, so choose it according to how quickly a disabled tenant must lose access.
+
+Caching is disabled by default. Setting the time to live without Caffeine on the classpath fails at startup.
+
+.Tenant Details Cache Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.multitenancy.details.cache.time-to-live`
+|
+|Time after which a cached tenant is loaded again. Setting it enables caching, which requires Caffeine on the classpath. A change to a tenant, such as disabling it, takes effect once its entry expires.
+
+|`arconia.multitenancy.details.cache.max-size`
+|`1000`
+|Maximum number of tenants held in the cache.
+|===
+
 == Actuator
 
 === Tenants Endpoint
