@@ -32,7 +32,7 @@ dependencies {
             because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
         }
         // TEMPORARY: CVE fix in commons-lang3, pulled in by the Spring Boot plugin via commons-compress. Aligned with the version Spring Boot manages.
-        implementation("org.apache.commons:commons-lang3:3.20.0") {
+        implementation("org.apache.commons:commons-lang3:3.21.0") {
             because "GHSA-j288-q9x7-2f5v (fixed in 3.18.0)"
         }
     }
