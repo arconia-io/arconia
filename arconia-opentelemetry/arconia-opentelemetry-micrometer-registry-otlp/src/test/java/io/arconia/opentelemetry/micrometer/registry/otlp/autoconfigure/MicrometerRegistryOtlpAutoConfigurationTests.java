@@ -1,5 +1,8 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Map;
@@ -255,6 +258,24 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                     HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(httpSender, "httpClient");
                     assertThat(httpClient.connectTimeout()).contains(Duration.ofSeconds(2));
                     assertThat(ReflectionTestUtils.getField(httpSender, "timeout")).isEqualTo(Duration.ofSeconds(7));
+                });
+    }
+
+    @Test
+    void metricsSenderUsesProxy() {
+        contextRunner
+                .withPropertyValues(
+                        "arconia.otel.metrics.exporter.otlp.proxy.host=proxy.example.com",
+                        "arconia.otel.metrics.exporter.otlp.proxy.port=3128"
+                )
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> {
+                    JdkHttpClientSender httpSender = httpSender(context.getBean(OtlpHttpMetricsSender.class));
+                    HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(httpSender, "httpClient");
+                    assertThat(httpClient.proxy()).hasValueSatisfying(proxySelector ->
+                            assertThat(proxySelector.select(URI.create("https://otlp.example.com")))
+                                    .extracting(Proxy::address)
+                                    .containsExactly(InetSocketAddress.createUnresolved("proxy.example.com", 3128)));
                 });
     }
 

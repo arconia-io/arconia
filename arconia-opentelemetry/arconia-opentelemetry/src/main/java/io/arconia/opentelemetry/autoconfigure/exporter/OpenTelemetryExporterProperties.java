@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.ProxyConfig;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.RetryConfig;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.SslConfig;
 
@@ -103,6 +104,12 @@ public class OpenTelemetryExporterProperties {
         private final SslConfig ssl = new SslConfig();
 
         /**
+         * Configuration for connecting through an HTTP proxy.
+         */
+        @NestedConfigurationProperty
+        private final ProxyConfig proxy = new ProxyConfig();
+
+        /**
          * Additional headers to include in each request to the endpoint.
          */
         private Map<String, String> headers = new HashMap<>();
@@ -159,6 +166,10 @@ public class OpenTelemetryExporterProperties {
 
         public SslConfig getSsl() {
             return ssl;
+        }
+
+        public ProxyConfig getProxy() {
+            return proxy;
         }
 
         public Map<String, String> getHeaders() {

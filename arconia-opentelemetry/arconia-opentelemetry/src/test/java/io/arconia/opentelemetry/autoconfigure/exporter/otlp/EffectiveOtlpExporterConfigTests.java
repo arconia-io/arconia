@@ -1,7 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -253,6 +258,52 @@ class EffectiveOtlpExporterConfigTests {
         @Test
         void trustManagerFromSslBundle() {
             assertThat(EffectiveOtlpExporterConfig.getTrustManager(sslBundle)).isNotNull();
+        }
+
+    }
+
+    @Nested
+    class ProxyResolution {
+
+        @Test
+        void usesJvmProxySelectorByDefault() {
+            assertThat(config.hasProxy()).isFalse();
+            assertThat(config.getProxyOptions().getProxySelector()).isSameAs(ProxySelector.getDefault());
+        }
+
+        @Test
+        void usesCommonProxy() {
+            commonProperties.getOtlp().getProxy().setHost("proxy.example.com");
+            commonProperties.getOtlp().getProxy().setPort(3128);
+
+            assertThat(config.hasProxy()).isTrue();
+            assertThat(selectedProxy(config)).isEqualTo(InetSocketAddress.createUnresolved("proxy.example.com", 3128));
+        }
+
+        @Test
+        void signalProxyTakesPrecedence() {
+            commonProperties.getOtlp().getProxy().setHost("proxy.example.com");
+            commonProperties.getOtlp().getProxy().setPort(3128);
+            signalProperties.getProxy().setHost("traces-proxy.example.com");
+            signalProperties.getProxy().setPort(8080);
+
+            assertThat(selectedProxy(config)).isEqualTo(InetSocketAddress.createUnresolved("traces-proxy.example.com", 8080));
+        }
+
+        @Test
+        void whenProxyPortMissingThenThrow() {
+            commonProperties.getOtlp().getProxy().setHost("proxy.example.com");
+
+            assertThatIllegalStateException()
+                    .isThrownBy(config::getProxyOptions)
+                    .withMessage("The proxy for the OTLP exporter requires a port between 1 and 65535, but it's null");
+        }
+
+        private static SocketAddress selectedProxy(EffectiveOtlpExporterConfig config) {
+            List<Proxy> proxies = config.getProxyOptions().getProxySelector().select(URI.create("https://otlp.example.com:4318"));
+            assertThat(proxies).hasSize(1);
+            assertThat(proxies.get(0).type()).isEqualTo(Proxy.Type.HTTP);
+            return proxies.get(0).address();
         }
 
     }

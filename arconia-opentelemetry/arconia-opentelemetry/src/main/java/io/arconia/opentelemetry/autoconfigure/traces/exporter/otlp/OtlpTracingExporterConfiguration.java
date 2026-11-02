@@ -6,6 +6,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.ConditionalOnOtlpProtocol;
@@ -55,7 +57,6 @@ public final class OtlpTracingExporterConfiguration {
         };
     }
 
-    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpTracingConnectionDetails.class)
@@ -75,6 +76,10 @@ public final class OtlpTracingExporterConfiguration {
         if (sslBundle != null) {
             builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
         }
+        ProxyOptions proxyOptions = config.getProxyOptions();
+        if (proxyOptions != null) {
+            builder.setProxy(proxyOptions);
+        }
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
@@ -83,13 +88,13 @@ public final class OtlpTracingExporterConfiguration {
         return builder.build();
     }
 
-    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpTracingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryTracingExporterProperties.CONFIG_PREFIX, value = Protocol.GRPC)
     OtlpGrpcSpanExporter otlpGrpcSpanExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
+        Assert.state(!config.hasProxy(), "The OTLP exporter doesn't support a proxy with the gRPC protocol. Use the HTTP/Protobuf protocol, or remove the proxy configuration.");
         String url = connectionDetails.getTracesUrl(Protocol.GRPC);
         OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder()
                 .setEndpoint(url)

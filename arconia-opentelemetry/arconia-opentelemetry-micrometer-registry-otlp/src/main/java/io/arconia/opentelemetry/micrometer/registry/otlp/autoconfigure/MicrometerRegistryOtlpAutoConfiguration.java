@@ -12,6 +12,7 @@ import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.registry.otlp.OtlpHttpMetricsSender;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
 import io.micrometer.registry.otlp.OtlpMetricsSender;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -103,7 +104,9 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
                                             OpenTelemetryMetricsExporterProperties metricsProperties
     ) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, metricsProperties.getOtlp());
-        return new OtlpHttpMetricsSender(new JdkHttpClientSender(config.getConnectTimeout(), config.getTimeout(), connectionDetails.getSslBundle()));
+        ProxyOptions proxyOptions = config.getProxyOptions();
+        return new OtlpHttpMetricsSender(new JdkHttpClientSender(config.getConnectTimeout(), config.getTimeout(),
+                connectionDetails.getSslBundle(), proxyOptions != null ? proxyOptions.getProxySelector() : null));
     }
 
     @Bean

@@ -6,6 +6,7 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.ConditionalOnOtlpProtocol;
@@ -55,7 +57,6 @@ public final class OtlpLoggingExporterConfiguration {
         };
     }
 
-    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
@@ -75,6 +76,10 @@ public final class OtlpLoggingExporterConfiguration {
         if (sslBundle != null) {
             builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
         }
+        ProxyOptions proxyOptions = config.getProxyOptions();
+        if (proxyOptions != null) {
+            builder.setProxyOptions(proxyOptions);
+        }
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
@@ -83,13 +88,13 @@ public final class OtlpLoggingExporterConfiguration {
         return builder.build();
     }
 
-    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, value = Protocol.GRPC)
     OtlpGrpcLogRecordExporter otlpGrpcLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
+        Assert.state(!config.hasProxy(), "The OTLP exporter doesn't support a proxy with the gRPC protocol. Use the HTTP/Protobuf protocol, or remove the proxy configuration.");
         String url = connectionDetails.getLogsUrl(Protocol.GRPC);
         OtlpGrpcLogRecordExporterBuilder builder = OtlpGrpcLogRecordExporter.builder()
                 .setEndpoint(url)

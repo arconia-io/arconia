@@ -216,6 +216,14 @@ Global properties are available to configure the OTLP exporters for logs, metric
 |`http-protobuf`
 |Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
+|`arconia.otel.exporter.otlp.proxy.host`
+|-
+|Host of the proxy. When not set, the proxy configured for the JVM is used, if any.
+
+|`arconia.otel.exporter.otlp.proxy.port`
+|-
+|Port of the proxy.
+
 |`arconia.otel.exporter.otlp.ssl.bundle`
 |-
 |Name of the SSL bundle to use for the connection to the OTLP endpoint.
@@ -344,6 +352,36 @@ arconia.otel.exporter.otlp.ssl.bundle=otlp
 The SSL bundle applies to the OTLP exporters of all signals and to the xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP]. You can use a different SSL bundle for a signal with the `arconia.otel.<signal>.exporter.otlp.ssl.bundle` property.
 
 The `OTEL_EXPORTER_OTLP_CERTIFICATE`, `OTEL_EXPORTER_OTLP_CLIENT_KEY`, and `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE` environment variables configure an SSL bundle named `otel-exporter-otlp` from the given PEM files and use it for the OTLP exporters. Their signal-specific variants, such as `OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE`, configure an SSL bundle named `otel-exporter-otlp-<signal>`, taking the files they don't set from the general variables. The client key and the client certificate must be set together. The `OTEL_EXPORTER_OTLP_INSECURE` variables are not supported, since the scheme of the endpoint determines whether TLS is used.
+
+==== Proxy
+
+The OTLP exporters connect to the endpoint through the proxy configured for the JVM, if any, such as with the standard `https.proxyHost`, `https.proxyPort`, and `http.nonProxyHosts` system properties. You can configure a proxy for the OTLP exporters explicitly instead.
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  otel:
+    exporter:
+      otlp:
+        proxy:
+          host: proxy.example.com
+          port: 3128
+----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.exporter.otlp.proxy.host=proxy.example.com
+arconia.otel.exporter.otlp.proxy.port=3128
+----
+======
+
+The proxy applies to the OTLP exporters of all signals and to the xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP]. You can use a different proxy for a signal with the `arconia.otel.<signal>.exporter.otlp.proxy.*` properties. Proxies are only supported with HTTP/Protobuf, so the application fails to start if a proxy is configured explicitly for an exporter using gRPC. Proxy authentication is not supported.
 
 === Console
 

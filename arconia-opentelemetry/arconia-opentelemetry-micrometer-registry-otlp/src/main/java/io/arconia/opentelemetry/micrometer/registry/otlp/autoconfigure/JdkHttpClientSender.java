@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
 import java.io.IOException;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,7 +21,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link HttpSender} based on the JDK {@link HttpClient}, so that the connection
- * to the OTLP endpoint can be secured with an SSL bundle.
+ * to the OTLP endpoint can be secured with an SSL bundle and go through a proxy.
  */
 final class JdkHttpClientSender implements HttpSender {
 
@@ -28,7 +29,7 @@ final class JdkHttpClientSender implements HttpSender {
 
     private final Duration timeout;
 
-    JdkHttpClientSender(Duration connectTimeout, Duration timeout, @Nullable SslBundle sslBundle) {
+    JdkHttpClientSender(Duration connectTimeout, Duration timeout, @Nullable SslBundle sslBundle, @Nullable ProxySelector proxySelector) {
         Assert.notNull(connectTimeout, "connectTimeout cannot be null");
         Assert.notNull(timeout, "timeout cannot be null");
         HttpClient.Builder builder = HttpClient.newBuilder()
@@ -37,6 +38,9 @@ final class JdkHttpClientSender implements HttpSender {
                 // backends and proxies reject by closing the connection. OTLP works the same over HTTP/1.1.
                 // See https://github.com/open-telemetry/opentelemetry-java/issues/8982.
                 .version(HttpClient.Version.HTTP_1_1);
+        if (proxySelector != null) {
+            builder.proxy(proxySelector);
+        }
         if (sslBundle != null) {
             builder.sslContext(sslBundle.createSslContext());
             SslOptions options = sslBundle.getOptions();

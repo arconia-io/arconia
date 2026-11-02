@@ -158,6 +158,14 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 |`http-protobuf`
 |Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
+|`arconia.otel.logs.exporter.otlp.proxy.host`
+|-
+|Host of the proxy. When not set, the proxy configured for the JVM is used, if any.
+
+|`arconia.otel.logs.exporter.otlp.proxy.port`
+|-
+|Port of the proxy.
+
 |`arconia.otel.logs.exporter.otlp.ssl.bundle`
 |-
 |Name of the SSL bundle to use for the connection to the OTLP endpoint.

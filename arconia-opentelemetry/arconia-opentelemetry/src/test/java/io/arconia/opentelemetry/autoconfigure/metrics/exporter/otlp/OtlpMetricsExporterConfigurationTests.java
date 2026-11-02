@@ -1,10 +1,15 @@
 package io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.util.List;
 
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -372,6 +377,43 @@ class OtlpMetricsExporterConfigurationTests {
             .run(context -> assertThat(context).getFailure()
                 .rootCause()
                 .hasMessage("The SSL bundle 'otlp' is configured for the OTLP exporter, but no SSL bundles are available"));
+    }
+
+    @Test
+    void proxyAppliedToHttpProtobufExporter() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.metrics.exporter.otlp.proxy.host=proxy.example.com",
+                "arconia.otel.metrics.exporter.otlp.proxy.port=3128"
+            )
+            .run(context -> assertThat(proxyOptions(context.getBean(OtlpHttpMetricExporter.class)).getProxySelector().select(URI.create("https://otlp.example.com")))
+                .extracting(Proxy::address)
+                .containsExactly(InetSocketAddress.createUnresolved("proxy.example.com", 3128)));
+    }
+
+    @Test
+    void jvmProxySelectorAppliedToHttpProtobufExporterByDefault() {
+        contextRunner
+            .run(context -> assertThat(proxyOptions(context.getBean(OtlpHttpMetricExporter.class)).getProxySelector())
+                .isSameAs(ProxySelector.getDefault()));
+    }
+
+    @Test
+    void failsWhenProxyConfiguredWithGrpc() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.proxy.host=proxy.example.com",
+                "arconia.otel.exporter.otlp.proxy.port=3128",
+                "arconia.otel.exporter.otlp.protocol=grpc"
+            )
+            .run(context -> assertThat(context).getFailure()
+                .rootCause()
+                .hasMessageContaining("doesn't support a proxy with the gRPC protocol"));
+    }
+
+    private static ProxyOptions proxyOptions(Object exporter) {
+        Object builder = ReflectionTestUtils.getField(exporter, "builder");
+        return (ProxyOptions) ReflectionTestUtils.getField(builder, "proxyOptions");
     }
 
     /**

@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -11,6 +13,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 
 import org.jspecify.annotations.Nullable;
@@ -120,6 +123,36 @@ public final class EffectiveOtlpExporterConfig {
         }
         Assert.state(sslBundles != null, "The SSL bundle '%s' is configured for the OTLP exporter, but no SSL bundles are available".formatted(bundleName));
         return sslBundles.getBundle(bundleName);
+    }
+
+    /**
+     * Whether a proxy is configured explicitly, either for the signal or for all signals.
+     */
+    public boolean hasProxy() {
+        return StringUtils.hasText(getProxyConfig().getHost());
+    }
+
+    /**
+     * Get the proxy for the connection to the endpoint. Without a proxy configured explicitly, the default proxy
+     * selector of the JVM is used, so that the standard proxy system properties apply, such as {@code https.proxyHost}.
+     */
+    @Nullable
+    public ProxyOptions getProxyOptions() {
+        ProxyConfig proxy = getProxyConfig();
+        String host = proxy.getHost();
+        if (!StringUtils.hasText(host)) {
+            ProxySelector defaultProxySelector = ProxySelector.getDefault();
+            return defaultProxySelector != null ? ProxyOptions.create(defaultProxySelector) : null;
+        }
+        Integer port = proxy.getPort();
+        Assert.state(port != null && port > 0 && port <= 65535,
+                "The proxy for the OTLP exporter requires a port between 1 and 65535, but it's %s".formatted(port));
+        return ProxyOptions.create(InetSocketAddress.createUnresolved(host, port));
+    }
+
+    private ProxyConfig getProxyConfig() {
+        ProxyConfig signalProxy = signalProperties.getProxy();
+        return StringUtils.hasText(signalProxy.getHost()) ? signalProxy : commonProperties.getOtlp().getProxy();
     }
 
     public boolean isMetrics() {

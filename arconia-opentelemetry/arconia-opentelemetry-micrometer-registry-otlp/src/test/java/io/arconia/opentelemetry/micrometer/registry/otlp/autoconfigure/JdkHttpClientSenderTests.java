@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
 import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
@@ -61,20 +62,20 @@ class JdkHttpClientSenderTests {
     @Test
     void whenConnectTimeoutNullThenThrow() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new JdkHttpClientSender(null, Duration.ofSeconds(10), null))
+                .isThrownBy(() -> new JdkHttpClientSender(null, Duration.ofSeconds(10), null, null))
                 .withMessage("connectTimeout cannot be null");
     }
 
     @Test
     void whenTimeoutNullThenThrow() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new JdkHttpClientSender(Duration.ofSeconds(10), null, null))
+                .isThrownBy(() -> new JdkHttpClientSender(Duration.ofSeconds(10), null, null, null))
                 .withMessage("timeout cannot be null");
     }
 
     @Test
     void sendsRequest() throws Throwable {
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
         URI uri = URI.create("http://localhost:%d/v1/metrics".formatted(server.getAddress().getPort()));
 
         HttpSender.Response response = sender.send(new HttpSender.Request(uri.toURL(),
@@ -89,7 +90,7 @@ class JdkHttpClientSenderTests {
 
     @Test
     void usesHttp11() {
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
 
         HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
         assertThat(httpClient.version()).isEqualTo(HttpClient.Version.HTTP_1_1);
@@ -103,7 +104,7 @@ class JdkHttpClientSenderTests {
             exchange.sendResponseHeaders(200, -1);
             exchange.close();
         });
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
         URI uri = URI.create("http://localhost:%d/v1/upgrade".formatted(server.getAddress().getPort()));
 
         sender.send(new HttpSender.Request(uri.toURL(), new byte[0], HttpSender.Method.POST, Map.of()));
@@ -112,11 +113,20 @@ class JdkHttpClientSenderTests {
     }
 
     @Test
+    void usesProxySelector() {
+        ProxySelector proxySelector = ProxySelector.of(InetSocketAddress.createUnresolved("proxy.example.com", 3128));
+        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, proxySelector);
+
+        HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
+        assertThat(httpClient.proxy()).contains(proxySelector);
+    }
+
+    @Test
     void usesSslBundle() throws Exception {
         SslBundle sslBundle = SslBundle.of(new PemSslStoreBundle(null, PemSslStoreDetails.forCertificate("classpath:ssl/ca.crt")),
                 null, SslOptions.of(null, new String[] { "TLSv1.3" }));
 
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), sslBundle);
+        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), sslBundle, null);
 
         HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
         assertThat(httpClient.sslContext()).isNotSameAs(SSLContext.getDefault());
