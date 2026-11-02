@@ -126,7 +126,7 @@ Maven::
 ----
 ======
 
-The dependency is all you need: Arconia auto-configures a `JdbcTenantDetailsService` that loads tenant details from the `DataSource` available in the application. No further configuration is required.
+The dependency is all you need: Arconia auto-configures a `JdbcTenantDetailsService` that loads tenant details from the `DataSource` available in the application. No further configuration is required. It queries the database through the `JdbcClient` auto-configured by Spring Boot, so the `spring.jdbc.template.*` properties apply to it. Since the tenant is looked up on every request, consider setting `spring.jdbc.template.query-timeout` so that a database that stops responding fails the request instead of holding its thread.
 
 If tenants are also declared via `arconia.multitenancy.details.tenants`, the JDBC implementation takes precedence. Set `arconia.multitenancy.details.jdbc.enabled` to `false` to use the configured list instead, without removing the dependency.
 

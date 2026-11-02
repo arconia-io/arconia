@@ -6,10 +6,13 @@ import javax.sql.DataSource;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
@@ -86,6 +89,17 @@ class JdbcTenantDetailsAutoConfigurationTests {
     }
 
     @Test
+    void tenantDetailsServiceWhenJdbcClientBeanThenUsed() {
+        contextRunner.withUserConfiguration(JdbcClientConfiguration.class).run(context -> {
+            var jdbcClient = context.getBean(JdbcClient.class);
+
+            context.getBean(JdbcTenantDetailsService.class).loadTenantByIdentifier("acme");
+
+            Mockito.verify(jdbcClient).sql(Mockito.anyString());
+        });
+    }
+
+    @Test
     void tenantVerifierWhenJdbc() {
         contextRunner.withConfiguration(AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class))
             .run(context -> {
@@ -132,6 +146,16 @@ class JdbcTenantDetailsAutoConfigurationTests {
         @Bean
         DataSource dataSource() {
             return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).generateUniqueName(true).build();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class JdbcClientConfiguration {
+
+        @Bean
+        JdbcClient jdbcClient() {
+            return Mockito.mock(JdbcClient.class, Answers.RETURNS_DEEP_STUBS);
         }
 
     }

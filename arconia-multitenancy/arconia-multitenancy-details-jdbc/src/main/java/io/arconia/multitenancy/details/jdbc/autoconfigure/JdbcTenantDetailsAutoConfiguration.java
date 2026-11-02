@@ -2,12 +2,14 @@ package io.arconia.multitenancy.details.jdbc.autoconfigure;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.JdbcClientAutoConfiguration;
 import org.springframework.boot.sql.autoconfigure.init.OnDatabaseInitializationCondition;
 import org.springframework.boot.sql.init.dependency.DatabaseInitializationDependencyConfigurer;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 import io.arconia.multitenancy.core.autoconfigure.MultitenancyCoreAutoConfiguration;
 import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
@@ -23,7 +26,8 @@ import io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsService;
 /**
  * Auto-configuration for JDBC-based tenant details.
  */
-@AutoConfiguration(after = DataSourceAutoConfiguration.class, before = MultitenancyCoreAutoConfiguration.class)
+@AutoConfiguration(after = { DataSourceAutoConfiguration.class, JdbcClientAutoConfiguration.class },
+        before = MultitenancyCoreAutoConfiguration.class)
 @ConditionalOnSingleCandidate(DataSource.class)
 @ConditionalOnBooleanProperty(prefix = JdbcTenantDetailsProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(JdbcTenantDetailsProperties.class)
@@ -32,8 +36,10 @@ public final class JdbcTenantDetailsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TenantDetailsService.class)
     @DependsOnDatabaseInitialization
-    JdbcTenantDetailsService tenantDetailsService(DataSource dataSource) {
-        return JdbcTenantDetailsService.builder().dataSource(dataSource).build();
+    JdbcTenantDetailsService tenantDetailsService(DataSource dataSource, ObjectProvider<JdbcClient> jdbcClient) {
+        return JdbcTenantDetailsService.builder()
+            .jdbcClient(jdbcClient.getIfUnique(() -> JdbcClient.create(dataSource)))
+            .build();
     }
 
     @Configuration(proxyBeanMethods = false)
