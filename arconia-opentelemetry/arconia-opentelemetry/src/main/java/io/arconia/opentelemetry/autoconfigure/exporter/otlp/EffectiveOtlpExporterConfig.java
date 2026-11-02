@@ -157,7 +157,8 @@ public final class EffectiveOtlpExporterConfig {
         }
         Integer port = proxy.getPort();
         Assert.state(port != null && port > 0 && port <= 65535,
-                "The proxy for the OTLP exporter requires a port between 1 and 65535, but it's %s".formatted(port));
+                "The OTLP exporter proxy '%s' requires a port between 1 and 65535, but it's %s. Set the port together with the host."
+                        .formatted(host, port));
         return ProxyOptions.create(InetSocketAddress.createUnresolved(host, port));
     }
 

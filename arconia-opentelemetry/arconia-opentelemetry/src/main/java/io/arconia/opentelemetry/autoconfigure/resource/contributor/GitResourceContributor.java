@@ -26,7 +26,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code vcs.repository.url.full}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/registry/attributes/vcs/">VCS Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/registry/attributes/vcs/">VCS Semantic Conventions</a>
  */
 @Incubating
 public final class GitResourceContributor implements ResourceContributor {

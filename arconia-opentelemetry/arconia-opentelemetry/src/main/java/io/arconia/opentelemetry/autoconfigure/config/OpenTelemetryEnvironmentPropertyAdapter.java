@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
  * or application properties. When the same Arconia property is mapped more than once,
  * the last mapping with a value wins.
  *
- * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/common/">OpenTelemetry Configuration Types</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/common/">OpenTelemetry Configuration Types</a>
  */
 final class OpenTelemetryEnvironmentPropertyAdapter {
 

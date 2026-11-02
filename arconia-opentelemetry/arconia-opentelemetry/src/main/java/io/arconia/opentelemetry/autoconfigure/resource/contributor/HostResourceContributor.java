@@ -26,7 +26,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code host.name}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/host/">Resource Host Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/host/">Resource Host Semantic Conventions</a>
  */
 @Incubating
 public final class HostResourceContributor implements ResourceContributor {

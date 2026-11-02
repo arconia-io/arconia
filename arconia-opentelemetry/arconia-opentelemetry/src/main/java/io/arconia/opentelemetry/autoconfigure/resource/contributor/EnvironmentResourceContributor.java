@@ -33,8 +33,8 @@ import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceProp
  * <p>
  * Furthermore, any additional attributes defined in the {@link OpenTelemetryResourceProperties} are also populated.
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/webengine">Resource WebEngine Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/webengine">Resource WebEngine Semantic Conventions</a>
  */
 @Incubating
 public final class EnvironmentResourceContributor implements ResourceContributor {
@@ -84,7 +84,7 @@ public final class EnvironmentResourceContributor implements ResourceContributor
      * only the {@code OTEL_RESOURCE_ATTRIBUTES} environment variable is percent-encoded, and it's decoded
      * when mapped to the properties.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/resource/sdk/#specifying-resource-information-via-an-environment-variable">Resource Attributes</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/resource/sdk/#specifying-resource-information-via-an-environment-variable">Resource Attributes</a>
      */
     private Attributes computeAttributes() {
         AttributesBuilder attributesBuilder = Attributes.builder();

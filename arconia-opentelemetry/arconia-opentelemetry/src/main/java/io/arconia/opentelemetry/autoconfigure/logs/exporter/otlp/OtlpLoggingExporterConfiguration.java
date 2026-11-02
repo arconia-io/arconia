@@ -15,7 +15,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.ssl.SslBundle;
@@ -65,7 +64,6 @@ public final class OtlpLoggingExporterConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, value = Protocol.HTTP_PROTOBUF)
     OtlpHttpLogRecordExporter otlpHttpLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider, Environment environment) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
@@ -104,7 +102,6 @@ public final class OtlpLoggingExporterConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, value = Protocol.GRPC)
     OtlpGrpcLogRecordExporter otlpGrpcLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());

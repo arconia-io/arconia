@@ -160,11 +160,11 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 
 |`arconia.otel.logs.exporter.otlp.proxy.host`
 |-
-|Host of the proxy. When not set, the proxy configured for the JVM is used, if any.
+|Host of the proxy. The port must be set together with it.
 
 |`arconia.otel.logs.exporter.otlp.proxy.port`
 |-
-|Port of the proxy.
+|Port of the proxy, between 1 and 65535. Required when the host is set.
 
 |`arconia.otel.logs.exporter.otlp.ssl.bundle`
 |-

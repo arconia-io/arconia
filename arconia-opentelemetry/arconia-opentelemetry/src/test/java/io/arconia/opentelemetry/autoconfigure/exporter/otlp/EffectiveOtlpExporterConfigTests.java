@@ -324,7 +324,7 @@ class EffectiveOtlpExporterConfigTests {
 
             assertThatIllegalStateException()
                     .isThrownBy(config::getProxyOptions)
-                    .withMessage("The proxy for the OTLP exporter requires a port between 1 and 65535, but it's null");
+                    .withMessageStartingWith("The OTLP exporter proxy 'proxy.example.com' requires a port between 1 and 65535, but it's null");
         }
 
         private static SocketAddress selectedProxy(EffectiveOtlpExporterConfig config) {

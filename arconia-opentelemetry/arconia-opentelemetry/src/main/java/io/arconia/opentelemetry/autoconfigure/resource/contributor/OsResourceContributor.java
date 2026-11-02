@@ -29,7 +29,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code os.version}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/os">Resource OS Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/os">Resource OS Semantic Conventions</a>
  */
 @Incubating
 public final class OsResourceContributor implements ResourceContributor {

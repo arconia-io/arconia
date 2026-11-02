@@ -16,7 +16,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code service.version}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">Resource Service Semantic Conventions</a>
  */
 @Incubating
 public final class BuildResourceContributor implements ResourceContributor {

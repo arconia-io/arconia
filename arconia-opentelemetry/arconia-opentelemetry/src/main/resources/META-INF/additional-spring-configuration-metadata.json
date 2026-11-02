@@ -32,10 +32,22 @@
       "defaultValue": true
     },
     {
+      "name": "arconia.otel.resource.contributors.distro.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Distro resource contributor is enabled.",
+      "defaultValue": true
+    },
+    {
       "name": "arconia.otel.resource.contributors.environment.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether the Environment resource contributor is enabled.",
       "defaultValue": true
+    },
+    {
+      "name": "arconia.otel.resource.contributors.git.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Git resource contributor is enabled.",
+      "defaultValue": false
     },
     {
       "name": "arconia.otel.resource.contributors.host.enabled",

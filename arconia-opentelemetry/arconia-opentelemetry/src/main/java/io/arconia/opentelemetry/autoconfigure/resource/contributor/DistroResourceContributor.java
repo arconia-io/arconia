@@ -17,7 +17,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code telemetry.distro.version}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-distribution">Resource Telemetry Distribution Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-distribution">Resource Telemetry Distribution Semantic Conventions</a>
  */
 @Incubating
 public final class DistroResourceContributor implements ResourceContributor {

@@ -218,11 +218,11 @@ Global properties are available to configure the OTLP exporters for logs, metric
 
 |`arconia.otel.exporter.otlp.proxy.host`
 |-
-|Host of the proxy. When not set, the proxy configured for the JVM is used, if any.
+|Host of the proxy. The port must be set together with it.
 
 |`arconia.otel.exporter.otlp.proxy.port`
 |-
-|Port of the proxy.
+|Port of the proxy, between 1 and 65535. Required when the host is set.
 
 |`arconia.otel.exporter.otlp.ssl.bundle`
 |-

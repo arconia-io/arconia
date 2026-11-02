@@ -8,13 +8,13 @@ import org.jspecify.annotations.Nullable;
 public class ProxyConfig {
 
     /**
-     * Host of the proxy. When not set, the proxy configured for the JVM is used, if any.
+     * Host of the proxy. The port must be set together with it.
      */
     @Nullable
     private String host;
 
     /**
-     * Port of the proxy.
+     * Port of the proxy, between 1 and 65535. Required when the host is set.
      */
     @Nullable
     private Integer port;

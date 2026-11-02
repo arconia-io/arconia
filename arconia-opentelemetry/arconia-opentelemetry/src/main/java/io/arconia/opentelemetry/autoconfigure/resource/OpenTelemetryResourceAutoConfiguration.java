@@ -10,6 +10,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
@@ -33,7 +34,7 @@ import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContr
 /**
  * Auto-configuration for OpenTelemetry {@link Resource}.
  */
-@AutoConfiguration(after = org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration.class)
+@AutoConfiguration(after = ProjectInfoAutoConfiguration.class)
 @ConditionalOnOpenTelemetry
 @EnableConfigurationProperties(OpenTelemetryResourceProperties.class)
 public final class OpenTelemetryResourceAutoConfiguration {

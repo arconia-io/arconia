@@ -23,7 +23,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code process.working_directory}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process">Resource Process Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process">Resource Process Semantic Conventions</a>
  */
 @Incubating
 public final class ProcessResourceContributor implements ResourceContributor {

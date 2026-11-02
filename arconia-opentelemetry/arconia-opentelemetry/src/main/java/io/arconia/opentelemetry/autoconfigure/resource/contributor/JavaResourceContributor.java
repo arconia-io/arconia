@@ -19,7 +19,7 @@ import io.arconia.core.annotations.Incubating;
  *     <li>{@code process.runtime.version}</li>
  * </ul>
  *
- * @link <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes">Resource Process Runtime Semantic Conventions</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes">Resource Process Runtime Semantic Conventions</a>
  */
 @Incubating
 public final class JavaResourceContributor implements ResourceContributor {

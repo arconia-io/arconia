@@ -31,7 +31,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTraci
  * JVM system properties, command-line arguments, and properties to the appropriate Arconia configuration.
  * That's especially useful if you're migrating from the OpenTelemetry Spring Boot Starter to Arconia OpenTelemetry.
  *
- * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/">OpenTelemetry Environment Variable Specification</a>
+ * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/">OpenTelemetry Environment Variable Specification</a>
  */
 class OpenTelemetryEnvironmentPropertyAdapters {
 
@@ -90,7 +90,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      *     <li>{@code OTEL_LOG_LEVEL}</li>
      * </ul>
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration">General SDK Configuration</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration">General SDK Configuration</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter general(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -125,7 +125,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#batch-span-processor">Batch Span Processor</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#batch-span-processor">Batch Span Processor</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter batchSpanProcessor(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -145,7 +145,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All properties supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#batch-logrecord-processor">Batch Log Record Processor</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#batch-logrecord-processor">Batch Log Record Processor</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter logRecordProcessor(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -165,7 +165,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#attribute-limits">Attribute Limits</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#attribute-limits">Attribute Limits</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter attributeLimits(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -183,7 +183,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#span-limits">Span Limits</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#span-limits">Span Limits</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter spanLimits(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -207,7 +207,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#logrecord-limits">Log Record Limits</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#logrecord-limits">Log Record Limits</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter logRecordLimits(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -223,7 +223,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#exporter-selection">Exporter Selection</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#exporter-selection">Exporter Selection</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter exporterSelection(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -241,7 +241,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * <p>
      * All environment variables are supported.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#metrics-sdk-configuration">Metrics SDK Configuration</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#metrics-sdk-configuration">Metrics SDK Configuration</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter metrics(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
@@ -268,7 +268,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      * The certificate and client key variables are mapped to Spring Boot PEM SSL bundles: {@value #SSL_BUNDLE_NAME}
      * for the variables applying to all signals, and {@value #SSL_BUNDLE_NAME}-&lt;signal&gt; for the signal-specific ones.
      *
-     * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#otlp-exporter">OTLP Exporter</a>
+     * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#otlp-exporter">OTLP Exporter</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter otlpExporter(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
