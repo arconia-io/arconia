@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.metrics.exporter;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -22,7 +23,7 @@ class OnOpenTelemetryMetricsExporterCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetryMetricsExporter.class.getName());
+        Map<String, @Nullable Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetryMetricsExporter.class.getName());
         String requestedExporterType = attributes != null ? (String) attributes.get("value") : null;
 
         if (!StringUtils.hasText(requestedExporterType)) {

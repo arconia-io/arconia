@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure.resource;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -20,9 +21,9 @@ class OnOpenTelemetryResourceContributorCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetryResourceContributor.class.getName());
+        Map<String, @Nullable Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetryResourceContributor.class.getName());
         String contributorName = attributes != null ? (String) attributes.get("value") : null;
-        boolean matchIfMissing = attributes != null && (boolean) attributes.get("matchIfMissing");
+        boolean matchIfMissing = attributes != null && Boolean.TRUE.equals(attributes.get("matchIfMissing"));
 
         if (StringUtils.hasLength(contributorName)) {
             Boolean contributorEnabled = context.getEnvironment()

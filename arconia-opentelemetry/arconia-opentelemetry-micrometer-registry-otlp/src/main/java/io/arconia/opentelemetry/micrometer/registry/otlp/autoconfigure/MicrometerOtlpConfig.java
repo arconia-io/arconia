@@ -150,6 +150,7 @@ class MicrometerOtlpConfig implements OtlpConfig {
      */
     static class Builder {
         private boolean enabled = true;
+        @Nullable
         private String url;
         private Duration step = Duration.ofSeconds(60);
         private AggregationTemporality aggregationTemporality = AggregationTemporality.CUMULATIVE;

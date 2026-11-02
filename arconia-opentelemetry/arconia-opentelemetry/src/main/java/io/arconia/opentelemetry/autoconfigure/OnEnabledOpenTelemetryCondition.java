@@ -2,6 +2,7 @@ package io.arconia.opentelemetry.autoconfigure;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -15,8 +16,8 @@ class OnEnabledOpenTelemetryCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetry.class.getName());
-        boolean checkForEnabled = attributes != null && (boolean) attributes.get("enabled");
+        Map<String, @Nullable Object> attributes = metadata.getAnnotationAttributes(ConditionalOnOpenTelemetry.class.getName());
+        boolean checkForEnabled = attributes != null && Boolean.TRUE.equals(attributes.get("enabled"));
 
         String openTelemetryEnabledKey = OpenTelemetryProperties.CONFIG_PREFIX + ".enabled";
         boolean openTelemetryEnabled = context.getEnvironment().getProperty(openTelemetryEnabledKey, boolean.class, true);
