@@ -16,14 +16,14 @@ class HeaderTenantResolverTests {
 
     @Test
     void whenNullCustomHeaderThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> HeaderTenantResolver.builder().tenantHeaderName(null).build())
-            .withMessageContaining("tenantHeaderName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> HeaderTenantResolver.builder().headerName(null).build())
+            .withMessageContaining("headerName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomHeaderThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> HeaderTenantResolver.builder().tenantHeaderName("").build())
-            .withMessageContaining("tenantHeaderName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> HeaderTenantResolver.builder().headerName("").build())
+            .withMessageContaining("headerName cannot be null or empty");
     }
 
     @Test
@@ -42,7 +42,7 @@ class HeaderTenantResolverTests {
     void whenCustomHeaderIsUsed() {
         var expectedTenantId = "default";
         var headerName = "tenantIdentifier";
-        var headerTenantResolver = HeaderTenantResolver.builder().tenantHeaderName(headerName).build();
+        var headerTenantResolver = HeaderTenantResolver.builder().headerName(headerName).build();
         var request = new MockHttpServletRequest();
         request.addHeader(headerName, expectedTenantId);
 

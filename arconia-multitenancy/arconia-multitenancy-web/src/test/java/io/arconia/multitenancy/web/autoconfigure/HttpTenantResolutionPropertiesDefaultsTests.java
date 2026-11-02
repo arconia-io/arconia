@@ -33,20 +33,20 @@ class HttpTenantResolutionPropertiesDefaultsTests {
 
     @Test
     void headerNameDefaultMatchesResolverDefault() {
-        assertThat(properties.getHeader().getHeaderName())
-            .isEqualTo(HeaderTenantResolver.builder().build().getTenantHeaderName());
+        assertThat(properties.getHeader().getName())
+            .isEqualTo(HeaderTenantResolver.builder().build().getHeaderName());
     }
 
     @Test
     void cookieNameDefaultMatchesResolverDefault() {
-        assertThat(properties.getCookie().getCookieName())
-            .isEqualTo(CookieTenantResolver.builder().build().getTenantCookieName());
+        assertThat(properties.getCookie().getName())
+            .isEqualTo(CookieTenantResolver.builder().build().getCookieName());
     }
 
     @Test
     void claimNameDefaultMatchesResolverDefault() {
         assertThat(properties.getOauth2().getClaimName())
-            .isEqualTo(OAuth2TenantResolver.builder().build().getTenantClaimName());
+            .isEqualTo(OAuth2TenantResolver.builder().build().getClaimName());
     }
 
     @Test

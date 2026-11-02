@@ -59,7 +59,7 @@ class TenantContextFilterTests {
             .isThrownBy(() -> TenantContextFilter.builder()
                 .eventPublisher(eventPublisher)
                 .build())
-            .withMessageContaining("httpRequestTenantResolver cannot be null");
+            .withMessageContaining("tenantResolver cannot be null");
     }
 
     @Test
@@ -74,7 +74,7 @@ class TenantContextFilterTests {
         var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
         assertThatIllegalArgumentException()
             .isThrownBy(() -> TenantContextFilter.builder()
-                .httpRequestTenantResolver(httpRequestTenantResolver)
+                .tenantResolver(httpRequestTenantResolver)
                 .build())
             .withMessageContaining("eventPublisher cannot be null");
     }
@@ -88,7 +88,7 @@ class TenantContextFilterTests {
         var filterChain = new MockFilterChain();
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .eventPublisher(eventPublisher)
             .build();
 
@@ -122,7 +122,7 @@ class TenantContextFilterTests {
             throw new TenantVerificationException("The resolved tenant is invalid or disabled");
         };
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .eventPublisher(eventPublisher)
             .tenantVerifier(tenantVerifier)
             .build();
@@ -142,7 +142,7 @@ class TenantContextFilterTests {
         var filterChain = new MockFilterChain();
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .eventPublisher(eventPublisher)
             .build();
 
@@ -163,7 +163,7 @@ class TenantContextFilterTests {
         var filterChain = new MockFilterChain();
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .ignorePaths(Set.of(path))
             .eventPublisher(eventPublisher)
             .build();
@@ -184,10 +184,10 @@ class TenantContextFilterTests {
         var filterChain = new MockFilterChain();
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .eventPublisher(eventPublisher)
             .tenantObservationFilter(
-                    TenantObservationFilter.builder().tenantIdentifierKey("tenant.id").cardinality(Cardinality.HIGH).build())
+                    TenantObservationFilter.builder().keyName("tenant.id").cardinality(Cardinality.HIGH).build())
             .build();
 
         filter.doFilter(request, response, filterChain);
@@ -447,7 +447,7 @@ class TenantContextFilterTests {
             throw new IllegalStateException("resolver bug");
         };
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(failingResolver)
+            .tenantResolver(failingResolver)
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .build();
 
@@ -477,7 +477,7 @@ class TenantContextFilterTests {
         var failures = new ArrayList<TenantResolutionFailure>();
         HttpRequestTenantResolver blank = request -> " ";
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(blank)
+            .tenantResolver(blank)
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .failureHandler((req, res, failure) -> failures.add(failure))
             .build();
@@ -530,7 +530,7 @@ class TenantContextFilterTests {
     void whenErrorDispatchInPathModeThenTenantOfFailedRequestIsBound() throws ServletException, IOException {
         var request = new MockHttpServletRequest("GET", "/tenants/acme/products");
         var filter = TenantContextFilter.builder()
-            .httpRequestTenantResolver(PathTenantResolver.builder().pattern("/tenants/{tenant}/**").build())
+            .tenantResolver(PathTenantResolver.builder().pattern("/tenants/{tenant}/**").build())
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .build();
         filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
@@ -605,7 +605,7 @@ class TenantContextFilterTests {
 
     private TenantContextFilter.Builder defaultFilter(ApplicationEventPublisher eventPublisher) {
         return TenantContextFilter.builder()
-            .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
+            .tenantResolver(HeaderTenantResolver.builder().build())
             .eventPublisher(eventPublisher);
     }
 

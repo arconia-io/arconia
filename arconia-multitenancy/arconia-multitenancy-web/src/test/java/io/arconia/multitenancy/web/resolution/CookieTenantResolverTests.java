@@ -18,14 +18,14 @@ class CookieTenantResolverTests {
 
     @Test
     void whenNullCustomCookieThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> CookieTenantResolver.builder().tenantCookieName(null).build())
-            .withMessageContaining("tenantCookieName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> CookieTenantResolver.builder().cookieName(null).build())
+            .withMessageContaining("cookieName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomCookieThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> CookieTenantResolver.builder().tenantCookieName("").build())
-            .withMessageContaining("tenantCookieName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> CookieTenantResolver.builder().cookieName("").build())
+            .withMessageContaining("cookieName cannot be null or empty");
     }
 
     @Test
@@ -44,7 +44,7 @@ class CookieTenantResolverTests {
     void whenCustomCookieIsUsed() {
         var expectedTenantId = "default";
         var cookieName = "tenantIdentifier";
-        var cookieTenantResolver = CookieTenantResolver.builder().tenantCookieName(cookieName).build();
+        var cookieTenantResolver = CookieTenantResolver.builder().cookieName(cookieName).build();
         var request = new MockHttpServletRequest();
         request.setCookies(new Cookie(cookieName, expectedTenantId));
 

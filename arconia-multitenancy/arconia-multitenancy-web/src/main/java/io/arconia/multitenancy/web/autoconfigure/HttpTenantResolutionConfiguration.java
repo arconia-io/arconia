@@ -90,8 +90,8 @@ final class HttpTenantResolutionConfiguration {
             TenantIdentifierValidator tenantIdentifierValidator, @Nullable ClassLoader classLoader
     ) {
         return switch (mode) {
-            case HEADER -> HeaderTenantResolver.builder().tenantHeaderName(properties.getHeader().getHeaderName()).build();
-            case COOKIE -> CookieTenantResolver.builder().tenantCookieName(properties.getCookie().getCookieName()).build();
+            case HEADER -> HeaderTenantResolver.builder().headerName(properties.getHeader().getName()).build();
+            case COOKIE -> CookieTenantResolver.builder().cookieName(properties.getCookie().getName()).build();
             case PATH -> {
                 var pattern = properties.getPath().getPattern();
                 Assert.state(pattern != null && !pattern.isBlank(), "The '" + HttpTenantResolutionProperties.CONFIG_PREFIX
@@ -154,7 +154,7 @@ final class HttpTenantResolutionConfiguration {
             }
             return TenantContextFilter.builder()
                 .order(httpTenantResolutionProperties.getFilter().getOrder())
-                .httpRequestTenantResolver(httpRequestTenantResolver)
+                .tenantResolver(httpRequestTenantResolver)
                 .ignorePaths(ignorePaths(httpTenantResolutionProperties.getFilter()))
                 .eventPublisher(eventPublisher)
                 .tenantIdentifierValidator(tenantIdentifierValidator)
@@ -181,7 +181,7 @@ final class HttpTenantResolutionConfiguration {
         private OAuth2Support() {}
 
         static HttpRequestTenantResolver createResolver(String claimName) {
-            return OAuth2TenantResolver.builder().tenantClaimName(claimName).build();
+            return OAuth2TenantResolver.builder().claimName(claimName).build();
         }
 
     }

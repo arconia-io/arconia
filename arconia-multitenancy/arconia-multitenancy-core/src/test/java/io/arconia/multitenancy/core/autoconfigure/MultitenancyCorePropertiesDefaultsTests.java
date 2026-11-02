@@ -38,7 +38,7 @@ class MultitenancyCorePropertiesDefaultsTests {
     @Test
     void observationKeyNameDefaultMatchesObservationFilterDefault() {
         assertThat(new TenantObservationProperties().getKeyName())
-            .isEqualTo(TenantObservationFilter.builder().build().getTenantIdentifierKey());
+            .isEqualTo(TenantObservationFilter.builder().build().getKeyName());
     }
 
     @Test
@@ -58,7 +58,7 @@ class MultitenancyCorePropertiesDefaultsTests {
     @Test
     void mdcKeyNameDefaultMatchesListenerDefault() {
         assertThat(new TenantLoggingProperties().getMdc().getKeyName())
-            .isEqualTo(MdcTenantEventListener.builder().build().getTenantIdentifierKey());
+            .isEqualTo(MdcTenantEventListener.builder().build().getKeyName());
     }
 
     @Test

@@ -110,7 +110,7 @@ arconia:
     resolution:
       http:
         header:
-          header-name: X-Custom-Tenant
+          name: X-Custom-Tenant
 ----
 
 A request carrying the header more than once is rejected rather than resolved from the first value, since conflicting values are a sign of a misbehaving or malicious client.
@@ -138,7 +138,7 @@ arconia:
       http:
         resolution-mode: cookie
         cookie:
-          cookie-name: MY-TENANT
+          name: MY-TENANT
 ----
 
 A request carrying several cookies with that name is rejected, for the same reason as duplicate headers.
@@ -316,11 +316,11 @@ The `oauth2` mode reads the tenant from the verified token, so the identity and 
 | `header`
 | Modes of HTTP resolution, consulted in order until one resolves a tenant. Options: `header`, `cookie`, `path`, `subdomain`, `oauth2`, `fixed`. The `fixed` mode always resolves a tenant, so it can only be the last one.
 
-| `arconia.multitenancy.resolution.http.header.header-name`
+| `arconia.multitenancy.resolution.http.header.name`
 | `X-TenantId`
 | Name of the HTTP header from which to resolve the current tenant.
 
-| `arconia.multitenancy.resolution.http.cookie.cookie-name`
+| `arconia.multitenancy.resolution.http.cookie.name`
 | `TENANT-ID`
 | Name of the HTTP cookie from which to resolve the current tenant.
 

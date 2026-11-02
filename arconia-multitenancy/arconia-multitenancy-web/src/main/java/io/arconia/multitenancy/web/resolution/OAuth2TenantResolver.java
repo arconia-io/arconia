@@ -30,24 +30,24 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
 
     private static final String DEFAULT_CLAIM_NAME = "tenant_id";
 
-    private final String tenantClaimName;
+    private final String claimName;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy;
 
     private final AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 
-    private OAuth2TenantResolver(String tenantClaimName, SecurityContextHolderStrategy securityContextHolderStrategy) {
-        Assert.hasText(tenantClaimName, "tenantClaimName cannot be null or empty");
+    private OAuth2TenantResolver(String claimName, SecurityContextHolderStrategy securityContextHolderStrategy) {
+        Assert.hasText(claimName, "claimName cannot be null or empty");
         Assert.notNull(securityContextHolderStrategy, "securityContextHolderStrategy cannot be null");
-        this.tenantClaimName = tenantClaimName;
+        this.claimName = claimName;
         this.securityContextHolderStrategy = securityContextHolderStrategy;
     }
 
     /**
      * Name of the OAuth2 token claim from which the current tenant is resolved.
      */
-    public String getTenantClaimName() {
-        return tenantClaimName;
+    public String getClaimName() {
+        return claimName;
     }
 
     @Override
@@ -69,7 +69,7 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
         }
         if (isOAuth2(principal) || isOAuth2(credentials)) {
             throw new InvalidTenantIdentifierException(
-                    "The OAuth2 token must contain a '%s' claim".formatted(tenantClaimName));
+                    "The OAuth2 token must contain a '%s' claim".formatted(claimName));
         }
         return null;
     }
@@ -83,10 +83,10 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
     @Nullable
     private String extractClaim(@Nullable Object candidate) {
         if (candidate instanceof ClaimAccessor claimAccessor) {
-            return claimAccessor.getClaimAsString(tenantClaimName);
+            return claimAccessor.getClaimAsString(claimName);
         }
         if (candidate instanceof OAuth2AuthenticatedPrincipal principal) {
-            Object value = principal.getAttribute(tenantClaimName);
+            Object value = principal.getAttribute(claimName);
             return value != null ? value.toString() : null;
         }
         return null;
@@ -105,7 +105,7 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
 
     public static final class Builder {
 
-        private String tenantClaimName = DEFAULT_CLAIM_NAME;
+        private String claimName = DEFAULT_CLAIM_NAME;
 
         private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
@@ -115,8 +115,8 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
         /**
          * Name of the OAuth2 token claim from which to resolve the current tenant.
          */
-        public Builder tenantClaimName(String tenantClaimName) {
-            this.tenantClaimName = tenantClaimName;
+        public Builder claimName(String claimName) {
+            this.claimName = claimName;
             return this;
         }
 
@@ -132,7 +132,7 @@ public final class OAuth2TenantResolver implements HttpRequestTenantResolver {
          * Builds the {@link OAuth2TenantResolver} instance.
          */
         public OAuth2TenantResolver build() {
-            return new OAuth2TenantResolver(tenantClaimName, securityContextHolderStrategy);
+            return new OAuth2TenantResolver(claimName, securityContextHolderStrategy);
         }
 
     }

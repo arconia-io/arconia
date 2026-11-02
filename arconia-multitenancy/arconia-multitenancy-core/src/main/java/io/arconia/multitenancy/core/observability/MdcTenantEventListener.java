@@ -24,27 +24,27 @@ public final class MdcTenantEventListener {
 
     private static final String DEFAULT_TENANT_IDENTIFIER_KEY = "tenantId";
 
-    private final String tenantIdentifierKey;
+    private final String keyName;
 
-    private MdcTenantEventListener(String tenantIdentifierKey) {
-        Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be null or empty");
-        this.tenantIdentifierKey = tenantIdentifierKey;
+    private MdcTenantEventListener(String keyName) {
+        Assert.hasText(keyName, "keyName cannot be null or empty");
+        this.keyName = keyName;
     }
 
-    public String getTenantIdentifierKey() {
-        return tenantIdentifierKey;
+    public String getKeyName() {
+        return keyName;
     }
 
     @EventListener
     void onAttached(TenantContextAttachedEvent event) {
         logger.trace("Setting current tenant in MDC to: {}", event.getTenantIdentifier());
-        MDC.put(tenantIdentifierKey, event.getTenantIdentifier());
+        MDC.put(keyName, event.getTenantIdentifier());
     }
 
     @EventListener
     void onClosed(TenantContextClosedEvent event) {
         logger.trace("Removing current tenant from MDC");
-        MDC.remove(tenantIdentifierKey);
+        MDC.remove(keyName);
     }
 
     /**
@@ -56,15 +56,15 @@ public final class MdcTenantEventListener {
 
     public static final class Builder {
 
-        private String tenantIdentifierKey = DEFAULT_TENANT_IDENTIFIER_KEY;
+        private String keyName = DEFAULT_TENANT_IDENTIFIER_KEY;
 
         private Builder() {}
 
         /**
          * Name of the key to use for the tenant identifier in MDC.
          */
-        public Builder tenantIdentifierKey(String tenantIdentifierKey) {
-            this.tenantIdentifierKey = tenantIdentifierKey;
+        public Builder keyName(String keyName) {
+            this.keyName = keyName;
             return this;
         }
 
@@ -72,7 +72,7 @@ public final class MdcTenantEventListener {
          * Builds the {@link MdcTenantEventListener} instance.
          */
         public MdcTenantEventListener build() {
-            return new MdcTenantEventListener(tenantIdentifierKey);
+            return new MdcTenantEventListener(keyName);
         }
 
     }

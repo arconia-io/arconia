@@ -101,14 +101,14 @@ public class HttpTenantResolutionProperties {
         /**
          * Name of the HTTP header from which to resolve the current tenant.
          */
-        private String headerName = "X-TenantId";
+        private String name = "X-TenantId";
 
-        public String getHeaderName() {
-            return headerName;
+        public String getName() {
+            return name;
         }
 
-        public void setHeaderName(String headerName) {
-            this.headerName = headerName;
+        public void setName(String name) {
+            this.name = name;
         }
 
     }
@@ -118,14 +118,14 @@ public class HttpTenantResolutionProperties {
         /**
          * Name of the HTTP cookie from which to resolve the current tenant.
          */
-        private String cookieName = "TENANT-ID";
+        private String name = "TENANT-ID";
 
-        public String getCookieName() {
-            return cookieName;
+        public String getName() {
+            return name;
         }
 
-        public void setCookieName(String cookieName) {
-            this.cookieName = cookieName;
+        public void setName(String name) {
+            this.name = name;
         }
 
     }

@@ -19,15 +19,15 @@ class TenantObservationFilterTests {
     @Test
     void whenEmptyTenantKeyThenThrow() {
         assertThatIllegalArgumentException()
-            .isThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey("").build())
-            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
+            .isThrownBy(() -> TenantObservationFilter.builder().keyName("").build())
+            .withMessageContaining("keyName cannot be null or empty");
     }
 
     @Test
     void whenNullTenantKeyThenThrow() {
         assertThatIllegalArgumentException()
-            .isThrownBy(() -> TenantObservationFilter.builder().tenantIdentifierKey(null).build())
-            .withMessageContaining("tenantIdentifierKey cannot be null or empty");
+            .isThrownBy(() -> TenantObservationFilter.builder().keyName(null).build())
+            .withMessageContaining("keyName cannot be null or empty");
     }
 
     @Test
@@ -41,7 +41,7 @@ class TenantObservationFilterTests {
     void whenDefaultsThenTenantIdKeyAndHighCardinality() {
         var filter = TenantObservationFilter.builder().build();
 
-        assertThat(filter.getTenantIdentifierKey()).isEqualTo("tenant.id");
+        assertThat(filter.getKeyName()).isEqualTo("tenant.id");
         assertThat(filter.getCardinality()).isEqualTo(Cardinality.HIGH);
     }
 
@@ -58,7 +58,7 @@ class TenantObservationFilterTests {
         TestObservationRegistryAssert.assertThat(registry)
             .hasObservationWithNameEqualTo("test.observation")
             .that()
-            .hasHighCardinalityKeyValue(filter.getTenantIdentifierKey(), "acme");
+            .hasHighCardinalityKeyValue(filter.getKeyName(), "acme");
     }
 
     @Test
@@ -74,7 +74,7 @@ class TenantObservationFilterTests {
         TestObservationRegistryAssert.assertThat(registry)
             .hasObservationWithNameEqualTo("test.observation")
             .that()
-            .hasLowCardinalityKeyValue(filter.getTenantIdentifierKey(), "acme");
+            .hasLowCardinalityKeyValue(filter.getKeyName(), "acme");
     }
 
     @Test
@@ -82,7 +82,7 @@ class TenantObservationFilterTests {
         var customKey = "tenant.identifier";
         var registry = TestObservationRegistry.create();
         registry.observationConfig()
-            .observationFilter(TenantObservationFilter.builder().tenantIdentifierKey(customKey).build());
+            .observationFilter(TenantObservationFilter.builder().keyName(customKey).build());
 
         TenantContext.where("acme").run(() -> {
             Observation.start("test.observation", registry).stop();
@@ -105,7 +105,7 @@ class TenantObservationFilterTests {
         TestObservationRegistryAssert.assertThat(registry)
             .hasObservationWithNameEqualTo("test.observation")
             .that()
-            .doesNotHaveHighCardinalityKeyValueWithKey(filter.getTenantIdentifierKey());
+            .doesNotHaveHighCardinalityKeyValueWithKey(filter.getKeyName());
     }
 
 }

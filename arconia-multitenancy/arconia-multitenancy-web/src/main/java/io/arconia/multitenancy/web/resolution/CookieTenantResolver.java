@@ -19,18 +19,18 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
     private static final String DEFAULT_COOKIE_NAME = "TENANT-ID";
 
-    private final String tenantCookieName;
+    private final String cookieName;
 
-    private CookieTenantResolver(String tenantCookieName) {
-        Assert.hasText(tenantCookieName, "tenantCookieName cannot be null or empty");
-        this.tenantCookieName = tenantCookieName;
+    private CookieTenantResolver(String cookieName) {
+        Assert.hasText(cookieName, "cookieName cannot be null or empty");
+        this.cookieName = cookieName;
     }
 
     /**
      * Name of the HTTP cookie from which the current tenant is resolved.
      */
-    public String getTenantCookieName() {
-        return tenantCookieName;
+    public String getCookieName() {
+        return cookieName;
     }
 
     @Override
@@ -42,12 +42,12 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
             return null;
         }
         var values = Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(tenantCookieName))
+            .filter(cookie -> cookie.getName().equals(cookieName))
             .map(Cookie::getValue)
             .toList();
         if (values.size() > 1) {
             throw new InvalidTenantIdentifierException(
-                    "The request must not contain more than one '%s' cookie".formatted(tenantCookieName));
+                    "The request must not contain more than one '%s' cookie".formatted(cookieName));
         }
         return values.isEmpty() ? null : values.getFirst();
     }
@@ -61,15 +61,15 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
 
     public static final class Builder {
 
-        private String tenantCookieName = DEFAULT_COOKIE_NAME;
+        private String cookieName = DEFAULT_COOKIE_NAME;
 
         private Builder() {}
 
         /**
          * Name of the HTTP cookie from which to resolve the current tenant.
          */
-        public Builder tenantCookieName(String tenantCookieName) {
-            this.tenantCookieName = tenantCookieName;
+        public Builder cookieName(String cookieName) {
+            this.cookieName = cookieName;
             return this;
         }
 
@@ -77,7 +77,7 @@ public final class CookieTenantResolver implements HttpRequestTenantResolver {
          * Builds the {@link CookieTenantResolver} instance.
          */
         public CookieTenantResolver build() {
-            return new CookieTenantResolver(tenantCookieName);
+            return new CookieTenantResolver(cookieName);
         }
 
     }

@@ -21,7 +21,7 @@ class TenantObservabilityConfiguration {
     @ConditionalOnBooleanProperty(prefix = TenantObservationProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
     TenantObservationFilter tenantObservationFilter(TenantObservationProperties tenantObservationProperties) {
         return TenantObservationFilter.builder()
-            .tenantIdentifierKey(tenantObservationProperties.getKeyName())
+            .keyName(tenantObservationProperties.getKeyName())
             .cardinality(tenantObservationProperties.getCardinality())
             .build();
     }
@@ -31,7 +31,7 @@ class TenantObservabilityConfiguration {
     @ConditionalOnBooleanProperty(prefix = TenantLoggingProperties.CONFIG_PREFIX, value = "mdc.enabled", matchIfMissing = true)
     MdcTenantEventListener mdcTenantEventListener(TenantLoggingProperties tenantLoggingProperties) {
         return MdcTenantEventListener.builder()
-            .tenantIdentifierKey(tenantLoggingProperties.getMdc().getKeyName())
+            .keyName(tenantLoggingProperties.getMdc().getKeyName())
             .build();
     }
 

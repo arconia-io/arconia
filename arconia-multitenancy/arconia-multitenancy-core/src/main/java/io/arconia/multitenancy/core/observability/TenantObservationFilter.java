@@ -20,19 +20,19 @@ public final class TenantObservationFilter implements ObservationFilter {
 
     private static final Cardinality DEFAULT_CARDINALITY = Cardinality.HIGH;
 
-    private final String tenantIdentifierKey;
+    private final String keyName;
 
     private final Cardinality cardinality;
 
-    private TenantObservationFilter(String tenantIdentifierKey, Cardinality cardinality) {
-        Assert.hasText(tenantIdentifierKey, "tenantIdentifierKey cannot be null or empty");
+    private TenantObservationFilter(String keyName, Cardinality cardinality) {
+        Assert.hasText(keyName, "keyName cannot be null or empty");
         Assert.notNull(cardinality, "cardinality cannot be null");
-        this.tenantIdentifierKey = tenantIdentifierKey;
+        this.keyName = keyName;
         this.cardinality = cardinality;
     }
 
-    public String getTenantIdentifierKey() {
-        return tenantIdentifierKey;
+    public String getKeyName() {
+        return keyName;
     }
 
     public Cardinality getCardinality() {
@@ -55,7 +55,7 @@ public final class TenantObservationFilter implements ObservationFilter {
     public Observation.Context enrich(Observation.Context context, String tenantIdentifier) {
         Assert.notNull(context, "context cannot be null");
         Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
-        var keyValue = KeyValue.of(tenantIdentifierKey, tenantIdentifier);
+        var keyValue = KeyValue.of(keyName, tenantIdentifier);
         if (cardinality == Cardinality.LOW) {
             context.addLowCardinalityKeyValue(keyValue);
         } else {
@@ -73,7 +73,7 @@ public final class TenantObservationFilter implements ObservationFilter {
 
     public static final class Builder {
 
-        private String tenantIdentifierKey = DEFAULT_TENANT_IDENTIFIER_KEY;
+        private String keyName = DEFAULT_TENANT_IDENTIFIER_KEY;
 
         private Cardinality cardinality = DEFAULT_CARDINALITY;
 
@@ -82,8 +82,8 @@ public final class TenantObservationFilter implements ObservationFilter {
         /**
          * Name of the key to use for the tenant identifier in observations.
          */
-        public Builder tenantIdentifierKey(String tenantIdentifierKey) {
-            this.tenantIdentifierKey = tenantIdentifierKey;
+        public Builder keyName(String keyName) {
+            this.keyName = keyName;
             return this;
         }
 
@@ -99,7 +99,7 @@ public final class TenantObservationFilter implements ObservationFilter {
          * Builds the {@link TenantObservationFilter} instance.
          */
         public TenantObservationFilter build() {
-            return new TenantObservationFilter(tenantIdentifierKey, cardinality);
+            return new TenantObservationFilter(keyName, cardinality);
         }
 
     }

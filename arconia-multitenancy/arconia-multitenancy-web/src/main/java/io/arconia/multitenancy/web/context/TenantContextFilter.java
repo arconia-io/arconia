@@ -86,7 +86,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
             Set<String> ignorePaths, ApplicationEventPublisher eventPublisher,
             TenantIdentifierValidator tenantIdentifierValidator, @Nullable TenantVerifier tenantVerifier,
             @Nullable TenantObservationFilter tenantObservationFilter, TenantResolutionFailureHandler failureHandler) {
-        Assert.notNull(tenantResolver, "httpRequestTenantResolver cannot be null");
+        Assert.notNull(tenantResolver, "tenantResolver cannot be null");
         Assert.notNull(ignorePaths, "ignorePaths cannot be null");
         Assert.notNull(eventPublisher, "eventPublisher cannot be null");
         Assert.notNull(tenantIdentifierValidator, "tenantIdentifierValidator cannot be null");
@@ -322,7 +322,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         /**
          * Resolver of the tenant identifier from the HTTP request.
          */
-        public Builder httpRequestTenantResolver(TenantResolver<HttpServletRequest> tenantResolver) {
+        public Builder tenantResolver(TenantResolver<HttpServletRequest> tenantResolver) {
             this.tenantResolver = tenantResolver;
             return this;
         }
@@ -377,7 +377,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         }
 
         public TenantContextFilter build() {
-            Assert.notNull(tenantResolver, "httpRequestTenantResolver cannot be null");
+            Assert.notNull(tenantResolver, "tenantResolver cannot be null");
             Assert.notNull(eventPublisher, "eventPublisher cannot be null");
             return new TenantContextFilter(order, tenantResolver, ignorePaths, eventPublisher,
                     tenantIdentifierValidator, tenantVerifier, tenantObservationFilter, failureHandler);

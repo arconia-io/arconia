@@ -18,32 +18,32 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
     private static final String DEFAULT_HEADER_NAME = "X-TenantId";
 
-    private final String tenantHeaderName;
+    private final String headerName;
 
-    private HeaderTenantResolver(String tenantHeaderName) {
-        Assert.hasText(tenantHeaderName, "tenantHeaderName cannot be null or empty");
-        this.tenantHeaderName = tenantHeaderName;
+    private HeaderTenantResolver(String headerName) {
+        Assert.hasText(headerName, "headerName cannot be null or empty");
+        this.headerName = headerName;
     }
 
     /**
      * Name of the HTTP header from which the current tenant is resolved.
      */
-    public String getTenantHeaderName() {
-        return tenantHeaderName;
+    public String getHeaderName() {
+        return headerName;
     }
 
     @Override
     @Nullable
     public String resolveTenantIdentifier(HttpServletRequest request) {
         Assert.notNull(request, "request cannot be null");
-        var headers = request.getHeaders(tenantHeaderName);
+        var headers = request.getHeaders(headerName);
         if (headers == null) {
             return null;
         }
         var values = Collections.list(headers);
         if (values.size() > 1) {
             throw new InvalidTenantIdentifierException(
-                    "The request must not contain more than one '%s' header".formatted(tenantHeaderName));
+                    "The request must not contain more than one '%s' header".formatted(headerName));
         }
         return values.isEmpty() ? null : values.getFirst();
     }
@@ -57,15 +57,15 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
 
     public static final class Builder {
 
-        private String tenantHeaderName = DEFAULT_HEADER_NAME;
+        private String headerName = DEFAULT_HEADER_NAME;
 
         private Builder() {}
 
         /**
          * Name of the HTTP header from which to resolve the current tenant.
          */
-        public Builder tenantHeaderName(String tenantHeaderName) {
-            this.tenantHeaderName = tenantHeaderName;
+        public Builder headerName(String headerName) {
+            this.headerName = headerName;
             return this;
         }
 
@@ -73,7 +73,7 @@ public final class HeaderTenantResolver implements HttpRequestTenantResolver {
          * Builds the {@link HeaderTenantResolver} instance.
          */
         public HeaderTenantResolver build() {
-            return new HeaderTenantResolver(tenantHeaderName);
+            return new HeaderTenantResolver(headerName);
         }
 
     }

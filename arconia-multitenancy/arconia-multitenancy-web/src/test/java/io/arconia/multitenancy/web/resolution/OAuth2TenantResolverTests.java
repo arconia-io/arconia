@@ -48,14 +48,14 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenNullCustomClaimThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> OAuth2TenantResolver.builder().tenantClaimName(null).build())
-            .withMessageContaining("tenantClaimName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> OAuth2TenantResolver.builder().claimName(null).build())
+            .withMessageContaining("claimName cannot be null or empty");
     }
 
     @Test
     void whenEmptyCustomClaimThenThrow() {
-        assertThatIllegalArgumentException().isThrownBy(() -> OAuth2TenantResolver.builder().tenantClaimName("").build())
-            .withMessageContaining("tenantClaimName cannot be null or empty");
+        assertThatIllegalArgumentException().isThrownBy(() -> OAuth2TenantResolver.builder().claimName("").build())
+            .withMessageContaining("claimName cannot be null or empty");
     }
 
     @Test
@@ -103,7 +103,7 @@ class OAuth2TenantResolverTests {
 
     @Test
     void whenCustomClaimIsUsed() {
-        var resolver = OAuth2TenantResolver.builder().tenantClaimName("https://arconia.io/tenant").build();
+        var resolver = OAuth2TenantResolver.builder().claimName("https://arconia.io/tenant").build();
         authenticate(new JwtAuthenticationToken(jwt(Map.of("https://arconia.io/tenant", TENANT_ID)), AuthorityUtils.NO_AUTHORITIES));
 
         assertThat(resolver.resolveTenantIdentifier(request)).isEqualTo(TENANT_ID);
