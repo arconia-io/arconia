@@ -197,6 +197,15 @@ class TenantDetailsConfigurationTests {
     }
 
     @Test
+    void whenTenantWithEmptyIdentifierThenFail() {
+        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=").run(context -> {
+            assertThat(context).hasFailed();
+            assertThat(context.getStartupFailure()).rootCause()
+                .hasMessage("The 'arconia.multitenancy.details.tenants[0].identifier' property must be set");
+        });
+    }
+
+    @Test
     void whenTenantWithoutIdentifierThenFail() {
         contextRunner
             .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",

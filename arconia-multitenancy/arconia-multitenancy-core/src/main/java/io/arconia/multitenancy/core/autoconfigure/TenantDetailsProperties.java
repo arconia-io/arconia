@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.util.Assert;
 
 /**
  * Configuration properties for tenant details.
  */
 @ConfigurationProperties(prefix = TenantDetailsProperties.CONFIG_PREFIX)
-public class TenantDetailsProperties implements InitializingBean {
+public class TenantDetailsProperties {
 
     public static final String CONFIG_PREFIX = "arconia.multitenancy.details";
 
@@ -34,19 +32,6 @@ public class TenantDetailsProperties implements InitializingBean {
 
     public Cache getCache() {
         return cache;
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        validate();
-    }
-
-    public void validate() {
-        for (int i = 0; i < tenants.size(); i++) {
-            if (tenants.get(i).getIdentifier() == null) {
-                throw new IllegalStateException("The '%s.tenants[%d].identifier' property must be set".formatted(CONFIG_PREFIX, i));
-            }
-        }
     }
 
     public static class Cache {
@@ -106,8 +91,7 @@ public class TenantDetailsProperties implements InitializingBean {
             return identifier;
         }
 
-        public void setIdentifier(String identifier) {
-            Assert.hasText(identifier, "identifier cannot be null or empty");
+        public void setIdentifier(@Nullable String identifier) {
             this.identifier = identifier;
         }
 
@@ -124,7 +108,6 @@ public class TenantDetailsProperties implements InitializingBean {
         }
 
         public void setAttributes(Map<String, Object> attributes) {
-            Assert.notNull(attributes, "attributes cannot be null");
             this.attributes = attributes;
         }
 

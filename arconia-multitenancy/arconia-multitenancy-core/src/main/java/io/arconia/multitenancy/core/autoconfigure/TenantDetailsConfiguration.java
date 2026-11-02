@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import io.arconia.multitenancy.core.resolution.DefaultTenantVerifier;
 import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
@@ -43,7 +44,10 @@ final class TenantDetailsConfiguration {
 
     private static Tenant toTenant(TenantDetailsProperties.TenantConfig tenantConfig, int index, TenantIdentifierValidator tenantIdentifierValidator) {
         var identifier = tenantConfig.getIdentifier();
-        Assert.hasText(identifier, "identifier cannot be null or empty");
+        if (!StringUtils.hasText(identifier)) {
+            throw new IllegalStateException("The '%s.tenants[%d].identifier' property must be set"
+                .formatted(TenantDetailsProperties.CONFIG_PREFIX, index));
+        }
         try {
             tenantIdentifierValidator.validate(identifier);
         } catch (InvalidTenantIdentifierException ex) {

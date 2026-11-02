@@ -1,7 +1,8 @@
 package io.arconia.multitenancy.core.tenantdetails;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.jspecify.annotations.Nullable;
@@ -19,19 +20,22 @@ public final class InMemoryTenantDetailsService implements TenantDetailsService 
 
     private final List<? extends TenantDetails> tenants;
 
+    private final Map<String, TenantDetails> tenantsByIdentifier;
+
     public InMemoryTenantDetailsService(List<? extends TenantDetails> tenants) {
         Assert.notNull(tenants, "tenants cannot be null");
         Assert.noNullElements(tenants, "tenants cannot contain null elements");
-        var identifiers = new HashSet<String>();
+        var tenantsByIdentifier = new HashMap<String, TenantDetails>();
         var duplicates = new TreeSet<String>();
         for (var tenant : tenants) {
-            if (!identifiers.add(tenant.identifier())) {
+            if (tenantsByIdentifier.putIfAbsent(tenant.identifier(), tenant) != null) {
                 duplicates.add(tenant.identifier());
             }
         }
         Assert.isTrue(duplicates.isEmpty(), () -> "tenants must have unique identifiers, but found duplicates: "
                 + String.join(", ", duplicates));
         this.tenants = List.copyOf(tenants);
+        this.tenantsByIdentifier = Map.copyOf(tenantsByIdentifier);
     }
 
     @Override
@@ -43,7 +47,7 @@ public final class InMemoryTenantDetailsService implements TenantDetailsService 
     @Override
     public TenantDetails loadTenantByIdentifier(String identifier) {
         Assert.hasText(identifier, "identifier cannot be null or empty");
-        return tenants.stream().filter(tenant -> identifier.equals(tenant.identifier())).findFirst().orElse(null);
+        return tenantsByIdentifier.get(identifier);
     }
 
 }

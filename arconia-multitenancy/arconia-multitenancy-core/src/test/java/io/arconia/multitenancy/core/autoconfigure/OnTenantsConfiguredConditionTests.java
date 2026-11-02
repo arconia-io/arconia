@@ -51,9 +51,9 @@ class OnTenantsConfiguredConditionTests {
     }
 
     @Test
-    void whenTenantIdentifierIsEmptyThenFailFast() {
+    void whenTenantIdentifierIsEmptyThenMatch() {
         contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=").run(context ->
-            assertThat(context).hasFailed()
+            assertThat(context).hasBean("conditionalBean")
         );
     }
 
