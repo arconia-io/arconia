@@ -37,15 +37,15 @@ arconia:
 
 .Tenant Identifier Configuration Properties
 |===
-| Property | Default | Description
+|Property |Default |Description
 
-| `arconia.multitenancy.identifier.max-length`
-| `64`
-| Maximum number of characters accepted in a tenant identifier.
+|`arconia.multitenancy.identifier.max-length`
+|`64`
+|Maximum number of characters accepted in a tenant identifier.
 
-| `arconia.multitenancy.identifier.pattern`
-| `[a-zA-Z0-9_-]+`
-| Regular expression a tenant identifier must match in full.
+|`arconia.multitenancy.identifier.pattern`
+|`[a-zA-Z0-9_-]+`
+|Regular expression a tenant identifier must match in full.
 |===
 
 For rules that a regular expression cannot express, provide your own implementation. It takes precedence over the auto-configured default:

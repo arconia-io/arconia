@@ -297,37 +297,37 @@ The `oauth2` mode reads the tenant from the verified token, so the identity and 
 
 .HTTP Tenant Resolution Configuration Properties
 |===
-| Property | Default | Description
+|Property |Default |Description
 
-| `arconia.multitenancy.resolution.http.enabled`
-| `true`
-| Whether HTTP tenant resolution is enabled. When disabled, neither the resolvers nor the filter are configured.
+|`arconia.multitenancy.resolution.http.enabled`
+|`true`
+|Whether HTTP tenant resolution is enabled. When disabled, neither the resolvers nor the filter are configured.
 
-| `arconia.multitenancy.resolution.http.resolution-mode`
-| `header`
-| Modes of HTTP resolution, consulted in order until one resolves a tenant. Options: `header`, `cookie`, `path`, `subdomain`, `oauth2`, `fixed`. The `fixed` mode always resolves a tenant, so it can only be the last one.
+|`arconia.multitenancy.resolution.http.resolution-mode`
+|`header`
+|Modes of HTTP resolution, consulted in order until one resolves a tenant. Options: `header`, `cookie`, `path`, `subdomain`, `oauth2`, `fixed`. The `fixed` mode always resolves a tenant, so it can only be the last one.
 
-| `arconia.multitenancy.resolution.http.header.name`
-| `X-TenantId`
-| Name of the HTTP header from which to resolve the current tenant.
+|`arconia.multitenancy.resolution.http.header.name`
+|`X-TenantId`
+|Name of the HTTP header from which to resolve the current tenant.
 
-| `arconia.multitenancy.resolution.http.cookie.name`
-| `TENANT-ID`
-| Name of the HTTP cookie from which to resolve the current tenant.
+|`arconia.multitenancy.resolution.http.cookie.name`
+|`TENANT-ID`
+|Name of the HTTP cookie from which to resolve the current tenant.
 
-| `arconia.multitenancy.resolution.http.path.pattern`
+|`arconia.multitenancy.resolution.http.path.pattern`
 |
-| Pattern matched against the request path, containing a `\{tenant}` variable that captures the tenant identifier, such as `/tenants/\{tenant}/**`. Required when the `path` mode is used.
+|Pattern matched against the request path, containing a `\{tenant}` variable that captures the tenant identifier, such as `/tenants/\{tenant}/**`. Required when the `path` mode is used.
 
-| `arconia.multitenancy.resolution.http.subdomain.pattern`
+|`arconia.multitenancy.resolution.http.subdomain.pattern`
 |
-| Pattern matched against the request host, containing a `\{tenant}` variable that captures the tenant identifier, such as `\{tenant}.example.com`. Required when the `subdomain` mode is used.
+|Pattern matched against the request host, containing a `\{tenant}` variable that captures the tenant identifier, such as `\{tenant}.example.com`. Required when the `subdomain` mode is used.
 
-| `arconia.multitenancy.resolution.http.oauth2.claim-name`
-| `tenant_id`
-| Name of the OAuth2 token claim from which to resolve the current tenant.
+|`arconia.multitenancy.resolution.http.oauth2.claim-name`
+|`tenant_id`
+|Name of the OAuth2 token claim from which to resolve the current tenant.
 
-| `arconia.multitenancy.resolution.fixed.tenant-identifier`
-| `default`
-| Identifier of the tenant resolved by the `fixed` mode.
+|`arconia.multitenancy.resolution.fixed.tenant-identifier`
+|`default`
+|Identifier of the tenant resolved by the `fixed` mode.
 |===

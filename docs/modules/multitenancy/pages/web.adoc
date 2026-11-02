@@ -260,23 +260,23 @@ To remove the resolvers as well, disable HTTP tenant resolution altogether with 
 
 .Tenant Context Filter Configuration Properties
 |===
-| Property | Default | Description
+|Property |Default |Description
 
-| `arconia.multitenancy.resolution.http.filter.enabled`
-| `true`
-| Whether the HTTP filter resolving the current tenant is enabled.
+|`arconia.multitenancy.resolution.http.filter.enabled`
+|`true`
+|Whether the HTTP filter resolving the current tenant is enabled.
 
-| `arconia.multitenancy.resolution.http.filter.order`
-| `2147483647`
-| Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain. Set it below `-100` to bind the tenant before the security filter chain. See xref:_filter_placement[Filter Placement].
+|`arconia.multitenancy.resolution.http.filter.order`
+|`2147483647`
+|Order of the HTTP filter resolving the current tenant. By default, the filter runs after the Spring Security filter chain. Set it below `-100` to bind the tenant before the security filter chain. See xref:_filter_placement[Filter Placement].
 
-| `arconia.multitenancy.resolution.http.filter.ignore-paths`
-| `/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
-| HTTP request paths for which tenant resolution will not be performed.
+|`arconia.multitenancy.resolution.http.filter.ignore-paths`
+|`/actuator/\**, /livez, /readyz, /webjars/**, /css/**, /js/**, /**/*.ico, /login, /oauth2/authorization/**, /login/oauth2/code/**`
+|HTTP request paths for which tenant resolution will not be performed.
 
-| `arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
-| `[]`
-| Additional HTTP request paths for which tenant resolution will not be performed.
+|`arconia.multitenancy.resolution.http.filter.additional-ignore-paths`
+|`[]`
+|Additional HTTP request paths for which tenant resolution will not be performed.
 |===
 
 == @TenantIdentifier Annotation

@@ -86,7 +86,7 @@ TenantContext.where("acme").run(() -> {
 
 === Configuration Properties
 
-[cols="1,1,2"]
+.Tenant Context Configuration Properties
 |===
 |Property |Default |Description
 
