@@ -98,6 +98,39 @@ class OtlpMetricsExporterConfigurationTests {
     }
 
     @Test
+    void grpcExporterCreatedWhenCommonProtocolIsGrpc() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.protocol=grpc")
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpGrpcMetricExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpHttpMetricExporter.class);
+            });
+    }
+
+    @Test
+    void signalProtocolTakesPrecedenceOverCommonProtocol() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.protocol=grpc",
+                "arconia.otel.metrics.exporter.otlp.protocol=http_protobuf"
+            )
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpHttpMetricExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpGrpcMetricExporter.class);
+            });
+    }
+
+    @Test
+    void httpProtobufExporterCreatedWhenProtocolIsHyphenated() {
+        contextRunner
+            .withPropertyValues("arconia.otel.metrics.exporter.otlp.protocol=http-protobuf")
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpHttpMetricExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpGrpcMetricExporter.class);
+            });
+    }
+
+    @Test
     void existingConnectionDetailsRespected() {
         contextRunner
             .withBean(OtlpMetricsConnectionDetails.class, () -> new OtlpMetricsConnectionDetails() {

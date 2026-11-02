@@ -84,6 +84,39 @@ class OtlpTracingExporterConfigurationTests {
     }
 
     @Test
+    void grpcExporterCreatedWhenCommonProtocolIsGrpc() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.protocol=grpc")
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpGrpcSpanExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpHttpSpanExporter.class);
+            });
+    }
+
+    @Test
+    void signalProtocolTakesPrecedenceOverCommonProtocol() {
+        contextRunner
+            .withPropertyValues(
+                "arconia.otel.exporter.otlp.protocol=grpc",
+                "arconia.otel.traces.exporter.otlp.protocol=http_protobuf"
+            )
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpHttpSpanExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpGrpcSpanExporter.class);
+            });
+    }
+
+    @Test
+    void httpProtobufExporterCreatedWhenProtocolIsHyphenated() {
+        contextRunner
+            .withPropertyValues("arconia.otel.traces.exporter.otlp.protocol=http-protobuf")
+            .run(context -> {
+                assertThat(context).hasSingleBean(OtlpHttpSpanExporter.class);
+                assertThat(context).doesNotHaveBean(OtlpGrpcSpanExporter.class);
+            });
+    }
+
+    @Test
     void existingConnectionDetailsRespected() {
         contextRunner
             .withBean(OtlpTracingConnectionDetails.class, () -> protocol -> "http://test:4318")
