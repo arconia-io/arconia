@@ -12,6 +12,7 @@ import javax.net.ssl.SSLContext;
 
 import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.CompressionMode;
+import io.micrometer.registry.otlp.ExemplarContextProvider;
 import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpHttpMetricsSender;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
@@ -221,6 +222,23 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                 .withBean(Resource.class, Resource::getDefault)
                 .run(context -> assertThat(context.getBean(MicrometerOtlpConfig.class).compressionMode())
                         .isEqualTo(CompressionMode.NONE));
+    }
+
+    @Test
+    void exemplarContextProviderApplied() {
+        contextRunner
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(ExemplarContextProvider.class, () -> () -> null)
+                .run(context -> assertThat(ReflectionTestUtils.getField(context.getBean(OtlpMeterRegistry.class), "exemplarSamplerFactory"))
+                        .isNotNull());
+    }
+
+    @Test
+    void noExemplarsWithoutExemplarContextProvider() {
+        contextRunner
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> assertThat(ReflectionTestUtils.getField(context.getBean(OtlpMeterRegistry.class), "exemplarSamplerFactory"))
+                        .isNull());
     }
 
     @Test

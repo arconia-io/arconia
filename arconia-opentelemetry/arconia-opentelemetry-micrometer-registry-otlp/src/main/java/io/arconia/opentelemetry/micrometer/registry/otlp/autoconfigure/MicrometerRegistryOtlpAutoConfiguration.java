@@ -8,6 +8,7 @@ import java.util.Set;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.CompressionMode;
+import io.micrometer.registry.otlp.ExemplarContextProvider;
 import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.registry.otlp.OtlpHttpMetricsSender;
@@ -16,6 +17,7 @@ import io.micrometer.registry.otlp.OtlpMetricsSender;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.resources.Resource;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -113,10 +115,12 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    OtlpMeterRegistry otlpMeterRegistry(Clock clock, OtlpConfig otlpConfig, OtlpMetricsSender otlpMetricsSender, Environment environment) {
+    OtlpMeterRegistry otlpMeterRegistry(Clock clock, OtlpConfig otlpConfig, OtlpMetricsSender otlpMetricsSender,
+                                        ObjectProvider<ExemplarContextProvider> exemplarContextProvider, Environment environment) {
         OtlpMeterRegistry.Builder builder = OtlpMeterRegistry.builder(otlpConfig)
                 .clock(clock)
                 .metricsSender(otlpMetricsSender);
+        exemplarContextProvider.ifAvailable(builder::exemplarContextProvider);
         if (Threading.VIRTUAL.isActive(environment)) {
             builder.threadFactory(new VirtualThreadTaskExecutor("otlp-meter-registry-").getVirtualThreadFactory());
         }

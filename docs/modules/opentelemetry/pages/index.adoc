@@ -393,7 +393,7 @@ arconia.otel.exporter.otlp.ssl.bundle=otlp
 ----
 ======
 
-The SSL bundle applies to the OTLP exporters of all signals and to the xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP]. You can use a different SSL bundle for a signal with the `arconia.otel.<signal>.exporter.otlp.ssl.bundle` property.
+The SSL bundle applies to the OTLP exporters of all signals and to the xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP]. You can use a different SSL bundle for a signal with the `arconia.otel.<signal>.exporter.otlp.ssl.bundle` property. The TLS protocols enabled by the SSL bundle apply to all the exporters, while its ciphers only apply to the Micrometer Metrics Registry OTLP, since the OpenTelemetry SDK doesn't support configuring them.
 
 The `OTEL_EXPORTER_OTLP_CERTIFICATE`, `OTEL_EXPORTER_OTLP_CLIENT_KEY`, and `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE` environment variables configure an SSL bundle named `otel-exporter-otlp` from the given PEM files and use it for the OTLP exporters. Their signal-specific variants, such as `OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE`, configure an SSL bundle named `otel-exporter-otlp-<signal>`, taking the files they don't set from the general variables. The client key and the client certificate must be set together. The `OTEL_EXPORTER_OTLP_INSECURE` variables are not supported, since the scheme of the endpoint determines whether TLS is used.
 

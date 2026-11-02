@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -8,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import javax.net.ssl.SSLContext;
@@ -28,6 +30,11 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpHttpClients;
  * set up as for the OpenTelemetry SDK exporters, see {@link OtlpHttpClients}.
  */
 final class JdkHttpClientSender implements HttpSender {
+
+    /**
+     * The largest response body read, as for the OpenTelemetry SDK exporters.
+     */
+    private static final int MAX_RESPONSE_BODY_SIZE = 4 * 1024 * 1024;
 
     private final HttpClient httpClient;
 
@@ -58,8 +65,11 @@ final class JdkHttpClientSender implements HttpSender {
                 .timeout(timeout)
                 .method(request.getMethod().name(), BodyPublishers.ofByteArray(request.getEntity()));
         request.getRequestHeaders().forEach(builder::header);
-        HttpResponse<String> response = httpClient.send(builder.build(), BodyHandlers.ofString());
-        return new Response(response.statusCode(), response.body());
+        HttpResponse<InputStream> response = httpClient.send(builder.build(), BodyHandlers.ofInputStream());
+        // The body is only included in the error messages, so a large one is truncated rather than read in full.
+        try (InputStream body = response.body()) {
+            return new Response(response.statusCode(), new String(body.readNBytes(MAX_RESPONSE_BODY_SIZE), StandardCharsets.UTF_8));
+        }
     }
 
 }

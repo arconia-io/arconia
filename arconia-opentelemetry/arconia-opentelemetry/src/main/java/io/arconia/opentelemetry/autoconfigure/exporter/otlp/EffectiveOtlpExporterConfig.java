@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.ssl.SslOptions;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -184,6 +186,16 @@ public final class EffectiveOtlpExporterConfig {
         } catch (URISyntaxException ex) {
             return "<unparseable URL>";
         }
+    }
+
+    /**
+     * Get the TLS protocols the SSL bundle enables, if it restricts them.
+     */
+    @Nullable
+    public static List<String> getEnabledProtocols(SslBundle sslBundle) {
+        Assert.notNull(sslBundle, "sslBundle cannot be null");
+        SslOptions options = sslBundle.getOptions();
+        return options.getEnabledProtocols() != null ? List.of(options.getEnabledProtocols()) : null;
     }
 
     /**

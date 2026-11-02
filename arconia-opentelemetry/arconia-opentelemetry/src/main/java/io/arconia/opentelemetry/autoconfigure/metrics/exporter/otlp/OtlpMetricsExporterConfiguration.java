@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -86,6 +87,10 @@ public final class OtlpMetricsExporterConfiguration {
         SslBundle sslBundle = connectionDetails.getSslBundle();
         if (sslBundle != null) {
             builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
+            List<String> enabledProtocols = EffectiveOtlpExporterConfig.getEnabledProtocols(sslBundle);
+            if (enabledProtocols != null) {
+                builder.setEnabledProtocols(enabledProtocols);
+            }
         }
         ProxyOptions proxyOptions = config.getProxyOptions();
         if (proxyOptions != null) {
@@ -125,6 +130,10 @@ public final class OtlpMetricsExporterConfiguration {
         SslBundle sslBundle = connectionDetails.getSslBundle();
         if (sslBundle != null) {
             builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
+            List<String> enabledProtocols = EffectiveOtlpExporterConfig.getEnabledProtocols(sslBundle);
+            if (enabledProtocols != null) {
+                builder.setEnabledProtocols(enabledProtocols);
+            }
         }
         if (config.isMetrics()) {
             // The meter provider is resolved on first use, since creating it requires this exporter.

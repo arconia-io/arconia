@@ -5,6 +5,7 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
@@ -234,6 +235,33 @@ class OtlpTracingExporterConfigurationTests {
     }
 
     @Test
+    void sslBundleProtocolsAppliedToHttpProtobufExporter() {
+        contextRunner
+            .withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class))
+            .withPropertyValues(
+                "spring.ssl.bundle.pem.otlp.truststore.certificate=classpath:ssl/ca.crt",
+                "spring.ssl.bundle.pem.otlp.options.enabled-protocols=TLSv1.3",
+                "arconia.otel.exporter.otlp.ssl.bundle=otlp"
+            )
+            .run(context -> assertThat(builderField(context.getBean(OtlpHttpSpanExporter.class), "enabledProtocols"))
+                .isEqualTo(List.of("TLSv1.3")));
+    }
+
+    @Test
+    void sslBundleProtocolsAppliedToGrpcExporter() {
+        contextRunner
+            .withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class))
+            .withPropertyValues(
+                "spring.ssl.bundle.pem.otlp.truststore.certificate=classpath:ssl/ca.crt",
+                "spring.ssl.bundle.pem.otlp.options.enabled-protocols=TLSv1.3",
+                "arconia.otel.exporter.otlp.ssl.bundle=otlp",
+                "arconia.otel.exporter.otlp.protocol=grpc"
+            )
+            .run(context -> assertThat(builderField(context.getBean(OtlpGrpcSpanExporter.class), "enabledProtocols"))
+                .isEqualTo(List.of("TLSv1.3")));
+    }
+
+    @Test
     void noSslContextByDefault() {
         contextRunner
             .run(context -> {
@@ -321,6 +349,11 @@ class OtlpTracingExporterConfigurationTests {
     private static @Nullable ExecutorService executorService(Object exporter) {
         Object builder = ReflectionTestUtils.getField(exporter, "builder");
         return (ExecutorService) ReflectionTestUtils.getField(builder, "executorService");
+    }
+
+    private static @Nullable Object builderField(Object exporter, String name) {
+        Object builder = ReflectionTestUtils.getField(exporter, "builder");
+        return ReflectionTestUtils.getField(builder, name);
     }
 
     private static @Nullable ProxyOptions proxyOptions(Object exporter) {

@@ -98,6 +98,23 @@ class JdkHttpClientSenderTests {
     }
 
     @Test
+    void truncatesLargeResponseBody() throws Throwable {
+        server.createContext("/v1/large", exchange -> {
+            byte[] response = new byte[5 * 1024 * 1024];
+            exchange.sendResponseHeaders(400, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
+        URI uri = URI.create("http://localhost:%d/v1/large".formatted(server.getAddress().getPort()));
+
+        HttpSender.Response response = sender.send(new HttpSender.Request(uri.toURL(), new byte[0], HttpSender.Method.POST, Map.of()));
+
+        assertThat(response.code()).isEqualTo(400);
+        assertThat(response.body()).hasSize(4 * 1024 * 1024);
+    }
+
+    @Test
     void usesHttp11() {
         JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
 

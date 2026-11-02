@@ -260,12 +260,12 @@ The following table summarizes the differences between the two approaches:
 | Stable | ✅ | ❌
 | OpenTelemetry API | ❌ | ✅
 | Support non-OTLP exporters | ❌ | ✅
-| Support exemplars | ❌ | ✅
+| Support exemplars | ✅ | ✅
 | Support reading metrics | ✅ | ❌
 | Maintained by the Micrometer team | ✅ | ❌
 |===
 
-By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, use a different exporter than OTLP, or need exemplar support, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge] section for more details.
+By default, Arconia uses the Micrometer Metrics Registry OTLP. The main reason is that it's stable and fully supported by the Micrometer project. However, if you need to export Micrometer metrics via the OpenTelemetry API, or use a different exporter than OTLP, you can switch to the Micrometer Metrics OpenTelemetry Bridge instead. Refer to the xref:_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge] section for more details.
 
 === Micrometer Metrics OpenTelemetry Bridge (from OpenTelemetry Java Instrumentation)
 
@@ -321,7 +321,7 @@ If the Micrometer Metrics OpenTelemetry Bridge is included in the project, it wi
 arconia.otel.metrics.micrometer-bridge.enabled: false
 ----
 
-WARNING: The Micrometer Metrics OpenTelemetry Bridge is mutually exclusive with the Micrometer Metrics Registry OTLP. If you have both dependencies in your project, it will be up to you to explicitly disable one of the two options via configuration properties or else neither will be auto-configured.
+WARNING: The Micrometer Metrics OpenTelemetry Bridge and the Micrometer Metrics Registry OTLP are not meant to be used together. If you have both dependencies in your project, both are auto-configured and the Micrometer metrics are exported twice. Disable one of them with the `arconia.otel.exporter.otlp.micrometer.enabled` or `arconia.otel.metrics.micrometer-bridge.enabled` property.
 
 ==== Configuration Properties
 
