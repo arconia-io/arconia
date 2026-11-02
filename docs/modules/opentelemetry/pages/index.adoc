@@ -258,7 +258,49 @@ You can override any of these properties for each observability signal using the
 
 ==== HTTP
 
-By default, the OpenTelemetry SDK uses HTTP/Protobuf for OTLP communication. In particular, it relies on the https://opentelemetry.io/docs/languages/java/sdk/#senders[JDK Http Client] to send telemetry data to the endpoint.
+By default, the OTLP exporters use HTTP/Protobuf. The Arconia OpenTelemetry Spring Boot Starter includes the `arconia-opentelemetry-exporter-sender-http` module, which sends the telemetry data to the endpoint with the JDK HTTP Client over HTTP/1.1. Every OTLP endpoint supports HTTP/1.1, while the requests to upgrade the connection to HTTP/2 are rejected by many servers and proxies (https://github.com/open-telemetry/opentelemetry-java/issues/8982[opentelemetry-java#8982]). The xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] connects to the endpoint the same way.
+
+When virtual threads are enabled with the `spring.threads.virtual.enabled` property, the OTLP exporters send the telemetry data on virtual threads.
+
+You can use another https://opentelemetry.io/docs/languages/java/sdk/#senders[sender] provided by the OpenTelemetry project instead, such as the one based on OkHttp, by excluding the Arconia sender and adding the other one.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    implementation('io.arconia:arconia-opentelemetry-spring-boot-starter') {
+        exclude group: 'io.arconia', module: 'arconia-opentelemetry-exporter-sender-http'
+    }
+    runtimeOnly 'io.opentelemetry:opentelemetry-exporter-sender-okhttp'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>io.arconia</groupId>
+            <artifactId>arconia-opentelemetry-exporter-sender-http</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
+    <scope>runtime</scope>
+</dependency>
+----
+======
+
+When more than one sender is on the classpath, the OpenTelemetry SDK logs a warning and uses one of them. You can choose which one by setting the `io.opentelemetry.sdk.common.export.HttpSenderProvider` JVM system property to the fully qualified class name of its provider, such as `io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider`.
 
 ==== gRPC
 

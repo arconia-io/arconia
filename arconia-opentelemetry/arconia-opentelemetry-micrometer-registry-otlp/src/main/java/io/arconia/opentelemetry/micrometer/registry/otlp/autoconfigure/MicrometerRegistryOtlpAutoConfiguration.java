@@ -1,5 +1,6 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
@@ -105,7 +106,8 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
     ) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, metricsProperties.getOtlp());
         ProxyOptions proxyOptions = config.getProxyOptions();
-        return new OtlpHttpMetricsSender(new JdkHttpClientSender(config.getConnectTimeout(), config.getTimeout(),
+        URI endpoint = URI.create(connectionDetails.getMetricsUrl(Protocol.HTTP_PROTOBUF));
+        return new OtlpHttpMetricsSender(new JdkHttpClientSender(endpoint, config.getConnectTimeout(), config.getTimeout(),
                 connectionDetails.getSslBundle(), proxyOptions != null ? proxyOptions.getProxySelector() : null));
     }
 

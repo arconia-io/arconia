@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp;
 
+import java.util.concurrent.Executors;
+
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
@@ -17,8 +19,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.thread.Threading;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
@@ -61,7 +66,7 @@ public final class OtlpTracingExporterConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpTracingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryTracingExporterProperties.CONFIG_PREFIX, value = Protocol.HTTP_PROTOBUF)
-    OtlpHttpSpanExporter otlpHttpSpanExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
+    OtlpHttpSpanExporter otlpHttpSpanExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryTracingExporterProperties properties, OtlpTracingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider, Environment environment) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
         String url = connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF);
         OtlpHttpSpanExporterBuilder builder = OtlpHttpSpanExporter.builder()
@@ -83,6 +88,10 @@ public final class OtlpTracingExporterConfiguration {
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
+        }
+        if (Threading.VIRTUAL.isActive(environment)) {
+            builder.setExecutorService(Executors.newThreadPerTaskExecutor(
+                    new VirtualThreadTaskExecutor("otel-traces-exporter-").getVirtualThreadFactory()));
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", EffectiveOtlpExporterConfig.toLoggableUrl(url));
         return builder.build();

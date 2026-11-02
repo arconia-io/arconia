@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp;
 
+import java.util.concurrent.Executors;
+
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
@@ -17,8 +19,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.thread.Threading;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.util.Assert;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
@@ -61,7 +66,7 @@ public final class OtlpLoggingExporterConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpLoggingConnectionDetails.class)
     @ConditionalOnOtlpProtocol(prefix = OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX, value = Protocol.HTTP_PROTOBUF)
-    OtlpHttpLogRecordExporter otlpHttpLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider) {
+    OtlpHttpLogRecordExporter otlpHttpLogRecordExporter(OpenTelemetryExporterProperties commonProperties, OpenTelemetryLoggingExporterProperties properties, OtlpLoggingConnectionDetails connectionDetails, ObjectProvider<MeterProvider> meterProvider, Environment environment) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
         String url = connectionDetails.getLogsUrl(Protocol.HTTP_PROTOBUF);
         OtlpHttpLogRecordExporterBuilder builder = OtlpHttpLogRecordExporter.builder()
@@ -83,6 +88,10 @@ public final class OtlpLoggingExporterConfiguration {
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
+        }
+        if (Threading.VIRTUAL.isActive(environment)) {
+            builder.setExecutorService(Executors.newThreadPerTaskExecutor(
+                    new VirtualThreadTaskExecutor("otel-logs-exporter-").getVirtualThreadFactory()));
         }
         logger.info("Configuring OpenTelemetry HTTP/Protobuf log exporter with endpoint: {}", EffectiveOtlpExporterConfig.toLoggableUrl(url));
         return builder.build();

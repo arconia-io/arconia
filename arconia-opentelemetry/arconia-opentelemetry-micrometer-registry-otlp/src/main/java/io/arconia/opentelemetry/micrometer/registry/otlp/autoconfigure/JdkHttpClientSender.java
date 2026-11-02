@@ -10,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import io.micrometer.core.ipc.http.HttpSender;
@@ -19,9 +20,12 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslOptions;
 import org.springframework.util.Assert;
 
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpHttpClients;
+
 /**
  * {@link HttpSender} based on the JDK {@link HttpClient}, so that the connection
- * to the OTLP endpoint can be secured with an SSL bundle and go through a proxy.
+ * to the OTLP endpoint can be secured with an SSL bundle and go through a proxy. The client is
+ * set up as for the OpenTelemetry SDK exporters, see {@link OtlpHttpClients}.
  */
 final class JdkHttpClientSender implements HttpSender {
 
@@ -29,29 +33,22 @@ final class JdkHttpClientSender implements HttpSender {
 
     private final Duration timeout;
 
-    JdkHttpClientSender(Duration connectTimeout, Duration timeout, @Nullable SslBundle sslBundle, @Nullable ProxySelector proxySelector) {
+    JdkHttpClientSender(URI endpoint, Duration connectTimeout, Duration timeout, @Nullable SslBundle sslBundle, @Nullable ProxySelector proxySelector) {
+        Assert.notNull(endpoint, "endpoint cannot be null");
         Assert.notNull(connectTimeout, "connectTimeout cannot be null");
         Assert.notNull(timeout, "timeout cannot be null");
-        HttpClient.Builder builder = HttpClient.newBuilder()
-                .connectTimeout(connectTimeout)
-                // By default, the client asks to upgrade cleartext connections to HTTP/2 (h2c), which many OTLP
-                // backends and proxies reject by closing the connection. OTLP works the same over HTTP/1.1.
-                // See https://github.com/open-telemetry/opentelemetry-java/issues/8982.
-                .version(HttpClient.Version.HTTP_1_1);
-        if (proxySelector != null) {
-            builder.proxy(proxySelector);
-        }
+        SSLContext sslContext = null;
+        SSLParameters sslParameters = null;
         if (sslBundle != null) {
-            builder.sslContext(sslBundle.createSslContext());
+            sslContext = sslBundle.createSslContext();
             SslOptions options = sslBundle.getOptions();
             if (options.isSpecified()) {
-                SSLParameters parameters = new SSLParameters();
-                parameters.setCipherSuites(options.getCiphers());
-                parameters.setProtocols(options.getEnabledProtocols());
-                builder.sslParameters(parameters);
+                sslParameters = new SSLParameters();
+                sslParameters.setCipherSuites(options.getCiphers());
+                sslParameters.setProtocols(options.getEnabledProtocols());
             }
         }
-        this.httpClient = builder.build();
+        this.httpClient = OtlpHttpClients.create(endpoint, connectTimeout, sslContext, sslParameters, proxySelector);
         this.timeout = timeout;
     }
 

@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 class JdkHttpClientSenderTests {
 
+    private static final URI ENDPOINT = URI.create("http://localhost:4318/v1/metrics");
+
     private final AtomicReference<String> receivedMethod = new AtomicReference<>();
 
     private final AtomicReference<String> receivedHeader = new AtomicReference<>();
@@ -60,22 +62,29 @@ class JdkHttpClientSenderTests {
     }
 
     @Test
+    void whenEndpointNullThenThrow() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new JdkHttpClientSender(null, Duration.ofSeconds(1), Duration.ofSeconds(10), null, null))
+                .withMessage("endpoint cannot be null");
+    }
+
+    @Test
     void whenConnectTimeoutNullThenThrow() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new JdkHttpClientSender(null, Duration.ofSeconds(10), null, null))
+                .isThrownBy(() -> new JdkHttpClientSender(ENDPOINT, null, Duration.ofSeconds(10), null, null))
                 .withMessage("connectTimeout cannot be null");
     }
 
     @Test
     void whenTimeoutNullThenThrow() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new JdkHttpClientSender(Duration.ofSeconds(10), null, null, null))
+                .isThrownBy(() -> new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(10), null, null, null))
                 .withMessage("timeout cannot be null");
     }
 
     @Test
     void sendsRequest() throws Throwable {
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
         URI uri = URI.create("http://localhost:%d/v1/metrics".formatted(server.getAddress().getPort()));
 
         HttpSender.Response response = sender.send(new HttpSender.Request(uri.toURL(),
@@ -90,7 +99,7 @@ class JdkHttpClientSenderTests {
 
     @Test
     void usesHttp11() {
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
 
         HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
         assertThat(httpClient.version()).isEqualTo(HttpClient.Version.HTTP_1_1);
@@ -104,7 +113,7 @@ class JdkHttpClientSenderTests {
             exchange.sendResponseHeaders(200, -1);
             exchange.close();
         });
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, null);
         URI uri = URI.create("http://localhost:%d/v1/upgrade".formatted(server.getAddress().getPort()));
 
         sender.send(new HttpSender.Request(uri.toURL(), new byte[0], HttpSender.Method.POST, Map.of()));
@@ -115,7 +124,7 @@ class JdkHttpClientSenderTests {
     @Test
     void usesProxySelector() {
         ProxySelector proxySelector = ProxySelector.of(InetSocketAddress.createUnresolved("proxy.example.com", 3128));
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), null, proxySelector);
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), null, proxySelector);
 
         HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
         assertThat(httpClient.proxy()).contains(proxySelector);
@@ -126,7 +135,7 @@ class JdkHttpClientSenderTests {
         SslBundle sslBundle = SslBundle.of(new PemSslStoreBundle(null, PemSslStoreDetails.forCertificate("classpath:ssl/ca.crt")),
                 null, SslOptions.of(null, new String[] { "TLSv1.3" }));
 
-        JdkHttpClientSender sender = new JdkHttpClientSender(Duration.ofSeconds(1), Duration.ofSeconds(5), sslBundle, null);
+        JdkHttpClientSender sender = new JdkHttpClientSender(ENDPOINT, Duration.ofSeconds(1), Duration.ofSeconds(5), sslBundle, null);
 
         HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(sender, "httpClient");
         assertThat(httpClient.sslContext()).isNotSameAs(SSLContext.getDefault());

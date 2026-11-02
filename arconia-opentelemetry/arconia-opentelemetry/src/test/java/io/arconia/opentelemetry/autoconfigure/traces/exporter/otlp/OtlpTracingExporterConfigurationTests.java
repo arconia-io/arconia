@@ -4,12 +4,14 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.OpenTelemetryTracingExporterAutoConfiguration;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
@@ -277,6 +279,28 @@ class OtlpTracingExporterConfigurationTests {
             .run(context -> assertThat(context).getFailure()
                 .rootCause()
                 .hasMessageContaining("doesn't support a proxy with the gRPC protocol"));
+    }
+
+    @Test
+    void httpProtobufExporterUsesVirtualThreadsWhenEnabled() {
+        contextRunner
+            .withPropertyValues("spring.threads.virtual.enabled=true")
+            .run(context -> {
+                ExecutorService executorService = executorService(context.getBean(OtlpHttpSpanExporter.class));
+                assertThat(executorService).isNotNull();
+                assertThat(executorService.submit(() -> Thread.currentThread().isVirtual()).get()).isTrue();
+            });
+    }
+
+    @Test
+    void httpProtobufExporterUsesDefaultExecutorWhenVirtualThreadsDisabled() {
+        contextRunner
+            .run(context -> assertThat(executorService(context.getBean(OtlpHttpSpanExporter.class))).isNull());
+    }
+
+    private static @Nullable ExecutorService executorService(Object exporter) {
+        Object builder = ReflectionTestUtils.getField(exporter, "builder");
+        return (ExecutorService) ReflectionTestUtils.getField(builder, "executorService");
     }
 
     private static ProxyOptions proxyOptions(Object exporter) {
