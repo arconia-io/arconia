@@ -3,6 +3,7 @@ package io.arconia.multitenancy.web.autoconfigure;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +31,6 @@ import io.arconia.multitenancy.core.resolution.TenantResolver;
 import io.arconia.multitenancy.core.resolution.TenantVerifier;
 import io.arconia.multitenancy.web.autoconfigure.HttpTenantResolutionProperties.HttpResolutionMode;
 import io.arconia.multitenancy.web.context.TenantContextFilter;
-import io.arconia.multitenancy.web.context.TenantContextIgnorePathMatcher;
 import io.arconia.multitenancy.web.resolution.CompositeHttpRequestTenantResolver;
 import io.arconia.multitenancy.web.resolution.CookieTenantResolver;
 import io.arconia.multitenancy.web.resolution.HeaderTenantResolver;
@@ -47,7 +47,7 @@ import io.arconia.multitenancy.web.resolution.TenantResolutionFailureHandler;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(HttpTenantResolutionProperties.class)
 @ConditionalOnBooleanProperty(prefix = HttpTenantResolutionProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
-public final class HttpTenantResolutionConfiguration {
+final class HttpTenantResolutionConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpTenantResolutionConfiguration.class);
 
@@ -140,7 +140,6 @@ public final class HttpTenantResolutionConfiguration {
         TenantContextFilter tenantContextFilter(
                 HttpTenantResolutionProperties httpTenantResolutionProperties,
                 HttpRequestTenantResolver httpRequestTenantResolver,
-                TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher,
                 ApplicationEventPublisher eventPublisher,
                 TenantIdentifierValidator tenantIdentifierValidator,
                 ObjectProvider<TenantVerifier> tenantVerifier,
@@ -156,7 +155,7 @@ public final class HttpTenantResolutionConfiguration {
             return TenantContextFilter.builder()
                 .order(httpTenantResolutionProperties.getFilter().getOrder())
                 .httpRequestTenantResolver(httpRequestTenantResolver)
-                .tenantContextIgnorePathMatcher(tenantContextIgnorePathMatcher)
+                .ignorePaths(ignorePaths(httpTenantResolutionProperties.getFilter()))
                 .eventPublisher(eventPublisher)
                 .tenantIdentifierValidator(tenantIdentifierValidator)
                 .tenantVerifier(verifier)
@@ -165,12 +164,10 @@ public final class HttpTenantResolutionConfiguration {
                 .build();
         }
 
-        @Bean
-        @ConditionalOnMissingBean
-        TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher(HttpTenantResolutionProperties httpTenantResolutionProperties) {
-            var ignorePathMatcher = new HashSet<>(httpTenantResolutionProperties.getFilter().getIgnorePaths());
-            ignorePathMatcher.addAll(httpTenantResolutionProperties.getFilter().getAdditionalIgnorePaths());
-            return new TenantContextIgnorePathMatcher(ignorePathMatcher);
+        private static Set<String> ignorePaths(HttpTenantResolutionProperties.Filter filter) {
+            var ignorePaths = new HashSet<>(filter.getIgnorePaths());
+            ignorePaths.addAll(filter.getAdditionalIgnorePaths());
+            return ignorePaths;
         }
 
     }

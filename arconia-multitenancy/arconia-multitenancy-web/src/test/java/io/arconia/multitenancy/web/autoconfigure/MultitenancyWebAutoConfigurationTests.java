@@ -41,7 +41,6 @@ import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.resolution.FixedTenantResolver;
 import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
 import io.arconia.multitenancy.web.context.TenantContextFilter;
-import io.arconia.multitenancy.web.context.TenantContextIgnorePathMatcher;
 import io.arconia.multitenancy.web.resolution.CompositeHttpRequestTenantResolver;
 import io.arconia.multitenancy.web.resolution.CookieTenantResolver;
 import io.arconia.multitenancy.web.resolution.HeaderTenantResolver;
@@ -390,15 +389,25 @@ class MultitenancyWebAutoConfigurationTests {
     }
 
     @Test
-    void tenantContextIgnorePathMatcher() {
+    void tenantContextFilterIgnoresConfiguredAndAdditionalPaths() {
         contextRunner
-                .withPropertyValues("arconia.multitenancy.resolution.http.filter.ignore-paths=/actuator/**,/status")
+                .withPropertyValues("arconia.multitenancy.resolution.http.filter.ignore-paths=/actuator/**",
+                        "arconia.multitenancy.resolution.http.filter.additional-ignore-paths=/status")
                 .run(context -> {
-                    assertThat(context).hasSingleBean(TenantContextIgnorePathMatcher.class);
-                    var tenantContextIgnorePathMatcher = context.getBean(TenantContextIgnorePathMatcher.class);
-                    var mockRequest = new MockHttpServletRequest();
-                    mockRequest.setRequestURI("/actuator/prometheus");
-                    assertThat(tenantContextIgnorePathMatcher.matches(mockRequest)).isTrue();
+                    var filter = context.getBean(TenantContextFilter.class);
+                    for (var path : List.of("/actuator/prometheus", "/status")) {
+                        var request = new MockHttpServletRequest("GET", path);
+                        var response = new MockHttpServletResponse();
+                        var chain = new MockFilterChain();
+
+                        filter.doFilter(request, response, chain);
+
+                        assertThat(chain.getRequest()).isSameAs(request);
+                        assertThat(response.getStatus()).isEqualTo(200);
+                    }
+                    var notIgnored = new MockHttpServletResponse();
+                    filter.doFilter(new MockHttpServletRequest("GET", "/products"), notIgnored, new MockFilterChain());
+                    assertThat(notIgnored.getStatus()).isEqualTo(400);
                 });
     }
 
@@ -406,12 +415,6 @@ class MultitenancyWebAutoConfigurationTests {
     void tenantContextFilterDisabled() {
         contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.enabled=false")
                 .run(context -> assertThat(context).doesNotHaveBean(TenantContextFilter.class));
-    }
-
-    @Test
-    void tenantContextIgnorePathMatcherDisabled() {
-        contextRunner.withPropertyValues("arconia.multitenancy.resolution.http.filter.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(TenantContextIgnorePathMatcher.class));
     }
 
     private static List<?> configuredResolvers(AssertableWebApplicationContext context) {

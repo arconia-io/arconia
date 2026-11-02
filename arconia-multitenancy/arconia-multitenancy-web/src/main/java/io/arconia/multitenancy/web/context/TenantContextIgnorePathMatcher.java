@@ -12,24 +12,21 @@ import org.springframework.util.Assert;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import io.arconia.core.annotations.Incubating;
-
 /**
  * Matches HTTP requests paths for which a tenant context is not attached.
  */
-@Incubating
-public class TenantContextIgnorePathMatcher {
+final class TenantContextIgnorePathMatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantContextIgnorePathMatcher.class);
 
     private final List<PathPattern> ignorePathPatterns;
 
-    public TenantContextIgnorePathMatcher(Set<String> ignorePathPatterns) {
+    TenantContextIgnorePathMatcher(Set<String> ignorePathPatterns) {
         Assert.notNull(ignorePathPatterns, "ignorePathPatterns cannot be null");
         this.ignorePathPatterns = ignorePathPatterns.stream().map(this::parse).toList();
     }
 
-    public boolean matches(HttpServletRequest httpServletRequest) {
+    boolean matches(HttpServletRequest httpServletRequest) {
         Assert.notNull(httpServletRequest, "httpServletRequest cannot be null");
         var requestUri = httpServletRequest.getRequestURI();
         // Matched against the path within the application, so that the configured

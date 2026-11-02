@@ -1,6 +1,7 @@
 package io.arconia.multitenancy.web.context;
 
 import java.io.IOException;
+import java.util.Set;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,7 +26,6 @@ import io.arconia.multitenancy.core.observability.TenantObservationFilter;
 import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
 import io.arconia.multitenancy.core.resolution.InvalidTenantIdentifierException;
 import io.arconia.multitenancy.core.resolution.TenantIdentifierValidator;
-import io.arconia.multitenancy.core.resolution.TenantIdentifiers;
 import io.arconia.multitenancy.core.resolution.TenantResolver;
 import io.arconia.multitenancy.core.resolution.TenantVerificationException;
 import io.arconia.multitenancy.core.resolution.TenantVerifier;
@@ -54,6 +54,10 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     private static final String REJECTED_TENANT_MESSAGE = "The tenant was rejected";
 
+    private static final int LOG_MAX_LENGTH = 64;
+
+    private static final char LOG_REPLACEMENT_CHAR = '\uFFFD';
+
     /**
      * Request attribute holding the tenant identifier established on the initial
      * dispatch. Clients cannot set request attributes, so its value is trusted.
@@ -64,7 +68,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     private final TenantResolver<HttpServletRequest> tenantResolver;
 
-    private final TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
+    private final TenantContextIgnorePathMatcher ignorePathMatcher;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -79,17 +83,17 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
     private final TenantResolutionFailureHandler failureHandler;
 
     private TenantContextFilter(int order, TenantResolver<HttpServletRequest> tenantResolver,
-            TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher, ApplicationEventPublisher eventPublisher,
+            Set<String> ignorePaths, ApplicationEventPublisher eventPublisher,
             TenantIdentifierValidator tenantIdentifierValidator, @Nullable TenantVerifier tenantVerifier,
             @Nullable TenantObservationFilter tenantObservationFilter, TenantResolutionFailureHandler failureHandler) {
         Assert.notNull(tenantResolver, "httpRequestTenantResolver cannot be null");
-        Assert.notNull(tenantContextIgnorePathMatcher, "tenantContextIgnorePathMatcher cannot be null");
+        Assert.notNull(ignorePaths, "ignorePaths cannot be null");
         Assert.notNull(eventPublisher, "eventPublisher cannot be null");
         Assert.notNull(tenantIdentifierValidator, "tenantIdentifierValidator cannot be null");
         Assert.notNull(failureHandler, "failureHandler cannot be null");
         this.order = order;
         this.tenantResolver = tenantResolver;
-        this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
+        this.ignorePathMatcher = new TenantContextIgnorePathMatcher(ignorePaths);
         this.eventPublisher = eventPublisher;
         this.tenantIdentifierValidator = tenantIdentifierValidator;
         this.tenantVerifier = tenantVerifier;
@@ -201,6 +205,24 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
     }
 
     /**
+     * Returns a form of the given value that is safe to log: control characters are
+     * replaced, and the length is capped, so that an attacker-controlled identifier can
+     * neither inject log lines nor flood the log.
+     */
+    static String sanitizeForLogging(String value) {
+        var length = Math.min(value.length(), LOG_MAX_LENGTH);
+        var builder = new StringBuilder(length + 1);
+        for (int i = 0; i < length; i++) {
+            var c = value.charAt(i);
+            builder.append(Character.isISOControl(c) ? LOG_REPLACEMENT_CHAR : c);
+        }
+        if (value.length() > LOG_MAX_LENGTH) {
+            builder.append('…');
+        }
+        return builder.toString();
+    }
+
+    /**
      * The exception message describes the violated rule to the caller. An exception
      * without one falls back to a generic description of the outcome.
      */
@@ -220,7 +242,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
             Outcome outcome, String message, @Nullable Throwable cause, @Nullable String tenantIdentifier)
             throws ServletException, IOException {
         if (logger.isDebugEnabled()) {
-            var identifier = tenantIdentifier != null ? " '" + TenantIdentifiers.sanitizeForLogging(tenantIdentifier) + "'" : "";
+            var identifier = tenantIdentifier != null ? " '" + sanitizeForLogging(tenantIdentifier) + "'" : "";
             logger.debug("No tenant context established for request to %s (%s%s): %s".formatted(request.getRequestURI(),
                     outcome.name().toLowerCase(java.util.Locale.ROOT), identifier, message));
         }
@@ -237,7 +259,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return CorsUtils.isPreFlightRequest(request) || tenantContextIgnorePathMatcher.matches(request);
+        return CorsUtils.isPreFlightRequest(request) || ignorePathMatcher.matches(request);
     }
 
     /**
@@ -274,8 +296,7 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         @Nullable
         private TenantResolver<HttpServletRequest> tenantResolver;
 
-        @Nullable
-        private TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher;
+        private Set<String> ignorePaths = Set.of();
 
         @Nullable
         private ApplicationEventPublisher eventPublisher;
@@ -307,11 +328,11 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         }
 
         /**
-         * Matcher that determines whether a tenant context should be established for
-         * the given request.
+         * Path patterns of the requests for which no tenant context is established,
+         * matched against the path within the application.
          */
-        public Builder tenantContextIgnorePathMatcher(TenantContextIgnorePathMatcher tenantContextIgnorePathMatcher) {
-            this.tenantContextIgnorePathMatcher = tenantContextIgnorePathMatcher;
+        public Builder ignorePaths(Set<String> ignorePaths) {
+            this.ignorePaths = ignorePaths;
             return this;
         }
 
@@ -357,9 +378,8 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
         public TenantContextFilter build() {
             Assert.notNull(tenantResolver, "httpRequestTenantResolver cannot be null");
-            Assert.notNull(tenantContextIgnorePathMatcher, "tenantContextIgnorePathMatcher cannot be null");
             Assert.notNull(eventPublisher, "eventPublisher cannot be null");
-            return new TenantContextFilter(order, tenantResolver, tenantContextIgnorePathMatcher, eventPublisher,
+            return new TenantContextFilter(order, tenantResolver, ignorePaths, eventPublisher,
                     tenantIdentifierValidator, tenantVerifier, tenantObservationFilter, failureHandler);
         }
 

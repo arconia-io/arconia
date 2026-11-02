@@ -54,36 +54,27 @@ class TenantContextFilterTests {
 
     @Test
     void whenNullTenantResolverThenThrow() {
-        var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         assertThatIllegalArgumentException()
             .isThrownBy(() -> TenantContextFilter.builder()
-                .tenantContextIgnorePathMatcher(noTenantPathMatcher)
                 .eventPublisher(eventPublisher)
                 .build())
             .withMessageContaining("httpRequestTenantResolver cannot be null");
     }
 
     @Test
-    void whenNullPathMatcherThenThrow() {
-        var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
-        var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+    void whenNullIgnorePathsThenThrow() {
         assertThatIllegalArgumentException()
-            .isThrownBy(() -> TenantContextFilter.builder()
-                .httpRequestTenantResolver(httpRequestTenantResolver)
-                .eventPublisher(eventPublisher)
-                .build())
-            .withMessageContaining("tenantContextIgnorePathMatcher cannot be null");
+            .isThrownBy(() -> defaultFilter(Mockito.mock(ApplicationEventPublisher.class)).ignorePaths(null).build())
+            .withMessageContaining("ignorePaths cannot be null");
     }
 
     @Test
     void whenNullEventPublisherThenThrow() {
         var httpRequestTenantResolver = Mockito.mock(HttpRequestTenantResolver.class);
-        var noTenantPathMatcher = Mockito.mock(TenantContextIgnorePathMatcher.class);
         assertThatIllegalArgumentException()
             .isThrownBy(() -> TenantContextFilter.builder()
                 .httpRequestTenantResolver(httpRequestTenantResolver)
-                .tenantContextIgnorePathMatcher(noTenantPathMatcher)
                 .build())
             .withMessageContaining("eventPublisher cannot be null");
     }
@@ -98,7 +89,6 @@ class TenantContextFilterTests {
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher)
             .build();
 
@@ -133,7 +123,6 @@ class TenantContextFilterTests {
         };
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher)
             .tenantVerifier(tenantVerifier)
             .build();
@@ -154,7 +143,6 @@ class TenantContextFilterTests {
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher)
             .build();
 
@@ -176,7 +164,7 @@ class TenantContextFilterTests {
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of(path)))
+            .ignorePaths(Set.of(path))
             .eventPublisher(eventPublisher)
             .build();
 
@@ -197,7 +185,6 @@ class TenantContextFilterTests {
         var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher)
             .tenantObservationFilter(
                     TenantObservationFilter.builder().tenantIdentifierKey("tenant.id").cardinality(Cardinality.HIGH).build())
@@ -461,7 +448,6 @@ class TenantContextFilterTests {
         };
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(failingResolver)
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .build();
 
@@ -492,7 +478,6 @@ class TenantContextFilterTests {
         HttpRequestTenantResolver blank = request -> " ";
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(blank)
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .failureHandler((req, res, failure) -> failures.add(failure))
             .build();
@@ -546,7 +531,6 @@ class TenantContextFilterTests {
         var request = new MockHttpServletRequest("GET", "/tenants/acme/products");
         var filter = TenantContextFilter.builder()
             .httpRequestTenantResolver(PathTenantResolver.builder().pattern("/tenants/{tenant}/**").build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
             .build();
         filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
@@ -594,10 +578,34 @@ class TenantContextFilterTests {
                 """, response.getContentAsString(), JSONCompareMode.STRICT);
     }
 
+    @Test
+    void whenPlainValueThenSanitizedValueIsUnchanged() {
+        assertThat(TenantContextFilter.sanitizeForLogging("acme")).isEqualTo("acme");
+    }
+
+    @Test
+    void whenControlCharactersThenSanitizedValueReplacesThem() {
+        assertThat(TenantContextFilter.sanitizeForLogging("acme\nfake log line\r\t"))
+            .isEqualTo("acme\uFFFDfake log line\uFFFD\uFFFD");
+    }
+
+    @Test
+    void whenLongerThanLimitThenSanitizedValueIsTruncatedWithEllipsis() {
+        var sanitized = TenantContextFilter.sanitizeForLogging("a".repeat(100));
+
+        assertThat(sanitized).hasSize(65).startsWith("a".repeat(64)).endsWith("…");
+    }
+
+    @Test
+    void whenAtLimitThenSanitizedValueIsUnchanged() {
+        var value = "a".repeat(64);
+
+        assertThat(TenantContextFilter.sanitizeForLogging(value)).isEqualTo(value);
+    }
+
     private TenantContextFilter.Builder defaultFilter(ApplicationEventPublisher eventPublisher) {
         return TenantContextFilter.builder()
             .httpRequestTenantResolver(HeaderTenantResolver.builder().build())
-            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
             .eventPublisher(eventPublisher);
     }
 

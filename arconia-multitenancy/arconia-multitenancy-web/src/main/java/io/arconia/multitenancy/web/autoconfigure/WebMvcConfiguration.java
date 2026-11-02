@@ -12,7 +12,7 @@ import io.arconia.multitenancy.web.context.TenantIdentifierArgumentResolver;
  * Register Arconia-specific Spring Web MVC configuration.
  */
 @Configuration(proxyBeanMethods = false)
-public final class WebMvcConfiguration implements WebMvcConfigurer {
+final class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
