@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 public class RetryConfig {
 
     /**
-     * Maximum number of retries.
+     * Maximum number of attempts, including the original request. Must be between 2 and 5.
      */
     private int maxAttempts = 5;
 

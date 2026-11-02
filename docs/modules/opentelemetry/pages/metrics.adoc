@@ -155,7 +155,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 
 |`arconia.otel.metrics.exporter.otlp.retry.max-attempts`
 |`5`
-|Maximum number of retries.
+|Maximum number of attempts, including the original request. Must be between 2 and 5.
 
 |`arconia.otel.metrics.exporter.otlp.retry.backoff-config.first-backoff`
 |`1s`

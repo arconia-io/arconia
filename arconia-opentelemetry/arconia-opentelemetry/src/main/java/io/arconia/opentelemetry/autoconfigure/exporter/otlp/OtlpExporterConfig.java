@@ -47,6 +47,7 @@ public class OtlpExporterConfig {
      * Configuration for retrying failed requests.
      */
     @Nullable
+    @NestedConfigurationProperty
     private RetryConfig retry;
 
     /**
