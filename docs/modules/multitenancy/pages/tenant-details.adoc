@@ -153,7 +153,7 @@ create table tenant_details_attributes
 );
 ----
 
-Deleting a tenant also deletes its attributes. Attribute values are stored as text, so `TenantDetails.attribute(key, String.class)` is the way to read them, whereas tenants declared in properties keep the type the value was bound with.
+Deleting a tenant also deletes its attributes. Attribute values are stored as text. `TenantDetails.attribute(key, type)` converts them to the requested type, so `attribute("seats", Integer.class)` reads the same attribute whether the tenant comes from the database or from configuration properties. A value that cannot be converted, such as `eu` read as an `Integer`, fails with an `IllegalStateException`.
 
 Identifiers are compared by the database, so the result follows its collation. PostgreSQL and H2 compare them case-sensitively, like the rest of Arconia Multitenancy, while a case-insensitive collation, such as the MySQL default, would let `Acme` match a tenant registered as `acme`.
 

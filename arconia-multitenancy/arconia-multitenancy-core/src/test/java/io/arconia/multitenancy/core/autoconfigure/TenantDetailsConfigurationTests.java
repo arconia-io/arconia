@@ -47,6 +47,19 @@ class TenantDetailsConfigurationTests {
     }
 
     @Test
+    void tenantDetailsServiceWhenTenantAttributesConfiguredThenConvertedOnAccess() {
+        contextRunner
+            .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",
+                    "arconia.multitenancy.details.tenants[0].attributes.seats=42")
+            .run(context -> {
+                var tenant = context.getBean(TenantDetailsService.class).loadTenantByIdentifier("acme");
+
+                assertThat(tenant).isNotNull();
+                assertThat(tenant.attribute("seats", Integer.class)).isEqualTo(42);
+            });
+    }
+
+    @Test
     void tenantDetailsServiceWhenTenantsConfiguredThenTenantsAreBound() {
         contextRunner
             .withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme",

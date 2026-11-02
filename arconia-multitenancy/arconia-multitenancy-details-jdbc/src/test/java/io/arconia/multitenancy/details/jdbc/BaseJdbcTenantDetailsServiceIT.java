@@ -81,6 +81,14 @@ abstract class BaseJdbcTenantDetailsServiceIT {
     }
 
     @Test
+    void whenTextAttributeThenConvertedToRequestedType() {
+        var tenant = tenantDetailsService.loadTenantByIdentifier("pixie");
+
+        assertThat(tenant).isNotNull();
+        assertThat(tenant.attribute("onboarding", Boolean.class)).isTrue();
+    }
+
+    @Test
     void whenTenantHasNoAttributesThenReturnEmpty() {
         var tenant = tenantDetailsService.loadTenantByIdentifier("beans");
 

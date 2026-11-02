@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.convert.ConversionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,13 +51,29 @@ class TenantDetailsTests {
         }
 
         @Test
-        void whenKeyPresentWithWrongTypeThenThrow() {
+        void whenTextValueThenConvertedToRequestedType() {
+            var tenant = tenantWith(Map.of("seats", "42", "trial", "true", "plan", "premium"));
+
+            assertThat(tenant.attribute("seats", Integer.class)).isEqualTo(42);
+            assertThat(tenant.attribute("trial", Boolean.class)).isTrue();
+            assertThat(tenant.attribute("plan", String.class)).isEqualTo("premium");
+        }
+
+        @Test
+        void whenTypedValueThenConvertedToText() {
+            var tenant = tenantWith(Map.of("seats", 42));
+
+            assertThat(tenant.attribute("seats", String.class)).isEqualTo("42");
+        }
+
+        @Test
+        void whenValueCannotBeConvertedThenThrow() {
             var tenant = tenantWith(Map.of("region", "eu"));
 
             assertThatThrownBy(() -> tenant.attribute("region", Integer.class))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Attribute 'region' is not of type 'java.lang.Integer'")
-                .hasCauseInstanceOf(ClassCastException.class);
+                .hasMessage("Attribute 'region' cannot be converted to type 'java.lang.Integer'")
+                .hasCauseInstanceOf(ConversionException.class);
         }
 
         @Test
