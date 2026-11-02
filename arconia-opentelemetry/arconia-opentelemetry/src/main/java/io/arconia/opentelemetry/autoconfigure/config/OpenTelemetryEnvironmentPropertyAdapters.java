@@ -1,9 +1,12 @@
 package io.arconia.opentelemetry.autoconfigure.config;
 
 import java.util.Map;
+import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.util.Assert;
+import org.springframework.util.ResourceUtils;
 
 import io.arconia.opentelemetry.autoconfigure.OpenTelemetryProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
@@ -72,6 +75,8 @@ class OpenTelemetryEnvironmentPropertyAdapters {
     private static final Map<String, HistogramAggregationStrategy> HISTOGRAM_AGGREGATIONS = Map.of(
             "explicit_bucket_histogram", HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM,
             "base2_exponential_bucket_histogram", HistogramAggregationStrategy.BASE2_EXPONENTIAL_BUCKET_HISTOGRAM);
+
+    static final String SSL_BUNDLE_NAME = "otel-exporter-otlp";
 
     private static final String SAMPLING_STRATEGY_KEY = OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy";
 
@@ -251,25 +256,16 @@ class OpenTelemetryEnvironmentPropertyAdapters {
      *     <li>{@code OTEL_EXPORTER_OTLP_TRACES_INSECURE}</li>
      *     <li>{@code OTEL_EXPORTER_OTLP_METRICS_INSECURE}</li>
      *     <li>{@code OTEL_EXPORTER_OTLP_LOGS_INSECURE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_LOGS_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_CLIENT_KEY}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_TRACES_CLIENT_KEY}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_LOGS_CLIENT_KEY}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_TRACES_CLIENT_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE}</li>
-     *     <li>{@code OTEL_EXPORTER_OTLP_LOGS_CLIENT_CERTIFICATE}</li>
      * </ul>
+     * <p>
+     * The certificate and client key variables are mapped to Spring Boot PEM SSL bundles: {@value #SSL_BUNDLE_NAME}
+     * for the variables applying to all signals, and {@value #SSL_BUNDLE_NAME}-&lt;signal&gt; for the signal-specific ones.
      *
      * @link <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#otlp-exporter">OTLP Exporter</a>
      */
     static OpenTelemetryEnvironmentPropertyAdapter otlpExporter(OpenTelemetryEnvironmentPropertyAdapter adapter) {
         Assert.notNull(adapter, "adapter cannot be null");
-        return adapter
+        adapter
 
                 // OTLP Exporter
 
@@ -326,6 +322,71 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 .mapEnum("otel.exporter.otlp.traces.compression", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.compression", COMPRESSIONS)
                 // OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
                 .mapTimeout("otel.exporter.otlp.traces.timeout", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.timeout");
+
+        // OTEL_EXPORTER_OTLP_CERTIFICATE, OTEL_EXPORTER_OTLP_CLIENT_KEY, OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE
+        // and their signal-specific variants
+        mapSslBundle(adapter, null, OpenTelemetryExporterProperties.CONFIG_PREFIX);
+        mapSslBundle(adapter, "logs", OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX);
+        mapSslBundle(adapter, "metrics", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX);
+        mapSslBundle(adapter, "traces", OpenTelemetryTracingExporterProperties.CONFIG_PREFIX);
+        return adapter;
+    }
+
+    /**
+     * Maps the certificate files to a Spring Boot PEM SSL bundle and configures the exporter to use it.
+     * For a signal, the bundle is created only when one of its own variables is set, and the files it doesn't set
+     * come from the variables applying to all signals, as defined by the specification. The client key and certificate
+     * are only used together.
+     */
+    private static void mapSslBundle(OpenTelemetryEnvironmentPropertyAdapter adapter, @Nullable String signal, String exporterPrefix) {
+        String commonPrefix = "otel.exporter.otlp.";
+        String signalPrefix = signal != null ? commonPrefix + signal + "." : commonPrefix;
+        if (!adapter.hasProperty(signalPrefix + "certificate") && !adapter.hasProperty(signalPrefix + "client.key")
+                && !adapter.hasProperty(signalPrefix + "client.certificate")) {
+            return;
+        }
+
+        String bundleName = signal != null ? SSL_BUNDLE_NAME + "-" + signal : SSL_BUNDLE_NAME;
+        String bundlePrefix = "spring.ssl.bundle.pem." + bundleName;
+        boolean certificate = isSet(adapter, commonPrefix, signalPrefix, "certificate");
+        boolean clientKey = isSet(adapter, commonPrefix, signalPrefix, "client.key");
+        boolean clientCertificate = isSet(adapter, commonPrefix, signalPrefix, "client.certificate");
+
+        if (certificate) {
+            mapFile(adapter, commonPrefix, signalPrefix, "certificate", bundlePrefix + ".truststore.certificate");
+        }
+        if (clientKey && clientCertificate) {
+            mapFile(adapter, commonPrefix, signalPrefix, "client.key", bundlePrefix + ".keystore.private-key");
+            mapFile(adapter, commonPrefix, signalPrefix, "client.certificate", bundlePrefix + ".keystore.certificate");
+        } else if (clientKey || clientCertificate) {
+            String reason = "a client key and a client certificate are both required";
+            adapter.ignoreProperty(signalPrefix + "client.key", reason).ignoreProperty(signalPrefix + "client.certificate", reason);
+            if (signal != null) {
+                adapter.ignoreProperty(commonPrefix + "client.key", reason).ignoreProperty(commonPrefix + "client.certificate", reason);
+            }
+        }
+
+        if (certificate || (clientKey && clientCertificate)) {
+            // The bundle name is recorded as adapted from the first variable that is set.
+            String sourceKey = adapter.hasProperty(signalPrefix + "certificate") ? signalPrefix + "certificate"
+                    : adapter.hasProperty(signalPrefix + "client.key") ? signalPrefix + "client.key" : signalPrefix + "client.certificate";
+            adapter.mapProperty(sourceKey, exporterPrefix + ".otlp.ssl.bundle", value -> bundleName);
+        }
+    }
+
+    private static boolean isSet(OpenTelemetryEnvironmentPropertyAdapter adapter, String commonPrefix, String signalPrefix, String name) {
+        return adapter.hasProperty(signalPrefix + name) || adapter.hasProperty(commonPrefix + name);
+    }
+
+    /**
+     * Maps a file path to a resource location, where the signal-specific variable takes precedence over the common one.
+     */
+    private static void mapFile(OpenTelemetryEnvironmentPropertyAdapter adapter, String commonPrefix, String signalPrefix, String name, String arconiaKey) {
+        Function<String, @Nullable String> toLocation = value -> ResourceUtils.isUrl(value) ? value : ResourceUtils.FILE_URL_PREFIX + value;
+        adapter.mapProperty(commonPrefix + name, arconiaKey, toLocation);
+        if (!signalPrefix.equals(commonPrefix)) {
+            adapter.mapProperty(signalPrefix + name, arconiaKey, toLocation);
+        }
     }
 
 }

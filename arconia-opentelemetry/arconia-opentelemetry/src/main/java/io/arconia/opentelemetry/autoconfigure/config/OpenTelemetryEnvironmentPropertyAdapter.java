@@ -81,6 +81,14 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
     }
 
     /**
+     * Whether the property is set.
+     */
+    boolean hasProperty(String externalKey) {
+        Assert.hasText(externalKey, "externalKey cannot be null or empty");
+        return StringUtils.hasText(environment.getProperty(externalKey));
+    }
+
+    /**
      * Reports that the property is ignored, if it's set.
      */
     OpenTelemetryEnvironmentPropertyAdapter ignoreProperty(String externalKey, String reason) {

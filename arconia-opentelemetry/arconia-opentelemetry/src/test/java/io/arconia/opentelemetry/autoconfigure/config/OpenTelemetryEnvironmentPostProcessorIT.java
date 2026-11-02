@@ -1,6 +1,9 @@
 package io.arconia.opentelemetry.autoconfigure.config;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,10 +13,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.ClassPathResource;
 
 import io.arconia.opentelemetry.autoconfigure.OpenTelemetryProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.ExporterType;
@@ -265,7 +274,35 @@ class OpenTelemetryEnvironmentPostProcessorIT {
             .isNull();
     }
 
+    @Test
+    void runWithCertificateEnvironmentVariableShouldConfigureSslBundle() throws Exception {
+        Path certificate = temp.toPath().resolve("ca.crt");
+        try (InputStream inputStream = new ClassPathResource("ssl/ca.crt").getInputStream()) {
+            Files.copy(inputStream, certificate);
+        }
+        ConfigurableEnvironment environment = new StandardEnvironment();
+        Map<String, Object> envVars = new HashMap<>();
+        envVars.put("OTEL_EXPORTER_OTLP_CERTIFICATE", certificate.toString());
+        environment.getPropertySources().addFirst(new MapPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, envVars));
+        SpringApplication sslApplication = new SpringApplication(SslBundlesConfig.class);
+        sslApplication.setWebApplicationType(WebApplicationType.NONE);
+        sslApplication.setEnvironment(environment);
+
+        ConfigurableApplicationContext context = sslApplication.run();
+
+        assertThat(context.getEnvironment().getProperty("arconia.otel.exporter.otlp.ssl.bundle")).isEqualTo("otel-exporter-otlp");
+        SslBundle sslBundle = context.getBean(SslBundles.class).getBundle("otel-exporter-otlp");
+        assertThat(sslBundle.getManagers().getTrustManagers()).isNotEmpty();
+        context.close();
+    }
+
     static class Config {
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ImportAutoConfiguration(SslAutoConfiguration.class)
+    static class SslBundlesConfig {
 
     }
 

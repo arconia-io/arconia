@@ -253,7 +253,7 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 
 |`arconia.otel.traces.exporter.otlp.ssl.bundle`
 |-
-|The name of the SSL bundle to use for the connection to the OTLP endpoint.
+|Name of the SSL bundle to use for the connection to the OTLP endpoint.
 
 |`arconia.otel.traces.exporter.otlp.timeout`
 |`10s`

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.LogFactory;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -607,6 +608,86 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
 
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".histogram-aggregation"))
                 .isEqualTo(expected);
+    }
+
+    @Nested
+    class CertificateVariables {
+
+        private static final String BUNDLE = "spring.ssl.bundle.pem.otel-exporter-otlp";
+
+        private static final String TRACES_BUNDLE = "spring.ssl.bundle.pem.otel-exporter-otlp-traces";
+
+        @Test
+        void certificateMappedToSslBundle() {
+            var environment = new MockEnvironment()
+                .withProperty("otel.exporter.otlp.certificate", "/etc/otel/ca.crt");
+
+            Map<String, Object> properties = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment)).getArconiaProperties();
+
+            assertThat(properties)
+                .containsEntry(BUNDLE + ".truststore.certificate", "file:/etc/otel/ca.crt")
+                .containsEntry(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle", "otel-exporter-otlp")
+                .doesNotContainKeys(BUNDLE + ".keystore.certificate", BUNDLE + ".keystore.private-key")
+                .doesNotContainKey(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle");
+        }
+
+        @Test
+        void clientKeyAndCertificateMappedToSslBundle() {
+            var environment = new MockEnvironment()
+                .withProperty("otel.exporter.otlp.client.key", "/etc/otel/client.key")
+                .withProperty("otel.exporter.otlp.client.certificate", "/etc/otel/client.crt");
+
+            Map<String, Object> properties = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment)).getArconiaProperties();
+
+            assertThat(properties)
+                .containsEntry(BUNDLE + ".keystore.private-key", "file:/etc/otel/client.key")
+                .containsEntry(BUNDLE + ".keystore.certificate", "file:/etc/otel/client.crt")
+                .containsEntry(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle", "otel-exporter-otlp")
+                .doesNotContainKey(BUNDLE + ".truststore.certificate");
+        }
+
+        @Test
+        void clientKeyWithoutCertificateIgnored(CapturedOutput output) {
+            var environment = new MockEnvironment()
+                .withProperty("otel.exporter.otlp.client.key", "/etc/otel/client.key");
+
+            Map<String, Object> properties = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment)).getArconiaProperties();
+
+            assertThat(properties).doesNotContainKeys(BUNDLE + ".keystore.private-key",
+                    OpenTelemetryExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle");
+            assertThat(output).contains("Ignoring otel.exporter.otlp.client.key because a client key and a client certificate are both required");
+        }
+
+        @Test
+        void signalVariablesFallBackToCommonVariables() {
+            var environment = new MockEnvironment()
+                .withProperty("otel.exporter.otlp.certificate", "/etc/otel/ca.crt")
+                .withProperty("otel.exporter.otlp.client.key", "/etc/otel/client.key")
+                .withProperty("otel.exporter.otlp.client.certificate", "/etc/otel/client.crt")
+                .withProperty("otel.exporter.otlp.traces.certificate", "/etc/otel/traces-ca.crt");
+
+            Map<String, Object> properties = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment)).getArconiaProperties();
+
+            assertThat(properties)
+                .containsEntry(TRACES_BUNDLE + ".truststore.certificate", "file:/etc/otel/traces-ca.crt")
+                .containsEntry(TRACES_BUNDLE + ".keystore.private-key", "file:/etc/otel/client.key")
+                .containsEntry(TRACES_BUNDLE + ".keystore.certificate", "file:/etc/otel/client.crt")
+                .containsEntry(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle", "otel-exporter-otlp-traces")
+                .containsEntry(BUNDLE + ".truststore.certificate", "file:/etc/otel/ca.crt")
+                .doesNotContainKey(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".otlp.ssl.bundle")
+                .doesNotContainKey("spring.ssl.bundle.pem.otel-exporter-otlp-logs.truststore.certificate");
+        }
+
+        @Test
+        void resourceLocationsKeptAsTheyAre() {
+            var environment = new MockEnvironment()
+                .withProperty("otel.exporter.otlp.certificate", "classpath:ssl/ca.crt");
+
+            Map<String, Object> properties = OpenTelemetryEnvironmentPropertyAdapters.otlpExporter(adapter(environment)).getArconiaProperties();
+
+            assertThat(properties).containsEntry(BUNDLE + ".truststore.certificate", "classpath:ssl/ca.crt");
+        }
+
     }
 
     private static OpenTelemetryEnvironmentPropertyAdapter adapter(MockEnvironment environment) {

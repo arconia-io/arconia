@@ -160,7 +160,7 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 
 |`arconia.otel.logs.exporter.otlp.ssl.bundle`
 |-
-|The name of the SSL bundle to use for the connection to the OTLP endpoint.
+|Name of the SSL bundle to use for the connection to the OTLP endpoint.
 
 |`arconia.otel.logs.exporter.otlp.timeout`
 |`10s`
