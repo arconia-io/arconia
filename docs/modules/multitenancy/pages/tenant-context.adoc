@@ -4,7 +4,7 @@ Once a tenant is resolved, the tenant context is propagated through the request 
 
 == TenantContext
 
-The `TenantContext` provides static methods to access the current tenant identifier from anywhere in your code. It uses a `ScopedValue` internally. A binding cannot be changed from inside its scope, only shadowed by a nested one, and it is automatically removed when the scope exits. The tenant context is a per-scope binding, not a tenant store: code that leaves the scope does not see it.
+The `TenantContext` provides static methods to access the current tenant identifier from anywhere in your code. A binding cannot be changed from inside its scope, only shadowed by a nested one. The tenant context is a per-scope binding, not a tenant store: code that leaves the scope does not see it.
 
 [source,java]
 ----
@@ -21,7 +21,7 @@ In xref:web.adoc[web applications], the `TenantContext` is automatically bound f
 
 === Manual Context Management
 
-For non-web scenarios (e.g., background jobs, message consumers), you can bind the tenant context using `TenantContext.where()`. This is a trusted boundary: the identifier is only checked to be non-empty, so validate or verify an identifier taken from untrusted input before binding it. See xref:architecture.adoc#_trust_boundaries[Trust Boundaries].
+For non-web scenarios, such as background jobs and message consumers, you can bind the tenant context using `TenantContext.where()`. The identifier is trusted as it is, apart from being rejected with an `IllegalArgumentException` when null or empty, so validate and verify an identifier taken from untrusted input, such as a message header, before binding it. See xref:architecture.adoc#_trust_boundaries[Trust Boundaries].
 
 [source,java]
 ----
@@ -43,8 +43,6 @@ TenantContext.where("acme").run(() -> {
     // TenantContext.getTenantIdentifier() returns "acme" again
 });
 ----
-
-The tenant identifier must not be null or empty. `TenantContext.where()` rejects both with an `IllegalArgumentException`.
 
 === Context Propagation Across Threads
 

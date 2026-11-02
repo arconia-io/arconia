@@ -1,10 +1,6 @@
 = Arconia Multitenancy
 
-Arconia Multitenancy provides comprehensive multitenancy support for Spring Boot applications, handling tenant resolution, context propagation, and observability integration out of the box.
-
-Need to build a multitenant application where each request is associated with a specific tenant? Add the appropriate Arconia Multitenancy starter to your project and get automatic tenant resolution, scoped context propagation, and observability enrichment with sensible defaults and minimal configuration.
-
-Built on Spring Boot's auto-configuration model, Arconia Multitenancy is designed as a set of composable modules that you can adopt incrementally based on your needs.
+Arconia Multitenancy adds multitenancy to Spring Boot applications. It resolves the tenant of each request, makes it available throughout your code and to the background tasks the request starts, and adds it to logs and observations. It is a set of composable modules built on Spring Boot auto-configuration, with sensible defaults, so you can adopt only the parts you need.
 
 NOTE: Arconia Multitenancy requires Java 25+ because it uses the `ScopedValue` API (https://openjdk.org/jeps/506[JEP 506]) for tenant context propagation. All the other Arconia modules still support Java 21, but if you want to use Arconia Multitenancy, your application must run on Java 25 or later.
 

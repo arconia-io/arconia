@@ -124,7 +124,7 @@ The filter stays registered as a standard servlet filter, so no further configur
 
 [WARNING]
 ====
-With the filter in front of Spring Security, unauthenticated requests are answered by the tenant filter first. A request with a known tenant proceeds to Spring Security and gets `401`, while a request with an unknown or missing tenant gets `400`. The difference lets an unauthenticated caller find out which tenants exist. Accept this only when authentication itself needs the tenant, and consider a custom `TenantResolutionFailureHandler` that answers every failure with the same status Spring Security uses.
+With the filter in front of Spring Security, unauthenticated callers can tell known tenants from unknown ones by the `401` or `400` they get back, as explained in <<_filter_placement>>. Accept this only when authentication itself needs the tenant, and consider a custom `TenantResolutionFailureHandler` that answers every failure with the same status Spring Security uses.
 ====
 
 Alternatively, place the filter inside the security filter chain, right before the authentication filter that needs it. In an OAuth2 resource server that is the `BearerTokenAuthenticationFilter`, so that an `AuthenticationManagerResolver` can select the authorization server for the tenant:
@@ -146,7 +146,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http, TenantContextFilter t
 
 In an OAuth2 login client, place it before the `OAuth2AuthorizationRequestRedirectFilter` instead, so that the tenant is known when the authorization request is built. Either way, also disable the standard servlet registration as described in xref:_registering_the_filter_in_the_security_filter_chain[Registering the Filter in the Security Filter Chain].
 
-A tenant identifier resolved before authentication comes from unverified request data. It is safe to use it to select a trusted issuer, because a token minted for another tenant will not validate against the selected keys, but it must never be trusted as the tenant identity on its own. Always resolve it through a xref:tenant-details.adoc[`TenantDetailsService`] so that only known tenants are accepted and never use it to build an issuer URL directly.
+A tenant identifier resolved before authentication is unverified request data. Use it only to select a trusted issuer, never as the tenant identity on its own, as described in xref:tenant-resolution.adoc#_trusting_the_resolved_tenant[Trusting the Resolved Tenant].
 
 ==== OAuth2 Mode
 
