@@ -48,32 +48,28 @@ class OpenTelemetryMetricsExporterAutoConfigurationTests {
     }
 
     @Test
-    void platformThreadsMetricBuilderCustomizerConfigurationApplied() {
+    void periodicMetricReadersConfiguredWithPlatformThreads() {
         contextRunner
                 .withPropertyValues(
                         "arconia.otel.metrics.exporter.interval=10s",
                         "spring.threads.virtual.enabled=false"
                 )
                 .run(context -> {
-                    assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
-                    assertThat(context).hasBean("histogramAggregation");
-                    assertThat(context).hasBean("metricBuilderPlatformThreads");
-                    assertThat(context).doesNotHaveBean("metricBuilderVirtualThreads");
+                    assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class)
+                            .containsExactly("periodicMetricReaders");
                 });
     }
 
     @Test
-    void virtualThreadsMetricBuilderCustomizerConfigurationApplied() {
+    void periodicMetricReadersConfiguredWithVirtualThreads() {
         contextRunner
                 .withPropertyValues(
                         "arconia.otel.metrics.exporter.interval=10s",
                         "spring.threads.virtual.enabled=true"
                 )
                 .run(context -> {
-                    assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
-                    assertThat(context).hasBean("histogramAggregation");
-                    assertThat(context).hasBean("metricBuilderVirtualThreads");
-                    assertThat(context).doesNotHaveBean("metricBuilderPlatformThreads");
+                    assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class)
+                            .containsExactly("periodicMetricReaders");
                 });
     }
 

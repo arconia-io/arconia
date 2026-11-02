@@ -34,7 +34,7 @@ public class OpenTelemetryMetricsExporterProperties {
     private AggregationTemporalityStrategy aggregationTemporality = AggregationTemporalityStrategy.CUMULATIVE;
 
     /**
-     * The aggregation strategy to use for exporting histograms.
+     * The aggregation strategy to use for exporting histograms via OTLP.
      */
     private HistogramAggregationStrategy histogramAggregation = HistogramAggregationStrategy.EXPLICIT_BUCKET_HISTOGRAM;
 

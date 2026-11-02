@@ -28,10 +28,6 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 |`2000`
 |Maximum number of distinct points per metric.
 
-|`arconia.otel.metrics.exemplars.enabled`
-|`true`
-|Whether exemplars should be enabled.
-
 |`arconia.otel.metrics.exemplars.filter`
 |`trace-based`
 |Determines which measurements are eligible to become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
@@ -102,7 +98,7 @@ NOTE: If a value is not provided specifically for metrics, the value configured 
 
 |`arconia.otel.metrics.exporter.histogram-aggregation`
 |`explicit-bucket-histogram`
-|The aggregation strategy to use for exporting histograms. Options: `base2-exponential-bucket-histogram`, `explicit-bucket-histogram`.
+|The aggregation strategy to use for exporting histograms via OTLP. Options: `base2-exponential-bucket-histogram`, `explicit-bucket-histogram`.
 |===
 
 NOTE: For more information on exporting metrics to the console, refer to xref:index.adoc#_console[Console Exporter].

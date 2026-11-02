@@ -18,17 +18,17 @@ public class OpenTelemetryMetricsProperties {
     /**
      * Maximum number of distinct points per metric.
      */
-    private Integer cardinalityLimit = 2000;
+    private int cardinalityLimit = 2000;
 
     public Exemplars getExemplars() {
         return this.exemplars;
     }
 
-    public Integer getCardinalityLimit() {
+    public int getCardinalityLimit() {
         return this.cardinalityLimit;
     }
 
-    public void setCardinalityLimit(Integer cardinalityLimit) {
+    public void setCardinalityLimit(int cardinalityLimit) {
         this.cardinalityLimit = cardinalityLimit;
     }
 
@@ -38,22 +38,9 @@ public class OpenTelemetryMetricsProperties {
     public static class Exemplars {
 
         /**
-         * Whether exemplars should be enabled.
-         */
-        private boolean enabled = true;
-
-        /**
          * Determines which measurements are eligible to become Exemplars.
          */
         private ExemplarFilter filter = ExemplarFilter.TRACE_BASED;
-
-        public boolean isEnabled() {
-            return this.enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
 
         public ExemplarFilter getFilter() {
             return this.filter;

@@ -31,16 +31,13 @@ public final class OpenTelemetryMetricsAutoConfiguration {
     @ConditionalOnMissingBean
     SdkMeterProvider meterProvider(Clock clock,
                                    ExemplarFilter exemplarFilter,
-                                   OpenTelemetryMetricsProperties properties,
                                    Resource resource,
                                    ObjectProvider<OpenTelemetryMeterProviderBuilderCustomizer> customizers
     ) {
         SdkMeterProviderBuilder builder = SdkMeterProvider.builder()
                 .setClock(clock)
+                .setExemplarFilter(exemplarFilter)
                 .setResource(resource);
-        if (properties.getExemplars().isEnabled()) {
-            builder.setExemplarFilter(exemplarFilter);
-        }
         customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
         return builder.build();
     }

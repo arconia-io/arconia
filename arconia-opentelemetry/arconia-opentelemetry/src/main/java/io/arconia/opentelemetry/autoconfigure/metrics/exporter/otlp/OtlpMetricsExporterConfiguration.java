@@ -6,12 +6,10 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
-import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggregation;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProp
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.ConditionalOnOtlpProtocol;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.EffectiveOtlpExporterConfig;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
@@ -62,6 +59,7 @@ public final class OtlpMetricsExporterConfiguration {
                 .setCompression(config.getCompression())
                 .setRetryPolicy(config.getRetryPolicy())
                 .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
+                .setDefaultAggregationSelector(getDefaultAggregationSelector(properties))
                 .setMemoryMode(config.getMemoryMode());
         config.getHeaders(connectionDetails).forEach(builder::addHeader);
         if (config.isMetrics()) {
@@ -87,6 +85,7 @@ public final class OtlpMetricsExporterConfiguration {
                 .setCompression(config.getCompression())
                 .setRetryPolicy(config.getRetryPolicy())
                 .setAggregationTemporalitySelector(getAggregationTemporalitySelector(properties))
+                .setDefaultAggregationSelector(getDefaultAggregationSelector(properties))
                 .setMemoryMode(config.getMemoryMode());
         config.getHeaders(connectionDetails).forEach(builder::addHeader);
         if (config.isMetrics()) {
@@ -105,18 +104,12 @@ public final class OtlpMetricsExporterConfiguration {
         };
     }
 
-    @Bean
-    OpenTelemetryMeterProviderBuilderCustomizer histogramAggregation(OpenTelemetryMetricsExporterProperties properties) {
-        return builder -> builder.registerView(
-                InstrumentSelector.builder()
-                        .setType(InstrumentType.HISTOGRAM)
-                        .build(),
-                View.builder()
-                        .setAggregation(switch(properties.getHistogramAggregation()) {
-                            case BASE2_EXPONENTIAL_BUCKET_HISTOGRAM -> Base2ExponentialHistogramAggregation.getDefault();
-                            case EXPLICIT_BUCKET_HISTOGRAM -> ExplicitBucketHistogramAggregation.getDefault();
-                        })
-                        .build());
+    DefaultAggregationSelector getDefaultAggregationSelector(OpenTelemetryMetricsExporterProperties properties) {
+        return switch (properties.getHistogramAggregation()) {
+            case EXPLICIT_BUCKET_HISTOGRAM -> DefaultAggregationSelector.getDefault();
+            case BASE2_EXPONENTIAL_BUCKET_HISTOGRAM -> DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
+        };
     }
 
 }

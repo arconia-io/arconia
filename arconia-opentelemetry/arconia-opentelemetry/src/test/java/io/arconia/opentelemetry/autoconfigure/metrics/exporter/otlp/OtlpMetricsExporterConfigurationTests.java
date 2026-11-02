@@ -1,8 +1,17 @@
 package io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp;
 
+import java.util.List;
+
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -11,6 +20,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
+import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -35,7 +45,6 @@ class OtlpMetricsExporterConfigurationTests {
                 assertThat(context).hasSingleBean(OtlpMetricsConnectionDetails.class);
                 assertThat(context).hasSingleBean(OtlpHttpMetricExporter.class);
                 assertThat(context).doesNotHaveBean(OtlpGrpcMetricExporter.class);
-                assertThat(context).hasBean("histogramAggregation");
 
                 // Verify default histogram aggregation
                 OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
@@ -220,31 +229,54 @@ class OtlpMetricsExporterConfigurationTests {
     }
 
     @Test
-    void histogramAggregationConfigurationApplied() {
+    void explicitBucketHistogramAggregationByDefault() {
+        contextRunner
+            .run(context -> {
+                OtlpHttpMetricExporter exporter = context.getBean(OtlpHttpMetricExporter.class);
+                assertThat(exporter.getDefaultAggregation(InstrumentType.HISTOGRAM)).isEqualTo(Aggregation.defaultAggregation());
+            });
+    }
+
+    @Test
+    void base2ExponentialHistogramAggregationApplied() {
         contextRunner
             .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram")
             .run(context -> {
-                assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
-                assertThat(context).hasBean("histogramAggregation");
-                assertThat(context).hasBean("metricBuilderPlatformThreads");
-
-                // Verify the histogram aggregation property is set correctly
-                OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
-                assertThat(properties.getHistogramAggregation().name())
-                        .isEqualTo("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
+                OtlpHttpMetricExporter exporter = context.getBean(OtlpHttpMetricExporter.class);
+                assertThat(exporter.getDefaultAggregation(InstrumentType.HISTOGRAM)).isEqualTo(Aggregation.base2ExponentialBucketHistogram());
+                assertThat(exporter.getDefaultAggregation(InstrumentType.COUNTER)).isEqualTo(Aggregation.defaultAggregation());
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exporter.histogram-aggregation=explicit-bucket-histogram")
+            .withPropertyValues(
+                "arconia.otel.metrics.exporter.histogram-aggregation=base2-exponential-bucket-histogram",
+                "arconia.otel.metrics.exporter.otlp.protocol=grpc"
+            )
             .run(context -> {
-                assertThat(context).getBeanNames(OpenTelemetryMeterProviderBuilderCustomizer.class).hasSize(2);
-                assertThat(context).hasBean("histogramAggregation");
-                assertThat(context).hasBean("metricBuilderPlatformThreads");
+                OtlpGrpcMetricExporter exporter = context.getBean(OtlpGrpcMetricExporter.class);
+                assertThat(exporter.getDefaultAggregation(InstrumentType.HISTOGRAM)).isEqualTo(Aggregation.base2ExponentialBucketHistogram());
+            });
+    }
 
-                // Verify the histogram aggregation property is set correctly
-                OpenTelemetryMetricsExporterProperties properties = context.getBean(OpenTelemetryMetricsExporterProperties.class);
-                assertThat(properties.getHistogramAggregation().name())
-                        .isEqualTo("EXPLICIT_BUCKET_HISTOGRAM");
+    @Test
+    void histogramBucketAdvicePreserved() {
+        InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+        new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class,
+                OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
+            .withBean(Clock.class, Clock::getDefault)
+            .withBean(Resource.class, Resource::empty)
+            .withBean(OpenTelemetryMeterProviderBuilderCustomizer.class, () -> builder -> builder.registerMetricReader(metricReader))
+            .run(context -> {
+                SdkMeterProvider meterProvider = context.getBean(SdkMeterProvider.class);
+                meterProvider.get("test").histogramBuilder("test.duration")
+                    .setExplicitBucketBoundariesAdvice(List.of(0.1, 0.2, 0.3))
+                    .build()
+                    .record(0.15);
+
+                MetricData metric = metricReader.collectAllMetrics().iterator().next();
+                assertThat(metric.getHistogramData().getPoints().iterator().next().getBoundaries())
+                    .containsExactly(0.1, 0.2, 0.3);
             });
     }
 

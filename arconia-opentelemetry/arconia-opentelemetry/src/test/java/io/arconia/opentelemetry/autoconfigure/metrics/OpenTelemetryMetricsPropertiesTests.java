@@ -18,7 +18,6 @@ class OpenTelemetryMetricsPropertiesTests {
     @Test
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
-        assertThat(properties.getExemplars().isEnabled()).isTrue();
         assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.TRACE_BASED);
         assertThat(properties.getCardinalityLimit()).isEqualTo(2000);
     }
@@ -27,11 +26,9 @@ class OpenTelemetryMetricsPropertiesTests {
     void shouldUpdateValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
         properties.setCardinalityLimit(3000);
-        properties.getExemplars().setEnabled(false);
         properties.getExemplars().setFilter(ExemplarFilter.ALWAYS_ON);
 
         assertThat(properties.getCardinalityLimit()).isEqualTo(3000);
-        assertThat(properties.getExemplars().isEnabled()).isFalse();
         assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.ALWAYS_ON);
     }
 

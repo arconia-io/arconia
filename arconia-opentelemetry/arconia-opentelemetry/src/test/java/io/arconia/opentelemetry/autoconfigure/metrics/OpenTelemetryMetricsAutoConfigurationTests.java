@@ -1,7 +1,14 @@
 package io.arconia.opentelemetry.autoconfigure.metrics;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -63,6 +70,16 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     }
 
     @Test
+    void exemplarsRecordedForSampledSpansByDefault() {
+        assertThat(exemplarCount()).isEqualTo(1);
+    }
+
+    @Test
+    void exemplarsDisabledWithAlwaysOffFilter() {
+        assertThat(exemplarCount("arconia.otel.metrics.exemplars.filter=always-off")).isZero();
+    }
+
+    @Test
     void meterProviderAvailableWithDefaultConfiguration() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(SdkMeterProvider.class);
@@ -115,6 +132,28 @@ class OpenTelemetryMetricsAutoConfigurationTests {
                 assertThat(context.getBean(CardinalityLimitSelector.class))
                     .isSameAs(context.getBean(CustomCardinalityLimitSelectorConfiguration.class).customCardinalityLimitSelector());
             });
+    }
+
+    /**
+     * Records a measurement in the context of a sampled span and counts the exemplars collected.
+     */
+    private int exemplarCount(String... properties) {
+        InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+        AtomicInteger exemplarCount = new AtomicInteger();
+        contextRunner
+            .withPropertyValues(properties)
+            .withBean(OpenTelemetryMeterProviderBuilderCustomizer.class, () -> builder -> builder.registerMetricReader(metricReader))
+            .run(context -> {
+                SdkMeterProvider meterProvider = context.getBean(SdkMeterProvider.class);
+                SpanContext spanContext = SpanContext.create("0af7651916cd43dd8448eb211c80319c", "b7ad6b7169203331",
+                        TraceFlags.getSampled(), TraceState.getDefault());
+                try (Scope ignored = Span.wrap(spanContext).makeCurrent()) {
+                    meterProvider.get("test").histogramBuilder("test.duration").build().record(1.0);
+                }
+                metricReader.collectAllMetrics().forEach(metric ->
+                        metric.getHistogramData().getPoints().forEach(point -> exemplarCount.addAndGet(point.getExemplars().size())));
+            });
+        return exemplarCount.get();
     }
 
     @Configuration(proxyBeanMethods = false)
