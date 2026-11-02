@@ -128,6 +128,8 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * Histograms now use the bucket boundaries advised by their instrumentation, such as the ones defined by the semantic conventions. Previously, they always used the default boundaries, which suit durations in milliseconds. The `arconia.otel.metrics.exporter.histogram-aggregation` property now sets the default aggregation of the OTLP metrics exporter.
 * The `arconia.otel.metrics.exemplars.enabled` property has been removed, since setting it to `false` didn't disable the exemplars. Set `arconia.otel.metrics.exemplars.filter` to `always-off` instead. The xref:upgrading-arconia.adoc[upgrade recipe] migrates the property.
 * The tracing context is now propagated whatever the type of traces exporter. Previously, with the `console` or `none` exporter, incoming trace context was ignored and none was sent to other services, so an application not exporting traces broke the traces passing through it. Learn more about xref:opentelemetry:traces.adoc#_propagation[Propagation].
+* The Micrometer OTLP registry now sends the headers provided by the OTLP connection details, such as the credentials of a backend, and applies the OTLP connection and request timeouts. Previously, it ignored them.
+* The Micrometer OTLP registry only supports HTTP/Protobuf, so the application now fails to start with an explanation when the metrics exporter is configured to use gRPC. Previously, the registry sent HTTP requests to the gRPC endpoint and the metrics were lost. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer OTLP] registry.
 
 === OpenTelemetry Semantic Conventions
 

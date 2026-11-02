@@ -166,6 +166,8 @@ Spring libraries and many other libraries from the Java ecosystem are instrument
 
 That means there will be two different exporters sending metrics to the same OTLP endpoint: the OpenTelemetry Metrics OTLP exporter (for metrics instrumented via OpenTelemetry API) and the Micrometer Metrics Registry OTLP (for metrics instrumented via Micrometer API).
 
+The Micrometer Metrics Registry OTLP uses the same OTLP configuration as the OpenTelemetry Metrics OTLP exporter, including endpoint, headers, compression, and timeouts. It only supports HTTP/Protobuf, so the application fails to start if the metrics exporter is configured to use gRPC. If you export the other signals via gRPC, set `arconia.otel.metrics.exporter.otlp.protocol` to `http-protobuf`, or use the xref:_micrometer_metrics_support[Micrometer Metrics Support] instead.
+
 NOTE: If you'd rather export Micrometer metrics via the OpenTelemetry API instead of using a separate Micrometer-specific exporter, refer to the xref:_micrometer_metrics_support[Micrometer Metrics Support] section.
 
 ===== Enabling/Disabling
@@ -177,7 +179,7 @@ The Micrometer Metrics Registry OTLP can be disabled via configuration propertie
 arconia.otel.exporter.otlp.micrometer.enabled: false
 ----
 
-Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project, which will disable the registry entirely.
+Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-micrometer-registry-otlp` dependency from your project, which will disable the registry entirely.
 
 [tabs]
 ======
@@ -187,7 +189,7 @@ Gradle::
 ----
 dependencies {
   implementation("io.arconia:arconia-opentelemetry-spring-boot-starter") {
-    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-metrics-registry-otlp"
+    exclude group: "io.arconia", module: "arconia-opentelemetry-micrometer-registry-otlp"
   }
 }
 ----
@@ -202,7 +204,7 @@ Maven::
   <exclusions>
     <exclusion>
       <groupId>io.arconia</groupId>
-      <artifactId>arconia-opentelemetry-micrometer-metrics-registry-otlp</artifactId>
+      <artifactId>arconia-opentelemetry-micrometer-registry-otlp</artifactId>
     </exclusion>
   </exclusions>
 </dependency>
@@ -263,7 +265,7 @@ NOTE: The `OpenTelemetryMeterRegistry` bean registered by this bridge doesn't su
 
 ==== Enabling/Disabling the Bridge
 
-By default, the Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer Metrics Registry OTLP. You can choose to remove it and use the Micrometer Metrics OpenTelemetry Bridge instead. To achieve that, exclude the `io.arconia:arconia-opentelemetry-micrometer-metrics-registry-otlp` dependency from your project and include the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency instead.
+By default, the Arconia OpenTelemetry Spring Boot Starter comes built-in with the Micrometer Metrics Registry OTLP. You can choose to remove it and use the Micrometer Metrics OpenTelemetry Bridge instead. To achieve that, exclude the `io.arconia:arconia-opentelemetry-micrometer-registry-otlp` dependency from your project and include the `io.arconia:arconia-opentelemetry-micrometer-metrics-bridge` dependency instead.
 
 [tabs]
 ======

@@ -299,6 +299,8 @@ Maven::
 ----
 ======
 
+NOTE: The xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] included in the Arconia OpenTelemetry Spring Boot Starter only supports HTTP/Protobuf. When switching to gRPC, keep exporting metrics via HTTP/Protobuf by setting `arconia.otel.metrics.exporter.otlp.protocol` to `http-protobuf`, or replace the registry with the xref:metrics.adoc#_micrometer_metrics_support[Micrometer Metrics Support].
+
 === Console
 
 Instead of OTLP, you can use the console exporter to print the telemetry data to the console. This is useful for debugging and testing purposes. Besides setting the exporter type to `console` for the observability signals you want to export, you also need to add the following dependency:

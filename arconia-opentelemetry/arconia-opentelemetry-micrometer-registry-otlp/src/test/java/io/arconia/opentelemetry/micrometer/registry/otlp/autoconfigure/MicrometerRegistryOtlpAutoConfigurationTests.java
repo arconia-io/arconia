@@ -1,11 +1,16 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.core.ipc.http.HttpUrlConnectionSender;
 import io.micrometer.registry.otlp.AggregationTemporality;
+import io.micrometer.registry.otlp.CompressionMode;
 import io.micrometer.registry.otlp.HistogramFlavor;
+import io.micrometer.registry.otlp.OtlpHttpMetricsSender;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
+import io.micrometer.registry.otlp.OtlpMetricsSender;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
@@ -14,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
@@ -27,14 +33,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class MicrometerRegistryOtlpAutoConfigurationTests {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+    private final ApplicationContextRunner baseContextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
                     MetricsAutoConfiguration.class,
                     MicrometerRegistryOtlpAutoConfiguration.class))
-            .withBean(OtlpMetricsConnectionDetails.class, () -> protocol ->
-                    protocol == Protocol.GRPC ? "http://localhost:4317" : "http://localhost:4318/v1/metrics")
             .withBean(OpenTelemetryExporterProperties.class, OpenTelemetryExporterProperties::new)
             .withBean(OpenTelemetryMetricsExporterProperties.class, OpenTelemetryMetricsExporterProperties::new);
+
+    private final ApplicationContextRunner contextRunner = baseContextRunner
+            .withBean(OtlpMetricsConnectionDetails.class, () -> protocol ->
+                    protocol == Protocol.GRPC ? "http://localhost:4317" : "http://localhost:4318/v1/metrics");
 
     @Test
     void autoConfigurationNotActivatedWhenRegistryDisabled() {
@@ -175,14 +183,95 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
     }
 
     @Test
+    void otlpConfigIncludesConnectionDetailsHeaders() {
+        baseContextRunner
+                .withPropertyValues("arconia.otel.exporter.otlp.headers.Authorization=from-properties")
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(OtlpMetricsConnectionDetails.class, () -> new OtlpMetricsConnectionDetails() {
+                    @Override
+                    public String getMetricsUrl(Protocol protocol) {
+                        return "http://localhost:4318/v1/metrics";
+                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        return Map.of("Authorization", "from-connection-details", "X-Tenant", "acme");
+                    }
+                })
+                .run(context -> {
+                    MicrometerOtlpConfig config = context.getBean(MicrometerOtlpConfig.class);
+                    assertThat(config.headers())
+                            .containsEntry("Authorization", "from-properties")
+                            .containsEntry("X-Tenant", "acme");
+                });
+    }
+
+    @Test
+    void otlpConfigWithCompression() {
+        contextRunner
+                .withPropertyValues("arconia.otel.metrics.exporter.otlp.compression=none")
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> assertThat(context.getBean(MicrometerOtlpConfig.class).compressionMode())
+                        .isEqualTo(CompressionMode.NONE));
+    }
+
+    @Test
+    void otlpConfigFailsWithGrpcProtocol() {
+        contextRunner
+                .withPropertyValues("arconia.otel.exporter.otlp.protocol=grpc")
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> assertThat(context).getFailure()
+                        .rootCause()
+                        .hasMessageContaining("The Micrometer OTLP registry only supports the HTTP/Protobuf protocol"));
+    }
+
+    @Test
+    void otlpConfigWithGrpcProtocolForOtherSignalsOnly() {
+        contextRunner
+                .withPropertyValues(
+                        "arconia.otel.exporter.otlp.protocol=grpc",
+                        "arconia.otel.metrics.exporter.otlp.protocol=http-protobuf"
+                )
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> assertThat(context.getBean(MicrometerOtlpConfig.class).url())
+                        .isEqualTo("http://localhost:4318/v1/metrics"));
+    }
+
+    @Test
+    void metricsSenderUsesOtlpTimeouts() {
+        contextRunner
+                .withPropertyValues(
+                        "arconia.otel.exporter.otlp.connect-timeout=2s",
+                        "arconia.otel.metrics.exporter.otlp.timeout=7s"
+                )
+                .withBean(Resource.class, Resource::getDefault)
+                .run(context -> {
+                    OtlpHttpMetricsSender metricsSender = context.getBean(OtlpHttpMetricsSender.class);
+                    Object httpSender = ReflectionTestUtils.getField(metricsSender, "httpSender");
+                    assertThat(httpSender).isInstanceOf(HttpUrlConnectionSender.class);
+                    assertThat(ReflectionTestUtils.getField(httpSender, "connectTimeoutMs")).isEqualTo(2000);
+                    assertThat(ReflectionTestUtils.getField(httpSender, "readTimeoutMs")).isEqualTo(7000);
+                });
+    }
+
+    @Test
+    void customMetricsSenderUsed() {
+        OtlpMetricsSender customMetricsSender = request -> {};
+        contextRunner
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(OtlpMetricsSender.class, () -> customMetricsSender)
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OtlpHttpMetricsSender.class);
+                    assertThat(context).hasSingleBean(OtlpMeterRegistry.class);
+                });
+    }
+
+    @Test
     void otlpMeterRegistryWithVirtualThreads() {
         contextRunner
                 .withPropertyValues("spring.threads.virtual.enabled=true")
                 .withBean(Resource.class, Resource::getDefault)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OtlpMeterRegistry.class);
-                    assertThat(context).hasBean("otlpMeterRegistryVirtualThreads");
-                });
+                .run(context -> assertThat(context).hasSingleBean(OtlpMeterRegistry.class));
     }
 
     @Test
@@ -190,10 +279,7 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
         contextRunner
                 .withPropertyValues("spring.threads.virtual.enabled=false")
                 .withBean(Resource.class, Resource::getDefault)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OtlpMeterRegistry.class);
-                    assertThat(context).hasBean("otlpMeterRegistryPlatformThreads");
-                });
+                .run(context -> assertThat(context).hasSingleBean(OtlpMeterRegistry.class));
     }
 
 }
