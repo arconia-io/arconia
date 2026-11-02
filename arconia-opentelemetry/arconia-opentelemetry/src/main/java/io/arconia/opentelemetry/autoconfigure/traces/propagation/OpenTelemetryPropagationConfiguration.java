@@ -31,8 +31,6 @@ import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperti
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
-
 /**
  * Configuration for OpenTelemetry propagation.
  * <p>
@@ -50,7 +48,6 @@ public class OpenTelemetryPropagationConfiguration {
     public static class PropagationWithoutBaggage {
 
 		@Bean
-        @ConditionalOnOpenTelemetryTracingExporter("otlp")
 		TextMapPropagator textMapPropagator(TracingProperties properties) {
 			return CompositeTextMapPropagator.create(properties.getPropagation(), null);
 		}
@@ -66,7 +63,6 @@ public class OpenTelemetryPropagationConfiguration {
     public static class PropagationWithBaggage {
 
 		@Bean
-		@ConditionalOnOpenTelemetryTracingExporter("otlp")
 		TextMapPropagator textMapPropagatorWithBaggage(OtelCurrentTraceContext otelCurrentTraceContext, TracingProperties tracingProperties) {
 			List<String> remoteFields = tracingProperties.getBaggage().getRemoteFields();
 			List<String> tagFields = tracingProperties.getBaggage().getTagFields();
@@ -80,20 +76,6 @@ public class OpenTelemetryPropagationConfiguration {
 		@ConditionalOnBooleanProperty(name = "management.tracing.baggage.correlation.enabled", matchIfMissing = true)
 		Slf4JBaggageEventListener otelSlf4JBaggageEventListener(TracingProperties tracingProperties) {
 			return new Slf4JBaggageEventListener(tracingProperties.getBaggage().getCorrelation().getFields());
-		}
-
-	}
-
-	/**
-	 * Propagates neither traces nor baggage.
-	 */
-	@Configuration(proxyBeanMethods = false)
-    public static class NoPropagation {
-
-		@Bean
-		@ConditionalOnMissingBean
-		TextMapPropagator noopTextMapPropagator() {
-			return TextMapPropagator.noop();
 		}
 
 	}

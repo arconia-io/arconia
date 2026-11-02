@@ -41,6 +41,8 @@ How to sample traces.
 
 Arconia OpenTelemetry relies on Spring Boot Actuator for configuring propagation, based on Micrometer Tracing. For convenience, the configuration properties from Spring Boot Actuator are included here.
 
+The tracing context is propagated whatever the type of traces exporter, including `none`, so that an application that doesn't export traces still continues the traces of the services it calls and is called by.
+
 NOTE: For more information, refer to the https://docs.micrometer.io/tracing/reference/index.html[Micrometer Tracing] and https://docs.spring.io/spring-boot/reference/actuator/tracing.html[Spring Boot Actuator] documentation.
 
 .Propagation Configuration Properties

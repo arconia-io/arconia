@@ -127,6 +127,7 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The warnings about invalid OpenTelemetry environment variables now appear in the application log. Previously, they were lost because they were logged before the logging system was initialized. They never include the values of headers and resource attributes, and a value that isn't correctly percent-encoded is skipped instead of preventing the application from starting. When a value can't be bound, the error names the environment variable it comes from.
 * Histograms now use the bucket boundaries advised by their instrumentation, such as the ones defined by the semantic conventions. Previously, they always used the default boundaries, which suit durations in milliseconds. The `arconia.otel.metrics.exporter.histogram-aggregation` property now sets the default aggregation of the OTLP metrics exporter.
 * The `arconia.otel.metrics.exemplars.enabled` property has been removed, since setting it to `false` didn't disable the exemplars. Set `arconia.otel.metrics.exemplars.filter` to `always-off` instead. The xref:upgrading-arconia.adoc[upgrade recipe] migrates the property.
+* The tracing context is now propagated whatever the type of traces exporter. Previously, with the `console` or `none` exporter, incoming trace context was ignored and none was sent to other services, so an application not exporting traces broke the traces passing through it. Learn more about xref:opentelemetry:traces.adoc#_propagation[Propagation].
 
 === OpenTelemetry Semantic Conventions
 

@@ -46,8 +46,7 @@ import io.arconia.opentelemetry.autoconfigure.traces.propagation.OpenTelemetryPr
 @Import({
         MicrometerTracingOpenTelemetryBridgeConfiguration.class,
         OpenTelemetryPropagationConfiguration.PropagationWithoutBaggage.class,
-        OpenTelemetryPropagationConfiguration.PropagationWithBaggage.class,
-        OpenTelemetryPropagationConfiguration.NoPropagation.class
+        OpenTelemetryPropagationConfiguration.PropagationWithBaggage.class
 })
 public final class OpenTelemetryTracingAutoConfiguration {
 
