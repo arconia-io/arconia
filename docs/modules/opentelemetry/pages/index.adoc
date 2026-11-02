@@ -137,21 +137,21 @@ You can disable individual observability signals or even disable the entire Open
 |===
 |Property |Default |Description
 
-|`arconia.otel.enabled`
-|`true`
-|Whether OpenTelemetry support should be enabled.
+| `arconia.otel.enabled`
+| `true`
+| Whether OpenTelemetry support should be enabled.
 
-|`arconia.otel.logs.enabled`
-|`true`
-|Whether support for OpenTelemetry logs is enabled.
+| `arconia.otel.logs.enabled`
+| `true`
+| Whether support for OpenTelemetry logs is enabled.
 
-|`arconia.otel.metrics.enabled`
-|`true`
-|Whether support for OpenTelemetry metrics is enabled.
+| `arconia.otel.metrics.enabled`
+| `true`
+| Whether support for OpenTelemetry metrics is enabled.
 
-|`arconia.otel.traces.enabled`
-|`true`
-|Whether support for OpenTelemetry traces is enabled.
+| `arconia.otel.traces.enabled`
+| `true`
+| Whether support for OpenTelemetry traces is enabled.
 |===
 
 == Exporting Telemetry
@@ -162,13 +162,13 @@ By default, all observability signals are exported via OTLP. If you set the expo
 |===
 |Property |Default |Description
 
-|`arconia.otel.exporter.type`
-|`otlp`
-|The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+| `arconia.otel.exporter.type`
+| `otlp`
+| The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
 
-|`arconia.otel.exporter.memory-mode`
-|`reusable-data`
-|Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
+| `arconia.otel.exporter.memory-mode`
+| `reusable-data`
+| Whether to reuse objects to reduce allocation or work with immutable data structures. Options: `reusable-data`, `immutable-data`.
 |===
 
 You can change the type of the exporter in use for each observability signal using the `arconia.otel.<signal>.exporter.type` property, where `<signal>` is one of `logs`, `metrics`, or `traces`.
@@ -177,15 +177,15 @@ You can change the type of the exporter in use for each observability signal usi
 |===
 |Property |Default |Description
 
-|`arconia.otel.logs.exporter.type`
-|_(inherited from arconia.otel.exporter.type)_
-|The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
-|`arconia.otel.metrics.exporter.type`
-|_(inherited from arconia.otel.exporter.type)_
-|The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
-|`arconia.otel.traces.exporter.type`
-|_(inherited from arconia.otel.exporter.type)_
-|The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
+| `arconia.otel.logs.exporter.type`
+| _(inherited from arconia.otel.exporter.type)_
+| The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
+| `arconia.otel.metrics.exporter.type`
+| _(inherited from arconia.otel.exporter.type)_
+| The type of OpenTelemetry exporter to use for metrics. Options: `console`, `otlp`, `none`.
+| `arconia.otel.traces.exporter.type`
+| _(inherited from arconia.otel.exporter.type)_
+| The type of OpenTelemetry exporter to use for traces. Options: `console`, `otlp`, `none`.
 |===
 
 === OTLP
@@ -196,61 +196,61 @@ Global properties are available to configure the OTLP exporters for logs, metric
 |===
 |Property |Default |Description
 
-|`arconia.otel.exporter.otlp.compression`
-|`gzip`
-|Compression type to use for OTLP requests. Options: `none`, `gzip`.
+| `arconia.otel.exporter.otlp.compression`
+| `gzip`
+| Compression type to use for OTLP requests. Options: `none`, `gzip`.
 
-|`arconia.otel.exporter.otlp.connect-timeout`
-|`10s`
-|The maximum waiting time for the exporter to establish a connection to the endpoint.
+| `arconia.otel.exporter.otlp.connect-timeout`
+| `10s`
+| The maximum waiting time for the exporter to establish a connection to the endpoint.
 
-|`arconia.otel.exporter.otlp.endpoint`
-|`http://localhost:4317` (gRPC) or `http://localhost:4318` (HTTP)
-|The endpoint to which telemetry data will be sent.
+| `arconia.otel.exporter.otlp.endpoint`
+| `http://localhost:4317` (gRPC) or `http://localhost:4318` (HTTP)
+| The endpoint to which telemetry data will be sent.
 
-|`arconia.otel.exporter.otlp.headers`
-|-
-|Additional headers to include in each request to the endpoint.
+| `arconia.otel.exporter.otlp.headers`
+| -
+| Additional headers to include in each request to the endpoint.
 
-|`arconia.otel.exporter.otlp.metrics`
-|`false`
-|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
+| `arconia.otel.exporter.otlp.metrics`
+| `false`
+| Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
-|`arconia.otel.exporter.otlp.protocol`
-|`http-protobuf`
-|Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+| `arconia.otel.exporter.otlp.protocol`
+| `http-protobuf`
+| Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
-|`arconia.otel.exporter.otlp.proxy.host`
-|-
-|Host of the proxy. The port must be set together with it.
+| `arconia.otel.exporter.otlp.proxy.host`
+| -
+| Host of the proxy. The port must be set together with it.
 
-|`arconia.otel.exporter.otlp.proxy.port`
-|-
-|Port of the proxy, between 1 and 65535. Required when the host is set.
+| `arconia.otel.exporter.otlp.proxy.port`
+| -
+| Port of the proxy, between 1 and 65535. Required when the host is set.
 
-|`arconia.otel.exporter.otlp.ssl.bundle`
-|-
-|Name of the SSL bundle to use for the connection to the OTLP endpoint.
+| `arconia.otel.exporter.otlp.ssl.bundle`
+| -
+| Name of the SSL bundle to use for the connection to the OTLP endpoint.
 
-|`arconia.otel.exporter.otlp.timeout`
-|`10s`
-|The maximum waiting time for the exporter to send each telemetry batch.
+| `arconia.otel.exporter.otlp.timeout`
+| `10s`
+| The maximum waiting time for the exporter to send each telemetry batch.
 
-|`arconia.otel.exporter.otlp.retry.max-attempts`
-|`5`
-|Maximum number of attempts, including the original request. Must be between 2 and 5.
+| `arconia.otel.exporter.otlp.retry.max-attempts`
+| `5`
+| Maximum number of attempts, including the original request. Must be between 2 and 5.
 
-|`arconia.otel.exporter.otlp.retry.backoff-config.first-backoff`
-|`1s`
-|Initial backoff time.
+| `arconia.otel.exporter.otlp.retry.backoff-config.first-backoff`
+| `1s`
+| Initial backoff time.
 
-|`arconia.otel.exporter.otlp.retry.backoff-config.max-backoff`
-|`5s`
-|Maximum backoff time.
+| `arconia.otel.exporter.otlp.retry.backoff-config.max-backoff`
+| `5s`
+| Maximum backoff time.
 
-|`arconia.otel.exporter.otlp.retry.backoff-config.multiplier`
-|`1.5`
-|Backoff multiplier.
+| `arconia.otel.exporter.otlp.retry.backoff-config.multiplier`
+| `1.5`
+| Backoff multiplier.
 
 |===
 
@@ -457,7 +457,7 @@ Maven::
 
 WARNING: This exporter option is not recommended for production.
 
-NOTE: The console exporter doesn't support exporting metrics defined using the Micrometer APIs when using the Micrometer Metrics Registry OTLP module instead of the OpenTelemetry Micrometer Metrics Bridge.
+NOTE: The console exporter doesn't support exporting metrics defined using the Micrometer APIs when using the Micrometer Metrics Registry OTLP module instead of the Micrometer Metrics OpenTelemetry Bridge.
 
 == OpenTelemetry Environment Variables
 
@@ -527,4 +527,4 @@ By not reusing the existing Micrometer instrumentation, the OpenTelemetry Spring
 
 Additionally, the configuration model is not as streamlined as you'd expect from a Spring Boot library, primarily due to the use of an auto-configuration design specific to the OpenTelemetry Java SDK, which doesn't always follow the usual Spring Boot conventions.
 
-Finally, it doesn't offer support for https://docs.spring.io/spring-boot/reference/features/dev-services.html[Spring Boot development-time services] (e.g., Testcontainers or Docker Container), which makes the local development and testing experience less convenient.
+Finally, it doesn't offer support for https://docs.spring.io/spring-boot/reference/features/dev-services.html[Spring Boot development-time services], such as Testcontainers or Docker Compose, which makes the local development and testing experience less convenient.

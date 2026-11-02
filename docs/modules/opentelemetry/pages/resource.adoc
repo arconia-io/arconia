@@ -12,37 +12,37 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |===
 |Property |Example |Description
 
-|`service.name`
-|`inventory-service`
-|The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+| `service.name`
+| `inventory-service`
+| The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
 
-|`service.namespace`
-|`ecommerce`
-|The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+| `service.namespace`
+| `ecommerce`
+| The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
 
-|`service.version`
-|`4.2.0`
-|The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
+| `service.version`
+| `4.2.0`
+| The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
 
-|`service.instance.id`
-|`123e4567-e89b-12d3-a456-42683e5064da`
-|A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+| `service.instance.id`
+| `123e4567-e89b-12d3-a456-42683e5064da`
+| A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
 
-|`webengine.name`
-|`Spring Boot`
-|The name of the web engine. It's always `Spring Boot`.
+| `webengine.name`
+| `Spring Boot`
+| The name of the web engine. It's always `Spring Boot`.
 
-|`webengine.version`
-|`4.1.2`
-|The version of the web engine (Spring Boot) in use.
+| `webengine.version`
+| `4.1.2`
+| The version of the web engine (Spring Boot) in use.
 
-|`telemetry.distro.name`
-|`arconia-opentelemetry`
-|The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
+| `telemetry.distro.name`
+| `arconia-opentelemetry`
+| The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
 
-|`telemetry.distro.version`
-|`{page-component-version}`
-|The version of the Arconia OpenTelemetry distribution in use.
+| `telemetry.distro.version`
+| `{page-component-version}`
+| The version of the Arconia OpenTelemetry distribution in use.
 |===
 
 The `Resource` declares the schema URL of the OpenTelemetry Semantic Conventions version its attributes follow, so that backends can interpret them correctly.
@@ -57,37 +57,37 @@ By default, Arconia only adds stable attributes, with one exception: the `webeng
 |===
 |Resource Contributor |Enabled by Default |Stability
 
-|<<_environment_resource_contributor,Environment>>
-|Yes
-|Stable, except `webengine.*` (development)
+| <<_environment_resource_contributor,Environment>>
+| Yes
+| Stable, except `webengine.*` (development)
 
-|<<_build_resource_contributor,Build>>
-|Yes
-|Stable
+| <<_build_resource_contributor,Build>>
+| Yes
+| Stable
 
-|<<_distro_resource_contributor,Distro>>
-|Yes
-|Stable
+| <<_distro_resource_contributor,Distro>>
+| Yes
+| Stable
 
-|<<_git_resource_contributor,Git>>
-|No
-|Release candidate (the `vcs.ref` entity is in development)
+| <<_git_resource_contributor,Git>>
+| No
+| Release candidate (the `vcs.ref` entity is in development)
 
-|<<_host_resource_contributor,Host>>
-|No
-|Development
+| <<_host_resource_contributor,Host>>
+| No
+| Development
 
-|<<_java_resource_contributor,Java>>
-|No
-|Release candidate (the `process.runtime` entity is in development)
+| <<_java_resource_contributor,Java>>
+| No
+| Release candidate (the `process.runtime` entity is in development)
 
-|<<_os_resource_contributor,OS>>
-|No
-|Development
+| <<_os_resource_contributor,OS>>
+| No
+| Development
 
-|<<_process_resource_contributor,Process>>
-|No
-|Release candidate
+| <<_process_resource_contributor,Process>>
+| No
+| Release candidate
 |===
 
 TIP: Check the stability of each attribute in the https://opentelemetry.io/docs/specs/semconv/registry/attributes/[OpenTelemetry Attribute Registry].
@@ -96,6 +96,10 @@ TIP: Check the stability of each attribute in the https://opentelemetry.io/docs/
 
 You can add new attributes or override the default values via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -108,10 +112,25 @@ arconia:
         cluster: production-3
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.service-name=my-service
+arconia.otel.resource.deployment-environment-name=production
+arconia.otel.resource.attributes.service.namespace=my-namespace
+arconia.otel.resource.attributes.cluster=production-3
+----
+======
+
 The `deployment-environment-name` property sets the `deployment.environment.name` attribute, identifying the deployment environment (also known as deployment tier) of the application. Use one of the values defined by the OpenTelemetry Semantic Conventions when it applies: `production`, `staging`, `test`, or `development`. If not set, no value is added.
 
 You can also control whether certain attributes should be added or disabled altogether via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -121,8 +140,20 @@ arconia:
         service.instance.id: false
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.enable.service.instance.id=false
+----
+======
+
 Each key matches the attributes whose names start with it, compared by dot-separated segments, and the longest match wins. For example, the following configuration disables all the `process.*` attributes except `process.pid`.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -133,8 +164,21 @@ arconia:
         process.pid: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.enable.process=false
+arconia.otel.resource.enable.process.pid=true
+----
+======
+
 The `all` special key can be used to enable or disable all the attributes not matched by a more specific key. For example, the following configuration disables all attributes except the `service.*` ones.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -145,31 +189,40 @@ arconia:
         service: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.enable.all=false
+arconia.otel.resource.enable.service=true
+----
+======
+
 The following configuration properties are available for the resource.
 
 .Resource Configuration Properties
 |===
 |Property |Default |Description
 
-|`arconia.otel.resource.attributes`
-|-
-|Additional attributes to include in the resource.
+| `arconia.otel.resource.attributes`
+| -
+| Additional attributes to include in the resource.
 
-|`arconia.otel.resource.contributors.<name>.enabled`
-|-
-|Whether a resource contributor is enabled, where `<name>` is one of `build`, `distro`, `environment`, `git`, `host`, `java`, `os`, or `process`. The `build`, `distro`, and `environment` contributors are enabled by default, the others are disabled. See xref:_resource_contributors[Resource Contributors].
+| `arconia.otel.resource.contributors.<name>.enabled`
+| -
+| Whether a resource contributor is enabled, where `<name>` is one of `build`, `distro`, `environment`, `git`, `host`, `java`, `os`, or `process`. The `build`, `distro`, and `environment` contributors are enabled by default, the others are disabled. See xref:_resource_contributors[Resource Contributors].
 
-|`arconia.otel.resource.deployment-environment-name`
-|-
-|Name of the deployment environment (also known as deployment tier), such as 'production', 'staging', 'test', or 'development'.
+| `arconia.otel.resource.deployment-environment-name`
+| -
+| Name of the deployment environment (also known as deployment tier), such as 'production', 'staging', 'test', or 'development'.
 
-|`arconia.otel.resource.enable`
-|-
-|Whether resource attributes having keys starting with the specified name should be enabled. The longest match wins, comparing dot-separated segments. The key 'all' can be used to enable/disable all the attributes not matched by a more specific name.
+| `arconia.otel.resource.enable`
+| -
+| Whether resource attributes having keys starting with the specified name should be enabled. The longest match wins, comparing dot-separated segments. The key 'all' can be used to enable/disable all the attributes not matched by a more specific name.
 
-|`arconia.otel.resource.service-name`
-|-
-|Name identifying the service.
+| `arconia.otel.resource.service-name`
+| -
+| Name identifying the service.
 |===
 
 === OpenTelemetry Environment Variables
@@ -196,17 +249,21 @@ Arconia comes with a set of built-in resource contributors that automatically ad
 
 The `EnvironmentResourceContributor` contributes attributes to the `Resource` instance from the Spring environment and configuration properties, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`service.name`**: The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
-* **`service.namespace`**: The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
-* **`service.instance.id`**: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
-* **`deployment.environment.name`**: The name of the deployment environment as defined in the `arconia.otel.resource.deployment-environment-name` property or `arconia.otel.resource.attributes`. If none of these properties are set, no value is added.
-* **`webengine.name`**: The name of the web engine. It's always `Spring Boot`.
-* **`webengine.version`**: The version of the web engine (Spring Boot) in use.
+* `service.name`: The name of the application as defined in the `arconia.otel.resource.service-name` property, `arconia.otel.resource.attributes`, or `spring.application.name`. If none of these properties are set, the default value is `unknown_service:java`.
+* `service.namespace`: The namespace of the application as defined in the `arconia.otel.resource.attributes` property or `spring.application.group`. If none of these properties are set, no value is added.
+* `service.instance.id`: A unique identifier for the application instance as defined in the `arconia.otel.resource.attributes` property. If not set, the default value is a random UUIDv4.
+* `deployment.environment.name`: The name of the deployment environment as defined in the `arconia.otel.resource.deployment-environment-name` property or `arconia.otel.resource.attributes`. If none of these properties are set, no value is added.
+* `webengine.name`: The name of the web engine. It's always `Spring Boot`.
+* `webengine.version`: The version of the web engine (Spring Boot) in use.
 
 Furthermore, any additional attribute defined in the `arconia.otel.resource.attributes` property will be added to the `Resource` instance.
 
 This contributor is enabled by default. You can disable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -217,13 +274,21 @@ arconia:
           enabled: false
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.environment.enabled=false
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#service[Resource Service Semantic Conventions] and https://opentelemetry.io/docs/specs/semconv/resource/webengine[Resource WebEngine Semantic Conventions].
 
 === Build Resource Contributor
 
 The `BuildResourceContributor` contributes build information to the `Resource` instance, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`service.version`**: The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
+* `service.version`: The version of the application resolved from the artifact at build time (`META-INF/build-info.properties`). If not available, no value is added.
 
 The information is extracted from the `META-INF/build-info.properties` file generated by the Spring Boot Maven and Gradle plugins when the feature is enabled. In Gradle projects, you can enable it by adding the following configuration to your `build.gradle` file:
 
@@ -240,6 +305,10 @@ NOTE: Find more information about the `build-info.properties` file in the https:
 
 This contributor is enabled by default. You can disable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -250,19 +319,31 @@ arconia:
           enabled: false
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.build.enabled=false
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#service[Resource Service Semantic Conventions].
 
 === Distro Resource Contributor
 
 The `DistroResourceContributor` contributes information about the OpenTelemetry distribution to the `Resource` instance, following the OpenTelemetry Semantic Conventions.
 
-* **`telemetry.distro.name`**: The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
-* **`telemetry.distro.version`**: The version of the Arconia OpenTelemetry distribution in use. If not available, no value is added.
+* `telemetry.distro.name`: The name of the OpenTelemetry distribution. It's always `arconia-opentelemetry`.
+* `telemetry.distro.version`: The version of the Arconia OpenTelemetry distribution in use. If not available, no value is added.
 
 The attributes complement the `telemetry.sdk.*` attributes identifying the OpenTelemetry SDK, which Arconia uses unmodified.
 
 This contributor is enabled by default. You can disable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -273,22 +354,34 @@ arconia:
           enabled: false
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.distro.enabled=false
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-distribution[Resource Telemetry Distribution Semantic Conventions].
 
 === Git Resource Contributor
 
 The `GitResourceContributor` contributes attributes to the `Resource` instance about the Git revision the application was built from, following the OpenTelemetry Semantic Conventions.
 
-* **`vcs.ref.head.revision`**: The ID of the commit the application was built from.
-* **`vcs.ref.head.name`**: The name of the branch the application was built from.
-* **`vcs.ref.head.type`**: The type of the reference the application was built from. It's always `branch`.
-* **`vcs.repository.url.full`**: The URL of the repository, resolved from the URL of the `origin` remote. Credentials and the `.git` extension are removed, and SSH remotes are converted to HTTPS URLs on the same host, such as `https://github.com/arconia-io/arconia`. If the remote is not available or not a repository URL, no value is added.
-* **`vcs.repository.name`**: The name of the repository, resolved from its URL.
+* `vcs.ref.head.revision`: The ID of the commit the application was built from.
+* `vcs.ref.head.name`: The name of the branch the application was built from.
+* `vcs.ref.head.type`: The type of the reference the application was built from. It's always `branch`.
+* `vcs.repository.url.full`: The URL of the repository, resolved from the URL of the `origin` remote. Credentials and the `.git` extension are removed, and SSH remotes are converted to HTTPS URLs on the same host, such as `https://github.com/arconia-io/arconia`. If the remote is not available or not a repository URL, no value is added.
+* `vcs.repository.name`: The name of the repository, resolved from its URL.
 
 The information is extracted from the `git.properties` file generated at build time, which Spring Boot exposes as `GitProperties`. You can generate it with the https://github.com/n0mer/gradle-git-properties[Gradle Git Properties] plugin or the https://github.com/git-commit-id/git-commit-id-maven-plugin[Git Commit Id Maven Plugin].
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -299,17 +392,29 @@ arconia:
           enabled: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.git.enabled=true
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/registry/attributes/vcs/[VCS Semantic Conventions].
 
 === Host Resource Contributor
 
 The `HostResourceContributor` contributes attributes to the `Resource` instance about the host the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`host.arch`**: The CPU architecture of the host the application is running on, using the values defined by the OpenTelemetry Semantic Conventions (for example, `amd64` or `arm64`) and the architecture reported by the JVM for the others.
-* **`host.name`**: The name of the host the application is running on.
+* `host.arch`: The CPU architecture of the host the application is running on, using the values defined by the OpenTelemetry Semantic Conventions (for example, `amd64` or `arm64`) and the architecture reported by the JVM for the others.
+* `host.name`: The name of the host the application is running on.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -320,20 +425,32 @@ arconia:
           enabled: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.host.enabled=true
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/host/[Resource Host Semantic Conventions].
 
 === Java Resource Contributor
 
 The `JavaResourceContributor` contributes attributes to the `Resource` instance about the Java Runtime Environment the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`process.runtime.description`**: Additional description about the Java Runtime Environment for the application process.
-* **`process.runtime.name`**: The name of the Java Runtime Environment for the application process.
-* **`process.runtime.version`**: The version of the Java Runtime Environment for the application process.
+* `process.runtime.description`: Additional description about the Java Runtime Environment for the application process.
+* `process.runtime.name`: The name of the Java Runtime Environment for the application process.
+* `process.runtime.version`: The version of the Java Runtime Environment for the application process.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `java` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.java-information[Spring Boot Actuator documentation] for more details.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -344,21 +461,33 @@ arconia:
           enabled: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.java.enabled=true
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes[Resource Process Runtime Semantic Conventions].
 
 === OS Resource Contributor
 
 The `OsResourceContributor` contributes attributes to the `Resource` instance about the operating system the application is running on, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`os.description`**: A human-readable description of the operating system the application is running on, like the one reported by `lsb_release` or `ver`. On Linux, it's the `PRETTY_NAME` from the `/etc/os-release` file (for example, `Ubuntu 24.04.1 LTS`). On the other operating systems, it's made of the operating system name and version (for example, `Mac OS X 15.6`).
-* **`os.name`**: The name of the operating system the application is running on.
-* **`os.type`**: The type of the operating system the application is running on.
-* **`os.version`**: The version of the operating system the application is running on.
+* `os.description`: A human-readable description of the operating system the application is running on, like the one reported by `lsb_release` or `ver`. On Linux, it's the `PRETTY_NAME` from the `/etc/os-release` file (for example, `Ubuntu 24.04.1 LTS`). On the other operating systems, it's made of the operating system name and version (for example, `Mac OS X 15.6`).
+* `os.name`: The name of the operating system the application is running on.
+* `os.type`: The type of the operating system the application is running on.
+* `os.version`: The version of the operating system the application is running on.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `os` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.os-information[Spring Boot Actuator documentation] for more details.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -369,22 +498,34 @@ arconia:
           enabled: true
 ----
 
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.os.enabled=true
+----
+======
+
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/os[Resource OS Semantic Conventions].
 
 === Process Resource Contributor
 
 The `ProcessResourceContributor` contributes attributes to the `Resource` instance about the Java process, following the OpenTelemetry Semantic Conventions whenever possible.
 
-* **`process.creation.time`**: The date and time the Java process was created, in ISO 8601 format.
-* **`process.owner`**: The username of the user that owns the Java process.
-* **`process.parent_pid`**: The parent process ID of the Java process, if it has a parent.
-* **`process.pid`**: The process ID of the Java process.
-* **`process.working_directory`**: The working directory of the Java process.
+* `process.creation.time`: The date and time the Java process was created, in ISO 8601 format.
+* `process.owner`: The username of the user that owns the Java process.
+* `process.parent_pid`: The parent process ID of the Java process, if it has a parent.
+* `process.pid`: The process ID of the Java process.
+* `process.working_directory`: The working directory of the Java process.
 
 NOTE: The information provided by this contributor is the same contributed to the Spring Boot Actuator `/actuator/info` endpoint under the `process` key. Refer to the https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.info.process-information[Spring Boot Actuator documentation] for more details.
 
 This contributor is disabled by default. You can enable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -394,6 +535,14 @@ arconia:
         process:
           enabled: true
 ----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.resource.contributors.process.enabled=true
+----
+======
 
 NOTE: For additional information about the Semantic Conventions, check out the https://opentelemetry.io/docs/specs/semconv/resource/process/#process[Resource Process Semantic Conventions].
 

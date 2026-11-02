@@ -8,6 +8,10 @@ TIP: Learn more about https://opentelemetry.io/docs/concepts/signals/logs[logs] 
 
 Support for OpenTelemetry Logs is enabled by default. You can disable it via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -15,6 +19,14 @@ arconia:
     logs:
       enabled: false
 ----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.logs.enabled=false
+----
+======
 
 == Configuration Properties
 
@@ -28,13 +40,13 @@ Constraints for the data captured by log records.
 |===
 |Property |Default |Description
 
-|`arconia.otel.logs.limits.max-attribute-value-length`
-|-
-|The maximum length of an attribute value.
+| `arconia.otel.logs.limits.max-attribute-value-length`
+| -
+| The maximum length of an attribute value.
 
-|`arconia.otel.logs.limits.max-number-of-attributes`
-|`128`
-|The maximum number of attributes that can be attached to a log record.
+| `arconia.otel.logs.limits.max-number-of-attributes`
+| `128`
+| The maximum number of attributes that can be attached to a log record.
 |===
 
 === Log Record Processor
@@ -45,25 +57,25 @@ Configuration for the batch log record processor.
 |===
 |Property |Default |Description
 
-|`arconia.otel.logs.processor.export-timeout`
-|`30s`
-|The maximum allowed time to export log records.
+| `arconia.otel.logs.processor.export-timeout`
+| `30s`
+| The maximum allowed time to export log records.
 
-|`arconia.otel.logs.processor.max-export-batch-size`
-|`512`
-|The maximum number of log records to export in a single batch.
+| `arconia.otel.logs.processor.max-export-batch-size`
+| `512`
+| The maximum number of log records to export in a single batch.
 
-|`arconia.otel.logs.processor.max-queue-size`
-|`2048`
-|The maximum number of log records that can be queued before batching.
+| `arconia.otel.logs.processor.max-queue-size`
+| `2048`
+| The maximum number of log records that can be queued before batching.
 
-|`arconia.otel.logs.processor.metrics`
-|`false`
-|Whether to generate metrics for the log record processor. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
+| `arconia.otel.logs.processor.metrics`
+| `false`
+| Whether to generate metrics for the log record processor. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
-|`arconia.otel.logs.processor.schedule-delay`
-|`1s`
-|The interval between two consecutive exports.
+| `arconia.otel.logs.processor.schedule-delay`
+| `1s`
+| The interval between two consecutive exports.
 |===
 
 === OpenTelemetry Environment Variables
@@ -113,13 +125,13 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 |===
 |Property |Default |Description
 
-|`arconia.otel.exporter.type`
-|`otlp`
-|The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
+| `arconia.otel.exporter.type`
+| `otlp`
+| The type of OpenTelemetry exporter to use for observability signals. Options: `console`, `otlp`, `none`.
 
-|`arconia.otel.logs.exporter.type`
-|``
-|The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
+| `arconia.otel.logs.exporter.type`
+| -
+| The type of OpenTelemetry exporter to use for logs. Options: `console`, `otlp`, `none`.
 |===
 
 NOTE: For more information on exporting logs to the console, refer to xref:index.adoc#_console[Console Exporter].
@@ -134,61 +146,61 @@ NOTE: If a value is not provided specifically for logs, the value configured for
 |===
 |Property |Default |Description
 
-|`arconia.otel.logs.exporter.otlp.compression`
-|`gzip`
-|Compression type to use for OTLP requests. Options: `none`, `gzip`.
+| `arconia.otel.logs.exporter.otlp.compression`
+| `gzip`
+| Compression type to use for OTLP requests. Options: `none`, `gzip`.
 
-|`arconia.otel.logs.exporter.otlp.connect-timeout`
-|`10s`
-|The maximum waiting time for the exporter to establish a connection to the endpoint.
+| `arconia.otel.logs.exporter.otlp.connect-timeout`
+| `10s`
+| The maximum waiting time for the exporter to establish a connection to the endpoint.
 
-|`arconia.otel.logs.exporter.otlp.endpoint`
-|`http://localhost:4317` (gRPC) or `http://localhost:4318/v1/logs` (HTTP)
-|The endpoint to which telemetry data will be sent.
+| `arconia.otel.logs.exporter.otlp.endpoint`
+| `http://localhost:4317` (gRPC) or `http://localhost:4318/v1/logs` (HTTP)
+| The endpoint to which telemetry data will be sent.
 
-|`arconia.otel.logs.exporter.otlp.headers`
-|-
-|Additional headers to include in each request to the endpoint.
+| `arconia.otel.logs.exporter.otlp.headers`
+| -
+| Additional headers to include in each request to the endpoint.
 
-|`arconia.otel.logs.exporter.otlp.metrics`
-|`false`
-|Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
+| `arconia.otel.logs.exporter.otlp.metrics`
+| `false`
+| Whether to generate metrics for the exporter itself. The metrics follow the https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/[OpenTelemetry Semantic Conventions for SDK metrics] (`otel.sdk.*`), which are still in development.
 
-|`arconia.otel.logs.exporter.otlp.protocol`
-|`http-protobuf`
-|Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
+| `arconia.otel.logs.exporter.otlp.protocol`
+| `http-protobuf`
+| Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
-|`arconia.otel.logs.exporter.otlp.proxy.host`
-|-
-|Host of the proxy. The port must be set together with it.
+| `arconia.otel.logs.exporter.otlp.proxy.host`
+| -
+| Host of the proxy. The port must be set together with it.
 
-|`arconia.otel.logs.exporter.otlp.proxy.port`
-|-
-|Port of the proxy, between 1 and 65535. Required when the host is set.
+| `arconia.otel.logs.exporter.otlp.proxy.port`
+| -
+| Port of the proxy, between 1 and 65535. Required when the host is set.
 
-|`arconia.otel.logs.exporter.otlp.ssl.bundle`
-|-
-|Name of the SSL bundle to use for the connection to the OTLP endpoint.
+| `arconia.otel.logs.exporter.otlp.ssl.bundle`
+| -
+| Name of the SSL bundle to use for the connection to the OTLP endpoint.
 
-|`arconia.otel.logs.exporter.otlp.timeout`
-|`10s`
-|The maximum waiting time for the exporter to send each telemetry batch.
+| `arconia.otel.logs.exporter.otlp.timeout`
+| `10s`
+| The maximum waiting time for the exporter to send each telemetry batch.
 
-|`arconia.otel.logs.exporter.otlp.retry.max-attempts`
-|`5`
-|Maximum number of attempts, including the original request. Must be between 2 and 5.
+| `arconia.otel.logs.exporter.otlp.retry.max-attempts`
+| `5`
+| Maximum number of attempts, including the original request. Must be between 2 and 5.
 
-|`arconia.otel.logs.exporter.otlp.retry.backoff-config.first-backoff`
-|`1s`
-|Initial backoff time.
+| `arconia.otel.logs.exporter.otlp.retry.backoff-config.first-backoff`
+| `1s`
+| Initial backoff time.
 
-|`arconia.otel.logs.exporter.otlp.retry.backoff-config.max-backoff`
-|`5s`
-|Maximum backoff time.
+| `arconia.otel.logs.exporter.otlp.retry.backoff-config.max-backoff`
+| `5s`
+| Maximum backoff time.
 
-|`arconia.otel.logs.exporter.otlp.retry.backoff-config.multiplier`
-|`1.5`
-|Backoff multiplier.
+| `arconia.otel.logs.exporter.otlp.retry.backoff-config.multiplier`
+| `1.5`
+| Backoff multiplier.
 |===
 
 NOTE: The default OTLP exporter uses HTTP/Protobuf. If you'd like to use gRPC, refer to xref:index.adoc#_grpc[OTLP gRPC].
@@ -207,10 +219,26 @@ WARNING: The Logback OpenTelemetry Bridge from the OpenTelemetry Java Instrument
 
 The Logback OpenTelemetry Bridge is active whenever logs are exported, with any exporter type except `none`. It can be disabled via configuration properties.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
-arconia.otel.logs.logback-bridge.enabled: false
+arconia:
+  otel:
+    logs:
+      logback-bridge:
+        enabled: false
 ----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.logs.logback-bridge.enabled=false
+----
+======
 
 Alternatively, you can exclude the `io.arconia:arconia-opentelemetry-logback-bridge` dependency from your project, which will disable the bridge entirely.
 
@@ -252,57 +280,57 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 |===
 |Property |Default |Description
 
-|`arconia.otel.logs.logback-bridge.capture-arguments`
-|`false`
-|Enable the capture of Logback log event arguments.
+| `arconia.otel.logs.logback-bridge.capture-arguments`
+| `false`
+| Enable the capture of Logback log event arguments.
 
-|`arconia.otel.logs.logback-bridge.capture-template`
-|`false`
-|Enable the capture of the Logback log event message template (if arguments are provided).
+| `arconia.otel.logs.logback-bridge.capture-template`
+| `false`
+| Enable the capture of the Logback log event message template (if arguments are provided).
 
-|`arconia.otel.logs.logback-bridge.capture-code-attributes`
-|`false`
-|Enable the capture of source code attributes. Note that capturing source code attributes at logging sites might add a performance overhead.
+| `arconia.otel.logs.logback-bridge.capture-code-attributes`
+| `false`
+| Enable the capture of source code attributes. Note that capturing source code attributes at logging sites might add a performance overhead.
 
-|`arconia.otel.logs.logback-bridge.capture-experimental-attributes`
-|`false`
-|Enable the capture of experimental log attributes `thread.name` and `thread.id`.
+| `arconia.otel.logs.logback-bridge.capture-experimental-attributes`
+| `false`
+| Enable the capture of experimental log attributes `thread.name` and `thread.id`.
 
-|`arconia.otel.logs.logback-bridge.capture-marker-attribute`
-|`false`
-|Enable the capture of Logback markers as attributes.
+| `arconia.otel.logs.logback-bridge.capture-marker-attribute`
+| `false`
+| Enable the capture of Logback markers as attributes.
 
-|`arconia.otel.logs.logback-bridge.enabled`
-|`true`
-|Whether to enable the Logback OpenTelemetry Bridge.
+| `arconia.otel.logs.logback-bridge.enabled`
+| `true`
+| Whether to enable the Logback OpenTelemetry Bridge.
 
-|`arconia.otel.logs.logback-bridge.structured-attributes.included`
-|`[]`
-|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
+| `arconia.otel.logs.logback-bridge.structured-attributes.included`
+| `[]`
+| Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
-|`arconia.otel.logs.logback-bridge.structured-attributes.excluded`
-|`[]`
-|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
+| `arconia.otel.logs.logback-bridge.structured-attributes.excluded`
+| `[]`
+| Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
-|`arconia.otel.logs.logback-bridge.mdc-attributes.included`
-|`[]`
-|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
+| `arconia.otel.logs.logback-bridge.mdc-attributes.included`
+| `[]`
+| Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
-|`arconia.otel.logs.logback-bridge.mdc-attributes.excluded`
-|`[]`
-|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
+| `arconia.otel.logs.logback-bridge.mdc-attributes.excluded`
+| `[]`
+| Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
-|`arconia.otel.logs.logback-bridge.logger-context-attributes.included`
-|`[]`
-|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
+| `arconia.otel.logs.logback-bridge.logger-context-attributes.included`
+| `[]`
+| Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
-|`arconia.otel.logs.logback-bridge.logger-context-attributes.excluded`
-|`[]`
-|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
+| `arconia.otel.logs.logback-bridge.logger-context-attributes.excluded`
+| `[]`
+| Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
-|`arconia.otel.logs.logback-bridge.num-logs-captured-before-otel-install`
-|`1000`
-|Log telemetry is emitted after the initialization of the OpenTelemetry Logback appender with an OpenTelemetry object. This setting allows you to modify the size of the cache used to replay the first logs. `thread.id` attribute is not captured.
+| `arconia.otel.logs.logback-bridge.num-logs-captured-before-otel-install`
+| `1000`
+| Log telemetry is emitted after the initialization of the OpenTelemetry Logback appender with an OpenTelemetry object. This setting allows you to modify the size of the cache used to replay the first logs. `thread.id` attribute is not captured.
 |===
 
 ==== Attribute Selectors
@@ -311,6 +339,10 @@ Structured attributes, MDC entries, and logger context properties may contain se
 
 The `structured-attributes` selector applies to every event-local structured source at once: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments.
 
+[tabs]
+======
+YAML::
++
 [source,yaml]
 ----
 arconia:
@@ -323,3 +355,13 @@ arconia:
         mdc-attributes:
           included: "tenant.id,request.id"
 ----
+
+Properties::
++
+[source,properties]
+----
+arconia.otel.logs.logback-bridge.structured-attributes.included=*
+arconia.otel.logs.logback-bridge.structured-attributes.excluded=*-secret,*-token
+arconia.otel.logs.logback-bridge.mdc-attributes.included=tenant.id,request.id
+----
+======

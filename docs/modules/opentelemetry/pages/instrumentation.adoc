@@ -10,9 +10,9 @@ The https://micrometer.io[Micrometer] project provides APIs for instrumenting Ja
 
 The following APIs are available:
 
-* **`Observation`**: the recommended API. A single observation produces both metrics and traces, decoupling the capturing of contextual information from the generation of telemetry data.
-* **`MeterRegistry`**: for metrics-only instrumentation. Metrics are automatically exported to OpenTelemetry via the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge].
-* **`Tracer`**: for traces-only instrumentation. Traces are automatically exported to OpenTelemetry via the xref:opentelemetry:traces.adoc#_micrometer_tracing_bridge_from_micrometer[Micrometer Tracing OpenTelemetry Bridge].
+* `Observation`: the recommended API. A single observation produces both metrics and traces, decoupling the capturing of contextual information from the generation of telemetry data.
+* `MeterRegistry`: for metrics-only instrumentation. Metrics are automatically exported to OpenTelemetry via the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] or the xref:opentelemetry:metrics.adoc#_micrometer_metrics_opentelemetry_bridge_from_opentelemetry_java_instrumentation[Micrometer Metrics OpenTelemetry Bridge].
+* `Tracer`: for traces-only instrumentation. Traces are automatically exported to OpenTelemetry via the xref:opentelemetry:traces.adoc#_micrometer_tracing_bridge_from_micrometer[Micrometer Tracing OpenTelemetry Bridge].
 
 Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Micrometer] and https://docs.spring.io/spring-boot/reference/actuator/observability.html[Spring Boot] documentation for more information.
 
@@ -22,10 +22,10 @@ By default, Micrometer-based instrumentation uses its own stable naming conventi
 
 The https://opentelemetry.io/docs/languages/java/[OpenTelemetry Java] project provides its own APIs for instrumenting applications. The main APIs available for instrumentation are:
 
-* **`Tracer`**: for creating spans and distributed traces.
-* **`Meter`**: for recording metrics (counters, histograms, gauges).
-* **`Logger`**: for emitting structured log records.
-* **`Context`**: for propagating context across threads and services.
+* `Tracer`: for creating spans and distributed traces.
+* `Meter`: for recording metrics (counters, histograms, gauges).
+* `Logger`: for emitting structured log records.
+* `Context`: for propagating context across threads and services.
 
 Check out the https://opentelemetry.io/docs/languages/java/api/[OpenTelemetry Java API documentation] for more information on how to use these APIs directly.
 

@@ -66,13 +66,13 @@ Arconia supports the https://opentelemetry.io/docs/specs/otel/configuration/sdk-
 
 NOTE: You can disable this support by setting the `arconia.otel.compatibility.environment-variable-specification` configuration property to `false`.
 
-If you were using the OpenTelemetry Environment Variables in your application (e.g. `OTEL_EXPORTER_OTLP_ENDPOINT`), you can continue to do so with Arconia OpenTelemetry, either directly as environment variables or using one of the relaxed-binding forms supported by Spring Boot (e.g. `otel.exporter.otlp.endpoint` as a configuration property or JVM system property).
+If you were using the OpenTelemetry Environment Variables in your application (such as `OTEL_EXPORTER_OTLP_ENDPOINT`), you can continue to do so with Arconia OpenTelemetry, either directly as environment variables or using one of the relaxed-binding forms supported by Spring Boot (e.g. `otel.exporter.otlp.endpoint` as a configuration property or JVM system property).
 
 For the rest, Arconia OpenTelemetry provides its own set of configuration properties that are similar to the OpenTelemetry Spring Boot Starter, but with some differences in naming and structure. You can find all the configuration properties under the `arconia.otel` namespace.
 
 == Beans
 
-If you customized the OpenTelemetry SDK in your Spring Boot application, the same code will work with Arconia Opentelemetry. Therefore, no changes are required in this area.
+If you customized the OpenTelemetry SDK in your Spring Boot application, the same code will work with Arconia OpenTelemetry. Therefore, no changes are required in this area.
 
 WARNING: If you customized the OpenTelemetry SDK Autoconfigure module via code, that same code will not work with Arconia OpenTelemetry because that module is not supported since Spring Boot comes already with an autoconfiguration strategy, and we didn't see the benefits in adding an extra layer. You can apply equivalent changes directly against the OpenTelemetry SDK.
 
