@@ -251,6 +251,10 @@ NOTE: If a value is not provided specifically for traces, the value configured f
 |`http-protobuf`
 |Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
+|`arconia.otel.traces.exporter.otlp.ssl.bundle`
+|-
+|The name of the SSL bundle to use for the connection to the OTLP endpoint.
+
 |`arconia.otel.traces.exporter.otlp.timeout`
 |`10s`
 |The maximum waiting time for the exporter to send each telemetry batch.

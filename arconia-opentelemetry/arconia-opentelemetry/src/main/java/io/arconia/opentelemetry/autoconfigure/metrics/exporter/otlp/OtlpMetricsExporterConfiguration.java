@@ -11,12 +11,15 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,12 +42,24 @@ public final class OtlpMetricsExporterConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    OtlpMetricsConnectionDetails otlpMetricsConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties) {
+    OtlpMetricsConnectionDetails otlpMetricsConnectionDetails(OpenTelemetryExporterProperties commonProperties, OpenTelemetryMetricsExporterProperties properties, ObjectProvider<SslBundles> sslBundles) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, properties.getOtlp());
-        return protocol -> config.getUrl(protocol, OtlpMetricsConnectionDetails.METRICS_PATH);
+        return new OtlpMetricsConnectionDetails() {
+
+            @Override
+            public String getMetricsUrl(Protocol protocol) {
+                return config.getUrl(protocol, METRICS_PATH);
+            }
+
+            @Override
+            public @Nullable SslBundle getSslBundle() {
+                return config.getSslBundle(sslBundles.getIfAvailable());
+            }
+
+        };
     }
 
-    // TODO: Add certificates/TLS and proxy.
+    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpMetricsConnectionDetails.class)
@@ -62,6 +77,10 @@ public final class OtlpMetricsExporterConfiguration {
                 .setDefaultAggregationSelector(getDefaultAggregationSelector(properties))
                 .setMemoryMode(config.getMemoryMode());
         config.getHeaders(connectionDetails).forEach(builder::addHeader);
+        SslBundle sslBundle = connectionDetails.getSslBundle();
+        if (sslBundle != null) {
+            builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
+        }
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
@@ -70,7 +89,7 @@ public final class OtlpMetricsExporterConfiguration {
         return builder.build();
     }
 
-    // TODO: Add certificates/TLS and proxy.
+    // TODO: Add proxy.
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(OtlpMetricsConnectionDetails.class)
@@ -88,6 +107,10 @@ public final class OtlpMetricsExporterConfiguration {
                 .setDefaultAggregationSelector(getDefaultAggregationSelector(properties))
                 .setMemoryMode(config.getMemoryMode());
         config.getHeaders(connectionDetails).forEach(builder::addHeader);
+        SslBundle sslBundle = connectionDetails.getSslBundle();
+        if (sslBundle != null) {
+            builder.setSslContext(sslBundle.createSslContext(), EffectiveOtlpExporterConfig.getTrustManager(sslBundle));
+        }
         if (config.isMetrics()) {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);

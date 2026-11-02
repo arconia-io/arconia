@@ -15,7 +15,9 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
@@ -325,6 +327,60 @@ class OtlpMetricsExporterConfigurationTests {
                 assertThat(connectionDetails.getMetricsUrl(Protocol.GRPC))
                     .isEqualTo("https://example.com/otel");
             });
+    }
+
+
+    @Test
+    void sslBundleAppliedToHttpProtobufExporter() {
+        contextRunner
+            .withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class))
+            .withPropertyValues(
+                "spring.ssl.bundle.pem.otlp.truststore.certificate=classpath:ssl/ca.crt",
+                "arconia.otel.metrics.exporter.otlp.ssl.bundle=otlp"
+            )
+            .run(context -> {
+                assertThat(context.getBean(OtlpMetricsConnectionDetails.class).getSslBundle()).isNotNull();
+                assertThat(sslContext(context.getBean(OtlpHttpMetricExporter.class))).isNotNull();
+            });
+    }
+
+    @Test
+    void sslBundleAppliedToGrpcExporter() {
+        contextRunner
+            .withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class))
+            .withPropertyValues(
+                "spring.ssl.bundle.pem.otlp.truststore.certificate=classpath:ssl/ca.crt",
+                "arconia.otel.exporter.otlp.ssl.bundle=otlp",
+                "arconia.otel.exporter.otlp.protocol=grpc"
+            )
+            .run(context -> assertThat(sslContext(context.getBean(OtlpGrpcMetricExporter.class))).isNotNull());
+    }
+
+    @Test
+    void noSslContextByDefault() {
+        contextRunner
+            .run(context -> {
+                assertThat(context.getBean(OtlpMetricsConnectionDetails.class).getSslBundle()).isNull();
+                assertThat(sslContext(context.getBean(OtlpHttpMetricExporter.class))).isNull();
+            });
+    }
+
+    @Test
+    void failsWhenSslBundleConfiguredWithoutSslBundles() {
+        contextRunner
+            .withPropertyValues("arconia.otel.exporter.otlp.ssl.bundle=otlp")
+            .run(context -> assertThat(context).getFailure()
+                .rootCause()
+                .hasMessage("The SSL bundle 'otlp' is configured for the OTLP exporter, but no SSL bundles are available"));
+    }
+
+    /**
+     * Reads the configured SSL context without calling the getter, which creates a default one.
+     */
+    private static Object sslContext(Object exporter) {
+        Object builder = ReflectionTestUtils.getField(exporter, "builder");
+        Object tlsConfigHelper = ReflectionTestUtils.getField(builder, "tlsConfigHelper");
+        return ReflectionTestUtils.getField(tlsConfigHelper, "sslContext");
     }
 
 }

@@ -132,6 +132,7 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The Micrometer OTLP registry only supports HTTP/Protobuf, so the application now fails to start with an explanation when the metrics exporter is configured to use gRPC. Previously, the registry sent HTTP requests to the gRPC endpoint and the metrics were lost. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer OTLP] registry.
 * The Logback OpenTelemetry Bridge now forwards logs with the `console` logs exporter too. Previously, it only forwarded them when exporting via OTLP. When logs aren't exported, it no longer holds the first log events in memory waiting for an exporter.
 * The Logback OpenTelemetry Bridge now registers a single appender when an application is started several times in the same JVM, such as in tests. Previously, each start added another appender, so each log event was exported several times.
+* The OTLP exporters, including the Micrometer Metrics Registry OTLP, can now trust a certificate authority or authenticate with a client certificate through a Spring Boot SSL bundle, configured with the new `arconia.otel.exporter.otlp.ssl.bundle` property or per signal. `OtlpConnectionDetails` can provide an SSL bundle through the new `getSslBundle()` method, and the Testcontainers service connections use HTTPS when the container has one. Learn more about xref:opentelemetry:index.adoc#_tls[TLS].
 
 === OpenTelemetry Semantic Conventions
 

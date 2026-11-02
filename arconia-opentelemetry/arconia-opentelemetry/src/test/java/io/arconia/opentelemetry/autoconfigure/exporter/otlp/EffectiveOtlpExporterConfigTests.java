@@ -9,11 +9,16 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.ssl.DefaultSslBundleRegistry;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.pem.PemSslStoreBundle;
+import org.springframework.boot.ssl.pem.PemSslStoreDetails;
 
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * Unit tests for {@link EffectiveOtlpExporterConfig}.
@@ -206,6 +211,48 @@ class EffectiveOtlpExporterConfigTests {
             signalProperties.setMetrics(false);
 
             assertThat(config.isMetrics()).isFalse();
+        }
+
+    }
+
+    @Nested
+    class SslBundleResolution {
+
+        private final SslBundle sslBundle = SslBundle.of(new PemSslStoreBundle(null, PemSslStoreDetails.forCertificate("classpath:ssl/ca.crt")));
+
+        @Test
+        void noSslBundleByDefault() {
+            assertThat(config.getSslBundleName()).isNull();
+            assertThat(config.getSslBundle(null)).isNull();
+        }
+
+        @Test
+        void usesCommonSslBundle() {
+            commonProperties.getOtlp().getSsl().setBundle("otlp");
+
+            assertThat(config.getSslBundle(new DefaultSslBundleRegistry("otlp", sslBundle))).isSameAs(sslBundle);
+        }
+
+        @Test
+        void signalSslBundleTakesPrecedence() {
+            commonProperties.getOtlp().getSsl().setBundle("common");
+            signalProperties.getSsl().setBundle("signal");
+
+            assertThat(config.getSslBundleName()).isEqualTo("signal");
+        }
+
+        @Test
+        void whenSslBundleConfiguredWithoutSslBundlesThenThrow() {
+            commonProperties.getOtlp().getSsl().setBundle("otlp");
+
+            assertThatIllegalStateException()
+                    .isThrownBy(() -> config.getSslBundle(null))
+                    .withMessage("The SSL bundle 'otlp' is configured for the OTLP exporter, but no SSL bundles are available");
+        }
+
+        @Test
+        void trustManagerFromSslBundle() {
+            assertThat(EffectiveOtlpExporterConfig.getTrustManager(sslBundle)).isNotNull();
         }
 
     }

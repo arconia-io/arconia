@@ -216,6 +216,10 @@ Global properties are available to configure the OTLP exporters for logs, metric
 |`http-protobuf`
 |Transport protocol to use for OTLP requests. Options: `grpc`, `http-protobuf`.
 
+|`arconia.otel.exporter.otlp.ssl.bundle`
+|-
+|The name of the SSL bundle to use for the connection to the OTLP endpoint.
+
 |`arconia.otel.exporter.otlp.timeout`
 |`10s`
 |The maximum waiting time for the exporter to send each telemetry batch.
@@ -300,6 +304,44 @@ Maven::
 ======
 
 NOTE: The xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] included in the Arconia OpenTelemetry Spring Boot Starter only supports HTTP/Protobuf. When switching to gRPC, keep exporting metrics via HTTP/Protobuf by setting `arconia.otel.metrics.exporter.otlp.protocol` to `http-protobuf`, or replace the registry with the xref:metrics.adoc#_micrometer_metrics_support[Micrometer Metrics Support].
+
+==== TLS
+
+To secure the connection to the OTLP endpoint with TLS, use an `https` endpoint. The certificates trusted by the JVM are used by default. To trust a different certificate authority, or to authenticate the application with a client certificate, configure a Spring Boot https://docs.spring.io/spring-boot/reference/features/ssl.html[SSL bundle] and reference it by name.
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+spring:
+  ssl:
+    bundle:
+      pem:
+        otlp:
+          truststore:
+            certificate: "file:/etc/otel/ca.crt"
+arconia:
+  otel:
+    exporter:
+      otlp:
+        endpoint: https://otel-collector:4318
+        ssl:
+          bundle: otlp
+----
+
+Properties::
++
+[source,properties]
+----
+spring.ssl.bundle.pem.otlp.truststore.certificate=file:/etc/otel/ca.crt
+arconia.otel.exporter.otlp.endpoint=https://otel-collector:4318
+arconia.otel.exporter.otlp.ssl.bundle=otlp
+----
+======
+
+The SSL bundle applies to the OTLP exporters of all signals and to the xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP]. You can use a different SSL bundle for a signal with the `arconia.otel.<signal>.exporter.otlp.ssl.bundle` property.
 
 === Console
 

@@ -5,7 +5,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.ipc.http.HttpUrlConnectionSender;
 import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.CompressionMode;
 import io.micrometer.registry.otlp.HistogramFlavor;
@@ -99,11 +98,12 @@ public final class MicrometerRegistryOtlpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(OtlpMetricsSender.class)
-    OtlpHttpMetricsSender otlpMetricsSender(OpenTelemetryExporterProperties commonProperties,
+    OtlpHttpMetricsSender otlpMetricsSender(OtlpMetricsConnectionDetails connectionDetails,
+                                            OpenTelemetryExporterProperties commonProperties,
                                             OpenTelemetryMetricsExporterProperties metricsProperties
     ) {
         EffectiveOtlpExporterConfig config = new EffectiveOtlpExporterConfig(commonProperties, metricsProperties.getOtlp());
-        return new OtlpHttpMetricsSender(new HttpUrlConnectionSender(config.getConnectTimeout(), config.getTimeout()));
+        return new OtlpHttpMetricsSender(new JdkHttpClientSender(config.getConnectTimeout(), config.getTimeout(), connectionDetails.getSslBundle()));
     }
 
     @Bean

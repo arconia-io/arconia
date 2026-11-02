@@ -1,5 +1,7 @@
 package io.arconia.opentelemetry.testcontainers;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 
@@ -30,12 +32,21 @@ class PhoenixOtlpTracingContainerConnectionDetailsFactory
 
         @Override
         public String getTracesUrl(Protocol protocol) {
-            return switch (protocol) {
+            return secure(switch (protocol) {
                 case HTTP_PROTOBUF ->
                         "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getHttpPort(), TRACES_PATH);
                 case GRPC ->
                         "http://%s:%d".formatted(getContainer().getHost(), getContainer().getGrpcPort());
-            };
+            });
+        }
+
+        @Override
+        public @Nullable SslBundle getSslBundle() {
+            return super.getSslBundle();
+        }
+
+        private String secure(String url) {
+            return getSslBundle() != null ? url.replaceFirst("^http://", "https://") : url;
         }
 
     }

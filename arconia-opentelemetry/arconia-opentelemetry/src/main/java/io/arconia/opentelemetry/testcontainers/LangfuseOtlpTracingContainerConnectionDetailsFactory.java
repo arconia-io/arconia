@@ -2,6 +2,8 @@ package io.arconia.opentelemetry.testcontainers;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 
@@ -32,11 +34,11 @@ class LangfuseOtlpTracingContainerConnectionDetailsFactory
 
         @Override
         public String getTracesUrl(Protocol protocol) {
-            return switch (protocol) {
+            return secure(switch (protocol) {
                 case HTTP_PROTOBUF -> getContainer().getOtlpTracesUrl();
                 case GRPC -> throw new IllegalStateException(
                         "Langfuse doesn't support OTLP over gRPC. Use the HTTP/Protobuf protocol instead.");
-            };
+            });
         }
 
         /**
@@ -48,6 +50,15 @@ class LangfuseOtlpTracingContainerConnectionDetailsFactory
             return Map.of(
                     "Authorization", getContainer().getBasicAuthHeader(),
                     "x-langfuse-ingestion-version", "4");
+        }
+
+        @Override
+        public @Nullable SslBundle getSslBundle() {
+            return super.getSslBundle();
+        }
+
+        private String secure(String url) {
+            return getSslBundle() != null ? url.replaceFirst("^http://", "https://") : url;
         }
 
     }

@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.RetryConfig;
+import io.arconia.opentelemetry.autoconfigure.exporter.otlp.SslConfig;
 
 /**
  * Configuration properties for OpenTelemetry exporters.
@@ -96,6 +97,12 @@ public class OpenTelemetryExporterProperties {
         private final RetryConfig retry = new RetryConfig();
 
         /**
+         * Configuration for securing the connection with TLS.
+         */
+        @NestedConfigurationProperty
+        private final SslConfig ssl = new SslConfig();
+
+        /**
          * Additional headers to include in each request to the endpoint.
          */
         private Map<String, String> headers = new HashMap<>();
@@ -148,6 +155,10 @@ public class OpenTelemetryExporterProperties {
 
         public RetryConfig getRetry() {
             return retry;
+        }
+
+        public SslConfig getSsl() {
+            return ssl;
         }
 
         public Map<String, String> getHeaders() {

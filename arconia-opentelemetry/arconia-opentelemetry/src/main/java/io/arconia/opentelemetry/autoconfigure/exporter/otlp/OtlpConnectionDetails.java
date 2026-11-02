@@ -2,7 +2,9 @@ package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
+import org.springframework.boot.ssl.SslBundle;
 
 /**
  * Connection details to establish a connection to an OTLP endpoint.
@@ -21,6 +23,14 @@ public interface OtlpConnectionDetails extends ConnectionDetails {
      */
     default Map<String, String> getHeaders() {
         return Map.of();
+    }
+
+    /**
+     * SSL bundle to secure the connection to the endpoint with TLS,
+     * or {@code null} to use the default trust material of the JVM.
+     */
+    default @Nullable SslBundle getSslBundle() {
+        return null;
     }
 
 }

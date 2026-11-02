@@ -7,10 +7,17 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import io.arconia.core.annotations.Internal;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
@@ -93,6 +100,28 @@ public final class EffectiveOtlpExporterConfig {
         return headers;
     }
 
+    /**
+     * Get the name of the SSL bundle to use for the connection to the endpoint, if any.
+     */
+    @Nullable
+    public String getSslBundleName() {
+        String bundleName = signalProperties.getSsl().getBundle();
+        return StringUtils.hasText(bundleName) ? bundleName : commonProperties.getOtlp().getSsl().getBundle();
+    }
+
+    /**
+     * Get the SSL bundle to use for the connection to the endpoint, if any.
+     */
+    @Nullable
+    public SslBundle getSslBundle(@Nullable SslBundles sslBundles) {
+        String bundleName = getSslBundleName();
+        if (!StringUtils.hasText(bundleName)) {
+            return null;
+        }
+        Assert.state(sslBundles != null, "The SSL bundle '%s' is configured for the OTLP exporter, but no SSL bundles are available".formatted(bundleName));
+        return sslBundles.getBundle(bundleName);
+    }
+
     public boolean isMetrics() {
         Boolean metrics = signalProperties.isMetrics();
         return metrics != null ? metrics : commonProperties.getOtlp().isMetrics();
@@ -113,6 +142,19 @@ public final class EffectiveOtlpExporterConfig {
         } catch (URISyntaxException ex) {
             return "<unparseable URL>";
         }
+    }
+
+    /**
+     * Get the trust manager of the SSL bundle, which the OpenTelemetry exporters require together with the SSL context.
+     */
+    public static X509TrustManager getTrustManager(SslBundle sslBundle) {
+        Assert.notNull(sslBundle, "sslBundle cannot be null");
+        for (TrustManager trustManager : sslBundle.getManagers().getTrustManagers()) {
+            if (trustManager instanceof X509TrustManager x509TrustManager) {
+                return x509TrustManager;
+            }
+        }
+        throw new IllegalStateException("No X509TrustManager found in the trust managers of the SSL bundle");
     }
 
 }

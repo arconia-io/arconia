@@ -1,10 +1,12 @@
 package io.arconia.opentelemetry.micrometer.registry.otlp.autoconfigure;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import io.micrometer.core.ipc.http.HttpUrlConnectionSender;
+import javax.net.ssl.SSLContext;
+
 import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.CompressionMode;
 import io.micrometer.registry.otlp.HistogramFlavor;
@@ -18,6 +20,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.pem.PemSslStoreBundle;
+import org.springframework.boot.ssl.pem.PemSslStoreDetails;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -246,11 +251,33 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                 )
                 .withBean(Resource.class, Resource::getDefault)
                 .run(context -> {
-                    OtlpHttpMetricsSender metricsSender = context.getBean(OtlpHttpMetricsSender.class);
-                    Object httpSender = ReflectionTestUtils.getField(metricsSender, "httpSender");
-                    assertThat(httpSender).isInstanceOf(HttpUrlConnectionSender.class);
-                    assertThat(ReflectionTestUtils.getField(httpSender, "connectTimeoutMs")).isEqualTo(2000);
-                    assertThat(ReflectionTestUtils.getField(httpSender, "readTimeoutMs")).isEqualTo(7000);
+                    JdkHttpClientSender httpSender = httpSender(context.getBean(OtlpHttpMetricsSender.class));
+                    HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(httpSender, "httpClient");
+                    assertThat(httpClient.connectTimeout()).contains(Duration.ofSeconds(2));
+                    assertThat(ReflectionTestUtils.getField(httpSender, "timeout")).isEqualTo(Duration.ofSeconds(7));
+                });
+    }
+
+    @Test
+    void metricsSenderUsesConnectionDetailsSslBundle() {
+        SslBundle sslBundle = SslBundle.of(new PemSslStoreBundle(null, PemSslStoreDetails.forCertificate("classpath:ssl/ca.crt")));
+        baseContextRunner
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(OtlpMetricsConnectionDetails.class, () -> new OtlpMetricsConnectionDetails() {
+                    @Override
+                    public String getMetricsUrl(Protocol protocol) {
+                        return "https://localhost:4318/v1/metrics";
+                    }
+
+                    @Override
+                    public SslBundle getSslBundle() {
+                        return sslBundle;
+                    }
+                })
+                .run(context -> {
+                    JdkHttpClientSender httpSender = httpSender(context.getBean(OtlpHttpMetricsSender.class));
+                    HttpClient httpClient = (HttpClient) ReflectionTestUtils.getField(httpSender, "httpClient");
+                    assertThat(httpClient.sslContext()).isNotSameAs(SSLContext.getDefault());
                 });
     }
 
@@ -280,6 +307,12 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                 .withPropertyValues("spring.threads.virtual.enabled=false")
                 .withBean(Resource.class, Resource::getDefault)
                 .run(context -> assertThat(context).hasSingleBean(OtlpMeterRegistry.class));
+    }
+
+    private static JdkHttpClientSender httpSender(OtlpHttpMetricsSender metricsSender) {
+        Object httpSender = ReflectionTestUtils.getField(metricsSender, "httpSender");
+        assertThat(httpSender).isInstanceOf(JdkHttpClientSender.class);
+        return (JdkHttpClientSender) httpSender;
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * Configuration properties for exporting OpenTelemetry telemetry data using OTLP.
@@ -47,6 +48,12 @@ public class OtlpExporterConfig {
      */
     @Nullable
     private RetryConfig retry;
+
+    /**
+     * Configuration for securing the connection with TLS.
+     */
+    @NestedConfigurationProperty
+    private final SslConfig ssl = new SslConfig();
 
     /**
      * Additional headers to include in each request to the endpoint.
@@ -111,6 +118,10 @@ public class OtlpExporterConfig {
 
     public void setRetry(RetryConfig retry) {
         this.retry = retry;
+    }
+
+    public SslConfig getSsl() {
+        return ssl;
     }
 
     public Map<String, String> getHeaders() {
