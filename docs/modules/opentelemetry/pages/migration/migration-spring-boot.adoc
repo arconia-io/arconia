@@ -8,7 +8,7 @@ If you're currently relying on the OpenTelemetry/OTLP support available in Sprin
 
 For starters, include the Arconia BOM to your project.
 
-WARNING: The current version of Arconia doesn't support Spring Boot 3.5 any longer. If you want to migrate an existing Spring Boot 3.5 application to using Arconia OpenTelemetry, it's recommended you first upgrade your application to Spring Boot 4.0 (we provide https://github.com/arconia-io/arconia-migrations/blob/main/docs/spring-boot.md[automations] for doing that). If that's not possible, you can use version 0.20.1 of Arconia, which is the latest one still supporting Spring Boot 3.5.
+WARNING: The current version of Arconia requires Spring Boot 4.1. If you want to migrate an existing Spring Boot 3.5 or 4.0 application to Arconia OpenTelemetry, it's recommended you first upgrade your application to Spring Boot 4.1 (we provide https://github.com/arconia-io/arconia-migrations/blob/main/docs/spring-boot.md[automations] for doing that). If that's not possible, you can use version 0.28.0 of Arconia, the latest one supporting Spring Boot 4.0, or version 0.20.1, the latest one supporting Spring Boot 3.5.
 
 [tabs]
 ======
