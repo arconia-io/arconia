@@ -62,7 +62,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".attributes"))
                 .isEqualTo(Map.of("key1", "value1", "key2", "value2"));
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")).isEqualTo("test-service");
-        assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.produce"))
+        assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.type"))
                 .containsExactlyInAnyOrder(PropagationType.W3C, PropagationType.B3);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy"))
                 .isEqualTo(SamplingStrategy.TRACE_ID_RATIO);
@@ -476,7 +476,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
 
-        assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.produce"))
+        assertThat((List<PropagationType>) adapter.getArconiaProperties().get("management.tracing.propagation.type"))
                 .containsExactly(PropagationType.B3, PropagationType.W3C, PropagationType.B3_MULTI);
     }
 
@@ -515,6 +515,27 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = { "traceidratio", "parentbased_traceidratio" })
+    void shouldDefaultRatioToOneForRatioBasedSamplersWithoutArgument(String sampler) {
+        var environment = new MockEnvironment().withProperty("otel.traces.sampler", sampler);
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties().get("management.tracing.sampling.probability")).isEqualTo(1.0);
+    }
+
+    @Test
+    void shouldKeepConfiguredProbabilityForRatioBasedSamplerWithoutArgument() {
+        var environment = new MockEnvironment()
+                .withProperty("otel.traces.sampler", "traceidratio")
+                .withProperty("management.tracing.sampling.probability", "0.5");
+
+        var adapter = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment));
+
+        assertThat(adapter.getArconiaProperties()).doesNotContainKey("management.tracing.sampling.probability");
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "-0.1", "1.1", "invalid" })
     void shouldSkipSamplerArgumentOutOfRange(String argument, CapturedOutput output) {
         var environment = new MockEnvironment()
@@ -547,7 +568,7 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
         var propertySource = OpenTelemetryEnvironmentPropertyAdapters.general(adapter(environment)).toPropertySource("test");
 
         var produce = new Binder(ConfigurationPropertySources.from(propertySource))
-                .bind("management.tracing.propagation.produce", Bindable.listOf(PropagationType.class));
+                .bind("management.tracing.propagation.type", Bindable.listOf(PropagationType.class));
         assertThat(produce.get()).isEmpty();
         assertThat(output).contains("Ignoring the other values of otel.propagators because it includes 'none'");
     }

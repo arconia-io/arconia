@@ -80,6 +80,8 @@ class OpenTelemetryEnvironmentPropertyAdapters {
 
     private static final String SAMPLING_STRATEGY_KEY = OpenTelemetryTracingProperties.CONFIG_PREFIX + ".sampling.strategy";
 
+    private static final String SAMPLING_PROBABILITY_KEY = "management.tracing.sampling.probability";
+
     /**
      * General SDK Configuration.
      * <p>
@@ -100,14 +102,19 @@ class OpenTelemetryEnvironmentPropertyAdapters {
                 // OTEL_SERVICE_NAME
                 .mapString("otel.service.name", OpenTelemetryResourceProperties.CONFIG_PREFIX + ".service-name")
                 // OTEL_PROPAGATORS
-                .mapEnumList("otel.propagators", "management.tracing.propagation.produce", PROPAGATION_TYPES)
+                // Both injected and extracted, as the specification defines.
+                .mapEnumList("otel.propagators", "management.tracing.propagation.type", PROPAGATION_TYPES)
                 // OTEL_TRACES_SAMPLER
                 .mapEnum("otel.traces.sampler", SAMPLING_STRATEGY_KEY, SAMPLING_STRATEGIES);
 
         // OTEL_TRACES_SAMPLER_ARG, only defined for the ratio-based samplers
         Object samplingStrategy = adapter.getArconiaProperties().get(SAMPLING_STRATEGY_KEY);
         if (samplingStrategy == SamplingStrategy.TRACE_ID_RATIO || samplingStrategy == SamplingStrategy.PARENT_BASED_TRACE_ID_RATIO) {
-            return adapter.mapDouble("otel.traces.sampler.arg", "management.tracing.sampling.probability", 0.0, 1.0);
+            if (!adapter.hasProperty("otel.traces.sampler.arg") && !adapter.hasProperty(SAMPLING_PROBABILITY_KEY)) {
+                // The specification defaults the ratio to 1.0, while Spring Boot defaults the probability to 0.1.
+                return adapter.mapProperty("otel.traces.sampler", SAMPLING_PROBABILITY_KEY, value -> 1.0);
+            }
+            return adapter.mapDouble("otel.traces.sampler.arg", SAMPLING_PROBABILITY_KEY, 0.0, 1.0);
         }
         return adapter.ignoreProperty("otel.traces.sampler.arg",
                 "it only applies to the traceidratio and parentbased_traceidratio samplers set via otel.traces.sampler");
