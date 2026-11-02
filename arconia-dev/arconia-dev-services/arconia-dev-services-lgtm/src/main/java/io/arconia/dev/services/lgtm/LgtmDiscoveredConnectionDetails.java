@@ -1,5 +1,8 @@
 package io.arconia.dev.services.lgtm;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
+
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
@@ -17,9 +20,14 @@ final class LgtmDiscoveredConnectionDetails
 
     private final String grpcUrl;
 
+    @Nullable
+    private final SslBundle sslBundle;
+
     LgtmDiscoveredConnectionDetails(DiscoveredContainer container) {
-        this.httpUrl = "http://%s:%d".formatted(container.host(), container.mappedPort(DEFAULT_HTTP_PORT));
-        this.grpcUrl = "http://%s:%d".formatted(container.host(), container.mappedPort(DEFAULT_GRPC_PORT));
+        this.sslBundle = container.sslBundle();
+        String scheme = (sslBundle != null) ? "https" : "http";
+        this.httpUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(DEFAULT_HTTP_PORT));
+        this.grpcUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(DEFAULT_GRPC_PORT));
     }
 
     @Override
@@ -44,6 +52,12 @@ final class LgtmDiscoveredConnectionDetails
             case HTTP_PROTOBUF -> httpUrl + LOGS_PATH;
             case GRPC -> grpcUrl;
         };
+    }
+
+    @Override
+    @Nullable
+    public SslBundle getSslBundle() {
+        return sslBundle;
     }
 
 }

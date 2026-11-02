@@ -331,6 +331,14 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.dashboards.built-in.enabled`
 | `true`
 | Whether the dashboards shipped with the dev service are provisioned, next to the ones contributed by the classpath.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+include::partial$using-ssl.adoc[]
+
+The OpenTelemetry Collector of the stack then serves both its OTLP gRPC and HTTP ports over SSL only, and clients are not asked for a certificate. Grafana, Prometheus, Loki, and Tempo keep serving plain HTTP. The certificate and key are passed to the collector through `OTELCOL_EXTRA_ARGS`, after any arguments you set in that variable. The OTLP links reported at startup still use `http`.
 
 include::partial$disabling-dev-service.adoc[]

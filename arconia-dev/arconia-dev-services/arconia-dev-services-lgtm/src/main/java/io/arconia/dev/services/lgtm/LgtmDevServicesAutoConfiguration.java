@@ -1,10 +1,15 @@
 package io.arconia.dev.services.lgtm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -12,6 +17,7 @@ import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnable
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.ssl.SslBundleFiles;
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.LgtmDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
@@ -62,6 +68,17 @@ public final class LgtmDevServicesAutoConfiguration {
 
     static final String PROMETHEUS_START_TIME_ARG = "--enable-feature=created-timestamp-zero-ingestion";
 
+    /**
+     * The OpenTelemetry Collector accepts extra command line arguments from this environment variable,
+     * separated by whitespace.
+     */
+    static final String OTELCOL_EXTRA_ARGS_ENV = "OTELCOL_EXTRA_ARGS";
+
+    /**
+     * Where the SSL files are copied in the container.
+     */
+    static final String SSL_DIRECTORY = "/arconia/ssl/";
+
     static final String GRAFANA_ADMIN_USER = "arconia";
 
     static final String GRAFANA_ADMIN_PASSWORD = "arconia";
@@ -75,6 +92,27 @@ public final class LgtmDevServicesAutoConfiguration {
         container.withEnv(PROMETHEUS_EXTRA_ARGS_ENV, PROMETHEUS_START_TIME_ARG);
         dashboards.applyTo(container);
         return container;
+    }
+
+    /**
+     * Configure the OTLP receiver of the OpenTelemetry Collector to serve both its gRPC and HTTP ports over SSL,
+     * with the certificate and key of the bundle. The settings are appended to the extra command line arguments
+     * of the collector, keeping any configured through the environment. Grafana and the other components keep
+     * serving plain HTTP, and the readiness check uses the health check port of the collector, which is unaffected.
+     */
+    static void configureSsl(LgtmStackContainer container, SslBundle bundle) {
+        container.withCopyToContainer(SslBundleFiles.certificateChain(bundle), SSL_DIRECTORY + "server.crt");
+        container.withCopyToContainer(SslBundleFiles.privateKey(bundle), SSL_DIRECTORY + "server.key");
+        List<String> arguments = new ArrayList<>();
+        String configuredArguments = container.getEnvMap().get(OTELCOL_EXTRA_ARGS_ENV);
+        if (StringUtils.hasText(configuredArguments)) {
+            arguments.add(configuredArguments.strip());
+        }
+        for (String protocol : List.of("grpc", "http")) {
+            arguments.add("--set=receivers::otlp::protocols::%s::tls::cert_file=%sserver.crt".formatted(protocol, SSL_DIRECTORY));
+            arguments.add("--set=receivers::otlp::protocols::%s::tls::key_file=%sserver.key".formatted(protocol, SSL_DIRECTORY));
+        }
+        container.withEnv(OTELCOL_EXTRA_ARGS_ENV, String.join(" ", arguments));
     }
 
     static class LgtmDevServicesRegistrar extends DevServicesRegistrar {
@@ -96,6 +134,7 @@ public final class LgtmDevServicesAutoConfiguration {
                     .additionalPort(LOKI_PORT, properties.getLokiPort())
                     .additionalPort(TEMPO_PORT, properties.getTempoPort())
                     .additionalPort(PROMETHEUS_PORT, properties.getPrometheusPort())
+                    .ssl(LgtmDevServicesAutoConfiguration::configureSsl)
                     .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
                     .link("Grafana", GRAFANA_PORT)
                     .link("OTLP/HTTP", OTLP_HTTP_PORT)

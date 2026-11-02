@@ -17,6 +17,8 @@ dependencies {
     implementation "org.slf4j:slf4j-api"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation "io.opentelemetry:opentelemetry-exporter-otlp"
+    testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
     testImplementation project(":arconia-observation:arconia-opentelemetry-ai-semantic-conventions")
     testImplementation project(":arconia-observation:arconia-opentelemetry-semantic-conventions")
     testImplementation "org.springframework.boot:spring-boot-starter-test"

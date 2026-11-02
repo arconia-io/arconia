@@ -19,7 +19,9 @@ import org.testcontainers.grafana.LgtmStackContainer;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
+import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
+import io.arconia.dev.services.tests.SslTestCertificates;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.otlp.OtlpLoggingConnectionDetails;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
@@ -182,6 +184,34 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
                         .doesNotContain("RED Metrics");
             }
         });
+    }
+
+    @Test
+    void sslApplied() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .run(context -> {
+                    var container = (LgtmStackContainer) context.getBean(getContainerClass());
+                    String directory = LgtmDevServicesAutoConfiguration.SSL_DIRECTORY;
+                    assertThat(container.getEnvMap().get(LgtmDevServicesAutoConfiguration.OTELCOL_EXTRA_ARGS_ENV)).isEqualTo(String.join(" ",
+                            "--set=receivers::otlp::protocols::grpc::tls::cert_file=" + directory + "server.crt",
+                            "--set=receivers::otlp::protocols::grpc::tls::key_file=" + directory + "server.key",
+                            "--set=receivers::otlp::protocols::http::tls::cert_file=" + directory + "server.crt",
+                            "--set=receivers::otlp::protocols::http::tls::key_file=" + directory + "server.key"));
+                    assertThat(DevServiceContainers.copiedFiles(container)).containsValues(directory + "server.crt", directory + "server.key");
+                });
+    }
+
+    @Test
+    void sslAppendedToConfiguredCollectorArguments() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .withPropertyValues("arconia.dev.services.lgtm.environment[OTELCOL_EXTRA_ARGS]=--feature-gates=+example")
+                .run(context -> {
+                    var container = (LgtmStackContainer) context.getBean(getContainerClass());
+                    assertThat(container.getEnvMap().get(LgtmDevServicesAutoConfiguration.OTELCOL_EXTRA_ARGS_ENV))
+                            .startsWith("--feature-gates=+example --set=receivers::otlp::protocols::grpc::tls::cert_file=");
+                });
     }
 
 }

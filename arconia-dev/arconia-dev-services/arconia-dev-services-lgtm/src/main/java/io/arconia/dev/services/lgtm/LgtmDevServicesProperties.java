@@ -8,17 +8,20 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
+import io.arconia.dev.services.api.config.SslConfig;
+import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Grafana LGTM Dev Services.
  */
 @ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
-public class LgtmDevServicesProperties implements DevServicesProperties {
+public class LgtmDevServicesProperties implements DevServicesProperties, SslDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.lgtm";
 
@@ -115,6 +118,12 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
      * Grafana dashboards provisioned in the dev service.
      */
     private Dashboards dashboards = new Dashboards();
+
+    /**
+     * SSL configuration of the dev service.
+     */
+    @NestedConfigurationProperty
+    private final SslConfig ssl = new SslConfig();
 
     @Override
     public boolean isEnabled() {
@@ -251,6 +260,11 @@ public class LgtmDevServicesProperties implements DevServicesProperties {
 
     public void setDashboards(Dashboards dashboards) {
         this.dashboards = dashboards;
+    }
+
+    @Override
+    public SslConfig getSsl() {
+        return ssl;
     }
 
     /**
