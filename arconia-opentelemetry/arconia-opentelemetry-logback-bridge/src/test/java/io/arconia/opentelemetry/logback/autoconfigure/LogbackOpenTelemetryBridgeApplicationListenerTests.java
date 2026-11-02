@@ -133,6 +133,60 @@ class LogbackOpenTelemetryBridgeApplicationListenerTests {
         assertThat(hasOpenTelemetryAppender()).isFalse();
     }
 
+    @Test
+    void appenderRegisteredWithConsoleExporter() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("arconia.otel.logs.exporter.type", "console");
+        listener.onApplicationEvent(createEvent(env));
+        assertThat(hasOpenTelemetryAppender()).isTrue();
+    }
+
+    @Test
+    void appenderNotRegisteredWhenLoggingExportDisabled() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("arconia.otel.logs.exporter.type", "none");
+        listener.onApplicationEvent(createEvent(env));
+        assertThat(hasOpenTelemetryAppender()).isFalse();
+    }
+
+    @Test
+    void appenderNotRegisteredWhenCommonExportDisabled() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("arconia.otel.exporter.type", "none");
+        listener.onApplicationEvent(createEvent(env));
+        assertThat(hasOpenTelemetryAppender()).isFalse();
+    }
+
+    @Test
+    void appenderRegisteredWhenLogsExporterOverridesCommonExportDisabled() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("arconia.otel.exporter.type", "none");
+        env.setProperty("arconia.otel.logs.exporter.type", "otlp");
+        listener.onApplicationEvent(createEvent(env));
+        assertThat(hasOpenTelemetryAppender()).isTrue();
+    }
+
+    @Test
+    void appenderNotRegisteredWhenLoggingDisabled() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("arconia.otel.logs.enabled", "false");
+        listener.onApplicationEvent(createEvent(env));
+        assertThat(hasOpenTelemetryAppender()).isFalse();
+    }
+
+    @Test
+    void appenderReplacedWhenApplicationStartedAgain() {
+        listener.onApplicationEvent(createEvent(new MockEnvironment()));
+        OpenTelemetryAppender firstAppender = findOpenTelemetryAppender();
+
+        listener.onApplicationEvent(createEvent(new MockEnvironment()));
+
+        assertThat(countOpenTelemetryAppenders()).isEqualTo(1);
+        assertThat(findOpenTelemetryAppender()).isNotSameAs(firstAppender)
+                .satisfies(appender -> assertThat(appender.getName()).isEqualTo(LogbackOpenTelemetryBridgeApplicationListener.APPENDER_NAME));
+        assertThat(firstAppender.isStarted()).isFalse();
+    }
+
     @Nested
     class AttributeSelectors {
 
@@ -275,6 +329,17 @@ class LogbackOpenTelemetryBridgeApplicationListenerTests {
 
     private boolean hasOpenTelemetryAppender() {
         return findOpenTelemetryAppender() != null;
+    }
+
+    private int countOpenTelemetryAppenders() {
+        int count = 0;
+        Iterator<Appender<ILoggingEvent>> it = rootLogger.iteratorForAppenders();
+        while (it.hasNext()) {
+            if (it.next() instanceof OpenTelemetryAppender) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private OpenTelemetryAppender findOpenTelemetryAppender() {

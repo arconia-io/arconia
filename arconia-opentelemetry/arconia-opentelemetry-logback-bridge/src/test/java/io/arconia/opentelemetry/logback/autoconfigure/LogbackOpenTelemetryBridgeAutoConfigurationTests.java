@@ -95,6 +95,16 @@ class LogbackOpenTelemetryBridgeAutoConfigurationTests {
     }
 
     @Test
+    void listenersAvailableWithConsoleExporter() {
+        contextRunner
+                .withPropertyValues("arconia.otel.logs.exporter.type=console")
+                .run(context -> {
+                    assertThat(context).hasBean("logbackAppenderOnReady");
+                    assertThat(context).hasBean("logbackAppenderOnFailed");
+                });
+    }
+
+    @Test
     void listenersNotAvailableWhenOpenTelemetryMissing() {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(LogbackOpenTelemetryBridgeAutoConfiguration.class))

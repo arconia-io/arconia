@@ -1,7 +1,5 @@
 package io.arconia.opentelemetry.logback.autoconfigure;
 
-import java.util.List;
-
 import io.opentelemetry.instrumentation.api.config.IncludeExclude;
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
 
@@ -10,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.boot.context.logging.LoggingApplicationListener;
-import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -20,8 +17,13 @@ import org.springframework.core.ResolvableType;
 import org.springframework.util.ClassUtils;
 
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 
 import io.arconia.opentelemetry.autoconfigure.OpenTelemetryProperties;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.logs.OpenTelemetryLoggingProperties;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 
 /**
  * An {@link ApplicationListener} that configures the OpenTelemetry Logback appender
@@ -29,9 +31,10 @@ import io.arconia.opentelemetry.autoconfigure.OpenTelemetryProperties;
  */
 class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicationListener {
 
+    static final String APPENDER_NAME = "OpenTelemetry";
+
     private static final Class<?>[] EVENT_TYPES = {ApplicationEnvironmentPreparedEvent.class};
     private static final Class<?>[] SOURCE_TYPES = {ApplicationContext.class, SpringApplication.class};
-    private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
 
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
@@ -54,70 +57,56 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
         }
 
         Binder binder = Binder.get(applicationEvent.getEnvironment());
-        if (!isOpenTelemetryEnabled(binder) || !isLogbackAppenderBridgeEnabled(binder)) {
+        if (!isOpenTelemetryEnabled(binder) || !isLoggingExportEnabled(binder)) {
+            return;
+        }
+
+        LogbackOpenTelemetryBridgeProperties properties = binder
+                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX, LogbackOpenTelemetryBridgeProperties.class)
+                .orElseGet(LogbackOpenTelemetryBridgeProperties::new);
+        if (!properties.isEnabled()) {
             return;
         }
 
         OpenTelemetryAppender openTelemetryAppender = new OpenTelemetryAppender();
-        configureOpenTelemetryAppender(openTelemetryAppender, binder);
+        configureOpenTelemetryAppender(openTelemetryAppender, properties);
         openTelemetryAppender.start();
 
+        // An application started more than once in the same JVM, such as in tests, gets a single appender.
         Logger rootLogbackLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Appender<ILoggingEvent> previousAppender = rootLogbackLogger.getAppender(APPENDER_NAME);
+        if (previousAppender != null) {
+            rootLogbackLogger.detachAppender(previousAppender);
+            previousAppender.stop();
+        }
         rootLogbackLogger.addAppender(openTelemetryAppender);
     }
 
-    private void configureOpenTelemetryAppender(OpenTelemetryAppender openTelemetryAppender, Binder binder) {
-        boolean captureArguments = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-arguments", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureArguments(captureArguments);
+    private void configureOpenTelemetryAppender(OpenTelemetryAppender openTelemetryAppender, LogbackOpenTelemetryBridgeProperties properties) {
+        openTelemetryAppender.setName(APPENDER_NAME);
+        openTelemetryAppender.setCaptureArguments(properties.isCaptureArguments());
+        openTelemetryAppender.setCaptureTemplate(properties.isCaptureTemplate());
+        openTelemetryAppender.setCaptureCodeAttributes(properties.isCaptureCodeAttributes());
+        openTelemetryAppender.setCaptureExperimentalAttributes(properties.isCaptureExperimentalAttributes());
+        openTelemetryAppender.setCaptureMarkerAttribute(properties.isCaptureMarkerAttribute());
 
-        boolean captureTemplate = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-template", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureTemplate(captureTemplate);
-
-        boolean captureCodeAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-code-attributes", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureCodeAttributes(captureCodeAttributes);
-
-        boolean captureExperimentalAttributes = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-experimental-attributes", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureExperimentalAttributes(captureExperimentalAttributes);
-
-        boolean captureMarkerAttribute = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".capture-marker-attribute", Boolean.class)
-                .orElse(false);
-        openTelemetryAppender.setCaptureMarkerAttribute(captureMarkerAttribute);
-
-        IncludeExclude structuredAttributes = bindSelector(binder, "structured-attributes");
+        IncludeExclude structuredAttributes = toIncludeExclude(properties.getStructuredAttributes());
         openTelemetryAppender.setKeyValuePairAttributes(structuredAttributes);
         openTelemetryAppender.setLogstashMarkerAttributes(structuredAttributes);
         openTelemetryAppender.setLogstashStructuredArgumentAttributes(structuredAttributes);
+        openTelemetryAppender.setMdcAttributes(toIncludeExclude(properties.getMdcAttributes()));
+        openTelemetryAppender.setLoggerContextAttributes(toIncludeExclude(properties.getLoggerContextAttributes()));
 
-        openTelemetryAppender.setMdcAttributes(bindSelector(binder, "mdc-attributes"));
-
-        openTelemetryAppender.setLoggerContextAttributes(bindSelector(binder, "logger-context-attributes"));
-
-        Integer numLogsCapturedBeforeOtelInstall = binder
-                .bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".num-logs-captured-before-otel-install", Integer.class)
-                .orElse(1000);
-        openTelemetryAppender.setNumLogsCapturedBeforeOtelInstall(numLogsCapturedBeforeOtelInstall);
+        openTelemetryAppender.setNumLogsCapturedBeforeOtelInstall(properties.getNumLogsCapturedBeforeOtelInstall());
     }
 
     /**
-     * Binds the "included" and "excluded" glob patterns of an attribute selector.
      * An empty selector captures nothing.
      */
-    private IncludeExclude bindSelector(Binder binder, String selectorName) {
-        String prefix = LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + "." + selectorName;
-        List<String> included = binder.bind(prefix + ".included", STRING_LIST).orElse(List.of());
-        List<String> excluded = binder.bind(prefix + ".excluded", STRING_LIST).orElse(List.of());
+    private IncludeExclude toIncludeExclude(LogbackOpenTelemetryBridgeProperties.AttributeSelector selector) {
         return IncludeExclude.builder()
-                .setIncluded(included)
-                .setExcluded(excluded)
+                .setIncluded(selector.getIncluded())
+                .setExcluded(selector.getExcluded())
                 .build();
     }
 
@@ -144,13 +133,21 @@ class LogbackOpenTelemetryBridgeApplicationListener implements GenericApplicatio
         return ClassUtils.isPresent("io.opentelemetry.api.OpenTelemetry", null);
     }
 
-    private boolean isLogbackAppenderBridgeEnabled(Binder binder) {
-        return binder.bind(LogbackOpenTelemetryBridgeProperties.CONFIG_PREFIX + ".enabled", Boolean.class)
-                .orElse(true);
-    }
-
     private boolean isOpenTelemetryEnabled(Binder binder) {
         return binder.bind(OpenTelemetryProperties.CONFIG_PREFIX + ".enabled", Boolean.class).orElse(true);
+    }
+
+    /**
+     * Whether logs are exported, which is the case for every exporter type but "none". The values are read
+     * as text, since this listener runs whether or not Arconia OpenTelemetry is on the classpath.
+     */
+    private boolean isLoggingExportEnabled(Binder binder) {
+        if (!binder.bind(OpenTelemetryLoggingProperties.CONFIG_PREFIX + ".enabled", Boolean.class).orElse(true)) {
+            return false;
+        }
+        String exporterType = binder.bind(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type", String.class)
+                .orElseGet(() -> binder.bind(OpenTelemetryExporterProperties.CONFIG_PREFIX + ".type", String.class).orElse("otlp"));
+        return !"none".equalsIgnoreCase(exporterType.strip());
     }
 
     @Override

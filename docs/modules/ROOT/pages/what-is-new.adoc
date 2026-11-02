@@ -130,6 +130,8 @@ The following changes affect the custom Dev Services you build on the Arconia De
 * The tracing context is now propagated whatever the type of traces exporter. Previously, with the `console` or `none` exporter, incoming trace context was ignored and none was sent to other services, so an application not exporting traces broke the traces passing through it. Learn more about xref:opentelemetry:traces.adoc#_propagation[Propagation].
 * The Micrometer OTLP registry now sends the headers provided by the OTLP connection details, such as the credentials of a backend, and applies the OTLP connection and request timeouts. Previously, it ignored them.
 * The Micrometer OTLP registry only supports HTTP/Protobuf, so the application now fails to start with an explanation when the metrics exporter is configured to use gRPC. Previously, the registry sent HTTP requests to the gRPC endpoint and the metrics were lost. Learn more about the xref:opentelemetry:metrics.adoc#_micrometer_otlp[Micrometer OTLP] registry.
+* The Logback OpenTelemetry Bridge now forwards logs with the `console` logs exporter too. Previously, it only forwarded them when exporting via OTLP. When logs aren't exported, it no longer holds the first log events in memory waiting for an exporter.
+* The Logback OpenTelemetry Bridge now registers a single appender when an application is started several times in the same JVM, such as in tests. Previously, each start added another appender, so each log event was exported several times.
 
 === OpenTelemetry Semantic Conventions
 

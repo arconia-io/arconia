@@ -19,6 +19,18 @@ class LogbackOpenTelemetryBridgePropertiesTests {
     void shouldCreateInstanceWithDefaultValues() {
         LogbackOpenTelemetryBridgeProperties properties = new LogbackOpenTelemetryBridgeProperties();
         assertThat(properties.isEnabled()).isTrue();
+        assertThat(properties.isCaptureArguments()).isFalse();
+        assertThat(properties.isCaptureTemplate()).isFalse();
+        assertThat(properties.isCaptureCodeAttributes()).isFalse();
+        assertThat(properties.isCaptureExperimentalAttributes()).isFalse();
+        assertThat(properties.isCaptureMarkerAttribute()).isFalse();
+        assertThat(properties.getStructuredAttributes().getIncluded()).isEmpty();
+        assertThat(properties.getStructuredAttributes().getExcluded()).isEmpty();
+        assertThat(properties.getMdcAttributes().getIncluded()).isEmpty();
+        assertThat(properties.getMdcAttributes().getExcluded()).isEmpty();
+        assertThat(properties.getLoggerContextAttributes().getIncluded()).isEmpty();
+        assertThat(properties.getLoggerContextAttributes().getExcluded()).isEmpty();
+        assertThat(properties.getNumLogsCapturedBeforeOtelInstall()).isEqualTo(1000);
     }
 
     @Test

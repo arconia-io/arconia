@@ -193,7 +193,7 @@ WARNING: The Logback OpenTelemetry Bridge from the OpenTelemetry Java Instrument
 
 ==== Enabling/Disabling the Bridge
 
-The Logback OpenTelemetry Bridge can be disabled via configuration properties.
+The Logback OpenTelemetry Bridge is active whenever logs are exported, with any exporter type except `none`. It can be disabled via configuration properties.
 
 [source,yaml]
 ----
