@@ -74,6 +74,10 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 * The OpenAI compatibility of the Ollama Dev Service now works with Spring AI 2: the `spring.ai.openai.base-url` property points to the OpenAI-compatible API of Ollama, under `/v1`, where requests previously failed with a 404 error.
 
+=== OpenTelemetry Collector
+
+* The OpenTelemetry Collector Dev Service can now serve SSL, so that the application exports telemetry to it over SSL, as it does with a collector secured with SSL. Learn more about xref:dev-services:otel-collector.adoc#_using_ssl[Using SSL].
+
 === Phoenix
 
 * The Phoenix Dev Service can now serve SSL, so that the application exports traces to it over SSL, as it does with a Phoenix deployment secured with SSL. Learn more about xref:dev-services:phoenix.adoc#_using_ssl[Using SSL].

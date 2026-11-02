@@ -116,6 +116,14 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.otlp-grpc-port`
 | `0`
 | Fixed port for exposing the OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+include::partial$using-ssl.adoc[]
+
+The OTLP receiver then serves both its gRPC and HTTP ports over SSL only, and clients are not asked for a certificate. The certificate and key are set from the command line, on top of the configuration file, so they also apply to a xref:_customizing_the_collector_configuration[custom configuration] that defines the `otlp` receiver with both protocols. The OTLP links reported at startup still use `http`.
 
 include::partial$disabling-dev-service.adoc[]
