@@ -1,7 +1,6 @@
 package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
 import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -143,16 +142,16 @@ public final class EffectiveOtlpExporterConfig {
     }
 
     /**
-     * Get the proxy for the connection to the endpoint. Without a proxy configured explicitly, the default proxy
-     * selector of the JVM is used, so that the standard proxy system properties apply, such as {@code https.proxyHost}.
+     * Get the proxy configured explicitly for the connection to the endpoint, if any. Without one, the HTTP
+     * clients use the default proxy selector of the JVM, so that the standard proxy system properties apply,
+     * such as {@code https.proxyHost}.
      */
     @Nullable
     public ProxyOptions getProxyOptions() {
         ProxyConfig proxy = getProxyConfig();
         String host = proxy.getHost();
         if (!StringUtils.hasText(host)) {
-            ProxySelector defaultProxySelector = ProxySelector.getDefault();
-            return defaultProxySelector != null ? ProxyOptions.create(defaultProxySelector) : null;
+            return null;
         }
         Integer port = proxy.getPort();
         Assert.state(port != null && port > 0 && port <= 65535,

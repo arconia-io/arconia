@@ -45,6 +45,10 @@ public final class OtlpHttpClients {
             @Nullable SSLParameters sslParameters, @Nullable ProxySelector proxySelector) {
         Assert.notNull(endpoint, "endpoint cannot be null");
         Assert.notNull(connectTimeout, "connectTimeout cannot be null");
+        // The JDK client rejects every request to such an endpoint, so it's reported when the application starts.
+        Assert.isTrue(endpoint.getHost() != null, () -> ("The OTLP endpoint address '%s' has no host name the JDK HTTP client "
+                + "accepts, such as one with an underscore. Use another name, such as a network alias, or another sender, "
+                + "such as the OkHttp one.").formatted(address(endpoint)));
         HttpClient.Builder builder = HttpClient.newBuilder()
                 .version(version(endpoint, isHttp2Enabled()))
                 .connectTimeout(connectTimeout);
@@ -58,6 +62,14 @@ public final class OtlpHttpClients {
             builder.proxy(proxySelector);
         }
         return builder.build();
+    }
+
+    /**
+     * The host and port of the endpoint, without any user information.
+     */
+    private static String address(URI endpoint) {
+        String authority = endpoint.getRawAuthority();
+        return authority != null ? authority.substring(authority.lastIndexOf('@') + 1) : "";
     }
 
     static HttpClient.Version version(URI endpoint, boolean http2Enabled) {

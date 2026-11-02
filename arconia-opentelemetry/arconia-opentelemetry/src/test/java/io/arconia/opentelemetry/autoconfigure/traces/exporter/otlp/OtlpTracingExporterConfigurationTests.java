@@ -264,10 +264,9 @@ class OtlpTracingExporterConfigurationTests {
     }
 
     @Test
-    void jvmProxySelectorAppliedToHttpProtobufExporterByDefault() {
+    void noProxyAppliedToHttpProtobufExporterByDefault() {
         contextRunner
-            .run(context -> assertThat(proxyOptions(context.getBean(OtlpHttpSpanExporter.class)).getProxySelector())
-                .isSameAs(ProxySelector.getDefault()));
+            .run(context -> assertThat(proxyOptions(context.getBean(OtlpHttpSpanExporter.class))).isNull());
     }
 
     @Test
@@ -324,7 +323,7 @@ class OtlpTracingExporterConfigurationTests {
         return (ExecutorService) ReflectionTestUtils.getField(builder, "executorService");
     }
 
-    private static ProxyOptions proxyOptions(Object exporter) {
+    private static @Nullable ProxyOptions proxyOptions(Object exporter) {
         Object builder = ReflectionTestUtils.getField(exporter, "builder");
         return (ProxyOptions) ReflectionTestUtils.getField(builder, "proxyOptions");
     }

@@ -55,6 +55,16 @@ class OtlpHttpClientsTests {
     }
 
     @Test
+    void whenEndpointHostInvalidThenThrow() {
+        URI endpoint = URI.create("http://user:secret@otel_collector:4318/v1/traces");
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> OtlpHttpClients.create(endpoint, Duration.ofSeconds(1), null, null, null))
+                .withMessageStartingWith("The OTLP endpoint address 'otel_collector:4318' has no host name the JDK HTTP client accepts")
+                .withMessageNotContaining("secret");
+    }
+
+    @Test
     void whenEndpointNullThenThrow() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> OtlpHttpClients.create(null, Duration.ofSeconds(1), null, null, null))

@@ -294,9 +294,9 @@ class EffectiveOtlpExporterConfigTests {
     class ProxyResolution {
 
         @Test
-        void usesJvmProxySelectorByDefault() {
+        void noProxyByDefault() {
             assertThat(config.hasProxy()).isFalse();
-            assertThat(config.getProxyOptions().getProxySelector()).isSameAs(ProxySelector.getDefault());
+            assertThat(config.getProxyOptions()).isNull();
         }
 
         @Test

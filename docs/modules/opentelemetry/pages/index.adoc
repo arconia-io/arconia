@@ -260,6 +260,8 @@ You can override any of these properties for each observability signal using the
 
 By default, the OTLP exporters use HTTP/Protobuf. The Arconia OpenTelemetry Spring Boot Starter includes the `arconia-opentelemetry-exporter-sender-http` module, which sends the telemetry data to the endpoint with the JDK HTTP Client over HTTP/1.1. Every OTLP endpoint supports HTTP/1.1, while the requests to upgrade the connection to HTTP/2 are rejected by many servers and proxies (https://github.com/open-telemetry/opentelemetry-java/issues/8982[opentelemetry-java#8982]). The xref:metrics.adoc#_micrometer_otlp[Micrometer Metrics Registry OTLP] connects to the endpoint the same way.
 
+The JDK HTTP Client doesn't accept some host names, such as the ones with an underscore, so the application fails to start when an OTLP endpoint uses one. Use another name, such as a network alias, or another sender.
+
 When virtual threads are enabled with the `spring.threads.virtual.enabled` property, the OTLP exporters send the telemetry data on virtual threads.
 
 You can use another https://opentelemetry.io/docs/languages/java/sdk/#senders[sender] provided by the OpenTelemetry project instead, such as the one based on OkHttp, by excluding the Arconia sender and adding the other one.
