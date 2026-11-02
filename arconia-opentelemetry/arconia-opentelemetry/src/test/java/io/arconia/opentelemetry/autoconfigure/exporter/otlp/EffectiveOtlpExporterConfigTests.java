@@ -210,6 +210,29 @@ class EffectiveOtlpExporterConfigTests {
 
     }
 
+    @Nested
+    class LoggableUrl {
+
+        @Test
+        void keepsSchemeHostPortAndPath() {
+            assertThat(EffectiveOtlpExporterConfig.toLoggableUrl("https://otlp.example.com:4318/v1/traces"))
+                    .isEqualTo("https://otlp.example.com:4318/v1/traces");
+        }
+
+        @Test
+        void removesUserInfoQueryAndFragment() {
+            assertThat(EffectiveOtlpExporterConfig.toLoggableUrl("https://user:secret@otlp.example.com/v1/traces?api-key=secret#part"))
+                    .isEqualTo("https://otlp.example.com/v1/traces");
+        }
+
+        @Test
+        void hidesUnparseableUrl() {
+            assertThat(EffectiveOtlpExporterConfig.toLoggableUrl("not a url")).isEqualTo("<unparseable URL>");
+            assertThat(EffectiveOtlpExporterConfig.toLoggableUrl("otlp.example.com:4317")).isEqualTo("<unparseable URL>");
+        }
+
+    }
+
     @Test
     void usesCommonMemoryMode() {
         commonProperties.setMemoryMode(MemoryMode.IMMUTABLE_DATA);

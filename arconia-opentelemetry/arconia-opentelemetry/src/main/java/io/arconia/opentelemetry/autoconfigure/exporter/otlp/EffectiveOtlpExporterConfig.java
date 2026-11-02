@@ -1,6 +1,7 @@
 package io.arconia.opentelemetry.autoconfigure.exporter.otlp;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -95,6 +96,23 @@ public final class EffectiveOtlpExporterConfig {
     public boolean isMetrics() {
         Boolean metrics = signalProperties.isMetrics();
         return metrics != null ? metrics : commonProperties.getOtlp().isMetrics();
+    }
+
+    /**
+     * Get the URL without the user information, query, and fragment, which may hold credentials,
+     * so that it can be logged.
+     */
+    public static String toLoggableUrl(String url) {
+        Assert.notNull(url, "url cannot be null");
+        try {
+            URI uri = new URI(url);
+            if (uri.getHost() == null) {
+                return "<unparseable URL>";
+            }
+            return new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), null, null).toString();
+        } catch (URISyntaxException ex) {
+            return "<unparseable URL>";
+        }
     }
 
 }

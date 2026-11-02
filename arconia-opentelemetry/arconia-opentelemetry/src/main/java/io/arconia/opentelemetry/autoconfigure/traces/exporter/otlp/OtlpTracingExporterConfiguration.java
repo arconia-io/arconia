@@ -60,7 +60,7 @@ public final class OtlpTracingExporterConfiguration {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
-        logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", url);
+        logger.info("Configuring OpenTelemetry HTTP/Protobuf span exporter with endpoint: {}", EffectiveOtlpExporterConfig.toLoggableUrl(url));
         return builder.build();
     }
 
@@ -84,7 +84,7 @@ public final class OtlpTracingExporterConfiguration {
             meterProvider.ifAvailable(builder::setMeterProvider);
             builder.setInternalTelemetryVersion(InternalTelemetryVersion.LATEST);
         }
-        logger.info("Configuring OpenTelemetry gRPC span exporter with endpoint: {}", url);
+        logger.info("Configuring OpenTelemetry gRPC span exporter with endpoint: {}", EffectiveOtlpExporterConfig.toLoggableUrl(url));
         return builder.build();
     }
 
