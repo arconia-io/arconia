@@ -43,7 +43,7 @@ Maven::
 
 == Main Migration
 
-To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration to Arconia OpenTelemetry configuration.
+To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration to Arconia OpenTelemetry configuration. The recipe migrates a Spring Boot 4.1 application, including the configuration properties introduced in Spring Boot 4.1.
 
 There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
 
@@ -54,7 +54,7 @@ Using the https://arconia.io/docs/arconia-cli/latest/[Arconia CLI], you can run 
 [source,shell]
 ----
 arconia rewrite run \
-    --recipe-name io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
+    --recipe-name io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_1_OtlpToArconiaOpenTelemetry
 ----
 
 === Gradle OpenRewrite Plugin
@@ -100,7 +100,7 @@ Then, run the following command:
 ----
 ./gradlew rewriteRun \
     --init-script init.gradle \
-    -DactiveRecipe=io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
+    -DactiveRecipe=io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_1_OtlpToArconiaOpenTelemetry
 ----
 
 Finally, you can remove the `init.gradle` file.
@@ -113,7 +113,7 @@ Using the https://docs.openrewrite.org[OpenRewrite Maven Plugin], you can apply 
 ----
 ./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run \
   -Drewrite.recipeArtifactCoordinates=io.arconia.migrations:rewrite-arconia:LATEST \
-  -Drewrite.activeRecipes=io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_0_OtlpToArconiaOpenTelemetry
+  -Drewrite.activeRecipes=io.arconia.rewrite.framework.opentelemetry.MigrateSpringBoot4_1_OtlpToArconiaOpenTelemetry
 ----
 
 == Dev Services
