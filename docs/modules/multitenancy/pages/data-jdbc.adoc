@@ -96,7 +96,7 @@ TenantDataSource.builder()
     .dataSourceFactory(this::createDataSource)
     .tenantIdentifierValidator(tenantIdentifier -> {
         if (!tenantIdentifier.matches("[a-z0-9]{8}")) {
-            throw new TenantVerificationException("The tenant identifier must be 8 lowercase alphanumeric characters");
+            throw new InvalidTenantIdentifierException("The tenant identifier must be 8 lowercase alphanumeric characters");
         }
     })
     .build();

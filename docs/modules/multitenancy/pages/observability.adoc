@@ -4,7 +4,9 @@ Arconia Multitenancy integrates with logging and observability tools to provide 
 
 == MDC Logging
 
-The current tenant identifier is automatically added to the SLF4J MDC (Mapped Diagnostic Context) for every request. This allows you to filter and correlate log entries by tenant.
+The current tenant identifier is automatically added to the SLF4J MDC (Mapped Diagnostic Context) for every request, and for the asynchronous tasks the tenant context is xref:tenant-context.adoc#_context_propagation_across_threads[propagated] to. This allows you to filter and correlate log entries by tenant.
+
+When you bind a tenant yourself with `TenantContext.where()`, for example, in a scheduled job, the MDC is not set for you. Add the identifier to it around the work, for example, with SLF4J's `MDC.putCloseable(...)`, using the configured key name.
 
 By default, the MDC key is `tenantId`. You can include it in your log pattern:
 
@@ -56,9 +58,9 @@ arconia:
 
 [WARNING]
 ====
-What bounds the number of metric series is not the number of tenants you have, but the number of distinct identifiers that can reach the tenant context. Every value that gets bound becomes a metric series when the cardinality is `low`, including values that are rejected later in the request.
+What bounds the number of metric series is not the number of tenants you have, but the number of distinct identifiers that can reach the tenant context. Every identifier that gets bound becomes a metric series when the cardinality is `low`.
 
-The auto-configured xref:tenant-details.adoc#_tenant_identifier_validation[identifier validator] keeps that set narrow, and a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`] narrows it to tenants that actually exist. If you replace the validator with a permissive one, do not use `low`.
+With a xref:tenant-details.adoc#_tenant_verification[`TenantVerifier`], only known, enabled tenants are bound. Without one, every identifier that passes the xref:tenant-details.adoc#_tenant_identifier_validation[identifier validation] is bound, so each request naming a new tenant adds a new series. The web module logs at startup when tenants are not verified. Use `low` only when tenants are verified.
 ====
 
 === Configuration Properties

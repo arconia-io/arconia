@@ -100,6 +100,8 @@ curl -H "X-TenantId: acme" http://localhost:8080/api/resource
 
 If the header is missing, the server responds with HTTP `400 Bad Request`.
 
+Out of the box, any identifier that passes the xref:tenant-details.adoc#_tenant_identifier_validation[identifier validation] is accepted, so the client can name any tenant, and the application logs at startup that tenants are not verified. To accept only the tenants you know, configure xref:tenant-details.adoc[tenant details], for example, as a list in the application configuration or in a database.
+
 === Accessing the Current Tenant
 
 You can access the current tenant identifier in your controllers using the `@TenantIdentifier` annotation on a method parameter.
