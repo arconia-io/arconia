@@ -26,7 +26,7 @@ public class OpenTelemetryExporterProperties {
     public static final String CONFIG_PREFIX = "arconia.otel.exporter";
 
     /**
-     * The type of OpenTelemetry exporter to use.
+     * The type of OpenTelemetry exporter to use for observability signals.
      */
     private ExporterType type = ExporterType.OTLP;
 
@@ -115,7 +115,7 @@ public class OpenTelemetryExporterProperties {
         private Map<String, String> headers = new HashMap<>();
 
         /**
-         * Whether to generate metrics for the exporter.
+         * Whether to generate metrics for the exporter itself. The metrics follow the OpenTelemetry Semantic Conventions for SDK metrics (otel.sdk.*), which are still in development.
          */
         private boolean metrics = false;
 

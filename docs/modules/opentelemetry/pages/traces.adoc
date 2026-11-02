@@ -39,7 +39,7 @@ How to sample traces.
 
 === Propagation
 
-Arconia OpenTelemetry relies on Spring Boot Actuator for configuring propagation, based on Micrometer Tracing. For convenience, the configuration properties from Spring Boot Actuator are included here.
+Arconia OpenTelemetry relies on the Spring Boot support for Micrometer Tracing for configuring propagation. For convenience, its configuration properties are included here.
 
 The tracing context is propagated whatever the type of traces exporter, including `none`, so that an application that doesn't export traces still continues the traces of the services it calls and is called by.
 
@@ -64,7 +64,7 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 
 === Baggage
 
-Arconia OpenTelemetry relies on Spring Boot Actuator for configuring baggage management, based on Micrometer Tracing. For convenience, the configuration properties from Spring Boot Actuator are included here.
+Arconia OpenTelemetry relies on the Spring Boot support for Micrometer Tracing for configuring baggage management. For convenience, its configuration properties are included here.
 
 NOTE: For more information, refer to the https://docs.micrometer.io/tracing/reference/index.html[Micrometer Tracing] and https://docs.spring.io/spring-boot/reference/actuator/tracing.html[Spring Boot Actuator] documentation.
 

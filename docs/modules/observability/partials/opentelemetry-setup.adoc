@@ -7,7 +7,7 @@ Gradle::
 [source,groovy]
 ----
 dependencies {
-  implementation 'io.arconia:arconia-spring-boot-starter-opentelemetry'
+  implementation 'io.arconia:arconia-opentelemetry-spring-boot-starter'
 }
 ----
 
@@ -17,7 +17,7 @@ Maven::
 ----
 <dependency>
     <groupId>io.arconia</groupId>
-    <artifactId>arconia-spring-boot-starter-opentelemetry</artifactId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter</artifactId>
 </dependency>
 ----
 ======

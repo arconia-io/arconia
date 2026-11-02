@@ -272,29 +272,33 @@ The Logback OpenTelemetry Bridge can be configured via configuration properties.
 |`false`
 |Enable the capture of Logback markers as attributes.
 
+|`arconia.otel.logs.logback-bridge.enabled`
+|`true`
+|Whether to enable the Logback OpenTelemetry Bridge.
+
 |`arconia.otel.logs.logback-bridge.structured-attributes.included`
 |`[]`
-|Glob patterns for the keys of structured log attributes to capture: SLF4J key-value pairs, Logstash markers, and Logstash structured arguments.
+|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
 |`arconia.otel.logs.logback-bridge.structured-attributes.excluded`
 |`[]`
-|Glob patterns for the keys of structured log attributes not to capture.
+|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
 |`arconia.otel.logs.logback-bridge.mdc-attributes.included`
 |`[]`
-|Glob patterns for the MDC keys to capture as log attributes.
+|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
 |`arconia.otel.logs.logback-bridge.mdc-attributes.excluded`
 |`[]`
-|Glob patterns for the MDC keys not to capture as log attributes.
+|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
 |`arconia.otel.logs.logback-bridge.logger-context-attributes.included`
 |`[]`
-|Glob patterns for the Logback logger context property keys to capture as log attributes.
+|Case-sensitive glob patterns for the keys to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence. Nothing is captured when both included and excluded are empty.
 
 |`arconia.otel.logs.logback-bridge.logger-context-attributes.excluded`
 |`[]`
-|Glob patterns for the Logback logger context property keys not to capture as log attributes.
+|Case-sensitive glob patterns for the keys not to capture. '*' matches any number of characters and '?' matches one character. Excluded patterns take precedence over included patterns. Configuring only excluded patterns captures every key they do not match.
 
 |`arconia.otel.logs.logback-bridge.num-logs-captured-before-otel-install`
 |`1000`

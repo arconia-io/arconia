@@ -178,7 +178,7 @@ public class OpenTelemetryTracingProperties {
         private boolean exportUnsampledSpans = false;
 
         /**
-         * Whether to generate metrics for the span processor.
+         * Whether to generate metrics for the span processor. The metrics follow the OpenTelemetry Semantic Conventions for SDK metrics (otel.sdk.*), which are still in development.
          */
         private boolean metrics = false;
 

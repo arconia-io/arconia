@@ -86,7 +86,7 @@ public class OpenTelemetryLoggingProperties {
         private int maxExportBatchSize = 512;
 
         /**
-         * Whether to generate metrics for the log record processor.
+         * Whether to generate metrics for the log record processor. The metrics follow the OpenTelemetry Semantic Conventions for SDK metrics (otel.sdk.*), which are still in development.
          */
         private boolean metrics = false;
 

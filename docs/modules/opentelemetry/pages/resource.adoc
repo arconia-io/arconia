@@ -33,7 +33,7 @@ By default, Arconia automatically creates a `Resource` instance with the followi
 |The name of the web engine. It's always `Spring Boot`.
 
 |`webengine.version`
-|`3.5.7`
+|`4.1.2`
 |The version of the web engine (Spring Boot) in use.
 
 |`telemetry.distro.name`
@@ -144,6 +144,33 @@ arconia:
         all: false
         service: true
 ----
+
+The following configuration properties are available for the resource.
+
+.Resource Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.otel.resource.attributes`
+|-
+|Additional attributes to include in the resource.
+
+|`arconia.otel.resource.contributors.<name>.enabled`
+|-
+|Whether a resource contributor is enabled, where `<name>` is one of `build`, `distro`, `environment`, `git`, `host`, `java`, `os`, or `process`. The `build`, `distro`, and `environment` contributors are enabled by default, the others are disabled. See xref:_resource_contributors[Resource Contributors].
+
+|`arconia.otel.resource.deployment-environment-name`
+|-
+|Name of the deployment environment (also known as deployment tier), such as 'production', 'staging', 'test', or 'development'.
+
+|`arconia.otel.resource.enable`
+|-
+|Whether resource attributes having keys starting with the specified name should be enabled. The longest match wins, comparing dot-separated segments. The key 'all' can be used to enable/disable all the attributes not matched by a more specific name.
+
+|`arconia.otel.resource.service-name`
+|-
+|Name identifying the service.
+|===
 
 === OpenTelemetry Environment Variables
 

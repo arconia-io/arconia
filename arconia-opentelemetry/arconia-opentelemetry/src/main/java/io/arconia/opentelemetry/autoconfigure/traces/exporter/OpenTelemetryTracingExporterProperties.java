@@ -16,7 +16,7 @@ public class OpenTelemetryTracingExporterProperties {
     public static final String CONFIG_PREFIX = "arconia.otel.traces.exporter";
 
     /**
-     * The type of OpenTelemetry exporter to use.
+     * The type of OpenTelemetry exporter to use for traces.
      */
     @Nullable
     private ExporterType type;

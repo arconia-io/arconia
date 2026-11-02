@@ -67,7 +67,7 @@ public class OtlpExporterConfig {
     private Map<String, String> headers = new HashMap<>();
 
     /**
-     * Whether to generate metrics for the exporter.
+     * Whether to generate metrics for the exporter itself. The metrics follow the OpenTelemetry Semantic Conventions for SDK metrics (otel.sdk.*), which are still in development.
      */
     @Nullable
     private Boolean metrics;

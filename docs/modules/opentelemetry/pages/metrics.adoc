@@ -178,7 +178,7 @@ Spring libraries and many other libraries from the Java ecosystem are instrument
 
 That means there will be two different exporters sending metrics to the same OTLP endpoint: the OpenTelemetry Metrics OTLP exporter (for metrics instrumented via OpenTelemetry API) and the Micrometer Metrics Registry OTLP (for metrics instrumented via Micrometer API).
 
-The Micrometer Metrics Registry OTLP uses the same OTLP configuration as the OpenTelemetry Metrics OTLP exporter, including endpoint, headers, compression, and timeouts. It only supports HTTP/Protobuf, so the application fails to start if the metrics exporter is configured to use gRPC. If you export the other signals via gRPC, set `arconia.otel.metrics.exporter.otlp.protocol` to `http-protobuf`, or use the xref:_micrometer_metrics_support[Micrometer Metrics Support] instead.
+The Micrometer Metrics Registry OTLP uses the same OTLP configuration as the OpenTelemetry Metrics OTLP exporter, including endpoint, headers, compression, timeouts, SSL bundle, and proxy. The retry settings don't apply to it, and the `low-memory` aggregation temporality is treated as `cumulative`. It only supports HTTP/Protobuf, so the application fails to start if the metrics exporter is configured to use gRPC. If you export the other signals via gRPC, set `arconia.otel.metrics.exporter.otlp.protocol` to `http-protobuf`, or use the xref:_micrometer_metrics_support[Micrometer Metrics Support] instead.
 
 NOTE: If you'd rather export Micrometer metrics via the OpenTelemetry API instead of using a separate Micrometer-specific exporter, refer to the xref:_micrometer_metrics_support[Micrometer Metrics Support] section.
 
@@ -234,6 +234,10 @@ On top of the general metrics and OTLP configuration described previously, the M
 |`arconia.otel.exporter.otlp.micrometer.base-time-unit`
 |`seconds`
 |Base time unit for Micrometer metrics.
+
+|`arconia.otel.exporter.otlp.micrometer.enabled`
+|`true`
+|Whether to enable the Micrometer Metrics Registry OTLP.
 
 |`arconia.otel.exporter.otlp.micrometer.max-bucket-count`
 |`160`
@@ -334,6 +338,10 @@ The Micrometer Metrics OpenTelemetry Bridge can be configured via configuration 
 |`arconia.otel.metrics.micrometer-bridge.base-time-unit`
 |`seconds`
 |The base time unit for Micrometer metrics.
+
+|`arconia.otel.metrics.micrometer-bridge.enabled`
+|`true`
+|Whether to enable the Micrometer Metrics OpenTelemetry bridge.
 
 |`arconia.otel.metrics.micrometer-bridge.histogram-gauges`
 |`true`
