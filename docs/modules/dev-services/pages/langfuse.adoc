@@ -5,7 +5,7 @@ A service providing https://langfuse.com[Langfuse], an open-source LLM engineeri
 
 * https://langfuse.com[Langfuse] for exploring the traces of AI applications, with the worker processing the ingested data.
 * https://www.postgresql.org[PostgreSQL], https://clickhouse.com[ClickHouse], and https://redis.io[Redis] as the Langfuse backends.
-* xref:floci.adoc[Floci] as the S3-compatible storage for the ingested events and as a proxy for the OTLP endpoint.
+* xref:floci.adoc[Floci] as the S3-compatible storage for the ingested events and media.
 
 It works with Spring Boot libraries that support OpenTelemetry, including:
 
@@ -48,9 +48,7 @@ Sign in with the user created when Langfuse starts: `arconia@example.com` (email
 
 The application sends its traces to Langfuse authenticated with the API keys of the project, `pk-lf-arconia` (public key) and `sk-lf-arconia` (secret key). Use the `public-key` and `secret-key` properties to change them.
 
-=== Why the traces go through a proxy
-
-The Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2, as the JDK HTTP client does by default, including the one the OpenTelemetry exporters use in Arconia. For this reason, the traces are sent to a proxy in Floci, which forwards them to Langfuse over HTTP/1.1. Arconia configures the exporter to use the proxy automatically, so no configuration is needed on your side.
+NOTE: The Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2. The OTLP exporters of Arconia OpenTelemetry send the traces over HTTP/1.1, so no configuration is needed on your side. If you replace the Arconia sender, use one that doesn't request the upgrade, such as the one based on OkHttp. Learn more about xref:opentelemetry:index.adoc#_http[HTTP].
 
 === Customizing Langfuse
 
@@ -102,7 +100,7 @@ You can configure the Dev Service via configuration properties.
 
 | `arconia.dev.services.{service-name}.floci-image-name`
 | `floci/floci`
-| Full name of the container image used for the internal Floci instance, providing the S3-compatible storage and the proxy for the OTLP endpoint.
+| Full name of the container image used for the internal Floci instance, providing the S3-compatible storage.
 
 | `arconia.dev.services.{service-name}.public-key`
 | `pk-lf-arconia`

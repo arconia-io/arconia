@@ -19,7 +19,7 @@ Langfuse accepts traces via OTLP with the HTTP/Protobuf protocol, at `getOtlpTra
 
 [NOTE]
 ====
-The OTLP endpoint is a proxy to Langfuse, since the Langfuse server closes the plaintext HTTP connections that request an upgrade to HTTP/2, as the JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters (https://github.com/open-telemetry/opentelemetry-java/issues/8982[opentelemetry-java#8982]).
+The Langfuse server closes the plaintext HTTP connections that request an upgrade to HTTP/2, as the JDK HTTP client does by default, including the JDK sender of the OpenTelemetry Java exporters (https://github.com/open-telemetry/opentelemetry-java/issues/8982[opentelemetry-java#8982]). Send the requests over HTTP/1.1, as the xref:opentelemetry:index.adoc#_http[Arconia OpenTelemetry] exporters do.
 ====
 
 Langfuse starts with an organization, a project, and a user, so that you can explore the traces right away. The UI is available at `getLangfuseUrl()`, where you sign in as `arconia@example.com` (email) and `password` (password). The traces are in the `Arconia` project.

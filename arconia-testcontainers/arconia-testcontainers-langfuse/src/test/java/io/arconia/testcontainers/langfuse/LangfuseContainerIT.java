@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.dockerjava.api.model.Container;
-import io.floci.testcontainers.FlociContainer;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
@@ -61,17 +60,6 @@ class LangfuseContainerIT {
             """;
 
     @Test
-    void otlpProxyIsFoundWhenFlociIsReused() {
-        try (var floci = new FlociContainer(FLOCI_IMAGE).disableAllServices()
-                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))) {
-            floci.start();
-            // A reused Floci container already has the proxy, which keeps the labels of Langfuse the same.
-            String apiId = LangfuseContainer.findOrCreateOtlpProxy(floci);
-            assertThat(LangfuseContainer.findOrCreateOtlpProxy(floci)).isEqualTo(apiId);
-        }
-    }
-
-    @Test
     void containerStartsAndIngestsOtlpTraces() throws Exception {
         try (var container = new LangfuseContainer(IMAGE)
                 .withWorkerImage(WORKER_IMAGE)
@@ -90,8 +78,7 @@ class LangfuseContainerIT {
                     .header("x-langfuse-ingestion-version", "4")
                     .POST(HttpRequest.BodyPublishers.ofString(TRACES_PAYLOAD.formatted(TRACE_ID, now, now + 1_000_000_000L)))
                     .build();
-            // The default JDK client requests an upgrade to HTTP/2, as the OpenTelemetry Java exporters do.
-            var exportResponse = HttpClient.newHttpClient().send(exportRequest, HttpResponse.BodyHandlers.ofString());
+            var exportResponse = httpClient.send(exportRequest, HttpResponse.BodyHandlers.ofString());
             assertThat(exportResponse.statusCode()).as(exportResponse.body()).isBetween(200, 299);
 
             // The worker processes the ingested span asynchronously.

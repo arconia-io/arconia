@@ -37,7 +37,7 @@ dependencies {
     optional("org.junit.platform:junit-platform-launcher")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
+    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"

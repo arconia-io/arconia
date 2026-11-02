@@ -15,8 +15,10 @@ dependencies {
     api "org.springframework.boot:spring-boot-autoconfigure"
 
     testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
-    testImplementation "io.opentelemetry:opentelemetry-exporter-otlp"
-    testImplementation "io.opentelemetry:opentelemetry-exporter-sender-jdk"
+    testImplementation("io.opentelemetry:opentelemetry-exporter-otlp") {
+        exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
+    }
+    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

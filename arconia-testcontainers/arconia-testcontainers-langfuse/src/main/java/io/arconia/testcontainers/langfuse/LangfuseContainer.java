@@ -10,8 +10,6 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import io.floci.testcontainers.FlociContainer;
 
@@ -37,10 +35,9 @@ import io.arconia.testcontainers.redis.RedisContainer;
  * Langfuse is initialized with an organization, a project with API keys, and a user, so that
  * telemetry data can be sent and explored right away.
  * <p>
- * The OTLP endpoint is exposed through a proxy in Floci (see {@link #getOtlpTracesUrl()}), because
- * the Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2 (h2c), as the
- * JDK HTTP client does by default, including the one used by the OpenTelemetry Java exporters
- * (see <a href="https://github.com/open-telemetry/opentelemetry-java/issues/8982">opentelemetry-java#8982</a>).
+ * The Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2 (h2c), as the
+ * JDK HTTP client does by default, so the OTLP endpoint (see {@link #getOtlpTracesUrl()}) needs a client
+ * using HTTP/1.1 (see <a href="https://github.com/open-telemetry/opentelemetry-java/issues/8982">opentelemetry-java#8982</a>).
  * <p>
  * If a network is set on this container via {@link #withNetwork(Network)} before starting,
  * Langfuse and the containers it needs join that network. Otherwise, a private network is
@@ -76,26 +73,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     public static final int HTTP_PORT = 3000;
 
-    private static final String OTLP_TRACES_PATH = "/api/public/otel/v1/traces";
-
-    private static final String OTLP_PROXY_NAME = "langfuse-otlp";
-
-    private static final Pattern API_ID_PATTERN = Pattern.compile("\"apiId\"\\s*:\\s*\"([^\"]+)\"");
-
-    // Floci lists each API with its ID followed by its name, as AWS does. Other fields can contain braces,
-    // such as the route selection expression, so the pair is matched rather than the whole object.
-    private static final Pattern OTLP_PROXY_PATTERN = Pattern.compile(
-            "\"apiId\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"name\"\\s*:\\s*\"" + OTLP_PROXY_NAME + "\"");
-
     /**
-     * Label with the host port of the OTLP proxy for traces, so that other applications can discover it.
+     * Path of the OTLP/HTTP endpoint for traces.
      */
-    public static final String OTLP_TRACES_PORT_LABEL = "io.arconia.langfuse.otlp-traces-port";
-
-    /**
-     * Label with the path of the OTLP proxy for traces, so that other applications can discover it.
-     */
-    public static final String OTLP_TRACES_PATH_LABEL = "io.arconia.langfuse.otlp-traces-path";
+    public static final String OTLP_TRACES_PATH = "/api/public/otel/v1/traces";
 
     public static final String DEFAULT_PUBLIC_KEY = "pk-lf-arconia";
 
@@ -207,12 +188,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withNetwork(network)
                 .withNetworkAliases(REDIS_NETWORK_ALIAS)
                 .withReuse(reuse);
-        // Only S3 is needed, as blob storage for the ingested events and media,
-        // and API Gateway, as a proxy for the OTLP endpoint.
+        // Only S3 is needed, as blob storage for the ingested events and media.
         FlociContainer floci = new FlociContainer(flociImageName)
                 .disableAllServices()
                 .withS3Config(s3 -> s3.enabled(true))
-                .withApiGatewayConfig(apiGateway -> apiGateway.enabled(true))
                 .withNetwork(network)
                 .withNetworkAliases(FLOCI_NETWORK_ALIAS)
                 .withReuse(reuse);
@@ -226,9 +205,6 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
             Startables.deepStart(postgres, clickHouse, redis, floci).join();
             createBucket(floci);
             configureLangfuseEnvironment(postgres, clickHouse, floci);
-            // The OTLP proxy is created before Langfuse starts, since its location is recorded in the labels.
-            withLabel(OTLP_TRACES_PORT_LABEL, String.valueOf(floci.getMappedPort(FlociContainer.PORT)));
-            withLabel(OTLP_TRACES_PATH_LABEL, "/_aws/execute-api/%s/v1/traces".formatted(findOrCreateOtlpProxy(floci)));
 
             getEnvMap().forEach(worker::withEnv);
             worker.start();
@@ -266,12 +242,11 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     /**
      * Returns the URL of the OTLP/HTTP endpoint for traces, which is the only signal Langfuse accepts.
      * <p>
-     * It's a proxy in Floci to the Langfuse endpoint, since the Langfuse server closes plaintext HTTP
-     * connections that request an upgrade to HTTP/2 (h2c), as the JDK HTTP client does by default.
+     * The Langfuse server closes plaintext HTTP connections that request an upgrade to HTTP/2 (h2c),
+     * as the JDK HTTP client does by default, so the requests must use HTTP/1.1.
      */
     public String getOtlpTracesUrl() {
-        return "http://%s:%s%s".formatted(getHost(), requireStarted(getLabels().get(OTLP_TRACES_PORT_LABEL)),
-                requireStarted(getLabels().get(OTLP_TRACES_PATH_LABEL)));
+        return getLangfuseUrl() + OTLP_TRACES_PATH;
     }
 
     public String getPublicKey() {
@@ -361,35 +336,6 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         }
     }
 
-    /**
-     * Returns the ID of the HTTP API in Floci that proxies requests to the OTLP endpoint for traces of
-     * Langfuse, creating it if needed. Reusing the existing one keeps the labels, and therefore the
-     * container, the same across restarts when reusing containers. Floci forwards requests over HTTP/1.1
-     * without the request path, hence the full endpoint URL as target.
-     */
-    static String findOrCreateOtlpProxy(FlociContainer floci) {
-        URI apisUri = URI.create("http://%s:%d/v2/apis".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT)));
-        HttpResponse<String> existing = send(HttpRequest.newBuilder(apisUri).GET().build(), "list the APIs in Floci");
-        Matcher existingMatcher = OTLP_PROXY_PATTERN.matcher(existing.body());
-        if (existing.statusCode() < 300 && existingMatcher.find()) {
-            return existingMatcher.group(1);
-        }
-
-        String api = """
-                {"name":"%s","protocolType":"HTTP","target":"http://%s:%d%s"}"""
-                .formatted(OTLP_PROXY_NAME, LANGFUSE_NETWORK_ALIAS, HTTP_PORT, OTLP_TRACES_PATH);
-        HttpResponse<String> response = send(HttpRequest.newBuilder(apisUri)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(api))
-                .build(), "create the OTLP proxy in Floci");
-        Matcher matcher = API_ID_PATTERN.matcher(response.body());
-        if (response.statusCode() >= 300 || !matcher.find()) {
-            throw new IllegalStateException("Failed to create the OTLP proxy in Floci (HTTP %d): %s"
-                    .formatted(response.statusCode(), response.body()));
-        }
-        return matcher.group(1);
-    }
-
     private static HttpResponse<String> send(HttpRequest request, String action) {
         try (HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()) {
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -399,13 +345,6 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         } catch (IOException ex) {
             throw new IllegalStateException("Failed to " + action, ex);
         }
-    }
-
-    private static <T> T requireStarted(@Nullable T value) {
-        if (value == null) {
-            throw new IllegalStateException("The OTLP proxy is created when the Langfuse container starts");
-        }
-        return value;
     }
 
     // Finds the named Docker network if it already exists, otherwise creates it.

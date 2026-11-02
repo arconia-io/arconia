@@ -53,7 +53,7 @@ public class LangfuseDevServicesProperties implements DevServicesProperties {
 
     /**
      * Full name of the container image used for the internal Floci instance,
-     * providing the S3-compatible storage and the proxy for the OTLP endpoint.
+     * providing the S3-compatible storage.
      */
     private String flociImageName = "floci/floci:2.4.0";
 
