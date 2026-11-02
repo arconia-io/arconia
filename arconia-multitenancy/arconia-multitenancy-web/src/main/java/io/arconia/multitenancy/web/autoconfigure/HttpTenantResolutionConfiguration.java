@@ -147,13 +147,19 @@ public final class HttpTenantResolutionConfiguration {
                 ObjectProvider<TenantObservationFilter> tenantObservationFilter,
                 TenantResolutionFailureHandler tenantResolutionFailureHandler
         ) {
+            var verifier = tenantVerifier.getIfAvailable();
+            if (verifier == null) {
+                logger.info("Tenants are not verified, since no TenantVerifier is configured. Any tenant identifier"
+                        + " that passes validation is accepted. Configure a TenantDetailsService to accept only known,"
+                        + " enabled tenants");
+            }
             return TenantContextFilter.builder()
                 .order(httpTenantResolutionProperties.getFilter().getOrder())
                 .httpRequestTenantResolver(httpRequestTenantResolver)
                 .tenantContextIgnorePathMatcher(tenantContextIgnorePathMatcher)
                 .eventPublisher(eventPublisher)
                 .tenantIdentifierValidator(tenantIdentifierValidator)
-                .tenantVerifier(tenantVerifier.getIfAvailable())
+                .tenantVerifier(verifier)
                 .tenantObservationFilter(tenantObservationFilter.getIfAvailable())
                 .failureHandler(tenantResolutionFailureHandler)
                 .build();

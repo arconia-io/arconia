@@ -4,6 +4,8 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
@@ -28,7 +30,7 @@ import io.arconia.multitenancy.details.jdbc.JdbcTenantDetailsService;
  */
 @AutoConfiguration(after = { DataSourceAutoConfiguration.class, JdbcClientAutoConfiguration.class },
         before = MultitenancyCoreAutoConfiguration.class)
-@ConditionalOnSingleCandidate(DataSource.class)
+@Conditional(JdbcTenantDetailsAutoConfiguration.OnTenantDetailsDataSourceCondition.class)
 @ConditionalOnBooleanProperty(prefix = JdbcTenantDetailsProperties.CONFIG_PREFIX, value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(JdbcTenantDetailsProperties.class)
 public final class JdbcTenantDetailsAutoConfiguration {
@@ -36,9 +38,14 @@ public final class JdbcTenantDetailsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TenantDetailsService.class)
     @DependsOnDatabaseInitialization
-    JdbcTenantDetailsService tenantDetailsService(DataSource dataSource, ObjectProvider<JdbcClient> jdbcClient) {
+    JdbcTenantDetailsService tenantDetailsService(@TenantDetailsDataSource ObjectProvider<DataSource> tenantDetailsDataSource,
+            ObjectProvider<DataSource> dataSource, ObjectProvider<JdbcClient> jdbcClient) {
+        var dedicatedDataSource = tenantDetailsDataSource.getIfAvailable();
+        if (dedicatedDataSource != null) {
+            return JdbcTenantDetailsService.builder().dataSource(dedicatedDataSource).build();
+        }
         return JdbcTenantDetailsService.builder()
-            .jdbcClient(jdbcClient.getIfUnique(() -> JdbcClient.create(dataSource)))
+            .jdbcClient(jdbcClient.getIfUnique(() -> JdbcClient.create(dataSource.getObject())))
             .build();
     }
 
@@ -50,8 +57,10 @@ public final class JdbcTenantDetailsAutoConfiguration {
         @ConditionalOnMissingBean
         @Conditional(OnJdbcTenantDetailsDatabaseInitializationCondition.class)
         JdbcTenantDetailsDataSourceScriptDatabaseInitializer jdbcTenantDetailsDataSourceScriptDatabaseInitializer(
-                DataSource dataSource, JdbcTenantDetailsProperties properties) {
-            return new JdbcTenantDetailsDataSourceScriptDatabaseInitializer(dataSource, properties);
+                @TenantDetailsDataSource ObjectProvider<DataSource> tenantDetailsDataSource,
+                ObjectProvider<DataSource> dataSource, JdbcTenantDetailsProperties properties) {
+            return new JdbcTenantDetailsDataSourceScriptDatabaseInitializer(
+                    tenantDetailsDataSource.getIfAvailable(dataSource::getObject), properties);
         }
 
         static class OnJdbcTenantDetailsDatabaseInitializationCondition extends OnDatabaseInitializationCondition {
@@ -61,6 +70,24 @@ public final class JdbcTenantDetailsAutoConfiguration {
             }
 
         }
+
+    }
+
+    /**
+     * Matches when a data source is qualified with {@link TenantDetailsDataSource}, or
+     * when the application has a single data source candidate.
+     */
+    static final class OnTenantDetailsDataSourceCondition extends AnyNestedCondition {
+
+        OnTenantDetailsDataSourceCondition() {
+            super(ConfigurationPhase.REGISTER_BEAN);
+        }
+
+        @ConditionalOnBean(annotation = TenantDetailsDataSource.class)
+        static final class QualifiedDataSource {}
+
+        @ConditionalOnSingleCandidate(DataSource.class)
+        static final class SingleDataSource {}
 
     }
 

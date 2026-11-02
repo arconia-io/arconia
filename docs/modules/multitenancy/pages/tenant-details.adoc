@@ -204,6 +204,30 @@ For a database without a bundled script, point `schema` to your own script. The 
 |Whether initialization should continue when an error occurs when applying the schema script.
 |===
 
+=== Dedicated Data Source
+
+By default, the tenant details are read from the single `DataSource` of the application, or from the `@Primary` one when there are several. To keep them in a database of their own, such as a control-plane database separate from the business data, annotate the `DataSource` bean holding them with `@TenantDetailsDataSource`:
+
+[source,java]
+----
+import io.arconia.multitenancy.details.jdbc.autoconfigure.TenantDetailsDataSource;
+
+@Configuration(proxyBeanMethods = false)
+class TenantDetailsDataSourceConfiguration {
+
+    @Bean(defaultCandidate = false)
+    @TenantDetailsDataSource
+    DataSource tenantDetailsDataSource() {
+        return DataSourceBuilder.create().url("jdbc:postgresql://localhost:5432/tenants").build();
+    }
+
+}
+----
+
+Both the `JdbcTenantDetailsService` and the schema initialization then use that data source. Declaring it with `defaultCandidate = false` keeps it out of regular injection points, so Spring Boot still auto-configures the main `DataSource` from the `spring.datasource.*` properties for the rest of the application. Since Spring Boot's `JdbcClient` belongs to the main data source, the `spring.jdbc.template.*` properties do not apply to the dedicated one: configure timeouts on its connection pool or driver instead, or declare your own `JdbcTenantDetailsService` bean built with `JdbcTenantDetailsService.builder().jdbcClient(...)`.
+
+IMPORTANT: When the application has several data sources, none of them `@Primary` and none annotated with `@TenantDetailsDataSource`, the JDBC tenant details are not configured, and tenants are no longer verified. The web module logs this at startup, as described in <<_tenant_verification>>.
+
 == Custom TenantDetailsService
 
 For dynamic tenant management from another source, implement the `TenantDetailsService` interface and register it as a Spring bean:
@@ -295,7 +319,7 @@ Keep a custom validator strict. A tenant identifier that passes validation can b
 
 == Tenant Verification
 
-The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier belongs to a tenant that exists and is allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled. Unlike identifier validation, verification is only applied when a `TenantDetailsService` is configured.
+The `TenantVerifier` interface defines the contract for verifying that a resolved tenant identifier belongs to a tenant that exists and is allowed to proceed. When a `TenantDetailsService` is available, Arconia auto-configures a `DefaultTenantVerifier` that checks the tenant exists and is enabled. Unlike identifier validation, verification is only applied when a `TenantDetailsService` is configured. Without a `TenantVerifier`, the web module logs at startup that tenants are not verified, since every identifier that passes validation is then accepted.
 
 Entry points such as the xref:web.adoc[`TenantContextFilter`] call the verifier directly before establishing the tenant context. If verification fails, a `TenantVerificationException` is thrown, resulting in an HTTP `400 Bad Request` response. An unknown tenant and a disabled tenant are reported with the same message, so that callers cannot find out which tenants exist.
 
@@ -362,7 +386,7 @@ arconia.multitenancy.details.cache.time-to-live=30s
 
 The `DefaultTenantVerifier` then reads tenants through a `CachingTenantDetailsService`. Only tenants that exist are cached, including disabled ones. An identifier that matches no tenant is looked up every time, so that arbitrary identifiers sent by clients cannot push known tenants out of the cache and a newly created tenant is accepted right away. The xref:_tenants_endpoint[tenants endpoint] and your own code keep reading the `TenantDetailsService` directly.
 
-IMPORTANT: A change to a tenant takes effect once its cache entry expires. In particular, a tenant you disable keeps being accepted for up to the time to live, so choose it according to how quickly a disabled tenant must lose access.
+IMPORTANT: A change to a tenant takes effect once its cache entry expires. In particular, a tenant you disable keeps being accepted for up to the time to live, so choose it according to how quickly a disabled tenant must lose access. Each application instance keeps its own cache, so with several replicas every one of them can keep accepting a disabled tenant for up to that time. When a disabled tenant must lose access immediately, leave caching disabled.
 
 Caching is disabled by default. Setting the time to live without Caffeine on the classpath fails at startup.
 

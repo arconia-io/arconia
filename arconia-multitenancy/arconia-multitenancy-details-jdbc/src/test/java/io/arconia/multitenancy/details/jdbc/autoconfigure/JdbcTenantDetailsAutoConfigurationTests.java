@@ -9,9 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -100,6 +104,68 @@ class JdbcTenantDetailsAutoConfigurationTests {
     }
 
     @Test
+    void tenantDetailsServiceWhenQualifiedDataSourceAmongSeveralThenItIsUsed() {
+        new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(JdbcTenantDetailsAutoConfiguration.class))
+            .withUserConfiguration(QualifiedDataSourceConfiguration.class)
+            .run(context -> {
+                assertThat(context).hasSingleBean(JdbcTenantDetailsService.class);
+                assertThat(context.getBean(JdbcTenantDetailsService.class).loadAllTenants()).isEmpty();
+                assertThat(hasTenantDetailsTable(context.getBean("tenantDetailsDataSource", DataSource.class))).isTrue();
+                assertThat(hasTenantDetailsTable(context.getBean("businessDataSource", DataSource.class))).isFalse();
+            });
+    }
+
+    @Test
+    void tenantDetailsServiceWhenQualifiedDataSourceAndPrimaryThenQualifiedIsUsed() {
+        new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(JdbcTenantDetailsAutoConfiguration.class))
+            .withUserConfiguration(QualifiedAndPrimaryDataSourceConfiguration.class)
+            .run(context -> {
+                assertThat(hasTenantDetailsTable(context.getBean("tenantDetailsDataSource", DataSource.class))).isTrue();
+                assertThat(hasTenantDetailsTable(context.getBean("businessDataSource", DataSource.class))).isFalse();
+            });
+    }
+
+    @Test
+    void tenantDetailsServiceWhenQualifiedDataSourceIsNotDefaultCandidateThenItIsUsedAlongsideAutoConfiguredOne() {
+        new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class, JdbcTenantDetailsAutoConfiguration.class))
+            .withPropertyValues("spring.datasource.generate-unique-name=true")
+            .withUserConfiguration(NonDefaultCandidateDataSourceConfiguration.class)
+            .run(context -> {
+                assertThat(context).hasSingleBean(JdbcTenantDetailsService.class);
+                var mainDataSource = context.getBean(DataSource.class);
+                var tenantDetailsDataSource = context.getBean("tenantDetailsDataSource", DataSource.class);
+                assertThat(mainDataSource).isNotSameAs(tenantDetailsDataSource);
+                assertThat(hasTenantDetailsTable(tenantDetailsDataSource)).isTrue();
+                assertThat(hasTenantDetailsTable(mainDataSource)).isFalse();
+            });
+    }
+
+    @Test
+    void tenantDetailsServiceWhenSeveralDataSourcesWithoutQualifierThenBacksOff() {
+        new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(JdbcTenantDetailsAutoConfiguration.class))
+            .withUserConfiguration(SeveralDataSourcesConfiguration.class)
+            .run(context -> {
+                assertThat(context).hasNotFailed();
+                assertThat(context).doesNotHaveBean(TenantDetailsService.class);
+            });
+    }
+
+    private static boolean hasTenantDetailsTable(DataSource dataSource) {
+        try {
+            new JdbcTemplate(dataSource).queryForObject("select count(*) from tenant_details", Integer.class);
+            return true;
+        }
+        catch (DataAccessException ex) {
+            return false;
+        }
+    }
+
+    private static DataSource embeddedDataSource() {
+        return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).generateUniqueName(true).build();
+    }
+
+    @Test
     void tenantVerifierWhenJdbc() {
         contextRunner.withConfiguration(AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class))
             .run(context -> {
@@ -146,6 +212,65 @@ class JdbcTenantDetailsAutoConfigurationTests {
         @Bean
         DataSource dataSource() {
             return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).generateUniqueName(true).build();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class QualifiedDataSourceConfiguration {
+
+        @Bean
+        DataSource businessDataSource() {
+            return embeddedDataSource();
+        }
+
+        @Bean
+        @TenantDetailsDataSource
+        DataSource tenantDetailsDataSource() {
+            return embeddedDataSource();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class QualifiedAndPrimaryDataSourceConfiguration {
+
+        @Bean
+        @Primary
+        DataSource businessDataSource() {
+            return embeddedDataSource();
+        }
+
+        @Bean
+        @TenantDetailsDataSource
+        DataSource tenantDetailsDataSource() {
+            return embeddedDataSource();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class NonDefaultCandidateDataSourceConfiguration {
+
+        @Bean(defaultCandidate = false)
+        @TenantDetailsDataSource
+        DataSource tenantDetailsDataSource() {
+            return embeddedDataSource();
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class SeveralDataSourcesConfiguration {
+
+        @Bean
+        DataSource businessDataSource() {
+            return embeddedDataSource();
+        }
+
+        @Bean
+        DataSource otherDataSource() {
+            return embeddedDataSource();
         }
 
     }

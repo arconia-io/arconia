@@ -12,12 +12,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletContextInitializerBeans;
 import org.springframework.context.annotation.Bean;
@@ -68,6 +71,24 @@ class MultitenancyWebAutoConfigurationTests {
 
         nonServletContextRunner
                 .run(context -> assertThat(context).doesNotHaveBean(HttpTenantResolutionConfiguration.class));
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    void whenNoTenantVerifierThenUnverifiedTenantsAreLogged(CapturedOutput output) {
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(TenantContextFilter.class);
+            assertThat(output).contains("Tenants are not verified, since no TenantVerifier is configured");
+        });
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    void whenTenantVerifierThenUnverifiedTenantsAreNotLogged(CapturedOutput output) {
+        contextRunner.withPropertyValues("arconia.multitenancy.details.tenants[0].identifier=acme").run(context -> {
+            assertThat(context).hasSingleBean(TenantContextFilter.class);
+            assertThat(output).doesNotContain("Tenants are not verified");
+        });
     }
 
     @Test
