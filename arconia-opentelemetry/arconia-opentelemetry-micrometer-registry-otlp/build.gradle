@@ -9,11 +9,11 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+    api "io.micrometer:micrometer-registry-otlp"
     api "org.springframework.boot:spring-boot-micrometer-metrics"
 
     optional project(":arconia-opentelemetry:arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-autoconfigure"
-    optional("io.micrometer:micrometer-registry-otlp")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

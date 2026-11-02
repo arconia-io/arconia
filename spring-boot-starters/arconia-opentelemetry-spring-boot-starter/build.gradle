@@ -12,7 +12,6 @@ dependencies {
     api "org.springframework.boot:spring-boot-starter"
 
     runtimeOnly "io.micrometer:micrometer-java21"
-    runtimeOnly "io.micrometer:micrometer-registry-otlp"
     runtimeOnly("io.micrometer:micrometer-tracing-bridge-otel") {
         exclude(group: "aopalliance", module: "aopalliance")
     }
