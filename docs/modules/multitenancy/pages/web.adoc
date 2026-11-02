@@ -399,7 +399,7 @@ The filter also runs on error dispatches, so error handling for a failed request
 
 [NOTE]
 ====
-The same applies to the asynchronous dispatch that completes a `Callable`, `DeferredResult`, or streaming response: the tenant established for the request is bound again, so return-value handling and `@ExceptionHandler` methods see it. The `Callable` body and any other work on another thread are a separate case, since a thread does not inherit the `ScopedValue` binding. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
+The same applies to the asynchronous dispatch that completes a `Callable`, `DeferredResult`, or streaming response: the tenant established for the request is bound again, so return-value handling and `@ExceptionHandler` methods see it. The `Callable` body runs on the executor Spring Boot auto-configures, so it gets the tenant through xref:tenant-context.adoc#_context_propagation_across_threads[context propagation], whereas a `DeferredResult` completed from a thread of your own does not.
 ====
 
 A resolver, validator, or verifier that throws an unexpected exception other than the ones described above is treated as a programming error, and the exception propagates like any other servlet exception.

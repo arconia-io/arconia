@@ -142,7 +142,7 @@ An unknown tenant never falls back to the default data source, so a missing regi
 
 [WARNING]
 ====
-A tenant context is not inherited by threads started from within its scope, so work handed to an `@Async` method, an `Executor`, or a `CompletableFuture` stage runs with no tenant bound. When a default data source is configured, that work reaches it instead of the tenant's database, and it does so without an error. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads] for how to rebind the tenant on the other thread.
+A tenant context is not inherited by threads started from within its scope. Arconia propagates it to `@Async` methods and to the executors Spring Boot auto-configures, but work handed to an executor you create yourself, or to a `CompletableFuture` stage on the common pool, runs with no tenant bound. When a default data source is configured, that work reaches it instead of the tenant's database, and it does so without an error. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads] for which threads are covered and how to rebind the tenant on the others.
 
 The first time the default data source is used, `TenantDataSource` logs a warning, so this shows up in the logs rather than only in the data. Later occurrences are logged at debug level. If your application never intends to access the database outside a tenant context, omit the default data source entirely and the same situation fails loudly instead.
 ====

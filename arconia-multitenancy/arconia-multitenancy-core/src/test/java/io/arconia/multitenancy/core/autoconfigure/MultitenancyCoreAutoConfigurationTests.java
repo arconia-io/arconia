@@ -1,12 +1,19 @@
 package io.arconia.multitenancy.core.autoconfigure;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskDecorator;
 
 import io.arconia.multitenancy.core.cache.TenantKeyGenerator;
+import io.arconia.multitenancy.core.context.TenantContext;
+import io.arconia.multitenancy.core.context.TenantContextPropagatingTaskDecorator;
 import io.arconia.multitenancy.core.observability.MdcTenantEventListener;
 import io.arconia.multitenancy.core.observability.TenantObservationFilter;
 import io.arconia.multitenancy.core.resolution.DefaultTenantIdentifierValidator;
@@ -23,6 +30,51 @@ class MultitenancyCoreAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
         .withConfiguration(AutoConfigurations.of(MultitenancyCoreAutoConfiguration.class));
+
+    @Test
+    void tenantContextPropagatingTaskDecorator() {
+        contextRunner.run(context -> assertThat(context).hasSingleBean(TenantContextPropagatingTaskDecorator.class));
+    }
+
+    @Test
+    void tenantContextPropagatingTaskDecoratorUsesMdcKeyName() {
+        contextRunner.withPropertyValues("arconia.multitenancy.logging.mdc.key-name=tenant")
+            .run(context -> assertThat(context.getBean(TenantContextPropagatingTaskDecorator.class).getMdcKeyName())
+                .isEqualTo("tenant"));
+    }
+
+    @Test
+    void tenantContextPropagatingTaskDecoratorWhenMdcDisabledThenMdcUntouched() {
+        contextRunner.withPropertyValues("arconia.multitenancy.logging.mdc.enabled=false")
+            .run(context -> assertThat(context.getBean(TenantContextPropagatingTaskDecorator.class).getMdcKeyName())
+                .isNull());
+    }
+
+    @Test
+    void tenantContextPropagatingTaskDecoratorWhenDisabled() {
+        contextRunner.withPropertyValues("arconia.multitenancy.context.propagation.enabled=false")
+            .run(context -> assertThat(context).doesNotHaveBean(TenantContextPropagatingTaskDecorator.class));
+    }
+
+    @Test
+    void tenantContextPropagatingTaskDecoratorWhenOtherTaskDecoratorThenBothRegistered() {
+        contextRunner.withBean("otherTaskDecorator", TaskDecorator.class, () -> runnable -> runnable)
+            .run(context -> {
+                assertThat(context).hasSingleBean(TenantContextPropagatingTaskDecorator.class);
+                assertThat(context.getBeansOfType(TaskDecorator.class)).hasSize(2);
+            });
+    }
+
+    @Test
+    void tenantContextPropagatingTaskDecoratorWhenApplicationTaskExecutorThenTenantPropagated() {
+        contextRunner.withConfiguration(AutoConfigurations.of(TaskExecutionAutoConfiguration.class)).run(context -> {
+            var executor = context.getBean("applicationTaskExecutor", AsyncTaskExecutor.class);
+
+            var future = TenantContext.where("acme").call(() -> executor.submit(TenantContext::getTenantIdentifier));
+
+            assertThat(future.get(5, TimeUnit.SECONDS)).isEqualTo("acme");
+        });
+    }
 
     @Test
     void tenantKeyGenerator() {
