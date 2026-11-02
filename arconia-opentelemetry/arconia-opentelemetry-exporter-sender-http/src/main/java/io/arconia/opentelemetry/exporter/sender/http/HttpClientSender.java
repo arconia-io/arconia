@@ -56,12 +56,7 @@ final class HttpClientSender implements HttpSender {
     /**
      * The HTTP status codes of a response worth retrying, as defined by the OTLP specification.
      */
-    static final Set<Integer> RETRYABLE_STATUS_CODES = Set.of(429, 502, 503, 504);
-
-    /**
-     * The shortest timeout of a request, for an attempt starting right before the export timeout.
-     */
-    private static final Duration MIN_REQUEST_TIMEOUT = Duration.ofMillis(1);
+    private static final Set<Integer> RETRYABLE_STATUS_CODES = Set.of(429, 502, 503, 504);
 
     private static final Logger logger = LoggerFactory.getLogger(HttpClientSender.class);
 
@@ -143,7 +138,7 @@ final class HttpClientSender implements HttpSender {
      * allows another attempt, and the backoff ends before the export timeout. The last response is returned,
      * or the last failure thrown, when no further attempt is made.
      */
-    HttpResponse sendWithRetries(MessageWriter messageWriter) throws IOException {
+    private HttpResponse sendWithRetries(MessageWriter messageWriter) throws IOException {
         long startNanos = System.nanoTime();
         HttpRequest.Builder request = newRequest(messageWriter);
         if (retryPolicy == null) {
@@ -152,16 +147,22 @@ final class HttpClientSender implements HttpSender {
 
         int attempts = 0;
         long backoffNanos = retryPolicy.getInitialBackoff().toNanos();
+        HttpResponse response = null;
+        IOException failure = null;
         while (true) {
-            Duration remaining = timeout.minusNanos(System.nanoTime() - startNanos);
-            if (remaining.compareTo(MIN_REQUEST_TIMEOUT) < 0) {
-                remaining = MIN_REQUEST_TIMEOUT;
+            Duration requestTimeout = timeout;
+            if (attempts > 0) {
+                requestTimeout = timeout.minusNanos(System.nanoTime() - startNanos);
+                if (!requestTimeout.isPositive()) {
+                    // The backoff ended at the export timeout, so the last attempt decides the result.
+                    return lastResult(response, failure);
+                }
             }
-            HttpResponse response = null;
-            IOException failure = null;
+            response = null;
+            failure = null;
             OptionalLong retryAfterNanos = OptionalLong.empty();
             try {
-                java.net.http.HttpResponse<InputStream> rawResponse = send(request, remaining);
+                java.net.http.HttpResponse<InputStream> rawResponse = send(request, requestTimeout);
                 response = toHttpResponse(rawResponse);
                 if (!RETRYABLE_STATUS_CODES.contains(rawResponse.statusCode())) {
                     return response;
@@ -193,7 +194,8 @@ final class HttpClientSender implements HttpSender {
         request.header("Content-Type", contentType);
         request.header("Accept-Encoding", "gzip, identity");
 
-        RequestBody body = new RequestBody(Math.max(messageWriter.getContentLength(), 32));
+        // The content length is the uncompressed size, which would oversize the buffer of a compressed body.
+        RequestBody body = compressor != null ? new RequestBody() : new RequestBody(messageWriter.getContentLength());
         if (compressor != null) {
             request.header("Content-Encoding", compressor.getEncoding());
             try (OutputStream compressed = compressor.compress(body)) {
@@ -334,8 +336,11 @@ final class HttpClientSender implements HttpSender {
      */
     private static final class RequestBody extends ByteArrayOutputStream {
 
+        RequestBody() {
+        }
+
         RequestBody(int initialSize) {
-            super(initialSize);
+            super(Math.max(initialSize, 32));
         }
 
         HttpRequest.BodyPublisher publisher() {

@@ -10,6 +10,7 @@ dependencies {
 
     implementation project(":arconia-opentelemetry:arconia-opentelemetry")
     implementation "io.opentelemetry:opentelemetry-api"
+    implementation "org.springframework:spring-context"
     implementation "org.slf4j:slf4j-api"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
