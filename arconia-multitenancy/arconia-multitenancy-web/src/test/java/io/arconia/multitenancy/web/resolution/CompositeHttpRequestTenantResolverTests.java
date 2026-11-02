@@ -32,12 +32,12 @@ class CompositeHttpRequestTenantResolverTests {
     }
 
     @Test
-    void whenResolverReturnsEmptyValueThenNextOneIsConsulted() {
+    void whenResolverReturnsEmptyValueThenChainStopsWithIt() {
         HttpRequestTenantResolver empty = request -> "";
         var resolver = new CompositeHttpRequestTenantResolver(List.of(empty,
                 FixedTenantResolver.builder().tenantIdentifier("public").build()));
 
-        assertThat(resolver.resolveTenantIdentifier(new MockHttpServletRequest())).isEqualTo("public");
+        assertThat(resolver.resolveTenantIdentifier(new MockHttpServletRequest())).isEmpty();
     }
 
     @Test

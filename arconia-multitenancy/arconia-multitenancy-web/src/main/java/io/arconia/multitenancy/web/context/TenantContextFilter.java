@@ -13,6 +13,7 @@ import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.filter.ServerHttpObservationFilter;
 import org.springframework.web.util.WebUtils;
 
@@ -53,6 +54,12 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     private static final String REJECTED_TENANT_MESSAGE = "The tenant was rejected";
 
+    /**
+     * Request attribute holding the tenant identifier established on the initial
+     * dispatch. Clients cannot set request attributes, so its value is trusted.
+     */
+    private static final String TENANT_IDENTIFIER_ATTRIBUTE = TenantContextFilter.class.getName() + ".TENANT_IDENTIFIER";
+
     private final int order;
 
     private final TenantResolver<HttpServletRequest> tenantResolver;
@@ -92,45 +99,13 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String tenantIdentifier;
-        try {
-            tenantIdentifier = tenantResolver.resolveTenantIdentifier(request);
-        } catch (InvalidTenantIdentifierException ex) {
-            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, null);
+        // The tenant established on the initial dispatch is bound again, as it is, on the
+        // ASYNC and ERROR dispatches of the same request. Resolving it again could give
+        // another result, since an ERROR dispatch has the error page as its request URI.
+        var tenantIdentifier = request.getAttribute(TENANT_IDENTIFIER_ATTRIBUTE) instanceof String established
+                ? established : establishTenant(request, response, filterChain);
+        if (tenantIdentifier == null) {
             return;
-        }
-        if (!StringUtils.hasText(tenantIdentifier)) {
-            handleFailure(request, response, filterChain, Outcome.MISSING, MISSING_TENANT_MESSAGE, null, null);
-            return;
-        }
-
-        try {
-            tenantIdentifierValidator.validate(tenantIdentifier);
-            if (tenantVerifier != null) {
-                tenantVerifier.verify(tenantIdentifier);
-            }
-        } catch (InvalidTenantIdentifierException ex) {
-            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, tenantIdentifier);
-            return;
-        } catch (TenantVerificationException ex) {
-            handleFailure(request, response, filterChain, Outcome.REJECTED, messageOf(ex, REJECTED_TENANT_MESSAGE), ex, tenantIdentifier);
-            return;
-        } catch (RuntimeException ex) {
-            // The tenant registry itself failed, for example, because the datastore
-            // backing the TenantDetailsService is unreachable. That is not the caller's
-            // fault, so it degrades to a controlled 503 rather than an unhandled 500.
-            logger.error("Tenant verification failed unexpectedly", ex);
-            handleFailure(request, response, filterChain, Outcome.UNAVAILABLE, TENANT_LOOKUP_ERROR_MESSAGE, ex, tenantIdentifier);
-            return;
-        }
-
-        // The HTTP server observation is created by ServerHttpObservationFilter before a
-        // tenant is bound, so the core TenantObservationFilter never sees it. Without
-        // this, only the child observations would carry the tenant identifier and the
-        // outer server span would not.
-        if (tenantObservationFilter != null) {
-            ServerHttpObservationFilter.findObservationContext(request)
-                .ifPresent(context -> tenantObservationFilter.enrich(context, tenantIdentifier));
         }
 
         try {
@@ -156,6 +131,73 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
                 default -> throw new ServletException(ex);
             }
         }
+    }
+
+    /**
+     * Resolves, validates, and verifies the tenant identifier, and records it on the
+     * request for the later dispatches. Returns {@code null} once the failure has been
+     * handled when no tenant context can be established.
+     */
+    @Nullable
+    private String establishTenant(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String tenantIdentifier;
+        try {
+            tenantIdentifier = tenantResolver.resolveTenantIdentifier(request);
+        } catch (InvalidTenantIdentifierException ex) {
+            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, null);
+            return null;
+        }
+        // Only null means absent. A blank value was found, so the validator rejects it
+        // rather than treating the tenant as missing.
+        if (tenantIdentifier == null) {
+            handleFailure(request, response, filterChain, Outcome.MISSING, MISSING_TENANT_MESSAGE, null, null);
+            return null;
+        }
+
+        try {
+            tenantIdentifierValidator.validate(tenantIdentifier);
+        } catch (InvalidTenantIdentifierException ex) {
+            handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, tenantIdentifier);
+            return null;
+        }
+
+        if (tenantVerifier != null) {
+            try {
+                tenantVerifier.verify(tenantIdentifier);
+            } catch (InvalidTenantIdentifierException ex) {
+                handleFailure(request, response, filterChain, Outcome.INVALID, messageOf(ex, INVALID_TENANT_MESSAGE), ex, tenantIdentifier);
+                return null;
+            } catch (TenantVerificationException ex) {
+                handleFailure(request, response, filterChain, Outcome.REJECTED, messageOf(ex, REJECTED_TENANT_MESSAGE), ex, tenantIdentifier);
+                return null;
+            } catch (RuntimeException ex) {
+                // The tenant registry itself failed, for example, because the datastore
+                // backing the TenantDetailsService is unreachable. That is not the caller's
+                // fault, so it degrades to a controlled 503 rather than an unhandled 500.
+                // An outage repeats this on every request, so the stack trace is only
+                // logged at debug level.
+                if (logger.isDebugEnabled()) {
+                    logger.warn("Tenant verification failed unexpectedly", ex);
+                } else {
+                    logger.warn("Tenant verification failed unexpectedly: " + ex);
+                }
+                handleFailure(request, response, filterChain, Outcome.UNAVAILABLE, TENANT_LOOKUP_ERROR_MESSAGE, ex, tenantIdentifier);
+                return null;
+            }
+        }
+
+        // The HTTP server observation is created by ServerHttpObservationFilter before a
+        // tenant is bound, so the core TenantObservationFilter never sees it. Without
+        // this, only the child observations would carry the tenant identifier and the
+        // outer server span would not.
+        if (tenantObservationFilter != null) {
+            ServerHttpObservationFilter.findObservationContext(request)
+                .ifPresent(context -> tenantObservationFilter.enrich(context, tenantIdentifier));
+        }
+
+        request.setAttribute(TENANT_IDENTIFIER_ATTRIBUTE, tenantIdentifier);
+        return tenantIdentifier;
     }
 
     /**
@@ -189,9 +231,22 @@ public final class TenantContextFilter extends OncePerRequestFilter implements O
         failureHandler.handle(request, response, new TenantResolutionFailure(outcome, message, cause));
     }
 
+    /**
+     * A CORS preflight request is skipped, since browsers send it without the
+     * credentials, cookies, or custom headers that would carry the tenant.
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return tenantContextIgnorePathMatcher.matches(request);
+        return CorsUtils.isPreFlightRequest(request) || tenantContextIgnorePathMatcher.matches(request);
+    }
+
+    /**
+     * The tenant context is re-established on an ASYNC dispatch, so that the response of
+     * an asynchronous request is completed with the same tenant as the request.
+     */
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
     }
 
     /**

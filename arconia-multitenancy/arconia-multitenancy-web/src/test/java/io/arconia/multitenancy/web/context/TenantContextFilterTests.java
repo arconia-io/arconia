@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletException;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
@@ -23,6 +27,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.filter.ServerHttpObservationFilter;
 import org.springframework.web.util.WebUtils;
 
+import io.arconia.multitenancy.core.context.TenantContext;
 import io.arconia.multitenancy.core.context.TenantContextAttachedEvent;
 import io.arconia.multitenancy.core.context.TenantContextClosedEvent;
 import io.arconia.multitenancy.core.observability.Cardinality;
@@ -32,6 +37,7 @@ import io.arconia.multitenancy.core.resolution.TenantVerificationException;
 import io.arconia.multitenancy.core.resolution.TenantVerifier;
 import io.arconia.multitenancy.web.resolution.HeaderTenantResolver;
 import io.arconia.multitenancy.web.resolution.HttpRequestTenantResolver;
+import io.arconia.multitenancy.web.resolution.PathTenantResolver;
 import io.arconia.multitenancy.web.resolution.TenantResolutionFailure;
 import io.arconia.multitenancy.web.resolution.TenantResolutionFailure.Outcome;
 import io.arconia.multitenancy.web.resolution.TenantResolutionFailureHandler;
@@ -478,6 +484,96 @@ class TenantContextFilterTests {
         filter.doFilter(request, new MockHttpServletResponse(), filterChain);
 
         assertThat(filterChain.getRequest()).isSameAs(request);
+    }
+
+    @Test
+    void whenResolvedIdentifierIsBlankThenInvalidRatherThanMissing() throws ServletException, IOException {
+        var failures = new ArrayList<TenantResolutionFailure>();
+        HttpRequestTenantResolver blank = request -> " ";
+        var filter = TenantContextFilter.builder()
+            .httpRequestTenantResolver(blank)
+            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
+            .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
+            .failureHandler((req, res, failure) -> failures.add(failure))
+            .build();
+
+        filter.doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockFilterChain());
+
+        assertThat(failures).singleElement().satisfies(failure -> {
+            assertThat(failure.outcome()).isEqualTo(Outcome.INVALID);
+            assertThat(failure.message()).isEqualTo("The tenant identifier must not be empty");
+        });
+    }
+
+    @Test
+    void whenCorsPreflightRequestThenSkipped() throws ServletException, IOException {
+        var request = new MockHttpServletRequest(HttpMethod.OPTIONS.name(), "/products");
+        request.addHeader(HttpHeaders.ORIGIN, "https://app.example.com");
+        request.addHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET.name());
+        var response = new MockHttpServletResponse();
+        var filterChain = new MockFilterChain();
+        var eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+
+        defaultFilter(eventPublisher).build().doFilter(request, response, filterChain);
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(filterChain.getRequest()).isSameAs(request);
+        Mockito.verify(eventPublisher, Mockito.times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
+    }
+
+    @Test
+    void whenAsyncDispatchThenTenantEstablishedOnRequestDispatchIsBound() throws ServletException, IOException {
+        var request = new MockHttpServletRequest();
+        request.addHeader("X-TenantId", "acme");
+        var verifications = new ArrayList<String>();
+        var filter = defaultFilter(Mockito.mock(ApplicationEventPublisher.class))
+            .tenantVerifier(verifications::add)
+            .build();
+        filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+
+        request.removeHeader("X-TenantId");
+        request.setDispatcherType(DispatcherType.ASYNC);
+        var boundTenant = new AtomicReference<String>();
+        filter.doFilter(request, new MockHttpServletResponse(),
+                (req, res) -> boundTenant.set(TenantContext.getTenantIdentifier()));
+
+        assertThat(boundTenant).hasValue("acme");
+        assertThat(verifications).containsExactly("acme");
+    }
+
+    @Test
+    void whenErrorDispatchInPathModeThenTenantOfFailedRequestIsBound() throws ServletException, IOException {
+        var request = new MockHttpServletRequest("GET", "/tenants/acme/products");
+        var filter = TenantContextFilter.builder()
+            .httpRequestTenantResolver(PathTenantResolver.builder().pattern("/tenants/{tenant}/**").build())
+            .tenantContextIgnorePathMatcher(new TenantContextIgnorePathMatcher(Set.of()))
+            .eventPublisher(Mockito.mock(ApplicationEventPublisher.class))
+            .build();
+        filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+
+        request.setRequestURI("/error");
+        request.setDispatcherType(DispatcherType.ERROR);
+        request.setAttribute(WebUtils.ERROR_REQUEST_URI_ATTRIBUTE, "/tenants/acme/products");
+        var boundTenant = new AtomicReference<String>();
+        filter.doFilter(request, new MockHttpServletResponse(),
+                (req, res) -> boundTenant.set(TenantContext.getTenantIdentifier()));
+
+        assertThat(boundTenant).hasValue("acme");
+    }
+
+    @Test
+    void whenValidatorThrowsUnexpectedlyThenExceptionPropagates() {
+        var request = new MockHttpServletRequest();
+        request.addHeader("X-TenantId", "acme");
+        var filter = defaultFilter(Mockito.mock(ApplicationEventPublisher.class))
+            .tenantIdentifierValidator(tenantIdentifier -> {
+                throw new IllegalArgumentException("validator bug");
+            })
+            .build();
+
+        assertThatIllegalArgumentException()
+            .isThrownBy(() -> filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain()))
+            .withMessage("validator bug");
     }
 
     @Test

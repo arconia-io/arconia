@@ -29,7 +29,7 @@ Different modules provide specialized implementations of this interface for spec
 
 == Resolver Chains
 
-Several resolvers can be consulted in turn: a resolver returning `null` hands over to the next one, and a resolver throwing an `InvalidTenantIdentifierException` stops the chain. In xref:web.adoc#_http_tenant_resolution[web applications], the chain is assembled for you from the configured resolution modes, and `CompositeHttpRequestTenantResolver` lets you assemble your own.
+Several resolvers can be consulted in turn: a resolver returning `null` hands over to the next one, and a resolver throwing an `InvalidTenantIdentifierException` stops the chain. Only `null` hands over: a blank value is a value that was found, so it stops the chain too and is then rejected by the xref:tenant-details.adoc#_tenant_identifier_validation[identifier validation]. An empty tenant header, or an OAuth2 token whose tenant claim is empty, never falls back to the next resolver. In xref:web.adoc#_http_tenant_resolution[web applications], the chain is assembled for you from the configured resolution modes, and `CompositeHttpRequestTenantResolver` lets you assemble your own.
 
 == Fixed Tenant Resolution
 

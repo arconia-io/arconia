@@ -73,6 +73,17 @@ class DefaultTenantVerifierTests {
     }
 
     @Test
+    void whenLoadedTenantHasDifferentlyCasedIdentifierThenThrow() {
+        var tenant = Tenant.builder().identifier("acme").enabled(true).build();
+        var service = Mockito.mock(TenantDetailsService.class);
+        when(service.loadTenantByIdentifier("ACME")).thenReturn(tenant);
+        var verifier = new DefaultTenantVerifier(service);
+
+        assertThatThrownBy(() -> verifier.verify("ACME")).isInstanceOf(TenantVerificationException.class)
+            .hasMessageContaining("The resolved tenant is invalid or disabled");
+    }
+
+    @Test
     void whenTenantNotFoundThenThrow() {
         var service = Mockito.mock(TenantDetailsService.class);
         when(service.loadTenantByIdentifier("unknown")).thenReturn(null);

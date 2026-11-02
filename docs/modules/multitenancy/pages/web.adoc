@@ -370,7 +370,7 @@ When no tenant context can be established, the filter hands the request to a `Te
 
 The `detail` of the problem response carries the message of the failure and `instance` carries the request URI. An unknown tenant and a disabled tenant produce the same message on purpose so that callers cannot enumerate which tenants exist. A registry outage is reported as `503` rather than `400`, so that a server-side problem is distinguishable from a bad request and does not surface as an unhandled error on every request.
 
-Every rejection is logged at `DEBUG` level, with the identifier in a log-safe form. A registry outage is logged at `ERROR` level.
+Every rejection is logged at `DEBUG` level, with the identifier in a log-safe form. A registry outage is logged at `WARN` level in a single line, since it repeats on every request while it lasts, and with the stack trace when `DEBUG` is enabled for `io.arconia.multitenancy.web.context.TenantContextFilter`.
 
 The response is produced by the filter, outside Spring MVC, so `@ControllerAdvice` and `spring.mvc.problemdetails` do not apply to it. To shape the response yourself, for example, to redirect a browser to a tenant selection page when the tenant cookie is missing, register a `TenantResolutionFailureHandler` bean:
 
@@ -395,11 +395,11 @@ The handler decides the response only. The filter still decides the outcome, log
 
 === Error Dispatches
 
-The filter also runs on error dispatches, so error handling for a failed request executes with the same tenant bound as the request that failed. On an error dispatch the filter never writes a response of its own: if the tenant cannot be resolved or validated there, the request proceeds without a tenant context rather than replacing the response the container is already producing. Spring Boot registers `Filter` beans for every dispatcher type, and the Spring Security filter chain is registered for every dispatcher type too, so this behaviour is the same whether the filter runs as a servlet filter or inside the security filter chain.
+The filter also runs on error dispatches, so error handling for a failed request executes with the same tenant bound as the request that failed. The tenant established for the request is bound again as it is, without resolving it a second time, so the error page gets the right tenant even in the `path` mode, where the error dispatch has the error page as its request URI. When the request failed before a tenant was established, the filter resolves it on the error dispatch. On an error dispatch the filter never writes a response of its own: if the tenant cannot be resolved or validated there, the request proceeds without a tenant context rather than replacing the response the container is already producing. Spring Boot registers `Filter` beans for every dispatcher type, and the Spring Security filter chain is registered for every dispatcher type too, so this behaviour is the same whether the filter runs as a servlet filter or inside the security filter chain.
 
 [NOTE]
 ====
-Asynchronous request handling is a separate case. A `Callable` or `DeferredResult` runs on another thread, which does not inherit the `ScopedValue` binding, and the response is completed on a dispatch where the filter does not re-bind the tenant. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
+The same applies to the asynchronous dispatch that completes a `Callable`, `DeferredResult`, or streaming response: the tenant established for the request is bound again, so return-value handling and `@ExceptionHandler` methods see it. The `Callable` body and any other work on another thread are a separate case, since a thread does not inherit the `ScopedValue` binding. See xref:tenant-context.adoc#_context_propagation_across_threads[Context Propagation Across Threads].
 ====
 
 A resolver, validator, or verifier that throws an unexpected exception other than the ones described above is treated as a programming error, and the exception propagates like any other servlet exception.
@@ -512,6 +512,8 @@ Certain paths can be excluded from tenant resolution. By default, the following 
 * `/login`
 * `/oauth2/authorization/**`
 * `/login/oauth2/code/**`
+
+CORS preflight requests are skipped as well, wherever they are sent, since browsers send them without the headers and cookies that carry the tenant.
 
 The login and OAuth2 endpoints are ignored so that a user can still authenticate when no tenant has been established yet. At the default filter order those endpoints are handled inside the Spring Security filter chain and never reach the tenant filter, but they do reach it when the login page is served by your own controller, or when the filter is ordered ahead of the security chain.
 

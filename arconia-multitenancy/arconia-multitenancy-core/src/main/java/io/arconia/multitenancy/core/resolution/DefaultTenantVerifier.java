@@ -9,7 +9,8 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 
 /**
  * Default {@link TenantVerifier} implementation that checks the tenant exists and is
- * enabled using a {@link TenantDetailsService}.
+ * enabled using a {@link TenantDetailsService}. The loaded tenant must carry exactly the
+ * requested identifier.
  */
 @Incubating
 public final class DefaultTenantVerifier implements TenantVerifier {
@@ -28,7 +29,10 @@ public final class DefaultTenantVerifier implements TenantVerifier {
         Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
         logger.trace("Verifying tenant: {}", tenantIdentifier);
         var tenant = tenantDetailsService.loadTenantByIdentifier(tenantIdentifier);
-        if (tenant == null || !tenant.enabled()) {
+        // Identifiers are compared exactly, so that a service matching case-insensitively,
+        // such as one backed by a case-insensitive collation, cannot admit "ACME" as an
+        // alias of "acme" and split one tenant across data sources and cache keys.
+        if (tenant == null || !tenant.enabled() || !tenantIdentifier.equals(tenant.identifier())) {
             throw new TenantVerificationException("The resolved tenant is invalid or disabled");
         }
     }
