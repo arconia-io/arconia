@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -60,7 +59,6 @@ public final class OpenTelemetryMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OpenTelemetry.class)
     Meter meter(OpenTelemetry openTelemetry) {
         return openTelemetry.meterBuilder(INSTRUMENTATION_SCOPE_NAME)
                 .setInstrumentationVersion(SpringBootVersion.getVersion())

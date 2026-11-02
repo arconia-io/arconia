@@ -13,10 +13,17 @@ import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegist
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.util.ReflectionUtils;
 
+import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.resource.OpenTelemetryResourceAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,6 +84,20 @@ class MicrometerMetricsOpenTelemetryBridgeAutoConfigurationTests {
     }
 
     @Test
+    void meterRegistryAvailableWithOpenTelemetryAutoConfigurations() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(MetricsAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class,
+                        OpenTelemetryAutoConfiguration.class,
+                        OpenTelemetryResourceAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class,
+                        OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class,
+                        MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(SimpleMeterRegistry.class);
+                    assertThat(context).hasSingleBean(OpenTelemetryMeterRegistry.class);
+                });
+    }
+
+    @Test
     void meterRegistryConfiguredWithCustomProperties() {
         contextRunner
                 .withPropertyValues(
@@ -134,32 +155,6 @@ class MicrometerMetricsOpenTelemetryBridgeAutoConfigurationTests {
                     registry = context.getBean(OpenTelemetryMeterRegistry.class);
                     assertThat(registry).isNotNull();
                 });
-    }
-
-    @Test
-    void meterRegistryNotAvailableWhenClockMissing() {
-        new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
-                .withBean(OpenTelemetry.class, OpenTelemetry::noop)
-                .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
-                    OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
-                    properties.setInterval(Duration.ofSeconds(5));
-                    return properties;
-                })
-                .run(context -> assertThat(context).doesNotHaveBean(MeterRegistry.class));
-    }
-
-    @Test
-    void meterRegistryNotAvailableWhenOpenTelemetryMissing() {
-        new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(MicrometerMetricsOpenTelemetryBridgeAutoConfiguration.class))
-                .withBean(Clock.class, () -> Clock.SYSTEM)
-                .withBean(OpenTelemetryMetricsExporterProperties.class, () -> {
-                    OpenTelemetryMetricsExporterProperties properties = new OpenTelemetryMetricsExporterProperties();
-                    properties.setInterval(Duration.ofSeconds(5));
-                    return properties;
-                })
-                .run(context -> assertThat(context).doesNotHaveBean(MeterRegistry.class));
     }
 
 }

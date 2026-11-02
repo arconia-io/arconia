@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMeterProviderBuilderCustomizer;
@@ -271,9 +272,8 @@ class OtlpMetricsExporterConfigurationTests {
     void histogramBucketAdvicePreserved() {
         InMemoryMetricReader metricReader = InMemoryMetricReader.create();
         new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(OpenTelemetryExporterAutoConfiguration.class,
+            .withConfiguration(AutoConfigurations.of(OpenTelemetryAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class,
                 OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
-            .withBean(Clock.class, Clock::getDefault)
             .withBean(Resource.class, Resource::empty)
             .withBean(OpenTelemetryMeterProviderBuilderCustomizer.class, () -> builder -> builder.registerMetricReader(metricReader))
             .run(context -> {

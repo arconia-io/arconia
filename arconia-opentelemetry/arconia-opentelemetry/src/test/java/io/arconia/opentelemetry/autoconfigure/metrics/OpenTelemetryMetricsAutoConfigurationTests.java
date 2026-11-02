@@ -21,10 +21,13 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootVersion;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -77,6 +80,15 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     @Test
     void exemplarsDisabledWithAlwaysOffFilter() {
         assertThat(exemplarCount("arconia.otel.metrics.exemplars.filter=always-off")).isZero();
+    }
+
+    @Test
+    void meterAvailableWhenConfiguredBeforeOpenTelemetry() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(OpenTelemetryAutoConfiguration.class,
+                        OpenTelemetryMetricsAutoConfiguration.class, MetricsBeforeOpenTelemetryAutoConfiguration.class))
+                .withBean(Resource.class, Resource::empty)
+                .run(context -> assertThat(context).hasSingleBean(Meter.class));
     }
 
     @Test
@@ -177,6 +189,15 @@ class OpenTelemetryMetricsAutoConfigurationTests {
         OpenTelemetryMeterProviderBuilderCustomizer customMetricBuilderCustomizer() {
             return customMetricBuilderCustomizer;
         }
+
+    }
+
+    /**
+     * Orders the metrics auto-configuration before the OpenTelemetry one, as other
+     * auto-configurations ordered after both can do.
+     */
+    @AutoConfiguration(after = OpenTelemetryMetricsAutoConfiguration.class, before = OpenTelemetryAutoConfiguration.class)
+    static class MetricsBeforeOpenTelemetryAutoConfiguration {
 
     }
 

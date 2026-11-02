@@ -12,7 +12,6 @@ import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegist
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration;
@@ -21,17 +20,20 @@ import org.springframework.boot.micrometer.metrics.autoconfigure.export.simple.S
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
+import io.arconia.opentelemetry.autoconfigure.OpenTelemetryAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.ConditionalOnOpenTelemetryMetrics;
 import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
 
 /**
  * Auto-configuration for Micrometer metrics bridge to OpenTelemetry.
  */
 @AutoConfiguration(
-    after = { MetricsAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryMetricsAutoConfiguration.class },
+    after = { MetricsAutoConfiguration.class, OpenTelemetryAutoConfiguration.class, OpenTelemetryExporterAutoConfiguration.class,
+            OpenTelemetryMetricsAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class },
     before = { CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class }
 )
 @ConditionalOnProperty(prefix = MicrometerMetricsOpenTelemetryBridgeProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -47,13 +49,11 @@ public final class MicrometerMetricsOpenTelemetryBridgeAutoConfiguration {
     // only bridging them to OpenTelemetry. We register this first so that it is the default
     // MeterRegistry used by the Actuator.
     @Bean
-    @ConditionalOnBean({ Clock.class, OpenTelemetry.class, OpenTelemetryMetricsExporterProperties.class })
     SimpleMeterRegistry simpleMeterRegistry(Clock clock, OpenTelemetryMetricsExporterProperties properties) {
         return new SimpleMeterRegistry(new OpenTelemetrySimpleConfig(properties), clock);
     }
 
     @Bean
-    @ConditionalOnBean({ Clock.class, OpenTelemetry.class })
     MeterRegistry meterRegistry(MicrometerMetricsOpenTelemetryBridgeProperties properties, Clock clock, OpenTelemetry openTelemetry) {
         return OpenTelemetryMeterRegistry.builder(openTelemetry)
                 .setBaseTimeUnit(properties.getBaseTimeUnit())
