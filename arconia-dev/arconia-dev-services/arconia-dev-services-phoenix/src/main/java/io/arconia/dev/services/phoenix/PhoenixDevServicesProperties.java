@@ -7,17 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
+import io.arconia.dev.services.api.config.SslConfig;
+import io.arconia.dev.services.api.config.SslDevServicesProperties;
 import io.arconia.dev.services.api.config.VolumeMapping;
 
 /**
  * Properties for the Arize Phoenix Dev Services.
  */
 @ConfigurationProperties(prefix = PhoenixDevServicesProperties.CONFIG_PREFIX)
-public class PhoenixDevServicesProperties implements DevServicesProperties {
+public class PhoenixDevServicesProperties implements DevServicesProperties, SslDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.phoenix";
 
@@ -85,6 +88,12 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
      * When it's 0 (default), a random available port is assigned dynamically.
      */
     private int otlpGrpcPort = 0;
+
+    /**
+     * SSL configuration of the dev service.
+     */
+    @NestedConfigurationProperty
+    private final SslConfig ssl = new SslConfig();
 
     @Override
     public boolean isEnabled() {
@@ -181,6 +190,11 @@ public class PhoenixDevServicesProperties implements DevServicesProperties {
 
     public void setOtlpGrpcPort(int otlpGrpcPort) {
         this.otlpGrpcPort = otlpGrpcPort;
+    }
+
+    @Override
+    public SslConfig getSsl() {
+        return ssl;
     }
 
 }

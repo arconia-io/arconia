@@ -74,6 +74,10 @@ The following changes affect the custom Dev Services you build on the Arconia De
 
 * The OpenAI compatibility of the Ollama Dev Service now works with Spring AI 2: the `spring.ai.openai.base-url` property points to the OpenAI-compatible API of Ollama, under `/v1`, where requests previously failed with a 404 error.
 
+=== Phoenix
+
+* The Phoenix Dev Service can now serve SSL, so that the application exports traces to it over SSL, as it does with a Phoenix deployment secured with SSL. Learn more about xref:dev-services:phoenix.adoc#_using_ssl[Using SSL].
+
 === Keycloak
 
 * The Keycloak Dev Service now imports several realm files, each holding a single realm or a list of realms in the formats Keycloak exports, so that an application with a realm per tenant can run against all of them. The files are configured in `arconia.dev.services.keycloak.realm.import-paths` (replacing the previous `arconia.dev.services.keycloak.realm.import-path` property), and `arconia.dev.services.keycloak.realm.name` selects the realm the application connects to. Learn more about xref:dev-services:keycloak.adoc#_importing_realms[Importing Realms].

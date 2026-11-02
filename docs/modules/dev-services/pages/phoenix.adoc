@@ -91,6 +91,14 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.otlp-grpc-port`
 | `0`
 | Fixed port for exposing the Phoenix OTLP gRPC port to the host. When it's 0 (default), a random available port is assigned dynamically.
+
+include::partial$ssl-properties.adoc[]
 |===
+
+== Using SSL
+
+include::partial$using-ssl.adoc[]
+
+Phoenix then serves both its HTTP port and its gRPC port over SSL only, and clients are not asked for a certificate. Since the Phoenix UI shares the HTTP port with the OTLP endpoint, open it with `https` in the browser, which asks you to accept the certificate unless your machine trusts it. The Phoenix UI link reported at startup still uses `http`.
 
 include::partial$disabling-dev-service.adoc[]

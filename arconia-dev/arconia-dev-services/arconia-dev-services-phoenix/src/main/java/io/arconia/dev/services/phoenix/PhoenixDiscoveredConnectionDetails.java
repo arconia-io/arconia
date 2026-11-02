@@ -1,5 +1,8 @@
 package io.arconia.dev.services.phoenix;
 
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.ssl.SslBundle;
+
 import io.arconia.dev.services.core.registration.DiscoveredContainer;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
@@ -16,9 +19,14 @@ final class PhoenixDiscoveredConnectionDetails implements OtlpTracingConnectionD
 
     private final String grpcUrl;
 
+    @Nullable
+    private final SslBundle sslBundle;
+
     PhoenixDiscoveredConnectionDetails(DiscoveredContainer container) {
-        this.httpUrl = "http://%s:%d".formatted(container.host(), container.mappedPort(PhoenixContainer.HTTP_PORT));
-        this.grpcUrl = "http://%s:%d".formatted(container.host(), container.mappedPort(PhoenixContainer.GRPC_PORT));
+        this.sslBundle = container.sslBundle();
+        String scheme = (sslBundle != null) ? "https" : "http";
+        this.httpUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(PhoenixContainer.HTTP_PORT));
+        this.grpcUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(PhoenixContainer.GRPC_PORT));
     }
 
     @Override
@@ -27,6 +35,12 @@ final class PhoenixDiscoveredConnectionDetails implements OtlpTracingConnectionD
             case HTTP_PROTOBUF -> httpUrl + TRACES_PATH;
             case GRPC -> grpcUrl;
         };
+    }
+
+    @Override
+    @Nullable
+    public SslBundle getSslBundle() {
+        return sslBundle;
     }
 
 }

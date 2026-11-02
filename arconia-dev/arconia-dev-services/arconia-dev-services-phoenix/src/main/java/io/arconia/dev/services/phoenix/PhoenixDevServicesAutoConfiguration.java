@@ -2,15 +2,18 @@ package io.arconia.dev.services.phoenix;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import io.arconia.dev.services.core.autoconfigure.ConditionalOnDevServicesEnabled;
 import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
+import io.arconia.dev.services.core.ssl.SslBundleFiles;
 import io.arconia.dev.services.phoenix.PhoenixDevServicesAutoConfiguration.PhoenixDevServicesRegistrar;
 import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
@@ -31,8 +34,27 @@ public final class PhoenixDevServicesAutoConfiguration {
 
     static final String COMPATIBLE_IMAGE_NAME = "arizephoenix/phoenix";
 
+    /**
+     * Where the SSL files are copied in the container.
+     */
+    static final String SSL_DIRECTORY = "/arconia/ssl/";
+
     static PhoenixContainer createContainer(PhoenixDevServicesProperties properties) {
         return new PhoenixContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
+    }
+
+    /**
+     * Configure Phoenix to serve both its HTTP port, including the UI, and its gRPC port over SSL,
+     * with the certificate and key of the bundle. The readiness check then uses SSL too,
+     * trusting any certificate since the dev service presents its own.
+     */
+    static void configureSsl(PhoenixContainer container, SslBundle bundle) {
+        container.withCopyToContainer(SslBundleFiles.certificateChain(bundle), SSL_DIRECTORY + "server.crt");
+        container.withCopyToContainer(SslBundleFiles.privateKey(bundle), SSL_DIRECTORY + "server.key");
+        container.withEnv("PHOENIX_TLS_ENABLED", "true");
+        container.withEnv("PHOENIX_TLS_CERT_FILE", SSL_DIRECTORY + "server.crt");
+        container.withEnv("PHOENIX_TLS_KEY_FILE", SSL_DIRECTORY + "server.key");
+        container.waitingFor(Wait.forHttp("/readyz").forPort(PhoenixContainer.HTTP_PORT).usingTls().allowInsecure().forStatusCode(200));
     }
 
     static class PhoenixDevServicesRegistrar extends DevServicesRegistrar {
@@ -49,6 +71,7 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .container(PhoenixContainer.class, () -> createContainer(properties))
                     .port(PhoenixContainer.HTTP_PORT)
                     .additionalPort(PhoenixContainer.GRPC_PORT, properties.getOtlpGrpcPort())
+                    .ssl(PhoenixDevServicesAutoConfiguration::configureSsl)
                     .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
                     .link("Phoenix UI", PhoenixContainer.HTTP_PORT));
 

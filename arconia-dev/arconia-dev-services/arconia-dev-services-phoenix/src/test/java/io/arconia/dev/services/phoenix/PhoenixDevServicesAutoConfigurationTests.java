@@ -15,7 +15,9 @@ import org.testcontainers.containers.GenericContainer;
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
+import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
+import io.arconia.dev.services.tests.SslTestCertificates;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterAutoConfiguration;
@@ -115,6 +117,22 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
                         OpenTelemetryLoggingExporterAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
                 .withBean(CardinalityLimitSelector.class, CardinalityLimitSelector::defaultCardinalityLimitSelector)
                 .withBean(OpenTelemetryMetricsProperties.class, OpenTelemetryMetricsProperties::new);
+    }
+
+    @Test
+    void sslApplied() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .run(context -> {
+                    var container = (PhoenixContainer) context.getBean(getContainerClass());
+                    assertThat(container.getEnvMap())
+                            .containsEntry("PHOENIX_TLS_ENABLED", "true")
+                            .containsEntry("PHOENIX_TLS_CERT_FILE", PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.crt")
+                            .containsEntry("PHOENIX_TLS_KEY_FILE", PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.key");
+                    assertThat(DevServiceContainers.copiedFiles(container)).containsValues(
+                            PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.crt",
+                            PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.key");
+                });
     }
 
 }
