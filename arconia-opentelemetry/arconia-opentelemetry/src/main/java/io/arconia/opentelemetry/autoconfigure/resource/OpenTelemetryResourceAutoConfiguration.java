@@ -46,7 +46,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
     Resource resource(ObjectProvider<ResourceContributor> resourceContributors,
                       ObjectProvider<OpenTelemetryResourceBuilderCustomizer> customizers
     ) {
-        ResourceBuilder builder = Resource.getDefault().toBuilder().setSchemaUrl(SchemaUrls.V1_44_0);
+        ResourceBuilder builder = Resource.getDefault().toBuilder().setSchemaUrl(SchemaUrls.V1_45_0);
         resourceContributors.orderedStream().forEach(contributor -> contributor.contribute(builder));
         customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
         return builder.build();
