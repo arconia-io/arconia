@@ -28,7 +28,7 @@ dependencies {
 
     constraints {
         // TEMPORARY: CVE fix in guava, pulled in by the CycloneDX plugin via maven-core. Remove once the plugin upgrades it.
-        implementation("com.google.guava:guava:33.7.2-jre") {
+        implementation("com.google.guava:guava:33.8.0-jre") {
             because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
         }
         // TEMPORARY: CVE fix in commons-lang3, pulled in by the Spring Boot plugin via commons-compress. Aligned with the version Spring Boot manages.
