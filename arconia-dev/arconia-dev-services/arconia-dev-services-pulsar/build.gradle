@@ -21,7 +21,7 @@ dependencies {
 
     constraints {
         // TEMPORARY: CVE fix in guava, which pulsar-client pins to a vulnerable version and Spring Boot does not manage.
-        api("com.google.guava:guava:33.7.2-jre") {
+        api("com.google.guava:guava:33.8.0-jre") {
             because "GHSA-xxph-c9ww-hj94 (fixed in 33.7.2)"
         }
     }
