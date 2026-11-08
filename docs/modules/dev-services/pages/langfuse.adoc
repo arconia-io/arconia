@@ -13,7 +13,7 @@ It works with Spring Boot libraries that support OpenTelemetry, including:
 
 For Spring AI applications, use it together with the xref:observability:semantic-conventions/langfuse.adoc[Langfuse Semantic Conventions].
 
-Langfuse accepts traces only, via OTLP with the HTTP/Protobuf protocol. While the Dev Service is active, logs and metrics are not exported.
+Langfuse accepts traces only, via OTLP with the HTTP/Protobuf protocol. While the Langfuse Dev Service module is on the classpath, logs and metrics are not exported, also when the application connects to a Langfuse instance of its own instead of the Dev Service.
 
 [NOTE]
 ====
