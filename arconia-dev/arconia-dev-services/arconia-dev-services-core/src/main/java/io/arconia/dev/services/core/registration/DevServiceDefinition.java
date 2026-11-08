@@ -50,14 +50,6 @@ record DevServiceDefinition(
 ) {
 
     DevServiceDefinition {
-        Assert.hasText(name, "name cannot be null or empty");
-        Assert.hasText(description, "description cannot be null or empty");
-        Assert.notNull(properties, "properties cannot be null");
-        Assert.notNull(containerType, "containerType cannot be null");
-        Assert.notNull(containerSupplier, "containerSupplier cannot be null");
-        Assert.notNull(additionalPorts, "additionalPorts cannot be null");
-        Assert.notNull(links, "links cannot be null");
-
         additionalPorts = List.copyOf(additionalPorts);
         links = List.copyOf(links);
     }
@@ -181,11 +173,13 @@ record DevServiceDefinition(
         }
 
         DevServiceDefinition build() {
-            Assert.notNull(name, "name cannot be null");
-            Assert.notNull(description, "description cannot be null");
+            Assert.hasText(name, "name cannot be null or empty");
+            Assert.hasText(description, "description cannot be null or empty");
             Assert.notNull(properties, "properties cannot be null");
             Assert.notNull(containerType, "containerType cannot be null");
             Assert.notNull(containerSupplier, "containerSupplier cannot be null");
+            Assert.notNull(additionalPorts, "additionalPorts cannot be null");
+            Assert.notNull(links, "links cannot be null");
             return new DevServiceDefinition(name, description, category, properties, containerType, containerSupplier,
                     serviceConnection, serviceConnectionName, discovery, port, additionalPorts, links, sslSupport);
         }
