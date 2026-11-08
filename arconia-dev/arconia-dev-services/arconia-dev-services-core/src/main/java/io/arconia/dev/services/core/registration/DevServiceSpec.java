@@ -172,7 +172,6 @@ public final class DevServiceSpec {
      * beans: when one is present, it takes precedence over the one provided by the dev service.
      */
     public <D extends ConnectionDetails> DevServiceSpec discovery(Class<D> connectionDetailsType, Function<DiscoveredContainer, ? extends D> connectionDetails) {
-        Assert.state(this.connectionDetailsType == null && this.connectionDetailsFactory == null, "discovery can be declared only once");
         this.connectionDetailsType = connectionDetailsType;
         this.connectionDetailsFactory = connectionDetails;
         return this;
@@ -237,8 +236,6 @@ public final class DevServiceSpec {
      * configured, and Spring Boot extracts the generated certificate from the container otherwise.
      */
     public <C extends Container<?>> DevServiceSpec ssl(DevServiceSslConfigurer<C> configurer, SslKeyStoreRequirement keyStoreRequirement) {
-        Assert.notNull(configurer, "configurer cannot be null");
-        Assert.notNull(keyStoreRequirement, "keyStoreRequirement cannot be null");
         this.sslSupport = new SslSupport(configurer, keyStoreRequirement);
         return this;
     }

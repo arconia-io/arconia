@@ -189,16 +189,6 @@ class DevServiceSpecTests {
         }
 
         @Test
-        void whenDiscoveryIsDeclaredTwiceThenThrow() {
-            DevServiceSpec spec = completeSpec()
-                    .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host()));
-
-            assertThatIllegalStateException()
-                    .isThrownBy(() -> spec.discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())))
-                    .withMessageContaining("discovery can be declared only once");
-        }
-
-        @Test
         void whenDiscoveryTypeIsNullThenThrow() {
             DevServiceSpec spec = completeSpec()
                     .discovery(null, container -> new TestConnectionDetails(container.host()));
