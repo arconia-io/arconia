@@ -66,14 +66,13 @@ class OpenLitDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
 
     @Test
     @DisabledIfDockerUnavailable
-    void devServiceLinksExposeOpenLitUi() {
+    void devServiceLinksExposeOpenLitUiAndOtlpUrls() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
             List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
-            assertThat(links).singleElement().satisfies(link -> {
-                assertThat(link.label()).isEqualTo("OpenLIT UI");
-                assertThat(link.url()).startsWith("http://" + container.getHost() + ":");
-            });
+            assertThat(links).extracting(DevServiceLink::label)
+                    .containsExactly("OpenLIT UI", "OTLP/HTTP", "OTLP/gRPC");
+            assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
         });
     }
 

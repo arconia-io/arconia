@@ -56,7 +56,7 @@ arconia:
 
 Setting the `reuse-strategy` property to `testcontainers` also avoids the cost at every application restart in dev mode, but the container is then no longer discoverable by other applications, and it doesn't apply to tests.
 
-Only containers started by the application are affected. When the application connects to a container started by another application, its models are left untouched.
+Only containers started by the application are affected. When the application connects to a container started by another application, its models are left untouched. To have the models the application uses pulled into such a container too, use the model initialization of Spring AI Ollama, which works with any Ollama service: set `spring.ai.ollama.init.pull-model-strategy` to `when_missing`.
 ====
 
 == Spring AI OpenAI Compatibility

@@ -50,7 +50,9 @@ public final class OpenLitDevServicesAutoConfiguration {
                     .additionalPort(OpenLitContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .additionalPort(OpenLitContainer.OTLP_HTTP_PORT, properties.getOtlpHttpPort())
                     .discovery(OtlpConnectionDetails.class, OpenLitDiscoveredConnectionDetails::new)
-                    .link("OpenLIT UI", OpenLitContainer.UI_PORT));
+                    .link("OpenLIT UI", OpenLitContainer.UI_PORT)
+                    .link("OTLP/HTTP", OpenLitContainer.OTLP_HTTP_PORT)
+                    .link("OTLP/gRPC", OpenLitContainer.OTLP_GRPC_PORT));
         }
 
     }

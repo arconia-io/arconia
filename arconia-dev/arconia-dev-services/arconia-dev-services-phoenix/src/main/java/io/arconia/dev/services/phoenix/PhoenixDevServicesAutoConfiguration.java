@@ -73,7 +73,9 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .additionalPort(PhoenixContainer.GRPC_PORT, properties.getOtlpGrpcPort())
                     .ssl(PhoenixDevServicesAutoConfiguration::configureSsl)
                     .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
-                    .link("Phoenix UI", PhoenixContainer.HTTP_PORT));
+                    .link("Phoenix UI", PhoenixContainer.HTTP_PORT)
+                    // Phoenix serves OTLP over HTTP on the port of its UI, so only gRPC gets a link of its own.
+                    .link("OTLP/gRPC", PhoenixContainer.GRPC_PORT));
 
             // Phoenix accepts traces only. Logs and metrics are not exported while the dev service is active.
             addDynamicProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type", () -> "none");
