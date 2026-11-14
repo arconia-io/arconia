@@ -13,7 +13,7 @@ import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycle
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 import io.arconia.dev.services.tests.SslTestCertificates;
 
@@ -34,7 +34,7 @@ class RabbitMqDevServicesSslIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test

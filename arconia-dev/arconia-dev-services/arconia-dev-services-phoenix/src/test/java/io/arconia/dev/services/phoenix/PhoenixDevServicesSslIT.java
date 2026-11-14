@@ -19,7 +19,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -49,7 +49,7 @@ class PhoenixDevServicesSslIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -76,7 +76,7 @@ class PhoenixDevServicesSslIT {
         PhoenixDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
         // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
         // the application under test never sees the dev mode it asks for.
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
             contextRunner

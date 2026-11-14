@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +33,7 @@ class KeycloakOAuth2ClientDevServicesAutoConfigurationIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test

@@ -16,7 +16,7 @@ import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycle
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -40,7 +40,7 @@ class RedisDevServicesSslIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -69,7 +69,7 @@ class RedisDevServicesSslIT {
         RedisDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
         // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
         // the application under test never sees the dev mode it asks for.
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
 

@@ -1,6 +1,7 @@
 package io.arconia.core.bootstrap;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -9,6 +10,8 @@ import org.springframework.core.NativeDetector;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Detects the application bootstrap mode based on various heuristics.
  * <p>
@@ -16,7 +19,8 @@ import org.springframework.util.StringUtils;
  * initialized. The detected mode and any problem with an explicit one are reported
  * by the environment post-processor activating the bootstrap profiles.
  */
-final class BootstrapModeDetector {
+@Internal
+public final class BootstrapModeDetector {
 
     private static final Set<String> TEST_CLASS_PREFIXES = Set.of(
         "org.junit.runners.",
@@ -49,8 +53,41 @@ final class BootstrapModeDetector {
         return mode;
     }
 
-    static void clearCache() {
+    /**
+     * Clears the detected bootstrap mode cache.
+     * Do NOT use this method in production code.
+     */
+    public static void clearCache() {
         cachedMode = null;
+    }
+
+    /**
+     * Get the bootstrap mode set explicitly, as it was set, or {@code null} when it's not set.
+     */
+    public static @Nullable String getExplicitValue() {
+        return getExplicitValue(System.getProperty(BootstrapMode.SYSTEM_PROPERTY), System.getenv(BootstrapMode.ENVIRONMENT_VARIABLE));
+    }
+
+    static @Nullable String getExplicitValue(@Nullable String systemProperty, @Nullable String environmentVariable) {
+        if (StringUtils.hasText(systemProperty)) {
+            return systemProperty;
+        }
+        return StringUtils.hasText(environmentVariable) ? environmentVariable : null;
+    }
+
+    /**
+     * Parses a bootstrap mode, case-insensitively and ignoring surrounding whitespace.
+     * Returns {@code null} when the value is not a valid bootstrap mode.
+     */
+    public static @Nullable BootstrapMode parse(@Nullable String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return BootstrapMode.valueOf(value.strip().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     private static BootstrapMode doDetect(StackTraceElement @Nullable [] stackTraceElements) {
@@ -58,10 +95,10 @@ final class BootstrapModeDetector {
                 ? Thread.currentThread().getStackTrace() : stackTraceElements;
 
         // 1. Check for an explicit mode: JVM system property or environment variable.
-        String modeProperty = BootstrapMode.getExplicitValue();
+        String modeProperty = getExplicitValue();
         if (modeProperty != null) {
             // An invalid value is reported by the environment post-processor activating the bootstrap profiles.
-            BootstrapMode mode = BootstrapMode.parse(modeProperty);
+            BootstrapMode mode = parse(modeProperty);
             return mode != null ? mode : BootstrapMode.PROD;
         }
 

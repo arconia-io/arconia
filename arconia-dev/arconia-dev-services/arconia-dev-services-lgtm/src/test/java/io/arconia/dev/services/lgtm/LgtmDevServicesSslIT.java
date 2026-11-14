@@ -21,7 +21,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 import io.arconia.dev.services.tests.SslTestCertificates;
@@ -49,7 +49,7 @@ class LgtmDevServicesSslIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test

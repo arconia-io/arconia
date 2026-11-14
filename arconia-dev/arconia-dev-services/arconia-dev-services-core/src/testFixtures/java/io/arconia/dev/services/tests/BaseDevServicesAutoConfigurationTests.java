@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
@@ -146,7 +146,7 @@ public abstract class BaseDevServicesAutoConfigurationTests {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -260,7 +260,7 @@ public abstract class BaseDevServicesAutoConfigurationTests {
         // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
         // the mode detected here outlives this call and the application under test never sees the
         // dev mode it asks for.
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
         try (GenericContainer<?> discoveredContainer = peerContainer) {
             discoveredContainer.start();
 

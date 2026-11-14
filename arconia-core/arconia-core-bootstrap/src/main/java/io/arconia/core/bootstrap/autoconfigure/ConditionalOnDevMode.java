@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Conditional;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Whether the application is running in dev mode.
  */
@@ -15,4 +17,5 @@ import org.springframework.context.annotation.Conditional;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
 @Conditional(OnDevModeCondition.class)
+@Incubating
 public @interface ConditionalOnDevMode {}

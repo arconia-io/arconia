@@ -25,6 +25,7 @@ import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,7 +42,7 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @BeforeEach
     void setUp() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -81,11 +82,11 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @Test
     void shouldWarnWhenBootstrapModeIsInvalid(CapturedOutput output) {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "invalid");
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "invalid");
         try {
             processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
         } finally {
-            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
         }
 
         assertThat(output).contains("Invalid arconia.bootstrap.mode property value: 'invalid'. Defaulting to PROD mode.");
@@ -107,12 +108,12 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @Test
     void shouldWarnWhenBootstrapModeIsDevDuringAotProcessing(CapturedOutput output) {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
         System.setProperty(AbstractAotProcessor.AOT_PROCESSING, "true");
         try {
             processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
         } finally {
-            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
             System.clearProperty(AbstractAotProcessor.AOT_PROCESSING);
         }
 
@@ -305,11 +306,11 @@ class BootstrapEnvironmentPostProcessorTests {
                 server.port=9090
                 """);
         var environment = new MockEnvironment();
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
         try {
             processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
         } finally {
-            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
         }
 
         assertThat(environment.getActiveProfiles()).containsExactly("file-dev");
@@ -328,11 +329,11 @@ class BootstrapEnvironmentPostProcessorTests {
                 server.port=9090
                 """);
         var environment = new MockEnvironment();
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "prod");
         try {
             processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
         } finally {
-            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
         }
 
         assertThat(environment.getPropertySources().contains(BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME)).isFalse();

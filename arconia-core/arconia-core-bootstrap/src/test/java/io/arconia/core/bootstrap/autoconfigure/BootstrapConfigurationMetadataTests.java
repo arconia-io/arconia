@@ -17,6 +17,7 @@ import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,8 +40,8 @@ class BootstrapConfigurationMetadataTests {
 
     @AfterEach
     void tearDown() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
+        System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -48,7 +49,7 @@ class BootstrapConfigurationMetadataTests {
         List<String> names = metadata.read("$.properties[*].name");
 
         assertThat(names).containsExactlyInAnyOrder(
-                BootstrapMode.PROPERTY_KEY,
+                BootstrapMode.SYSTEM_PROPERTY,
                 BootstrapConfigurationFile.PROFILES_ENABLED_PROPERTY,
                 BootstrapConfigurationFile.DEV_PROFILES_PROPERTY,
                 BootstrapConfigurationFile.TEST_PROFILES_PROPERTY);
@@ -56,7 +57,7 @@ class BootstrapConfigurationMetadataTests {
 
     @Test
     void shouldDescribeTheTypes() {
-        assertThat(property(BootstrapMode.PROPERTY_KEY, "type")).isEqualTo(BootstrapMode.class.getName());
+        assertThat(property(BootstrapMode.SYSTEM_PROPERTY, "type")).isEqualTo(BootstrapMode.class.getName());
         assertThat(property(BootstrapConfigurationFile.PROFILES_ENABLED_PROPERTY, "type")).isEqualTo(Boolean.class.getName());
         assertThat(property(BootstrapConfigurationFile.DEV_PROFILES_PROPERTY, "type")).isEqualTo("java.util.List<java.lang.String>");
         assertThat(property(BootstrapConfigurationFile.TEST_PROFILES_PROPERTY, "type")).isEqualTo("java.util.List<java.lang.String>");
@@ -65,8 +66,8 @@ class BootstrapConfigurationMetadataTests {
     @ParameterizedTest
     @CsvSource({ "dev, arconia.dev.profiles", "test, arconia.test.profiles" })
     void shouldDescribeTheDefaultsApplied(String mode, String profilesProperty) {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, mode);
-        BootstrapMode.clear();
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
+        BootstrapModeDetector.clearCache();
         var environment = new MockEnvironment();
 
         new BootstrapEnvironmentPostProcessor(Supplier::get).postProcessEnvironment(environment, new SpringApplication());

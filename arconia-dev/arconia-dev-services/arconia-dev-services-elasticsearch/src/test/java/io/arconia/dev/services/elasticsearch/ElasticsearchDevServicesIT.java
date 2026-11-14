@@ -19,7 +19,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.nodes.stats.NodeStatsMetric;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -47,7 +47,7 @@ class ElasticsearchDevServicesIT {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -102,7 +102,7 @@ class ElasticsearchDevServicesIT {
         // the application under test never sees the dev mode it asks for.
         ElasticsearchContainer peer = DevServiceContainers.discoverable(
                 ElasticsearchDevServicesAutoConfiguration.createContainer(properties), properties, "elasticsearch", "another-application");
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
 

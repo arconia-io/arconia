@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 /**
  * Activates the Spring profiles for the current bootstrap mode before the Spring Boot
@@ -113,10 +114,10 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
      * system is initialized.
      */
     private void logBootstrapMode(BootstrapMode mode) {
-        String explicitMode = BootstrapMode.getExplicitValue();
-        if (explicitMode != null && BootstrapMode.parse(explicitMode) == null) {
+        String explicitMode = BootstrapModeDetector.getExplicitValue();
+        if (explicitMode != null && BootstrapModeDetector.parse(explicitMode) == null) {
             logger.warn("Invalid %s property value: '%s'. Defaulting to PROD mode."
-                    .formatted(BootstrapMode.PROPERTY_KEY, explicitMode));
+                    .formatted(BootstrapMode.SYSTEM_PROPERTY, explicitMode));
         }
 
         // The test mode is expected when processing the tests ahead-of-time, whereas the dev mode

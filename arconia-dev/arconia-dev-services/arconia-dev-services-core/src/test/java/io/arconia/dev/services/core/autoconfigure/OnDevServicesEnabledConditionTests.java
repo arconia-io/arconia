@@ -20,6 +20,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,13 +41,13 @@ class OnDevServicesEnabledConditionTests {
     @BeforeEach
     void setUp() {
         when(context.getEnvironment()).thenReturn(environment);
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @AfterEach
     void tearDown() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
+        System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        BootstrapModeDetector.clearCache();
     }
 
     /**
@@ -77,8 +78,8 @@ class OnDevServicesEnabledConditionTests {
             """)
     void decidesFromModeAndProperties(String mode, @Nullable String global, @Nullable String service, @Nullable String prefix,
             @Nullable String name, boolean match, String message) {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, mode);
-        BootstrapMode.clear();
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
+        BootstrapModeDetector.clearCache();
         if (global != null) {
             environment.setProperty("arconia.dev.services.enabled", global);
         }

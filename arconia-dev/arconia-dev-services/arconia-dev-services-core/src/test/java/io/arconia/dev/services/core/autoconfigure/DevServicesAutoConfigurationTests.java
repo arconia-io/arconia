@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.containers.Network;
 
 import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,8 +23,8 @@ class DevServicesAutoConfigurationTests {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
-        BootstrapMode.clear();
+        System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -33,8 +34,8 @@ class DevServicesAutoConfigurationTests {
 
     @Test
     void networkBeanDefaultsToSharedNetwork() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
-        BootstrapMode.clear();
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "test");
+        BootstrapModeDetector.clearCache();
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(Network.class);
             assertThat(context.getBean(Network.class)).isSameAs(Network.SHARED);
@@ -43,8 +44,8 @@ class DevServicesAutoConfigurationTests {
 
     @Test
     void userNetworkBeanTakesPrecedence() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "test");
-        BootstrapMode.clear();
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "test");
+        BootstrapModeDetector.clearCache();
         Network userNetwork = new TestNetwork();
         contextRunner
                 .withBean("userNetwork", Network.class, () -> userNetwork)
@@ -56,8 +57,8 @@ class DevServicesAutoConfigurationTests {
 
     @Test
     void networkBeanIsNotCreatedInProdMode() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
-        BootstrapMode.clear();
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "prod");
+        BootstrapModeDetector.clearCache();
         contextRunner.run(context -> assertThat(context).doesNotHaveBean(Network.class));
     }
 

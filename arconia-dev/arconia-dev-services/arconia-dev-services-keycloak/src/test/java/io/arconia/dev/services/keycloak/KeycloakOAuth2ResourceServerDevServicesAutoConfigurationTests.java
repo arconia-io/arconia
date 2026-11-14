@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.env.PropertySource;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +32,7 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     private static boolean contributesIssuerUri(AssertableApplicationContext context) {

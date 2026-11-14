@@ -7,6 +7,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -35,17 +37,17 @@ class BootstrapModeDetectorTests {
         BootstrapModeDetector.clearCache();
 
         // Capture original system property
-        originalArconiaBootstrapModeProperty = System.getProperty(BootstrapMode.PROPERTY_KEY);
-        System.clearProperty(BootstrapMode.PROPERTY_KEY);
+        originalArconiaBootstrapModeProperty = System.getProperty(BootstrapMode.SYSTEM_PROPERTY);
+        System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
     }
 
     @AfterEach
     void tearDown() {
         // Restore original system property
         if (originalArconiaBootstrapModeProperty == null) {
-            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
         } else {
-            System.setProperty(BootstrapMode.PROPERTY_KEY, originalArconiaBootstrapModeProperty);
+            System.setProperty(BootstrapMode.SYSTEM_PROPERTY, originalArconiaBootstrapModeProperty);
         }
         originalArconiaBootstrapModeProperty = null;
 
@@ -62,13 +64,13 @@ class BootstrapModeDetectorTests {
     @ParameterizedTest
     @ValueSource(strings = {"DEV", "TEST", "PROD"})
     void whenArconiaBootstrapModePropertyIsSet(String modeValue) {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, modeValue);
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, modeValue);
         assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.valueOf(modeValue));
     }
 
     @Test
     void whenArconiaBootstrapModePropertyIsSetToInvalidDefaultsToProduction() {
-        System.setProperty(BootstrapMode.PROPERTY_KEY, "INVALID_MODE");
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "INVALID_MODE");
         assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.PROD);
     }
 
@@ -301,6 +303,34 @@ class BootstrapModeDetectorTests {
     void notDevelopmentClassPathWhenNullOrEmpty() {
         assertThat(BootstrapModeDetector.isDevelopmentClassPath(null)).isFalse();
         assertThat(BootstrapModeDetector.isDevelopmentClassPath("")).isFalse();
+    }
+
+    // EXPLICIT MODE
+
+    @ParameterizedTest
+    @CsvSource({ "DEV, DEV", "test, TEST", "Prod, PROD", "'\n dev', DEV", "'prod   \n', PROD" })
+    void shouldParseValidMode(String value, BootstrapMode expected) {
+        assertThat(BootstrapModeDetector.parse(value)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "   ", "INVALID", "development" })
+    void shouldNotParseInvalidMode(String value) {
+        assertThat(BootstrapModeDetector.parse(value)).isNull();
+    }
+
+    @ParameterizedTest
+    @CsvSource(nullValues = "null", value = {
+            "dev, test, dev",
+            "dev, null, dev",
+            "null, test, test",
+            "'  ', test, test",
+            "null, '', null",
+            "null, null, null"
+    })
+    void systemPropertyTakesPrecedenceOverEnvironmentVariable(String systemProperty, String environmentVariable, String expected) {
+        assertThat(BootstrapModeDetector.getExplicitValue(systemProperty, environmentVariable)).isEqualTo(expected);
     }
 
     private void mockNativeContext(boolean isNative) {

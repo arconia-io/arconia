@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.core.bootstrap.BootstrapMode;
+import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
@@ -33,7 +33,7 @@ class DevServicesEndpointAutoConfigurationTests {
     @BeforeEach
     @AfterEach
     void resetBootstrapMode() {
-        BootstrapMode.clear();
+        BootstrapModeDetector.clearCache();
     }
 
     @Test

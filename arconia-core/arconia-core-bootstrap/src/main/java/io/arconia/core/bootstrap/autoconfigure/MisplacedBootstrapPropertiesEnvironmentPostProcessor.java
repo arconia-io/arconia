@@ -75,11 +75,11 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
             if (isModeSource(propertySource) || ConfigurationPropertySources.isAttachedConfigurationPropertySource(propertySource)) {
                 continue;
             }
-            if (propertySource.containsProperty(BootstrapMode.PROPERTY_KEY)) {
+            if (propertySource.containsProperty(BootstrapMode.SYSTEM_PROPERTY)) {
                 logger.warn(("The '%s' property was found in an unsupported location (%s), where it has no effect "
                         + "because the bootstrap mode describes the launch context and is determined before the application "
                         + "configuration is loaded. Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.")
-                        .formatted(BootstrapMode.PROPERTY_KEY, propertySource.getName(), BootstrapMode.PROPERTY_KEY, BootstrapMode.ENVIRONMENT_VARIABLE));
+                        .formatted(BootstrapMode.SYSTEM_PROPERTY, propertySource.getName(), BootstrapMode.SYSTEM_PROPERTY, BootstrapMode.ENVIRONMENT_VARIABLE));
             }
         }
     }
