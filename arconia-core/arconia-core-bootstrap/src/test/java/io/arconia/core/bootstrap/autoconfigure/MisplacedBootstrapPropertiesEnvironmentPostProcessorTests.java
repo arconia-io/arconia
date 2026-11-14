@@ -1,10 +1,14 @@
 package io.arconia.core.bootstrap.autoconfigure;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -130,6 +134,18 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
 
         assertThat(output).contains("The 'arconia.dev.profiles' property was found in "
                 + "Config resource 'class path resource [misplaced-bootstrap.properties]'");
+    }
+
+    @Test
+    void shouldWarnWhenProfilesPropertyInConfigurationTreeLoadedBySpringBoot(@TempDir Path configTree, CapturedOutput output) throws IOException {
+        // Guards the name Spring Boot gives to the property sources loaded from configuration trees.
+        Files.writeString(configTree.resolve("arconia.dev.profiles"), "custom");
+        var application = new SpringApplication(TestConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+
+        application.run("--spring.config.import=configtree:" + configTree.toUri().getPath()).close();
+
+        assertThat(output).contains("The 'arconia.dev.profiles' property was found in Config tree '");
     }
 
     private static StandardEnvironment environmentWithConfigFileProperties(Map<String, Object> properties) {

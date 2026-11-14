@@ -74,7 +74,7 @@ arconia.bootstrap.profiles.enabled=false
 
 |`arconia.bootstrap.profiles.enabled`
 |`true`
-|Whether the profiles are enabled based on the application mode.
+|Whether to activate profiles based on the bootstrap mode.
 
 |`arconia.dev.profiles`
 |`dev`
@@ -90,4 +90,11 @@ Both profile properties accept a list of profiles. For example, you can define m
 [source,properties]
 ----
 arconia.dev.profiles=dev,local
+----
+
+To activate no profile in one of the modes while keeping the other, set its property to an empty value:
+
+[source,properties]
+----
+arconia.test.profiles=
 ----

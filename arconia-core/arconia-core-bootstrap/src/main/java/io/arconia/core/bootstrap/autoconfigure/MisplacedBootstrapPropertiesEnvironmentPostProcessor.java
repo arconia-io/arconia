@@ -1,5 +1,7 @@
 package io.arconia.core.bootstrap.autoconfigure;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
@@ -28,10 +30,11 @@ import io.arconia.core.bootstrap.BootstrapMode;
 class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     /**
-     * How Spring Boot names the property sources loaded by the configuration data import.
-     * See org.springframework.boot.context.config.StandardConfigDataLoader.
+     * How Spring Boot names the property sources loaded by the configuration data import,
+     * from configuration files and from configuration trees. See StandardConfigDataLoader
+     * and ConfigTreeConfigDataLoader in org.springframework.boot.context.config.
      */
-    private static final String CONFIG_RESOURCE_PROPERTY_SOURCE_NAME_PREFIX = "Config resource '";
+    private static final List<String> CONFIG_DATA_PROPERTY_SOURCE_NAME_PREFIXES = List.of("Config resource '", "Config tree '");
 
     private final Log logger;
 
@@ -51,7 +54,7 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
         warnIfBootstrapModeMisplaced(environment);
 
         for (PropertySource<?> propertySource : environment.getPropertySources()) {
-            if (!propertySource.getName().startsWith(CONFIG_RESOURCE_PROPERTY_SOURCE_NAME_PREFIX)) {
+            if (CONFIG_DATA_PROPERTY_SOURCE_NAME_PREFIXES.stream().noneMatch(propertySource.getName()::startsWith)) {
                 continue;
             }
             for (String propertyKey : BootstrapConfigurationFile.SUPPORTED_PROPERTIES) {

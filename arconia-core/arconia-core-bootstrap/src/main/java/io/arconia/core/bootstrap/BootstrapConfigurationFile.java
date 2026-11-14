@@ -24,17 +24,17 @@ public final class BootstrapConfigurationFile {
     public static final String LOCATION = "META-INF/arconia-bootstrap.properties";
 
     /**
-     * Whether the profiles are enabled based on the application mode.
+     * Whether to activate profiles based on the bootstrap mode.
      */
     public static final String PROFILES_ENABLED_PROPERTY = "arconia.bootstrap.profiles.enabled";
 
     /**
-     * Name of the profiles to activate in development mode.
+     * Names of the profiles to activate in dev mode.
      */
     public static final String DEV_PROFILES_PROPERTY = "arconia.dev.profiles";
 
     /**
-     * Name of the profiles to activate in test mode.
+     * Names of the profiles to activate in test mode.
      */
     public static final String TEST_PROFILES_PROPERTY = "arconia.test.profiles";
 

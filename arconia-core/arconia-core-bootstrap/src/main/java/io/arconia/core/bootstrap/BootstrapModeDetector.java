@@ -162,7 +162,7 @@ public final class BootstrapModeDetector {
             return false;
         }
         for (String entry : classPath.split(File.pathSeparator)) {
-            String path = entry.replace('\\', '/');
+            String path = StringUtils.trimTrailingCharacter(entry.replace('\\', '/'), '/');
             if (path.contains("/build/classes/")            // Gradle
                     || path.endsWith("/target/classes")     // Maven
                     || path.contains("/out/production/")    // IntelliJ IDEA

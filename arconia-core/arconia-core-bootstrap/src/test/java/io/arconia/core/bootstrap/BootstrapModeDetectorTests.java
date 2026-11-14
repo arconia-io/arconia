@@ -306,6 +306,12 @@ class BootstrapModeDetectorTests {
     }
 
     @Test
+    void developmentClassPathWhenTrailingSeparator() {
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("/home/user/demo/target/classes/")).isTrue();
+        assertThat(BootstrapModeDetector.isDevelopmentClassPath("D:\\demo\\bin\\main\\")).isTrue();
+    }
+
+    @Test
     void developmentClassPathWhenWindowsPaths() {
         assertThat(BootstrapModeDetector.isDevelopmentClassPath("D:\\demo\\build\\classes\\java\\main")).isTrue();
     }

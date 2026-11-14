@@ -5,6 +5,10 @@ Arconia {page-component-version} provides a number of new features and enhanceme
 
 We provide an automated way to upgrade your project to the latest version of Arconia, which is described in the xref:upgrading-arconia.adoc[Upgrading Arconia] documentation.
 
+== Core Features
+
+* Arconia now also warns when the profile settings (`arconia.dev.profiles`, `arconia.test.profiles`, `arconia.bootstrap.profiles.enabled`) are found in a configuration tree imported with `spring.config.import=configtree:`, where they have no effect, as it does for configuration files. Learn more about xref:core-features/profiles.adoc#_customizing_the_profiles[Customizing the Profiles].
+
 == Dev Services
 
 * The OpenLIT and Phoenix Dev Services now report their OTLP endpoints among their links, as the Grafana LGTM and OpenTelemetry Collector Dev Services do. Learn more about xref:dev-services:index.adoc#_startup_feedback[Startup Feedback].

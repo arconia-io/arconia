@@ -76,7 +76,7 @@ class BootstrapEnvironmentPostProcessorTests {
     void shouldWarnWhenBootstrapModeIsInvalid(CapturedOutput output) {
         postProcess("invalid", new MockEnvironment());
 
-        assertThat(output).contains("Invalid arconia.bootstrap.mode property value: 'invalid'. Defaulting to PROD mode.");
+        assertThat(output).contains("Invalid bootstrap mode: 'invalid'. Supported values: dev, test, prod. Defaulting to prod mode.");
     }
 
     @Test
@@ -102,7 +102,7 @@ class BootstrapEnvironmentPostProcessorTests {
             System.clearProperty(AbstractAotProcessor.AOT_PROCESSING);
         }
 
-        assertThat(output).contains("The bootstrap mode is set to DEV while Spring AOT processing is running.");
+        assertThat(output).contains("The bootstrap mode is set to dev while Spring AOT processing is running.");
     }
 
     // PROFILES
