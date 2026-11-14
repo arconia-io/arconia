@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -21,7 +19,6 @@ import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
@@ -143,12 +140,6 @@ public abstract class BaseDevServicesAutoConfigurationTests {
                 : new String[0];
     }
 
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
-
     @Test
     void skippedInTestModeByDefault() {
         Assumptions.assumeTrue(isSkippedInTestsByDefault(), "the dev service is not skipped in test mode");
@@ -257,10 +248,6 @@ public abstract class BaseDevServicesAutoConfigurationTests {
     void containerDiscoveredWhenStartedByAnotherApplication() {
         GenericContainer<?> peerContainer = createDiscoverableContainer("another-application");
         Assumptions.assumeTrue(peerContainer != null, "dev service does not support discovery");
-        // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
-        // the mode detected here outlives this call and the application under test never sees the
-        // dev mode it asks for.
-        BootstrapModeDetector.clearCache();
         try (GenericContainer<?> discoveredContainer = peerContainer) {
             discoveredContainer.start();
 

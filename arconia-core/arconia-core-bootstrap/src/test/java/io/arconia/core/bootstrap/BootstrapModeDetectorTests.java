@@ -69,6 +69,24 @@ class BootstrapModeDetectorTests {
     }
 
     @Test
+    void explicitModeTakesPrecedenceOverCachedMode() {
+        // The detected mode is cached.
+        assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.TEST);
+
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
+        assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.DEV);
+    }
+
+    @Test
+    void explicitModeIsNotCached() {
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
+        assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.DEV);
+
+        System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.TEST);
+    }
+
+    @Test
     void whenArconiaBootstrapModePropertyIsSetToInvalidDefaultsToProduction() {
         System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "INVALID_MODE");
         assertThat(BootstrapModeDetector.detect()).isEqualTo(BootstrapMode.PROD);

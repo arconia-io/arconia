@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -25,7 +24,6 @@ import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,11 +37,6 @@ import static org.mockito.Mockito.mock;
 class BootstrapEnvironmentPostProcessorTests {
 
     private final BootstrapEnvironmentPostProcessor processor = new BootstrapEnvironmentPostProcessor(Supplier::get);
-
-    @BeforeEach
-    void setUp() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void shouldThrowExceptionWhenEnvironmentIsNull() {

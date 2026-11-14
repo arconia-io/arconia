@@ -17,7 +17,6 @@ import org.springframework.mock.env.MockEnvironment;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +40,6 @@ class BootstrapConfigurationMetadataTests {
     @AfterEach
     void tearDown() {
         System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        BootstrapModeDetector.clearCache();
     }
 
     @Test
@@ -67,7 +65,6 @@ class BootstrapConfigurationMetadataTests {
     @CsvSource({ "dev, arconia.dev.profiles", "test, arconia.test.profiles" })
     void shouldDescribeTheDefaultsApplied(String mode, String profilesProperty) {
         System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
-        BootstrapModeDetector.clearCache();
         var environment = new MockEnvironment();
 
         new BootstrapEnvironmentPostProcessor(Supplier::get).postProcessEnvironment(environment, new SpringApplication());

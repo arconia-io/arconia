@@ -6,8 +6,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.json.JsonParserFactory;
@@ -17,7 +15,6 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,12 +33,6 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationIT {
                     KeycloakOAuth2ResourceServerDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class,
                     OAuth2ResourceServerAutoConfiguration.class));
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void jwtDecoderResolvedAgainstTheDevService() {

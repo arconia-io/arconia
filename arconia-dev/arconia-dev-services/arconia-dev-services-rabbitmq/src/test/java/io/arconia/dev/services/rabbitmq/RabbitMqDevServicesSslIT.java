@@ -1,7 +1,5 @@
 package io.arconia.dev.services.rabbitmq;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -13,7 +11,6 @@ import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycle
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 import io.arconia.dev.services.tests.SslTestCertificates;
 
@@ -30,12 +27,6 @@ class RabbitMqDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(RabbitMqDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, RabbitAutoConfiguration.class))
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationConnectsOverSsl() {

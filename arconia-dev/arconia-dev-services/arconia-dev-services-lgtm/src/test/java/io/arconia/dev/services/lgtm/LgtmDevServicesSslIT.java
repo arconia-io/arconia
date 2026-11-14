@@ -10,8 +10,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
@@ -21,7 +19,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 import io.arconia.dev.services.tests.SslTestCertificates;
@@ -45,12 +42,6 @@ class LgtmDevServicesSslIT {
                     OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryTracingExporterAutoConfiguration.class))
             .withPropertyValues("arconia.dev.services.lgtm.skip-in-tests=false")
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationExportsTracesOverSsl() throws Exception {

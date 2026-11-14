@@ -37,7 +37,7 @@ When running in dev or test mode, Arconia logs the active mode at startup:
 The application is running in dev mode
 ----
 
-To check the mode in your code, use `BootstrapMode.detect()`, or the `BootstrapMode.isDev()` and `BootstrapMode.isTest()` shortcuts, from the `io.arconia.core.bootstrap` package. The mode is detected once and cached for the lifetime of the JVM.
+To check the mode in your code, use `BootstrapMode.detect()`, or the `BootstrapMode.isDev()` and `BootstrapMode.isTest()` shortcuts, from the `io.arconia.core.bootstrap` package. When the mode is not set explicitly, it's detected once and cached for the lifetime of the JVM.
 
 == Registering Beans Based on the Bootstrap Mode
 

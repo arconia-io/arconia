@@ -1,7 +1,5 @@
 package io.arconia.dev.services.keycloak;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -12,7 +10,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,12 +22,6 @@ class KeycloakOAuth2ClientDevServicesAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ClientDevServicesAutoConfiguration.class));
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void backsOffWhenSpringSecurityOAuth2ClientIsAbsent() {

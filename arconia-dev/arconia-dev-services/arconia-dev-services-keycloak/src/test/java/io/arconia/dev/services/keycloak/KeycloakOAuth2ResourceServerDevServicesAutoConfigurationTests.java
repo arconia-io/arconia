@@ -1,7 +1,5 @@
 package io.arconia.dev.services.keycloak;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -10,7 +8,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.env.PropertySource;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,12 +25,6 @@ class KeycloakOAuth2ResourceServerDevServicesAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(
                     KeycloakDevServicesAutoConfiguration.class,
                     KeycloakOAuth2ResourceServerDevServicesAutoConfiguration.class));
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     private static boolean contributesIssuerUri(AssertableApplicationContext context) {
         PropertySource<?> propertySource = context.getEnvironment().getPropertySources()

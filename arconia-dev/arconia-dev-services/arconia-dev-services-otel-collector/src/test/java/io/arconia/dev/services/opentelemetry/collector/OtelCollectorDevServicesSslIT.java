@@ -10,8 +10,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties;
@@ -23,7 +21,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycleApplicationContextInitializer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -48,12 +45,6 @@ class OtelCollectorDevServicesSslIT {
                     OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryTracingExporterAutoConfiguration.class))
             .withPropertyValues("arconia.dev.services.otel-collector.skip-in-tests=false")
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationExportsTracesOverSsl() {
@@ -92,9 +83,6 @@ class OtelCollectorDevServicesSslIT {
         properties.getSsl().getPem().getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
         ArconiaOtelCollectorContainer peer = DevServiceContainers.discoverable(new ArconiaOtelCollectorContainer(properties), properties, "otel-collector", "another-application");
         OtelCollectorDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
-        // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
-        // the application under test never sees the dev mode it asks for.
-        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
             contextRunner

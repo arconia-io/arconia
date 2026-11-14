@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.actuate.endpoint.DevServicesEndpoint;
@@ -29,12 +26,6 @@ class DevServicesEndpointAutoConfigurationTests {
     private static final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(DevServicesEndpointAutoConfiguration.class))
             .withPropertyValues("management.endpoints.web.exposure.include=devservices");
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void endpointBeanIsAvailableWhenDevModeIsEnabled() {

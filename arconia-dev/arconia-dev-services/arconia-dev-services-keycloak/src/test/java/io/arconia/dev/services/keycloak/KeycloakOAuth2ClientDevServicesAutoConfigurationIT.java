@@ -1,7 +1,5 @@
 package io.arconia.dev.services.keycloak;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
@@ -12,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,12 +26,6 @@ class KeycloakOAuth2ClientDevServicesAutoConfigurationIT {
                     KeycloakOAuth2ClientDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class,
                     OAuth2ClientAutoConfiguration.class));
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void devServiceRegistersTheClientRegistrationItself() {

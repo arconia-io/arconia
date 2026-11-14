@@ -3,8 +3,6 @@ package io.arconia.dev.services.kafka;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.admin.AdminClient;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration;
@@ -14,7 +12,6 @@ import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycle
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.kafka.core.KafkaAdmin;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 import io.arconia.dev.services.tests.SslTestCertificates;
 
@@ -31,12 +28,6 @@ class KafkaDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(KafkaDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, KafkaAutoConfiguration.class))
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationConnectsOverSsl() {

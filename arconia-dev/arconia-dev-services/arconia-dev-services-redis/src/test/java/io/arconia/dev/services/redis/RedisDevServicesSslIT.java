@@ -1,7 +1,5 @@
 package io.arconia.dev.services.redis;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties;
@@ -16,7 +14,6 @@ import org.springframework.boot.testcontainers.lifecycle.TestcontainersLifecycle
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -36,12 +33,6 @@ class RedisDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(RedisDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, DataRedisAutoConfiguration.class, SslAutoConfiguration.class))
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationConnectsOverSslWithPemBundle() {
@@ -67,9 +58,6 @@ class RedisDevServicesSslIT {
         properties.getSsl().getPem().getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
         RedisContainer peer = DevServiceContainers.discoverable(RedisDevServicesAutoConfiguration.createContainer(properties), properties, "redis", "another-application");
         RedisDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
-        // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
-        // the application under test never sees the dev mode it asks for.
-        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
 

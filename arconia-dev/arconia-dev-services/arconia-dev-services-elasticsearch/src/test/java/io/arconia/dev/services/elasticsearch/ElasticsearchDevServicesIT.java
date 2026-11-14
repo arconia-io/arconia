@@ -3,8 +3,6 @@ package io.arconia.dev.services.elasticsearch;
 import java.time.Duration;
 
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchClientAutoConfiguration;
@@ -19,7 +17,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.nodes.stats.NodeStatsMetric;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
@@ -43,12 +40,6 @@ class ElasticsearchDevServicesIT {
                     ElasticsearchClientAutoConfiguration.class))
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer())
             .withPropertyValues(STARTUP_TIMEOUT);
-
-    @BeforeEach
-    @AfterEach
-    void resetBootstrapMode() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void applicationConnectsOverHttpByDefault() {
@@ -98,11 +89,8 @@ class ElasticsearchDevServicesIT {
     void applicationConnectsToDiscoveredContainerWithTheCertificateItGenerated() {
         var properties = new ElasticsearchDevServicesProperties();
         properties.getSsl().setEnabled(true);
-        // Constructing a dev service container detects and caches the bootstrap mode. Clear it, or
-        // the application under test never sees the dev mode it asks for.
         ElasticsearchContainer peer = DevServiceContainers.discoverable(
                 ElasticsearchDevServicesAutoConfiguration.createContainer(properties), properties, "elasticsearch", "another-application");
-        BootstrapModeDetector.clearCache();
         try (peer) {
             peer.start();
 

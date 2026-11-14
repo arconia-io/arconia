@@ -5,13 +5,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.testcontainers.ollama.OllamaContainer;
 
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.tests.DevServiceContainers;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
@@ -28,11 +26,6 @@ class OllamaOpenAiDevServicesAutoConfigurationIT {
                     OllamaDevServicesAutoConfiguration.class,
                     OllamaOpenAiDevServicesAutoConfiguration.class))
             .withPropertyValues("arconia.dev.services.ollama.ignore-native-service=true");
-
-    @BeforeEach
-    void setUp() {
-        BootstrapModeDetector.clearCache();
-    }
 
     @Test
     void openAiBaseUrlResolvedFromContainer() {

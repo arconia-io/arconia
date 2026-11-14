@@ -16,7 +16,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
 import io.arconia.core.bootstrap.BootstrapMode;
-import io.arconia.core.bootstrap.BootstrapModeDetector;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.core.TestDevServicesProperties;
@@ -42,12 +41,10 @@ final class DevServicesTestSupport {
 
     static void resetBootstrapMode() {
         System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        BootstrapModeDetector.clearCache();
     }
 
     private static void setBootstrapMode(String mode) {
         System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
-        BootstrapModeDetector.clearCache();
     }
 
     // REGISTRIES
