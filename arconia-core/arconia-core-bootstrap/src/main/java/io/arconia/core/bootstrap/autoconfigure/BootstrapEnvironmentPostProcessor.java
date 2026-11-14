@@ -114,9 +114,11 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
                     BootstrapMode.PROPERTY_KEY, explicitMode));
         }
 
-        if (mode != BootstrapMode.PROD && Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING)) {
-            logger.warn(LogMessage.format("The bootstrap mode is set to %s while Spring AOT processing is running. "
-                    + "The %s mode behavior will be baked into the AOT artifacts.", mode, mode));
+        // The test mode is expected when processing the tests ahead-of-time, whereas the dev mode
+        // is never detected during AOT processing, so it can only come from an explicit value.
+        if (mode == BootstrapMode.DEV && Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING)) {
+            logger.warn("The bootstrap mode is set to DEV while Spring AOT processing is running. "
+                    + "The DEV mode behavior will be baked into the AOT artifacts.");
         }
 
         if (mode == BootstrapMode.PROD) {

@@ -92,7 +92,21 @@ class BootstrapEnvironmentPostProcessorTests {
     }
 
     @Test
-    void shouldWarnWhenBootstrapModeIsNotProdDuringAotProcessing(CapturedOutput output) {
+    void shouldNotWarnWhenBootstrapModeIsTestDuringAotProcessing(CapturedOutput output) {
+        // The mode detected when Spring AOT processes the tests.
+        System.setProperty(AbstractAotProcessor.AOT_PROCESSING, "true");
+        try {
+            processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
+        } finally {
+            System.clearProperty(AbstractAotProcessor.AOT_PROCESSING);
+        }
+
+        assertThat(output).contains("The application is running in test mode");
+        assertThat(output).doesNotContain("while Spring AOT processing is running");
+    }
+
+    @Test
+    void shouldWarnWhenBootstrapModeIsDevDuringAotProcessing(CapturedOutput output) {
         System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
         System.setProperty(AbstractAotProcessor.AOT_PROCESSING, "true");
         try {
