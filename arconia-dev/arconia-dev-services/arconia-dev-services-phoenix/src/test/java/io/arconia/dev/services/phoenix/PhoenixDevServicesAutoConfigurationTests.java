@@ -1,5 +1,6 @@
 package io.arconia.dev.services.phoenix;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
 import io.arconia.dev.services.api.registration.DevServiceRegistration;
@@ -131,6 +134,19 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
                     assertThat(DevServiceContainers.copiedFiles(container)).containsValues(
                             PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.crt",
                             PhoenixDevServicesAutoConfiguration.SSL_DIRECTORY + "server.key");
+                });
+    }
+
+    @Test
+    void sslKeepsTheStartupTimeout() {
+        getContextRunner()
+                .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
+                .withPropertyValues("arconia.dev.services.phoenix.startup-timeout=3m")
+                .run(context -> {
+                    var container = (PhoenixContainer) context.getBean(getContainerClass());
+                    WaitStrategy waitStrategy = ReflectionTestUtils.invokeMethod(container, "getWaitStrategy");
+                    assertThat(waitStrategy).isNotNull();
+                    assertThat(ReflectionTestUtils.getField(waitStrategy, "startupTimeout")).isEqualTo(Duration.ofMinutes(3));
                 });
     }
 

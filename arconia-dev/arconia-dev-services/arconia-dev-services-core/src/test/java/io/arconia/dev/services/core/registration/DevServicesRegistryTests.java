@@ -29,7 +29,10 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -938,6 +941,24 @@ class DevServicesRegistryTests {
             assertThat(container.getEnvMap()).containsEntry("SSL", "true");
             assertThat(configuredBundle.get()).isNotNull();
             assertThat(configuredBundle.get().getStores().getKeyStore()).isNotNull();
+        }
+
+        @Test
+        void whenSslConfigurerReplacesTheWaitStrategyThenTheStartupTimeoutStillApplies() {
+            TestSslDevServicesProperties properties = TestSslDevServicesProperties.pem();
+            DevServiceSslConfigurer<TestLinkContainer> replacingConfigurer = (container, bundle) -> container.waitingFor(Wait.forListeningPort());
+            registry.registerDevService(service -> service
+                    .name("secure")
+                    .description("Test Dev Service")
+                    .properties(properties)
+                    .container(TestLinkContainer.class, TestLinkContainer::new)
+                    .ssl(replacingConfigurer));
+
+            var container = beanFactory.getBean(BeanName.CONTAINER.of("secure"), GenericContainer.class);
+
+            WaitStrategy waitStrategy = ReflectionTestUtils.invokeMethod(container, "getWaitStrategy");
+            assertThat(waitStrategy).isNotNull();
+            assertThat(ReflectionTestUtils.getField(waitStrategy, "startupTimeout")).isEqualTo(properties.getStartupTimeout());
         }
 
         @Test

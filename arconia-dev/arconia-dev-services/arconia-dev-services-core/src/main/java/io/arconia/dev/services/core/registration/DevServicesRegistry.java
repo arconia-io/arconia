@@ -372,6 +372,9 @@ public final class DevServicesRegistry {
             bindFixedPorts(container, service);
             if (sslBundle != null) {
                 DevServiceSslSupport.configure(container, service, sslBundle.bundle());
+                // The configurer may replace the wait strategy, as when the readiness check
+                // moves to SSL, so the startup timeout is applied to the one in place now.
+                container.withStartupTimeout(service.properties().getStartupTimeout());
             }
             container.withReuse(reuse.effective() == ReuseStrategy.TESTCONTAINERS);
             applyCustomizers(container, registeredBean.getBeanFactory());
