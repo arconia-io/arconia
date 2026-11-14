@@ -7,20 +7,27 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
 import io.arconia.core.bootstrap.BootstrapMode;
@@ -52,15 +59,7 @@ class BootstrapEnvironmentPostProcessorTests {
                 .hasMessage("application cannot be null");
     }
 
-    @Test
-    void shouldNotAddProfilesWhenDisabled() {
-        var environment = new MockEnvironment().withProperty("arconia.bootstrap.profiles.enabled", "false");
-        var application = new SpringApplication();
-
-        processor.postProcessEnvironment(environment, application);
-
-        assertThat(environment.getActiveProfiles()).isEmpty();
-    }
+    // BOOTSTRAP MODE
 
     @Test
     void shouldLogBootstrapModeDuringApplicationStartup(CapturedOutput output) {
@@ -75,12 +74,7 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @Test
     void shouldWarnWhenBootstrapModeIsInvalid(CapturedOutput output) {
-        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "invalid");
-        try {
-            processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
-        } finally {
-            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        }
+        postProcess("invalid", new MockEnvironment());
 
         assertThat(output).contains("Invalid arconia.bootstrap.mode property value: 'invalid'. Defaulting to PROD mode.");
     }
@@ -101,210 +95,164 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @Test
     void shouldWarnWhenBootstrapModeIsDevDuringAotProcessing(CapturedOutput output) {
-        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
         System.setProperty(AbstractAotProcessor.AOT_PROCESSING, "true");
         try {
-            processor.postProcessEnvironment(new MockEnvironment(), new SpringApplication());
+            postProcess("dev", new MockEnvironment());
         } finally {
-            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
             System.clearProperty(AbstractAotProcessor.AOT_PROCESSING);
         }
 
         assertThat(output).contains("The bootstrap mode is set to DEV while Spring AOT processing is running.");
     }
 
-    // DEV
+    // PROFILES
 
-    @Test
-    void shouldAddDefaultProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("dev");
-                });
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldAddDefaultProfile(String mode) {
+        var environment = postProcess(mode, new MockEnvironment());
+
+        assertThat(environment.getActiveProfiles()).containsExactly(mode);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldAddCustomProfile(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty(profilesProperty(mode), "custom"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("custom");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldAddMultipleProfilesInOrder(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty(profilesProperty(mode), "custom1, \ncustom2,custom3"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("custom1", "custom2", "custom3");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldAddIndexedProfiles(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty(profilesProperty(mode) + "[0]", "custom1")
+                .withProperty(profilesProperty(mode) + "[1]", "custom2"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("custom1", "custom2");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldFilterEmptyProfilesInList(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty(profilesProperty(mode), "custom1,,custom2, ,custom3"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("custom1", "custom2", "custom3");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldNotAddProfileWhenEmpty(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty(profilesProperty(mode), ""));
+
+        assertThat(environment.getActiveProfiles()).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldNotAddProfilesWhenDisabled(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty("arconia.bootstrap.profiles.enabled", "false"));
+
+        assertThat(environment.getActiveProfiles()).isEmpty();
     }
 
     @Test
-    void shouldAddCustomProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.profiles=custom-dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("custom-dev");
-                });
+    void shouldOnlyAddProfilesOfCurrentMode() {
+        var environment = postProcess("dev", new MockEnvironment()
+                .withProperty("arconia.test.profiles", "custom"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("dev");
     }
 
     @Test
-    void shouldNotAddDuplicateProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("spring.profiles.active=custom-dev")
-                .withPropertyValues("arconia.dev.profiles=custom-dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).hasSize(1);
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("custom-dev");
-                });
+    void shouldAddNoProfileWhenProductionMode() {
+        var environment = postProcess("prod", new MockEnvironment()
+                .withProperty("arconia.dev.profiles", "custom-dev")
+                .withProperty("arconia.test.profiles", "custom-test"));
+
+        assertThat(environment.getActiveProfiles()).isEmpty();
     }
 
     @Test
-    void shouldNotAddEmptyProfileWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.profiles=")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).doesNotContain("dev");
-                });
+    void shouldAddModeProfilesBeforeProgrammaticallySetProfiles() {
+        var environment = new MockEnvironment();
+        environment.setActiveProfiles("custom");
+
+        postProcess("dev", environment);
+
+        assertThat(environment.getActiveProfiles()).containsExactly("dev", "custom");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "dev", "test" })
+    void shouldNotAddAlreadyActiveProfile(String mode) {
+        var environment = postProcess(mode, new MockEnvironment()
+                .withProperty("spring.profiles.active", "custom")
+                .withProperty(profilesProperty(mode), "custom"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("custom");
     }
 
     @Test
-    void shouldAddMultipleProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.profiles=dev1,dev2,dev3")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles())
-                            .contains("dev1", "dev2", "dev3");
-                });
+    void shouldNotAddAlreadyActiveIndexedProfile() {
+        var environment = postProcess("dev", new MockEnvironment()
+                .withProperty("spring.profiles.active[0]", "custom")
+                .withProperty("arconia.dev.profiles", "custom"));
+
+        // The indexed declaration is only visible through the Binder. Since the profile
+        // is recognized as already declared, the post-processor adds nothing on top.
+        assertThat(environment.getActiveProfiles()).isEmpty();
     }
 
-    @Test
-    void shouldAddIndexedProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.profiles[0]=dev1", "arconia.dev.profiles[1]=dev2")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("dev1", "dev2");
-                });
-    }
+    // PROPERTY SOURCES
 
     @Test
-    void shouldNotAddDuplicateIndexedProfilesWhenDevMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("spring.profiles.active[0]=custom-dev")
-                .withPropertyValues("arconia.dev.profiles=custom-dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    // The indexed declaration is only visible through the Binder. Since the profile
-                    // is recognized as already declared, the post-processor adds nothing on top.
-                    assertThat(context.getEnvironment().getActiveProfiles()).isEmpty();
-                });
-    }
+    void shouldPreferCommandLineArgumentsOverOtherSources() {
+        var environment = new MockEnvironment().withProperty("arconia.dev.profiles", "other-dev");
+        environment.getPropertySources().addFirst(new SimpleCommandLinePropertySource("--arconia.dev.profiles=cli-dev"));
 
-    @Test
-    void shouldActivateProfilesFromCommandLineArguments() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withInitializer(context -> {
-                    var environment = context.getEnvironment();
-                    environment.getPropertySources().addFirst(new SimpleCommandLinePropertySource("--arconia.dev.profiles=cli-dev"));
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(environment, application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("cli-dev");
-                });
-    }
+        postProcess("dev", environment);
 
-    @Test
-    void shouldPreferCommandLineArgumentsOverSystemProperties() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev", "arconia.dev.profiles=system-dev")
-                .withInitializer(context -> {
-                    var environment = context.getEnvironment();
-                    environment.getPropertySources().addFirst(new SimpleCommandLinePropertySource("--arconia.dev.profiles=cli-dev"));
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(environment, application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("cli-dev");
-                    assertThat(context.getEnvironment().getActiveProfiles()).doesNotContain("system-dev");
-                });
+        assertThat(environment.getActiveProfiles()).containsExactly("cli-dev");
     }
 
     @Test
     void shouldActivateProfilesFromBootstrapConfigurationFile() {
-        var classLoader = classLoaderWithBootstrapFile("arconia.dev.profiles=file-dev");
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(new DefaultResourceLoader(classLoader), TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("file-dev");
-                    assertThat(context.getEnvironment().getPropertySources()
-                            .contains(BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME)).isTrue();
-                });
+        var environment = postProcess("dev", new MockEnvironment(), applicationWithBootstrapFile("arconia.dev.profiles=file-dev"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("file-dev");
+        assertThat(environment.getPropertySources().contains(BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME)).isTrue();
     }
 
     @Test
-    void shouldPreferSystemPropertiesOverBootstrapConfigurationFile() {
-        var classLoader = classLoaderWithBootstrapFile("arconia.dev.profiles=file-dev");
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev", "arconia.dev.profiles=system-dev")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(new DefaultResourceLoader(classLoader), TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("system-dev");
-                    assertThat(context.getEnvironment().getActiveProfiles()).doesNotContain("file-dev");
-                });
+    void shouldPreferOtherSourcesOverBootstrapConfigurationFile() {
+        var environment = postProcess("dev", new MockEnvironment().withProperty("arconia.dev.profiles", "other-dev"),
+                applicationWithBootstrapFile("arconia.dev.profiles=file-dev"));
+
+        assertThat(environment.getActiveProfiles()).containsExactly("other-dev");
     }
 
     @Test
     void shouldIgnoreUnsupportedPropertiesInBootstrapConfigurationFile(CapturedOutput output) {
-        var classLoader = classLoaderWithBootstrapFile("""
+        var environment = postProcess("dev", new MockEnvironment(), applicationWithBootstrapFile("""
                 arconia.dev.profiles[0]=file-dev
                 arconia.bootstrap.mode=prod
                 server.port=9090
-                """);
-        var environment = new MockEnvironment();
-        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
-        try {
-            processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
-        } finally {
-            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        }
+                """));
 
         assertThat(environment.getActiveProfiles()).containsExactly("file-dev");
         assertThat(environment.containsProperty("server.port")).isFalse();
@@ -317,24 +265,93 @@ class BootstrapEnvironmentPostProcessorTests {
 
     @Test
     void shouldNotLoadBootstrapConfigurationFileWhenProductionMode(CapturedOutput output) {
-        var classLoader = classLoaderWithBootstrapFile("""
+        var environment = postProcess("prod", new MockEnvironment(), applicationWithBootstrapFile("""
                 arconia.dev.profiles=file-dev
                 server.port=9090
-                """);
-        var environment = new MockEnvironment();
-        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "prod");
-        try {
-            processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
-        } finally {
-            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        }
+                """));
 
         assertThat(environment.getPropertySources().contains(BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME)).isFalse();
         assertThat(output).doesNotContain("is not supported in the");
     }
 
-    private static ClassLoader classLoaderWithBootstrapFile(String content) {
-        return new ClassLoader(BootstrapEnvironmentPostProcessorTests.class.getClassLoader()) {
+    // APPLICATION STARTUP
+
+    @Test
+    void shouldLoadProfileSpecificConfigurationDuringApplicationStartup() {
+        try (var context = run("dev", "--spring.config.name=bootstrap-profiles")) {
+            assertThat(context.getEnvironment().getActiveProfiles()).containsExactly("dev");
+            assertThat(context.getEnvironment().getProperty("greeting")).isEqualTo("dev");
+        }
+    }
+
+    @Test
+    void shouldGivePrecedenceToUserProfilesDuringApplicationStartup() {
+        try (var context = run("dev", "--spring.config.name=bootstrap-profiles", "--spring.profiles.active=local")) {
+            assertThat(context.getEnvironment().getActiveProfiles()).containsExactly("dev", "local");
+            assertThat(context.getEnvironment().getProperty("greeting")).isEqualTo("local");
+            assertThat(context.getEnvironment().getProperty("dev.only")).isEqualTo("true");
+        }
+    }
+
+    @Test
+    void shouldAddModeProfilesBeforeProfilesActivatedInApplicationConfiguration() {
+        try (var context = run("dev", "--spring.config.name=profiles-in-config")) {
+            assertThat(context.getEnvironment().getActiveProfiles()).containsExactly("dev", "local");
+        }
+    }
+
+    @Nested
+    @SpringBootTest(classes = TestConfig.class)
+    @ActiveProfiles("custom")
+    class WhenTestActivatesProfiles {
+
+        @Autowired
+        Environment environment;
+
+        @Test
+        void shouldAddModeProfilesBeforeTestProfiles() {
+            assertThat(environment.getActiveProfiles()).containsExactly("test", "custom");
+        }
+
+    }
+
+    /**
+     * Runs the post-processor with the given bootstrap mode set explicitly.
+     */
+    private <E extends ConfigurableEnvironment> E postProcess(String mode, E environment) {
+        return postProcess(mode, environment, new SpringApplication());
+    }
+
+    private <E extends ConfigurableEnvironment> E postProcess(String mode, E environment, SpringApplication application) {
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
+        try {
+            processor.postProcessEnvironment(environment, application);
+        } finally {
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        }
+        return environment;
+    }
+
+    /**
+     * Runs the full startup with the given bootstrap mode set explicitly.
+     */
+    private static ConfigurableApplicationContext run(String mode, String... args) {
+        var application = new SpringApplication(TestConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, mode);
+        try {
+            return application.run(args);
+        } finally {
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        }
+    }
+
+    private static String profilesProperty(String mode) {
+        return "arconia.%s.profiles".formatted(mode);
+    }
+
+    private static SpringApplication applicationWithBootstrapFile(String content) {
+        var classLoader = new ClassLoader(BootstrapEnvironmentPostProcessorTests.class.getClassLoader()) {
             @Override
             @Nullable
             public InputStream getResourceAsStream(String name) {
@@ -344,121 +361,10 @@ class BootstrapEnvironmentPostProcessorTests {
                 return super.getResourceAsStream(name);
             }
         };
+        return new SpringApplication(new DefaultResourceLoader(classLoader));
     }
 
-    @Test
-    void shouldFilterEmptyProfilesInList() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=dev")
-                .withPropertyValues("arconia.dev.profiles=dev1,,dev2, ,dev3")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles())
-                            .contains("dev1", "dev2", "dev3")
-                            .hasSize(3);
-                });
-    }
-
-    // TEST
-
-    @Test
-    void shouldAddDefaultProfilesWhenTestMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("test");
-                });
-    }
-
-    @Test
-    void shouldAddCustomProfilesWhenTestMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .withPropertyValues("arconia.test.profiles=custom-test")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("custom-test");
-                });
-    }
-
-    @Test
-    void shouldNotAddDuplicateProfilesWhenTestMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .withPropertyValues("spring.profiles.active=custom-test")
-                .withPropertyValues("arconia.test.profiles=custom-test")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).hasSize(1);
-                    assertThat(context.getEnvironment().getActiveProfiles()).contains("custom-test");
-                });
-    }
-
-    @Test
-    void shouldNotAddEmptyProfileWhenTestMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .withPropertyValues("arconia.test.profiles=")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).doesNotContain("test");
-                });
-    }
-
-    @Test
-    void shouldAddMultipleProfilesWhenTestMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
-                .withPropertyValues("arconia.test.profiles=test1, \ntest2,test3")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles())
-                            .contains("test1", "test2", "test3");
-                });
-    }
-
-    // PRODUCTION
-
-    @Test
-    void shouldAddNoProfileWhenProductionMode() {
-        new ApplicationContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=prod")
-                .withInitializer(context -> {
-                    var application = new SpringApplication(TestConfig.class);
-                    application.setMainApplicationClass(context.getClass());
-                    processor.postProcessEnvironment(context.getEnvironment(), application);
-                })
-                .run(context -> {
-                    assertThat(context.getEnvironment().getActiveProfiles()).isEmpty();
-                });
-    }
-
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class TestConfig {
     }
 

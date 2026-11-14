@@ -120,6 +120,18 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
         assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (commandLineArgs)");
     }
 
+    @Test
+    void shouldWarnWhenProfilesPropertyInConfigurationFileLoadedBySpringBoot(CapturedOutput output) {
+        // Guards the name Spring Boot gives to the property sources loaded from configuration files.
+        var application = new SpringApplication(TestConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+
+        application.run("--spring.config.name=misplaced-bootstrap").close();
+
+        assertThat(output).contains("The 'arconia.dev.profiles' property was found in "
+                + "Config resource 'class path resource [misplaced-bootstrap.properties]'");
+    }
+
     private static StandardEnvironment environmentWithConfigFileProperties(Map<String, Object> properties) {
         var environment = new StandardEnvironment();
         environment.getPropertySources().addLast(new MapPropertySource(CONFIG_FILE_SOURCE_NAME, properties));
