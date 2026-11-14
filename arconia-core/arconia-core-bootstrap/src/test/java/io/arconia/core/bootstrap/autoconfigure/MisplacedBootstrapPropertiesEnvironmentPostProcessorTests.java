@@ -110,17 +110,6 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessorTests {
     }
 
     @Test
-    void shouldWarnWhenModePropertyInBootstrapConfigurationFile(CapturedOutput output) {
-        var environment = new StandardEnvironment();
-        environment.getPropertySources().addLast(new MapPropertySource(
-                BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME, Map.of("arconia.bootstrap.mode", "dev")));
-
-        processor.postProcessEnvironment(environment, new SpringApplication());
-
-        assertThat(output).contains("The 'arconia.bootstrap.mode' property was found in an unsupported location (arconiaBootstrap)");
-    }
-
-    @Test
     void shouldLogWarningDuringApplicationStartup(CapturedOutput output) {
         // Runs the full startup, where Spring Boot suppresses any logging until the logging system is initialized.
         var application = new SpringApplication(TestConfig.class);

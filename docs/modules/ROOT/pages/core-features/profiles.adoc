@@ -55,7 +55,7 @@ arconia.dev.profiles=local
 arconia.test.profiles=integration
 ----
 
-The file uses the Java Properties format and supports only the profile settings listed on this page. It's read before the application configuration is loaded, so there are no profile-specific variants of it. When multiple files are present, the first one found on the classpath is used: for example, a file in `src/test/resources` takes precedence over the one in `src/main/resources` when running tests. The xref:core-features/bootstrap-mode.adoc[bootstrap mode] itself cannot be set in this file, since the file is checked in with the application, whereas the mode describes how the application is launched.
+The file uses the Java Properties format and supports only the profile settings listed on this page. Any other property in it is ignored, and Arconia logs a warning. It's read before the application configuration is loaded, so there are no profile-specific variants of it. When multiple files are present, the first one found on the classpath is used: for example, a file in `src/test/resources` takes precedence over the one in `src/main/resources` when running tests. The xref:core-features/bootstrap-mode.adoc[bootstrap mode] itself cannot be set in this file, since the file is checked in with the application, whereas the mode describes how the application is launched.
 
 == Disabling the Automatic Activation
 

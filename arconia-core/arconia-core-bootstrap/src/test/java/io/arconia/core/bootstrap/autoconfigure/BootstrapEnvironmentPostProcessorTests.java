@@ -297,6 +297,48 @@ class BootstrapEnvironmentPostProcessorTests {
                 });
     }
 
+    @Test
+    void shouldIgnoreUnsupportedPropertiesInBootstrapConfigurationFile(CapturedOutput output) {
+        var classLoader = classLoaderWithBootstrapFile("""
+                arconia.dev.profiles[0]=file-dev
+                arconia.bootstrap.mode=prod
+                server.port=9090
+                """);
+        var environment = new MockEnvironment();
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "dev");
+        try {
+            processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
+        } finally {
+            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+        }
+
+        assertThat(environment.getActiveProfiles()).containsExactly("file-dev");
+        assertThat(environment.containsProperty("server.port")).isFalse();
+        assertThat(environment.containsProperty("arconia.bootstrap.mode")).isFalse();
+        assertThat(output)
+                .contains("The 'server.port' property is not supported in the META-INF/arconia-bootstrap.properties file and is ignored.")
+                .contains("The 'arconia.bootstrap.mode' property is not supported in the META-INF/arconia-bootstrap.properties file and is ignored.")
+                .doesNotContain("The 'arconia.dev.profiles[0]' property is not supported");
+    }
+
+    @Test
+    void shouldNotLoadBootstrapConfigurationFileWhenProductionMode(CapturedOutput output) {
+        var classLoader = classLoaderWithBootstrapFile("""
+                arconia.dev.profiles=file-dev
+                server.port=9090
+                """);
+        var environment = new MockEnvironment();
+        System.setProperty(BootstrapMode.PROPERTY_KEY, "prod");
+        try {
+            processor.postProcessEnvironment(environment, new SpringApplication(new DefaultResourceLoader(classLoader)));
+        } finally {
+            System.clearProperty(BootstrapMode.PROPERTY_KEY);
+        }
+
+        assertThat(environment.getPropertySources().contains(BootstrapEnvironmentPostProcessor.PROPERTY_SOURCE_NAME)).isFalse();
+        assertThat(output).doesNotContain("is not supported in the");
+    }
+
     private static ClassLoader classLoaderWithBootstrapFile(String content) {
         return new ClassLoader(BootstrapEnvironmentPostProcessorTests.class.getClassLoader()) {
             @Override

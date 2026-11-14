@@ -1,7 +1,5 @@
 package io.arconia.core.bootstrap.autoconfigure;
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
@@ -12,7 +10,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 
 import io.arconia.core.bootstrap.BootstrapConfigurationFile;
@@ -36,11 +33,6 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
      */
     private static final String CONFIG_RESOURCE_PROPERTY_SOURCE_NAME_PREFIX = "Config resource '";
 
-    private static final List<String> BOOTSTRAP_PROPERTY_KEYS = List.of(
-            BootstrapConfigurationFile.PROFILES_ENABLED_PROPERTY,
-            BootstrapConfigurationFile.DEV_PROFILES_PROPERTY,
-            BootstrapConfigurationFile.TEST_PROFILES_PROPERTY);
-
     private final Log logger;
 
     /**
@@ -62,13 +54,13 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
             if (!propertySource.getName().startsWith(CONFIG_RESOURCE_PROPERTY_SOURCE_NAME_PREFIX)) {
                 continue;
             }
-            for (String propertyKey : BOOTSTRAP_PROPERTY_KEYS) {
+            for (String propertyKey : BootstrapConfigurationFile.SUPPORTED_PROPERTIES) {
                 // The indexed variant covers list values defined in YAML sequence form.
                 if (propertySource.containsProperty(propertyKey) || propertySource.containsProperty(propertyKey + "[0]")) {
-                    logger.warn(LogMessage.format("The '%s' property was found in %s, where it is not supported because the bootstrap "
+                    logger.warn(("The '%s' property was found in %s, where it is not supported because the bootstrap "
                             + "profiles are activated before the application configuration is loaded. Supported locations: "
-                            + "the %s file, JVM system properties, environment variables, and command line arguments.",
-                            propertyKey, propertySource.getName(), BootstrapConfigurationFile.LOCATION));
+                            + "the %s file, JVM system properties, environment variables, and command line arguments.")
+                            .formatted(propertyKey, propertySource.getName(), BootstrapConfigurationFile.LOCATION));
                 }
             }
         }
@@ -84,10 +76,10 @@ class MisplacedBootstrapPropertiesEnvironmentPostProcessor implements Environmen
                 continue;
             }
             if (propertySource.containsProperty(BootstrapMode.PROPERTY_KEY)) {
-                logger.warn(LogMessage.format("The '%s' property was found in an unsupported location (%s), where it has no effect "
+                logger.warn(("The '%s' property was found in an unsupported location (%s), where it has no effect "
                         + "because the bootstrap mode describes the launch context and is determined before the application "
-                        + "configuration is loaded. Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.",
-                        BootstrapMode.PROPERTY_KEY, propertySource.getName(), BootstrapMode.PROPERTY_KEY, BootstrapMode.ENVIRONMENT_VARIABLE));
+                        + "configuration is loaded. Set it as a JVM system property (-D%s) or as an environment variable (%s) instead.")
+                        .formatted(BootstrapMode.PROPERTY_KEY, propertySource.getName(), BootstrapMode.PROPERTY_KEY, BootstrapMode.ENVIRONMENT_VARIABLE));
             }
         }
     }

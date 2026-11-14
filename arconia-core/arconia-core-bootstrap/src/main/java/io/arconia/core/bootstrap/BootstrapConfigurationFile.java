@@ -2,6 +2,7 @@ package io.arconia.core.bootstrap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import org.springframework.util.Assert;
@@ -36,6 +37,12 @@ public final class BootstrapConfigurationFile {
      * Name of the profiles to activate in test mode.
      */
     public static final String TEST_PROFILES_PROPERTY = "arconia.test.profiles";
+
+    /**
+     * The properties supported in the bootstrap configuration file.
+     */
+    public static final List<String> SUPPORTED_PROPERTIES = List.of(
+            PROFILES_ENABLED_PROPERTY, DEV_PROFILES_PROPERTY, TEST_PROFILES_PROPERTY);
 
     private BootstrapConfigurationFile() {}
 

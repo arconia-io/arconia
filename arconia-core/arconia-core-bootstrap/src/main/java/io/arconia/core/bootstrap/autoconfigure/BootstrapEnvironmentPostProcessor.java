@@ -1,9 +1,11 @@
 package io.arconia.core.bootstrap.autoconfigure;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -17,9 +19,8 @@ import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -62,6 +63,11 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         BootstrapMode mode = BootstrapMode.detect();
         logBootstrapMode(mode);
 
+        // No profile is activated in prod mode, so the bootstrap settings are not needed.
+        if (mode == BootstrapMode.PROD) {
+            return;
+        }
+
         addBootstrapConfigurationFile(environment, application);
 
         Binder binder = Binder.get(environment);
@@ -74,7 +80,6 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         List<String> modeProfiles = switch (mode) {
             case DEV -> binder.bind(BootstrapConfigurationFile.DEV_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(List.of("dev"));
             case TEST -> binder.bind(BootstrapConfigurationFile.TEST_PROFILES_PROPERTY, Bindable.listOf(String.class)).orElse(List.of("test"));
-            // No additional profiles for prod mode
             case PROD -> List.of();
         };
 
@@ -87,7 +92,7 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         Set<String> mergedProfiles = new LinkedHashSet<>();
         for (String profile : modeProfiles) {
             if (StringUtils.hasText(profile) && !currentProfiles.contains(profile)) {
-                logger.debug(LogMessage.format("Adding active profile '%s' for the current bootstrap mode", profile));
+                logger.debug("Adding active profile '%s' for the current bootstrap mode".formatted(profile));
                 mergedProfiles.add(profile);
             }
         }
@@ -110,8 +115,8 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
     private void logBootstrapMode(BootstrapMode mode) {
         String explicitMode = BootstrapMode.getExplicitValue();
         if (explicitMode != null && BootstrapMode.parse(explicitMode) == null) {
-            logger.warn(LogMessage.format("Invalid %s property value: '%s'. Defaulting to PROD mode.",
-                    BootstrapMode.PROPERTY_KEY, explicitMode));
+            logger.warn("Invalid %s property value: '%s'. Defaulting to PROD mode."
+                    .formatted(BootstrapMode.PROPERTY_KEY, explicitMode));
         }
 
         // The test mode is expected when processing the tests ahead-of-time, whereas the dev mode
@@ -124,14 +129,15 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         if (mode == BootstrapMode.PROD) {
             logger.debug("The application is running in prod mode");
         } else {
-            logger.info(LogMessage.format("The application is running in %s mode", mode.name().toLowerCase(Locale.ROOT)));
+            logger.info("The application is running in %s mode".formatted(mode.name().toLowerCase(Locale.ROOT)));
         }
     }
 
     /**
-     * Exposes the content of the bootstrap configuration file as a property source, below the
-     * system and command line ones, so it participates in the binding of the bootstrap settings
-     * and remains inspectable at runtime.
+     * Exposes the bootstrap settings from the bootstrap configuration file as a property source,
+     * below the system and command line ones, so they participate in the binding of the bootstrap
+     * settings and remain inspectable at runtime. Any other property in the file is reported and
+     * left out, so that the file cannot be used to configure the application.
      */
     private void addBootstrapConfigurationFile(ConfigurableEnvironment environment, SpringApplication application) {
         if (environment.getPropertySources().contains(PROPERTY_SOURCE_NAME)) {
@@ -141,12 +147,34 @@ class BootstrapEnvironmentPostProcessor implements EnvironmentPostProcessor, Ord
         try {
             properties = BootstrapConfigurationFile.load(application.getClassLoader());
         } catch (IOException ex) {
-            logger.warn(LogMessage.format("Failed to load the bootstrap configuration file from %s", BootstrapConfigurationFile.LOCATION), ex);
+            logger.warn("Failed to load the bootstrap configuration file from %s".formatted(BootstrapConfigurationFile.LOCATION), ex);
             return;
         }
-        if (!properties.isEmpty()) {
-            environment.getPropertySources().addLast(new PropertiesPropertySource(PROPERTY_SOURCE_NAME, properties));
+        Map<String, Object> bootstrapProperties = new LinkedHashMap<>();
+        for (String key : properties.stringPropertyNames()) {
+            if (isSupported(key)) {
+                bootstrapProperties.put(key, properties.getProperty(key));
+            } else {
+                logger.warn("The '%s' property is not supported in the %s file and is ignored. Supported properties: %s."
+                        .formatted(key, BootstrapConfigurationFile.LOCATION,
+                                String.join(", ", BootstrapConfigurationFile.SUPPORTED_PROPERTIES)));
+            }
         }
+        if (!bootstrapProperties.isEmpty()) {
+            environment.getPropertySources().addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, bootstrapProperties));
+        }
+    }
+
+    /**
+     * Whether the key is one of the bootstrap settings, including the indexed form of a list.
+     */
+    private static boolean isSupported(String key) {
+        for (String property : BootstrapConfigurationFile.SUPPORTED_PROPERTIES) {
+            if (key.equals(property) || key.startsWith(property + "[")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
