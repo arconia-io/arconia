@@ -17,8 +17,8 @@ import io.arconia.dev.services.ollama.OllamaDevServicesAutoConfiguration.OllamaD
 /**
  * Auto-configuration for Ollama Dev Services.
  * <p>
- * If the application is running in dev mode and a native Ollama connection is detected,
- * the auto-configuration will be skipped.
+ * If a native Ollama connection is detected, in dev or test mode, the auto-configuration
+ * will be skipped.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
 @ConditionalOnDevServicesEnabled("ollama")
