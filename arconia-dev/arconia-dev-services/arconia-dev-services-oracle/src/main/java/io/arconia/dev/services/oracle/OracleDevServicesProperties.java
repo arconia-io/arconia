@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.config.JdbcDevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -16,6 +17,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Properties for the Oracle Dev Services.
  */
+@Incubating
 @ConfigurationProperties(prefix = OracleDevServicesProperties.CONFIG_PREFIX)
 public class OracleDevServicesProperties implements JdbcDevServicesProperties {
 

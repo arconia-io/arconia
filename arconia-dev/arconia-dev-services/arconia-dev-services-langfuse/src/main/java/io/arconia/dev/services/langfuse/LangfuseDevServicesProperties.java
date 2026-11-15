@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -16,6 +17,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Properties for the Langfuse Dev Services.
  */
+@Incubating
 @ConfigurationProperties(prefix = LangfuseDevServicesProperties.CONFIG_PREFIX)
 public class LangfuseDevServicesProperties implements DevServicesProperties {
 

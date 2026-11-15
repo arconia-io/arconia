@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -20,6 +21,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Properties for the Grafana LGTM Dev Services.
  */
+@Incubating
 @ConfigurationProperties(prefix = LgtmDevServicesProperties.CONFIG_PREFIX)
 public class LgtmDevServicesProperties implements DevServicesProperties, SslDevServicesProperties {
 

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.dev.services.api.config.DevServicesProperties;
 import io.arconia.dev.services.api.config.ResourceMapping;
 import io.arconia.dev.services.api.config.ReuseStrategy;
@@ -17,6 +18,7 @@ import io.arconia.dev.services.api.config.VolumeMapping;
 /**
  * Properties for the Keycloak Dev Services.
  */
+@Incubating
 @ConfigurationProperties(prefix = KeycloakDevServicesProperties.CONFIG_PREFIX)
 public class KeycloakDevServicesProperties implements DevServicesProperties {
 
