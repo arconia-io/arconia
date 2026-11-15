@@ -172,7 +172,7 @@ The following properties are available for all Dev Services. Each Dev Service pa
 | Strategy for reusing a running container for the dev service across applications or restarts. Only applicable in dev mode. See xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
 | `arconia.dev.services.<service-name>.startup-timeout`
-| `60s`, or `120s` for slow-starting services
+| `60s`, or longer for slow-starting services
 | Maximum waiting time for the service to start, counted from the container start.
 
 | `arconia.dev.services.<service-name>.volumes`
@@ -492,7 +492,7 @@ The bundle the application connects to the Dev Service with, which trusts the ce
 
 The container is configured for SSL right after the common properties are applied and before your xref:index.adoc#_programmatic_customization[`DevServiceContainerCustomizer`] beans run, so a customizer replacing the command or the configuration of the container must preserve the SSL part. A container kept across a Spring Boot DevTools restart keeps the SSL configuration it was started with, like the rest of its configuration: stop and start the application after changing the `ssl` properties (see xref:index.adoc#_lifecycle_management[Lifecycle Management]).
 
-The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], xref:kafka.adoc[Kafka], xref:mongodb.adoc[MongoDB], xref:rabbitmq.adoc[RabbitMQ], and xref:redis.adoc[Redis]. The Elasticsearch Dev Service also works with the certificate Elasticsearch generates itself, with no certificate configured at all.
+The following Dev Services support SSL: xref:elasticsearch.adoc[Elasticsearch], xref:lgtm.adoc[Grafana LGTM], xref:kafka.adoc[Kafka], xref:mongodb.adoc[MongoDB], xref:otel-collector.adoc[OpenTelemetry Collector], xref:phoenix.adoc[Phoenix], xref:rabbitmq.adoc[RabbitMQ], and xref:redis.adoc[Redis]. The Elasticsearch Dev Service also works with the certificate Elasticsearch generates itself, with no certificate configured at all.
 
 [NOTE]
 ====
@@ -624,6 +624,10 @@ Response example:
       {
         "label": "Docling OpenAPI",
         "url": "http://localhost:45525/docs"
+      },
+      {
+        "label": "Docling Scalar",
+        "url": "http://localhost:45525/scalar"
       }
     ],
     "containerInfo": {
@@ -871,7 +875,7 @@ Spring Boot Development-time Services::
 ----
 dependencies {
     testAndDevelopmentOnly 'org.springframework.boot:spring-boot-testcontainers'
-    testAndDevelopmentOnly 'org.testcontainers:postgresql'
+    testAndDevelopmentOnly 'org.testcontainers:testcontainers-postgresql'
 }
 ----
 +

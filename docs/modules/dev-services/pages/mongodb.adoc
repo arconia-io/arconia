@@ -75,6 +75,6 @@ include::partial$ssl-properties.adoc[]
 
 include::partial$using-ssl.adoc[]
 
-MongoDB then requires SSL on its port, and clients are not asked for a certificate.
+MongoDB then serves SSL on its port and still accepts plain connections, since Testcontainers sets up the replica set over one. Clients are not asked for a certificate.
 
 include::partial$disabling-dev-service.adoc[]
