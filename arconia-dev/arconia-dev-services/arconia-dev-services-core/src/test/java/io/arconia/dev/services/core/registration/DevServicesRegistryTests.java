@@ -84,6 +84,8 @@ class DevServicesRegistryTests {
     @AfterEach
     void reset() {
         resetBootstrapMode();
+        // The containers kept across restarts are tracked per JVM: none is left for the next test.
+        DevServiceRestartSupport.stopKeptContainers();
     }
 
     @Nested
@@ -807,6 +809,15 @@ class DevServicesRegistryTests {
 
             assertThat(second).isSameAs(first);
             assertThat(first.stopped).isFalse();
+        }
+
+        @Test
+        void whenApplicationExitsThenKeptContainerIsStopped() {
+            RestartingContainer container = restart(Map.of(), TestDevServicesProperties.DEFAULT, List.of());
+
+            DevServiceRestartSupport.stopKeptContainers();
+
+            assertThat(container.stopped).isTrue();
         }
 
         @Test

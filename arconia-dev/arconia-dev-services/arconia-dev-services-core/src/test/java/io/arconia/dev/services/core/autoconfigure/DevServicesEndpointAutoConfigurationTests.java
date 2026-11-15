@@ -35,6 +35,13 @@ class DevServicesEndpointAutoConfigurationTests {
     }
 
     @Test
+    void endpointBeanIsNotAvailableWhenTestModeIsEnabled() {
+        contextRunner
+                .withSystemProperties("arconia.bootstrap.mode=test")
+                .run(context -> assertThat(context).doesNotHaveBean(DevServicesEndpoint.class));
+    }
+
+    @Test
     void endpointBeanIsNotAvailableWhenProdModeIsEnabled() {
         contextRunner
                 .withSystemProperties("arconia.bootstrap.mode=prod")

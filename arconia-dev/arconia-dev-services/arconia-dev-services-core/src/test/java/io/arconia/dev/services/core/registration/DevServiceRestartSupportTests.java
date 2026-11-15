@@ -41,6 +41,8 @@ class DevServiceRestartSupportTests {
     @AfterEach
     void reset() {
         resetBootstrapMode();
+        // The containers kept across restarts are tracked per JVM: none is left for the next test.
+        DevServiceRestartSupport.stopKeptContainers();
     }
 
     @Test

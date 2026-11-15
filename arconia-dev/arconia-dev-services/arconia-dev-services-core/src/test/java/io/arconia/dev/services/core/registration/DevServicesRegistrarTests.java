@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.env.DefaultPropertiesPropertySource;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -16,8 +17,10 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 
+import io.arconia.dev.services.api.registration.DevServiceRegistration;
 import io.arconia.dev.services.core.TestDevServicesProperties;
 import io.arconia.dev.services.core.registration.DevServicesRegistry.BeanName;
+import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestConnectionDetails;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestLinkContainer;
 import io.arconia.dev.services.core.registration.DevServicesTestSupport.TestPostgresContainer;
 
@@ -76,6 +79,18 @@ class DevServicesRegistrarTests {
                             .hasMessageContaining("jdbc")
                             .hasMessageContaining("first")
                             .hasMessageContaining("second");
+                });
+    }
+
+    @Test
+    void whenApplicationDefinesConnectionDetailsThenDevServiceBacksOff() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(ApplicationConnectionDetailsConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(TestPostgresContainer.class);
+                    assertThat(context).doesNotHaveBean(DevServiceRegistration.class);
+                    assertThat(context.getBean(TestConnectionDetails.class).host()).isEqualTo("application-defined");
                 });
     }
 
@@ -146,6 +161,26 @@ class DevServicesRegistrarTests {
     @Configuration(proxyBeanMethods = false)
     @Import({FirstJdbcDevServiceRegistrar.class, SecondJdbcDevServiceRegistrar.class})
     static class ConflictingConfiguration {}
+
+    @Configuration(proxyBeanMethods = false)
+    @Import(SharedDevServiceRegistrar.class)
+    static class ApplicationConnectionDetailsConfiguration {
+
+        @Bean
+        TestConnectionDetails applicationConnectionDetails() {
+            return new TestConnectionDetails("application-defined");
+        }
+
+    }
+
+    static class SharedDevServiceRegistrar extends DevServicesRegistrar {
+
+        @Override
+        protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
+            DevServicesTestSupport.registerSharedDevService(registry);
+        }
+
+    }
 
     static class FirstJdbcDevServiceRegistrar extends DevServicesRegistrar {
 
