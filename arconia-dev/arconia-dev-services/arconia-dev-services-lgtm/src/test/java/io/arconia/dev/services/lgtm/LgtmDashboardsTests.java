@@ -294,6 +294,15 @@ class LgtmDashboardsTests {
         }
 
         @Test
+        void emptyHomeDashboardMeansNone() {
+            options.setHome("");
+
+            var dashboards = LgtmDashboards.collect(new MockEnvironment(), resourceLoader, options);
+
+            assertThat(dashboards.home()).isNull();
+        }
+
+        @Test
         void homeDashboardMustBeProvisioned() {
             options.setHome("missing.json");
 

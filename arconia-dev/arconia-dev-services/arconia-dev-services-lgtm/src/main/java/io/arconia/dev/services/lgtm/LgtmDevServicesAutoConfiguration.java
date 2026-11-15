@@ -120,14 +120,16 @@ public final class LgtmDevServicesAutoConfiguration {
         @Override
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             var properties = bindProperties(LgtmDevServicesProperties.CONFIG_PREFIX, LgtmDevServicesProperties.class);
-            var dashboards = LgtmDashboards.collect(environment, getResourceLoader(), properties.getDashboards());
 
             registry.registerDevService(service -> service
                     .name("lgtm")
                     .description("Grafana LGTM Dev Service")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
-                    .container(LgtmStackContainer.class, () -> createContainer(properties, dashboards))
+                    // The dashboards are collected when the container is created, so that nothing is
+                    // scanned for a dev service that is skipped or runs in a container already started.
+                    .container(LgtmStackContainer.class, () -> createContainer(properties,
+                            LgtmDashboards.collect(environment, getResourceLoader(), properties.getDashboards())))
                     .port(GRAFANA_PORT)
                     .additionalPort(OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .additionalPort(OTLP_HTTP_PORT, properties.getOtlpHttpPort())

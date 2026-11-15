@@ -18,6 +18,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.images.builder.Transferable;
 
@@ -123,7 +124,7 @@ final class LgtmDashboards {
      * Collect the dashboards to provision for the application: the built-in dashboards whose
      * condition holds, unless turned off, then the contributed ones. When two dashboards share
      * a file name, the first one wins and the other is ignored with a warning. The home dashboard,
-     * if configured, must be one of the collected dashboards. When provisioning is disabled,
+     * if configured and not empty, must be one of the collected dashboards. When provisioning is disabled,
      * nothing is collected and the container is left as the image ships it.
      */
     static LgtmDashboards collect(Environment environment, ResourceLoader resourceLoader, LgtmDevServicesProperties.Dashboards options) {
@@ -155,7 +156,7 @@ final class LgtmDashboards {
                         fileName, resource, existing);
             }
         }
-        String home = options.getHome();
+        String home = StringUtils.hasText(options.getHome()) ? options.getHome() : null;
         if (home != null) {
             Assert.state(dashboards.containsKey(home),
                     () -> "Grafana home dashboard '%s' is not among the provisioned dashboards: %s".formatted(home, dashboards.keySet()));

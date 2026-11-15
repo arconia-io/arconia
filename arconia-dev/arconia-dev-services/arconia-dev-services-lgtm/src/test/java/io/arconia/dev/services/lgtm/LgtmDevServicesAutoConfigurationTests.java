@@ -187,6 +187,16 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     }
 
     @Test
+    void dashboardsNotCollectedWhenDevServiceIsSkipped() {
+        getContextRunner()
+                .withSystemProperties("arconia.bootstrap.mode=test")
+                .withPropertyValues(
+                        "arconia.dev.services.lgtm.skip-in-tests=true",
+                        "arconia.dev.services.lgtm.dashboards.home=missing.json")
+                .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(LgtmStackContainer.class));
+    }
+
+    @Test
     void sslApplied() {
         getContextRunner()
                 .withPropertyValues(SslTestCertificates.pemProperties(getServiceName()))
