@@ -26,10 +26,6 @@ public class RabbitMqDevServicesProperties implements DevServicesProperties, Ssl
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.rabbitmq";
 
-    static final String DEFAULT_USERNAME = "arconia";
-
-    static final String DEFAULT_PASSWORD = "arconia";
-
     /**
      * Whether the dev service is enabled.
      */
@@ -99,12 +95,12 @@ public class RabbitMqDevServicesProperties implements DevServicesProperties, Ssl
     /**
      * Username for the RabbitMQ administrator user.
      */
-    private String username = DEFAULT_USERNAME;
+    private String username = "arconia";
 
     /**
      * Password for the RabbitMQ administrator user.
      */
-    private String password = DEFAULT_PASSWORD;
+    private String password = "arconia";
 
     @Override
     public boolean isEnabled() {

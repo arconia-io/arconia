@@ -23,10 +23,6 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.oracle";
 
-    static final String DEFAULT_USERNAME = "arconia";
-    static final String DEFAULT_PASSWORD = "arconia";
-    static final String DEFAULT_DB_NAME = "arconia";
-
     /**
      * Whether the dev service is enabled.
      */
@@ -83,17 +79,17 @@ public class OracleDevServicesProperties implements JdbcDevServicesProperties {
     /**
      * Username to be used for connecting to the database.
      */
-    private String username = DEFAULT_USERNAME;
+    private String username = "arconia";
 
     /**
      * Password to be used for connecting to the database.
      */
-    private String password = DEFAULT_PASSWORD;
+    private String password = "arconia";
 
     /**
      * Name of the database to be created.
      */
-    private String dbName = DEFAULT_DB_NAME;
+    private String dbName = "arconia";
 
     /**
      * List of paths to SQL scripts to be loaded from the classpath and

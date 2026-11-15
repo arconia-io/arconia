@@ -26,12 +26,4 @@ final class ArconiaOtelCollectorContainer extends GenericContainer<ArconiaOtelCo
         this.waitingFor(Wait.forLogMessage(".*Everything is ready\\. Begin running and processing data\\..*", 1));
     }
 
-    public Integer getGrpcPort() {
-        return getMappedPort(OTLP_GRPC_PORT);
-    }
-
-    public Integer getHttpPort() {
-        return getMappedPort(OTLP_HTTP_PORT);
-    }
-
 }

@@ -48,8 +48,8 @@ class OtelCollectorDevServicesAutoConfigurationTests extends BaseDevServicesAuto
         ArconiaOtelCollectorContainer container = (ArconiaOtelCollectorContainer) discoveredContainer;
         OtlpTracingConnectionDetails connectionDetails = context.getBean(OtlpTracingConnectionDetails.class);
         assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
-                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getHttpPort()) + OtlpTracingConnectionDetails.TRACES_PATH);
-        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).isEqualTo("http://%s:%d".formatted(container.getHost(), container.getGrpcPort()));
+                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getMappedPort(ArconiaOtelCollectorContainer.OTLP_HTTP_PORT)) + OtlpTracingConnectionDetails.TRACES_PATH);
+        assertThat(connectionDetails.getTracesUrl(Protocol.GRPC)).isEqualTo("http://%s:%d".formatted(container.getHost(), container.getMappedPort(ArconiaOtelCollectorContainer.OTLP_GRPC_PORT)));
     }
 
     @Test

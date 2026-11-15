@@ -23,9 +23,6 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
 
     public static final String CONFIG_PREFIX = "arconia.dev.services.artemis";
 
-    static final String DEFAULT_USERNAME = "arconia";
-    static final String DEFAULT_PASSWORD = "arconia";
-
     /**
      * Whether the dev service is enabled.
      */
@@ -88,12 +85,12 @@ public class ArtemisDevServicesProperties implements DevServicesProperties {
     /**
      * Username for the Artemis administrator user.
      */
-    private String username = DEFAULT_USERNAME;
+    private String username = "arconia";
 
     /**
      * Password for the Artemis administrator user.
      */
-    private String password = DEFAULT_PASSWORD;
+    private String password = "arconia";
 
     @Override
     public boolean isEnabled() {
