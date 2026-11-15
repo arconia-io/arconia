@@ -5,7 +5,6 @@ import java.util.List;
 import ai.docling.testcontainers.serve.DoclingServeContainer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -55,12 +54,22 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Test
-    void whenUiDisabledThenNoUiLinkIsDeclared() {
+    @DisabledIfDockerUnavailable
+    void whenUiDisabledThenNoUiLinkIsExposed() {
+        contextRunnerWithContainerLifecycle()
+                .withPropertyValues("arconia.dev.services.%s.ui-enabled=false".formatted(getServiceName()))
+                .run(context -> {
+                    List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
+                    assertThat(links).extracting(DevServiceLink::label).containsExactly("Docling OpenAPI", "Docling Scalar");
+                });
+    }
+
+    @Test
+    void whenUiDisabledThenUiIsDisabledInContainer() {
         getContextRunner()
                 .withPropertyValues("arconia.dev.services.%s.ui-enabled=false".formatted(getServiceName()))
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    ReflectionTestUtils.invokeMethod(container, "configure");
                     assertThat(container.getEnvMap()).doesNotContainEntry("DOCLING_SERVE_ENABLE_UI", "true");
                 });
     }
@@ -70,8 +79,6 @@ class DoclingDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
         getContextRunner()
                 .run(context -> {
                     var container = context.getBean(getContainerClass());
-                    // DoclingServeContainer applies its configuration to the environment when configured, right before starting.
-                    ReflectionTestUtils.invokeMethod(container, "configure");
                     assertThat(container.getEnvMap()).containsEntry("DOCLING_SERVE_ENABLE_UI", "true");
                 });
     }

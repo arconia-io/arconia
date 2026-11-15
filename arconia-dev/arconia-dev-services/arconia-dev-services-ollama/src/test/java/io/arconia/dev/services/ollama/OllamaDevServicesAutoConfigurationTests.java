@@ -2,11 +2,15 @@ package io.arconia.dev.services.ollama;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionDetails;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.testcontainers.beans.TestcontainerBeanDefinition;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ollama.OllamaContainer;
 
+import io.arconia.dev.services.api.registration.DevServiceLabels;
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
 import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
@@ -44,6 +48,23 @@ class OllamaDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigu
     protected void assertDiscoveredConnectionDetails(AssertableApplicationContext context, GenericContainer<?> discoveredContainer) {
         OllamaConnectionDetails connectionDetails = context.getBean(OllamaConnectionDetails.class);
         assertThat(connectionDetails.getBaseUrl()).isEqualTo(((OllamaContainer) discoveredContainer).getEndpoint());
+    }
+
+    @Test
+    @DisabledIfDockerUnavailable
+    void withoutTheSpringAiOllamaModuleThenNoServiceConnectionNorDiscovery() {
+        getContextRunner()
+                .withClassLoader(new FilteredClassLoader(OllamaConnectionDetails.class))
+                .withSystemProperties("arconia.bootstrap.mode=dev")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    String[] containerBeanNames = context.getBeanNamesForType(getContainerClass());
+                    assertThat(containerBeanNames).hasSize(1);
+                    var beanDefinition = (TestcontainerBeanDefinition) context.getBeanFactory().getBeanDefinition(containerBeanNames[0]);
+                    assertThat(beanDefinition.getAnnotations().isPresent(ServiceConnection.class)).isFalse();
+                    // The framework reuse strategy, the default, needs the connection details of the module.
+                    assertThat(context.getBean(getContainerClass()).getLabels()).doesNotContainKey(DevServiceLabels.DISCOVERABLE);
+                });
     }
 
     @Test
