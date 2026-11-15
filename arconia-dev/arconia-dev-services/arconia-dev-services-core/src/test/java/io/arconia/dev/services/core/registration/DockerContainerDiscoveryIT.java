@@ -1,7 +1,9 @@
 package io.arconia.dev.services.core.registration;
 
+import java.time.Duration;
 import java.util.UUID;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -41,14 +43,16 @@ class DockerContainerDiscoveryIT {
             DockerClientFactory.lazyClient().pauseContainerCmd(paused.getContainerId()).exec();
 
             try {
-                assertThat(discovery.discover(serviceName))
-                        .singleElement()
-                        .satisfies(candidate -> {
-                            assertThat(candidate.containerInfo().getId()).isEqualTo(discoverable.getContainerId());
-                            assertThat(candidate.containerInfo().getState()).isEqualTo("running");
-                            assertThat(candidate.host()).isEqualTo(discoverable.getHost());
-                            assertThat(candidate.mappedPort(80)).isEqualTo(discoverable.getMappedPort(80));
-                        });
+                // Pausing returns before the container runtime stops listing the container as running.
+                Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
+                        assertThat(discovery.discover(serviceName))
+                                .singleElement()
+                                .satisfies(candidate -> {
+                                    assertThat(candidate.containerInfo().getId()).isEqualTo(discoverable.getContainerId());
+                                    assertThat(candidate.containerInfo().getState()).isEqualTo("running");
+                                    assertThat(candidate.host()).isEqualTo(discoverable.getHost());
+                                    assertThat(candidate.mappedPort(80)).isEqualTo(discoverable.getMappedPort(80));
+                                }));
             } finally {
                 DockerClientFactory.lazyClient().unpauseContainerCmd(paused.getContainerId()).exec();
             }

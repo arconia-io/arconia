@@ -58,6 +58,7 @@ class RedisDevServicesSslIT {
         properties.getSsl().getPem().getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
         RedisContainer peer = DevServiceContainers.discoverable(RedisDevServicesAutoConfiguration.createContainer(properties), properties, "redis", "another-application");
         RedisDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
+        DevServiceContainers.awaitNoDiscoverableContainer("redis");
         try (peer) {
             peer.start();
 

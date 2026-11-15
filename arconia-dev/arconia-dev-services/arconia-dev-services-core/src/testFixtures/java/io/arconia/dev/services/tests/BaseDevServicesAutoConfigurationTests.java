@@ -248,6 +248,7 @@ public abstract class BaseDevServicesAutoConfigurationTests {
     void containerDiscoveredWhenStartedByAnotherApplication() {
         GenericContainer<?> peerContainer = createDiscoverableContainer("another-application");
         Assumptions.assumeTrue(peerContainer != null, "dev service does not support discovery");
+        DevServiceContainers.awaitNoDiscoverableContainer(getServiceName());
         try (GenericContainer<?> discoveredContainer = peerContainer) {
             discoveredContainer.start();
 

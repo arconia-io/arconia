@@ -65,6 +65,7 @@ class PhoenixDevServicesSslIT {
         properties.getSsl().getPem().getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
         PhoenixContainer peer = DevServiceContainers.discoverable(PhoenixDevServicesAutoConfiguration.createContainer(properties), properties, "phoenix", "another-application");
         PhoenixDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
+        DevServiceContainers.awaitNoDiscoverableContainer("phoenix");
         try (peer) {
             peer.start();
             contextRunner

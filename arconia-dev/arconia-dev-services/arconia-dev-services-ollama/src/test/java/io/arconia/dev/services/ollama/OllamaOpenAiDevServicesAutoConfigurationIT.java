@@ -51,6 +51,7 @@ class OllamaOpenAiDevServicesAutoConfigurationIT {
     @Test
     void openAiBaseUrlResolvedFromDiscoveredContainer() {
         OllamaDevServicesProperties properties = new OllamaDevServicesProperties();
+        DevServiceContainers.awaitNoDiscoverableContainer("ollama");
         try (OllamaContainer discoveredContainer = DevServiceContainers.discoverable(
                 new ArconiaOllamaContainer(properties), properties, "ollama", "another-application")) {
             discoveredContainer.start();

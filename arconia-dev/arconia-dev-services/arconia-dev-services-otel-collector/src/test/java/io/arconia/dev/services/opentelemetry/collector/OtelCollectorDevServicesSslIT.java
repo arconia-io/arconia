@@ -83,6 +83,7 @@ class OtelCollectorDevServicesSslIT {
         properties.getSsl().getPem().getKeystore().setPrivateKey(SslTestCertificates.PRIVATE_KEY);
         ArconiaOtelCollectorContainer peer = DevServiceContainers.discoverable(new ArconiaOtelCollectorContainer(properties), properties, "otel-collector", "another-application");
         OtelCollectorDevServicesAutoConfiguration.configureSsl(peer, sslBundle());
+        DevServiceContainers.awaitNoDiscoverableContainer("otel-collector");
         try (peer) {
             peer.start();
             contextRunner

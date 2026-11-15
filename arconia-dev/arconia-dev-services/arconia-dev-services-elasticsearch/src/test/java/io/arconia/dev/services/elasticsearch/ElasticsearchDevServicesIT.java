@@ -91,6 +91,7 @@ class ElasticsearchDevServicesIT {
         properties.getSsl().setEnabled(true);
         ElasticsearchContainer peer = DevServiceContainers.discoverable(
                 ElasticsearchDevServicesAutoConfiguration.createContainer(properties), properties, "elasticsearch", "another-application");
+        DevServiceContainers.awaitNoDiscoverableContainer("elasticsearch");
         try (peer) {
             peer.start();
 
