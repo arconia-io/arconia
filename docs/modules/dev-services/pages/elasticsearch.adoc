@@ -22,7 +22,7 @@ By default, each application starts its own Elasticsearch Dev Service. To let mu
 
 == Configuring the Dev Service
 
-You can configure the Dev Service via configuration properties.
+You can configure the Dev Service via configuration properties. The application connects with the `elastic` user and the `changeme` password. To change the password, set the `ELASTIC_PASSWORD` environment variable through the `environment` property. Elasticsearch runs with a heap sized for development (`-Xms512m -Xmx1g`), which you can change the same way with `ES_JAVA_OPTS`.
 
 |===
 |Property |Default |Description

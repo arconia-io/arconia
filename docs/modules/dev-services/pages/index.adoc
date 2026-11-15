@@ -293,6 +293,8 @@ The application that started the container owns its lifecycle: the container is 
 
 A discovered container is used as it runs, with the configuration of the application that started it. Application-specific customization (environment variables, resources, image name, `DevServiceContainerCustomizer` beans) doesn't apply to containers started by other applications. The application connects with its own configured settings, so any credentials must be the same across the applications using the service. For databases, that includes the username, the password, and the database name. If an application needs its own differently-configured service instance, set `arconia.dev.services.<service-name>.reuse-strategy=none` for that service.
 
+An application connected to a discovered container has no container bean for that Dev Service. Code that needs the connection to the service should inject its `ConnectionDetails` bean, which is available in both cases, rather than the container.
+
 When using Spring Boot DevTools, an application that started a container keeps using it across restarts, even if another application has started a container for the same Dev Service in the meantime.
 
 The `framework` strategy is supported by all the Dev Services, whether or not it is their default. When it cannot be applied (see the xref:ollama.adoc[Ollama Dev Service] for the one such case), the startup message says so.
@@ -426,13 +428,18 @@ arconia:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4317 # <2>
           DOCLING_SERVE_OTEL_ENABLE_TRACES: "true"
           DOCLING_SERVE_OTEL_ENABLE_OTLP_METRICS: "true"
+      lgtm:
+        reuse-strategy: none # <3>
 ----
 <1> A single global switch attaches every Dev Service container to the shared network.
 <2> The `lgtm` hostname is the target's service name, which every container on the shared network is reachable by, and `4317` is the container's internal OTLP/gRPC port, not the host-mapped port. To reach a container by other hostnames as well, set its `network-aliases` property.
+<3> The target must be a container this application starts (see xref:index.adoc#_advanced_scenarios[Advanced Scenarios]).
 
 ==== Advanced Scenarios
 
 * Container reuse. The shared network doesn't combine with the `testcontainers` reuse strategy: the network is created anew with every run, and since the Testcontainers reuse hash includes it, a container kept by that strategy would never be matched again and would be left running after every run. When the shared network is enabled, the strategy is therefore not applied, and the startup message of the Dev Service says so. Use one or the other.
+
+* Discovered containers. Only the containers this application starts join the shared network. A Dev Service the application connects to in a container started by another application, through the `framework` reuse strategy, is not on it, and its service name doesn't resolve. Set the `reuse-strategy` property to `none` for the Dev Services that other containers must reach by name.
 
 * Your own containers. The network is exposed as an injectable Testcontainers `Network` bean. To let a container you manage yourself reach Dev Services, enable the shared network, inject the bean, and attach your container:
 

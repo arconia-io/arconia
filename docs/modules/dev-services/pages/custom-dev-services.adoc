@@ -97,7 +97,7 @@ public class FancyDbDevServicesProperties implements DevServicesProperties {
 `DevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
 ====
 
-The common properties are `enabled`, `image-name`, `environment`, `network-aliases`, `port`, `resources`, `reuse-strategy`, `skip-in-tests`, `startup-timeout`, and `volumes`. The quickest way to get all of them, each with the Javadoc that becomes its description in the IDE, is to copy the properties class of a built-in Dev Service, such as `RedisDevServicesProperties`, and adapt it.
+The common properties are `enabled`, `image-name`, `environment`, `network-aliases`, `port`, `resources`, `reuse-strategy`, `skip-in-tests`, `startup-timeout`, and `volumes`. The quickest way to get all of them, each with the Javadoc that becomes its description in the IDE, is to copy the properties class of a built-in Dev Service, such as `RedisDevServicesProperties`, and adapt it. The exception is `skip-in-tests`, which only the Dev Services skipped in test mode by default declare, such as `LgtmDevServicesProperties`: the others inherit `false` from the contract.
 
 == Container
 
@@ -257,6 +257,8 @@ Declaring the discovery is what opts your Dev Service into it: a service that de
 The factory receives a `DiscoveredContainer` holding the discovered container's information, the host address, and the mapped ports, and returns the `ConnectionDetails` implementation for your service, which is the same abstraction a `ConnectionDetailsFactory` would produce for an owned container. Declare the module providing the `ConnectionDetails` type as a regular dependency of your Dev Service module: applications using your Dev Service use the corresponding integration anyway, and the dependency only lands on their development and test classpaths. If it must remain optional (for example, when one Dev Service serves alternative integrations), guard the discovery declaration with `ClassUtils.isPresent(...)` and keep the class literal in a method that is only invoked when the type is present. The declared type also tells the framework which `ConnectionDetails` the application may define on its own: when the application defines a bean of that type, the Dev Service is neither started nor discovered, mirroring Spring Boot's service connections behavior (see xref:index.adoc#_service_connections[Service Connections]).
 
 The `reuse-strategy` property is part of the `DevServicesProperties` contract and defaults to `none`. Choose the default for your Dev Service in your properties class: `framework` if it declares discovery and is the kind of service applications typically share, such as a message broker, and `none` otherwise.
+
+When a container is discovered, the application has no container bean for your Dev Service, only the `ConnectionDetails` built by your factory. A dynamic property whose supplier looks up the container bean, as in the FancyDB example, fails in that case: if your Dev Service combines `serviceConnection(false)` with discovery, make the supplier fall back to the `ConnectionDetails` bean when there is no container bean.
 
 A discovered container is used as it runs, with the configuration of the application that started it. In particular, credentials must be the same across the applications using the Dev Service; if your service is credential-protected, document this constraint for your users.
 

@@ -67,6 +67,18 @@ You can configure the Dev Service via configuration properties.
 include::partial$ssl-properties.adoc[]
 |===
 
+== Reaching Kafka from Other Containers
+
+When the xref:index.adoc#_shared_network[shared network] is enabled, other containers can't use Kafka at `kafka:9092`: the broker answers on that port with the address it advertises to the application, on the host, which is not reachable from inside a container. Add a listener for the other containers with a `DevServiceContainerCustomizer` (see xref:index.adoc#_programmatic_customization[Programmatic Customization]), and point them at it:
+
+[source,java]
+----
+@Bean
+DevServiceContainerCustomizer<KafkaContainer> kafkaListenerCustomizer() {
+    return container -> container.withListener("kafka:19092");
+}
+----
+
 == Using SSL
 
 include::partial$using-ssl.adoc[]

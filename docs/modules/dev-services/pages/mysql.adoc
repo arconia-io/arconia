@@ -31,7 +31,7 @@ include::partial$initializing-a-jdbc-database.adoc[]
 
 == Configuring the Dev Service
 
-You can configure the Dev Service via configuration properties.
+You can configure the Dev Service via configuration properties. The credentials and the database name are set with the `username`, `password`, and `db-name` properties: the environment variables the image offers for the same purpose have no effect when set through the `environment` property.
 
 |===
 |Property |Default |Description
