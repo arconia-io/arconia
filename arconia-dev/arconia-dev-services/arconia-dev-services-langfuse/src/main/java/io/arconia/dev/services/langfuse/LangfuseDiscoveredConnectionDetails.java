@@ -13,8 +13,9 @@ import io.arconia.testcontainers.langfuse.LangfuseContainer;
  * OTLP connection details for traces to connect to a Langfuse dev service
  * running in a container discovered from another application.
  * <p>
- * The API keys are the ones configured for this application, which must match the ones
- * of the discovered Langfuse instance.
+ * The API keys are the ones configured for this application, through the properties or the
+ * environment variables of the dev service, which must match the ones of the discovered
+ * Langfuse instance.
  */
 final class LangfuseDiscoveredConnectionDetails implements OtlpTracingConnectionDetails {
 
@@ -25,7 +26,13 @@ final class LangfuseDiscoveredConnectionDetails implements OtlpTracingConnection
     LangfuseDiscoveredConnectionDetails(DiscoveredContainer container, LangfuseDevServicesProperties properties) {
         this.tracesUrl = "http://%s:%d%s".formatted(container.host(), container.mappedPort(LangfuseContainer.HTTP_PORT),
                 LangfuseContainer.OTLP_TRACES_PATH);
-        String credentials = properties.getPublicKey() + ":" + properties.getSecretKey();
+        // As for a container the application starts itself, API keys set through the
+        // environment variables take precedence over the public-key and secret-key properties.
+        String publicKey = properties.getEnvironment().getOrDefault(
+                LangfuseDevServicesAutoConfiguration.PUBLIC_KEY_ENVIRONMENT_VARIABLE, properties.getPublicKey());
+        String secretKey = properties.getEnvironment().getOrDefault(
+                LangfuseDevServicesAutoConfiguration.SECRET_KEY_ENVIRONMENT_VARIABLE, properties.getSecretKey());
+        String credentials = publicKey + ":" + secretKey;
         this.headers = Map.of(
                 "Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8)),
                 "x-langfuse-ingestion-version", "4");

@@ -31,6 +31,10 @@ public final class LangfuseDevServicesAutoConfiguration {
 
     static final String COMPATIBLE_IMAGE_NAME = "langfuse/langfuse";
 
+    static final String PUBLIC_KEY_ENVIRONMENT_VARIABLE = "LANGFUSE_INIT_PROJECT_PUBLIC_KEY";
+
+    static final String SECRET_KEY_ENVIRONMENT_VARIABLE = "LANGFUSE_INIT_PROJECT_SECRET_KEY";
+
     static LangfuseContainer createContainer(LangfuseDevServicesProperties properties) {
         return new LangfuseContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME))
                 .withWorkerImage(properties.getWorkerImageName())
@@ -38,8 +42,8 @@ public final class LangfuseDevServicesAutoConfiguration {
                 .withClickHouseImage(properties.getClickhouseImageName())
                 .withRedisImage(properties.getRedisImageName())
                 .withFlociImage(properties.getFlociImageName())
-                .withEnv("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", properties.getPublicKey())
-                .withEnv("LANGFUSE_INIT_PROJECT_SECRET_KEY", properties.getSecretKey());
+                .withEnv(PUBLIC_KEY_ENVIRONMENT_VARIABLE, properties.getPublicKey())
+                .withEnv(SECRET_KEY_ENVIRONMENT_VARIABLE, properties.getSecretKey());
     }
 
     static class LangfuseDevServicesRegistrar extends DevServicesRegistrar {
