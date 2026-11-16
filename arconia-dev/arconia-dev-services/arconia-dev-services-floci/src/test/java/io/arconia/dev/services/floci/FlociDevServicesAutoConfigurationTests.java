@@ -8,14 +8,12 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.testcontainers.containers.GenericContainer;
 
 import io.arconia.dev.services.tests.BaseDevServicesAutoConfigurationTests;
-import io.arconia.dev.services.tests.DisabledIfDockerUnavailable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link FlociDevServicesAutoConfiguration}.
  */
-@DisabledIfDockerUnavailable
 class FlociDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigurationTests {
 
     FlociDevServicesAutoConfigurationTests() {

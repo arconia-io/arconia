@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link OllamaDevServicesAutoConfiguration}.
  */
+@DisabledIfDockerUnavailable
 class OllamaDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigurationTests {
 
     /**
@@ -51,7 +52,6 @@ class OllamaDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigu
     }
 
     @Test
-    @DisabledIfDockerUnavailable
     void withoutTheSpringAiOllamaModuleThenNoServiceConnectionNorDiscovery() {
         getContextRunner()
                 .withClassLoader(new FilteredClassLoader(OllamaConnectionDetails.class))
@@ -68,7 +68,6 @@ class OllamaDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigu
     }
 
     @Test
-    @DisabledIfDockerUnavailable
     void modelsPulledWhenConfigured() {
         getContextRunner()
                 .withPropertyValues("arconia.dev.services.ollama.models=%s,%s".formatted(TEST_MODEL, OTHER_TEST_MODEL))
@@ -87,7 +86,6 @@ class OllamaDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigu
     }
 
     @Test
-    @DisabledIfDockerUnavailable
     void noModelPulledWhenNotConfigured() {
         getContextRunner()
                 .run(context -> {
