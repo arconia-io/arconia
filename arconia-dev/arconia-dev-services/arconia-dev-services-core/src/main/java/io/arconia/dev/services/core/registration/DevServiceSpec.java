@@ -200,7 +200,7 @@ public final class DevServiceSpec {
     }
 
     /**
-     * A link the dev service exposes, such as a management console or a telemetry endpoint,
+     * A link the dev service exposes, such as a management console or an administration API,
      * at the given container port. The link is resolved against the port mapping of the
      * container the dev service runs in, whether started by this application or discovered.
      */

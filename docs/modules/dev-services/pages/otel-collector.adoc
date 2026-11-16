@@ -26,12 +26,11 @@ By default, when running the application in dev mode, multiple applications runn
 
 == Exploring the Telemetry
 
-The application logs will show you the URLs where the OpenTelemetry Collector is accepting logs, metrics, and traces.
+The application logs will show you the container the OpenTelemetry Collector runs in, with the address where it accepts logs, metrics, and traces via OTLP over HTTP.
 
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'otel-collector' is ready in container <container-id> (otel/opentelemetry-collector-contrib, localhost:<port>, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'otel-collector' links: OTLP/gRPC: http://localhost:<port>, OTLP/HTTP: http://localhost:<port>
 ----
 
 By default, logs, metrics, and traces are exported via OTLP using the HTTP/Protobuf format.

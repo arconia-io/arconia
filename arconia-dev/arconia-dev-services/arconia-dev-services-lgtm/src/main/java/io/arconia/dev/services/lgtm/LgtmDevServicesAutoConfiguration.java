@@ -139,8 +139,6 @@ public final class LgtmDevServicesAutoConfiguration {
                     .ssl(LgtmDevServicesAutoConfiguration::configureSsl)
                     .discovery(OtlpConnectionDetails.class, LgtmDiscoveredConnectionDetails::new)
                     .link("Grafana", GRAFANA_PORT)
-                    .link("OTLP/HTTP", OTLP_HTTP_PORT)
-                    .link("OTLP/gRPC", OTLP_GRPC_PORT)
                     .link("Prometheus", PROMETHEUS_PORT)
                     .link("Tempo MCP", TEMPO_PORT, TEMPO_MCP_PATH));
         }

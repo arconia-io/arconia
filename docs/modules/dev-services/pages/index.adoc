@@ -520,12 +520,12 @@ spring:
 
 === Startup Feedback
 
-When a Dev Service is ready, Arconia logs a consistent startup message: one line about the container the Dev Service runs in, and one line with its links, such as management consoles and telemetry endpoints, when it has any:
+When a Dev Service is ready, Arconia logs a consistent startup message: one line about the container the Dev Service runs in, and one line with its links, such as management consoles and API documentation, when it has any:
 
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'lgtm' is ready in container 3f2a9c1d7b4e (grafana/otel-lgtm, localhost:<port>, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, OTLP/HTTP: http://localhost:32896, OTLP/gRPC: http://localhost:32897, Prometheus: http://localhost:32898, Tempo MCP: http://localhost:32899/api/mcp
+...i.a.d.s.startup  : Dev Service 'lgtm' links: Grafana: http://localhost:32895, Prometheus: http://localhost:32896, Tempo MCP: http://localhost:32897/api/mcp
 ----
 
 The first line states:
@@ -545,7 +545,7 @@ When the configured reuse strategy could not be applied, the line says so and gi
 ...i.a.d.s.startup  : Dev Service 'redis' is ready in container 5e8d2b7f0c13 (redis, localhost:<port>, reuse-strategy: none ('testcontainers' requires reuse to be enabled in the Testcontainers configuration (testcontainers.reuse.enable=true in ~/.testcontainers.properties or TESTCONTAINERS_REUSE_ENABLE=true)), ssl)
 ----
 
-The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`, together with all the host ports the container publishes.
+The links are declared by each Dev Service and resolved against the container it runs in, whether the application started it or discovered it. They point to the endpoints you use yourself, from a browser or a tool. The endpoints the application is connected to automatically, such as the ones receiving its telemetry, are not among them. The same information is available programmatically through the `devservices` actuator endpoint (see xref:index.adoc#_actuator[Actuator]), for each service under a `links` list of `label` and `url`, together with all the host ports the container publishes.
 
 The messages are written by the `io.arconia.dev.services.startup` logger. To keep only them, quiet the logging of Testcontainers (see xref:index.adoc#_troubleshooting[Troubleshooting]).
 

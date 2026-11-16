@@ -71,9 +71,7 @@ public final class OtelCollectorDevServicesAutoConfiguration {
                     .additionalPort(ArconiaOtelCollectorContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .ssl(OtelCollectorDevServicesAutoConfiguration::configureSsl)
                     .serviceConnectionName(ArconiaOtelCollectorContainer.COMPATIBLE_IMAGE_NAME)
-                    .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new)
-                    .link("OTLP/gRPC", ArconiaOtelCollectorContainer.OTLP_GRPC_PORT)
-                    .link("OTLP/HTTP", ArconiaOtelCollectorContainer.OTLP_HTTP_PORT));
+                    .discovery(OtlpConnectionDetails.class, OtelCollectorDiscoveredConnectionDetails::new));
         }
 
     }

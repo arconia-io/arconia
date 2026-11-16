@@ -75,14 +75,13 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
 
     @Test
     @DisabledIfDockerUnavailable
-    void devServiceLinksExposePhoenixUiAndOtlpGrpc() {
+    void devServiceLinksExposePhoenixUi() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
             List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
-            assertThat(links).extracting(DevServiceLink::label).containsExactly("Phoenix UI", "OTLP/gRPC");
+            assertThat(links).extracting(DevServiceLink::label).containsExactly("Phoenix UI");
             assertThat(links).extracting(DevServiceLink::url).containsExactly(
-                    "http://" + container.getHost() + ":" + container.getMappedPort(PhoenixContainer.HTTP_PORT),
-                    "http://" + container.getHost() + ":" + container.getMappedPort(PhoenixContainer.GRPC_PORT));
+                    "http://" + container.getHost() + ":" + container.getMappedPort(PhoenixContainer.HTTP_PORT));
         });
     }
 

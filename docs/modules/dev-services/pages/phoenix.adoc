@@ -36,7 +36,7 @@ The application logs will show you the URL where you can access the Arize Phoeni
 [source,logs]
 ----
 ...i.a.d.s.startup  : Dev Service 'phoenix' is ready in container <container-id> (arizephoenix/phoenix, localhost:<port>, reuse-strategy: framework)
-...i.a.d.s.startup  : Dev Service 'phoenix' links: Phoenix UI: http://localhost:<port>, OTLP/gRPC: http://localhost:<port>
+...i.a.d.s.startup  : Dev Service 'phoenix' links: Phoenix UI: http://localhost:<port>
 ----
 
 By default, traces are exported via OTLP using the HTTP/Protobuf format.
@@ -99,6 +99,6 @@ include::partial$ssl-properties.adoc[]
 
 include::partial$using-ssl.adoc[]
 
-Phoenix then serves both its HTTP port and its gRPC port over SSL only, and clients are not asked for a certificate. Since the Phoenix UI shares the HTTP port with the OTLP endpoint, open it with `https` in the browser, which asks you to accept the certificate unless your machine trusts it. The Phoenix UI link reported at startup still uses `http`.
+Phoenix then serves both its HTTP port and its gRPC port over SSL only, and clients are not asked for a certificate. Since the Phoenix UI shares the HTTP port with the OTLP endpoint, open it with `https` in the browser, which asks you to accept the certificate unless your machine trusts it. The links of a Dev Service always use `http`, so the Phoenix UI link reported at startup does too: replace the scheme when opening it.
 
 include::partial$disabling-dev-service.adoc[]

@@ -128,12 +128,12 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
 
     @Test
     @DisabledIfDockerUnavailable
-    void devServiceLinksExposeGrafanaOtlpPrometheusAndTempoMcpUrls() {
+    void devServiceLinksExposeGrafanaPrometheusAndTempoMcpUrls() {
         contextRunnerWithContainerLifecycle().run(context -> {
             var container = context.getBean(getContainerClass());
             List<DevServiceLink> links = context.getBean(DevServiceRegistration.class).getLinks();
             assertThat(links).extracting(DevServiceLink::label)
-                    .containsExactly("Grafana", "OTLP/HTTP", "OTLP/gRPC", "Prometheus", "Tempo MCP");
+                    .containsExactly("Grafana", "Prometheus", "Tempo MCP");
             assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
             assertThat(links).filteredOn(link -> link.label().equals("Tempo MCP"))
                     .singleElement().satisfies(link -> assertThat(link.url()).endsWith(LgtmDevServicesAutoConfiguration.TEMPO_MCP_PATH));

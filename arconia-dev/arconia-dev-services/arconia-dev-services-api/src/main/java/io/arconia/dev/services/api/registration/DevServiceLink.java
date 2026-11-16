@@ -5,9 +5,9 @@ import org.springframework.util.Assert;
 import io.arconia.core.annotations.Incubating;
 
 /**
- * A link exposed by a dev service, such as a management console or a telemetry endpoint.
+ * A link exposed by a dev service, such as a management console or an administration API.
  *
- * @param label the human-readable label of the link (e.g. {@code Grafana}, {@code OTLP/HTTP})
+ * @param label the human-readable label of the link (e.g. {@code Grafana}, {@code Prometheus})
  * @param url the URL the link points to
  */
 @Incubating
