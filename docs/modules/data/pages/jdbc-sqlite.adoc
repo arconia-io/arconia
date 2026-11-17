@@ -166,6 +166,9 @@ Values of the `java.time` types are stored as https://www.sqlite.org/datatype3.h
 | `OffsetDateTime`
 | `2026-07-31 10:34:56.123456789`
 
+| `ZonedDateTime`
+| `2026-07-31 10:34:56.123456789`
+
 | `LocalDateTime`
 | `2026-07-31 12:34:56.123456789`
 
@@ -174,11 +177,38 @@ Values of the `java.time` types are stored as https://www.sqlite.org/datatype3.h
 
 | `LocalTime`
 | `12:34:56.123456789`
+
+| `OffsetTime`
+| `10:34:56.123456789`
+
+| `YearMonth`
+| `2026-07`
+
+| `Year`
+| `2026`, as an integer
 |===
 
-SQLite treats every date and time as UTC, so `Instant` and `OffsetDateTime` values are converted to UTC. An `OffsetDateTime` is read back as the same instant with a UTC offset. When reading, the date and time can also be separated by `T`, the fraction can have any number of digits, and the value can end with an offset such as `+02:00` or `Z`. A value without an offset is read as UTC.
+SQLite treats every date and time as UTC, so `Instant`, `OffsetDateTime`, `ZonedDateTime`, and `OffsetTime` values are converted to UTC. Values of the types with an offset or a time zone are read back as the same instant with a UTC offset. When reading, the date and time can also be separated by `T`, the fraction can have any number of digits, and the value can end with an offset such as `+02:00` or `Z`. A value without an offset is read as UTC.
 
-The legacy `java.sql.Timestamp`, `java.sql.Date`, and `java.sql.Time` types aren't supported. Use the `java.time` types instead.
+The legacy date and time types are stored in the same formats.
+
+|===
+| Java type | Stored as
+
+| `java.util.Date`
+| `Instant`
+
+| `java.sql.Timestamp`
+| `Instant`
+
+| `java.sql.Date`
+| `LocalDate`
+
+| `java.sql.Time`
+| `LocalTime`
+|===
+
+A `java.sql.Date` or `java.sql.Time` value is converted to a date or a time in the default time zone of the JVM, as its `toLocalDate()` or `toLocalTime()` method does. A `java.sql.Time` value keeps whole seconds only.
 
 === Booleans
 

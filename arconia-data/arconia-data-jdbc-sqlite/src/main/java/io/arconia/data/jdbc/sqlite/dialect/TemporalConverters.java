@@ -5,10 +5,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
@@ -23,8 +28,10 @@ import org.springframework.data.convert.WritingConverter;
  * {@code datetime()} and {@code CURRENT_TIMESTAMP}: a space between date and time and no offset,
  * since SQLite treats every date and time as UTC. SQLite compares them as text, so sharing that
  * format keeps ordering and range comparisons correct against values SQLite produces. The
- * fraction has nine digits, so values round-trip without losing precision. {@link Instant} and
- * {@link OffsetDateTime} values are normalized to UTC.
+ * fraction has nine digits, so values round-trip without losing precision. {@link Instant},
+ * {@link OffsetDateTime}, {@link ZonedDateTime}, {@link OffsetTime}, and {@link Date} values are
+ * normalized to UTC, and values with an offset or a time zone are read back with a UTC offset.
+ * {@link YearMonth} values are stored as text too, and {@link Year} values as integers.
  * <p>
  * Values are read leniently: the separator between date and time can be {@code T} or a space,
  * the fraction can have any number of digits, and a missing offset means UTC.
@@ -57,6 +64,12 @@ final class TemporalConverters {
             .parseDefaulting(ChronoField.OFFSET_SECONDS, 0)
             .toFormatter();
 
+    private static final DateTimeFormatter OFFSET_TIME_READER = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ISO_LOCAL_TIME)
+            .optionalStart().appendOffsetId().optionalEnd()
+            .parseDefaulting(ChronoField.OFFSET_SECONDS, 0)
+            .toFormatter();
+
     private TemporalConverters() {}
 
     static List<Object> converters() {
@@ -70,7 +83,18 @@ final class TemporalConverters {
                 LocalDateToStringConverter.INSTANCE,
                 StringToLocalDateConverter.INSTANCE,
                 LocalTimeToStringConverter.INSTANCE,
-                StringToLocalTimeConverter.INSTANCE
+                StringToLocalTimeConverter.INSTANCE,
+                ZonedDateTimeToStringConverter.INSTANCE,
+                StringToZonedDateTimeConverter.INSTANCE,
+                OffsetTimeToStringConverter.INSTANCE,
+                StringToOffsetTimeConverter.INSTANCE,
+                YearToIntegerConverter.INSTANCE,
+                NumberToYearConverter.INSTANCE,
+                StringToYearConverter.INSTANCE,
+                YearMonthToStringConverter.INSTANCE,
+                StringToYearMonthConverter.INSTANCE,
+                DateToStringConverter.INSTANCE,
+                StringToDateConverter.INSTANCE
         );
     }
 
@@ -190,6 +214,146 @@ final class TemporalConverters {
         @Override
         public LocalTime convert(String source) {
             return LocalTime.parse(source, DateTimeFormatter.ISO_LOCAL_TIME);
+        }
+
+    }
+
+    @WritingConverter
+    enum ZonedDateTimeToStringConverter implements Converter<ZonedDateTime, String> {
+
+        INSTANCE;
+
+        @Override
+        public String convert(ZonedDateTime source) {
+            return UTC_DATE_TIME_WRITER.format(source);
+        }
+
+    }
+
+    @ReadingConverter
+    enum StringToZonedDateTimeConverter implements Converter<String, ZonedDateTime> {
+
+        INSTANCE;
+
+        @Override
+        public ZonedDateTime convert(String source) {
+            return OffsetDateTime.parse(source, OFFSET_DATE_TIME_READER).toZonedDateTime();
+        }
+
+    }
+
+    @WritingConverter
+    enum OffsetTimeToStringConverter implements Converter<OffsetTime, String> {
+
+        INSTANCE;
+
+        @Override
+        public String convert(OffsetTime source) {
+            return TIME_WRITER.format(source.withOffsetSameInstant(ZoneOffset.UTC));
+        }
+
+    }
+
+    @ReadingConverter
+    enum StringToOffsetTimeConverter implements Converter<String, OffsetTime> {
+
+        INSTANCE;
+
+        @Override
+        public OffsetTime convert(String source) {
+            return OffsetTime.parse(source, OFFSET_TIME_READER);
+        }
+
+    }
+
+    @WritingConverter
+    enum YearToIntegerConverter implements Converter<Year, Integer> {
+
+        INSTANCE;
+
+        @Override
+        public Integer convert(Year source) {
+            return source.getValue();
+        }
+
+    }
+
+    @ReadingConverter
+    enum NumberToYearConverter implements Converter<Number, Year> {
+
+        INSTANCE;
+
+        @Override
+        public Year convert(Number source) {
+            return Year.of(source.intValue());
+        }
+
+    }
+
+    /**
+     * Reads a {@link Year} stored in a column with {@code TEXT} affinity, where SQLite keeps the
+     * integer as text.
+     */
+    @ReadingConverter
+    enum StringToYearConverter implements Converter<String, Year> {
+
+        INSTANCE;
+
+        @Override
+        public Year convert(String source) {
+            return Year.parse(source);
+        }
+
+    }
+
+    @WritingConverter
+    enum YearMonthToStringConverter implements Converter<YearMonth, String> {
+
+        INSTANCE;
+
+        @Override
+        public String convert(YearMonth source) {
+            return source.toString();
+        }
+
+    }
+
+    @ReadingConverter
+    enum StringToYearMonthConverter implements Converter<String, YearMonth> {
+
+        INSTANCE;
+
+        @Override
+        public YearMonth convert(String source) {
+            return YearMonth.parse(source);
+        }
+
+    }
+
+    /**
+     * Writes a {@link Date} as the instant it represents. Its {@code java.sql} subclasses have
+     * their own converters in {@link SqlTemporalConverters}.
+     */
+    @WritingConverter
+    enum DateToStringConverter implements Converter<Date, String> {
+
+        INSTANCE;
+
+        @Override
+        public String convert(Date source) {
+            return InstantToStringConverter.INSTANCE.convert(source.toInstant());
+        }
+
+    }
+
+    @ReadingConverter
+    enum StringToDateConverter implements Converter<String, Date> {
+
+        INSTANCE;
+
+        @Override
+        public Date convert(String source) {
+            return Date.from(StringToInstantConverter.INSTANCE.convert(source));
         }
 
     }

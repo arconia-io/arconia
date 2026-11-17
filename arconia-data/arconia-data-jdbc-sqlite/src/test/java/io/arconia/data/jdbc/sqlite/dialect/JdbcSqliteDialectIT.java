@@ -2,13 +2,21 @@ package io.arconia.data.jdbc.sqlite.dialect;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -260,6 +268,40 @@ class JdbcSqliteDialectIT {
         }
 
         @Test
+        void shouldRoundTripZonedAndPartialValues() {
+            Schedule saved = template.insert(new Schedule(null, INSTANT.atZone(ZoneId.of("Europe/Rome")),
+                    OffsetTime.of(12, 34, 56, 0, ZoneOffset.ofHours(2)), Year.of(2026), YearMonth.of(2026, 7)));
+
+            Schedule found = template.findById(saved.id(), Schedule.class);
+
+            assertThat(found).isNotNull();
+            assertThat(found.zonedDateTime()).isEqualTo(INSTANT.atZone(ZoneOffset.UTC));
+            assertThat(found.offsetTime()).isEqualTo(OffsetTime.of(10, 34, 56, 0, ZoneOffset.UTC));
+            assertThat(found.year()).isEqualTo(Year.of(2026));
+            assertThat(found.yearMonth()).isEqualTo(YearMonth.of(2026, 7));
+            assertThat(jdbcClient.sql("SELECT typeof(year) || '|' || year_month FROM schedule").query(String.class).single())
+                    .isEqualTo("integer|2026-07");
+        }
+
+        @Test
+        void shouldRoundTripLegacyValues() {
+            java.sql.Date sqlDate = java.sql.Date.valueOf(LocalDate.of(2026, 7, 31));
+            LegacyEvent saved = template.insert(new LegacyEvent(null, Date.from(INSTANT), Timestamp.from(INSTANT),
+                    sqlDate, Time.valueOf(LocalTime.of(12, 34, 56))));
+
+            LegacyEvent found = template.findById(saved.id(), LegacyEvent.class);
+
+            assertThat(found).isNotNull();
+            assertThat(found.date()).isEqualTo(Date.from(INSTANT.truncatedTo(ChronoUnit.MILLIS)));
+            assertThat(found.timestamp()).isEqualTo(Timestamp.from(INSTANT));
+            assertThat(found.sqlDate()).isEqualTo(sqlDate);
+            assertThat(found.time()).isEqualTo(Time.valueOf(LocalTime.of(12, 34, 56)));
+            assertThat(jdbcClient.sql("SELECT date || '|' || timestamp || '|' || sql_date || '|' || time FROM legacy_event")
+                    .query(String.class).single())
+                    .isEqualTo("2026-07-31 10:34:56.123000000|2026-07-31 10:34:56.123456789|2026-07-31|12:34:56.000000000");
+        }
+
+        @Test
         void shouldReadSqliteCurrentTimestamp() {
             jdbcClient.sql("""
                     INSERT INTO event (instant, offset_date_time, local_date_time, local_date, local_time)
@@ -343,6 +385,11 @@ class JdbcSqliteDialectIT {
 
     record Event(@Id @Nullable Long id, @Nullable Instant instant, @Nullable OffsetDateTime offsetDateTime,
             @Nullable LocalDateTime localDateTime, @Nullable LocalDate localDate, @Nullable LocalTime localTime) {}
+
+    record Schedule(@Id @Nullable Long id, ZonedDateTime zonedDateTime, OffsetTime offsetTime, Year year,
+            YearMonth yearMonth) {}
+
+    record LegacyEvent(@Id @Nullable Long id, Date date, Timestamp timestamp, java.sql.Date sqlDate, Time time) {}
 
     interface BookRepository extends ListCrudRepository<Book, Long>, ListPagingAndSortingRepository<Book, Long> {
 

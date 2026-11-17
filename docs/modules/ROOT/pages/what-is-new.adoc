@@ -9,6 +9,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * Arconia now also warns when the profile settings (`arconia.dev.profiles`, `arconia.test.profiles`, `arconia.bootstrap.profiles.enabled`) are found in a configuration tree imported with `spring.config.import=configtree:`, where they have no effect, as it does for configuration files. Learn more about xref:core-features/profiles.adoc#_customizing_the_profiles[Customizing the Profiles].
 
+== Data
+
+* The SQLite dialect for Spring Data JDBC now also stores and reads `ZonedDateTime`, `OffsetTime`, `Year`, `YearMonth`, `java.util.Date`, `java.sql.Timestamp`, `java.sql.Date`, and `java.sql.Time` values. Previously, values of these types could be written, but reading them back failed. Learn more about the xref:data:jdbc-sqlite.adoc#_dates_and_times[SQLite Type Mapping].
+
 == Dev Services
 
 * The Floci Dev Service now reports the URL of the Floci UI, a web console for the resources in the emulator, among its links. Floci starts the console the first time the URL is opened. Learn more about the xref:dev-services:floci.adoc#_accessing_the_floci_ui[Floci Dev Service].

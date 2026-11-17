@@ -25,3 +25,19 @@ CREATE TABLE product (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     price TEXT
 );
+
+CREATE TABLE schedule (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    zoned_date_time TIMESTAMP,
+    offset_time TIME,
+    year INTEGER,
+    year_month TEXT
+);
+
+CREATE TABLE legacy_event (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    timestamp TIMESTAMP,
+    sql_date DATE,
+    time TIME
+);

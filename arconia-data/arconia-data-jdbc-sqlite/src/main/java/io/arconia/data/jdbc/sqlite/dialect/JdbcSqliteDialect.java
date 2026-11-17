@@ -89,10 +89,11 @@ public class JdbcSqliteDialect extends AbstractDialect implements JdbcDialect {
         }
     };
 
-    private static final List<Object> CONVERTERS = Stream.concat(
-            Stream.of(NumberToBooleanConverter.INSTANCE),
-            TemporalConverters.converters().stream()
-    ).toList();
+    private static final List<Object> CONVERTERS = Stream.of(
+            List.<Object>of(NumberToBooleanConverter.INSTANCE),
+            TemporalConverters.converters(),
+            SqlTemporalConverters.converters()
+    ).flatMap(List::stream).toList();
 
     @Override
     public LimitClause limit() {
