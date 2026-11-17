@@ -8,3 +8,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == Core Features
 
 * Arconia now also warns when the profile settings (`arconia.dev.profiles`, `arconia.test.profiles`, `arconia.bootstrap.profiles.enabled`) are found in a configuration tree imported with `spring.config.import=configtree:`, where they have no effect, as it does for configuration files. Learn more about xref:core-features/profiles.adoc#_customizing_the_profiles[Customizing the Profiles].
+
+== OpenTelemetry
+
+* Arconia now stops recording observations, both metrics and traces, for the Spring Boot health endpoint and its `/livez` and `/readyz` probe paths in Servlet applications, so that frequent Kubernetes probes no longer flood the telemetry backend. The observations started while handling those requests, such as the Spring Security or JDBC ones, are skipped too, instead of becoming separate traces. Use `arconia.observations.http.server.additional-ignore-paths` to ignore more paths, or set `arconia.observations.http.server.ignore-paths` to an empty value to observe every request again. Learn more about xref:opentelemetry:instrumentation.adoc[Instrumentation].

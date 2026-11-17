@@ -79,6 +79,15 @@
       "type": "java.lang.Boolean",
       "description": "Whether to enable compatibility for OpenTelemetry Environment Variable Specification properties.",
       "defaultValue": true
+    },
+
+    {
+      "name": "arconia.observations.http.server.ignore-paths",
+      "defaultValue": [
+        "\/actuator\/health\/**",
+        "\/livez",
+        "\/readyz"
+      ]
     }
   ],
   "hints": [

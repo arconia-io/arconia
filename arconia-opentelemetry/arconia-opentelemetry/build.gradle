@@ -17,8 +17,11 @@ dependencies {
 
     implementation "org.slf4j:slf4j-api"
 
+    compileOnly "jakarta.servlet:jakarta.servlet-api"
+
     optional "io.micrometer:micrometer-tracing-bridge-otel"
     optional "org.springframework.boot:spring-boot-autoconfigure"
+    optional "org.springframework:spring-web"
 
     // OpenTelemetry
     optional("io.opentelemetry:opentelemetry-exporter-otlp") {
@@ -37,6 +40,7 @@ dependencies {
     optional("org.junit.platform:junit-platform-launcher")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "jakarta.servlet:jakarta.servlet-api"
     testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
