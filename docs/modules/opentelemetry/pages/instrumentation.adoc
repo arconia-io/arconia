@@ -18,6 +18,78 @@ Check out the https://docs.micrometer.io/micrometer/reference/reference.html[Mic
 
 By default, Micrometer-based instrumentation uses its own stable naming conventions. Arconia lets you switch to different types like the xref:observability:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] or the xref:observability:semantic-conventions/openinference.adoc[OpenInference Semantic Conventions] instead. Check out the xref:observability:semantic-conventions/index.adoc[Semantic Conventions] documentation for more details.
 
+=== Ignoring HTTP Server Requests
+
+In Servlet web applications, Arconia records no observations for the HTTP requests sent to certain paths. By default, the following paths are ignored, so that frequent Kubernetes liveness and readiness probes don't flood your telemetry backend:
+
+* `/actuator/health/**`
+* `/livez`
+* `/readyz`
+
+Both metrics and traces are skipped, since they're produced by the same observation. The observations started while handling an ignored request are skipped too, such as the Spring Security ones or the JDBC ones from a health indicator querying the database. Otherwise, they would have no parent and show up as separate traces.
+
+The `/actuator/health/**` pattern matches the health endpoint and its groups, such as `/actuator/health/liveness`. The defaults assume Spring Boot's default `management.endpoints.web.base-path`, and the `/livez` and `/readyz` entries match the additional probe paths Spring Boot registers on the main server port when `management.endpoint.health.probes.add-additional-paths` is enabled. Adjust the paths if you change the base path or register different additional paths.
+
+Patterns are matched against the path within the application, so they keep working when the application is deployed under a context path. With `server.servlet.context-path=/app`, the `/livez` pattern matches a request to `/app/livez`.
+
+The decision is made once, when the request starts, and applies to the whole request. A request to an ignored path is not observed even when it fails, including the error page it's forwarded to. Observations can't be turned on halfway through a request, and those started on the error dispatch alone would show up as separate traces with no link to the failed request. The failure is still visible in the application logs, and Kubernetes reports failing probes as events. A health check reporting a `DOWN` status is a regular response with a `503` status, and is ignored like any other probe.
+
+You can add additional paths to ignore without replacing the defaults:
+
+[source,yaml]
+----
+arconia:
+  observations:
+    http:
+      server:
+        additional-ignore-paths:
+          - /internal/**
+----
+
+You can also replace the default ignored paths entirely:
+
+[source,yaml]
+----
+arconia:
+  observations:
+    http:
+      server:
+        ignore-paths:
+          - /actuator/health/**
+          - /healthz
+----
+
+To observe every request again, set `ignore-paths` to an empty value:
+
+[source,yaml]
+----
+arconia:
+  observations:
+    http:
+      server:
+        ignore-paths: ""
+----
+
+Ignoring requests is independent of the OpenTelemetry support, and still applies when it's disabled with `arconia.otel.enabled=false`.
+
+The following limitations apply:
+
+* Only requests on the main server port are ignored. If you serve the actuator on a separate port with `management.server.port`, configure the probes to use the additional paths on the main port, for example with `management.endpoint.health.group.liveness.additional-path=server:/livez`.
+* Only observations started on the thread handling the request are ignored. Observations started on other threads, for example by an `@Async` method called while handling a request to a path you added, are still recorded, and show up as separate traces.
+
+.HTTP Server Observations Configuration Properties
+|===
+|Property |Default |Description
+
+|`arconia.observations.http.server.ignore-paths`
+|`/actuator/health/\**, /livez, /readyz`
+|HTTP request paths for which no observations are recorded, including those started while handling the request.
+
+|`arconia.observations.http.server.additional-ignore-paths`
+|`[]`
+|Additional HTTP request paths for which no observations are recorded, including those started while handling the request.
+|===
+
 == OpenTelemetry APIs
 
 The https://opentelemetry.io/docs/languages/java/[OpenTelemetry Java] project provides its own APIs for instrumenting applications. The main APIs available for instrumentation are:
