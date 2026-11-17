@@ -218,6 +218,25 @@ Values of type `boolean` are stored as the integers `1` and `0`.
 
 SQLite stores a value in a column declared as `NUMERIC` or `DECIMAL` as a floating-point number when it has a fractional part, keeping https://www.sqlite.org/datatype3.html#type_affinity[about 15 significant digits]. To store `BigDecimal` values exactly, declare the column as `TEXT`.
 
+== Error Handling
+
+The SQLite JDBC driver reports errors without the SQL state that Spring relies on to categorize them. Arconia contributes an `SqliteExceptionTranslator` that categorizes them based on the SQLite https://www.sqlite.org/rescode.html[result code] instead. Spring Boot applies it to the auto-configured `JdbcTemplate`, which Spring Data JDBC repositories and `JdbcClient` use too, and Arconia applies it to the transaction manager.
+
+|===
+| SQLite error | Exception
+
+| A violated `UNIQUE` or `PRIMARY KEY` constraint
+| `DuplicateKeyException`
+
+| Any other violated constraint, such as `NOT NULL`, `CHECK`, or `FOREIGN KEY`
+| `DataIntegrityViolationException`
+
+| A database that is busy or locked by another connection
+| `CannotAcquireLockException`
+|===
+
+A `CannotAcquireLockException` is a transient error, so the operation can succeed when retried. Other errors are translated as Spring does by default. The translator is also applied in tests annotated with `@JdbcTest` or `@DataJdbcTest`. To use a translator of your own, declare an `SQLExceptionTranslator` bean, and Arconia doesn't contribute its own.
+
 == Limitations
 
 Spring Data JDBC features that SQLite doesn't support behave as follows.

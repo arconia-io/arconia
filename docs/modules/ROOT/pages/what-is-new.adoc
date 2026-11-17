@@ -12,6 +12,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == Data
 
 * The SQLite dialect for Spring Data JDBC now also stores and reads `ZonedDateTime`, `OffsetTime`, `Year`, `YearMonth`, `java.util.Date`, `java.sql.Timestamp`, `java.sql.Date`, and `java.sql.Time` values. Previously, values of these types could be written, but reading them back failed. Learn more about the xref:data:jdbc-sqlite.adoc#_dates_and_times[SQLite Type Mapping].
+* Errors from SQLite are now translated into the matching Spring data access exceptions, such as `DuplicateKeyException` for a violated unique constraint and `CannotAcquireLockException` for a busy database. Previously, they were all reported as `UncategorizedSQLException`. Learn more about xref:data:jdbc-sqlite.adoc#_error_handling[SQLite Error Handling].
 
 == Dev Services
 
