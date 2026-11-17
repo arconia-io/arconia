@@ -1,6 +1,6 @@
 = Data JDBC SQLite
 
-Arconia Data JDBC SQLite adds https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect and the https://github.com/xerial/sqlite-jdbc[SQLite JDBC driver], so you can use SQLite as the database backing your Spring Data JDBC repositories.
+Arconia Data JDBC SQLite adds https://www.sqlite.org[SQLite] support to https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]. It contributes an SQLite dialect, the translation of SQLite errors into Spring data access exceptions, and the https://github.com/xerial/sqlite-jdbc[SQLite JDBC driver], so you can use SQLite as the database backing your Spring Data JDBC repositories.
 
 == Dependencies
 
@@ -74,6 +74,8 @@ spring:
     url: "jdbc:sqlite:./data/app.db?journal_mode=WAL&synchronous=NORMAL&busy_timeout=5000&foreign_keys=true"
 ----
 
+SQLite creates the database file when it doesn't exist, but not the directory containing it. Opening a connection fails with an `SQLITE_CANTOPEN` error when the directory is missing.
+
 The parameters in the example are recommended for applications serving concurrent requests.
 
 * `journal_mode=WAL` enables https://www.sqlite.org/wal.html[write-ahead logging], so that reading the database doesn't block writing to it and the other way around. SQLite still allows one writer at a time.
@@ -82,6 +84,16 @@ The parameters in the example are recommended for applications serving concurren
 * `foreign_keys=true` enforces the foreign key constraints of the schema, which SQLite ignores by default.
 
 Spring Boot detects the JDBC URL and configures the data source automatically. Spring Data JDBC discovers the SQLite dialect contributed by this module via Spring's `spring.factories` mechanism, so no further wiring is required.
+
+Other pragmas can help with larger databases.
+
+* `journal_size_limit` is the size, in bytes, that the write-ahead log file is truncated to after it has been written back to the database. Without it, the file keeps the size it reached at its peak.
+* `cache_size` is the amount of database pages each connection keeps in memory. A negative value is a size in kibibytes, such as `-65536` for 64 MiB. The SQLite default is `-2000`, about 2 MB.
+* `mmap_size` is the size, in bytes, of the part of the database file that SQLite reads through memory-mapped I/O instead of system calls.
+
+=== Connection Pool
+
+Spring Boot configures a pool of up to 10 connections. In write-ahead logging mode, they read the database in parallel, but write to it one at a time. A connection that wants to write waits for the current writer to finish, for up to the busy timeout. Keep write transactions short, so that the other writers don't run out of time while they wait.
 
 === In-Memory Databases
 
@@ -97,7 +109,7 @@ spring:
       max-lifetime: 0
 ----
 
-For tests, consider a database file in a temporary directory instead, which works with the default pool configuration.
+For tests, consider a database file in a temporary directory instead, as described in <<_testing>>.
 
 === Schema Initialization
 
@@ -109,6 +121,28 @@ spring:
   sql:
     init:
       mode: always
+----
+
+=== Testing
+
+Point tests at a database file in a temporary directory, which gives each test class a new database and works with the default pool configuration. When the JDBC URL comes from a `@DynamicPropertySource` method, Spring Boot keeps the SQLite data source in tests annotated with `@DataJdbcTest` or `@JdbcTest`, instead of replacing it with an embedded database.
+
+[source,java]
+----
+@DataJdbcTest(properties = "spring.sql.init.mode=always")
+class BookRepositoryTests {
+
+    @TempDir
+    static Path databaseDirectory;
+
+    @DynamicPropertySource
+    static void sqliteProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", () -> "jdbc:sqlite:" + databaseDirectory.resolve("test.db"));
+    }
+
+    // ...
+
+}
 ----
 
 === Deployment
@@ -183,7 +217,20 @@ Values of the `java.time` types are stored as https://www.sqlite.org/datatype3.h
 | `2026`, as an integer
 |===
 
-SQLite treats every date and time as UTC, so `Instant`, `OffsetDateTime`, `ZonedDateTime`, and `OffsetTime` values are converted to UTC. Values of the types with an offset or a time zone are read back as the same instant with a UTC offset. When reading, the date and time can also be separated by `T`, the fraction can have any number of digits, and the value can end with an offset such as `+02:00` or `Z`. A value without an offset is read as UTC.
+SQLite treats every date and time as UTC, so `Instant`, `OffsetDateTime`, `ZonedDateTime`, and `OffsetTime` values are converted to UTC. Values of the types with an offset or a time zone are read back as the same instant with a UTC offset. When reading, the date and time can also be separated by `T`, the fraction can have any number of digits, and the value can end with an offset such as `+02:00` or `Z`. A value without an offset is read as UTC. Values stored as numbers, such as the ones returned by the `unixepoch()` and `julianday()` functions, can't be read as dates and times.
+
+The dialect applies to the values that Spring Data JDBC writes, including the parameters of repository query methods. With `JdbcClient` and `JdbcTemplate`, the SQLite JDBC driver writes a `java.time` value as the result of its `toString()` method instead, such as `2026-07-31T10:34:56Z`. SQLite doesn't compare those values correctly with the ones in the format above, since it compares them as text. Format such values yourself, or let SQLite produce them with its date and time functions.
+
+[source,java]
+----
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS")
+        .withZone(ZoneOffset.UTC);
+
+jdbcClient.sql("UPDATE book SET published_at = :publishedAt WHERE id = :id")
+        .param("publishedAt", formatter.format(Instant.now()))
+        .param("id", id)
+        .update();
+----
 
 The legacy date and time types are stored in the same formats.
 
@@ -236,7 +283,8 @@ A `CannotAcquireLockException` is a transient error, so the operation can succee
 
 Spring Data JDBC features that SQLite doesn't support behave as follows.
 
-* Pessimistic locking. Queries annotated with `@Lock` run without a lock clause, since SQLite has no row locks and allows one writer at a time. In write-ahead logging mode, a transaction that reads and then writes fails with an `SQLITE_BUSY_SNAPSHOT` error if another connection wrote to the database in the meantime, without waiting for the busy timeout. Add `transaction_mode=IMMEDIATE` to the JDBC URL to make each transaction wait for its turn to write when it starts, at the cost of running transactions one at a time.
+* Pessimistic locking. Queries annotated with `@Lock` run without a lock clause, since SQLite has no row locks and allows one writer at a time. In write-ahead logging mode, a transaction that reads and then writes fails if another connection wrote to the database in the meantime, without waiting for the busy timeout. The failure is reported as a `CannotAcquireLockException`, so retry the whole transaction. The `transaction_mode=IMMEDIATE` parameter of the JDBC URL avoids the failure by making each transaction wait for its turn to write when it starts. Spring Data JDBC runs repository queries in transactions too, though, so with that parameter, reading also waits for the current writer to finish.
+* Read-only transactions. Writing in a transaction declared as read-only, such as with `@Transactional(readOnly = true)`, succeeds. The SQLite JDBC driver can only make a connection read-only when opening it, so Spring runs the transaction without that flag. Don't set the `jdbc.explicit_readonly` parameter of the JDBC URL to change that, since it leaves a pooled connection read-only after a read-only transaction, and later writes on that connection fail.
 * Upserts. Calling `JdbcAggregateTemplate.upsert()` fails with an `IllegalArgumentException`, since Spring Data JDBC doesn't support upserts for third-party dialects (https://github.com/spring-projects/spring-data-relational/issues/2304[spring-data-relational#2304]).
 * Escaping `LIKE` patterns. Spring Data JDBC escapes the `%` and `_` characters in the values of derived queries such as `findByNameContaining`, but SQLite only honors the escape character when the query declares it with an `ESCAPE` clause, which Spring Data JDBC doesn't add. A value containing those characters matches no rows. Write such queries with `@Query` instead.
 * Sequences. Identifiers are generated by the database, for example, with an `INTEGER PRIMARY KEY` column.

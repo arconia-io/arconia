@@ -29,7 +29,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.PageRequest;
@@ -59,7 +58,6 @@ import static org.assertj.core.api.Assertions.within;
         "spring.sql.init.mode=always",
         "spring.sql.init.schema-locations=classpath:sqlite/schema.sql"
 })
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class JdbcSqliteDialectIT {
 
     // A file-based database, since each pooled connection to an in-memory one sees a distinct database.

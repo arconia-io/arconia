@@ -14,6 +14,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The SQLite dialect for Spring Data JDBC now also stores and reads `ZonedDateTime`, `OffsetTime`, `Year`, `YearMonth`, `java.util.Date`, `java.sql.Timestamp`, `java.sql.Date`, and `java.sql.Time` values. Previously, values of these types could be written, but reading them back failed. Learn more about the xref:data:jdbc-sqlite.adoc#_dates_and_times[SQLite Type Mapping].
 * Errors from SQLite are now translated into the matching Spring data access exceptions, such as `DuplicateKeyException` for a violated unique constraint and `CannotAcquireLockException` for a busy database. Previously, they were all reported as `UncategorizedSQLException`. Learn more about xref:data:jdbc-sqlite.adoc#_error_handling[SQLite Error Handling].
 * A new `arconia-data-jdbc-sqlite-spring-boot-starter` brings in SQLite support for Spring Data JDBC together with the Spring Boot Starter for Spring Data JDBC, so a single dependency is enough. Learn more about the xref:data:jdbc-sqlite.adoc#_dependencies[SQLite Dependencies].
+* The xref:data:jdbc-sqlite.adoc[SQLite documentation] now covers testing, the connection pool, more pragmas, read-only transactions, and dates and times written with `JdbcClient` or `JdbcTemplate`. It also explains that the `transaction_mode=IMMEDIATE` parameter makes reading wait for the current writer too, since Spring Data JDBC runs repository queries in transactions.
 
 == Dev Services
 
