@@ -20,13 +20,15 @@ By default, Micrometer-based instrumentation uses its own stable naming conventi
 
 === Ignoring HTTP Server Requests
 
-In Servlet web applications, Arconia records no observations for the HTTP requests sent to certain paths. By default, the following paths are ignored, so that frequent Kubernetes liveness and readiness probes don't flood your telemetry backend:
+In Servlet web applications, Arconia records no observations for the HTTP requests sent to certain paths, so that frequent Kubernetes liveness and readiness probes don't flood your telemetry backend. Spring Boot doesn't provide a way to do this yet (see https://github.com/spring-projects/spring-boot/issues/34801[spring-boot#34801]).
+
+By default, the following paths are ignored:
 
 * `/actuator/health/**`
 * `/livez`
 * `/readyz`
 
-Both metrics and traces are skipped, since they're produced by the same observation. The observations started while handling an ignored request are skipped too, such as the Spring Security ones or the JDBC ones from a health indicator querying the database. Otherwise, they would have no parent and show up as separate traces.
+Both metrics and traces are skipped, since they're produced by the same observation. The observations started while handling an ignored request are skipped too, such as the Spring Security ones or the JDBC ones from a health indicator querying the database. Otherwise, they would have no parent and show up as separate traces (see https://github.com/spring-projects/spring-security/issues/12854[spring-security#12854]).
 
 The `/actuator/health/**` pattern matches the health endpoint and its groups, such as `/actuator/health/liveness`. The defaults assume Spring Boot's default `management.endpoints.web.base-path`, and the `/livez` and `/readyz` entries match the additional probe paths Spring Boot registers on the main server port when `management.endpoint.health.probes.add-additional-paths` is enabled. Adjust the paths if you change the base path or register different additional paths.
 
@@ -74,7 +76,7 @@ Ignoring requests is independent of the OpenTelemetry support, and still applies
 
 The following limitations apply:
 
-* Only requests on the main server port are ignored. If you serve the actuator on a separate port with `management.server.port`, configure the probes to use the additional paths on the main port, for example with `management.endpoint.health.group.liveness.additional-path=server:/livez`.
+* Only requests on the main server port are ignored. If you serve the actuator on a separate port with `management.server.port`, configure the probes to use the additional paths on the main port, for example with `management.endpoint.health.group.liveness.additional-path=server:/livez`. Spring Boot doesn't apply the application's servlet filters to the separate management port (see https://github.com/spring-projects/spring-boot/issues/31811[spring-boot#31811]), so requests on that port get no HTTP server observation and the request isn't available when other observations start. With Spring Security, every request on that port, ignored path or not, still produces Spring Security traces with no parent (see https://github.com/spring-projects/spring-security/issues/12854[spring-security#12854]).
 * Only observations started on the thread handling the request are ignored. Observations started on other threads, for example by an `@Async` method called while handling a request to a path you added, are still recorded, and show up as separate traces.
 
 .HTTP Server Observations Configuration Properties

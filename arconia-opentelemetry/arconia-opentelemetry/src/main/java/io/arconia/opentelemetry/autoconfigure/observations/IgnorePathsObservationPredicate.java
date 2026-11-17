@@ -30,6 +30,15 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * context. Any other observation finds the request bound to the current thread by
  * Spring Boot's {@code RequestContextFilter}, which runs before the Spring Security
  * filter chain.
+ * <p>
+ * Spring Boot has no property for this (spring-boot#34801), and the Spring Security
+ * observations don't carry the request (spring-security#12854). Requests on a separate
+ * management port are not covered, since Spring Boot doesn't apply the servlet filters
+ * to the management context (spring-boot#31811).
+ *
+ * @see <a href="https://github.com/spring-projects/spring-boot/issues/34801">spring-boot#34801</a>
+ * @see <a href="https://github.com/spring-projects/spring-security/issues/12854">spring-security#12854</a>
+ * @see <a href="https://github.com/spring-projects/spring-boot/issues/31811">spring-boot#31811</a>
  */
 final class IgnorePathsObservationPredicate implements ObservationPredicate {
 
