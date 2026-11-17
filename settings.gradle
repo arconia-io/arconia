@@ -69,6 +69,7 @@ include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge'
 include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp'
 
 // Spring Boot Starters
+include 'spring-boot-starters:arconia-data-jdbc-sqlite-spring-boot-starter'
 include 'spring-boot-starters:arconia-docling-spring-boot-starter'
 include 'spring-boot-starters:arconia-multitenancy-core-spring-boot-starter'
 include 'spring-boot-starters:arconia-multitenancy-details-jdbc-spring-boot-starter'

@@ -4,7 +4,7 @@ Arconia Data JDBC SQLite adds https://www.sqlite.org[SQLite] support to https://
 
 == Dependencies
 
-Arconia Data JDBC SQLite is designed to be used alongside the https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.jdbc[Spring Boot Starter for Spring Data JDBC]. Add both dependencies to your project.
+Add the Arconia Data JDBC SQLite Spring Boot Starter dependency to your project.
 
 [tabs]
 ======
@@ -13,8 +13,7 @@ Gradle::
 [source,groovy]
 ----
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-    implementation 'io.arconia:arconia-data-jdbc-sqlite'
+    implementation 'io.arconia:arconia-data-jdbc-sqlite-spring-boot-starter'
 }
 ----
 
@@ -23,17 +22,13 @@ Maven::
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jdbc</artifactId>
-</dependency>
-<dependency>
     <groupId>io.arconia</groupId>
-    <artifactId>arconia-data-jdbc-sqlite</artifactId>
+    <artifactId>arconia-data-jdbc-sqlite-spring-boot-starter</artifactId>
 </dependency>
 ----
 ======
 
-The Arconia module brings in the `org.xerial:sqlite-jdbc` driver transitively, so no additional SQLite dependency is required.
+The starter includes the https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.jdbc[Spring Boot Starter for Spring Data JDBC] and the `org.xerial:sqlite-jdbc` driver, so no additional dependency is required.
 
 Arconia publishes a BOM (Bill of Materials) that you can use to manage the version of the Arconia libraries. It is recommended to use the BOM to ensure that all dependencies are compatible.
 

@@ -66,6 +66,7 @@ dependencies {
         api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge")
         api project(":arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp")
 
+        api project(":spring-boot-starters:arconia-data-jdbc-sqlite-spring-boot-starter")
         api project(":spring-boot-starters:arconia-docling-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-core-spring-boot-starter")
         api project(":spring-boot-starters:arconia-multitenancy-details-jdbc-spring-boot-starter")
