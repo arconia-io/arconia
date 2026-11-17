@@ -142,7 +142,7 @@ The `DoclingDocumentReader` will use Docling to process the file, transform it i
 
 Docling Serve downloads the URL sources itself, from its own network. If the URLs come from the users of your application, validate them before passing them to the reader so that they can't point Docling Serve to internal services.
 
-All the files and URLs of a reader are sent to Docling Serve in a single request. If Docling Serve can't convert one of them, the reader throws an `IllegalStateException` listing the sources that failed and the reasons, without returning the chunks of the other sources.
+All the files and URLs of a reader are sent to Docling Serve in a single request. If Docling Serve can't convert one of them, or skips it because its format isn't allowed, the reader throws an `IllegalStateException` listing the sources that failed and the reasons, without returning the chunks of the other sources. A source that Docling Serve converts only partially, for example, because of a page it can't parse, still contributes the chunks it got.
 
 The reader waits for Docling Serve to process all the sources within the `arconia.docling.read-timeout`. For larger batches, split the sources across several readers.
 

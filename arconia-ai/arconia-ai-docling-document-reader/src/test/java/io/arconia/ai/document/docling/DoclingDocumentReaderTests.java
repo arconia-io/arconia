@@ -370,8 +370,53 @@ class DoclingDocumentReaderTests {
 
         assertThatThrownBy(reader::get)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("broken.pdf: could not load document")
+                .hasMessageContaining("broken.pdf (failure): could not load document")
                 .hasMessageNotContaining("test.pdf");
+    }
+
+    @Test
+    void whenSourceIsSkippedThenThrow() {
+        ChunkDocumentResponse response = ChunkDocumentResponse.builder()
+                .document(ai.docling.serve.api.chunk.response.Document.builder()
+                        .content(ExportDocumentResponse.builder().filename("data.bin").build())
+                        .status("skipped")
+                        .error(ErrorItem.builder().errorMessage("File format not allowed: data.bin").build())
+                        .build())
+                .build();
+        when(doclingServeApi.chunkSourceWithHierarchicalChunker(any())).thenReturn(response);
+
+        DoclingDocumentReader reader = DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .files(createMockResource())
+                .build();
+
+        assertThatThrownBy(reader::get)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("data.bin (skipped): File format not allowed: data.bin");
+    }
+
+    @Test
+    void whenConversionPartiallySucceedsThenReturnDocuments() {
+        Chunk chunk = createMockChunk();
+        Document document = createMockDocument();
+        ChunkDocumentResponse response = ChunkDocumentResponse.builder()
+                .chunk(chunk)
+                .document(ai.docling.serve.api.chunk.response.Document.builder()
+                        .content(ExportDocumentResponse.builder().filename("test.pdf").build())
+                        .status("partial_success")
+                        .error(ErrorItem.builder().errorMessage("page 3 could not be parsed").build())
+                        .build())
+                .build();
+        when(doclingServeApi.chunkSourceWithHierarchicalChunker(any())).thenReturn(response);
+        when(documentParser.parse(List.of(chunk), Map.of())).thenReturn(List.of(document));
+
+        DoclingDocumentReader reader = DoclingDocumentReader.builder()
+                .doclingServeApi(doclingServeApi)
+                .documentParser(documentParser)
+                .files(createMockResource())
+                .build();
+
+        assertThat(reader.get()).containsExactly(document);
     }
 
     private Resource createMockResource() {

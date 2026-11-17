@@ -34,7 +34,8 @@ import org.springframework.util.Assert;
  */
 public final class DoclingDocumentReader implements DocumentReader {
 
-    private static final String FAILURE_STATUS = "failure";
+    private static final String SUCCESS_STATUS = "success";
+    private static final String PARTIAL_SUCCESS_STATUS = "partial_success";
 
     private final DoclingServeApi doclingServeApi;
     private final ConvertDocumentOptions convertOptions;
@@ -92,12 +93,13 @@ public final class DoclingDocumentReader implements DocumentReader {
 
     /**
      * Docling Serve reports a source it could not convert in the response rather than with an error status,
-     * so returning the chunks alone would silently drop that source.
+     * so returning the chunks alone would silently drop that source. As in Docling, any status other than
+     * a success or a partial success is an error, including a source skipped because its format is not allowed.
      */
     private static void failOnConversionErrors(ChunkDocumentResponse response) {
         String failures = response.getDocuments().stream()
-                .filter(document -> FAILURE_STATUS.equals(document.getStatus()))
-                .map(document -> "%s: %s".formatted(document.getContent().getFilename(), document.getErrors().stream()
+                .filter(document -> !SUCCESS_STATUS.equals(document.getStatus()) && !PARTIAL_SUCCESS_STATUS.equals(document.getStatus()))
+                .map(document -> "%s (%s): %s".formatted(document.getContent().getFilename(), document.getStatus(), document.getErrors().stream()
                         .map(ErrorItem::getErrorMessage)
                         .collect(Collectors.joining("; "))))
                 .collect(Collectors.joining(System.lineSeparator()));
