@@ -1,15 +1,22 @@
 package io.arconia.docling.client;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.DoclingServeApiConfig;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.http.client.MockClientHttpResponse;
+import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -85,6 +92,8 @@ class DoclingServeClientTests {
         assertThat(config.baseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         assertThat(config.apiKey()).isNull();
         assertThat(config.isExplicitlySet(DoclingServeApiConfig.API_KEY)).isFalse();
+        assertThat(config.bearerToken()).isNull();
+        assertThat(config.isExplicitlySet(DoclingServeApiConfig.BEARER_TOKEN)).isFalse();
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofSeconds(5));
         assertThat(config.readTimeout()).isEqualTo(Duration.ofMinutes(2));
         assertThat(config.asyncPollInterval()).isEqualTo(Duration.ofSeconds(2));
@@ -125,6 +134,7 @@ class DoclingServeClientTests {
         DoclingServeClient client = DoclingServeClient.builder()
                 .baseUrl(URI.create("https://docling.example.com"))
                 .apiKey("secret")
+                .bearerToken("token")
                 .connectTimeout(Duration.ofSeconds(10))
                 .readTimeout(Duration.ofSeconds(60))
                 .asyncPollInterval(Duration.ofSeconds(1))
@@ -134,6 +144,7 @@ class DoclingServeClientTests {
         DoclingServeApiConfig expected = DoclingServeApi.builder()
                 .baseUrl("https://docling.example.com")
                 .apiKey("secret")
+                .bearerToken("token")
                 .connectTimeout(Duration.ofSeconds(10))
                 .readTimeout(Duration.ofSeconds(60))
                 .asyncPollInterval(Duration.ofSeconds(1))
@@ -146,6 +157,29 @@ class DoclingServeClientTests {
 
         assertThat(client.config()).isEqualTo(expected);
         assertThat(client.config().toBuilder().config()).isEqualTo(expected);
+    }
+
+    @Test
+    void sendsTheCredentialsInEveryRequest() {
+        AtomicReference<HttpHeaders> sentHeaders = new AtomicReference<>();
+        RestClient.Builder restClientBuilder = RestClient.builder()
+                .requestInterceptor((request, body, execution) -> {
+                    sentHeaders.set(request.getHeaders());
+                    MockClientHttpResponse response = new MockClientHttpResponse("{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8), HttpStatus.OK);
+                    response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                    return response;
+                });
+
+        DoclingServeClient.builder()
+                .restClientBuilder(restClientBuilder)
+                .baseUrl("http://localhost:5001")
+                .apiKey("secret")
+                .bearerToken("token")
+                .build()
+                .health();
+
+        assertThat(sentHeaders.get().getFirst(DoclingServeClient.API_KEY_HEADER_NAME)).isEqualTo("secret");
+        assertThat(sentHeaders.get().getFirst(HttpHeaders.AUTHORIZATION)).isEqualTo("Bearer token");
     }
 
     @Test

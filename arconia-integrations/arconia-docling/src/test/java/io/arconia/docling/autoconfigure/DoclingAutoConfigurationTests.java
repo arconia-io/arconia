@@ -52,6 +52,7 @@ class DoclingAutoConfigurationTests {
     void doclingClientWithCustomProperties() {
         contextRunner.withPropertyValues(
                 "arconia.docling.base-url=http://custom-host:8080",
+                "arconia.docling.bearer-token=token",
                 "arconia.docling.connect-timeout=10s",
                 "arconia.docling.read-timeout=60s",
                 "arconia.docling.async-poll-interval=500ms",
@@ -67,6 +68,7 @@ class DoclingAutoConfigurationTests {
 
             DoclingServeApiConfig config = context.getBean(DoclingServeApi.class).config();
             assertThat(config.baseUrl()).isEqualTo(URI.create("http://custom-host:8080"));
+            assertThat(config.bearerToken()).isEqualTo("token");
             assertThat(config.connectTimeout()).isEqualTo(Duration.ofSeconds(10));
             assertThat(config.readTimeout()).isEqualTo(Duration.ofSeconds(60));
             assertThat(config.asyncPollInterval()).isEqualTo(Duration.ofMillis(500));

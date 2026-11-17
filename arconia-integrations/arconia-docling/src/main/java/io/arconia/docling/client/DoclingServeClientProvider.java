@@ -17,6 +17,7 @@ public final class DoclingServeClientProvider implements DoclingServeApiProvider
         DoclingServeClient.Builder builder = DoclingServeClient.builder()
                 .baseUrl(config.baseUrl())
                 .apiKey(config.apiKey())
+                .bearerToken(config.bearerToken())
                 .connectTimeout(config.connectTimeout())
                 .readTimeout(config.readTimeout())
                 .asyncPollInterval(config.asyncPollInterval())

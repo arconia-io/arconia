@@ -40,6 +40,7 @@ public final class DoclingAutoConfiguration {
                 .httpClientSettings(httpClientSettings.getIfAvailable(HttpClientSettings::defaults))
                 .baseUrl(connectionDetails.getBaseUrl())
                 .apiKey(connectionDetails.getApiKey())
+                .bearerToken(properties.getBearerToken())
                 .connectTimeout(properties.getConnectTimeout())
                 .readTimeout(properties.getReadTimeout())
                 .asyncPollInterval(properties.getAsyncPollInterval())

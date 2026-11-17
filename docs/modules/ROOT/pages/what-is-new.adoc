@@ -13,6 +13,10 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The Floci Dev Service now reports the URL of the Floci UI, a web console for the resources in the emulator, among its links. Floci starts the console the first time the URL is opened. Learn more about the xref:dev-services:floci.adoc#_accessing_the_floci_ui[Floci Dev Service].
 
+== Docling
+
+* The Docling client can now send a bearer token in the `Authorization` header, which is what a proxy that authenticates the requests to Docling Serve expects. Set it via the `arconia.docling.bearer-token` property, or via `bearerToken()` when building the client with `DoclingServeApi.builder()` or `DoclingServeClient.builder()`. Learn more about the xref:integrations:docling.adoc#_configuration[Docling configuration].
+
 == OpenTelemetry
 
 * Arconia now stops recording observations, both metrics and traces, for the Spring Boot health endpoint and its `/livez` and `/readyz` probe paths in Servlet applications, so that frequent Kubernetes probes no longer flood the telemetry backend. The observations started while handling those requests, such as the Spring Security or JDBC ones, are skipped too, instead of becoming separate traces. Use `arconia.observations.http.server.additional-ignore-paths` to ignore more paths, or set `arconia.observations.http.server.ignore-paths` to an empty value to observe every request again. Learn more about xref:opentelemetry:instrumentation.adoc#_ignoring_http_server_requests[Ignoring HTTP Server Requests].

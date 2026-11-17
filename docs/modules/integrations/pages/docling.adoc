@@ -128,6 +128,10 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |``
 |API key to be used for authenticating requests to the Docling Serve API.
 
+|`arconia.docling.bearer-token`
+|``
+|Bearer token to be sent in the Authorization header, for example, to a proxy that authenticates the requests to the Docling Serve API.
+
 |`arconia.docling.connect-timeout`
 |`5s`
 |Timeout to establish a connection to the Docling Serve API.
@@ -146,7 +150,7 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 
 |`arconia.docling.log-requests`
 |`false`
-|Whether to log the requests sent to the Docling Serve API. The API key is masked and the bodies are truncated to 4000 characters.
+|Whether to log the requests sent to the Docling Serve API. The API key and the bearer token are masked, and the bodies are truncated to 4000 characters.
 
 |`arconia.docling.log-responses`
 |`false`

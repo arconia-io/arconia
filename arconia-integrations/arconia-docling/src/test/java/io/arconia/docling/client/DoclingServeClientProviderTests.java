@@ -32,6 +32,7 @@ class DoclingServeClientProviderTests {
         DoclingServeApi api = DoclingServeApi.builder()
                 .baseUrl("http://localhost:5001")
                 .apiKey("key")
+                .bearerToken("token")
                 .readTimeout(Duration.ofSeconds(10))
                 .asyncExecutor(asyncExecutor)
                 .logRequests()
@@ -44,6 +45,7 @@ class DoclingServeClientProviderTests {
         assertThat(config.prettyPrint()).isTrue();
         assertThat(config.baseUrl()).isEqualTo(URI.create("http://localhost:5001"));
         assertThat(config.apiKey()).isEqualTo("key");
+        assertThat(config.bearerToken()).isEqualTo("token");
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofSeconds(5));
         assertThat(config.readTimeout()).isEqualTo(Duration.ofSeconds(10));
         assertThat(config.asyncExecutor()).isSameAs(asyncExecutor);

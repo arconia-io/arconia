@@ -24,6 +24,13 @@ public class DoclingProperties {
     private String apiKey;
 
     /**
+     * Bearer token to be sent in the Authorization header, for example, to a proxy
+     * that authenticates the requests to the Docling Serve API.
+     */
+    @Nullable
+    private String bearerToken;
+
+    /**
      * Timeout to establish a connection to the Docling Serve API.
      */
     private Duration connectTimeout = Duration.ofSeconds(5);
@@ -46,7 +53,7 @@ public class DoclingProperties {
 
     /**
      * Whether to log the requests sent to the Docling Serve API.
-     * The API key is masked and the bodies are truncated to 4000 characters.
+     * The API key and the bearer token are masked, and the bodies are truncated to 4000 characters.
      */
     private boolean logRequests = false;
 
@@ -77,6 +84,15 @@ public class DoclingProperties {
 
     public void setApiKey(@Nullable String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    @Nullable
+    public String getBearerToken() {
+        return bearerToken;
+    }
+
+    public void setBearerToken(@Nullable String bearerToken) {
+        this.bearerToken = bearerToken;
     }
 
     public Duration getConnectTimeout() {

@@ -31,6 +31,7 @@ import ai.docling.serve.api.task.response.TaskStatusPollResponse;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpClientSettings;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
@@ -247,6 +248,8 @@ public class DoclingServeClient implements DoclingServeApi {
         private URI baseUrl;
         @Nullable
         private String apiKey;
+        @Nullable
+        private String bearerToken;
         private Duration connectTimeout = Duration.ofSeconds(5);
         private Duration readTimeout = Duration.ofMinutes(2);
         private Duration asyncPollInterval = Duration.ofSeconds(2);
@@ -284,6 +287,15 @@ public class DoclingServeClient implements DoclingServeApi {
 
         public Builder apiKey(@Nullable String apiKey) {
             this.apiKey = apiKey;
+            return this;
+        }
+
+        /**
+         * Bearer token sent in the {@code Authorization} header, for example, to a proxy that authenticates
+         * the requests to Docling Serve. It's independent of the API key, which Docling Serve itself checks.
+         */
+        public Builder bearerToken(@Nullable String bearerToken) {
+            this.bearerToken = bearerToken;
             return this;
         }
 
@@ -360,6 +372,9 @@ public class DoclingServeClient implements DoclingServeApi {
             if (StringUtils.hasText(apiKey)) {
                 restClientBuilder.defaultHeader(API_KEY_HEADER_NAME, apiKey);
             }
+            if (StringUtils.hasText(bearerToken)) {
+                restClientBuilder.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+            }
 
             restClientBuilder.defaultStatusHandler(ValidationErrorHandler.STATUS::equals, new ValidationErrorHandler());
 
@@ -374,6 +389,7 @@ public class DoclingServeClient implements DoclingServeApi {
             DoclingServeApiConfig config = DoclingServeApi.builder()
                     .baseUrl(baseUrl)
                     .apiKey(apiKey)
+                    .bearerToken(bearerToken)
                     .connectTimeout(connectTimeout)
                     .readTimeout(readTimeout)
                     .asyncPollInterval(asyncPollInterval)
