@@ -14,12 +14,15 @@ import org.springframework.data.relational.core.sql.LockOptions;
 import org.springframework.data.relational.core.sql.render.UpsertRenderContext;
 import org.springframework.data.relational.core.sql.render.UpsertRenderContexts;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link JdbcDialect} for SQLite.
  *
  * <p>Use {@link #INSTANCE} to reference the dialect, for example, when declaring it as a bean
  * to support ahead-of-time processing.
  */
+@Incubating
 public class JdbcSqliteDialect extends AbstractDialect implements JdbcDialect {
 
     public static final JdbcSqliteDialect INSTANCE = new JdbcSqliteDialect();
