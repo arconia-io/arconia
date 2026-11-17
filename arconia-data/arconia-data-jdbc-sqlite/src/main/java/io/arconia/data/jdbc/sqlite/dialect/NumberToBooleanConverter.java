@@ -8,7 +8,8 @@ import org.springframework.data.convert.ReadingConverter;
  * maps to {@code true}.
  *
  * <p>Based on {@code org.springframework.data.relational.core.dialect.NumberToBooleanConverter}
- * (Spring Data Relational, Apache-2.0).
+ * (Spring Data Relational, Apache-2.0), which truncates the value to an {@code int} and so reads
+ * fractions and large numbers as {@code false}.
  */
 @ReadingConverter
 enum NumberToBooleanConverter implements Converter<Number, Boolean> {
@@ -17,7 +18,7 @@ enum NumberToBooleanConverter implements Converter<Number, Boolean> {
 
     @Override
     public Boolean convert(Number number) {
-        return number.intValue() != 0;
+        return number.doubleValue() != 0;
     }
 
 }

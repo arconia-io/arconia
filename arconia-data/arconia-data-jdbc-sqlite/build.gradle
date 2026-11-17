@@ -14,6 +14,11 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+tasks.named('test') {
+    // The SQLite JDBC driver loads a native library.
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
