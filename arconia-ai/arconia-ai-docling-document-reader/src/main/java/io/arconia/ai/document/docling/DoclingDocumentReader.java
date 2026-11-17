@@ -196,23 +196,35 @@ public final class DoclingDocumentReader implements DocumentReader {
             return this;
         }
 
+        /**
+         * Sets the files to read, replacing any file added before.
+         */
         public Builder files(List<Resource> files) {
             Assert.notNull(files, "files cannot be null");
             this.files = new ArrayList<>(files);
             return this;
         }
 
+        /**
+         * Adds files to read.
+         */
         public Builder files(Resource... files) {
             this.files.addAll(List.of(files));
             return this;
         }
 
+        /**
+         * Sets the URLs of the documents to read, replacing any URL added before.
+         */
         public Builder urls(List<URI> urls) {
             Assert.notNull(urls, "urls cannot be null");
             this.urls = new ArrayList<>(urls);
             return this;
         }
 
+        /**
+         * Adds URLs of documents to read.
+         */
         public Builder urls(String... urls) {
             for (String url : urls) {
                 Assert.notNull(url, "url cannot be null");

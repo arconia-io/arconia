@@ -161,7 +161,7 @@ The Arconia Docling integration provides sensible defaults for connecting to a D
 |Whether to pretty-print the JSON bodies of the logged requests and responses.
 |===
 
-The client also applies the Spring Boot `spring.http.clients.*` settings, such as the SSL bundle used to trust the certificate of a Docling Serve instance served over HTTPS (`spring.http.clients.ssl.bundle`) and the redirect strategy (`spring.http.clients.redirects`). The `arconia.docling.connect-timeout` and `arconia.docling.read-timeout` properties take precedence over the Spring Boot timeouts. Learn more about https://docs.spring.io/spring-boot/reference/io/rest-client.html#io.rest-client.clienthttprequestfactory.configuration[global HTTP client configuration] in the Spring Boot documentation.
+The client also applies the Spring Boot `spring.http.clients.*` settings, such as the SSL bundle used to trust the certificate of a Docling Serve instance served over HTTPS (`spring.http.clients.ssl.bundle`) and the redirect strategy (`spring.http.clients.redirects`). The `arconia.docling.connect-timeout` and `arconia.docling.read-timeout` properties take precedence over the Spring Boot timeouts. The client always uses the JDK `HttpClient`, so `spring.http.clients.imperative.factory` doesn't apply to it. For a plain `http` base URL, it uses HTTP/1.1, since Docling Serve doesn't handle the HTTP/2 upgrade the JDK client attempts by default. Learn more about https://docs.spring.io/spring-boot/reference/io/rest-client.html#io.rest-client.clienthttprequestfactory.configuration[global HTTP client configuration] in the Spring Boot documentation.
 
 == Actuator
 
@@ -226,6 +226,8 @@ public class DocumentService {
 Arconia registers a `DoclingServeApiProvider`, so the standard `DoclingServeApi.builder()` entry point from Docling Java resolves to the Arconia client as well. That's useful outside the Spring context, for example, in tests, or to create a modified copy of the auto-configured client via `config().toBuilder()`.
 
 A client built this way only carries the options of `DoclingServeApiConfig`. It doesn't get the Spring Boot customizations of the auto-configured client, such as the `spring.http.clients.*` settings, the `RestClient` customizers, and the observations. When you build a new client with `DoclingServeApi.builder()`, its timeouts default to the Docling Java ones (5 seconds to connect, 30 seconds to read).
+
+`DoclingServeApi.builder()` requires exactly one `DoclingServeApiProvider` on the classpath. If another library brings the `docling-serve-client` artifact of Docling Java, `build()` fails with an `IllegalStateException` reporting multiple instances. In that case, exclude `docling-serve-client` or use `DoclingServeClient.builder()`. The auto-configured client isn't affected.
 
 [source,java]
 ----
@@ -311,7 +313,7 @@ if ("failure".equals(response.getStatus())) {
 }
 ----
 
-When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`. An async operation fails with a `TimeoutException` when the task doesn't complete within `asyncTimeout`, and with an `IllegalStateException` carrying the error message reported by Docling Serve when the task failed.
+When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`. An async operation fails with a `TimeoutException` when the task doesn't complete within `asyncTimeout`, and with an `IllegalStateException` carrying the error message reported by Docling Serve when the task failed. The returned `CompletionStage` wraps these exceptions in a `CompletionException`, which is what `join()` throws and what callbacks such as `exceptionally()` receive.
 
 [source,java]
 ----
