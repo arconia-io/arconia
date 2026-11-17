@@ -39,7 +39,7 @@ import org.springframework.web.client.RestClient;
 /**
  * Client interface for interacting with the Docling Serve API.
  */
-public class DoclingServeClient implements DoclingServeApi {
+public final class DoclingServeClient implements DoclingServeApi {
 
     public static final String API_KEY_HEADER_NAME = "X-Api-Key";
 
@@ -243,7 +243,7 @@ public class DoclingServeClient implements DoclingServeApi {
         return new Builder();
     }
 
-    public static class Builder {
+    public static final class Builder {
 
         private RestClient.Builder restClientBuilder = RestClient.builder();
         private HttpClientSettings httpClientSettings = HttpClientSettings.defaults();

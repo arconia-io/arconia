@@ -1,14 +1,11 @@
 package io.arconia.ai.document.docling;
 
 import org.springframework.ai.document.Document;
-import org.springframework.ai.document.DocumentReader;
-import org.springframework.ai.document.DocumentTransformer;
 
 /**
- * Common set of metadata keys used in a {@link Document} by a {@link DocumentReader}
- * or a {@link DocumentTransformer}.
+ * Metadata keys of the {@link Document}s created by the {@link DoclingDocumentReader}.
  */
-public enum DocumentMetadata {
+public enum DoclingDocumentMetadata {
 
     BINARY_HASH("binary_hash"),
     FILE_NAME("file_name"),
@@ -19,7 +16,7 @@ public enum DocumentMetadata {
 
     private final String value;
 
-    DocumentMetadata(String value) {
+    DoclingDocumentMetadata(String value) {
         this.value = value;
     }
 

@@ -34,18 +34,18 @@ public final class DefaultDoclingDocumentParser implements DoclingDocumentParser
         for (Chunk chunk : chunks) {
             Map<String, Object> metadata = new HashMap<>(commonMetadata);
 
-            metadata.put(DocumentMetadata.FILE_NAME.value(), chunk.getFilename());
+            metadata.put(DoclingDocumentMetadata.FILE_NAME.value(), chunk.getFilename());
             if (!CollectionUtils.isEmpty(chunk.getHeadings())) {
-                metadata.put(DocumentMetadata.HEADINGS.value(), chunk.getHeadings());
+                metadata.put(DoclingDocumentMetadata.HEADINGS.value(), chunk.getHeadings());
             }
             if (!CollectionUtils.isEmpty(chunk.getPageNumbers())) {
-                metadata.put(DocumentMetadata.PAGE_NUMBERS.value(), chunk.getPageNumbers());
+                metadata.put(DoclingDocumentMetadata.PAGE_NUMBERS.value(), chunk.getPageNumbers());
             }
 
             if (chunk.getMetadata().get(DOCLING_ORIGIN) instanceof Map<?, ?> origin) {
-                putIfPresent(metadata, DocumentMetadata.BINARY_HASH, origin.get(DOCLING_BINARY_HASH));
-                putIfPresent(metadata, DocumentMetadata.MIME_TYPE, origin.get(DOCLING_MIME_TYPE));
-                putIfPresent(metadata, DocumentMetadata.URI, origin.get(DOCLING_URI));
+                putIfPresent(metadata, DoclingDocumentMetadata.BINARY_HASH, origin.get(DOCLING_BINARY_HASH));
+                putIfPresent(metadata, DoclingDocumentMetadata.MIME_TYPE, origin.get(DOCLING_MIME_TYPE));
+                putIfPresent(metadata, DoclingDocumentMetadata.URI, origin.get(DOCLING_URI));
             }
 
             documents.add(Document.builder()
@@ -57,7 +57,7 @@ public final class DefaultDoclingDocumentParser implements DoclingDocumentParser
         return documents;
     }
 
-    private static void putIfPresent(Map<String, Object> metadata, DocumentMetadata key, @Nullable Object value) {
+    private static void putIfPresent(Map<String, Object> metadata, DoclingDocumentMetadata key, @Nullable Object value) {
         if (value != null) {
             metadata.put(key.value(), value);
         }

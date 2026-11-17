@@ -17,6 +17,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 * The Docling client can now send a bearer token in the `Authorization` header, which is what a proxy that authenticates the requests to Docling Serve expects. Set it via the `arconia.docling.bearer-token` property, or via `bearerToken()` when building the client with `DoclingServeApi.builder()` or `DoclingServeClient.builder()`. Learn more about the xref:integrations:docling.adoc#_configuration[Docling configuration].
 * The Docling Document Reader now processes the sources as a Docling Serve task and waits for it to complete within `arconia.docling.async-timeout` (5 minutes by default), instead of using a synchronous request, which Docling Serve stops after 2 minutes. Learn more about the xref:generative-ai:docling-document-reader.adoc#_ingesting_documents_with_docling[Docling Document Reader].
+* The Docling Document Reader now uses the hybrid chunker by default, which fits the chunks to a token limit so that each one fits the input of an embedding model. To keep one chunk for each element of the document structure, pass `HierarchicalChunkerOptions` via `chunkerOptions()`. Learn more about xref:generative-ai:docling-document-reader.adoc#_customizing_the_reader[Customizing the Reader].
+* The `DocumentMetadata` enumeration of the Docling Document Reader is now `DoclingDocumentMetadata`, so that it no longer clashes with the `DocumentMetadata` enumeration of Spring AI.
 
 == OpenTelemetry
 

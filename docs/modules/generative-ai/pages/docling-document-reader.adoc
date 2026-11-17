@@ -168,9 +168,9 @@ DoclingDocumentReader reader = DoclingDocumentReader.builder()
         .build();
 ----
 
-By default, the reader uses the hierarchical chunker, which creates one chunk for each element of the document structure, such as a paragraph or a list. The hybrid chunker refines those chunks to fit the token limit of your embedding model.
+By default, the reader uses the hybrid chunker, which starts from the document structure and then splits and merges the chunks to fit a token limit, so that each chunk fits the input of an embedding model. Use `maxTokens` and `tokenizer` to match the embedding model you use. If you want one chunk for each element of the document structure, such as a paragraph or a list, use the hierarchical chunker via `HierarchicalChunkerOptions`.
 
-Each resulting document carries the following metadata, besides the one you provide. You can refer to the keys via the `DocumentMetadata` enumeration.
+Each resulting document carries the following metadata, besides the one you provide. You can refer to the keys via the `DoclingDocumentMetadata` enumeration.
 
 [cols="1,3"]
 |===

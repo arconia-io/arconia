@@ -44,15 +44,15 @@ class DoclingDocumentReaderIT extends DoclingTestcontainers {
         assertThat(documents)
                 .allMatch(document -> document.getMetadata().get("location")
                         .equals("North Pole"))
-                .allMatch(document -> document.getMetadata().get(DocumentMetadata.BINARY_HASH.value()) != null)
-                .allMatch(document -> document.getMetadata().get(DocumentMetadata.FILE_NAME.value())
+                .allMatch(document -> document.getMetadata().get(DoclingDocumentMetadata.BINARY_HASH.value()) != null)
+                .allMatch(document -> document.getMetadata().get(DoclingDocumentMetadata.FILE_NAME.value())
                         .equals("story.pdf"))
-                .allMatch(document -> document.getMetadata().get(DocumentMetadata.HEADINGS.value())
+                .allMatch(document -> document.getMetadata().get(DoclingDocumentMetadata.HEADINGS.value())
                         .equals(List.of("The Adventures of Iorek and Pingu")))
-                .allMatch(document -> document.getMetadata().get(DocumentMetadata.MIME_TYPE.value())
+                .allMatch(document -> document.getMetadata().get(DoclingDocumentMetadata.MIME_TYPE.value())
                         .equals("application/pdf"))
-                .allMatch(document -> document.getMetadata().get(DocumentMetadata.PAGE_NUMBERS.value()) instanceof List
-                        && !((List<?>) document.getMetadata().get(DocumentMetadata.PAGE_NUMBERS.value())).isEmpty());
+                .allMatch(document -> document.getMetadata().get(DoclingDocumentMetadata.PAGE_NUMBERS.value()) instanceof List
+                        && !((List<?>) document.getMetadata().get(DoclingDocumentMetadata.PAGE_NUMBERS.value())).isEmpty());
 
     }
 

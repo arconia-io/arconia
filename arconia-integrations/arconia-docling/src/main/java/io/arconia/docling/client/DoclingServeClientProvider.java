@@ -6,10 +6,14 @@ import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.DoclingServeApiConfig;
 import ai.docling.serve.api.spi.DoclingServeApiProvider;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Provides a {@link DoclingServeClient} to {@link DoclingServeApi#builder()}, so that the standard
  * Docling Java entry point builds the Arconia client when this module is on the classpath.
+ * It's public only because {@link java.util.ServiceLoader} requires it.
  */
+@Internal
 public final class DoclingServeClientProvider implements DoclingServeApiProvider {
 
     @Override
