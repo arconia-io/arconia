@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.docling.serve.api.DoclingServeApi;
@@ -185,7 +186,7 @@ class DoclingServeClientTests {
     void whenAsyncTaskFailsThenReportTheErrorMessage() {
         DoclingServeClient client = clientRespondingWith("""
                 {"task_id": "task-1", "task_type": "convert", "task_status": "failure", "error_message": "Out of memory"}
-                """);
+                """).build();
 
         assertThat(client.convertSourceAsync(ConvertDocumentRequest.builder().build()).toCompletableFuture())
                 .failsWithin(Duration.ofSeconds(5))
@@ -199,7 +200,7 @@ class DoclingServeClientTests {
     void whenAsyncTaskFailsWithoutErrorMessageThenReportTheTask() {
         DoclingServeClient client = clientRespondingWith("""
                 {"task_id": "task-1", "task_type": "convert", "task_status": "failure"}
-                """);
+                """).build();
 
         assertThat(client.convertSourceAsync(ConvertDocumentRequest.builder().build()).toCompletableFuture())
                 .failsWithin(Duration.ofSeconds(5))
@@ -207,6 +208,23 @@ class DoclingServeClientTests {
                 .havingCause()
                 .isInstanceOf(IllegalStateException.class)
                 .withMessage("Docling Serve task task-1 failed");
+    }
+
+    @Test
+    void whenAsyncTaskDoesNotCompleteInTimeThenTimeout() {
+        DoclingServeClient client = clientRespondingWith("""
+                {"task_id": "task-1", "task_type": "convert", "task_status": "started"}
+                """)
+                .asyncPollInterval(Duration.ofMillis(10))
+                .asyncTimeout(Duration.ofMillis(100))
+                .build();
+
+        assertThat(client.convertSourceAsync(ConvertDocumentRequest.builder().build()).toCompletableFuture())
+                .failsWithin(Duration.ofSeconds(5))
+                .withThrowableThat()
+                .havingCause()
+                .isInstanceOf(TimeoutException.class)
+                .withMessage("Docling Serve task task-1 did not complete within PT0.1S");
     }
 
     @Test
@@ -223,12 +241,11 @@ class DoclingServeClientTests {
     /**
      * The client replaces the request factory when it's built, so an interceptor answers the requests instead.
      */
-    private static DoclingServeClient clientRespondingWith(String json) {
+    private static DoclingServeClient.Builder clientRespondingWith(String json) {
         return DoclingServeClient.builder()
                 .restClientBuilder(RestClient.builder()
                         .requestInterceptor((request, body, execution) -> jsonResponse(json)))
-                .baseUrl("http://localhost:5001")
-                .build();
+                .baseUrl("http://localhost:5001");
     }
 
     private static MockClientHttpResponse jsonResponse(String json) {
