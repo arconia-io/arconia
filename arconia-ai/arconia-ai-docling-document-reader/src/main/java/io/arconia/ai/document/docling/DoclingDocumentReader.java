@@ -26,6 +26,8 @@ import ai.docling.serve.api.convert.request.source.Source;
 import ai.docling.serve.api.convert.response.ErrorItem;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentReader;
 import org.springframework.core.io.Resource;
@@ -35,6 +37,8 @@ import org.springframework.util.Assert;
  * A {@link DocumentReader} using Docling to read, convert, and chunk documents.
  */
 public final class DoclingDocumentReader implements DocumentReader {
+
+    private static final Logger logger = LoggerFactory.getLogger(DoclingDocumentReader.class);
 
     private static final String SUCCESS_STATUS = "success";
     private static final String PARTIAL_SUCCESS_STATUS = "partial_success";
@@ -91,6 +95,7 @@ public final class DoclingDocumentReader implements DocumentReader {
 
         ChunkDocumentResponse response = await(task);
         failOnConversionErrors(response);
+        warnOnPartialConversions(response);
         return documentParser.parse(response.getChunks(), metadata);
     }
 
@@ -121,13 +126,28 @@ public final class DoclingDocumentReader implements DocumentReader {
     private static void failOnConversionErrors(ChunkDocumentResponse response) {
         String failures = response.getDocuments().stream()
                 .filter(document -> !SUCCESS_STATUS.equals(document.getStatus()) && !PARTIAL_SUCCESS_STATUS.equals(document.getStatus()))
-                .map(document -> "%s (%s): %s".formatted(document.getContent().getFilename(), document.getStatus(), document.getErrors().stream()
-                        .map(ErrorItem::getErrorMessage)
-                        .collect(Collectors.joining("; "))))
+                .map(document -> "%s (%s): %s".formatted(document.getContent().getFilename(), document.getStatus(), errorMessages(document.getErrors())))
                 .collect(Collectors.joining(System.lineSeparator()));
         if (!failures.isEmpty()) {
             throw new IllegalStateException("Docling Serve failed to convert the following sources:%n%s".formatted(failures));
         }
+    }
+
+    /**
+     * A source that Docling Serve converted only partially still contributes its chunks, but some of its content,
+     * such as a page that could not be parsed, is missing from them.
+     */
+    private static void warnOnPartialConversions(ChunkDocumentResponse response) {
+        response.getDocuments().stream()
+                .filter(document -> PARTIAL_SUCCESS_STATUS.equals(document.getStatus()))
+                .forEach(document -> logger.warn("Docling Serve converted the source {} only partially: {}",
+                        document.getContent().getFilename(), errorMessages(document.getErrors())));
+    }
+
+    private static String errorMessages(List<ErrorItem> errors) {
+        return errors.stream()
+                .map(ErrorItem::getErrorMessage)
+                .collect(Collectors.joining("; "));
     }
 
     private List<Source> buildSources() {

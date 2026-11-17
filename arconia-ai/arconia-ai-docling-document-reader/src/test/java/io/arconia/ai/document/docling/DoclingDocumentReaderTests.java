@@ -20,8 +20,11 @@ import ai.docling.serve.api.convert.request.options.ConvertDocumentOptions;
 import ai.docling.serve.api.convert.response.ErrorItem;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.document.Document;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.core.io.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -413,7 +416,8 @@ class DoclingDocumentReaderTests {
     }
 
     @Test
-    void whenConversionPartiallySucceedsThenReturnDocuments() {
+    @ExtendWith(OutputCaptureExtension.class)
+    void whenConversionPartiallySucceedsThenReturnDocumentsAndWarn(CapturedOutput output) {
         Chunk chunk = createMockChunk();
         Document document = createMockDocument();
         ChunkDocumentResponse response = ChunkDocumentResponse.builder()
@@ -434,6 +438,7 @@ class DoclingDocumentReaderTests {
                 .build();
 
         assertThat(reader.get()).containsExactly(document);
+        assertThat(output).contains("Docling Serve converted the source test.pdf only partially: page 3 could not be parsed");
     }
 
     @Test
