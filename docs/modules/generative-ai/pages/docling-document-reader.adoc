@@ -144,7 +144,7 @@ Docling Serve downloads the URL sources itself, from its own network. If the URL
 
 All the files and URLs of a reader are sent to Docling Serve in a single request. If Docling Serve can't convert one of them, or skips it because its format isn't allowed, the reader throws an `IllegalStateException` listing the sources that failed and the reasons, without returning the chunks of the other sources. A source that Docling Serve converts only partially, for example, because of a page it can't parse, still contributes the chunks it got.
 
-The reader waits for Docling Serve to process all the sources within the `arconia.docling.read-timeout`. For larger batches, split the sources across several readers.
+The reader submits the sources to Docling Serve as a task and checks its status every `arconia.docling.async-poll-interval` until it completes. If the task doesn't complete within the `arconia.docling.async-timeout` (5 minutes by default), the reader throws an `IllegalStateException`. For larger batches, increase the timeout or split the sources across several readers.
 
 NOTE: For more information on how to build a data ingestion pipeline in Spring AI, check out the https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html[dedicated documentation].
 

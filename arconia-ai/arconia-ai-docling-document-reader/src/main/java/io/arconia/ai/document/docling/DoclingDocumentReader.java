@@ -8,6 +8,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import ai.docling.serve.api.DoclingServeApi;
@@ -72,14 +74,14 @@ public final class DoclingDocumentReader implements DocumentReader {
     public List<Document> get() {
         List<Source> sources = buildSources();
 
-        ChunkDocumentResponse response = switch (chunkerOptions) {
-            case HierarchicalChunkerOptions hierarchicalChunkerOptions -> doclingServeApi.chunkSourceWithHierarchicalChunker(
+        CompletionStage<ChunkDocumentResponse> task = switch (chunkerOptions) {
+            case HierarchicalChunkerOptions hierarchicalChunkerOptions -> doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(
                     HierarchicalChunkDocumentRequest.builder()
                             .sources(sources)
                             .options(convertOptions)
                             .chunkingOptions(hierarchicalChunkerOptions)
                             .build());
-            case HybridChunkerOptions hybridChunkerOptions -> doclingServeApi.chunkSourceWithHybridChunker(
+            case HybridChunkerOptions hybridChunkerOptions -> doclingServeApi.chunkSourceWithHybridChunkerAsync(
                     HybridChunkDocumentRequest.builder()
                             .sources(sources)
                             .options(convertOptions)
@@ -87,8 +89,28 @@ public final class DoclingDocumentReader implements DocumentReader {
                             .build());
         };
 
+        ChunkDocumentResponse response = await(task);
         failOnConversionErrors(response);
         return documentParser.parse(response.getChunks(), metadata);
+    }
+
+    /**
+     * The sources are processed as a Docling Serve task, so that a batch is bounded by the async timeout of the
+     * client rather than by the maximum time Docling Serve waits for a synchronous request.
+     */
+    private static ChunkDocumentResponse await(CompletionStage<ChunkDocumentResponse> task) {
+        try {
+            return task.toCompletableFuture().get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for Docling Serve to process the sources", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            throw new IllegalStateException(cause != null ? cause.getMessage() : ex.getMessage(), cause);
+        }
     }
 
     /**

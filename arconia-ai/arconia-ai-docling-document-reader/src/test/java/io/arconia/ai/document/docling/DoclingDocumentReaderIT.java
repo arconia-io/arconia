@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.restclient.autoconfigure.RestClientAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -18,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import io.arconia.docling.autoconfigure.DoclingAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration tests for {@link DoclingDocumentReader}.
@@ -52,6 +54,24 @@ class DoclingDocumentReaderIT extends DoclingTestcontainers {
                 .allMatch(document -> document.getMetadata().get(DocumentMetadata.PAGE_NUMBERS.value()) instanceof List
                         && !((List<?>) document.getMetadata().get(DocumentMetadata.PAGE_NUMBERS.value())).isEmpty());
 
+    }
+
+    @Test
+    void whenFileFormatIsNotSupportedThenThrow() {
+        Resource file = new ByteArrayResource(new byte[] { 0, 1, 2, 3 }) {
+            @Override
+            public String getFilename() {
+                return "data.bin";
+            }
+        };
+        DoclingDocumentReader reader = DoclingDocumentReader.builder()
+                .files(file)
+                .doclingServeApi(doclingServeApi)
+                .build();
+
+        assertThatThrownBy(reader::get)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("data.bin (skipped)");
     }
 
     @Configuration(proxyBeanMethods = false)
