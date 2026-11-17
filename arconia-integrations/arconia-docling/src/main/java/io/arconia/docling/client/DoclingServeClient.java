@@ -210,7 +210,10 @@ public class DoclingServeClient implements DoclingServeApi {
             }
 
             if (task.getTaskStatus() == TaskStatus.FAILURE) {
-                throw new IllegalStateException("Docling Serve task %s failed".formatted(task.getTaskId()));
+                String errorMessage = task.getErrorMessage();
+                throw new IllegalStateException(StringUtils.hasText(errorMessage)
+                        ? "Docling Serve task %s failed: %s".formatted(task.getTaskId(), errorMessage)
+                        : "Docling Serve task %s failed".formatted(task.getTaskId()));
             }
             return taskResult.apply(TaskResultRequest.builder().taskId(task.getTaskId()).build());
         }, asyncExecutor());

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ai.docling.serve.api.DoclingServeApi;
 import ai.docling.serve.api.DoclingServeApiConfig;
+import ai.docling.serve.api.convert.request.ConvertDocumentRequest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -165,9 +166,7 @@ class DoclingServeClientTests {
         RestClient.Builder restClientBuilder = RestClient.builder()
                 .requestInterceptor((request, body, execution) -> {
                     sentHeaders.set(request.getHeaders());
-                    MockClientHttpResponse response = new MockClientHttpResponse("{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8), HttpStatus.OK);
-                    response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-                    return response;
+                    return jsonResponse("{\"status\":\"ok\"}");
                 });
 
         DoclingServeClient.builder()
@@ -183,6 +182,34 @@ class DoclingServeClientTests {
     }
 
     @Test
+    void whenAsyncTaskFailsThenReportTheErrorMessage() {
+        DoclingServeClient client = clientRespondingWith("""
+                {"task_id": "task-1", "task_type": "convert", "task_status": "failure", "error_message": "Out of memory"}
+                """);
+
+        assertThat(client.convertSourceAsync(ConvertDocumentRequest.builder().build()).toCompletableFuture())
+                .failsWithin(Duration.ofSeconds(5))
+                .withThrowableThat()
+                .havingCause()
+                .isInstanceOf(IllegalStateException.class)
+                .withMessage("Docling Serve task task-1 failed: Out of memory");
+    }
+
+    @Test
+    void whenAsyncTaskFailsWithoutErrorMessageThenReportTheTask() {
+        DoclingServeClient client = clientRespondingWith("""
+                {"task_id": "task-1", "task_type": "convert", "task_status": "failure"}
+                """);
+
+        assertThat(client.convertSourceAsync(ConvertDocumentRequest.builder().build()).toCompletableFuture())
+                .failsWithin(Duration.ofSeconds(5))
+                .withThrowableThat()
+                .havingCause()
+                .isInstanceOf(IllegalStateException.class)
+                .withMessage("Docling Serve task task-1 failed");
+    }
+
+    @Test
     void toBuilderIsNotSupported() {
         DoclingServeClient client = DoclingServeClient.builder()
                 .baseUrl("http://localhost:5001")
@@ -191,6 +218,23 @@ class DoclingServeClientTests {
         assertThatThrownBy(client::toBuilder)
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("config().toBuilder()");
+    }
+
+    /**
+     * The client replaces the request factory when it's built, so an interceptor answers the requests instead.
+     */
+    private static DoclingServeClient clientRespondingWith(String json) {
+        return DoclingServeClient.builder()
+                .restClientBuilder(RestClient.builder()
+                        .requestInterceptor((request, body, execution) -> jsonResponse(json)))
+                .baseUrl("http://localhost:5001")
+                .build();
+    }
+
+    private static MockClientHttpResponse jsonResponse(String json) {
+        MockClientHttpResponse response = new MockClientHttpResponse(json.getBytes(StandardCharsets.UTF_8), HttpStatus.OK);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        return response;
     }
 
 }

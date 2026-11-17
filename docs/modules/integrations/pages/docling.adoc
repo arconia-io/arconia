@@ -311,7 +311,7 @@ if ("failure".equals(response.getStatus())) {
 }
 ----
 
-When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`. An async operation fails with a `TimeoutException` when the task doesn't complete within `asyncTimeout`, and with an `IllegalStateException` when Docling Serve reports that the task failed.
+When the Docling Serve API rejects a request, the `DoclingServeApi` throws a `ValidationException` from Docling Java, carrying the validation details reported by the API. Any other error condition results in the runtime exceptions of the underlying `RestClient`. An async operation fails with a `TimeoutException` when the task doesn't complete within `asyncTimeout`, and with an `IllegalStateException` carrying the error message reported by Docling Serve when the task failed.
 
 [source,java]
 ----
