@@ -168,7 +168,9 @@ DoclingDocumentReader reader = DoclingDocumentReader.builder()
         .build();
 ----
 
-By default, the reader uses the hybrid chunker, which starts from the document structure and then splits and merges the chunks to fit a token limit, so that each chunk fits the input of an embedding model. Use `maxTokens` and `tokenizer` to match the embedding model you use. If you want one chunk for each element of the document structure, such as a paragraph or a list, use the hierarchical chunker via `HierarchicalChunkerOptions`.
+By default, the reader uses the hierarchical chunker, which creates one chunk for each element of the document structure, such as a paragraph or a list. The hybrid chunker (`HybridChunkerOptions`) starts from the same structure and then splits and merges the chunks to fit a token limit, so that each chunk fits the input of your embedding model. Use `maxTokens` and `tokenizer` to match the embedding model you use.
+
+NOTE: The hybrid chunker counts the tokens with a Hugging Face tokenizer, which Docling Serve downloads from Hugging Face the first time it uses it. If Docling Serve can't download it, for example, because it runs in a network without access to Hugging Face, it still reports the sources as converted but returns no chunks, so the reader returns no documents. In that case, make the tokenizer available to Docling Serve in advance.
 
 Each resulting document carries the following metadata, besides the one you provide. You can refer to the keys via the `DoclingDocumentMetadata` enumeration.
 

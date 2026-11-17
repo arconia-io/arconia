@@ -162,7 +162,7 @@ public final class DoclingDocumentReader implements DocumentReader {
         @Nullable
         private DoclingServeApi doclingServeApi;
         private ConvertDocumentOptions convertOptions = ConvertDocumentOptions.builder().build();
-        private ChunkerOptions chunkerOptions = HybridChunkerOptions.builder().build();
+        private ChunkerOptions chunkerOptions = HierarchicalChunkerOptions.builder().build();
         private DoclingDocumentParser documentParser = new DefaultDoclingDocumentParser();
         private Map<String, Object> metadata = new HashMap<>();
         private List<Resource> files = new ArrayList<>();

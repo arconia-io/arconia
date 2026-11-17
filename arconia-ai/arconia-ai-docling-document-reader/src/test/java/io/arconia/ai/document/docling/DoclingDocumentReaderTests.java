@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
 import ai.docling.serve.api.DoclingServeApi;
-import ai.docling.serve.api.chunk.request.HybridChunkDocumentRequest;
+import ai.docling.serve.api.chunk.request.HierarchicalChunkDocumentRequest;
 import ai.docling.serve.api.chunk.request.options.HierarchicalChunkerOptions;
 import ai.docling.serve.api.chunk.request.options.HybridChunkerOptions;
 import ai.docling.serve.api.chunk.response.Chunk;
@@ -330,8 +330,8 @@ class DoclingDocumentReaderTests {
     }
 
     @Test
-    void whenNoChunkerOptionsThenHybridChunker() {
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(ChunkDocumentResponse.builder().build()));
+    void whenNoChunkerOptionsThenHierarchicalChunker() {
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(ChunkDocumentResponse.builder().build()));
 
         DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
@@ -339,13 +339,13 @@ class DoclingDocumentReaderTests {
                 .build()
                 .get();
 
-        verify(doclingServeApi).chunkSourceWithHybridChunkerAsync(any());
-        verify(doclingServeApi, never()).chunkSourceWithHierarchicalChunkerAsync(any());
+        verify(doclingServeApi).chunkSourceWithHierarchicalChunkerAsync(any());
+        verify(doclingServeApi, never()).chunkSourceWithHybridChunkerAsync(any());
     }
 
     @Test
     void builderCopiesTheListsItIsGiven() {
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(ChunkDocumentResponse.builder().build()));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(ChunkDocumentResponse.builder().build()));
         List<URI> urls = new ArrayList<>(List.of(URI.create("https://example.com/file1.pdf")));
 
         DoclingDocumentReader.Builder builder = DoclingDocumentReader.builder()
@@ -359,8 +359,8 @@ class DoclingDocumentReaderTests {
 
         reader.get();
 
-        ArgumentCaptor<HybridChunkDocumentRequest> request = ArgumentCaptor.forClass(HybridChunkDocumentRequest.class);
-        verify(doclingServeApi).chunkSourceWithHybridChunkerAsync(request.capture());
+        ArgumentCaptor<HierarchicalChunkDocumentRequest> request = ArgumentCaptor.forClass(HierarchicalChunkDocumentRequest.class);
+        verify(doclingServeApi).chunkSourceWithHierarchicalChunkerAsync(request.capture());
         assertThat(request.getValue().getSources()).hasSize(3);
         assertThat(request.getValue().isIncludeConvertedDoc()).isFalse();
     }
@@ -378,7 +378,7 @@ class DoclingDocumentReaderTests {
                         .status("success")
                         .build())
                 .build();
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
 
         DoclingDocumentReader reader = DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
@@ -400,7 +400,7 @@ class DoclingDocumentReaderTests {
                         .error(ErrorItem.builder().errorMessage("File format not allowed: data.bin").build())
                         .build())
                 .build();
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
 
         DoclingDocumentReader reader = DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
@@ -424,7 +424,7 @@ class DoclingDocumentReaderTests {
                         .error(ErrorItem.builder().errorMessage("page 3 could not be parsed").build())
                         .build())
                 .build();
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.completedFuture(response));
         when(documentParser.parse(List.of(chunk), Map.of())).thenReturn(List.of(document));
 
         DoclingDocumentReader reader = DoclingDocumentReader.builder()
@@ -439,7 +439,7 @@ class DoclingDocumentReaderTests {
     @Test
     void whenTaskFailsThenThrowItsException() {
         IllegalStateException failure = new IllegalStateException("Docling Serve task task-1 failed");
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.failedFuture(failure));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.failedFuture(failure));
 
         DoclingDocumentReader reader = DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
@@ -452,7 +452,7 @@ class DoclingDocumentReaderTests {
     @Test
     void whenTaskTimesOutThenThrow() {
         TimeoutException timeout = new TimeoutException("Docling Serve task task-1 did not complete within PT5M");
-        when(doclingServeApi.chunkSourceWithHybridChunkerAsync(any())).thenReturn(CompletableFuture.failedFuture(timeout));
+        when(doclingServeApi.chunkSourceWithHierarchicalChunkerAsync(any())).thenReturn(CompletableFuture.failedFuture(timeout));
 
         DoclingDocumentReader reader = DoclingDocumentReader.builder()
                 .doclingServeApi(doclingServeApi)
