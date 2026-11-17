@@ -26,6 +26,37 @@ Your `@SpringBootTest` integration tests use the Dev Service with no additional 
 
 By default, each application starts its own Floci Dev Service. To let multiple applications running simultaneously in dev mode use the same one, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `framework`: the application connects to a running Floci Dev Service started by another application if available, or else starts its own that other applications can discover in turn. The applications using the same Dev Service must use the same region. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
+== Accessing the Floci UI
+
+The application logs will show you the URL where you can access the Floci UI, a web console for browsing and managing the resources in the emulator.
+
+[source,logs]
+----
+...i.a.d.s.startup  : Dev Service 'floci' is ready in container <container-id> (floci/floci, localhost:<port>)
+...i.a.d.s.startup  : Dev Service 'floci' links: Floci UI: http://localhost:<port>/_floci/ui
+----
+
+Floci runs the console in a container of its own, which it starts the first time you open the URL. The page waits for the console to be ready, which includes pulling its image the first time, and then takes you to it. The console container is removed together with the Dev Service.
+
+The console is published on port `4500` of the host, so only one can run at a time. When several applications run their own Floci Dev Service, give each console a different port through the environment of the Dev Service:
+
+[source,yaml]
+----
+arconia:
+  dev:
+    services:
+      floci:
+        environment:
+          FLOCI_SERVICES_UI_PORT: 4501
+----
+
+Alternatively, let the applications use the same Floci Dev Service, and therefore the same console, by setting the `reuse-strategy` property to `framework`.
+
+[NOTE]
+====
+Floci starts the console, and the containers it runs services like Lambda and RDS in, through the socket of the container runtime, which is mounted into the Floci container. On a host enforcing SELinux, such as a Podman machine, a confined container is denied access to that socket. The Dev Service therefore disables the SELinux label separation of the Floci container (the equivalent of `--security-opt label=disable`) whenever the socket is mounted. The option has no effect on a host without SELinux.
+====
+
 == Configuring the Dev Service
 
 You can configure the Dev Service via configuration properties.
