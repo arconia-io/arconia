@@ -41,6 +41,9 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "jakarta.servlet:jakarta.servlet-api"
+    testImplementation "org.springframework.boot:spring-boot-starter-actuator"
+    testImplementation "org.springframework.boot:spring-boot-starter-security"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc"
     testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
