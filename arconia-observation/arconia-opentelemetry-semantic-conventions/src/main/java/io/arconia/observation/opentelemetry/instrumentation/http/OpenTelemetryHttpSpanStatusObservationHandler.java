@@ -30,8 +30,9 @@ public final class OpenTelemetryHttpSpanStatusObservationHandler implements Obse
             return;
         }
         TracingObservationHandler.TracingContext tracingContext = context.get(TracingObservationHandler.TracingContext.class);
-        if (tracingContext != null && tracingContext.getSpan() != null) {
-            OtelSpan.toOtel(tracingContext.getSpan()).setStatus(StatusCode.ERROR);
+        // Spans not from the OpenTelemetry bridge, such as the ones of the no-op tracer, are left alone.
+        if (tracingContext != null && tracingContext.getSpan() instanceof OtelSpan otelSpan) {
+            OtelSpan.toOtel(otelSpan).setStatus(StatusCode.ERROR);
         }
     }
 

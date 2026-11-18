@@ -33,10 +33,12 @@ public final class OpenInferenceChatModelObservationHandler implements Observati
     public void onStop(ChatModelObservationContext context) {
         TracingObservationHandler.TracingContext tracingContext = context
                 .get(TracingObservationHandler.TracingContext.class);
-        if (tracingContext == null || tracingContext.getSpan() == null || context.getResponse() == null) {
+        // Spans not from the OpenTelemetry bridge, such as the ones of the no-op tracer, are left alone.
+        if (tracingContext == null || !(tracingContext.getSpan() instanceof OtelSpan otelSpan)
+                || context.getResponse() == null) {
             return;
         }
-        Span span = OtelSpan.toOtel(tracingContext.getSpan());
+        Span span = OtelSpan.toOtel(otelSpan);
         Usage usage = context.getResponse().getMetadata().getUsage();
         if (usage.getCacheReadInputTokens() != null) {
             span.setAttribute(LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_READ, usage.getCacheReadInputTokens());

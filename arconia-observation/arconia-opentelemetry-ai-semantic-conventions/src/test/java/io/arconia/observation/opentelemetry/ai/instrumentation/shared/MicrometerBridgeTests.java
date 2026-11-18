@@ -1,5 +1,6 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
+import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.micrometer.tracing.otel.bridge.OtelSpan;
 import io.opentelemetry.api.trace.Span;
@@ -30,6 +31,15 @@ class MicrometerBridgeTests {
         tracingContext.setSpan(OtelSpan.fromOtel(span));
 
         assertThat(MicrometerBridge.extractOtelSpan(tracingContext)).isSameAs(span);
+    }
+
+    @Test
+    void shouldReturnNullForSpansNotFromTheOpenTelemetryBridge() {
+        // Spring Boot falls back to the no-op tracer when no OpenTelemetry tracer is configured.
+        TracingObservationHandler.TracingContext tracingContext = new TracingObservationHandler.TracingContext();
+        tracingContext.setSpan(Tracer.NOOP.nextSpan());
+
+        assertThat(MicrometerBridge.extractOtelSpan(tracingContext)).isNull();
     }
 
 }

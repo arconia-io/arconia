@@ -4,6 +4,7 @@ import java.net.URI;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
 import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
 import io.micrometer.tracing.otel.bridge.OtelTracer;
@@ -25,6 +26,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 /**
  * Unit tests for {@link OpenTelemetryHttpSpanStatusObservationHandler}.
@@ -94,6 +96,22 @@ class OpenTelemetryHttpSpanStatusObservationHandlerTests {
                 new MockClientHttpRequest(HttpMethod.GET, URI.create("https://example.com")));
 
         assertThat(observe(context).getStatusCode()).isNotEqualTo(StatusCode.ERROR);
+    }
+
+    // NO-OP TRACER
+
+    @Test
+    void spansNotFromTheOpenTelemetryBridgeAreIgnored() {
+        // Spring Boot falls back to the no-op tracer when no OpenTelemetry tracer is configured.
+        ObservationRegistry noopRegistry = ObservationRegistry.create();
+        noopRegistry.observationConfig()
+                .observationHandler(new DefaultTracingObservationHandler(Tracer.NOOP))
+                .observationHandler(new OpenTelemetryHttpSpanStatusObservationHandler());
+
+        assertThatNoException().isThrownBy(() ->
+                Observation.createNotStarted("http", () -> serverContext(503, null), noopRegistry).start().stop());
+        assertThatNoException().isThrownBy(() ->
+                Observation.createNotStarted("http", () -> clientContext(HttpStatus.NOT_FOUND), noopRegistry).start().stop());
     }
 
     // SUPPORT

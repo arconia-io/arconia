@@ -6,6 +6,8 @@ import com.arize.semconv.trace.SemanticConventions;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import io.micrometer.tracing.otel.bridge.OtelSpan;
 import io.opentelemetry.api.common.AttributeKey;
@@ -29,6 +31,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.observation.conventions.AiProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 /**
  * Unit tests for {@link OpenInferenceChatModelObservationHandler}.
@@ -78,6 +81,19 @@ class OpenInferenceChatModelObservationHandlerTests {
                 .build();
 
         assertThat(observe(context).getAttributes().isEmpty()).isTrue();
+    }
+
+    @Test
+    void shouldIgnoreSpansNotFromTheOpenTelemetryBridge() {
+        // Spring Boot falls back to the no-op tracer when no OpenTelemetry tracer is configured.
+        ObservationRegistry registry = ObservationRegistry.create();
+        registry.observationConfig()
+                .observationHandler(new DefaultTracingObservationHandler(Tracer.NOOP))
+                .observationHandler(handler);
+        ChatModelObservationContext context = createContext(new DefaultUsage(100, 20, 120, null, 80L, 10L));
+
+        assertThatNoException().isThrownBy(() ->
+                Observation.createNotStarted("gen_ai.client.operation.duration", () -> context, registry).start().stop());
     }
 
     // Helpers
