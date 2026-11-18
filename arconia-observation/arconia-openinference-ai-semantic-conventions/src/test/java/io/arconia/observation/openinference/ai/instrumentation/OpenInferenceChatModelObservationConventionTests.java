@@ -661,6 +661,58 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldRecordPlainBase64ImageAsDataUriUpToMaxLength() {
+        // Spring AI also accepts the media data as plain base64, as Ollama expects it.
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data("AQID")
+                        .build())
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(userMessage), ChatOptions.builder().model("llama3.2").build()))
+                .provider(AiProvider.OLLAMA.value())
+                .build();
+        String imageUrlKey = SemanticConventions.LLM_INPUT_MESSAGES + ".0."
+                + SemanticConventions.MESSAGE_CONTENTS + ".1."
+                + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL;
+
+        OpenInferenceOptions exactOptions = new OpenInferenceOptions();
+        exactOptions.setBase64ImageMaxLength(26);
+        assertThat(findKeyValue(new OpenInferenceChatModelObservationConvention(exactOptions)
+                .getHighCardinalityKeyValues(context), imageUrlKey)).isEqualTo("data:image/png;base64,AQID");
+
+        OpenInferenceOptions shortOptions = new OpenInferenceOptions();
+        shortOptions.setBase64ImageMaxLength(25);
+        assertThat(findKeyValue(new OpenInferenceChatModelObservationConvention(shortOptions)
+                .getHighCardinalityKeyValues(context), imageUrlKey)).isEqualTo(OpenInferenceOptions.REDACTED_PLACEHOLDER);
+    }
+
+    @Test
+    void shouldRedactAllBase64ImageDataWhenMaxLengthIsZero() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("What's in this image?")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data(new byte[] {1, 2, 3})
+                        .build())
+                .build();
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(userMessage), ChatOptions.builder().model("mistral").build()))
+                .provider(AiProvider.SPRING_AI.value())
+                .build();
+        OpenInferenceOptions options = new OpenInferenceOptions();
+        options.setBase64ImageMaxLength(0);
+
+        String imageUrlKey = SemanticConventions.LLM_INPUT_MESSAGES + ".0."
+                + SemanticConventions.MESSAGE_CONTENTS + ".1."
+                + SemanticConventions.MESSAGE_CONTENT_IMAGE + "." + SemanticConventions.IMAGE_URL;
+        assertThat(findKeyValue(new OpenInferenceChatModelObservationConvention(options)
+                .getHighCardinalityKeyValues(context), imageUrlKey)).isEqualTo(OpenInferenceOptions.REDACTED_PLACEHOLDER);
+    }
+
+    @Test
     void shouldRedactBase64ImageDataLongerThanMaxLength() {
         byte[] imageBytes = new byte[50_000];
         UserMessage userMessage = UserMessage.builder()

@@ -211,6 +211,38 @@ class GenAiContentTests {
     }
 
     @Test
+    void fromMessagesShouldRecordPlainBase64AsBlob() {
+        // Spring AI also accepts the media data as plain base64, as Ollama expects it.
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data("AQIDBA==")
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        assertThat(result.getFirst().parts().get(1))
+                .isEqualTo(new GenAiContent.BlobPart("image", "image/png", "AQIDBA=="));
+    }
+
+    @Test
+    void fromMessagesShouldLeaveOutPlainBase64AboveMaxLength() {
+        UserMessage userMessage = UserMessage.builder()
+                .text("Describe this")
+                .media(Media.builder()
+                        .mimeType(Media.Format.IMAGE_PNG)
+                        .data("A".repeat(GenAiContent.BLOB_CONTENT_MAX_LENGTH + 1))
+                        .build())
+                .build();
+
+        var result = GenAiContent.fromMessages(List.of(userMessage));
+
+        assertThat(result.getFirst().parts()).containsExactly(new GenAiContent.TextPart("Describe this"));
+    }
+
+    @Test
     void fromMessagesShouldLeaveOutBlobAboveMaxLength() throws JSONException {
         byte[] imageBytes = new byte[GenAiContent.BLOB_CONTENT_MAX_LENGTH];
         UserMessage userMessage = UserMessage.builder()

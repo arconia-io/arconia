@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import com.arize.semconv.trace.SemanticConventions;
 
@@ -473,31 +474,40 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
 
     private String resolveMediaUrl(Media media) {
         Object data = media.getData();
+        if (data instanceof byte[] bytes) {
+            return base64DataUri(media, 4 * ((bytes.length + 2) / 3), () -> Base64.getEncoder().encodeToString(bytes));
+        }
         if (data instanceof String url) {
             if (url.startsWith("data:") && url.contains(";base64,")) {
                 return limitBase64DataUri(url);
             }
-            return url;
-        } else if (data instanceof byte[] bytes) {
-            String prefix = "data:" + media.getMimeType() + ";base64,";
-            long maxLength = openInferenceOptions.getBase64ImageMaxLength();
-            int encodedLength = 4 * ((bytes.length + 2) / 3);
-            if (maxLength > 0 && prefix.length() + encodedLength > maxLength) {
-                return OpenInferenceOptions.REDACTED_PLACEHOLDER;
+            // Plain base64, which Spring AI accepts too: a URI always has a colon after its scheme.
+            if (url.indexOf(':') < 0) {
+                return base64DataUri(media, url.length(), () -> url);
             }
-            return prefix + Base64.getEncoder().encodeToString(bytes);
+            return url;
         }
         return "";
     }
 
     /**
+     * Builds a base64 data URI for media carried inline, unless it would be longer than the configured maximum
+     * length, so that media too large to record is never encoded.
+     */
+    private String base64DataUri(Media media, int encodedLength, Supplier<String> encodedContent) {
+        String prefix = "data:" + media.getMimeType() + ";base64,";
+        if (prefix.length() + encodedLength > openInferenceOptions.getBase64ImageMaxLength()) {
+            return OpenInferenceOptions.REDACTED_PLACEHOLDER;
+        }
+        return prefix + encodedContent.get();
+    }
+
+    /**
      * Redacts a base64 data URI longer than the configured maximum length, as the OpenInference
-     * specification requires. A truncated data URI would be invalid. Binary media is checked before
-     * being encoded, see {@link #resolveMediaUrl(Media)}.
+     * specification requires. A truncated data URI would be invalid.
      */
     private String limitBase64DataUri(String dataUri) {
-        long maxLength = openInferenceOptions.getBase64ImageMaxLength();
-        if (maxLength > 0 && dataUri.length() > maxLength) {
+        if (dataUri.length() > openInferenceOptions.getBase64ImageMaxLength()) {
             return OpenInferenceOptions.REDACTED_PLACEHOLDER;
         }
         return dataUri;

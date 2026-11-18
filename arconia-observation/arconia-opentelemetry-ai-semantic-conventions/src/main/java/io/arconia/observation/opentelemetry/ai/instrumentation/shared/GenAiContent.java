@@ -201,23 +201,27 @@ public final class GenAiContent {
                 }
                 continue;
             }
-            String uri = media.getData().toString();
-            String content = base64DataUriContent(uri);
-            if (content == null) {
-                parts.add(new UriPart(modality, mimeType, uri));
-            } else if (content.length() <= BLOB_CONTENT_MAX_LENGTH) {
-                parts.add(new BlobPart(modality, mimeType, content));
+            String data = media.getData().toString();
+            int contentStart = base64ContentStart(data);
+            if (contentStart < 0) {
+                parts.add(new UriPart(modality, mimeType, data));
+            } else if (data.length() - contentStart <= BLOB_CONTENT_MAX_LENGTH) {
+                parts.add(new BlobPart(modality, mimeType, data.substring(contentStart)));
             }
         }
     }
 
     /**
-     * Returns the base64 content of a base64 data URI, which carries the media inline like bytes do,
-     * or null for any other URI.
+     * Returns where the base64 content starts when the data carries the media inline, like bytes do, either as a
+     * base64 data URI or as plain base64, which Spring AI accepts too. Returns -1 when the data is a URI pointing to
+     * the media: a URI always has a colon after its scheme, which plain base64 never contains.
      */
-    private static @Nullable String base64DataUriContent(String uri) {
-        int separator = uri.indexOf(";base64,");
-        return uri.startsWith("data:") && separator >= 0 ? uri.substring(separator + ";base64,".length()) : null;
+    private static int base64ContentStart(String data) {
+        if (data.startsWith("data:")) {
+            int separator = data.indexOf(";base64,");
+            return separator >= 0 ? separator + ";base64,".length() : -1;
+        }
+        return data.indexOf(':') < 0 ? 0 : -1;
     }
 
     /**

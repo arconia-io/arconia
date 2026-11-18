@@ -29,3 +29,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 == OpenTelemetry
 
 * Arconia now stops recording observations, both metrics and traces, for the Spring Boot health endpoint and its `/livez` and `/readyz` probe paths in Servlet applications, so that frequent Kubernetes probes no longer flood the telemetry backend. The observations started while handling those requests, such as the Spring Security or JDBC ones, are skipped too, instead of becoming separate traces. Use `arconia.observations.http.server.additional-ignore-paths` to ignore more paths, or set `arconia.observations.http.server.ignore-paths` to an empty value to observe every request again. Learn more about xref:opentelemetry:instrumentation.adoc#_ignoring_http_server_requests[Ignoring HTTP Server Requests].
+
+== Semantic Conventions
+
+* Setting `arconia.observations.conventions.openinference.ai.base64-image-max-length` to `0` now redacts all base64 media, as in the OpenInference reference implementation. Previously, it removed the limit. Learn more about the xref:observability:semantic-conventions/openinference.adoc#_configuration_properties[OpenInference Configuration Properties].
