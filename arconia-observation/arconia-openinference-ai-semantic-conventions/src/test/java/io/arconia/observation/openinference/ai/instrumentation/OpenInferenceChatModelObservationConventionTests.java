@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import com.arize.semconv.trace.SemanticConventions;
 
@@ -399,6 +400,32 @@ class OpenInferenceChatModelObservationConventionTests {
                 KeyValue.of(SemanticConventions.LLM_TOOLS + ".0." + SemanticConventions.TOOL_NAME, "get_weather"),
                 KeyValue.of(SemanticConventions.LLM_OUTPUT_MESSAGES + ".0." + SemanticConventions.MESSAGE_TOOL_CALLS + ".0."
                         + SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON, "{\"location\":\"Par"));
+    }
+
+    @Test
+    void shouldOmitBlankToolCallIds() {
+        // Spring AI reports an empty id for Google GenAI tool calls without one.
+        AssistantMessage.ToolCall toolCall = new AssistantMessage.ToolCall("", "function", "get_weather", "{}");
+        ChatModelObservationContext context = ChatModelObservationContext.builder()
+                .prompt(new Prompt(List.of(
+                        new UserMessage("What's the weather in Rome?"),
+                        AssistantMessage.builder().toolCalls(List.of(toolCall)).build(),
+                        ToolResponseMessage.builder()
+                                .responses(List.of(new ToolResponseMessage.ToolResponse("", "get_weather", "sunny")))
+                                .build()),
+                        ChatOptions.builder().model("gemini-2.5-flash").build()))
+                .provider(AiProvider.GOOGLE_GENAI_AI.value())
+                .build();
+        context.setResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder().toolCalls(List.of(toolCall)).build())))
+                .build());
+
+        KeyValues keyValues = observationConvention.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).extracting(KeyValue::getKey).noneMatch(key ->
+                key.endsWith(SemanticConventions.TOOL_CALL_ID) || key.endsWith(SemanticConventions.MESSAGE_TOOL_CALL_ID));
+        assertThat(findKeyValue(keyValues, SemanticConventions.INPUT_VALUE)).doesNotContain("\"id\"", "tool_call_id");
+        assertThat(findKeyValue(keyValues, SemanticConventions.OUTPUT_VALUE)).doesNotContain("\"id\"");
     }
 
     @Test
@@ -841,7 +868,7 @@ class OpenInferenceChatModelObservationConventionTests {
     }
 
     private void assertRedactionBehavior(ChatModelObservationContext context,
-                                         java.util.function.BiConsumer<OpenInferenceOptions, Boolean> optionSetter,
+                                         BiConsumer<OpenInferenceOptions, Boolean> optionSetter,
                                          String expectedKey) {
         OpenInferenceOptions redactingOptions = new OpenInferenceOptions();
         OpenInferenceChatModelObservationConvention redactingConvention =

@@ -3,6 +3,7 @@ package io.arconia.observation.openinference.ai.instrumentation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import com.arize.semconv.trace.SemanticConventions;
 
@@ -183,7 +184,7 @@ class OpenInferenceEmbeddingModelObservationConventionTests {
     }
 
     private void assertRedactionBehavior(EmbeddingModelObservationContext context,
-                                         java.util.function.BiConsumer<OpenInferenceOptions, Boolean> optionSetter,
+                                         BiConsumer<OpenInferenceOptions, Boolean> optionSetter,
                                          String expectedKey) {
         OpenInferenceOptions redactingOptions = new OpenInferenceOptions();
         OpenInferenceEmbeddingModelObservationConvention redactingConvention =

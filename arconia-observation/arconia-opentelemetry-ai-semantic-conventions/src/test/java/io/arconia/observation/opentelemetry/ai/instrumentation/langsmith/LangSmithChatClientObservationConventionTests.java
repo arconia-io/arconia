@@ -23,6 +23,7 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -118,6 +119,24 @@ class LangSmithChatClientObservationConventionTests {
         JSONAssert.assertEquals("""
                 {"messages": [{"role": "assistant", "content": "Hello!"}]}""",
                 findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey()), JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.LANGSMITH);
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.LOG_EVENTS);
+        var context = ChatClientObservationContext.builder()
+                .request(ChatClientRequest.builder()
+                        .prompt(new Prompt(List.of(new UserMessage("Hi"))))
+                        .build())
+                .build();
+        context.setResponse(ChatClientResponse.builder().chatResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Hello!").build())))
+                .build()).build());
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .contains(LangSmithAttributes.GEN_AI_PROMPT.getKey(), LangSmithAttributes.GEN_AI_COMPLETION.getKey());
     }
 
     @Test

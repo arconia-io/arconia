@@ -33,6 +33,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -197,6 +198,18 @@ class LangSmithChatModelObservationConventionTests {
                 assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_OUTPUT_MESSAGES.getKey()));
+    }
+
+    @Test
+    void shouldRecordContentOnSpanAttributesWhateverTheDestination() {
+        properties.setFlavor(GenAiConventionFlavor.LANGSMITH);
+        properties.setCaptureMessageContent(true);
+        properties.setInferenceContentDestination(OpenTelemetryAiConventionsProperties.InferenceContentDestination.LOG_EVENTS);
+        ChatModelObservationContext context = createContext("mistral");
+        setResponse(context, "mistral-42", "Hello!", "stop");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .contains(LangSmithAttributes.GEN_AI_PROMPT.getKey(), LangSmithAttributes.GEN_AI_COMPLETION.getKey());
     }
 
     @Test

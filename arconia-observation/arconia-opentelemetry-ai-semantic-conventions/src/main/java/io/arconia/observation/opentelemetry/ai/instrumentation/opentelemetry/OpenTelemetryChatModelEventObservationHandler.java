@@ -2,6 +2,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,11 +118,17 @@ public final class OpenTelemetryChatModelEventObservationHandler implements Obse
     }
 
     private void emitLogRecord(@Nullable Span span, ChatModelObservationContext context) {
+        Context logContext = span != null ? Context.root().with(span) : Context.current();
+        // Records nobody consumes, such as without a logs exporter or below the minimum severity, are dropped:
+        // serialising the messages for them would be wasted work.
+        if (!logger.isEnabled(Severity.DEBUG, logContext)) {
+            return;
+        }
         LogRecordBuilder logRecord = logger.logRecordBuilder()
                 .setEventName(GenAiIncubatingEvents.GEN_AI_CLIENT_INFERENCE_OPERATION_DETAILS)
                 .setSeverity(Severity.DEBUG)
                 .setTimestamp(Instant.now())
-                .setContext(span != null ? Context.root().with(span) : Context.current());
+                .setContext(logContext);
         for (KeyValue keyValue : context.getAllKeyValues()) {
             if (isSemanticConventionKey(keyValue.getKey())) {
                 logRecord.setAttribute(keyValue.getKey(), keyValue.getValue());
@@ -179,11 +186,11 @@ public final class OpenTelemetryChatModelEventObservationHandler implements Obse
      */
     private static Value<?> toValue(JsonNode node) {
         if (node.isObject()) {
-            List<io.opentelemetry.api.common.KeyValue> keyValues = new ArrayList<>();
+            Map<String, Value<?>> properties = new LinkedHashMap<>();
             for (Map.Entry<String, JsonNode> property : node.properties()) {
-                keyValues.add(io.opentelemetry.api.common.KeyValue.of(property.getKey(), toValue(property.getValue())));
+                properties.put(property.getKey(), toValue(property.getValue()));
             }
-            return Value.of(keyValues.toArray(io.opentelemetry.api.common.KeyValue[]::new));
+            return Value.of(properties);
         }
         if (node.isArray()) {
             List<Value<?>> values = new ArrayList<>();

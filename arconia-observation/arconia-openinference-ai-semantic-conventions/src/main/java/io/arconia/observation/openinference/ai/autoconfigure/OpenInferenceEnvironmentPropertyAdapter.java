@@ -12,7 +12,6 @@ import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.boot.origin.PropertySourceOrigin;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
-import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -111,7 +110,7 @@ final class OpenInferenceEnvironmentPropertyAdapter {
     }
 
     private void logUnsupportedValue(String externalKey, String value) {
-        logger.warn(LogMessage.format("Unsupported value for %s: %s", externalKey, value));
+        logger.warn("Unsupported value for %s: %s".formatted(externalKey, value));
     }
 
     /**

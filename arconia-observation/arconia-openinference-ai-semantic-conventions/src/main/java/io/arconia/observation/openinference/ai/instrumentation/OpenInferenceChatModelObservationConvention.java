@@ -156,8 +156,10 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
                     String messagePrefix = SemanticConventions.LLM_INPUT_MESSAGES + "." + i;
                     messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_ROLE,
                             message.getMessageType().getValue()));
-                    messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
-                            toolResponse.id()));
+                    if (StringUtils.hasText(toolResponse.id())) {
+                        messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_TOOL_CALL_ID,
+                                toolResponse.id()));
+                    }
                     messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_NAME,
                             toolResponse.name()));
                     messageKeyValues.add(KeyValue.of(messagePrefix + "." + SemanticConventions.MESSAGE_CONTENT,
@@ -381,7 +383,9 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
             List<Map<String, Object>> toolCalls = new ArrayList<>();
             for (AssistantMessage.ToolCall toolCall : assistantMessage.getToolCalls()) {
                 Map<String, Object> toolCallMap = new LinkedHashMap<>();
-                toolCallMap.put("id", toolCall.id());
+                if (StringUtils.hasText(toolCall.id())) {
+                    toolCallMap.put("id", toolCall.id());
+                }
                 toolCallMap.put("type", "function");
                 toolCallMap.put("function", Map.of("name", toolCall.name(), "arguments", toolCall.arguments()));
                 toolCalls.add(toolCallMap);
@@ -394,7 +398,9 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
     private Map<String, Object> toolResponseValue(ToolResponseMessage.ToolResponse response) {
         Map<String, Object> messageMap = new LinkedHashMap<>();
         messageMap.put("role", "tool");
-        messageMap.put("tool_call_id", response.id());
+        if (StringUtils.hasText(response.id())) {
+            messageMap.put("tool_call_id", response.id());
+        }
         messageMap.put("name", response.name());
         messageMap.put("content", response.responseData());
         return messageMap;
@@ -522,10 +528,13 @@ public final class OpenInferenceChatModelObservationConvention extends DefaultCh
         }
         for (int t = 0; t < toolCalls.size(); t++) {
             AssistantMessage.ToolCall toolCall = toolCalls.get(t);
-            messageKeyValues.add(KeyValue.of(
-                    observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_ID,
-                    toolCall.id()
-            ));
+            // Spring AI reports an empty id when the provider doesn't return one, such as Google GenAI.
+            if (StringUtils.hasText(toolCall.id())) {
+                messageKeyValues.add(KeyValue.of(
+                        observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_ID,
+                        toolCall.id()
+                ));
+            }
             messageKeyValues.add(KeyValue.of(
                     observationPrefix + "." + t + "." + SemanticConventions.TOOL_CALL_FUNCTION_NAME,
                     toolCall.name()

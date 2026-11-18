@@ -21,9 +21,8 @@ public final class OpenLitAttributes {
     /**
      * The number of dimensions requested for the embedding.
      * <p>
-     * Note: The OpenLIT UI reads {@code gen_ai.request.embedding_dimension}
-     * (underscore-separated), while the OTel base uses {@code gen_ai.request.embedding.dimensions}
-     * (dot-separated).
+     * Note: The OpenLIT UI reads {@code gen_ai.request.embedding_dimension}, while the OpenTelemetry
+     * flavor uses {@code gen_ai.embeddings.dimension.count}.
      */
     public static final String GEN_AI_REQUEST_EMBEDDING_DIMENSION = "gen_ai.request.embedding_dimension";
 

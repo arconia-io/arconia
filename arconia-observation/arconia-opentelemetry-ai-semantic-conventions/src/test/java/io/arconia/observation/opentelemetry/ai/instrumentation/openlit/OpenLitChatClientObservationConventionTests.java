@@ -1,5 +1,7 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.openlit;
 
+import java.util.List;
+
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
@@ -129,7 +131,7 @@ class OpenLitChatClientObservationConventionTests {
 
     private void setResponse(ChatClientObservationContext context, String content) {
         var chatResponse = ChatResponse.builder()
-                .generations(java.util.List.of(new Generation(
+                .generations(List.of(new Generation(
                         AssistantMessage.builder().content(content).build(),
                         ChatGenerationMetadata.builder().finishReason("stop").build())))
                 .build();

@@ -119,6 +119,8 @@ The requests are reported with the `http.server.request.duration` metric and spa
 
 Requests answered with a `5xx` status get `error.type` set to the status code. Requests answered with any other status don't get it, even when Spring MVC handled an exception to produce the response, such as a validation failure answered with `400`, since the request completed with a status code.
 
+The `outcome` attribute from Spring Framework is kept, since the OpenTelemetry Semantic Conventions don't define a stable equivalent for it.
+
 === HTTP Client
 
 Activated for the `RestClient` and `RestTemplate` instances built from the builders auto-configured by Spring Boot. The requests are reported with the `http.client.request.duration` metric and spans named after the request method, such as `GET`. The full URL of the request is recorded as `url.full`, with the credentials and the values of sensitive query parameters replaced by `REDACTED`. When the request fails without a response, `error.type` holds the class name of the I/O error, such as `java.net.ConnectException`, instead of the `ResourceAccessException` that Spring Framework wraps it in.

@@ -334,3 +334,5 @@ As in the OpenInference reference implementation, the boolean environment variab
 |`OPENINFERENCE_HIDE_OUTPUT_TEXT`
 |`arconia.observations.conventions.openinference.ai.hide-output-text`
 |===
+
+The `OPENINFERENCE_HIDE_PROMPTS` and `OPENINFERENCE_HIDE_CHOICES` variables are not supported, since they apply to the completions API, which Spring AI doesn't use. The `OPENINFERENCE_HIDE_RETRIEVAL_DOCUMENTS` and `OPENINFERENCE_BLOB_UPLOADER` variables are not supported either, since Arconia records no retriever spans and redacts the media longer than the maximum length instead of uploading it.

@@ -16,8 +16,10 @@ import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -195,7 +197,7 @@ class OpenTelemetryChatClientObservationConventionTests {
                 .build();
     }
 
-    private ChatClientObservationContext createContextWithMessages(List<org.springframework.ai.chat.messages.Message> messages) {
+    private ChatClientObservationContext createContextWithMessages(List<Message> messages) {
         return ChatClientObservationContext.builder()
                 .request(ChatClientRequest.builder()
                         .prompt(new Prompt(messages))
@@ -207,7 +209,7 @@ class OpenTelemetryChatClientObservationConventionTests {
         var chatResponse = ChatResponse.builder()
                 .generations(List.of(new Generation(
                         AssistantMessage.builder().content(content).build(),
-                        org.springframework.ai.chat.metadata.ChatGenerationMetadata.builder()
+                        ChatGenerationMetadata.builder()
                                 .finishReason(finishReason).build())))
                 .build();
         context.setResponse(ChatClientResponse.builder().chatResponse(chatResponse).build());
