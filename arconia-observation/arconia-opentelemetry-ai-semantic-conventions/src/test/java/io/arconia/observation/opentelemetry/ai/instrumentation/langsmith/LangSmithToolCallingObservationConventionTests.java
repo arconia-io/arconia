@@ -41,9 +41,19 @@ class LangSmithToolCallingObservationConventionTests {
                 KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_NAME.getKey(), "get_weather"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), "function"),
-                KeyValue.of("spring.ai.kind", "tool_call"),
+                KeyValue.of("spring.ai.kind", "tool_call")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "tool")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
     }
 
     @Test

@@ -44,11 +44,21 @@ class OpenLLMetryChatClientObservationConventionTests {
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
-                KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, "false"),
+                KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, "false")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        var context = createContext("Hello");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of("traceloop.workflow.name", "chat_client"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "chat_client"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TraceloopSpanKind.WORKFLOW.getValue())
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain("traceloop.workflow.name", OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, OpenLLMetryAttributes.TRACELOOP_SPAN_KIND);
     }
 
     @Test
@@ -160,6 +170,20 @@ class OpenLLMetryChatClientObservationConventionTests {
     }
 
     // Helpers
+
+    @Test
+    void shouldNotIncludeContentWithoutMessageContent() {
+        properties.setCaptureMessageContent(true);
+        var context = createContextWithMessages(List.of(new UserMessage("")));
+        context.setResponse(ChatClientResponse.builder().chatResponse(ChatResponse.builder()
+                .generations(List.of(new Generation(AssistantMessage.builder().content("").build())))
+                .build()).build());
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+
+        assertThat(keyValues).extracting(KeyValue::getKey).doesNotContain(
+                OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT);
+    }
 
     private ChatClientObservationContext createContext(String content) {
         return ChatClientObservationContext.builder()

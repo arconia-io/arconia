@@ -15,8 +15,8 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
 public final class OpenLLMetryAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(AdvisorObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(
+    public KeyValues getHighCardinalityKeyValues(AdvisorObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(
                 traceloopEntityName(context),
                 traceloopSpanKind(context)
         );

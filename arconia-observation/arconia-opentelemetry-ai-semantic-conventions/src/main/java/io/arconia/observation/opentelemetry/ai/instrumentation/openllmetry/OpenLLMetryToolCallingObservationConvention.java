@@ -19,11 +19,11 @@ public final class OpenLLMetryToolCallingObservationConvention extends OpenTelem
         super(properties);
     }
 
-    // LOW CARDINALITY
+    // HIGH CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(ToolCallingObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(
+    public KeyValues getHighCardinalityKeyValues(ToolCallingObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(
                 traceloopEntityName(context),
                 traceloopSpanKind()
         );
@@ -38,25 +38,28 @@ public final class OpenLLMetryToolCallingObservationConvention extends OpenTelem
                 OpenLLMetryAttributes.TraceloopSpanKind.TOOL.getValue());
     }
 
-    // HIGH CARDINALITY
-
+    /**
+     * Records the arguments both as {@code gen_ai.tool.call.arguments} and as {@code traceloop.entity.input},
+     * as the OpenLLMetry instrumentations do.
+     */
     @Override
     protected KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {
-        String toolCallArguments = context.getToolCallArguments();
-        return keyValues.and(
-                OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT,
-                toolCallArguments);
+        return super.toolCallArguments(keyValues, context)
+                .and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, context.getToolCallArguments());
     }
 
+    /**
+     * Records the result both as {@code gen_ai.tool.call.result} and as {@code traceloop.entity.output},
+     * as the OpenLLMetry instrumentations do.
+     */
     @Override
     protected KeyValues toolCallResult(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallResult = context.getToolCallResult();
-        if (toolCallResult != null) {
-            return keyValues.and(
-                    OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT,
-                    toolCallResult);
+        if (toolCallResult == null) {
+            return keyValues;
         }
-        return keyValues;
+        return super.toolCallResult(keyValues, context)
+                .and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, toolCallResult);
     }
 
 }

@@ -32,22 +32,22 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
     // LOW CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(ToolCallingObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(langSmithSpanKind(context));
-    }
-
-    @Override
     protected KeyValue aiProvider(ToolCallingObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
+    public KeyValues getHighCardinalityKeyValues(ToolCallingObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(langSmithSpanKind(context));
     }
 
     private KeyValue langSmithSpanKind(ToolCallingObservationContext context) {
         return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
-
-    // HIGH CARDINALITY
 
     @Override
     protected KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {

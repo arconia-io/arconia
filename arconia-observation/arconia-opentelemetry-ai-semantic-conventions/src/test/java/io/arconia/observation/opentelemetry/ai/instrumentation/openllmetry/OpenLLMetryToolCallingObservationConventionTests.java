@@ -9,6 +9,7 @@ import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,10 +39,20 @@ class OpenLLMetryToolCallingObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_NAME.getKey(), "get_weather"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), "function"),
-                KeyValue.of("spring.ai.kind", "tool_call"),
+                KeyValue.of("spring.ai.kind", "tool_call")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "get_weather"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, "tool")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, OpenLLMetryAttributes.TRACELOOP_SPAN_KIND);
     }
 
     @Test
@@ -81,10 +92,9 @@ class OpenLLMetryToolCallingObservationConventionTests {
         context.setToolCallResult("rainy, 57°F");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT));
-        assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT));
+        assertThat(keyValues).extracting(KeyValue::getKey).doesNotContain(
+                OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT,
+                GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(), GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey());
     }
 
     @Test
@@ -98,7 +108,10 @@ class OpenLLMetryToolCallingObservationConventionTests {
         assertThat(keyValues).contains(
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, """
                         {"location": "Paris}"""),
-                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, "rainy, 57°F")
+                KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, "rainy, 57°F"),
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(), """
+                        {"location": "Paris}"""),
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(), "rainy, 57°F")
         );
     }
 

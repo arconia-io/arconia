@@ -42,9 +42,19 @@ class LangSmithChatClientObservationConventionTests {
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        var context = createContext("Hello");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
     }
 
     @Test

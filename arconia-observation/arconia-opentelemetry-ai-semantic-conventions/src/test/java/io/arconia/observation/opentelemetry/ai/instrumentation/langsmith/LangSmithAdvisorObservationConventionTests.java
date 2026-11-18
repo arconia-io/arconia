@@ -43,9 +43,19 @@ class LangSmithAdvisorObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
                 KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
                 KeyValue.of("spring.ai.kind", "advisor"),
-                KeyValue.of("spring.ai.advisor.name", "call"),
+                KeyValue.of("spring.ai.advisor.name", "call")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        var context = createContext("call");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
     }
 
     // Helpers

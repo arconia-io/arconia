@@ -29,17 +29,19 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
     // LOW CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(ChatClientObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(
+    protected KeyValue stream(ChatClientObservationContext context) {
+        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, String.valueOf(context.isStream()));
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
+    public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(
                 traceloopWorkflowName(context),
                 traceloopEntityName(context),
                 traceloopSpanKind(context)
         );
-    }
-
-    @Override
-    protected KeyValue stream(ChatClientObservationContext context) {
-        return KeyValue.of(OpenLLMetryAttributes.GEN_AI_IS_STREAMING, String.valueOf(context.isStream()));
     }
 
     /**
@@ -57,8 +59,6 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
         return KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND,
                 OpenLLMetryAttributes.TraceloopSpanKind.WORKFLOW.getValue());
     }
-
-    // HIGH CARDINALITY
 
     @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
@@ -78,6 +78,9 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
             return keyValues;
         }
         var inputMessages = GenAiContent.fromMessages(messages);
+        if (inputMessages.isEmpty()) {
+            return keyValues;
+        }
         return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, jsonHelper.toJson(inputMessages));
     }
 
@@ -88,6 +91,9 @@ public final class OpenLLMetryChatClientObservationConvention extends OpenTeleme
             return keyValues;
         }
         var outputMessages = GenAiContent.fromGenerations(context.getResponse().chatResponse().getResults());
+        if (outputMessages.isEmpty()) {
+            return keyValues;
+        }
         return keyValues.and(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, jsonHelper.toJson(outputMessages));
     }
 

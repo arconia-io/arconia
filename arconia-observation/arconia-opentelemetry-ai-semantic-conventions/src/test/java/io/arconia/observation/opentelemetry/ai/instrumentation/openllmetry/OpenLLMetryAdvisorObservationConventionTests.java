@@ -44,10 +44,20 @@ class OpenLLMetryAdvisorObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey(), "spring_ai"),
                 KeyValue.of("spring.ai.kind", "advisor"),
-                KeyValue.of("spring.ai.advisor.name", "call"),
+                KeyValue.of("spring.ai.advisor.name", "call")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        var context = createContext("call");
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, "task"),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME, "call")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(OpenLLMetryAttributes.TRACELOOP_SPAN_KIND, OpenLLMetryAttributes.TRACELOOP_ENTITY_NAME);
     }
 
     // Helpers

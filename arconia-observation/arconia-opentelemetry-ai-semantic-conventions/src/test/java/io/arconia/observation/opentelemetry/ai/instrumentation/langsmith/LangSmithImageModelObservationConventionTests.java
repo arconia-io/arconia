@@ -26,9 +26,19 @@ class LangSmithImageModelObservationConventionTests {
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "image"),
                 KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "openai"),
-                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "dall-e-3"),
+                KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "dall-e-3")
+        );
+    }
+
+    @Test
+    void shouldHaveSpanMarkersAsHighCardinalityKeyValues() {
+        ImageModelObservationContext context = createContext(AiProvider.OPENAI);
+
+        assertThat(convention.getHighCardinalityKeyValues(context)).contains(
                 KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "llm")
         );
+        assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
     }
 
     @Test

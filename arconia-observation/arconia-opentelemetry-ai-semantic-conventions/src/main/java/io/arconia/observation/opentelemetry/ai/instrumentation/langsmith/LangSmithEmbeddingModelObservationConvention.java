@@ -18,22 +18,22 @@ public final class LangSmithEmbeddingModelObservationConvention extends OpenTele
     // LOW CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(EmbeddingModelObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(langSmithSpanKind(context));
-    }
-
-    @Override
     protected KeyValue aiProvider(EmbeddingModelObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
+    public KeyValues getHighCardinalityKeyValues(EmbeddingModelObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(langSmithSpanKind(context));
     }
 
     private KeyValue langSmithSpanKind(EmbeddingModelObservationContext context) {
         return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
-
-    // HIGH CARDINALITY
 
     @Override
     protected KeyValues usageInputTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {

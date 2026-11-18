@@ -29,22 +29,22 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
     // LOW CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(ChatClientObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(langSmithSpanKind(context));
-    }
-
-    @Override
     protected KeyValue aiProvider(ChatClientObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
+    public KeyValues getHighCardinalityKeyValues(ChatClientObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(langSmithSpanKind(context));
     }
 
     private KeyValue langSmithSpanKind(ChatClientObservationContext context) {
         return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
-
-    // HIGH CARDINALITY
 
     @Override
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {

@@ -18,14 +18,16 @@ public final class LangSmithImageModelObservationConvention extends OpenTelemetr
     // LOW CARDINALITY
 
     @Override
-    public KeyValues getLowCardinalityKeyValues(ImageModelObservationContext context) {
-        return super.getLowCardinalityKeyValues(context).and(langSmithSpanKind(context));
-    }
-
-    @Override
     protected KeyValue aiProvider(ImageModelObservationContext context) {
         return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
+    }
+
+    // HIGH CARDINALITY
+
+    @Override
+    public KeyValues getHighCardinalityKeyValues(ImageModelObservationContext context) {
+        return super.getHighCardinalityKeyValues(context).and(langSmithSpanKind(context));
     }
 
     private KeyValue langSmithSpanKind(ImageModelObservationContext context) {
