@@ -76,7 +76,7 @@ class LangSmithChatModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "chat"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "mistral")
         );
     }
@@ -86,10 +86,10 @@ class LangSmithChatModelObservationConventionTests {
         ChatModelObservationContext context = createContext("mistral");
 
         assertThat(convention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "llm")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "llm")
         );
         assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND);
     }
 
     @Test
@@ -190,10 +190,10 @@ class LangSmithChatModelObservationConventionTests {
                     {"id": "call-1", "name": "weather", "args": {"city": "Rome"}, "type": "tool_call"}
                   ]},
                   {"role": "tool", "tool_call_id": "call-1", "name": "weather", "content": "sunny"}
-                ]}""", findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey()), JSONCompareMode.STRICT);
+                ]}""", findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT), JSONCompareMode.STRICT);
         JSONAssert.assertEquals("""
                 {"messages": [{"role": "assistant", "content": "It's sunny"}]}""",
-                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey()), JSONCompareMode.STRICT);
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION), JSONCompareMode.STRICT);
         assertThat(keyValues).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_INPUT_MESSAGES.getKey()));
         assertThat(keyValues).noneSatisfy(kv ->
@@ -209,7 +209,7 @@ class LangSmithChatModelObservationConventionTests {
         setResponse(context, "mistral-42", "Hello!", "stop");
 
         assertThat(convention.getHighCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .contains(LangSmithAttributes.GEN_AI_PROMPT.getKey(), LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+                .contains(LangSmithAttributes.GEN_AI_PROMPT, LangSmithAttributes.GEN_AI_COMPLETION);
     }
 
     @Test
@@ -220,9 +220,9 @@ class LangSmithChatModelObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT));
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION));
     }
 
     @Test
@@ -245,7 +245,7 @@ class LangSmithChatModelObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS));
         assertThat(keyValues).anySatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo("spring.ai.model.request.tool.names"));
     }
@@ -266,7 +266,7 @@ class LangSmithChatModelObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.TOOLS));
     }
 
     @Test
@@ -291,7 +291,7 @@ class LangSmithChatModelObservationConventionTests {
                 .build();
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String toolDefs = findKeyValue(keyValues, LangSmithAttributes.TOOLS.getKey());
+        String toolDefs = findKeyValue(keyValues, LangSmithAttributes.TOOLS);
         JSONAssert.assertEquals("""
                 [{"type": "function", "name": "get_weather", "description": "Get weather",
                   "parameters": {"type": "object", "properties": {"location": {"type": "string"}}}}]""",

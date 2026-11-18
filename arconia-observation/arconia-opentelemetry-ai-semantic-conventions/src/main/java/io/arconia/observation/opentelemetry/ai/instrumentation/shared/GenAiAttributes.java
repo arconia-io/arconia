@@ -35,12 +35,12 @@ public final class GenAiAttributes {
     /**
      * Parameters passed to the tool call.
      */
-    public static final AttributeKey<String> GEN_AI_TOOL_CALL_ARGUMENTS = stringKey("gen_ai.tool.call.arguments");
+    public static final String GEN_AI_TOOL_CALL_ARGUMENTS = "gen_ai.tool.call.arguments";
 
     /**
      * The result returned by the tool call (if any and if execution was successful).
      */
-    public static final AttributeKey<String> GEN_AI_TOOL_CALL_RESULT = stringKey("gen_ai.tool.call.result");
+    public static final String GEN_AI_TOOL_CALL_RESULT = "gen_ai.tool.call.result";
 
     private GenAiAttributes() {}
 

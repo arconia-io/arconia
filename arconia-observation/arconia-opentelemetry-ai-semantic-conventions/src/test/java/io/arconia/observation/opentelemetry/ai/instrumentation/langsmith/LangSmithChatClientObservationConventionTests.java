@@ -43,7 +43,7 @@ class LangSmithChatClientObservationConventionTests {
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "invoke_agent"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai")
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "spring_ai")
         );
     }
 
@@ -52,10 +52,10 @@ class LangSmithChatClientObservationConventionTests {
         var context = createContext("Hello");
 
         assertThat(convention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "chain")
         );
         assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND);
     }
 
     @Test
@@ -115,10 +115,10 @@ class LangSmithChatClientObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         JSONAssert.assertEquals("""
                 {"messages": [{"role": "user", "content": "Hi"}]}""",
-                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey()), JSONCompareMode.STRICT);
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT), JSONCompareMode.STRICT);
         JSONAssert.assertEquals("""
                 {"messages": [{"role": "assistant", "content": "Hello!"}]}""",
-                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey()), JSONCompareMode.STRICT);
+                findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION), JSONCompareMode.STRICT);
     }
 
     @Test
@@ -136,7 +136,7 @@ class LangSmithChatClientObservationConventionTests {
                 .build()).build());
 
         assertThat(convention.getHighCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .contains(LangSmithAttributes.GEN_AI_PROMPT.getKey(), LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+                .contains(LangSmithAttributes.GEN_AI_PROMPT, LangSmithAttributes.GEN_AI_COMPLETION);
     }
 
     @Test
@@ -146,7 +146,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT));
     }
 
     @Test
@@ -160,7 +160,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey(), "session-42")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID, "session-42")
         );
     }
 
@@ -170,7 +170,7 @@ class LangSmithChatClientObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID));
     }
 
     // Helpers

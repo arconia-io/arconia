@@ -38,7 +38,7 @@ class LangSmithToolCallingObservationConventionTests {
         KeyValues keyValues = convention.getLowCardinalityKeyValues(context);
         assertThat(keyValues).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "execute_tool"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "spring_ai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_NAME.getKey(), "get_weather"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_TOOL_TYPE.getKey(), "function"),
                 KeyValue.of("spring.ai.kind", "tool_call")
@@ -50,10 +50,10 @@ class LangSmithToolCallingObservationConventionTests {
         ToolCallingObservationContext context = createContext("get_weather", "Get weather", "{}");
 
         assertThat(convention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "tool")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "tool")
         );
         assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND);
     }
 
     @Test
@@ -93,7 +93,7 @@ class LangSmithToolCallingObservationConventionTests {
                 {"location": "Paris"}""");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String prompt = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT.getKey());
+        String prompt = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_PROMPT);
         JSONAssert.assertEquals("""
                 {"location": "Paris"}""", prompt, JSONCompareMode.STRICT);
     }
@@ -105,7 +105,7 @@ class LangSmithToolCallingObservationConventionTests {
         context.setToolCallResult("rainy, 57°F");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION);
         JSONAssert.assertEquals("""
                 {"output": "rainy, 57°F"}""", completion, JSONCompareMode.STRICT);
     }
@@ -118,7 +118,7 @@ class LangSmithToolCallingObservationConventionTests {
                 [{"title": "His Dark Materials", "author": "Philip Pullman"}]""");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION);
         JSONAssert.assertEquals("""
                 {"output": [{"title": "His Dark Materials", "author": "Philip Pullman"}]}""",
                 completion, JSONCompareMode.STRICT);
@@ -131,7 +131,7 @@ class LangSmithToolCallingObservationConventionTests {
         context.setToolCallResult("null");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION);
         JSONAssert.assertEquals("""
                 {"output": null}""", completion, JSONCompareMode.STRICT);
     }
@@ -143,7 +143,7 @@ class LangSmithToolCallingObservationConventionTests {
         context.setToolCallResult("{\"temperature\": \"57°F\"");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION);
         JSONAssert.assertEquals("""
                 {"output": "{\\"temperature\\": \\"57°F\\""}""", completion, JSONCompareMode.STRICT);
     }
@@ -156,7 +156,7 @@ class LangSmithToolCallingObservationConventionTests {
                 {"temperature": "57°F", "condition": "rainy"}""");
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
-        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION.getKey());
+        String completion = findKeyValue(keyValues, LangSmithAttributes.GEN_AI_COMPLETION);
         JSONAssert.assertEquals("""
                 {"temperature": "57°F", "condition": "rainy"}""", completion, JSONCompareMode.STRICT);
     }
@@ -168,7 +168,7 @@ class LangSmithToolCallingObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION));
     }
 
     @Test
@@ -180,9 +180,9 @@ class LangSmithToolCallingObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_PROMPT));
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION.getKey()));
+                assertThat(kv.getKey()).isEqualTo(LangSmithAttributes.GEN_AI_COMPLETION));
     }
 
     private ToolCallingObservationContext createContext(String name, String description, String arguments) {

@@ -32,7 +32,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
 
     @Override
     protected KeyValue aiProvider(ChatClientObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
+        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM,
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
     }
 
@@ -44,7 +44,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
     }
 
     private KeyValue langSmithSpanKind(ChatClientObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
+        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND,
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
 
@@ -52,7 +52,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
     protected KeyValues conversationId(KeyValues keyValues, ChatClientObservationContext context) {
         String conversationId = GenAiConversations.conversationId(context);
         return conversationId != null
-                ? keyValues.and(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey(), conversationId)
+                ? keyValues.and(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID, conversationId)
                 : keyValues;
     }
 
@@ -62,7 +62,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
         if (CollectionUtils.isEmpty(messages)) {
             return keyValues;
         }
-        return keyValues.and(LangSmithAttributes.GEN_AI_PROMPT.getKey(),
+        return keyValues.and(LangSmithAttributes.GEN_AI_PROMPT,
                 jsonHelper.toJson(LangSmithMessages.fromMessages(messages)));
     }
 
@@ -72,7 +72,7 @@ public final class LangSmithChatClientObservationConvention extends OpenTelemetr
         if (chatResponse == null || CollectionUtils.isEmpty(chatResponse.getResults())) {
             return keyValues;
         }
-        return keyValues.and(LangSmithAttributes.GEN_AI_COMPLETION.getKey(),
+        return keyValues.and(LangSmithAttributes.GEN_AI_COMPLETION,
                 jsonHelper.toJson(LangSmithMessages.fromGenerations(chatResponse.getResults())));
     }
 

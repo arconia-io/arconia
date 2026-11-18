@@ -90,9 +90,9 @@ class OpenTelemetryToolCallingObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey()));
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS));
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey()));
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT));
     }
 
     @Test
@@ -104,9 +104,9 @@ class OpenTelemetryToolCallingObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).contains(
-                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(), """
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS, """
                         {"location": "Paris}"""),
-                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(), "rainy, 57°F")
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT, "rainy, 57°F")
         );
     }
 
@@ -117,7 +117,7 @@ class OpenTelemetryToolCallingObservationConventionTests {
 
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).noneSatisfy(kv ->
-                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey()));
+                assertThat(kv.getKey()).isEqualTo(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT));
     }
 
     private ToolCallingObservationContext createContext(String name, String description, String arguments) {

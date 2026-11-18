@@ -81,7 +81,7 @@ class LangSmithFlavorConfiguration {
         @Bean
         @ConditionalOnMissingBean(GenAiConversationIdObservationHandler.class)
         GenAiConversationIdObservationHandler conversationIdObservationHandler() {
-            return new GenAiConversationIdObservationHandler(List.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID.getKey()));
+            return new GenAiConversationIdObservationHandler(List.of(LangSmithAttributes.LANGSMITH_METADATA_THREAD_ID));
         }
 
     }

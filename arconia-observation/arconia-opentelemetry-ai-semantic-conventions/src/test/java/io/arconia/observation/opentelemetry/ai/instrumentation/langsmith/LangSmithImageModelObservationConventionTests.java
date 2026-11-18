@@ -25,7 +25,7 @@ class LangSmithImageModelObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "image"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "openai"),
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "openai"),
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_REQUEST_MODEL.getKey(), "dall-e-3")
         );
     }
@@ -35,10 +35,10 @@ class LangSmithImageModelObservationConventionTests {
         ImageModelObservationContext context = createContext(AiProvider.OPENAI);
 
         assertThat(convention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "llm")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "llm")
         );
         assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND);
     }
 
     @Test
@@ -46,7 +46,7 @@ class LangSmithImageModelObservationConventionTests {
         ImageModelObservationContext context = createContext(AiProvider.GOOGLE_GENAI_AI);
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "google"));
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "google"));
         assertThat(convention.getLowCardinalityKeyValues(context)).noneSatisfy(kv ->
                 assertThat(kv.getKey()).isEqualTo(GenAiIncubatingAttributes.GEN_AI_PROVIDER_NAME.getKey()));
     }

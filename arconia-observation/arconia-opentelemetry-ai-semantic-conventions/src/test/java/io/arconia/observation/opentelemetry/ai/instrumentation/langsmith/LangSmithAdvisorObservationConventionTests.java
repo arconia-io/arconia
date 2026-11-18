@@ -41,7 +41,7 @@ class LangSmithAdvisorObservationConventionTests {
 
         assertThat(convention.getLowCardinalityKeyValues(context)).contains(
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_OPERATION_NAME.getKey(), "framework"),
-                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), "spring_ai"),
+                KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, "spring_ai"),
                 KeyValue.of("spring.ai.kind", "advisor"),
                 KeyValue.of("spring.ai.advisor.name", "call")
         );
@@ -52,10 +52,10 @@ class LangSmithAdvisorObservationConventionTests {
         var context = createContext("call");
 
         assertThat(convention.getHighCardinalityKeyValues(context)).contains(
-                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain")
+                KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "chain")
         );
         assertThat(convention.getLowCardinalityKeyValues(context)).extracting(KeyValue::getKey)
-                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey());
+                .doesNotContain(LangSmithAttributes.LANGSMITH_SPAN_KIND);
     }
 
     // Helpers

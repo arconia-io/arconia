@@ -3,6 +3,7 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langsmith;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.tracing.handler.TracingObservationHandler;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
@@ -32,10 +33,10 @@ public final class LangSmithTokenUsageObservationHandler implements ObservationH
         if (span == null) {
             return;
         }
-        setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), usage.getPromptTokens());
-        setTokens(span, LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS.getKey(), usage.getTotalTokens());
+        setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS, usage.getPromptTokens());
+        setTokens(span, LangSmithAttributes.GEN_AI_USAGE_TOTAL_TOKENS, usage.getTotalTokens());
         if (context instanceof ChatModelObservationContext) {
-            setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey(), usage.getCompletionTokens());
+            setTokens(span, GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS, usage.getCompletionTokens());
             if (usage.getCacheReadInputTokens() != null) {
                 span.setAttribute(GenAiIncubatingAttributes.GEN_AI_USAGE_CACHE_READ_INPUT_TOKENS, usage.getCacheReadInputTokens());
             }
@@ -60,7 +61,7 @@ public final class LangSmithTokenUsageObservationHandler implements ObservationH
         return null;
     }
 
-    private static void setTokens(Span span, String key, @Nullable Integer tokens) {
+    private static void setTokens(Span span, AttributeKey<Long> key, @Nullable Integer tokens) {
         if (tokens != null) {
             span.setAttribute(key, tokens.longValue());
         }

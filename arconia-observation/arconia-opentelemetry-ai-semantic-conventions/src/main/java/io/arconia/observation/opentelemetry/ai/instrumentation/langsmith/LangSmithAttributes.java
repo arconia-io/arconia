@@ -5,7 +5,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.arconia.core.annotations.Incubating;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
  * LangSmith-specific attribute keys and event names for OpenTelemetry-based tracing.
@@ -18,33 +17,33 @@ public final class LangSmithAttributes {
     // LangSmith-specific attribute keys
 
     /** The run type for the span. Values: llm, chain, tool, retriever, embedding, prompt, parser. */
-    public static final AttributeKey<String> LANGSMITH_SPAN_KIND = stringKey("langsmith.span.kind");
+    public static final String LANGSMITH_SPAN_KIND = "langsmith.span.kind";
 
     /**
      * Thread identifier for grouping the traces of a conversation, recorded as the {@code thread_id} metadata.
      * <p>
      * Note: {@code langsmith.trace.session_id} identifies the LangSmith project, not a conversation.
      */
-    public static final AttributeKey<String> LANGSMITH_METADATA_THREAD_ID = stringKey("langsmith.metadata.thread_id");
+    public static final String LANGSMITH_METADATA_THREAD_ID = "langsmith.metadata.thread_id";
 
     // GenAI attribute keys (used by LangSmith, differ from OTel naming)
 
     /** The GenAI system / provider name. */
-    public static final AttributeKey<String> GEN_AI_SYSTEM = stringKey("gen_ai.system");
+    public static final String GEN_AI_SYSTEM = "gen_ai.system";
 
     /** Total number of tokens used (input + output). */
     public static final AttributeKey<Long> GEN_AI_USAGE_TOTAL_TOKENS = longKey("gen_ai.usage.total_tokens");
 
     /** The inputs of the run as JSON, such as the input messages of a model call or the arguments of a tool. */
-    public static final AttributeKey<String> GEN_AI_PROMPT = stringKey("gen_ai.prompt");
+    public static final String GEN_AI_PROMPT = "gen_ai.prompt";
 
     /** The outputs of the run as JSON, such as the output messages of a model call or the result of a tool. */
-    public static final AttributeKey<String> GEN_AI_COMPLETION = stringKey("gen_ai.completion");
+    public static final String GEN_AI_COMPLETION = "gen_ai.completion";
 
     // Tool attribute keys
 
     /** The list of tool definitions available to the GenAI model. */
-    public static final AttributeKey<String> TOOLS = stringKey("tools");
+    public static final String TOOLS = "tools";
 
     private LangSmithAttributes() {
     }

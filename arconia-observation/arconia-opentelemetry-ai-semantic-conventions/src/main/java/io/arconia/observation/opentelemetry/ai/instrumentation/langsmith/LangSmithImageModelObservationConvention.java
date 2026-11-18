@@ -21,7 +21,7 @@ public final class LangSmithImageModelObservationConvention extends OpenTelemetr
 
     @Override
     protected KeyValue aiProvider(ImageModelObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
+        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM,
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
     }
 
@@ -33,7 +33,7 @@ public final class LangSmithImageModelObservationConvention extends OpenTelemetr
     }
 
     private KeyValue langSmithSpanKind(ImageModelObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
+        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND,
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
 

@@ -35,7 +35,7 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
 
     @Override
     protected KeyValue aiProvider(ToolCallingObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(),
+        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM,
                 GenAiConventionsConverter.toLangSmithProviderName(context.getOperationMetadata().provider()));
     }
 
@@ -47,7 +47,7 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
     }
 
     private KeyValue langSmithSpanKind(ToolCallingObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(),
+        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND,
                 GenAiConventionsConverter.toLangSmithSpanKind(context.getOperationMetadata().operationType()));
     }
 
@@ -55,7 +55,7 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
     protected KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallArguments = context.getToolCallArguments();
         return keyValues.and(
-                LangSmithAttributes.GEN_AI_PROMPT.getKey(),
+                LangSmithAttributes.GEN_AI_PROMPT,
                 toolCallArguments);
     }
 
@@ -64,7 +64,7 @@ public final class LangSmithToolCallingObservationConvention extends OpenTelemet
         String toolCallResult = context.getToolCallResult();
         if (toolCallResult != null) {
             return keyValues.and(
-                    LangSmithAttributes.GEN_AI_COMPLETION.getKey(),
+                    LangSmithAttributes.GEN_AI_COMPLETION,
                     toJsonObject(toolCallResult));
         }
         return keyValues;

@@ -91,7 +91,7 @@ public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCa
     protected KeyValues toolCallArguments(KeyValues keyValues, ToolCallingObservationContext context) {
         String toolCallArguments = context.getToolCallArguments();
         return keyValues.and(
-                GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(),
+                GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS,
                 toolCallArguments);
     }
 
@@ -99,7 +99,7 @@ public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCa
         String toolCallResult = context.getToolCallResult();
         if (toolCallResult != null) {
             return keyValues.and(
-                    GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(),
+                    GenAiAttributes.GEN_AI_TOOL_CALL_RESULT,
                     toolCallResult);
         }
         return keyValues;

@@ -94,7 +94,7 @@ class OpenLLMetryToolCallingObservationConventionTests {
         KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
         assertThat(keyValues).extracting(KeyValue::getKey).doesNotContain(
                 OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT,
-                GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(), GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey());
+                GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS, GenAiAttributes.GEN_AI_TOOL_CALL_RESULT);
     }
 
     @Test
@@ -109,9 +109,9 @@ class OpenLLMetryToolCallingObservationConventionTests {
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_INPUT, """
                         {"location": "Paris}"""),
                 KeyValue.of(OpenLLMetryAttributes.TRACELOOP_ENTITY_OUTPUT, "rainy, 57°F"),
-                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS.getKey(), """
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_ARGUMENTS, """
                         {"location": "Paris}"""),
-                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT.getKey(), "rainy, 57°F")
+                KeyValue.of(GenAiAttributes.GEN_AI_TOOL_CALL_RESULT, "rainy, 57°F")
         );
     }
 

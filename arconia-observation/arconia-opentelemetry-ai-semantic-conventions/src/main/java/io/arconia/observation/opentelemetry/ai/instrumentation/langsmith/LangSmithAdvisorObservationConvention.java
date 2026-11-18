@@ -24,11 +24,11 @@ public final class LangSmithAdvisorObservationConvention extends OpenTelemetryAd
 
     @Override
     protected KeyValue aiProvider(AdvisorObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM.getKey(), AiProvider.SPRING_AI.value());
+        return KeyValue.of(LangSmithAttributes.GEN_AI_SYSTEM, AiProvider.SPRING_AI.value());
     }
 
     private KeyValue langSmithSpanKind(AdvisorObservationContext context) {
-        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND.getKey(), "chain");
+        return KeyValue.of(LangSmithAttributes.LANGSMITH_SPAN_KIND, "chain");
     }
 
 }
