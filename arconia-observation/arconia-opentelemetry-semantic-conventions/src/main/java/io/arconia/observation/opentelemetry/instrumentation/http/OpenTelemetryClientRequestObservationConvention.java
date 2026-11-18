@@ -124,9 +124,11 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
 
     /**
      * Records the server port, falling back to the default port of the URL scheme when the URL doesn't specify one.
+     * {@link URI} reports neither a host nor a port for host names it doesn't accept, such as the ones with an
+     * underscore, so no port is recorded for them rather than the default one.
      */
     private KeyValues serverPort(KeyValues keyValues, ClientRequestObservationContext context) {
-        if (context.getCarrier() != null) {
+        if (context.getCarrier() != null && context.getCarrier().getURI().getHost() != null) {
             URI uri = context.getCarrier().getURI();
             int port = uri.getPort();
             if (port == -1) {

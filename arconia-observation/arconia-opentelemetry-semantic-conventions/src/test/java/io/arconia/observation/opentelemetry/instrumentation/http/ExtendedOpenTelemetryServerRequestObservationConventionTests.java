@@ -174,6 +174,28 @@ class ExtendedOpenTelemetryServerRequestObservationConventionTests {
     }
 
     @Test
+    void routeIncludesContextPath() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/users/42");
+        request.setContextPath("/api");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+        context.setPathPattern("/users/{id}");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.route", "/api/users/{id}"));
+        assertThat(convention.getContextualName(context)).isEqualTo("GET /api/users/{id}");
+    }
+
+    @Test
+    void rootRouteIncludesContextPath() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/");
+        request.setContextPath("/api");
+        ServerRequestObservationContext context = new ServerRequestObservationContext(request, new MockHttpServletResponse());
+        context.setPathPattern("");
+
+        assertThat(convention.getLowCardinalityKeyValues(context)).contains(KeyValue.of("http.route", "/api/"));
+        assertThat(convention.getContextualName(context)).isEqualTo("GET /api/");
+    }
+
+    @Test
     void routeAbsentWhenNoPathPatternMatched() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/missing");
         MockHttpServletResponse response = new MockHttpServletResponse();

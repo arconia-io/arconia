@@ -115,7 +115,7 @@ The conventions cover the servlet web stack and the blocking HTTP clients. The r
 
 Activated when the application is a servlet-based web application. The conventions are based on the support provided by the https://spring.io/projects/spring-framework[Spring Framework] project, extended by Arconia to cover additional stable conventions.
 
-The requests are reported with the `http.server.request.duration` metric and spans named after the request method and the matched route, such as `GET /users/\{id}`. The query string of the request is recorded as `url.query`, with the values of sensitive query parameters replaced by `REDACTED`.
+The requests are reported with the `http.server.request.duration` metric and spans named after the request method and the matched route, such as `GET /users/\{id}`. The route includes the context path of the application, such as `/api/users/\{id}` when `server.servlet.context-path` is `/api`. The query string of the request is recorded as `url.query`, with the values of sensitive query parameters replaced by `REDACTED`.
 
 Requests answered with a `5xx` status get `error.type` set to the status code. Requests answered with any other status don't get it, even when Spring MVC handled an exception to produce the response, such as a validation failure answered with `400`, since the request completed with a status code.
 

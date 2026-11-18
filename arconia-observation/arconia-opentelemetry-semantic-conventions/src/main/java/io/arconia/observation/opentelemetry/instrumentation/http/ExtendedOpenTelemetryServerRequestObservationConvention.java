@@ -50,15 +50,14 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
     }
 
     /**
-     * Names the span after the root route when the request matched the root pattern,
-     * which Spring represents as an empty pattern.
+     * Names the span after the route, which includes the context path of the application.
      */
     @Override
     public String getContextualName(ServerRequestObservationContext context) {
-        String pattern = context.getPathPattern();
-        if (context.getCarrier() != null && pattern != null && pattern.isEmpty()) {
+        String route = httpRoute(context);
+        if (route != null) {
             String method = getMethodValue(context);
-            return "%s %s".formatted(method != null ? method : "HTTP", ROOT_ROUTE);
+            return "%s %s".formatted(method != null ? method : "HTTP", route);
         }
         return super.getContextualName(context);
     }
@@ -83,11 +82,23 @@ public final class ExtendedOpenTelemetryServerRequestObservationConvention exten
     }
 
     private KeyValues route(KeyValues keyValues, ServerRequestObservationContext context) {
-        String pattern = context.getPathPattern();
-        if (context.getCarrier() != null && pattern != null) {
-            return keyValues.and(HttpAttributes.HTTP_ROUTE.getKey(), pattern.isEmpty() ? ROOT_ROUTE : pattern);
+        String route = httpRoute(context);
+        if (route != null) {
+            return keyValues.and(HttpAttributes.HTTP_ROUTE.getKey(), route);
         }
         return keyValues;
+    }
+
+    /**
+     * Returns the route matched by the request, prefixed with the context path of the application, which the
+     * conventions call the application root. Spring represents the root pattern as an empty pattern.
+     */
+    private static @Nullable String httpRoute(ServerRequestObservationContext context) {
+        String pattern = context.getPathPattern();
+        if (context.getCarrier() == null || pattern == null) {
+            return null;
+        }
+        return context.getCarrier().getContextPath() + (pattern.isEmpty() ? ROOT_ROUTE : pattern);
     }
 
     private KeyValues networkProtocolVersion(KeyValues keyValues, ServerRequestObservationContext context) {

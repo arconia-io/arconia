@@ -169,6 +169,16 @@ class OpenTelemetryClientRequestObservationConventionTests {
     }
 
     @Test
+    void serverAddressAndPortAbsentWhenUriHasNoHost() {
+        // java.net.URI doesn't accept host names with an underscore, such as Docker Compose service names,
+        // but HTTP clients like Apache HttpClient still send the request.
+        ClientRequestObservationContext context = context(HttpMethod.GET, "http://my_service:8080/api");
+
+        assertThat(convention.getLowCardinalityKeyValues(context))
+                .noneMatch(kv -> kv.getKey().equals("server.address") || kv.getKey().equals("server.port"));
+    }
+
+    @Test
     void uriIsNoneWithoutUriTemplate() {
         ClientRequestObservationContext context = context(HttpMethod.GET, "https://example.com/users/42");
 
