@@ -1,10 +1,13 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.langfuse;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Langfuse-specific attribute keys for OpenTelemetry-based tracing.
  *
  * @see <a href="https://langfuse.com/integrations/native/opentelemetry">Langfuse OpenTelemetry</a>
  */
+@Incubating
 public final class LangfuseAttributes {
 
     /**

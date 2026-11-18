@@ -10,6 +10,7 @@ import org.springframework.ai.chat.client.observation.ChatClientObservationConte
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.util.CollectionUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
@@ -20,6 +21,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
+@Incubating
 public final class OpenLLMetryChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
 
     public OpenLLMetryChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {

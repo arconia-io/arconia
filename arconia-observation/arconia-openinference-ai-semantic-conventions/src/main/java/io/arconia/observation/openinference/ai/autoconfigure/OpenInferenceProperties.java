@@ -3,11 +3,13 @@ package io.arconia.observation.openinference.ai.autoconfigure;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.openinference.ai.instrumentation.OpenInferenceOptions;
 
 /**
  * Configuration properties for the OpenInference instrumentation.
  */
+@Incubating
 @ConfigurationProperties(prefix = OpenInferenceProperties.CONFIG_PREFIX)
 public class OpenInferenceProperties extends OpenInferenceOptions {
 

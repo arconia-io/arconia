@@ -12,6 +12,8 @@ import io.opentelemetry.api.trace.Span;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Observation handler that sets typed span attributes for chat model observations.
  * <p>
@@ -21,6 +23,7 @@ import org.springframework.ai.chat.observation.ChatModelObservationContext;
  * <p>
  * See <a href="https://github.com/micrometer-metrics/micrometer/issues/7433">micrometer#7433</a>.
  */
+@Internal
 public final class OpenInferenceChatModelObservationHandler implements ObservationHandler<ChatModelObservationContext> {
 
     private static final AttributeKey<Long> LLM_TOKEN_COUNT_PROMPT_DETAILS_CACHE_READ =

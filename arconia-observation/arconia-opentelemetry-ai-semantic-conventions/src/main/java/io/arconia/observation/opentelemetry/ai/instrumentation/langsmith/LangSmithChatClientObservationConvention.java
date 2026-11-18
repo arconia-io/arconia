@@ -10,6 +10,7 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.util.CollectionUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
@@ -20,6 +21,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
+@Incubating
 public final class LangSmithChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
 
     public LangSmithChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {

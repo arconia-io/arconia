@@ -21,10 +21,13 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.server.observation.OpenTelemetryServerRequestObservationConvention;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
+import io.arconia.core.annotations.Incubating;
+
 
 /**
  * Provides the missing OpenTelemetry-compatible observation for HTTP requests.
  */
+@Incubating
 public final class ExtendedOpenTelemetryServerRequestObservationConvention extends OpenTelemetryServerRequestObservationConvention {
 
     private static final String ROOT_ROUTE = "/";

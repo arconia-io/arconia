@@ -21,6 +21,8 @@ import org.springframework.http.client.observation.ClientRequestObservationConte
 import org.springframework.http.client.observation.DefaultClientRequestObservationConvention;
 import org.springframework.web.client.ResourceAccessException;
 
+import io.arconia.core.annotations.Incubating;
+
 
 /**
  * Observation convention for HTTP client requests following the OpenTelemetry Semantic Conventions,
@@ -29,6 +31,7 @@ import org.springframework.web.client.ResourceAccessException;
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span">HTTP Client Spans</a>
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpclientrequestduration">HTTP Client Metrics</a>
  */
+@Incubating
 public final class OpenTelemetryClientRequestObservationConvention extends DefaultClientRequestObservationConvention {
 
     /**

@@ -11,10 +11,13 @@ import org.springframework.ai.observation.conventions.AiOperationType;
 import org.springframework.ai.observation.conventions.AiProvider;
 import org.springframework.util.Assert;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Converters from Spring AI observation conventions to GenAI semantic convention values,
  * covering all the flavors (OpenTelemetry, OpenLLMetry, LangSmith, OpenLIT, Langfuse).
  */
+@Internal
 public final class GenAiConventionsConverter {
 
     private GenAiConventionsConverter() {}

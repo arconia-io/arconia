@@ -6,6 +6,7 @@ import io.micrometer.common.KeyValues;
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
 import org.springframework.ai.observation.conventions.AiProvider;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 
 /**
@@ -13,6 +14,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
+@Incubating
 public final class LangSmithAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override

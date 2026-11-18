@@ -7,6 +7,9 @@ import org.springframework.ai.chat.client.advisor.observation.AdvisorObservation
 import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObservationConvention;
 import org.springframework.ai.observation.conventions.AiProvider;
 
+import io.arconia.core.annotations.Incubating;
+
+@Incubating
 public class OpenTelemetryAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
 
     @Override

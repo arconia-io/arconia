@@ -6,6 +6,9 @@ import io.opentelemetry.api.trace.Span;
 
 import org.jspecify.annotations.Nullable;
 
+import io.arconia.core.annotations.Internal;
+
+@Internal
 public final class MicrometerBridge {
 
     private MicrometerBridge() {}

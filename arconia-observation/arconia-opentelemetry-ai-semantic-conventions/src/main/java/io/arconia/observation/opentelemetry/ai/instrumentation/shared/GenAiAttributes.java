@@ -2,6 +2,8 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.shared;
 
 import io.opentelemetry.api.common.AttributeKey;
 
+import io.arconia.core.annotations.Internal;
+
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
@@ -10,6 +12,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OTel GenAI Semantic Conventions</a>
  */
+@Internal
 public final class GenAiAttributes {
 
     // Attribute keys

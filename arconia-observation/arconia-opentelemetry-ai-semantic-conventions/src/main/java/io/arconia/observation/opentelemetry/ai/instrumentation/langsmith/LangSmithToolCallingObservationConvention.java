@@ -11,6 +11,7 @@ import org.springframework.ai.util.JsonHelper;
 
 import tools.jackson.databind.util.RawValue;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
@@ -21,6 +22,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiJson;
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
+@Incubating
 public final class LangSmithToolCallingObservationConvention extends OpenTelemetryToolCallingObservationConvention {
 
     private final JsonHelper jsonHelper = new JsonHelper();

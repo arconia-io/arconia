@@ -18,6 +18,7 @@ import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
@@ -30,6 +31,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OpenTelemetry Semantic Conventions for Generative AI</a>
  */
+@Incubating
 public class OpenTelemetryChatModelObservationConvention extends DefaultChatModelObservationConvention {
 
     protected final JsonHelper jsonHelper = new JsonHelper();

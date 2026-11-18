@@ -9,12 +9,12 @@ import io.arconia.observation.conventions.AiObservationConventionsProvider;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link ObservationAutoConfiguration}.
+ * Unit tests for {@link AiObservationConventionsAutoConfiguration}.
  */
-class ObservationAutoConfigurationTests {
+class AiObservationConventionsAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(ObservationAutoConfiguration.class));
+        .withConfiguration(AutoConfigurations.of(AiObservationConventionsAutoConfiguration.class));
 
     @Test
     void noFailureWithNoConventionsProviders() {

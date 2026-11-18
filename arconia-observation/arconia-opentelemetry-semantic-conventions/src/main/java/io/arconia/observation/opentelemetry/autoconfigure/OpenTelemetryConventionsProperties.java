@@ -2,11 +2,13 @@ package io.arconia.observation.opentelemetry.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.instrumentation.http.OpenTelemetryHttpOptions;
 
 /**
  * Configuration properties for the OpenTelemetry Semantic Conventions.
  */
+@Incubating
 @ConfigurationProperties(prefix = OpenTelemetryConventionsProperties.CONFIG_PREFIX)
 public class OpenTelemetryConventionsProperties {
 

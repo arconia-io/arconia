@@ -1,10 +1,13 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.openlit;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Semantic convention attribute keys for OpenLIT that differ from the OTel GenAI spec.
  *
  * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
  */
+@Incubating
 public final class OpenLitAttributes {
 
     /**

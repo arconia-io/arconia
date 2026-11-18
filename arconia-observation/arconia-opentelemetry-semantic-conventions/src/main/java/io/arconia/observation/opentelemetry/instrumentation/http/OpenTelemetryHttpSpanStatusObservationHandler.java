@@ -12,6 +12,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.observation.ClientRequestObservationContext;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * {@link ObservationHandler} setting the status of HTTP spans to {@code Error} when the response status code
  * signals an error but no exception was recorded, as the OpenTelemetry Semantic Conventions require:
@@ -22,6 +24,7 @@ import org.springframework.http.server.observation.ServerRequestObservationConte
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/http/http-spans/#status">HTTP Span Status</a>
  */
+@Internal
 public final class OpenTelemetryHttpSpanStatusObservationHandler implements ObservationHandler<Observation.Context> {
 
     @Override

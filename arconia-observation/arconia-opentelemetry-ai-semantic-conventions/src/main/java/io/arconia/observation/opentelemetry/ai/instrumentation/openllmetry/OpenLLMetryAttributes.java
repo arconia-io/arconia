@@ -1,10 +1,13 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation.openllmetry;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Semantic convention attribute keys and values for OpenLLMetry (Traceloop).
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
+@Incubating
 public final class OpenLLMetryAttributes {
 
     // Traceloop

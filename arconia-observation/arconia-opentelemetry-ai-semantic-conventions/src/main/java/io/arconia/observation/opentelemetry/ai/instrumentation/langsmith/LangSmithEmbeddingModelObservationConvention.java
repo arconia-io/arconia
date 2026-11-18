@@ -5,6 +5,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
@@ -13,6 +14,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
+@Incubating
 public final class LangSmithEmbeddingModelObservationConvention extends OpenTelemetryEmbeddingModelObservationConvention {
 
     // LOW CARDINALITY

@@ -1,10 +1,13 @@
 package io.arconia.observation.conventions;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Identifies an AI observation convention module. Each module that provides AI observation conventions
  * registers a bean implementing this interface, so that the application fails at startup when more than
  * one is active.
  */
+@Internal
 public interface AiObservationConventionsProvider {
 
     /**

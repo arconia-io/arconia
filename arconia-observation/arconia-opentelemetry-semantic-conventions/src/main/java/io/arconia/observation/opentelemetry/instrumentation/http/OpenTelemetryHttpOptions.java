@@ -9,9 +9,12 @@ import java.util.Map;
 import io.opentelemetry.semconv.AttributeKeyTemplate;
 import io.opentelemetry.semconv.HttpAttributes;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Options for OpenTelemetry HTTP semantic conventions.
  */
+@Incubating
 public class OpenTelemetryHttpOptions {
 
     /**

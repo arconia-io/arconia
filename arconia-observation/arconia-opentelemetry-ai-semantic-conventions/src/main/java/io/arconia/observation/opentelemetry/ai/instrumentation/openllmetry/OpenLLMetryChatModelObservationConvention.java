@@ -4,6 +4,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 
@@ -12,6 +13,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
+@Incubating
 public final class OpenLLMetryChatModelObservationConvention extends OpenTelemetryChatModelObservationConvention {
 
     public OpenLLMetryChatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {

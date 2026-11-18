@@ -4,6 +4,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 
 /**
@@ -11,6 +12,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://langfuse.com/integrations/native/opentelemetry">Langfuse OpenTelemetry</a>
  */
+@Incubating
 public final class LangfuseAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override

@@ -14,9 +14,12 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
 import io.opentelemetry.semconv.JvmAttributes;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Extends JvmMemoryMetrics to provide the missing OpenTelemetry-compatible metrics for JVM memory usage.
  */
+@Internal
 public final class OpenTelemetryJvmMemoryMetrics extends JvmMemoryMetrics {
 
     private final Tags extraTags;

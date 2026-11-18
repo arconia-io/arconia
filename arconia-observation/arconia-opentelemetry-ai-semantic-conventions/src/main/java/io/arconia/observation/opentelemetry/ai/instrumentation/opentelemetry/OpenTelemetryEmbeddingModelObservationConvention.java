@@ -10,9 +10,11 @@ import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObserva
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 
+@Incubating
 public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
     @Override

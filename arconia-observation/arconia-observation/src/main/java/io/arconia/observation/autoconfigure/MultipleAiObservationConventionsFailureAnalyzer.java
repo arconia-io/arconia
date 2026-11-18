@@ -8,7 +8,7 @@ import org.springframework.boot.diagnostics.FailureAnalyzer;
  * A {@link FailureAnalyzer} that provides instructions on how to solve
  * the conflict when multiple AI observation convention modules are detected.
  */
-public final class MultipleAiObservationConventionsFailureAnalyzer
+final class MultipleAiObservationConventionsFailureAnalyzer
         extends AbstractFailureAnalyzer<MultipleAiObservationConventionsException> {
 
     @Override

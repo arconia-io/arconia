@@ -5,6 +5,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.image.observation.ImageModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryImageModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
@@ -13,6 +14,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith</a>
  */
+@Incubating
 public final class LangSmithImageModelObservationConvention extends OpenTelemetryImageModelObservationConvention {
 
     // LOW CARDINALITY

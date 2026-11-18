@@ -6,6 +6,9 @@ import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.observation.EmbeddingModelMeterObservationHandler;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
+import io.arconia.core.annotations.Internal;
+
+@Internal
 public final class OpenTelemetryEmbeddingMeterObservationHandler extends EmbeddingModelMeterObservationHandler {
 
     private final MeterRegistry meterRegistry;

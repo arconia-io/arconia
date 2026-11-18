@@ -8,11 +8,13 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.opentelemetry.autoconfigure.resource.contributor.ResourceContributor;
 
 /**
  * A {@link ResourceContributor} that contributes resource attributes based on the OpenInference specification.
  */
+@Incubating
 public final class OpenInferenceResourceContributor implements ResourceContributor {
 
     @Nullable

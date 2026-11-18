@@ -1,11 +1,14 @@
 package io.arconia.observation.opentelemetry.ai.instrumentation;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * The convention flavor to apply for GenAI observations.
  * <p>
  * Each flavor uses the OpenTelemetry GenAI semantic conventions as a base,
  * overriding only the attributes that differ from the OTel spec.
  */
+@Incubating
 public enum GenAiConventionFlavor {
 
     /**

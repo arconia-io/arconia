@@ -11,6 +11,7 @@ import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
+import io.arconia.core.annotations.Internal;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.MicrometerBridge;
 
@@ -18,6 +19,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.Micrometer
  * Observation handler recording the token usage of chat and embedding model calls as numeric span attributes,
  * since LangSmith expects numbers and Micrometer key values are always strings.
  */
+@Internal
 public final class LangSmithTokenUsageObservationHandler implements ObservationHandler<Observation.Context> {
 
     @Override

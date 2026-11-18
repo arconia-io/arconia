@@ -25,6 +25,8 @@ import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Record types representing the OpenTelemetry GenAI semantic convention schemas for input
  * and output messages, with factory methods to convert from Spring AI types.
@@ -32,6 +34,7 @@ import org.springframework.util.StringUtils;
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-input-messages.json">Input Messages Schema</a>
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-output-messages.json">Output Messages Schema</a>
  */
+@Internal
 public final class GenAiContent {
 
     /**

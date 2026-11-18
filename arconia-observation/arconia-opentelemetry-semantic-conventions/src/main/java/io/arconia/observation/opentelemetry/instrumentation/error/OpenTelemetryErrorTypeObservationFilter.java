@@ -5,6 +5,8 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationFilter;
 import io.opentelemetry.semconv.ErrorAttributes;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * {@link ObservationFilter} recording the {@code error.type} attribute on observations ending in an error,
  * as a low cardinality key value so that it applies to both the span and the metrics of the observation.
@@ -20,6 +22,7 @@ import io.opentelemetry.semconv.ErrorAttributes;
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/registry/attributes/error/">OpenTelemetry Semantic Conventions for Errors</a>
  */
+@Internal
 public final class OpenTelemetryErrorTypeObservationFilter implements ObservationFilter {
 
     private static final String ERROR_TYPE = ErrorAttributes.ERROR_TYPE.getKey();

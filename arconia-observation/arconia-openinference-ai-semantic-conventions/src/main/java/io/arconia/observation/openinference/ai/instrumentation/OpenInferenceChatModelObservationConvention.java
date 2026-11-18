@@ -36,9 +36,12 @@ import org.springframework.util.StringUtils;
 
 import tools.jackson.databind.util.RawValue;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link ChatModelObservationConvention} for OpenInference.
  */
+@Incubating
 public final class OpenInferenceChatModelObservationConvention extends DefaultChatModelObservationConvention {
 
     private final JsonHelper jsonHelper = new JsonHelper();

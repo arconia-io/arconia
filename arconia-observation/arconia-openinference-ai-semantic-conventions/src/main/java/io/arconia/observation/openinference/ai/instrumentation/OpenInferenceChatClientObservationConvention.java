@@ -15,9 +15,12 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link ChatClientObservationConvention} for OpenInference.
  */
+@Incubating
 public final class OpenInferenceChatClientObservationConvention extends DefaultChatClientObservationConvention {
 
     private final OpenInferenceOptions openInferenceOptions;

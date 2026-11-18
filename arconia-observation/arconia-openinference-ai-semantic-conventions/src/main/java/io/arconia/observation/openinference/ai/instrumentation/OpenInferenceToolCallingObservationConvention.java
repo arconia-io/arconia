@@ -12,9 +12,12 @@ import org.springframework.ai.tool.observation.ToolCallingObservationConvention;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link ToolCallingObservationConvention} for OpenInference.
  */
+@Incubating
 public final class OpenInferenceToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
     private final OpenInferenceOptions openInferenceOptions;

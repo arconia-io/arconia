@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import io.arconia.core.annotations.Internal;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties.InferenceContentDestination;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
@@ -45,6 +46,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.Micrometer
  *
  * @see <a href="https://opentelemetry.io/docs/specs/semconv/general/events/">OpenTelemetry Semantic Conventions for Events</a>
  */
+@Internal
 public final class OpenTelemetryChatModelEventObservationHandler implements ObservationHandler<ChatModelObservationContext> {
 
     static final String INSTRUMENTATION_SCOPE_NAME = "io.arconia.observation.opentelemetry.ai";

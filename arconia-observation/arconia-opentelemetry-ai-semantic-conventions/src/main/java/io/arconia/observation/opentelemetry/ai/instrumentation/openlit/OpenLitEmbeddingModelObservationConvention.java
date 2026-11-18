@@ -7,6 +7,7 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryEmbeddingModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
@@ -15,6 +16,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
  */
+@Incubating
 public final class OpenLitEmbeddingModelObservationConvention extends OpenTelemetryEmbeddingModelObservationConvention {
 
     @Override

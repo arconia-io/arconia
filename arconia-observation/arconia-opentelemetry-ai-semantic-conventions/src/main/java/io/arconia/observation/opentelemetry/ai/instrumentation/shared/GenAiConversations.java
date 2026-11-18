@@ -6,9 +6,12 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Helpers to identify the conversation a chat client call belongs to.
  */
+@Internal
 public final class GenAiConversations {
 
     private GenAiConversations() {}

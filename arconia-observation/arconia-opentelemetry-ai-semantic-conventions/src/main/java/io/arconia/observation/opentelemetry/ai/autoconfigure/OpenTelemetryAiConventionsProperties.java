@@ -3,11 +3,13 @@ package io.arconia.observation.opentelemetry.ai.autoconfigure;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.GenAiConventionFlavor;
 
 /**
  * Configuration properties for the OpenTelemetry AI Semantic Conventions.
  */
+@Incubating
 @ConfigurationProperties(prefix = OpenTelemetryAiConventionsProperties.CONFIG_PREFIX)
 public class OpenTelemetryAiConventionsProperties {
 

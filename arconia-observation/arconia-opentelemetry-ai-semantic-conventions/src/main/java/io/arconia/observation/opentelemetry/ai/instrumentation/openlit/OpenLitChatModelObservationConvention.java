@@ -6,6 +6,7 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingAttributes;
 
 import org.springframework.ai.chat.observation.ChatModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatModelObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
@@ -15,6 +16,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
  */
+@Incubating
 public final class OpenLitChatModelObservationConvention extends OpenTelemetryChatModelObservationConvention {
 
     public OpenLitChatModelObservationConvention(OpenTelemetryAiConventionsProperties properties) {

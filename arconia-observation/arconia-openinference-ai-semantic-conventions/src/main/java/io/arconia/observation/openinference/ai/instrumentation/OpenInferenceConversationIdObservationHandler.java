@@ -14,6 +14,8 @@ import org.springframework.ai.chat.observation.ChatModelObservationContext;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationContext;
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Observation handler that propagates the conversation id of a chat client call to the observations nested in it.
  * <p>
@@ -21,6 +23,7 @@ import org.springframework.ai.tool.observation.ToolCallingObservationContext;
  * carries the conversation id in the chat client request, so the chat client convention records it on its
  * own span, and this handler copies it to the model, tool, and advisor spans below.
  */
+@Internal
 public final class OpenInferenceConversationIdObservationHandler implements ObservationHandler<Observation.Context> {
 
     @Override

@@ -5,6 +5,7 @@ import io.opentelemetry.semconv.incubating.SessionIncubatingAttributes;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConversations;
@@ -14,6 +15,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConve
  *
  * @see <a href="https://langfuse.com/integrations/native/opentelemetry">Langfuse OpenTelemetry</a>
  */
+@Incubating
 public final class LangfuseChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
 
     public LangfuseChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {

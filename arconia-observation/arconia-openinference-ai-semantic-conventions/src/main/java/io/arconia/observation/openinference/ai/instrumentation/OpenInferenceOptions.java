@@ -1,8 +1,11 @@
 package io.arconia.observation.openinference.ai.instrumentation;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * Options for customizing the OpenInference instrumentation.
  */
+@Incubating
 public class OpenInferenceOptions {
 
     public static final String REDACTED_PLACEHOLDER = "__REDACTED__";

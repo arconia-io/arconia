@@ -10,9 +10,12 @@ import org.springframework.ai.chat.client.advisor.observation.AdvisorObservation
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationConvention;
 import org.springframework.ai.chat.client.advisor.observation.DefaultAdvisorObservationConvention;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link AdvisorObservationConvention} for OpenInference.
  */
+@Incubating
 public final class OpenInferenceAdvisorObservationConvention extends DefaultAdvisorObservationConvention {
 
     @Override

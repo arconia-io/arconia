@@ -7,9 +7,12 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Checks on JSON text that is recorded as it is rather than parsed into a tree.
  */
+@Internal
 public final class GenAiJson {
 
     private static final JsonFactory jsonFactory = new JsonFactory();

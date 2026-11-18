@@ -8,8 +8,10 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 import org.springframework.ai.image.observation.DefaultImageModelObservationConvention;
 import org.springframework.ai.image.observation.ImageModelObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
+@Incubating
 public class OpenTelemetryImageModelObservationConvention extends DefaultImageModelObservationConvention {
 
     @Override

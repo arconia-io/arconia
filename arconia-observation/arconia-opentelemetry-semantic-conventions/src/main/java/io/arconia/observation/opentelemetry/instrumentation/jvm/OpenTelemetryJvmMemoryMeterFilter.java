@@ -9,10 +9,13 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.opentelemetry.semconv.JvmAttributes;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Filter to map the Micrometer JVM metrics not covered by the Micrometer OpenTelemetry conventions
  * to the OpenTelemetry semantic conventions, and to deny the ones the conventions replace.
  */
+@Internal
 public final class OpenTelemetryJvmMemoryMeterFilter implements MeterFilter {
 
     private static final String JVM_GC_DURATION = "jvm.gc.duration";

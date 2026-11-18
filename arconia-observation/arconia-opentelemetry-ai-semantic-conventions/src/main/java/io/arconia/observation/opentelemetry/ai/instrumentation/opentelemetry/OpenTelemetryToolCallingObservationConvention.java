@@ -9,10 +9,12 @@ import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
 
+@Incubating
 public class OpenTelemetryToolCallingObservationConvention extends DefaultToolCallingObservationConvention {
 
     private final OpenTelemetryAiConventionsProperties properties;

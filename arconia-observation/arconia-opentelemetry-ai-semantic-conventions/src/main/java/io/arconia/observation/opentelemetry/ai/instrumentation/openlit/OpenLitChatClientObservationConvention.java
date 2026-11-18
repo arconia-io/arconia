@@ -4,6 +4,7 @@ import io.micrometer.common.KeyValue;
 
 import org.springframework.ai.chat.client.observation.ChatClientObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryChatClientObservationConvention;
 
@@ -12,6 +13,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://github.com/openlit/openlit">OpenLIT</a>
  */
+@Incubating
 public final class OpenLitChatClientObservationConvention extends OpenTelemetryChatClientObservationConvention {
 
     public OpenLitChatClientObservationConvention(OpenTelemetryAiConventionsProperties properties) {

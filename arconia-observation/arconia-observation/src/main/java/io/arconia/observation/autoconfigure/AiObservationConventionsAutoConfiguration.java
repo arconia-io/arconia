@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Bean;
 import io.arconia.observation.conventions.AiObservationConventionsProvider;
 
 /**
- * Auto-configuration for observations.
+ * Auto-configuration ensuring that only one module of AI observation conventions is active.
  */
 @AutoConfiguration
-public final class ObservationAutoConfiguration {
+public final class AiObservationConventionsAutoConfiguration {
 
     @Bean
     SmartInitializingSingleton observationConventionsValidator(ObjectProvider<AiObservationConventionsProvider> providers) {

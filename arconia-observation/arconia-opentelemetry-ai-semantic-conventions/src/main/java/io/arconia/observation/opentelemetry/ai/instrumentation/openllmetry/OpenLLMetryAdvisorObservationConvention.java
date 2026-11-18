@@ -5,6 +5,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.chat.client.advisor.observation.AdvisorObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryAdvisorObservationConvention;
 
 /**
@@ -12,6 +13,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
+@Incubating
 public final class OpenLLMetryAdvisorObservationConvention extends OpenTelemetryAdvisorObservationConvention {
 
     @Override

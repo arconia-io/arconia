@@ -5,9 +5,12 @@ import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.lang.Contract;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Helpers to interpret the token usage reported by a model response.
  */
+@Internal
 public final class GenAiUsage {
 
     private GenAiUsage() {}

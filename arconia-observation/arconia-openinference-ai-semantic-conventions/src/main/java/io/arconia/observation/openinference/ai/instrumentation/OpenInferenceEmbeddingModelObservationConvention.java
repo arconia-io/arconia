@@ -22,9 +22,12 @@ import org.springframework.ai.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * {@link EmbeddingModelObservationConvention} for OpenInference.
  */
+@Incubating
 public final class OpenInferenceEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
     private final JsonHelper jsonHelper = new JsonHelper();

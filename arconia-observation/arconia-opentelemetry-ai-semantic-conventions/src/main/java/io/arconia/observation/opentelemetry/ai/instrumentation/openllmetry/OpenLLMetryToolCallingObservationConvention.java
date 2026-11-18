@@ -5,6 +5,7 @@ import io.micrometer.common.KeyValues;
 
 import org.springframework.ai.tool.observation.ToolCallingObservationContext;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConventionsProperties;
 import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.OpenTelemetryToolCallingObservationConvention;
 
@@ -13,6 +14,7 @@ import io.arconia.observation.opentelemetry.ai.instrumentation.opentelemetry.Ope
  *
  * @see <a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a>
  */
+@Incubating
 public final class OpenLLMetryToolCallingObservationConvention extends OpenTelemetryToolCallingObservationConvention {
 
     public OpenLLMetryToolCallingObservationConvention(OpenTelemetryAiConventionsProperties properties) {

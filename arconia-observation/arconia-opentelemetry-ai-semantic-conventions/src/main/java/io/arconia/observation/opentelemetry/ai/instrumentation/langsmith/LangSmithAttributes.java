@@ -2,6 +2,8 @@ package io.arconia.observation.opentelemetry.ai.instrumentation.langsmith;
 
 import io.opentelemetry.api.common.AttributeKey;
 
+import io.arconia.core.annotations.Incubating;
+
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
@@ -10,6 +12,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
  *
  * @see <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry">LangSmith OpenTelemetry Tracing</a>
  */
+@Incubating
 public final class LangSmithAttributes {
 
     // LangSmith-specific attribute keys
