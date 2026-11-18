@@ -1,9 +1,15 @@
 package io.arconia.observation.opentelemetry.autoconfigure;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.tracing.otel.bridge.OtelSpan;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.micrometer.metrics.MaximumAllowableTagsMeterFilter;
+import org.springframework.boot.micrometer.metrics.autoconfigure.CompositeMeterRegistryAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.simple.SimpleMetricsExportAutoConfiguration;
 import org.springframework.boot.restclient.observation.ObservationRestClientCustomizer;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -31,6 +37,11 @@ class HttpConventionsAutoConfigurationTests {
 
     private final ApplicationContextRunner nonWebContextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(HttpConventionsAutoConfiguration.class));
+
+    private final ApplicationContextRunner metricsContextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(MetricsAutoConfiguration.class,
+                    SimpleMetricsExportAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class,
+                    HttpConventionsAutoConfiguration.class));
 
     // Activation / deactivation
 
@@ -95,6 +106,53 @@ class HttpConventionsAutoConfigurationTests {
                     assertThat(context).doesNotHaveBean(OpenTelemetryHttpSpanStatusObservationHandler.class);
                     assertThat(context).hasSingleBean(ExtendedOpenTelemetryServerRequestObservationConvention.class);
                 });
+    }
+
+    // Client metrics
+
+    @Test
+    void limitsUriTagValuesOfClientMetric() {
+        metricsContextRunner.run(context -> {
+            MeterRegistry meterRegistry = context.getBean(MeterRegistry.class);
+            registerClientTimers(meterRegistry, 101);
+
+            assertThat(meterRegistry.find(OpenTelemetryClientRequestObservationConvention.METRIC_NAME).timers())
+                    .hasSize(100);
+        });
+    }
+
+    @Test
+    void limitsUriTagValuesOfClientMetricToConfiguredMaximum() {
+        metricsContextRunner
+                .withPropertyValues("management.metrics.web.client.max-uri-tags=2")
+                .run(context -> {
+                    MeterRegistry meterRegistry = context.getBean(MeterRegistry.class);
+                    registerClientTimers(meterRegistry, 5);
+
+                    assertThat(meterRegistry.find(OpenTelemetryClientRequestObservationConvention.METRIC_NAME).timers())
+                            .hasSize(2);
+                });
+    }
+
+    @Test
+    void doesNotLimitUriTagValuesWithoutMeterRegistry() {
+        nonWebContextRunner.run(context ->
+                assertThat(context).doesNotHaveBean(MaximumAllowableTagsMeterFilter.class));
+    }
+
+    @Test
+    void doesNotLimitUriTagValuesWhenDisabled() {
+        metricsContextRunner
+                .withPropertyValues("arconia.observations.conventions.opentelemetry.http.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(MaximumAllowableTagsMeterFilter.class));
+    }
+
+    private static void registerClientTimers(MeterRegistry meterRegistry, int count) {
+        for (int i = 0; i < count; i++) {
+            Timer.builder(OpenTelemetryClientRequestObservationConvention.METRIC_NAME)
+                    .tag("uri", "/users/" + i)
+                    .register(meterRegistry);
+        }
     }
 
     // Custom bean precedence

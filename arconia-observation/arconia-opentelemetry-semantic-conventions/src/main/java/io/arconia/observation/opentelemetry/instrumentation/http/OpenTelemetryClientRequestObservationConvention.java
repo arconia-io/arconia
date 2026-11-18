@@ -31,7 +31,10 @@ import org.springframework.web.client.ResourceAccessException;
  */
 public final class OpenTelemetryClientRequestObservationConvention extends DefaultClientRequestObservationConvention {
 
-    private static final String NAME = "http.client.request.duration";
+    /**
+     * The name of the metric reporting the HTTP client requests.
+     */
+    public static final String METRIC_NAME = "http.client.request.duration";
 
     private static final String REDACTED_USER_INFO = UrlQuerySanitizer.REDACTED + ":" + UrlQuerySanitizer.REDACTED;
 
@@ -50,7 +53,7 @@ public final class OpenTelemetryClientRequestObservationConvention extends Defau
     private final Map<String, String> responseHeaderAttributeKeys;
 
     public OpenTelemetryClientRequestObservationConvention(OpenTelemetryHttpOptions options) {
-        super(NAME);
+        super(METRIC_NAME);
         this.queryParametersToRedact = options.queryParametersToRedact();
         this.requestHeaderAttributeKeys = options.requestHeaderAttributeKeys();
         this.responseHeaderAttributeKeys = options.responseHeaderAttributeKeys();

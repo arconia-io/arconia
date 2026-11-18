@@ -125,6 +125,8 @@ Activated for the `RestClient` and `RestTemplate` instances built from the build
 
 The `outcome` and `uri` attributes from Spring Framework are kept, since the OpenTelemetry Semantic Conventions don't define a stable equivalent for them. The `uri` attribute holds the path of the URI template used for the request, such as `/users/\{id}`, and lets you break down the client metrics by endpoint.
 
+As with the Spring Boot defaults, the number of `uri` values recorded for the `http.client.request.duration` metric is limited by the `management.metrics.web.client.max-uri-tags` property (100 by default). The `management.observations.http.client.requests.name` property doesn't apply, since the OpenTelemetry Semantic Conventions define the name of the metric.
+
 === Configuration Properties
 
 .HTTP Configuration Properties
