@@ -157,6 +157,22 @@ class OpenTelemetryChatModelObservationConventionTests {
     }
 
     @Test
+    void shouldNotHaveUsageKeyValuesWhenUsageIsNotReported() {
+        // Spring AI falls back to EmptyUsage when the provider doesn't report the usage, whose zeros aren't counts.
+        ChatModelObservationContext context = createContext("mistral");
+        context.setResponse(ChatResponse.builder()
+                .metadata(ChatResponseMetadata.builder().id("resp-1").model("mistral-42").build())
+                .generations(List.of(new Generation(AssistantMessage.builder().content("Spring AI is great!").build())))
+                .build());
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).extracting(KeyValue::getKey).doesNotContain(
+                GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(),
+                GenAiIncubatingAttributes.GEN_AI_USAGE_OUTPUT_TOKENS.getKey(),
+                "gen_ai.usage.total_tokens");
+    }
+
+    @Test
     void shouldNormalizeFinishReasons() {
         ChatModelObservationContext context = createContext("gpt-5");
         setResponse(context, "gpt-5", "Calling a tool", "TOOL_CALLS");

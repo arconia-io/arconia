@@ -11,6 +11,7 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.util.StringUtils;
 
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 
 public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmbeddingModelObservationConvention {
 
@@ -59,6 +60,24 @@ public class OpenTelemetryEmbeddingModelObservationConvention extends DefaultEmb
                     String.valueOf(options.getDimensions()));
         }
         return keyValues;
+    }
+
+    @Override
+    protected KeyValues usageInputTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
+        return isUsageReported(context) ? super.usageInputTokens(keyValues, context) : keyValues;
+    }
+
+    @Override
+    protected KeyValues usageTotalTokens(KeyValues keyValues, EmbeddingModelObservationContext context) {
+        return isUsageReported(context) ? super.usageTotalTokens(keyValues, context) : keyValues;
+    }
+
+    /**
+     * Whether the provider reported the token usage. Otherwise, Spring AI records the zeros of the usage it falls
+     * back to as if they were actual counts.
+     */
+    private static boolean isUsageReported(EmbeddingModelObservationContext context) {
+        return context.getResponse() != null && !GenAiUsage.isUnreported(context.getResponse().getMetadata().getUsage());
     }
 
 }

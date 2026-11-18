@@ -22,6 +22,7 @@ import io.arconia.observation.opentelemetry.ai.autoconfigure.OpenTelemetryAiConv
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiAttributes;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiContent;
 import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiConventionsConverter;
+import io.arconia.observation.opentelemetry.ai.instrumentation.shared.GenAiUsage;
 
 /**
  * Base {@link ChatModelObservationConvention} implementing OpenTelemetry Semantic Conventions for Generative AI.
@@ -143,6 +144,31 @@ public class OpenTelemetryChatModelObservationConvention extends DefaultChatMode
             return keyValues;
         }
         return keyValues.and(GenAiAttributes.GEN_AI_TOOL_DEFINITIONS.getKey(), jsonHelper.toJson(toolDefinitions));
+    }
+
+    // Usage
+
+    @Override
+    protected KeyValues usageInputTokens(KeyValues keyValues, ChatModelObservationContext context) {
+        return isUsageReported(context) ? super.usageInputTokens(keyValues, context) : keyValues;
+    }
+
+    @Override
+    protected KeyValues usageOutputTokens(KeyValues keyValues, ChatModelObservationContext context) {
+        return isUsageReported(context) ? super.usageOutputTokens(keyValues, context) : keyValues;
+    }
+
+    @Override
+    protected KeyValues usageTotalTokens(KeyValues keyValues, ChatModelObservationContext context) {
+        return isUsageReported(context) ? super.usageTotalTokens(keyValues, context) : keyValues;
+    }
+
+    /**
+     * Whether the provider reported the token usage. Otherwise, Spring AI records the zeros of the usage it falls
+     * back to as if they were actual counts.
+     */
+    private static boolean isUsageReported(ChatModelObservationContext context) {
+        return context.getResponse() != null && !GenAiUsage.isUnreported(context.getResponse().getMetadata().getUsage());
     }
 
     // Content

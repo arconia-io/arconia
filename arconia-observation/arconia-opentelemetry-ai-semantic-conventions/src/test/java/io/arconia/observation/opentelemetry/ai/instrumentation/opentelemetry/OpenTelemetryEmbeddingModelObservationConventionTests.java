@@ -11,6 +11,7 @@ import io.opentelemetry.semconv.incubating.GenAiIncubatingMetrics;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.metadata.EmptyUsage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.EmbeddingRequest;
@@ -100,6 +101,19 @@ class OpenTelemetryEmbeddingModelObservationConventionTests {
                 KeyValue.of(GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(), "100"),
                 KeyValue.of("gen_ai.usage.total_tokens", "100")
         );
+    }
+
+    @Test
+    void shouldNotHaveUsageKeyValuesWhenUsageIsNotReported() {
+        // Spring AI falls back to EmptyUsage when the provider doesn't report the usage, whose zeros aren't counts.
+        EmbeddingModelObservationContext context = createContext("text-embedding-3-small");
+        context.setResponse(new EmbeddingResponse(List.of(),
+                new EmbeddingResponseMetadata("text-embedding-3-small", new EmptyUsage(), Map.of())));
+
+        KeyValues keyValues = convention.getHighCardinalityKeyValues(context);
+        assertThat(keyValues).extracting(KeyValue::getKey).doesNotContain(
+                GenAiIncubatingAttributes.GEN_AI_USAGE_INPUT_TOKENS.getKey(),
+                "gen_ai.usage.total_tokens");
     }
 
     private EmbeddingModelObservationContext createContext(String model) {
