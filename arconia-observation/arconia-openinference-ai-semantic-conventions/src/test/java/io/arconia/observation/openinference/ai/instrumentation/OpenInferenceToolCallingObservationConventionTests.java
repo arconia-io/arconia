@@ -122,6 +122,35 @@ class OpenInferenceToolCallingObservationConventionTests {
                 assertThat(kv.getKey()).isIn(SemanticConventions.OUTPUT_VALUE, SemanticConventions.OUTPUT_MIME_TYPE));
     }
 
+    @Test
+    void shouldRedactArgumentsAndResultWhenHidingInputsAndOutputs() {
+        openInferenceOptions.setHideInputs(true);
+        openInferenceOptions.setHideOutputs(true);
+        var context = createContext();
+        context.setToolCallResult("rainy, 57°F");
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.INPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER),
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, OpenInferenceOptions.REDACTED_PLACEHOLDER)
+        );
+    }
+
+    // As in the reference instrumentations, only hiding the inputs and outputs applies to tool executions.
+    @Test
+    void shouldKeepArgumentsAndResultWhenHidingMessages() {
+        openInferenceOptions.setHideInputMessages(true);
+        openInferenceOptions.setHideInputText(true);
+        openInferenceOptions.setHideOutputMessages(true);
+        openInferenceOptions.setHideOutputText(true);
+        var context = createContext();
+        context.setToolCallResult("rainy, 57°F");
+
+        assertThat(observationConvention.getHighCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.INPUT_VALUE, "{}"),
+                KeyValue.of(SemanticConventions.OUTPUT_VALUE, "rainy, 57°F")
+        );
+    }
+
     private ToolCallingObservationContext createContext() {
         return ToolCallingObservationContext.builder()
                 .toolDefinition(ToolDefinition.builder().name("weather").description("Get the weather").inputSchema("{}").build())

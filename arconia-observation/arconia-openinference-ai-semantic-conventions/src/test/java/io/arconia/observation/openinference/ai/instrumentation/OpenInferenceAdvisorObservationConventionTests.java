@@ -61,4 +61,18 @@ class OpenInferenceAdvisorObservationConventionTests {
         );
     }
 
+    @Test
+    void guardrailAdvisorIsGuardrail() {
+        var context = AdvisorObservationContext.builder()
+                .advisorName("PiiGuardrailAdvisor")
+                .chatClientRequest(ChatClientRequest.builder()
+                        .prompt(Prompt.builder().content("Hello").build())
+                        .build())
+                .build();
+
+        assertThat(observationConvention.getLowCardinalityKeyValues(context)).contains(
+                KeyValue.of(SemanticConventions.OPENINFERENCE_SPAN_KIND, "GUARDRAIL")
+        );
+    }
+
 }

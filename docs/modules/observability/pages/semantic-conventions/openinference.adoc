@@ -221,7 +221,7 @@ Content is captured by default, following the OpenInference specification. Use t
 
 include::partial$content-capturing-warning.adoc[]
 
-The `hide-*` properties follow the OpenInference configuration. They also hide any other attribute carrying the same content, such as `input.value` when hiding the input messages, so Arconia sometimes hides more than the reference instrumentations.
+The `hide-*` properties follow the OpenInference configuration. On model calls and chat client calls, they also hide any other attribute carrying the same content, such as `input.value` when hiding the input messages, so Arconia sometimes hides more than the reference instrumentations. As in the reference instrumentations, the arguments and the result of tool executions are only hidden by `hide-inputs` and `hide-outputs`.
 
 == Configuration Properties
 
