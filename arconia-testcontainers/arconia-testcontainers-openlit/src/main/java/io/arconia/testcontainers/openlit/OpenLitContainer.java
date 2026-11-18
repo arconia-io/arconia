@@ -73,30 +73,32 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
     @Override
     public void start() {
-        if (clickHouseContainer == null) {
-            // A network set before starting, such as the one shared by the Arconia Dev Services,
-            // is used as it is and never closed here, since other containers may be attached to it.
-            Network network = getNetwork();
-            if (network == null) {
-                if (isShouldBeReused()) {
-                    network = resolveNamedNetwork();
-                }
-                else {
-                    network = Network.newNetwork();
-                    privateNetwork = network;
-                }
-                withNetwork(network);
-            }
-
-            ClickHouseContainer clickHouse = new ClickHouseContainer(clickHouseImageName)
-                    .withNetwork(network)
-                    .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
-                    .withReuse(isShouldBeReused());
-            configureOpenLit(clickHouse);
-            clickHouseContainer = clickHouse;
+        if (getContainerId() != null) {
+            return;
         }
+
+        // A network set before starting, such as the one shared by the Arconia Dev Services,
+        // is used as it is and never closed here, since other containers may be attached to it.
+        Network network = getNetwork();
+        if (network == null) {
+            if (isShouldBeReused()) {
+                network = resolveNamedNetwork();
+            } else {
+                network = Network.newNetwork();
+                privateNetwork = network;
+            }
+            withNetwork(network);
+        }
+
+        ClickHouseContainer clickHouse = new ClickHouseContainer(clickHouseImageName)
+                .withNetwork(network)
+                .withNetworkAliases(CLICKHOUSE_NETWORK_ALIAS)
+                .withReuse(isShouldBeReused());
+        configureOpenLit(clickHouse);
+        clickHouseContainer = clickHouse;
+
         try {
-            clickHouseContainer.start();
+            clickHouse.start();
             super.start();
         } catch (RuntimeException ex) {
             // Nothing else stops the ClickHouse container when OpenLIT fails to start.

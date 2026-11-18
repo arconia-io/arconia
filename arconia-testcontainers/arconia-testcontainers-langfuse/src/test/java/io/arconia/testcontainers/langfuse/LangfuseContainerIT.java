@@ -66,9 +66,13 @@ class LangfuseContainerIT {
                 .withPostgresImage(POSTGRES_IMAGE)
                 .withClickHouseImage(CLICKHOUSE_IMAGE)
                 .withRedisImage(REDIS_IMAGE)
-                .withFlociImage(FLOCI_IMAGE)) {
+                .withFlociImage(FLOCI_IMAGE)
+                .withEnv("LANGFUSE_INIT_USER_NAME", "Langfuse IT")) {
             container.start();
-            assertThat(container.getEnvMap()).containsEntry("TELEMETRY_ENABLED", "false");
+            // User-provided environment variables take precedence over the container defaults.
+            assertThat(container.getEnvMap())
+                    .containsEntry("TELEMETRY_ENABLED", "false")
+                    .containsEntry("LANGFUSE_INIT_USER_NAME", "Langfuse IT");
 
             var httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
             long now = Instant.now().toEpochMilli() * 1_000_000;
@@ -156,6 +160,9 @@ class LangfuseContainerIT {
                     .withShowAll(true)
                     .withIdFilter(containerIds)
                     .exec()).isEmpty();
+
+            // The defaults are computed again on the next start, since some depend on the containers Langfuse needs.
+            assertThat(container.getEnvMap()).containsOnlyKeys("LANGFUSE_INIT_USER_NAME");
         }
     }
 

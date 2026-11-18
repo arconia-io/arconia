@@ -8,8 +8,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletionException;
 
 import io.floci.testcontainers.FlociContainer;
 
@@ -98,6 +100,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     // The containers Langfuse needs, created when it starts and stopped together with it.
     private List<GenericContainer<?>> dependencies = List.of();
+
+    // The environment variables set by default when Langfuse starts. Some depend on the containers it needs,
+    // such as the mapped port of Floci, so they're removed when it stops and computed again on the next start.
+    private final Set<String> defaultEnvNames = new HashSet<>();
 
     private @Nullable Network privateNetwork;
 
@@ -212,7 +218,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         } catch (RuntimeException ex) {
             // Nothing else stops the containers Langfuse needs when it fails to start.
             stop();
-            throw ex;
+            // The containers started together report their failure wrapped in a CompletionException.
+            throw (ex instanceof CompletionException && ex.getCause() instanceof RuntimeException cause) ? cause : ex;
         }
     }
 
@@ -224,6 +231,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         super.stop();
         dependencies.forEach(GenericContainer::stop);
         dependencies = List.of();
+        defaultEnvNames.forEach(getEnvMap()::remove);
+        defaultEnvNames.clear();
         if (privateNetwork != null) {
             privateNetwork.close();
             privateNetwork = null;
@@ -271,55 +280,63 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
      */
     private void configureLangfuseEnvironment(PostgreSQLContainer postgres, ClickHouseContainer clickHouse,
             FlociContainer floci) {
-        Map<String, String> env = getEnvMap();
-
-        env.putIfAbsent("TELEMETRY_ENABLED", "false");
+        putDefaultEnv("TELEMETRY_ENABLED", "false");
         // Langfuse waits 15 seconds by default before processing the ingested events.
         // A shorter delay makes the telemetry data visible right away during development and testing.
-        env.putIfAbsent("LANGFUSE_INGESTION_QUEUE_DELAY_MS", "1000");
-        env.putIfAbsent("NEXTAUTH_URL", "http://localhost:" + HTTP_PORT);
-        env.putIfAbsent("NEXTAUTH_SECRET", "arconia");
-        env.putIfAbsent("SALT", "arconia");
-        env.putIfAbsent("ENCRYPTION_KEY", "0".repeat(64));
+        putDefaultEnv("LANGFUSE_INGESTION_QUEUE_DELAY_MS", "1000");
+        putDefaultEnv("NEXTAUTH_URL", "http://localhost:" + HTTP_PORT);
+        putDefaultEnv("NEXTAUTH_SECRET", "arconia");
+        putDefaultEnv("SALT", "arconia");
+        putDefaultEnv("ENCRYPTION_KEY", "0".repeat(64));
 
-        env.putIfAbsent("DATABASE_URL", "postgresql://%s:%s@%s:5432/%s".formatted(postgres.getUsername(),
+        putDefaultEnv("DATABASE_URL", "postgresql://%s:%s@%s:5432/%s".formatted(postgres.getUsername(),
                 postgres.getPassword(), POSTGRES_NETWORK_ALIAS, postgres.getDatabaseName()));
 
-        env.putIfAbsent("CLICKHOUSE_MIGRATION_URL", "clickhouse://%s:9000".formatted(CLICKHOUSE_NETWORK_ALIAS));
-        env.putIfAbsent("CLICKHOUSE_URL", "http://%s:8123".formatted(CLICKHOUSE_NETWORK_ALIAS));
-        env.putIfAbsent("CLICKHOUSE_USER", clickHouse.getUsername());
-        env.putIfAbsent("CLICKHOUSE_PASSWORD", clickHouse.getPassword());
-        env.putIfAbsent("CLICKHOUSE_CLUSTER_ENABLED", "false");
+        putDefaultEnv("CLICKHOUSE_MIGRATION_URL", "clickhouse://%s:9000".formatted(CLICKHOUSE_NETWORK_ALIAS));
+        putDefaultEnv("CLICKHOUSE_URL", "http://%s:8123".formatted(CLICKHOUSE_NETWORK_ALIAS));
+        putDefaultEnv("CLICKHOUSE_USER", clickHouse.getUsername());
+        putDefaultEnv("CLICKHOUSE_PASSWORD", clickHouse.getPassword());
+        putDefaultEnv("CLICKHOUSE_CLUSTER_ENABLED", "false");
 
-        env.putIfAbsent("REDIS_HOST", REDIS_NETWORK_ALIAS);
-        env.putIfAbsent("REDIS_PORT", String.valueOf(RedisContainer.REDIS_PORT));
+        putDefaultEnv("REDIS_HOST", REDIS_NETWORK_ALIAS);
+        putDefaultEnv("REDIS_PORT", String.valueOf(RedisContainer.REDIS_PORT));
 
         String s3Endpoint = "http://%s:%d".formatted(FLOCI_NETWORK_ALIAS, FlociContainer.PORT);
         for (String prefix : List.of("LANGFUSE_S3_EVENT_UPLOAD", "LANGFUSE_S3_MEDIA_UPLOAD")) {
-            env.putIfAbsent(prefix + "_BUCKET", BUCKET_NAME);
-            env.putIfAbsent(prefix + "_REGION", floci.getRegion());
-            env.putIfAbsent(prefix + "_ACCESS_KEY_ID", floci.getAccessKey());
-            env.putIfAbsent(prefix + "_SECRET_ACCESS_KEY", floci.getSecretKey());
-            env.putIfAbsent(prefix + "_FORCE_PATH_STYLE", "true");
+            putDefaultEnv(prefix + "_BUCKET", BUCKET_NAME);
+            putDefaultEnv(prefix + "_REGION", floci.getRegion());
+            putDefaultEnv(prefix + "_ACCESS_KEY_ID", floci.getAccessKey());
+            putDefaultEnv(prefix + "_SECRET_ACCESS_KEY", floci.getSecretKey());
+            putDefaultEnv(prefix + "_FORCE_PATH_STYLE", "true");
         }
-        env.putIfAbsent("LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT", s3Endpoint);
+        putDefaultEnv("LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT", s3Endpoint);
         // Media is uploaded and downloaded from the host via presigned URLs, built with the external endpoint,
         // while Langfuse itself reaches the storage via the internal endpoint.
-        env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT",
+        putDefaultEnv("LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT",
                 "http://%s:%d".formatted(floci.getHost(), floci.getMappedPort(FlociContainer.PORT)));
-        env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT", s3Endpoint);
-        env.putIfAbsent("LANGFUSE_S3_EVENT_UPLOAD_PREFIX", "events/");
-        env.putIfAbsent("LANGFUSE_S3_MEDIA_UPLOAD_PREFIX", "media/");
+        putDefaultEnv("LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT", s3Endpoint);
+        putDefaultEnv("LANGFUSE_S3_EVENT_UPLOAD_PREFIX", "events/");
+        putDefaultEnv("LANGFUSE_S3_MEDIA_UPLOAD_PREFIX", "media/");
 
-        env.putIfAbsent("LANGFUSE_INIT_ORG_ID", "arconia");
-        env.putIfAbsent("LANGFUSE_INIT_ORG_NAME", "Arconia");
-        env.putIfAbsent("LANGFUSE_INIT_PROJECT_ID", "arconia");
-        env.putIfAbsent("LANGFUSE_INIT_PROJECT_NAME", "Arconia");
-        env.putIfAbsent("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", DEFAULT_PUBLIC_KEY);
-        env.putIfAbsent("LANGFUSE_INIT_PROJECT_SECRET_KEY", DEFAULT_SECRET_KEY);
-        env.putIfAbsent("LANGFUSE_INIT_USER_EMAIL", DEFAULT_USER_EMAIL);
-        env.putIfAbsent("LANGFUSE_INIT_USER_NAME", "Arconia");
-        env.putIfAbsent("LANGFUSE_INIT_USER_PASSWORD", DEFAULT_USER_PASSWORD);
+        putDefaultEnv("LANGFUSE_INIT_ORG_ID", "arconia");
+        putDefaultEnv("LANGFUSE_INIT_ORG_NAME", "Arconia");
+        putDefaultEnv("LANGFUSE_INIT_PROJECT_ID", "arconia");
+        putDefaultEnv("LANGFUSE_INIT_PROJECT_NAME", "Arconia");
+        putDefaultEnv("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", DEFAULT_PUBLIC_KEY);
+        putDefaultEnv("LANGFUSE_INIT_PROJECT_SECRET_KEY", DEFAULT_SECRET_KEY);
+        putDefaultEnv("LANGFUSE_INIT_USER_EMAIL", DEFAULT_USER_EMAIL);
+        putDefaultEnv("LANGFUSE_INIT_USER_NAME", "Arconia");
+        putDefaultEnv("LANGFUSE_INIT_USER_PASSWORD", DEFAULT_USER_PASSWORD);
+    }
+
+    /**
+     * Sets the environment variable unless the user has set it, and remembers it as a default,
+     * so that it's removed when the container stops and computed again when it starts.
+     */
+    private void putDefaultEnv(String name, String value) {
+        if (getEnvMap().putIfAbsent(name, value) == null) {
+            defaultEnvNames.add(name);
+        }
     }
 
     /**
