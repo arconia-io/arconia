@@ -15,6 +15,23 @@ var redis = new RedisContainer("redis:latest");
 redis.start();
 ----
 
-Redis accepts connections at `getRedisUrl()`, or on the port returned by `getRedisPort()`.
+Redis accepts connections at `getRedisUrl()`, or on the port returned by `getRedisPort()`. The container is ready once Redis accepts connections on that port.
+
+== Spring Boot Service Connections
+
+With the Spring Boot Testcontainers support (`org.springframework.boot:spring-boot-testcontainers`), the application connects to a `RedisContainer` bean annotated with `@ServiceConnection`, since Spring Boot names the service connection after the image, `redis`. For an image with another name, set the name explicitly with `@ServiceConnection(name = "redis")`.
+
+[source,java]
+----
+@TestConfiguration(proxyBeanMethods = false)
+public class TestcontainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+    RedisContainer redisContainer() {
+        return new RedisContainer("redis:latest");
+    }
+}
+----
 
 TIP: In Spring Boot applications, the xref:dev-services:redis.adoc[Redis Dev Service] runs this container with no code and connects the application to it.

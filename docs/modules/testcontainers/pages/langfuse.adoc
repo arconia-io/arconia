@@ -45,6 +45,27 @@ var langfuse = new LangfuseContainer("langfuse/langfuse:latest")
         .withFlociImage("floci/floci:latest");
 ----
 
-Langfuse and the containers it needs join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops.
+Langfuse and the containers it needs join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops. The containers Langfuse needs have fixed network aliases, such as `langfuse-postgres`, so run one Langfuse container per network.
+
+With `withReuse(true)`, the containers Langfuse needs are reused too. Unless a network is set, they join the `arconia-langfuse` network, which stays after the containers stop so that they find it again on the next run. Remove it once you no longer need the containers.
+
+== Spring Boot Service Connections
+
+With xref:opentelemetry:index.adoc[Arconia OpenTelemetry] and the Spring Boot Testcontainers support (`org.springframework.boot:spring-boot-testcontainers`), the application sends its traces to a `LangfuseContainer` bean annotated with `@ServiceConnection`, authenticated with the API keys of the Langfuse project.
+
+[source,java]
+----
+@TestConfiguration(proxyBeanMethods = false)
+public class TestcontainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+    LangfuseContainer langfuseContainer() {
+        return new LangfuseContainer("langfuse/langfuse:latest");
+    }
+}
+----
+
+Langfuse accepts traces only, so turn off the export of logs and metrics by setting the `arconia.otel.logs.exporter.type` and `arconia.otel.metrics.exporter.type` properties to `none`.
 
 TIP: In Spring Boot applications, the xref:dev-services:langfuse.adoc[Langfuse Dev Service] runs this container with no code and sends the traces of the application to it.

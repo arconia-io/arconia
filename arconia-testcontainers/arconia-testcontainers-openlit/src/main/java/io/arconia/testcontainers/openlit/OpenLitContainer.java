@@ -41,8 +41,19 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
     // keeping the container hash deterministic and allowing Testcontainers to find the existing container.
     private static final String REUSE_NETWORK_NAME = "arconia-openlit";
 
+    /**
+     * Port of the OpenLIT UI.
+     */
     public static final int UI_PORT = 3000;
+
+    /**
+     * Port of the OTLP/gRPC endpoint.
+     */
     public static final int OTLP_GRPC_PORT = 4317;
+
+    /**
+     * Port of the OTLP/HTTP endpoints.
+     */
     public static final int OTLP_HTTP_PORT = 4318;
 
     private DockerImageName clickHouseImageName = DEFAULT_CLICKHOUSE_IMAGE_NAME;
@@ -51,6 +62,9 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
     private @Nullable Network privateNetwork;
 
+    /**
+     * Creates a container for the given OpenLIT image, compatible with {@code ghcr.io/openlit/openlit}.
+     */
     public OpenLitContainer(DockerImageName imageName) {
         super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -65,19 +79,31 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
+    /**
+     * Creates a container for the given OpenLIT image, compatible with {@code ghcr.io/openlit/openlit}.
+     */
     public OpenLitContainer(String imageName) {
         this(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of ClickHouse, compatible with {@code clickhouse/clickhouse-server}.
+     */
     public OpenLitContainer withClickHouseImage(DockerImageName imageName) {
         this.clickHouseImageName = imageName.asCompatibleSubstituteFor(DEFAULT_CLICKHOUSE_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of ClickHouse, compatible with {@code clickhouse/clickhouse-server}.
+     */
     public OpenLitContainer withClickHouseImage(String imageName) {
         return withClickHouseImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Starts ClickHouse, then OpenLIT. If OpenLIT fails to start, ClickHouse is stopped.
+     */
     @Override
     public void start() {
         if (getContainerId() != null) {
@@ -165,26 +191,44 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         env.putIfAbsent("DEMO_ACCOUNT_PASSWORD", "openlituser");
     }
 
+    /**
+     * Returns the URL of the OpenLIT UI.
+     */
     public String getOpenLitUrl() {
         return "http://" + getHost() + ":" + getUiPort();
     }
 
+    /**
+     * Returns the host port mapped to {@link #UI_PORT}.
+     */
     public Integer getUiPort() {
         return getMappedPort(UI_PORT);
     }
 
+    /**
+     * Returns the host port mapped to {@link #OTLP_GRPC_PORT}.
+     */
     public Integer getOtlpGrpcPort() {
         return getMappedPort(OTLP_GRPC_PORT);
     }
 
+    /**
+     * Returns the host port mapped to {@link #OTLP_HTTP_PORT}.
+     */
     public Integer getOtlpHttpPort() {
         return getMappedPort(OTLP_HTTP_PORT);
     }
 
+    /**
+     * Returns the URL of the OTLP/gRPC endpoint.
+     */
     public String getOtlpGrpcUrl() {
         return "http://" + getHost() + ":" + getOtlpGrpcPort();
     }
 
+    /**
+     * Returns the base URL of the OTLP/HTTP endpoints, to which the path of each signal is appended, such as {@code /v1/traces}.
+     */
     public String getOtlpHttpUrl() {
         return "http://" + getHost() + ":" + getOtlpHttpPort();
     }

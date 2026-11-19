@@ -78,6 +78,9 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     // keeping the container hash deterministic and allowing Testcontainers to find the existing container.
     private static final String REUSE_NETWORK_NAME = "arconia-langfuse";
 
+    /**
+     * Port of the Langfuse web application, which serves the UI and the APIs, including OTLP.
+     */
     public static final int HTTP_PORT = 3000;
 
     /**
@@ -85,12 +88,24 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
      */
     public static final String OTLP_TRACES_PATH = "/api/public/otel/v1/traces";
 
+    /**
+     * Public API key of the Langfuse project, unless set via the {@code LANGFUSE_INIT_PROJECT_PUBLIC_KEY} environment variable.
+     */
     public static final String DEFAULT_PUBLIC_KEY = "pk-lf-arconia";
 
+    /**
+     * Secret API key of the Langfuse project, unless set via the {@code LANGFUSE_INIT_PROJECT_SECRET_KEY} environment variable.
+     */
     public static final String DEFAULT_SECRET_KEY = "sk-lf-arconia";
 
+    /**
+     * Email of the Langfuse user, unless set via the {@code LANGFUSE_INIT_USER_EMAIL} environment variable.
+     */
     public static final String DEFAULT_USER_EMAIL = "arconia@example.com";
 
+    /**
+     * Password of the Langfuse user, unless set via the {@code LANGFUSE_INIT_USER_PASSWORD} environment variable.
+     */
     public static final String DEFAULT_USER_PASSWORD = "password";
 
     private DockerImageName workerImageName = DEFAULT_WORKER_IMAGE_NAME;
@@ -112,6 +127,9 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private @Nullable Network privateNetwork;
 
+    /**
+     * Creates a container for the given Langfuse image, compatible with {@code langfuse/langfuse}.
+     */
     public LangfuseContainer(DockerImageName imageName) {
         super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -121,55 +139,92 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
+    /**
+     * Creates a container for the given Langfuse image, compatible with {@code langfuse/langfuse}.
+     */
     public LangfuseContainer(String imageName) {
         this(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of the Langfuse worker, compatible with {@code langfuse/langfuse-worker}.
+     */
     public LangfuseContainer withWorkerImage(DockerImageName imageName) {
         this.workerImageName = imageName.asCompatibleSubstituteFor(DEFAULT_WORKER_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of the Langfuse worker, compatible with {@code langfuse/langfuse-worker}.
+     */
     public LangfuseContainer withWorkerImage(String imageName) {
         return withWorkerImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of PostgreSQL, compatible with {@code postgres}.
+     */
     public LangfuseContainer withPostgresImage(DockerImageName imageName) {
         this.postgresImageName = imageName.asCompatibleSubstituteFor(DEFAULT_POSTGRES_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of PostgreSQL, compatible with {@code postgres}.
+     */
     public LangfuseContainer withPostgresImage(String imageName) {
         return withPostgresImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of ClickHouse, compatible with {@code clickhouse/clickhouse-server}.
+     */
     public LangfuseContainer withClickHouseImage(DockerImageName imageName) {
         this.clickHouseImageName = imageName.asCompatibleSubstituteFor(DEFAULT_CLICKHOUSE_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of ClickHouse, compatible with {@code clickhouse/clickhouse-server}.
+     */
     public LangfuseContainer withClickHouseImage(String imageName) {
         return withClickHouseImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of Redis, compatible with {@code redis}.
+     */
     public LangfuseContainer withRedisImage(DockerImageName imageName) {
         this.redisImageName = imageName.asCompatibleSubstituteFor(DEFAULT_REDIS_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of Redis, compatible with {@code redis}.
+     */
     public LangfuseContainer withRedisImage(String imageName) {
         return withRedisImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Sets the image of Floci, compatible with {@code floci/floci}.
+     */
     public LangfuseContainer withFlociImage(DockerImageName imageName) {
         this.flociImageName = imageName.asCompatibleSubstituteFor(DEFAULT_FLOCI_IMAGE_NAME);
         return self();
     }
 
+    /**
+     * Sets the image of Floci, compatible with {@code floci/floci}.
+     */
     public LangfuseContainer withFlociImage(String imageName) {
         return withFlociImage(DockerImageName.parse(imageName));
     }
 
+    /**
+     * Starts the containers Langfuse needs, then Langfuse and its worker. If any of them fails to start,
+     * the ones already started are stopped.
+     */
     @Override
     public void start() {
         if (getContainerId() != null) {
@@ -253,10 +308,16 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         }
     }
 
+    /**
+     * Returns the URL of the Langfuse UI and APIs.
+     */
     public String getLangfuseUrl() {
         return "http://" + getHost() + ":" + getHttpPort();
     }
 
+    /**
+     * Returns the host port mapped to {@link #HTTP_PORT}.
+     */
     public Integer getHttpPort() {
         return getMappedPort(HTTP_PORT);
     }
@@ -271,10 +332,16 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         return getLangfuseUrl() + OTLP_TRACES_PATH;
     }
 
+    /**
+     * Returns the public API key of the Langfuse project.
+     */
     public String getPublicKey() {
         return getEnvMap().getOrDefault("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", DEFAULT_PUBLIC_KEY);
     }
 
+    /**
+     * Returns the secret API key of the Langfuse project.
+     */
     public String getSecretKey() {
         return getEnvMap().getOrDefault("LANGFUSE_INIT_PROJECT_SECRET_KEY", DEFAULT_SECRET_KEY);
     }

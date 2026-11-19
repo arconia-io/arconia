@@ -33,6 +33,25 @@ var openLit = new OpenLitContainer("ghcr.io/openlit/openlit:latest")
         .withClickHouseImage("clickhouse/clickhouse-server:latest");
 ----
 
-OpenLIT and ClickHouse join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops.
+OpenLIT and ClickHouse join the network set via `withNetwork()`. Otherwise, the container creates a network for them and removes it when it stops. The ClickHouse container has the fixed network alias `openlit-clickhouse`, so run one OpenLIT container per network.
+
+With `withReuse(true)`, the ClickHouse container is reused too. Unless a network is set, both join the `arconia-openlit` network, which stays after the containers stop so that they find it again on the next run. Remove it once you no longer need the containers.
+
+== Spring Boot Service Connections
+
+With xref:opentelemetry:index.adoc[Arconia OpenTelemetry] and the Spring Boot Testcontainers support (`org.springframework.boot:spring-boot-testcontainers`), the application sends its logs, metrics, and traces to an `OpenLitContainer` bean annotated with `@ServiceConnection`.
+
+[source,java]
+----
+@TestConfiguration(proxyBeanMethods = false)
+public class TestcontainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+    OpenLitContainer openLitContainer() {
+        return new OpenLitContainer("ghcr.io/openlit/openlit:latest");
+    }
+}
+----
 
 TIP: In Spring Boot applications, the xref:dev-services:openlit.adoc[OpenLIT Dev Service] runs this container with no code and sends the telemetry of the application to it.

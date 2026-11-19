@@ -25,4 +25,23 @@ var phoenix = new PhoenixContainer("arizephoenix/phoenix:latest")
         .withEnv("PHOENIX_ENABLE_AUTH", "true");
 ----
 
+== Spring Boot Service Connections
+
+With xref:opentelemetry:index.adoc[Arconia OpenTelemetry] and the Spring Boot Testcontainers support (`org.springframework.boot:spring-boot-testcontainers`), the application sends its traces to a `PhoenixContainer` bean annotated with `@ServiceConnection`.
+
+[source,java]
+----
+@TestConfiguration(proxyBeanMethods = false)
+public class TestcontainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+    PhoenixContainer phoenixContainer() {
+        return new PhoenixContainer("arizephoenix/phoenix:latest");
+    }
+}
+----
+
+Phoenix accepts traces only, so turn off the export of logs and metrics by setting the `arconia.otel.logs.exporter.type` and `arconia.otel.metrics.exporter.type` properties to `none`.
+
 TIP: In Spring Boot applications, the xref:dev-services:phoenix.adoc[Phoenix Dev Service] runs this container with no code and sends the traces of the application to it.

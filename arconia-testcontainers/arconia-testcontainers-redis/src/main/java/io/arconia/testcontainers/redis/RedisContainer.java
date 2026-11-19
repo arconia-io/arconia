@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
@@ -17,7 +16,10 @@ import org.testcontainers.utility.DockerImageName;
 import io.arconia.core.annotations.Incubating;
 
 /**
- * A {@link Container} for Redis.
+ * A {@link GenericContainer} for Redis.
+ * <p>
+ * The container is ready once Redis accepts connections on the port mapped to the host, which can lag behind
+ * the readiness of Redis itself with Docker Desktop and some Docker-in-Docker setups.
  */
 @Incubating
 public class RedisContainer extends GenericContainer<RedisContainer> {
@@ -26,8 +28,14 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
 
     private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofSeconds(60);
 
+    /**
+     * Port on which Redis accepts connections.
+     */
     public static final int REDIS_PORT = 6379;
 
+    /**
+     * Creates a container for the given Redis image, compatible with {@code redis}.
+     */
     public RedisContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -40,14 +48,23 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
+    /**
+     * Creates a container for the given Redis image, compatible with {@code redis}.
+     */
     public RedisContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
+    /**
+     * Returns the URL for connecting to Redis, such as {@code redis://localhost:32768}.
+     */
     public String getRedisUrl() {
         return "redis://" + getHost() + ":" + getRedisPort();
     }
 
+    /**
+     * Returns the host port mapped to {@link #REDIS_PORT}.
+     */
     public Integer getRedisPort() {
         return getMappedPort(REDIS_PORT);
     }

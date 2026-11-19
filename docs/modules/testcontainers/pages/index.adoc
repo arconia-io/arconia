@@ -1,6 +1,6 @@
 = Testcontainers
 
-Arconia provides https://testcontainers.com[Testcontainers] modules for services that Testcontainers doesn't cover with a module of its own. They work in any Java project using Testcontainers.
+Arconia provides https://testcontainers.com[Testcontainers] modules for services that have no actively maintained Testcontainers module. They work in any Java project using Testcontainers.
 
 [cols="1,2"]
 |===
