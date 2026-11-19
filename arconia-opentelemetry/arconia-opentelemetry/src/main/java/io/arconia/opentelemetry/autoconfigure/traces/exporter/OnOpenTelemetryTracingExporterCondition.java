@@ -8,7 +8,8 @@ import io.arconia.opentelemetry.autoconfigure.exporter.OnOpenTelemetryExporterCo
 class OnOpenTelemetryTracingExporterCondition extends OnOpenTelemetryExporterCondition {
 
     OnOpenTelemetryTracingExporterCondition() {
-        super(ConditionalOnOpenTelemetryTracingExporter.class, OpenTelemetryTracingExporterProperties.CONFIG_PREFIX);
+        super(ConditionalOnOpenTelemetryTracingExporter.class, OpenTelemetryTracingExporterProperties.CONFIG_PREFIX,
+                "management.tracing.export.%s.enabled", "management.tracing.export.enabled");
     }
 
 }

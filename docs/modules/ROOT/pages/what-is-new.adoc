@@ -28,6 +28,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == OpenTelemetry
 
+* A new `arconia-opentelemetry-spring-boot-starter-test` turns off the export of logs, metrics, and traces in tests, where there is usually no backend to receive them. Without it, each test logs export failures and closing an application context can take several seconds. It includes the Spring Boot test support for Micrometer metrics and tracing, and adds the same support for logs. The tests that verify the exported telemetry turn it back on with the `spring.test.logging.export`, `spring.test.metrics.export`, and `spring.test.tracing.export` properties. Learn more about xref:opentelemetry:index.adoc#_testing[Testing].
+* The exporters now follow the Spring Boot properties that turn the export of a signal on and off: `management.logging.export.enabled`, `management.defaults.metrics.export.enabled`, and `management.tracing.export.enabled`. Previously, they had no effect.
 * Arconia now stops recording observations, both metrics and traces, for the Spring Boot health endpoint and its `/livez` and `/readyz` probe paths in Servlet applications, so that frequent Kubernetes probes no longer flood the telemetry backend. The observations started while handling those requests, such as the Spring Security or JDBC ones, are skipped too, instead of becoming separate traces. Use `arconia.observations.http.server.additional-ignore-paths` to ignore more paths, or set `arconia.observations.http.server.ignore-paths` to an empty value to observe every request again. Learn more about xref:opentelemetry:instrumentation.adoc#_ignoring_http_server_requests[Ignoring HTTP Server Requests].
 
 == Semantic Conventions

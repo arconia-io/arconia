@@ -8,7 +8,10 @@ import io.arconia.opentelemetry.autoconfigure.exporter.OnOpenTelemetryExporterCo
 class OnOpenTelemetryMetricsExporterCondition extends OnOpenTelemetryExporterCondition {
 
     OnOpenTelemetryMetricsExporterCondition() {
-        super(ConditionalOnOpenTelemetryMetricsExporter.class, OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX);
+        // The exporter-specific 'management.otlp.metrics.export.enabled' belongs to the Spring Boot
+        // OTLP configuration, which the Arconia one replaces.
+        super(ConditionalOnOpenTelemetryMetricsExporter.class, OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX,
+                "management.defaults.metrics.export.enabled");
     }
 
 }

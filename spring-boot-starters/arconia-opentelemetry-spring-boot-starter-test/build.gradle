@@ -1,0 +1,24 @@
+plugins {
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api project(":spring-boot-starters:arconia-opentelemetry-spring-boot-starter")
+    api project(":arconia-opentelemetry:arconia-opentelemetry-test")
+    api "org.springframework.boot:spring-boot-starter-test"
+    api "org.springframework.boot:spring-boot-starter-micrometer-metrics-test"
+    api "org.springframework.boot:spring-boot-micrometer-tracing-test"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry Spring Boot Starter Test"
+                description = "Arconia OpenTelemetry Spring Boot Starter Test."
+            }
+        }
+    }
+}

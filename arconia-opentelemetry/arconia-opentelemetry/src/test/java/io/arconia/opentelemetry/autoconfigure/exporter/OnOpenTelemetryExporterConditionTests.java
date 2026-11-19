@@ -25,6 +25,12 @@ class OnOpenTelemetryExporterConditionTests {
 
     private static final String COMMON_TYPE = "arconia.otel.exporter.type";
 
+    private static final String EXPORT_ENABLED = "management.test.export.enabled";
+
+    private static final String OTLP_EXPORT_ENABLED = "management.test.export.otlp.enabled";
+
+    private static final String CONSOLE_EXPORT_ENABLED = "management.test.export.console.enabled";
+
     private final TestExporterCondition condition = new TestExporterCondition();
 
     private final MockEnvironment environment = new MockEnvironment();
@@ -150,6 +156,70 @@ class OnOpenTelemetryExporterConditionTests {
         assertThat(outcome.getMessage()).contains("a valid exporter type is not specified");
     }
 
+    @Test
+    void whenExportEnabledPropertyNullThenThrow() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new OnOpenTelemetryExporterCondition(ConditionalOnTestExporter.class, "arconia.otel.test.exporter", (String) null) {})
+                .withMessage("exportEnabledProperties cannot contain null elements");
+    }
+
+    @Test
+    void exportDisabled() {
+        environment.setProperty(EXPORT_ENABLED, "false");
+
+        ConditionOutcome outcome = outcome(OtlpExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains(EXPORT_ENABLED + " is false");
+    }
+
+    @Test
+    void exportEnabled() {
+        environment.setProperty(EXPORT_ENABLED, "true");
+
+        ConditionOutcome outcome = outcome(OtlpExporter.class);
+
+        assertThat(outcome.isMatch()).isTrue();
+        assertThat(outcome.getMessage()).contains(COMMON_TYPE + " is set to OTLP");
+    }
+
+    @Test
+    void exportDisabledForExporterType() {
+        environment.setProperty(SIGNAL_TYPE, "console");
+        environment.setProperty(OTLP_EXPORT_ENABLED, "false");
+        environment.setProperty(CONSOLE_EXPORT_ENABLED, "false");
+
+        ConditionOutcome outcome = outcome(ConsoleExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains(CONSOLE_EXPORT_ENABLED + " is false");
+    }
+
+    @Test
+    void exportOfExporterTypeTakesPrecedenceOverExportOfSignal() {
+        environment.setProperty(EXPORT_ENABLED, "false");
+        environment.setProperty(OTLP_EXPORT_ENABLED, "true");
+
+        assertThat(outcome(OtlpExporter.class).isMatch()).isTrue();
+    }
+
+    @Test
+    void exportOfOtherExporterTypeIsIgnored() {
+        environment.setProperty(CONSOLE_EXPORT_ENABLED, "false");
+
+        assertThat(outcome(OtlpExporter.class).isMatch()).isTrue();
+    }
+
+    @Test
+    void differentExporterTypeReportedBeforeExportDisabled() {
+        environment.setProperty(EXPORT_ENABLED, "false");
+
+        ConditionOutcome outcome = outcome(ConsoleExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains(COMMON_TYPE + " is set to OTLP, but requested console");
+    }
+
     private ConditionOutcome outcome(Class<?> annotatedClass) {
         when(context.getEnvironment()).thenReturn(environment);
         return condition.getMatchOutcome(context, AnnotationMetadata.introspect(annotatedClass));
@@ -165,7 +235,8 @@ class OnOpenTelemetryExporterConditionTests {
     static class TestExporterCondition extends OnOpenTelemetryExporterCondition {
 
         TestExporterCondition() {
-            super(ConditionalOnTestExporter.class, "arconia.otel.test.exporter");
+            super(ConditionalOnTestExporter.class, "arconia.otel.test.exporter",
+                    "management.test.export.%s.enabled", "management.test.export.enabled");
         }
 
     }

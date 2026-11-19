@@ -1,0 +1,27 @@
+plugins {
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    implementation "org.springframework:spring-context"
+    implementation "org.springframework:spring-test"
+
+    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry")
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "io.opentelemetry:opentelemetry-exporter-logging"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia OpenTelemetry Test"
+                description = "Arconia OpenTelemetry Test."
+            }
+        }
+    }
+}

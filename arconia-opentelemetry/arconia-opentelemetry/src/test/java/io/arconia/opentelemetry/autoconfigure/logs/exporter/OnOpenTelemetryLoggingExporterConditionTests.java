@@ -42,6 +42,34 @@ class OnOpenTelemetryLoggingExporterConditionTests {
         assertThat(outcome.getMessage()).contains("arconia.otel.exporter.type is set to CONSOLE");
     }
 
+    @Test
+    void exportDisabled() {
+        environment.setProperty("management.logging.export.enabled", "false");
+
+        ConditionOutcome outcome = outcome(OtlpExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains("management.logging.export.enabled is false");
+    }
+
+    @Test
+    void exportDisabledForOtlp() {
+        environment.setProperty("management.logging.export.otlp.enabled", "false");
+
+        ConditionOutcome outcome = outcome(OtlpExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains("management.logging.export.otlp.enabled is false");
+    }
+
+    @Test
+    void exportEnabledForOtlpTakesPrecedence() {
+        environment.setProperty("management.logging.export.enabled", "false");
+        environment.setProperty("management.logging.export.otlp.enabled", "true");
+
+        assertThat(outcome(OtlpExporter.class).isMatch()).isTrue();
+    }
+
     private ConditionOutcome outcome(Class<?> annotatedClass) {
         when(context.getEnvironment()).thenReturn(environment);
         return condition.getMatchOutcome(context, AnnotationMetadata.introspect(annotatedClass));
@@ -49,6 +77,10 @@ class OnOpenTelemetryLoggingExporterConditionTests {
 
     @ConditionalOnOpenTelemetryLoggingExporter("console")
     static class ConsoleExporter {
+    }
+
+    @ConditionalOnOpenTelemetryLoggingExporter("otlp")
+    static class OtlpExporter {
     }
 
 }

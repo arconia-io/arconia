@@ -42,6 +42,23 @@ class OnOpenTelemetryMetricsExporterConditionTests {
         assertThat(outcome.getMessage()).contains("arconia.otel.exporter.type is set to CONSOLE");
     }
 
+    @Test
+    void exportDisabled() {
+        environment.setProperty("management.defaults.metrics.export.enabled", "false");
+
+        ConditionOutcome outcome = outcome(OtlpExporter.class);
+
+        assertThat(outcome.isMatch()).isFalse();
+        assertThat(outcome.getMessage()).contains("management.defaults.metrics.export.enabled is false");
+    }
+
+    @Test
+    void springBootOtlpExportPropertyIsIgnored() {
+        environment.setProperty("management.otlp.metrics.export.enabled", "false");
+
+        assertThat(outcome(OtlpExporter.class).isMatch()).isTrue();
+    }
+
     private ConditionOutcome outcome(Class<?> annotatedClass) {
         when(context.getEnvironment()).thenReturn(environment);
         return condition.getMatchOutcome(context, AnnotationMetadata.introspect(annotatedClass));
@@ -49,6 +66,10 @@ class OnOpenTelemetryMetricsExporterConditionTests {
 
     @ConditionalOnOpenTelemetryMetricsExporter("console")
     static class ConsoleExporter {
+    }
+
+    @ConditionalOnOpenTelemetryMetricsExporter("otlp")
+    static class OtlpExporter {
     }
 
 }

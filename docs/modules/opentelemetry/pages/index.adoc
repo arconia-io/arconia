@@ -459,6 +459,72 @@ WARNING: This exporter option is not recommended for production.
 
 NOTE: The console exporter doesn't support exporting metrics defined using the Micrometer APIs when using the Micrometer Metrics Registry OTLP module instead of the Micrometer Metrics OpenTelemetry Bridge.
 
+== Testing
+
+Tests usually have no backend to receive telemetry. When the application still exports it, each test logs export failures and waits for the pending telemetry to be sent whenever an application context is closed. The Arconia OpenTelemetry Spring Boot Starter for testing turns off the export of logs, metrics, and traces in tests.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    testImplementation 'io.arconia:arconia-opentelemetry-spring-boot-starter-test'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-opentelemetry-spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+======
+
+The starter includes the Spring Boot Starter for testing and the Spring Boot test support for Micrometer metrics and tracing.
+
+The telemetry is still produced in tests: the observations are recorded, the trace context is available, and the Micrometer metrics can be read from the `MeterRegistry`, which is an in-memory one.
+
+For the tests that verify the telemetry the application exports, turn the export of each signal back on via configuration properties.
+
+.Test Configuration Properties
+|===
+|Property |Default |Description
+
+| `spring.test.logging.export`
+| `false`
+| Whether logs should be exported in tests.
+
+| `spring.test.metrics.export`
+| `false`
+| Whether metrics should be exported in tests.
+
+| `spring.test.tracing.export`
+| `false`
+| Whether traces should be exported in tests.
+|===
+
+For example, you can enable the export of traces for a test class:
+
+[source,java]
+----
+@SpringBootTest(properties = "spring.test.tracing.export=true")
+class TracingTests {
+    // ...
+}
+----
+
+For metrics and traces, this is the test support of Spring Boot, so you can also use its `@AutoConfigureMetrics` and `@AutoConfigureTracing` annotations on a test class. Spring Boot has no such support for logs, which Arconia adds.
+
+Outside of tests, the export of a signal follows the Spring Boot properties `management.logging.export.enabled`, `management.defaults.metrics.export.enabled`, and `management.tracing.export.enabled`, which is what the test support sets to `false`.
+
+TIP: The xref:dev-services:index.adoc#_dev_services_in_test_mode[observability Dev Services] are skipped in tests by default. When you enable one for the tests that verify the exported telemetry, turn the export on as well.
+
 == OpenTelemetry Environment Variables
 
 include::partial$opentelemetry-environment-variables.adoc[]

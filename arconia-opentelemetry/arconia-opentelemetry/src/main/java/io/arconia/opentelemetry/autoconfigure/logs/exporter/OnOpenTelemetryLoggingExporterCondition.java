@@ -8,7 +8,8 @@ import io.arconia.opentelemetry.autoconfigure.exporter.OnOpenTelemetryExporterCo
 class OnOpenTelemetryLoggingExporterCondition extends OnOpenTelemetryExporterCondition {
 
     OnOpenTelemetryLoggingExporterCondition() {
-        super(ConditionalOnOpenTelemetryLoggingExporter.class, OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX);
+        super(ConditionalOnOpenTelemetryLoggingExporter.class, OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX,
+                "management.logging.export.%s.enabled", "management.logging.export.enabled");
     }
 
 }

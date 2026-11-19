@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "spring.test.logging.export",
+      "type": "java.lang.Boolean",
+      "description": "Whether logging export should be auto-configured in tests.",
+      "defaultValue": false
+    }
+  ]
+}
