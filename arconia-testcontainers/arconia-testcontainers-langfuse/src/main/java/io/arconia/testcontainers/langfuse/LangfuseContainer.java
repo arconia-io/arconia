@@ -32,7 +32,8 @@ import io.arconia.testcontainers.redis.RedisContainer;
  * <p>
  * It runs the Langfuse web application and manages the containers it needs: the Langfuse
  * worker, PostgreSQL, ClickHouse, Redis, and Floci as S3-compatible blob storage. They are
- * started before Langfuse and stopped together with it.
+ * started before Langfuse, except for the worker, which starts once Langfuse has run its database
+ * migrations, and they're stopped together with it.
  * <p>
  * Langfuse is initialized with an organization, a project with API keys, and a user, so that
  * telemetry data can be sent and explored right away.
@@ -66,6 +67,8 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
     private static final String FLOCI_NETWORK_ALIAS = "langfuse-floci";
 
     private static final String BUCKET_NAME = "langfuse";
+
+    private static final int WORKER_HTTP_PORT = 3030;
 
     private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(5);
 
@@ -202,8 +205,11 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
                 .withNetworkAliases(FLOCI_NETWORK_ALIAS)
                 .withReuse(reuse);
         // The worker processes the ingested data, while the web application serves the UI and the APIs.
+        // Its health check verifies that it reaches PostgreSQL and Redis, so that it doesn't fail unnoticed.
         GenericContainer<?> worker = new GenericContainer<>(workerImageName)
                 .withNetwork(network)
+                .withExposedPorts(WORKER_HTTP_PORT)
+                .waitingFor(Wait.forHttp("/api/health").forPort(WORKER_HTTP_PORT).forStatusCode(200))
                 .withReuse(reuse);
         dependencies = List.of(worker, postgres, clickHouse, redis, floci);
 
@@ -211,10 +217,11 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
             Startables.deepStart(postgres, clickHouse, redis, floci).join();
             createBucket(floci);
             configureLangfuseEnvironment(postgres, clickHouse, floci);
-
             getEnvMap().forEach(worker::withEnv);
-            worker.start();
+
             super.start();
+            // The worker initializes data in PostgreSQL, so it starts once Langfuse has run the database migrations.
+            worker.start();
         } catch (RuntimeException ex) {
             // Nothing else stops the containers Langfuse needs when it fails to start.
             stop();

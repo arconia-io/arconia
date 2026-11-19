@@ -33,7 +33,7 @@ var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:la
         .withEnv("LANGFUSE_INIT_PROJECT_SECRET_KEY", "sk-lf-my-project");
 ----
 
-The Langfuse worker, PostgreSQL, ClickHouse, Redis, and https://floci.io[Floci] as the S3-compatible storage start before Langfuse and stop together with it. Set their images via the dedicated methods.
+PostgreSQL, ClickHouse, Redis, and https://floci.io[Floci] as the S3-compatible storage start before Langfuse. The Langfuse worker, which processes the ingested data, starts once Langfuse has run its database migrations, and the container is ready only when the worker is ready too. They all stop together with Langfuse. Set their images via the dedicated methods.
 
 [source,java]
 ----
