@@ -7,7 +7,9 @@ plugins {
 
 dependencies {
     api project(":arconia-core:arconia-core-annotations")
-    api "org.testcontainers:testcontainers-clickhouse"
+    api "org.testcontainers:testcontainers"
+
+    implementation "org.testcontainers:testcontainers-clickhouse"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"

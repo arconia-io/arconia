@@ -7,10 +7,12 @@ plugins {
 
 dependencies {
     api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-testcontainers:arconia-testcontainers-redis")
-    api "io.floci:testcontainers-floci-aws:${flociVersion}"
-    api "org.testcontainers:testcontainers-clickhouse"
-    api "org.testcontainers:testcontainers-postgresql"
+    api "org.testcontainers:testcontainers"
+
+    implementation project(":arconia-testcontainers:arconia-testcontainers-redis")
+    implementation "io.floci:testcontainers-floci-aws:${flociVersion}"
+    implementation "org.testcontainers:testcontainers-clickhouse"
+    implementation "org.testcontainers:testcontainers-postgresql"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
