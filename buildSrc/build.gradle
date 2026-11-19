@@ -9,7 +9,7 @@ repositories {
 }
 
 ext {
-    set("cycloneDxVersion", '3.5.1')
+    set("cycloneDxVersion", '3.6.1')
     set("springBootVersion", '4.1.2')
     set("dependencyManagementVersion", '1.1.7')
     set("errorPronePluginVersion", '5.2.0')
