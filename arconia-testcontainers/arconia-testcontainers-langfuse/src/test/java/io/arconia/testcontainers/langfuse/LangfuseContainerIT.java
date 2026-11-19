@@ -19,10 +19,13 @@ import com.github.dockerjava.api.model.Container;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration tests for {@link LangfuseContainer}.
@@ -145,25 +148,61 @@ class LangfuseContainerIT {
                     HttpResponse.BodyHandlers.ofString());
             assertThat(sessionResponse.body()).contains(LangfuseContainer.DEFAULT_USER_EMAIL);
 
-            // The containers Langfuse needs are removed together with it.
+            // The containers Langfuse needs are removed together with it, and so is the network created for them.
             String networkId = container.getNetwork().getId();
-            List<String> containerIds = DockerClientFactory.instance().client().listContainersCmd()
-                    .withNetworkFilter(List.of(networkId))
-                    .exec()
-                    .stream()
-                    .map(Container::getId)
-                    .toList();
+            List<String> containerIds = containersOnNetwork(networkId);
             assertThat(containerIds).hasSize(6);
 
             container.stop();
-            assertThat(DockerClientFactory.instance().client().listContainersCmd()
-                    .withShowAll(true)
-                    .withIdFilter(containerIds)
-                    .exec()).isEmpty();
+            assertThat(existingContainers(containerIds)).isEmpty();
+            assertThat(networkExists(networkId)).isFalse();
 
             // The defaults are computed again on the next start, since some depend on the containers Langfuse needs.
             assertThat(container.getEnvMap()).containsOnlyKeys("LANGFUSE_INIT_USER_NAME");
         }
+    }
+
+    @Test
+    void containerStopsDependenciesAndKeepsProvidedNetworkWhenStartFails() {
+        try (var network = Network.newNetwork();
+                var container = new LangfuseContainer(IMAGE)
+                        .withPostgresImage(POSTGRES_IMAGE)
+                        .withClickHouseImage(CLICKHOUSE_IMAGE)
+                        .withRedisImage(REDIS_IMAGE)
+                        .withFlociImage(FLOCI_IMAGE)
+                        .withNetwork(network)
+                        // Fails once the containers Langfuse needs are running, before the Langfuse container is created.
+                        .withCreateContainerCmdModifier(cmd -> {
+                            throw new IllegalStateException("Simulated failure");
+                        })) {
+            assertThatThrownBy(container::start).isInstanceOf(ContainerLaunchException.class);
+            assertThat(containersOnNetwork(network.getId())).isEmpty();
+            // The network is provided by the caller, which may attach other containers to it.
+            assertThat(networkExists(network.getId())).isTrue();
+        }
+    }
+
+    private static List<String> containersOnNetwork(String networkId) {
+        return DockerClientFactory.instance().client().listContainersCmd()
+                .withNetworkFilter(List.of(networkId))
+                .exec()
+                .stream()
+                .map(Container::getId)
+                .toList();
+    }
+
+    private static List<Container> existingContainers(List<String> containerIds) {
+        return DockerClientFactory.instance().client().listContainersCmd()
+                .withShowAll(true)
+                .withIdFilter(containerIds)
+                .exec();
+    }
+
+    private static boolean networkExists(String networkId) {
+        return !DockerClientFactory.instance().client().listNetworksCmd()
+                .withIdFilter(networkId)
+                .exec()
+                .isEmpty();
     }
 
 }
