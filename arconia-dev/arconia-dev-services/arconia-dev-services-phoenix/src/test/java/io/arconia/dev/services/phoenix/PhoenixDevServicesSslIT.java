@@ -40,7 +40,6 @@ class PhoenixDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(PhoenixDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, SslAutoConfiguration.class,
                     OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryTracingExporterAutoConfiguration.class))
-            .withPropertyValues("arconia.dev.services.phoenix.skip-in-tests=false")
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
 
     @Test

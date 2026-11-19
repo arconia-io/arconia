@@ -37,11 +37,6 @@ class LangfuseDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
     }
 
     @Override
-    protected boolean isSkippedInTestsByDefault() {
-        return true;
-    }
-
-    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new LangfuseDevServicesProperties();
         return asDiscoverableContainer(LangfuseDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
@@ -109,6 +104,20 @@ class LangfuseDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfi
                         OpenTelemetryLoggingExporterAutoConfiguration.class, OpenTelemetryMetricsExporterAutoConfiguration.class))
                 .withBean(CardinalityLimitSelector.class, CardinalityLimitSelector::defaultCardinalityLimitSelector)
                 .withBean(OpenTelemetryMetricsProperties.class, OpenTelemetryMetricsProperties::new);
+    }
+
+    @Test
+    void notActivatedWhenTracesAreNotExported() {
+        getContextRunner()
+                .withPropertyValues("management.tracing.export.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void notActivatedWhenTracesAreNotExportedViaOtlp() {
+        getContextRunner()
+                .withPropertyValues("arconia.otel.traces.exporter.type=console")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
     }
 
 }

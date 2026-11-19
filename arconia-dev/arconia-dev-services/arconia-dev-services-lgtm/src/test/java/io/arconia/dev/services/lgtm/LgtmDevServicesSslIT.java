@@ -40,7 +40,6 @@ class LgtmDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(LgtmDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, SslAutoConfiguration.class,
                     OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryTracingExporterAutoConfiguration.class))
-            .withPropertyValues("arconia.dev.services.lgtm.skip-in-tests=false")
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
 
     @Test

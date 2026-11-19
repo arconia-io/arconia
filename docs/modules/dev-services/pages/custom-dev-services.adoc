@@ -97,7 +97,7 @@ public class FancyDbDevServicesProperties implements DevServicesProperties {
 `DevServicesProperties` defines the read contract only. For every property you expose to your users, declare a field, a getter, and a setter in your class so that Spring Boot can bind user configuration to it.
 ====
 
-The common properties are `enabled`, `image-name`, `environment`, `network-aliases`, `port`, `resources`, `reuse-strategy`, `skip-in-tests`, `startup-timeout`, and `volumes`. The quickest way to get all of them, each with the Javadoc that becomes its description in the IDE, is to copy the properties class of a built-in Dev Service, such as `RedisDevServicesProperties`, and adapt it. The exception is `skip-in-tests`, which only the Dev Services skipped in test mode by default declare, such as `LgtmDevServicesProperties`: the others inherit `false` from the contract.
+The common properties are `enabled`, `image-name`, `environment`, `network-aliases`, `port`, `resources`, `reuse-strategy`, `startup-timeout`, and `volumes`. The quickest way to get all of them, each with the Javadoc that becomes its description in the IDE, is to copy the properties class of a built-in Dev Service, such as `RedisDevServicesProperties`, and adapt it. The exception is `skip-in-tests`, which only the Dev Services skipped in test mode by default declare, such as `LgtmDevServicesProperties`: the others inherit `false` from the contract.
 
 == Container
 

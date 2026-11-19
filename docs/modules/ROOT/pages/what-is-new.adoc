@@ -18,6 +18,7 @@ We provide an automated way to upgrade your project to the latest version of Arc
 
 == Dev Services
 
+* The observability Dev Services (Grafana LGTM, OpenTelemetry Collector, Phoenix, OpenLIT, and Langfuse) now only start when the application exports the telemetry they receive via OTLP, and the `skip-in-tests` property is removed. In tests, they follow the export of telemetry: they are skipped when it's off, as with the new `arconia-opentelemetry-spring-boot-starter-test`, and start when a test turns it on with the `spring.test.logging.export`, `spring.test.metrics.export`, or `spring.test.tracing.export` properties. If you set `skip-in-tests` to `false`, use those properties instead. Learn more about xref:dev-services:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode].
 * The Floci Dev Service now reports the URL of the Floci UI, a web console for the resources in the emulator, among its links. Floci starts the console the first time the URL is opened. Learn more about the xref:dev-services:floci.adoc#_accessing_the_floci_ui[Floci Dev Service].
 
 == Docling

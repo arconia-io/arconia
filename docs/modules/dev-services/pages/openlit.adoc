@@ -23,7 +23,7 @@ include::partial$dependencies.adoc[]
 
 include::partial$running-application.adoc[]
 
-In test mode, the Dev Service is skipped by default, since most tests have no use for a telemetry backend. For the tests that verify the telemetry the application exports, set `arconia.dev.services.{service-name}.skip-in-tests` to `false`, preferably in a configuration shared by those tests, such as an `application-test.yml` file, so that they share one application context and one container (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
+The Dev Service only starts when the application exports logs, metrics, or traces via OTLP, since it would receive nothing otherwise. The xref:opentelemetry:index.adoc#_testing[Arconia OpenTelemetry Spring Boot Starter for testing] turns off the export of telemetry in tests, so the Dev Service is skipped there. For the tests that verify the telemetry the application exports, turn the export back on with the `spring.test.logging.export`, `spring.test.metrics.export`, and `spring.test.tracing.export` properties, preferably in a configuration shared by those tests, such as an `application-test.yml` file, so that they share one application context and one container (see xref:index.adoc#_dev_services_in_test_mode[Dev Services in Test Mode]).
 
 By default, when running the application in dev mode, multiple applications running simultaneously use the same OpenLIT Dev Service: the application connects to a running OpenLIT Dev Service started by another application if available, or else starts its own that other applications can discover in turn. To always start a container for the application alone, set the `arconia.dev.services.{service-name}.reuse-strategy` property to `none`. Learn more about xref:index.adoc#_reusing_dev_services[Reusing Dev Services].
 
@@ -99,10 +99,6 @@ You can configure the Dev Service via configuration properties.
 | `arconia.dev.services.{service-name}.clickhouse-image-name`
 | `clickhouse/clickhouse-server`
 | Full name of the container image used for the internal ClickHouse instance.
-
-| `arconia.dev.services.{service-name}.skip-in-tests`
-| `true`
-| Whether the dev service is skipped in test mode, where the application rarely needs a telemetry backend. Set it to false for tests that verify the telemetry the application exports.
 
 | `arconia.dev.services.{service-name}.otlp-grpc-port`
 | `0`

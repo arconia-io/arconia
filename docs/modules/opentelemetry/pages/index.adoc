@@ -523,7 +523,7 @@ For metrics and traces, this is the test support of Spring Boot, so you can also
 
 Outside of tests, the export of a signal follows the Spring Boot properties `management.logging.export.enabled`, `management.defaults.metrics.export.enabled`, and `management.tracing.export.enabled`, which is what the test support sets to `false`.
 
-TIP: The xref:dev-services:index.adoc#_dev_services_in_test_mode[observability Dev Services] are skipped in tests by default. When you enable one for the tests that verify the exported telemetry, turn the export on as well.
+TIP: The xref:dev-services:index.adoc#_dev_services_in_test_mode[observability Dev Services] only start when the application exports the telemetry they receive. They are skipped in the tests where the export is off, and start in the tests where you turn it on.
 
 == OpenTelemetry Environment Variables
 

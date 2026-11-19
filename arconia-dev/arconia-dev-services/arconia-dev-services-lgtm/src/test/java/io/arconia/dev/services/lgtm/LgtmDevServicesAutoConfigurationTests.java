@@ -39,11 +39,6 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     }
 
     @Override
-    protected boolean isSkippedInTestsByDefault() {
-        return true;
-    }
-
-    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new LgtmDevServicesProperties();
         var dashboards = LgtmDashboards.collect(new MockEnvironment(), new DefaultResourceLoader(), properties.getDashboards());
@@ -187,11 +182,10 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
     }
 
     @Test
-    void dashboardsNotCollectedWhenDevServiceIsSkipped() {
+    void dashboardsNotCollectedWhenNoSignalIsExported() {
         getContextRunner()
-                .withSystemProperties("arconia.bootstrap.mode=test")
                 .withPropertyValues(
-                        "arconia.dev.services.lgtm.skip-in-tests=true",
+                        "arconia.otel.exporter.type=none",
                         "arconia.dev.services.lgtm.dashboards.home=missing.json")
                 .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(LgtmStackContainer.class));
     }
@@ -222,6 +216,32 @@ class LgtmDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfigura
                     assertThat(container.getEnvMap().get(LgtmDevServicesAutoConfiguration.OTELCOL_EXTRA_ARGS_ENV))
                             .startsWith("--feature-gates=+example --set=receivers::otlp::protocols::grpc::tls::cert_file=");
                 });
+    }
+
+    @Test
+    void notActivatedWhenNoSignalIsExported() {
+        getContextRunner()
+                .withPropertyValues(
+                        "management.logging.export.enabled=false",
+                        "management.defaults.metrics.export.enabled=false",
+                        "management.tracing.export.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void notActivatedWhenNoSignalIsExportedViaOtlp() {
+        getContextRunner()
+                .withPropertyValues("arconia.otel.exporter.type=console")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void activatedWhenOneSignalIsExported() {
+        getContextRunner()
+                .withPropertyValues(
+                        "management.logging.export.enabled=false",
+                        "management.defaults.metrics.export.enabled=false")
+                .run(context -> assertThat(context).hasSingleBean(getContainerClass()));
     }
 
 }

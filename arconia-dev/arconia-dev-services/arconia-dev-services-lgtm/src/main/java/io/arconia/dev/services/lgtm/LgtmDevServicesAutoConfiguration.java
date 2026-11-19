@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
@@ -19,14 +21,16 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
 import io.arconia.dev.services.lgtm.LgtmDevServicesAutoConfiguration.LgtmDevServicesRegistrar;
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.ConditionalOnOpenTelemetryLoggingExporter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
 
 /**
  * Auto-configuration for Grafana LGTM Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnOpenTelemetry
+@Conditional(LgtmDevServicesAutoConfiguration.OtlpExportEnabled.class)
 @ConditionalOnDevServicesEnabled("lgtm")
 @EnableConfigurationProperties(LgtmDevServicesProperties.class)
 @Import(LgtmDevServicesRegistrar.class)
@@ -113,6 +117,27 @@ public final class LgtmDevServicesAutoConfiguration {
             arguments.add("--set=receivers::otlp::protocols::%s::tls::key_file=%sserver.key".formatted(protocol, SSL_DIRECTORY));
         }
         container.withEnv(OTELCOL_EXTRA_ARGS_ENV, String.join(" ", arguments));
+    }
+
+    /**
+     * The dev service is only started when the application exports at least one signal via OTLP,
+     * since it would receive nothing otherwise, as it is the case in tests by default.
+     */
+    static class OtlpExportEnabled extends AnyNestedCondition {
+
+        OtlpExportEnabled() {
+            super(ConfigurationPhase.PARSE_CONFIGURATION);
+        }
+
+        @ConditionalOnOpenTelemetryLoggingExporter("otlp")
+        static class LogsExportEnabled {}
+
+        @ConditionalOnOpenTelemetryMetricsExporter("otlp")
+        static class MetricsExportEnabled {}
+
+        @ConditionalOnOpenTelemetryTracingExporter("otlp")
+        static class TracesExportEnabled {}
+
     }
 
     static class LgtmDevServicesRegistrar extends DevServicesRegistrar {

@@ -41,11 +41,6 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Override
-    protected boolean isSkippedInTestsByDefault() {
-        return true;
-    }
-
-    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new PhoenixDevServicesProperties();
         return asDiscoverableContainer(PhoenixDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
@@ -147,6 +142,20 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
                     assertThat(waitStrategy).isNotNull();
                     assertThat(ReflectionTestUtils.getField(waitStrategy, "startupTimeout")).isEqualTo(Duration.ofMinutes(3));
                 });
+    }
+
+    @Test
+    void notActivatedWhenTracesAreNotExported() {
+        getContextRunner()
+                .withPropertyValues("management.tracing.export.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void notActivatedWhenTracesAreNotExportedViaOtlp() {
+        getContextRunner()
+                .withPropertyValues("arconia.otel.traces.exporter.type=console")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
     }
 
 }

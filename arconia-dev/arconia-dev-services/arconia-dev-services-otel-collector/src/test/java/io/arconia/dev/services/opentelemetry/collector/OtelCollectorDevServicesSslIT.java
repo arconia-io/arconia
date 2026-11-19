@@ -43,7 +43,6 @@ class OtelCollectorDevServicesSslIT {
             .withConfiguration(AutoConfigurations.of(OtelCollectorDevServicesAutoConfiguration.class,
                     ServiceConnectionAutoConfiguration.class, SslAutoConfiguration.class,
                     OpenTelemetryExporterAutoConfiguration.class, OpenTelemetryTracingExporterAutoConfiguration.class))
-            .withPropertyValues("arconia.dev.services.otel-collector.skip-in-tests=false")
             .withInitializer(new TestcontainersLifecycleApplicationContextInitializer());
 
     @Test

@@ -41,8 +41,6 @@ public class TestDevServicesProperties implements DevServicesProperties {
 
     private Duration startupTimeout = Duration.ofSeconds(30);
 
-    private boolean skipInTests = false;
-
     private List<VolumeMapping> volumes = List.of();
 
     public TestDevServicesProperties withEnabled(boolean enabled) {
@@ -93,12 +91,6 @@ public class TestDevServicesProperties implements DevServicesProperties {
         return copy;
     }
 
-    public TestDevServicesProperties withSkipInTests(boolean skipInTests) {
-        TestDevServicesProperties copy = copy();
-        copy.skipInTests = skipInTests;
-        return copy;
-    }
-
     public TestDevServicesProperties withVolumes(List<VolumeMapping> volumes) {
         TestDevServicesProperties copy = copy();
         copy.volumes = volumes;
@@ -146,11 +138,6 @@ public class TestDevServicesProperties implements DevServicesProperties {
     }
 
     @Override
-    public boolean isSkipInTests() {
-        return skipInTests;
-    }
-
-    @Override
     public List<VolumeMapping> getVolumes() {
         return volumes;
     }
@@ -176,7 +163,6 @@ public class TestDevServicesProperties implements DevServicesProperties {
         target.resources = resources;
         target.reuseStrategy = reuseStrategy;
         target.startupTimeout = startupTimeout;
-        target.skipInTests = skipInTests;
         target.volumes = volumes;
     }
 

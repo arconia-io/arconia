@@ -15,10 +15,10 @@ import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.core.ssl.SslBundleFiles;
 import io.arconia.dev.services.phoenix.PhoenixDevServicesAutoConfiguration.PhoenixDevServicesRegistrar;
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 import io.arconia.testcontainers.phoenix.PhoenixContainer;
 
@@ -27,7 +27,7 @@ import io.arconia.testcontainers.phoenix.PhoenixContainer;
  */
 @AutoConfiguration(before = { OpenTelemetryExporterAutoConfiguration.class, ServiceConnectionAutoConfiguration.class })
 @ConditionalOnDevServicesEnabled("phoenix")
-@ConditionalOnOpenTelemetry
+@ConditionalOnOpenTelemetryTracingExporter("otlp")
 @EnableConfigurationProperties(PhoenixDevServicesProperties.class)
 @Import(PhoenixDevServicesRegistrar.class)
 public final class PhoenixDevServicesAutoConfiguration {

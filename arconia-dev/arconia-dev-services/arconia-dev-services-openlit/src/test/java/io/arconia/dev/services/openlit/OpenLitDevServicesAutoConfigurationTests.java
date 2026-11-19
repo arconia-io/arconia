@@ -29,11 +29,6 @@ class OpenLitDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
     }
 
     @Override
-    protected boolean isSkippedInTestsByDefault() {
-        return true;
-    }
-
-    @Override
     protected GenericContainer<?> createDiscoverableContainer(String ownerId) {
         var properties = new OpenLitDevServicesProperties();
         return asDiscoverableContainer(OpenLitDevServicesAutoConfiguration.createContainer(properties), properties, ownerId);
@@ -73,6 +68,32 @@ class OpenLitDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
             assertThat(links).extracting(DevServiceLink::label).containsExactly("OpenLIT UI");
             assertThat(links).allSatisfy(link -> assertThat(link.url()).startsWith("http://" + container.getHost() + ":"));
         });
+    }
+
+    @Test
+    void notActivatedWhenNoSignalIsExported() {
+        getContextRunner()
+                .withPropertyValues(
+                        "management.logging.export.enabled=false",
+                        "management.defaults.metrics.export.enabled=false",
+                        "management.tracing.export.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void notActivatedWhenNoSignalIsExportedViaOtlp() {
+        getContextRunner()
+                .withPropertyValues("arconia.otel.exporter.type=console")
+                .run(context -> assertThat(context).doesNotHaveBean(getContainerClass()));
+    }
+
+    @Test
+    void activatedWhenOneSignalIsExported() {
+        getContextRunner()
+                .withPropertyValues(
+                        "management.logging.export.enabled=false",
+                        "management.defaults.metrics.export.enabled=false")
+                .run(context -> assertThat(context).hasSingleBean(getContainerClass()));
     }
 
 }

@@ -1,8 +1,10 @@
 package io.arconia.dev.services.openlit;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.testcontainers.utility.DockerImageName;
@@ -12,15 +14,17 @@ import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.openlit.OpenLitDevServicesAutoConfiguration.OpenLitDevServicesRegistrar;
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.OtlpConnectionDetails;
+import io.arconia.opentelemetry.autoconfigure.logs.exporter.ConditionalOnOpenTelemetryLoggingExporter;
+import io.arconia.opentelemetry.autoconfigure.metrics.exporter.ConditionalOnOpenTelemetryMetricsExporter;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
 import io.arconia.testcontainers.openlit.OpenLitContainer;
 
 /**
  * Auto-configuration for OpenLIT Dev Services.
  */
 @AutoConfiguration(before = ServiceConnectionAutoConfiguration.class)
-@ConditionalOnOpenTelemetry
+@Conditional(OpenLitDevServicesAutoConfiguration.OtlpExportEnabled.class)
 @ConditionalOnDevServicesEnabled("openlit")
 @EnableConfigurationProperties(OpenLitDevServicesProperties.class)
 @Import(OpenLitDevServicesRegistrar.class)
@@ -32,6 +36,27 @@ public final class OpenLitDevServicesAutoConfiguration {
         var container = new OpenLitContainer(DockerImageName.parse(properties.getImageName()).asCompatibleSubstituteFor(COMPATIBLE_IMAGE_NAME));
         container.withClickHouseImage(properties.getClickhouseImageName());
         return container;
+    }
+
+    /**
+     * The dev service is only started when the application exports at least one signal via OTLP,
+     * since it would receive nothing otherwise, as it is the case in tests by default.
+     */
+    static class OtlpExportEnabled extends AnyNestedCondition {
+
+        OtlpExportEnabled() {
+            super(ConfigurationPhase.PARSE_CONFIGURATION);
+        }
+
+        @ConditionalOnOpenTelemetryLoggingExporter("otlp")
+        static class LogsExportEnabled {}
+
+        @ConditionalOnOpenTelemetryMetricsExporter("otlp")
+        static class MetricsExportEnabled {}
+
+        @ConditionalOnOpenTelemetryTracingExporter("otlp")
+        static class TracesExportEnabled {}
+
     }
 
     static class OpenLitDevServicesRegistrar extends DevServicesRegistrar {

@@ -12,10 +12,10 @@ import io.arconia.dev.services.core.registration.DevServiceCategories;
 import io.arconia.dev.services.core.registration.DevServicesRegistrar;
 import io.arconia.dev.services.core.registration.DevServicesRegistry;
 import io.arconia.dev.services.langfuse.LangfuseDevServicesAutoConfiguration.LangfuseDevServicesRegistrar;
-import io.arconia.opentelemetry.autoconfigure.ConditionalOnOpenTelemetry;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterAutoConfiguration;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
+import io.arconia.opentelemetry.autoconfigure.traces.exporter.ConditionalOnOpenTelemetryTracingExporter;
 import io.arconia.opentelemetry.autoconfigure.traces.exporter.otlp.OtlpTracingConnectionDetails;
 import io.arconia.testcontainers.langfuse.LangfuseContainer;
 
@@ -24,7 +24,7 @@ import io.arconia.testcontainers.langfuse.LangfuseContainer;
  */
 @AutoConfiguration(before = { OpenTelemetryExporterAutoConfiguration.class, ServiceConnectionAutoConfiguration.class })
 @ConditionalOnDevServicesEnabled("langfuse")
-@ConditionalOnOpenTelemetry
+@ConditionalOnOpenTelemetryTracingExporter("otlp")
 @EnableConfigurationProperties(LangfuseDevServicesProperties.class)
 @Import(LangfuseDevServicesRegistrar.class)
 public final class LangfuseDevServicesAutoConfiguration {

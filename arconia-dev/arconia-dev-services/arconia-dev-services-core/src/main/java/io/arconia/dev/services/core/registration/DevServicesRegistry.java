@@ -41,7 +41,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import io.arconia.core.annotations.Incubating;
-import io.arconia.core.bootstrap.BootstrapMode;
 import io.arconia.dev.services.api.config.ReuseStrategy;
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLabels;
@@ -121,13 +120,12 @@ public final class DevServicesRegistry {
 
         // 2. A disabled dev service is not started nor registered. The auto-configuration
         // condition normally backs off earlier; this honors the properties contract for a dev
-        // service whose condition doesn't read the property. Neither is a dev service that is
-        // skipped in test mode, such as an observability platform. A ConnectionDetails bean of the
+        // service whose condition doesn't read the property. A ConnectionDetails bean of the
         // declared type defined by the application takes precedence over the dev service as well,
         // mirroring Spring Boot's service connection behavior: the application connects to the
         // service of its choice. Either way, a container kept across a DevTools restart is no
         // longer needed. A skipped dev service takes no part in the mutual exclusion below.
-        if (isDisabled(service) || isSkippedInTests(service) || isConnectionDetailsDefinedByApplication(service)) {
+        if (isDisabled(service) || isConnectionDetailsDefinedByApplication(service)) {
             restartSupport.discardKeptContainer(service.name(), containerBeanName);
             return;
         }
@@ -210,17 +208,6 @@ public final class DevServicesRegistry {
             return false;
         }
         logger.info("Dev Service '{}' is disabled", service.name());
-        return true;
-    }
-
-    /**
-     * Whether the dev service is skipped in test mode through its properties.
-     */
-    private static boolean isSkippedInTests(DevServiceDefinition service) {
-        if (!BootstrapMode.isTest() || !service.properties().isSkipInTests()) {
-            return false;
-        }
-        logger.info("Dev Service '{}' is skipped in test mode", service.name());
         return true;
     }
 
