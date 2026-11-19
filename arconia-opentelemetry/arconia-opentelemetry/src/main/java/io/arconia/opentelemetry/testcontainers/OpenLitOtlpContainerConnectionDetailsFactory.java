@@ -38,33 +38,25 @@ class OpenLitOtlpContainerConnectionDetailsFactory
         @Override
         public String getTracesUrl(Protocol protocol) {
             return secure(switch (protocol) {
-                case HTTP_PROTOBUF -> httpUrl() + TRACES_PATH;
-                case GRPC -> grpcUrl();
+                case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl() + TRACES_PATH;
+                case GRPC -> getContainer().getOtlpGrpcUrl();
             });
         }
 
         @Override
         public String getMetricsUrl(Protocol protocol) {
             return secure(switch (protocol) {
-                case HTTP_PROTOBUF -> httpUrl() + METRICS_PATH;
-                case GRPC -> grpcUrl();
+                case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl() + METRICS_PATH;
+                case GRPC -> getContainer().getOtlpGrpcUrl();
             });
         }
 
         @Override
         public String getLogsUrl(Protocol protocol) {
             return secure(switch (protocol) {
-                case HTTP_PROTOBUF -> httpUrl() + LOGS_PATH;
-                case GRPC -> grpcUrl();
+                case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl() + LOGS_PATH;
+                case GRPC -> getContainer().getOtlpGrpcUrl();
             });
-        }
-
-        private String httpUrl() {
-            return "http://%s:%d".formatted(getContainer().getHost(), getContainer().getOtlpHttpPort());
-        }
-
-        private String grpcUrl() {
-            return "http://%s:%d".formatted(getContainer().getHost(), getContainer().getOtlpGrpcPort());
         }
 
         @Override

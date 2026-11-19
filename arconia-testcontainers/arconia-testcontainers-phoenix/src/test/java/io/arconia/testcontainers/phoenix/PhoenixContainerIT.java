@@ -35,7 +35,7 @@ class PhoenixContainerIT {
             assertThat(response.statusCode()).isEqualTo(200);
 
             // An empty protobuf body is a valid OTLP export request without any span.
-            var exportRequest = HttpRequest.newBuilder(URI.create(container.getPhoenixUrl() + "/v1/traces"))
+            var exportRequest = HttpRequest.newBuilder(URI.create(container.getOtlpHttpUrl() + "/v1/traces"))
                     .header("Content-Type", "application/x-protobuf")
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();

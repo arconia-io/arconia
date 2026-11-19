@@ -87,7 +87,6 @@ class OpenLitContainerIT {
                 var container = new OpenLitContainer(IMAGE).withClickHouseImage(CLICKHOUSE_IMAGE).withNetwork(network)
                         .withTmpFs(Map.of("/tmp/user", "rw"))) {
             container.start();
-            assertThat(container.getClickHouseLogs()).isNotEmpty();
             // A user-provided tmpfs is kept next to the one for the OpenLIT data.
             assertThat(container.getTmpFsMapping()).containsKeys("/tmp/user", "/app/client/data");
 

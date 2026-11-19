@@ -11,7 +11,7 @@ include::partial$dependencies.adoc[]
 
 [source,java]
 ----
-var redis = new RedisContainer(DockerImageName.parse("redis:latest"));
+var redis = new RedisContainer("redis:latest");
 redis.start();
 ----
 

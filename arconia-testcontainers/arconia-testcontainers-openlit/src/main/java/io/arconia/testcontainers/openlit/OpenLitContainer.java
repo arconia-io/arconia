@@ -13,6 +13,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * A {@link GenericContainer} for OpenLIT.
  * <p>
@@ -23,6 +25,7 @@ import org.testcontainers.utility.DockerImageName;
  * both OpenLIT and its ClickHouse instance will join that network. Otherwise, a private
  * network is created automatically, and it's removed when the container is stopped.
  */
+@Incubating
 public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/openlit/openlit");
@@ -60,6 +63,10 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
                 .withStrategy(Wait.forHttp("/").forPort(UI_PORT).forStatusCodeMatching(sc -> sc < 500))
                 .withStrategy(Wait.forHttp("/health").forPort(OTLP_HTTP_PORT).forStatusCode(200))
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
+    }
+
+    public OpenLitContainer(String imageName) {
+        this(DockerImageName.parse(imageName));
     }
 
     public OpenLitContainer withClickHouseImage(DockerImageName imageName) {
@@ -156,17 +163,6 @@ public class OpenLitContainer extends GenericContainer<OpenLitContainer> {
         // Demo account created by the OpenLIT seed, used for automatic sign-in.
         env.putIfAbsent("DEMO_ACCOUNT_EMAIL", "user@openlit.io");
         env.putIfAbsent("DEMO_ACCOUNT_PASSWORD", "openlituser");
-    }
-
-    /**
-     * Returns the logs of the internal ClickHouse container, useful when OpenLIT fails
-     * because of its database.
-     */
-    public String getClickHouseLogs() {
-        if (clickHouseContainer == null) {
-            throw new IllegalStateException("The ClickHouse container is created when the OpenLIT container starts");
-        }
-        return clickHouseContainer.getLogs();
     }
 
     public String getOpenLitUrl() {

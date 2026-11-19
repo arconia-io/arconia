@@ -36,3 +36,8 @@ We provide an automated way to upgrade your project to the latest version of Arc
 * The `http.route` attribute and the name of HTTP server spans now include the context path of the application, as the OpenTelemetry Semantic Conventions recommend. For example, with `server.servlet.context-path=/api`, the route `/users/\{id}` is now reported as `/api/users/\{id}`. Learn more about the xref:observability:semantic-conventions/opentelemetry.adoc#_http_server[OpenTelemetry HTTP Server Conventions].
 * With the `langsmith` and `openllmetry` flavors of the OpenTelemetry AI Semantic Conventions, the attributes that tell the backend how to display a span, such as `langsmith.span.kind` and `traceloop.span.kind`, are now only recorded on spans. Previously, they were also tags of the metrics, which now have the same tags with every flavor. Learn more about the xref:observability:semantic-conventions/index.adoc[Semantic Conventions].
 * With the `openllmetry` flavor, tool executions now record their arguments and result also as `gen_ai.tool.call.arguments` and `gen_ai.tool.call.result`, as the OpenLLMetry instrumentations do. Learn more about the xref:observability:semantic-conventions/openllmetry.adoc[OpenLLMetry Semantic Conventions].
+
+== Testcontainers
+
+* The containers can now be created from an image name given as a string, as in `new PhoenixContainer("arizephoenix/phoenix:latest")`, like the modules of Testcontainers.
+* In `PhoenixContainer`, the `GRPC_PORT` constant is now `OTLP_GRPC_PORT` and the `getGrpcPort()` method is now `getOtlpGrpcPort()`, as in `OpenLitContainer`. The new `getOtlpHttpUrl()` and `getOtlpGrpcUrl()` methods return the OTLP endpoints. Learn more about the xref:testcontainers:phoenix.adoc[Phoenix Testcontainers module].

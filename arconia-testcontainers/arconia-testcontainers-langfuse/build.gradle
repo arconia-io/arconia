@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    api project(":arconia-core:arconia-core-annotations")
     api project(":arconia-testcontainers:arconia-testcontainers-redis")
     api "io.floci:testcontainers-floci-aws:${flociVersion}"
     api "org.testcontainers:testcontainers-clickhouse"

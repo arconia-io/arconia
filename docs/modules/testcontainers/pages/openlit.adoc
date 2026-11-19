@@ -11,7 +11,7 @@ include::partial$dependencies.adoc[]
 
 [source,java]
 ----
-var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"));
+var openLit = new OpenLitContainer("ghcr.io/openlit/openlit:latest");
 openLit.start();
 ----
 
@@ -21,7 +21,7 @@ The UI is available at `getOpenLitUrl()`, where you're signed in automatically w
 
 [source,java]
 ----
-var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"))
+var openLit = new OpenLitContainer("ghcr.io/openlit/openlit:latest")
         .withEnv("DEMO_ACCOUNT_EMAIL", "");
 ----
 
@@ -29,7 +29,7 @@ The ClickHouse container starts before OpenLIT and stops together with it. Set i
 
 [source,java]
 ----
-var openLit = new OpenLitContainer(DockerImageName.parse("ghcr.io/openlit/openlit:latest"))
+var openLit = new OpenLitContainer("ghcr.io/openlit/openlit:latest")
         .withClickHouseImage("clickhouse/clickhouse-server:latest");
 ----
 

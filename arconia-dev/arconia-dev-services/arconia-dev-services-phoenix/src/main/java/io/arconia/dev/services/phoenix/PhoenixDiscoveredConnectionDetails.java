@@ -26,7 +26,7 @@ final class PhoenixDiscoveredConnectionDetails implements OtlpTracingConnectionD
         this.sslBundle = container.sslBundle();
         String scheme = (sslBundle != null) ? "https" : "http";
         this.httpUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(PhoenixContainer.HTTP_PORT));
-        this.grpcUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(PhoenixContainer.GRPC_PORT));
+        this.grpcUrl = "%s://%s:%d".formatted(scheme, container.host(), container.mappedPort(PhoenixContainer.OTLP_GRPC_PORT));
     }
 
     @Override

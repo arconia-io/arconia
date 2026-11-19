@@ -11,7 +11,7 @@ include::partial$dependencies.adoc[]
 
 [source,java]
 ----
-var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"));
+var langfuse = new LangfuseContainer("langfuse/langfuse:latest");
 langfuse.start();
 ----
 
@@ -28,7 +28,7 @@ Override them and any other https://langfuse.com/self-hosting/configuration[Lang
 
 [source,java]
 ----
-var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"))
+var langfuse = new LangfuseContainer("langfuse/langfuse:latest")
         .withEnv("LANGFUSE_INIT_PROJECT_PUBLIC_KEY", "pk-lf-my-project")
         .withEnv("LANGFUSE_INIT_PROJECT_SECRET_KEY", "sk-lf-my-project");
 ----
@@ -37,7 +37,7 @@ PostgreSQL, ClickHouse, Redis, and https://floci.io[Floci] as the S3-compatible 
 
 [source,java]
 ----
-var langfuse = new LangfuseContainer(DockerImageName.parse("langfuse/langfuse:latest"))
+var langfuse = new LangfuseContainer("langfuse/langfuse:latest")
         .withWorkerImage("langfuse/langfuse-worker:latest")
         .withPostgresImage("postgres:latest")
         .withClickHouseImage("clickhouse/clickhouse-server:latest")

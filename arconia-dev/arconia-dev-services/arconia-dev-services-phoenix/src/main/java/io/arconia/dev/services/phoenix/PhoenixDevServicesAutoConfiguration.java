@@ -70,7 +70,7 @@ public final class PhoenixDevServicesAutoConfiguration {
                     .properties(properties)
                     .container(PhoenixContainer.class, () -> createContainer(properties))
                     .port(PhoenixContainer.HTTP_PORT)
-                    .additionalPort(PhoenixContainer.GRPC_PORT, properties.getOtlpGrpcPort())
+                    .additionalPort(PhoenixContainer.OTLP_GRPC_PORT, properties.getOtlpGrpcPort())
                     .ssl(PhoenixDevServicesAutoConfiguration::configureSsl)
                     .discovery(OtlpTracingConnectionDetails.class, PhoenixDiscoveredConnectionDetails::new)
                     .link("Phoenix UI", PhoenixContainer.HTTP_PORT));

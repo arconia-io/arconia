@@ -33,10 +33,8 @@ class PhoenixOtlpTracingContainerConnectionDetailsFactory
         @Override
         public String getTracesUrl(Protocol protocol) {
             return secure(switch (protocol) {
-                case HTTP_PROTOBUF ->
-                        "http://%s:%d%s".formatted(getContainer().getHost(), getContainer().getHttpPort(), TRACES_PATH);
-                case GRPC ->
-                        "http://%s:%d".formatted(getContainer().getHost(), getContainer().getGrpcPort());
+                case HTTP_PROTOBUF -> getContainer().getOtlpHttpUrl() + TRACES_PATH;
+                case GRPC -> getContainer().getOtlpGrpcUrl();
             });
         }
 

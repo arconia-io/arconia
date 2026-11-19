@@ -53,7 +53,7 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
 
     @Override
     protected Map<String, Integer> additionalFixedPortProperties() {
-        return Map.of("otlp-grpc-port", PhoenixContainer.GRPC_PORT);
+        return Map.of("otlp-grpc-port", PhoenixContainer.OTLP_GRPC_PORT);
     }
 
     @Override
@@ -63,7 +63,7 @@ class PhoenixDevServicesAutoConfigurationTests extends BaseDevServicesAutoConfig
         assertThat(connectionDetails.getTracesUrl(Protocol.HTTP_PROTOBUF))
                 .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getHttpPort()) + OtlpTracingConnectionDetails.TRACES_PATH);
         assertThat(connectionDetails.getTracesUrl(Protocol.GRPC))
-                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getGrpcPort()));
+                .isEqualTo("http://%s:%d".formatted(container.getHost(), container.getOtlpGrpcPort()));
     }
 
     @Test

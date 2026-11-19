@@ -11,17 +11,17 @@ include::partial$dependencies.adoc[]
 
 [source,java]
 ----
-var phoenix = new PhoenixContainer(DockerImageName.parse("arizephoenix/phoenix:latest"));
+var phoenix = new PhoenixContainer("arizephoenix/phoenix:latest");
 phoenix.start();
 ----
 
-Phoenix accepts traces via OTLP, with the HTTP/Protobuf protocol on the port returned by `getHttpPort()` and the gRPC protocol on the one returned by `getGrpcPort()`. The UI is available at `getPhoenixUrl()`.
+Phoenix accepts traces via OTLP, with the HTTP/Protobuf protocol at `getOtlpHttpUrl()` and the gRPC protocol at `getOtlpGrpcUrl()`. The UI is available at `getPhoenixUrl()`.
 
 Phoenix starts without authentication and with the telemetry of its UI turned off. Override them and any other https://arize.com/docs/phoenix/self-hosting/configuration[Phoenix configuration] via environment variables.
 
 [source,java]
 ----
-var phoenix = new PhoenixContainer(DockerImageName.parse("arizephoenix/phoenix:latest"))
+var phoenix = new PhoenixContainer("arizephoenix/phoenix:latest")
         .withEnv("PHOENIX_ENABLE_AUTH", "true");
 ----
 

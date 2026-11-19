@@ -5,24 +5,31 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.core.annotations.Incubating;
+
 /**
  * A {@link Container} for Phoenix.
  */
+@Incubating
 public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("arizephoenix/phoenix");
 
-    public static final int GRPC_PORT = 4317;
+    public static final int OTLP_GRPC_PORT = 4317;
 
     public static final int HTTP_PORT = 6006;
 
     public PhoenixContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        addExposedPorts(GRPC_PORT, HTTP_PORT);
+        addExposedPorts(OTLP_GRPC_PORT, HTTP_PORT);
         // Phoenix serves HTTP requests once its startup has completed, including the OTLP gRPC server,
         // and the readiness endpoint also checks the database.
         this.waitingFor(Wait.forHttp("/readyz").forPort(HTTP_PORT).forStatusCode(200));
+    }
+
+    public PhoenixContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
     @Override
@@ -39,12 +46,20 @@ public class PhoenixContainer extends GenericContainer<PhoenixContainer> {
         return "http://" + getHost() + ":" + getHttpPort();
     }
 
-    public Integer getGrpcPort() {
-        return getMappedPort(GRPC_PORT);
+    public Integer getOtlpGrpcPort() {
+        return getMappedPort(OTLP_GRPC_PORT);
     }
 
     public Integer getHttpPort() {
         return getMappedPort(HTTP_PORT);
+    }
+
+    public String getOtlpGrpcUrl() {
+        return "http://" + getHost() + ":" + getOtlpGrpcPort();
+    }
+
+    public String getOtlpHttpUrl() {
+        return "http://" + getHost() + ":" + getHttpPort();
     }
 
 }

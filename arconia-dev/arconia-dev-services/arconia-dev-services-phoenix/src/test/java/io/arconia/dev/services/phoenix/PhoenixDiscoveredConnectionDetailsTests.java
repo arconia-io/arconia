@@ -50,7 +50,7 @@ class PhoenixDiscoveredConnectionDetailsTests {
                 .imageName("arizephoenix/phoenix:latest")
                 .ports(List.of(
                         new ContainerInfo.ContainerPort("0.0.0.0", PhoenixContainer.HTTP_PORT, HTTP_MAPPED_PORT, "tcp"),
-                        new ContainerInfo.ContainerPort("0.0.0.0", PhoenixContainer.GRPC_PORT, GRPC_MAPPED_PORT, "tcp")))
+                        new ContainerInfo.ContainerPort("0.0.0.0", PhoenixContainer.OTLP_GRPC_PORT, GRPC_MAPPED_PORT, "tcp")))
                 .state("running")
                 .status("running")
                 .build()).host(HOST).sslBundle(sslBundle).build();

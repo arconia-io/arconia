@@ -2,7 +2,6 @@ package io.arconia.testcontainers.redis;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,8 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfDockerAvailable
 class RedisContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName
-            .parse("redis:8.10-alpine");
+    private static final String IMAGE = "redis:8.10-alpine";
 
     @Test
     void containerStartsAndStopsSuccessfully() {

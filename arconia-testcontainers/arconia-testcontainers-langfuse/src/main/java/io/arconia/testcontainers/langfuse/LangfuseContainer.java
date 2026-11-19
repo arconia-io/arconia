@@ -25,6 +25,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.arconia.core.annotations.Incubating;
 import io.arconia.testcontainers.redis.RedisContainer;
 
 /**
@@ -46,6 +47,7 @@ import io.arconia.testcontainers.redis.RedisContainer;
  * Langfuse and the containers it needs join that network. Otherwise, a private network is
  * created automatically, and it's removed when the container is stopped.
  */
+@Incubating
 public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("langfuse/langfuse");
@@ -117,6 +119,10 @@ public class LangfuseContainer extends GenericContainer<LangfuseContainer> {
         // Langfuse runs its database migrations at startup, which makes it slow to come up.
         this.waitingFor(Wait.forHttp("/api/public/health").forPort(HTTP_PORT).forStatusCode(200)
                 .withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
+    }
+
+    public LangfuseContainer(String imageName) {
+        this(DockerImageName.parse(imageName));
     }
 
     public LangfuseContainer withWorkerImage(DockerImageName imageName) {
