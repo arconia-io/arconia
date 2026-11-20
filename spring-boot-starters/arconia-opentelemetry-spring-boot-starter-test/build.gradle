@@ -12,6 +12,12 @@ dependencies {
     api "org.springframework.boot:spring-boot-micrometer-tracing-test"
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${openTelemetryInstrumentationVersion}-alpha"
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
