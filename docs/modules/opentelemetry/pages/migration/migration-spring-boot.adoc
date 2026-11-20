@@ -45,6 +45,8 @@ Maven::
 
 To ease the migration, Arconia provides an automated OpenRewrite recipe that you can run to convert your existing Spring Boot OpenTelemetry configuration to Arconia OpenTelemetry configuration. The recipe migrates a Spring Boot 4.1 application, including the configuration properties introduced in Spring Boot 4.1.
 
+After the migration, Arconia logs a warning at startup if any Spring Boot property under `+management.opentelemetry.*+` or `+management.otlp.*+` is still set, since those have no effect with Arconia OpenTelemetry.
+
 There are three ways you can run the migration recipe: Arconia CLI, Gradle OpenRewrite Plugin, or Maven OpenRewrite Plugin.
 
 === Arconia CLI

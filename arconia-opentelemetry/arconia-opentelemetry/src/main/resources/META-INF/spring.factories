@@ -12,4 +12,5 @@ io.arconia.opentelemetry.testcontainers.PhoenixOtlpTracingContainerConnectionDet
 
 # Application Listeners
 org.springframework.context.ApplicationListener=\
+io.arconia.opentelemetry.autoconfigure.config.ReplacedSpringBootPropertiesApplicationListener,\
 io.arconia.opentelemetry.autoconfigure.traces.bridge.MicrometerTracingOpenTelemetryContextStorageApplicationListener

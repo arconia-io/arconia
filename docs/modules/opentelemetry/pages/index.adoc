@@ -158,6 +158,8 @@ You can disable individual observability signals or even disable the entire Open
 
 By default, all observability signals are exported via OTLP. If you set the exporter type to `none`, the observability signals will be disabled from exporting.
 
+NOTE: The Arconia properties replace the Spring Boot ones for OpenTelemetry and OTLP. The properties under `+management.opentelemetry.*+` and `+management.otlp.*+` have no effect, and Arconia logs a warning at startup listing the ones it finds in the application configuration. If you're coming from the Spring Boot OpenTelemetry support, the xref:migration/migration-spring-boot.adoc[migration guide] includes a recipe that converts them.
+
 .Exporter Type Configuration Properties
 |===
 |Property |Default |Description
