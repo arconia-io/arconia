@@ -105,6 +105,8 @@ NOTE: For more information, refer to the https://docs.micrometer.io/tracing/refe
 | List of fields that should automatically become tags.
 |===
 
+When you set `management.tracing.baggage.tag-fields`, each span is tagged with the listed baggage fields found in the context it starts in. That includes the baggage received with an incoming request, not only the baggage set by the application. For example, with `management.tracing.baggage.tag-fields=tenant.id`, a request carrying the `tenant.id=acme` baggage results in spans with a `tenant.id` attribute set to `acme`.
+
 === Span Limits
 
 Constraints for the data captured by spans.

@@ -18,24 +18,28 @@ package io.arconia.opentelemetry.autoconfigure.traces.propagation;
 
 import java.util.List;
 
+import io.micrometer.tracing.otel.bridge.BaggageTaggingSpanProcessor;
 import io.micrometer.tracing.otel.bridge.OtelBaggageManager;
 import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
 import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
 import io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 
+import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.OnPropertyListCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration for OpenTelemetry propagation.
  * <p>
- * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.0.1/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryPropagationConfigurations.java">OpenTelemetryPropagationConfigurations.java</a>
- * authored by Moritz Halbritter in the Spring Boot project.
+ * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.2.0/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryPropagationConfigurations.java">OpenTelemetryPropagationConfigurations.java</a>
+ * authored by Moritz Halbritter and Oleksandr Shevchenko in the Spring Boot project.
  */
 public class OpenTelemetryPropagationConfiguration {
 
@@ -76,6 +80,29 @@ public class OpenTelemetryPropagationConfiguration {
 		@ConditionalOnBooleanProperty(name = "management.tracing.baggage.correlation.enabled", matchIfMissing = true)
 		Slf4JBaggageEventListener otelSlf4JBaggageEventListener(TracingProperties tracingProperties) {
 			return new Slf4JBaggageEventListener(tracingProperties.getBaggage().getCorrelation().getFields());
+		}
+
+		/**
+		 * Tags spans with the baggage found in their parent context, which covers the baggage
+		 * received with a request. Without it, only the baggage set through the Micrometer
+		 * Tracing API ends up on spans.
+		 */
+		@Bean
+		@ConditionalOnMissingBean
+		@Conditional(OnBaggageTagFieldsCondition.class)
+		BaggageTaggingSpanProcessor otelBaggageTaggingSpanProcessor(TracingProperties tracingProperties) {
+			return new BaggageTaggingSpanProcessor(tracingProperties.getBaggage().getTagFields());
+		}
+
+		/**
+		 * Matches when {@code management.tracing.baggage.tag-fields} has at least one entry.
+		 */
+		static class OnBaggageTagFieldsCondition extends OnPropertyListCondition {
+
+			OnBaggageTagFieldsCondition() {
+				super("management.tracing.baggage.tag-fields", () -> ConditionMessage.forCondition("Baggage tag fields"));
+			}
+
 		}
 
 	}
