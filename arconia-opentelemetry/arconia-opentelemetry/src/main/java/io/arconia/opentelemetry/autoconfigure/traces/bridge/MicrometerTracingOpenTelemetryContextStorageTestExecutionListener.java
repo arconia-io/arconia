@@ -19,6 +19,8 @@ package io.arconia.opentelemetry.autoconfigure.traces.bridge;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * JUnit {@link TestExecutionListener} to ensure
  * {@link MicrometerTracingOpenTelemetryContextStorageApplicationListener#addWrapper()} is called as
@@ -27,6 +29,7 @@ import org.junit.platform.launcher.TestIdentifier;
  * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.0.1/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryEventPublisherBeansTestExecutionListener.java">OpenTelemetryEventPublisherBeansTestExecutionListener.java</a>
  * authored by Phillip Webb in the Spring Boot project.
  */
+@Internal
 public class MicrometerTracingOpenTelemetryContextStorageTestExecutionListener implements TestExecutionListener {
 
     @Override

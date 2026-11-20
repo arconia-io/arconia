@@ -30,6 +30,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.util.Assert;
 
+import io.arconia.core.annotations.Internal;
 import io.arconia.opentelemetry.autoconfigure.exporter.OpenTelemetryExporterProperties;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.ConditionalOnOtlpProtocol;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.EffectiveOtlpExporterConfig;
@@ -43,6 +44,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OtlpHttpMetricExporter.class)
 @ConditionalOnOpenTelemetryMetricsExporter("otlp")
+@Internal
 public final class OtlpMetricsExporterConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OtlpMetricsExporterConfiguration.class);

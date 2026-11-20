@@ -21,7 +21,6 @@ import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.boot.origin.PropertySourceOrigin;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
-import org.springframework.core.log.LogMessage;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -95,7 +94,7 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
         Assert.hasText(externalKey, "externalKey cannot be null or empty");
         Assert.hasText(reason, "reason cannot be null or empty");
         if (StringUtils.hasText(environment.getProperty(externalKey))) {
-            logger.warn(LogMessage.format("Ignoring %s because %s", externalKey, reason));
+            logger.warn("Ignoring %s because %s".formatted(externalKey, reason));
         }
         return this;
     }
@@ -178,14 +177,14 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
             for (String pair : StringUtils.tokenizeToStringArray(value, ",")) {
                 String[] entry = pair.split("=", 2);
                 if (entry.length != 2 || !StringUtils.hasText(entry[0]) || !StringUtils.hasText(entry[1])) {
-                    logger.warn(LogMessage.format("Ignoring an invalid key-value pair in %s", externalKey));
+                    logger.warn("Ignoring an invalid key-value pair in %s".formatted(externalKey));
                     continue;
                 }
                 String key = entry[0].strip();
                 try {
                     propertyMap.put(key, StringUtils.uriDecode(entry[1].strip(), StandardCharsets.UTF_8));
                 } catch (IllegalArgumentException ex) {
-                    logger.warn(LogMessage.format("Ignoring the '%s' entry in %s because its value is not correctly percent-encoded", key, externalKey));
+                    logger.warn("Ignoring the '%s' entry in %s because its value is not correctly percent-encoded".formatted(key, externalKey));
                 }
             }
             return propertyMap.isEmpty() ? null : propertyMap;
@@ -217,7 +216,7 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
             List<String> items = List.of(StringUtils.tokenizeToStringArray(value.toLowerCase(Locale.ROOT), ","));
             if (items.contains("none")) {
                 if (items.size() > 1) {
-                    logger.warn(LogMessage.format("Ignoring the other values of %s because it includes 'none'", externalKey));
+                    logger.warn("Ignoring the other values of %s because it includes 'none'".formatted(externalKey));
                 }
                 return List.of();
             }
@@ -289,7 +288,7 @@ final class OpenTelemetryEnvironmentPropertyAdapter {
     }
 
     private void logUnsupportedValue(String externalKey, String value) {
-        logger.warn(LogMessage.format("Unsupported value for %s: %s", externalKey, value));
+        logger.warn("Unsupported value for %s: %s".formatted(externalKey, value));
     }
 
     /**

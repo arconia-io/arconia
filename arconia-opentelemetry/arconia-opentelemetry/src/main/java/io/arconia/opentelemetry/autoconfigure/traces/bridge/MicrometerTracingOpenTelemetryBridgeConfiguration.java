@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
+import io.arconia.core.annotations.Internal;
+
 @Configuration(proxyBeanMethods = false)
+@Internal
 public class MicrometerTracingOpenTelemetryBridgeConfiguration {
 
     @Bean

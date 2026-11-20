@@ -35,12 +35,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
+import io.arconia.core.annotations.Internal;
+
 /**
  * Configuration for OpenTelemetry propagation.
  * <p>
  * Code adapted from <a href="https://github.com/spring-projects/spring-boot/blob/v4.2.0/module/spring-boot-micrometer-tracing-opentelemetry/src/main/java/org/springframework/boot/micrometer/tracing/opentelemetry/autoconfigure/OpenTelemetryPropagationConfigurations.java">OpenTelemetryPropagationConfigurations.java</a>
  * authored by Moritz Halbritter and Oleksandr Shevchenko in the Spring Boot project.
  */
+@Internal
 public class OpenTelemetryPropagationConfiguration {
 
 	/**
