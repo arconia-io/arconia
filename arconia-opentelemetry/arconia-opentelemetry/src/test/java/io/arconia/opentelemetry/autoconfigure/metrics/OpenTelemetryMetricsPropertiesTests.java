@@ -2,7 +2,6 @@ package io.arconia.opentelemetry.autoconfigure.metrics;
 
 import org.junit.jupiter.api.Test;
 
-import static io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -18,7 +17,6 @@ class OpenTelemetryMetricsPropertiesTests {
     @Test
     void shouldCreateInstanceWithDefaultValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
-        assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.TRACE_BASED);
         assertThat(properties.getCardinalityLimit()).isEqualTo(2000);
     }
 
@@ -26,10 +24,8 @@ class OpenTelemetryMetricsPropertiesTests {
     void shouldUpdateValues() {
         OpenTelemetryMetricsProperties properties = new OpenTelemetryMetricsProperties();
         properties.setCardinalityLimit(3000);
-        properties.getExemplars().setFilter(ExemplarFilter.ALWAYS_ON);
 
         assertThat(properties.getCardinalityLimit()).isEqualTo(3000);
-        assertThat(properties.getExemplars().getFilter()).isEqualTo(ExemplarFilter.ALWAYS_ON);
     }
 
 }

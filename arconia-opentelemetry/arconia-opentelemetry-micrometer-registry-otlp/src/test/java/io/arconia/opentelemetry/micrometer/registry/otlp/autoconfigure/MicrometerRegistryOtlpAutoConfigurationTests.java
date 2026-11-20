@@ -17,13 +17,17 @@ import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpHttpMetricsSender;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
 import io.micrometer.registry.otlp.OtlpMetricsSender;
+import io.micrometer.tracing.Tracer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.micrometer.tracing.autoconfigure.otlp.OtlpExemplarsAutoConfiguration;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.pem.PemSslStoreBundle;
 import org.springframework.boot.ssl.pem.PemSslStoreDetails;
@@ -36,6 +40,7 @@ import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetr
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.otlp.OtlpMetricsConnectionDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link MicrometerRegistryOtlpAutoConfiguration}.
@@ -239,6 +244,38 @@ class MicrometerRegistryOtlpAutoConfigurationTests {
                 .withBean(Resource.class, Resource::getDefault)
                 .run(context -> assertThat(ReflectionTestUtils.getField(context.getBean(OtlpMeterRegistry.class), "exemplarSamplerFactory"))
                         .isNull());
+    }
+
+    /**
+     * The exemplars of the registry are configured by Spring Boot from the
+     * {@code management.tracing.exemplars.include} property, which Arconia relies on.
+     */
+    @Test
+    void exemplarsFollowSpringBootExemplarsPropertyByDefault() {
+        contextRunner
+                .withConfiguration(AutoConfigurations.of(OtlpExemplarsAutoConfiguration.class))
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(Tracer.class, () -> mock(Tracer.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(ExemplarContextProvider.class);
+                    assertThat(ReflectionTestUtils.getField(context.getBean(OtlpMeterRegistry.class), "exemplarSamplerFactory"))
+                            .isNotNull();
+                });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "NONE" })
+    void noExemplarsWhenSpringBootExemplarsPropertyIncludesNone(String include) {
+        contextRunner
+                .withConfiguration(AutoConfigurations.of(OtlpExemplarsAutoConfiguration.class))
+                .withPropertyValues("management.tracing.exemplars.include=" + include)
+                .withBean(Resource.class, Resource::getDefault)
+                .withBean(Tracer.class, () -> mock(Tracer.class))
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(ExemplarContextProvider.class);
+                    assertThat(ReflectionTestUtils.getField(context.getBean(OtlpMeterRegistry.class), "exemplarSamplerFactory"))
+                            .isNull();
+                });
     }
 
     @Test

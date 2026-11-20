@@ -40,10 +40,12 @@ You can configure the support for OpenTelemetry Metrics via configuration proper
 | `2000`
 | Maximum number of distinct points per metric.
 
-| `arconia.otel.metrics.exemplars.filter`
-| `trace-based`
-| Determines which measurements are eligible to become Exemplars. Options: `always-on`, `always-off`, `trace-based`.
+| `management.tracing.exemplars.include`
+| `sampled-traces`
+| Traces to include as exemplars. Options: `all`, `none`, `sampled-traces`.
 |===
+
+The exemplars are configured via the Spring Boot `management.tracing.exemplars.include` property, which applies to all the metrics of the application, whether they are recorded with Micrometer or with the OpenTelemetry API. With `sampled-traces`, a measurement gets an exemplar when it's recorded within a sampled trace. The `OTEL_METRICS_EXEMPLAR_FILTER` environment variable sets the same property: `trace_based` corresponds to `sampled-traces`, `always_on` to `all`, and `always_off` to `none`.
 
 === OpenTelemetry Environment Variables
 

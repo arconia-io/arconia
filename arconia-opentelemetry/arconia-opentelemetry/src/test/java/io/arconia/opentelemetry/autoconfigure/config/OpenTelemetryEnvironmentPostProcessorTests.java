@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Exemplars.Include;
 import org.springframework.core.Ordered;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -94,6 +95,15 @@ class OpenTelemetryEnvironmentPostProcessorTests {
         assertThat(environment.getProperty(OpenTelemetryLoggingExporterProperties.CONFIG_PREFIX + ".type")).isNull();
         assertThat(environment.getProperty(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".type")).isNull();
         assertThat(environment.getProperty(OpenTelemetryTracingExporterProperties.CONFIG_PREFIX + ".type")).isNull();
+    }
+
+    @Test
+    void postProcessEnvironmentShouldMapExemplarFilterToSpringBootProperty() {
+        var environment = new MockEnvironment().withProperty("otel.metrics.exemplar.filter", "always_off");
+
+        processor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("management.tracing.exemplars.include", Include.class)).isEqualTo(Include.NONE);
     }
 
     @Test

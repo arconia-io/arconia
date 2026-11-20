@@ -78,8 +78,8 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     }
 
     @Test
-    void exemplarsDisabledWithAlwaysOffFilter() {
-        assertThat(exemplarCount("arconia.otel.metrics.exemplars.filter=always-off")).isZero();
+    void exemplarsDisabledWhenNoTracesIncluded() {
+        assertThat(exemplarCount("management.tracing.exemplars.include=none")).isZero();
     }
 
     @Test
@@ -112,23 +112,28 @@ class OpenTelemetryMetricsAutoConfigurationTests {
     }
 
     @Test
-    void exemplarFilterConfigurationApplied() {
+    void exemplarFilterFollowsSpringBootExemplarsProperty() {
+        contextRunner.run(context -> {
+            ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
+            assertThat(exemplarFilter).isEqualTo(ExemplarFilter.traceBased());
+        });
+
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplars.filter=always-on")
+            .withPropertyValues("management.tracing.exemplars.include=all")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.alwaysOn());
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplars.filter=always-off")
+            .withPropertyValues("management.tracing.exemplars.include=none")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.alwaysOff());
             });
 
         contextRunner
-            .withPropertyValues("arconia.otel.metrics.exemplars.filter=trace-based")
+            .withPropertyValues("management.tracing.exemplars.include=sampled-traces")
             .run(context -> {
                 ExemplarFilter exemplarFilter = context.getBean(ExemplarFilter.class);
                 assertThat(exemplarFilter).isEqualTo(ExemplarFilter.traceBased());

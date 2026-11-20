@@ -11,18 +11,9 @@ public class OpenTelemetryMetricsProperties {
     public static final String CONFIG_PREFIX = "arconia.otel.metrics";
 
     /**
-     * Configuration for exemplars.
-     */
-    private final Exemplars exemplars = new Exemplars();
-
-    /**
      * Maximum number of distinct points per metric.
      */
     private int cardinalityLimit = 2000;
-
-    public Exemplars getExemplars() {
-        return this.exemplars;
-    }
 
     public int getCardinalityLimit() {
         return this.cardinalityLimit;
@@ -30,48 +21,6 @@ public class OpenTelemetryMetricsProperties {
 
     public void setCardinalityLimit(int cardinalityLimit) {
         this.cardinalityLimit = cardinalityLimit;
-    }
-
-    /**
-     * Configuration properties for exemplars.
-     */
-    public static class Exemplars {
-
-        /**
-         * Determines which measurements are eligible to become Exemplars.
-         */
-        private ExemplarFilter filter = ExemplarFilter.TRACE_BASED;
-
-        public ExemplarFilter getFilter() {
-            return this.filter;
-        }
-
-        public void setFilter(ExemplarFilter filter) {
-            this.filter = filter;
-        }
-
-    }
-
-    /**
-     * Filter for which measurements are eligible to become Exemplars.
-     */
-    public enum ExemplarFilter {
-
-        /**
-         * Filter which makes all measurements eligible for being an exemplar.
-         */
-        ALWAYS_ON,
-
-        /**
-         * Filter which makes no measurements eligible for being an exemplar.
-         */
-        ALWAYS_OFF,
-
-        /**
-         * Filter that only accepts measurements where there is a span in context that is being sampled.
-         */
-        TRACE_BASED;
-
     }
 
 }

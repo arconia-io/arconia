@@ -14,6 +14,7 @@ import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 @ConditionalOnOpenTelemetryMetrics
-@EnableConfigurationProperties(OpenTelemetryMetricsProperties.class)
+@EnableConfigurationProperties({ OpenTelemetryMetricsProperties.class, TracingProperties.class })
 public final class OpenTelemetryMetricsAutoConfiguration {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "org.springframework.boot";
@@ -47,13 +48,17 @@ public final class OpenTelemetryMetricsAutoConfiguration {
         return instrumentType -> properties.getCardinalityLimit();
     }
 
+    /**
+     * The exemplars follow the same Spring Boot property that configures them for the
+     * Micrometer registries, so that one setting applies to all the metrics of the application.
+     */
     @Bean
     @ConditionalOnMissingBean
-    ExemplarFilter exemplarFilter(OpenTelemetryMetricsProperties properties) {
-        return switch (properties.getExemplars().getFilter()) {
-            case ALWAYS_ON -> ExemplarFilter.alwaysOn();
-            case ALWAYS_OFF -> ExemplarFilter.alwaysOff();
-            case TRACE_BASED -> ExemplarFilter.traceBased();
+    ExemplarFilter exemplarFilter(TracingProperties tracingProperties) {
+        return switch (tracingProperties.getExemplars().getInclude()) {
+            case ALL -> ExemplarFilter.alwaysOn();
+            case NONE -> ExemplarFilter.alwaysOff();
+            case SAMPLED_TRACES -> ExemplarFilter.traceBased();
         };
     }
 

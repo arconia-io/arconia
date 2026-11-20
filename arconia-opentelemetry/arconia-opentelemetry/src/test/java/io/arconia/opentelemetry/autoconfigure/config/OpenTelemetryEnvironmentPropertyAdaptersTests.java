@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Exemplars.Include;
 import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -26,8 +27,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.OpenTelemetryLoggingProperties;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -261,8 +260,8 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
 
         var adapter = OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter(environment));
 
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter"))
-            .isEqualTo(ExemplarFilter.ALWAYS_ON);
+        assertThat(adapter.getArconiaProperties().get("management.tracing.exemplars.include"))
+            .isEqualTo(Include.ALL);
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".interval"))
                 .isEqualTo(Duration.ofSeconds(60));
         assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".otlp.timeout"))
@@ -431,18 +430,18 @@ class OpenTelemetryEnvironmentPropertyAdaptersTests {
 
     @ParameterizedTest
     @CsvSource({
-            "always_on, ALWAYS_ON",
-            "always_off, ALWAYS_OFF",
-            "trace_based, TRACE_BASED",
-            "TRACE_BASED, TRACE_BASED",
-            "' always_on ', ALWAYS_ON"
+            "always_on, ALL",
+            "always_off, NONE",
+            "trace_based, SAMPLED_TRACES",
+            "TRACE_BASED, SAMPLED_TRACES",
+            "' always_on ', ALL"
     })
-    void shouldMapSupportedExemplarFilters(String input, ExemplarFilter expected) {
+    void shouldMapSupportedExemplarFilters(String input, Include expected) {
         var environment = new MockEnvironment().withProperty("otel.metrics.exemplar.filter", input);
 
         var adapter = OpenTelemetryEnvironmentPropertyAdapters.metrics(adapter(environment));
 
-        assertThat(adapter.getArconiaProperties().get(OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter"))
+        assertThat(adapter.getArconiaProperties().get("management.tracing.exemplars.include"))
                 .isEqualTo(expected);
     }
 

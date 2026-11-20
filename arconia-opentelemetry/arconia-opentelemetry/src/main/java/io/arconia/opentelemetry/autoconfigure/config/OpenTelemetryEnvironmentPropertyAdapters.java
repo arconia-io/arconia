@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Exemplars.Include;
 import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperties.Propagation.PropagationType;
 import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
@@ -15,8 +16,6 @@ import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Compression;
 import io.arconia.opentelemetry.autoconfigure.exporter.otlp.Protocol;
 import io.arconia.opentelemetry.autoconfigure.logs.OpenTelemetryLoggingProperties;
 import io.arconia.opentelemetry.autoconfigure.logs.exporter.OpenTelemetryLoggingExporterProperties;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties;
-import io.arconia.opentelemetry.autoconfigure.metrics.OpenTelemetryMetricsProperties.ExemplarFilter;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.AggregationTemporalityStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.HistogramAggregationStrategy;
 import io.arconia.opentelemetry.autoconfigure.metrics.exporter.OpenTelemetryMetricsExporterProperties;
@@ -54,10 +53,10 @@ class OpenTelemetryEnvironmentPropertyAdapters {
             "none", ExporterType.NONE,
             "otlp", ExporterType.OTLP);
 
-    private static final Map<String, ExemplarFilter> EXEMPLAR_FILTERS = Map.of(
-            "always_on", ExemplarFilter.ALWAYS_ON,
-            "always_off", ExemplarFilter.ALWAYS_OFF,
-            "trace_based", ExemplarFilter.TRACE_BASED);
+    private static final Map<String, Include> EXEMPLAR_FILTERS = Map.of(
+            "always_on", Include.ALL,
+            "always_off", Include.NONE,
+            "trace_based", Include.SAMPLED_TRACES);
 
     private static final Map<String, Protocol> PROTOCOLS = Map.of(
             "grpc", Protocol.GRPC,
@@ -247,7 +246,7 @@ class OpenTelemetryEnvironmentPropertyAdapters {
         Assert.notNull(adapter, "adapter cannot be null");
         return adapter
                 // OTEL_METRICS_EXEMPLAR_FILTER
-                .mapEnum("otel.metrics.exemplar.filter", OpenTelemetryMetricsProperties.CONFIG_PREFIX + ".exemplars.filter", EXEMPLAR_FILTERS)
+                .mapEnum("otel.metrics.exemplar.filter", "management.tracing.exemplars.include", EXEMPLAR_FILTERS)
                 // OTEL_METRIC_EXPORT_INTERVAL
                 .mapDuration("otel.metric.export.interval", OpenTelemetryMetricsExporterProperties.CONFIG_PREFIX + ".interval")
                 // OTEL_METRIC_EXPORT_TIMEOUT
