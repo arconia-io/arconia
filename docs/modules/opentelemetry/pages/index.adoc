@@ -113,7 +113,7 @@ You can run your Spring Boot application using your preferred method.
 
 include::ROOT:partial$app-run.adoc[]
 
-If you have enabled the Grafana LGTM Dev Service, Arconia will automatically start a Grafana instance pre-configured to accept OpenTelemetry logs, metrics, and traces from your application when running in development or test mode.
+If you have enabled the Grafana LGTM Dev Service, Arconia will automatically start a Grafana instance pre-configured to accept OpenTelemetry logs, metrics, and traces from your application when running in development mode. In tests, the Dev Service starts only when the export of telemetry is turned on (see <<_testing>>).
 
 NOTE: By default, when running the application in development mode, the Grafana LGTM Dev Service is shared across multiple applications running simultaneously, so that you can have a single observability platform for all your applications running in your development environment.
 
@@ -554,6 +554,7 @@ The main reason why Arconia OpenTelemetry exists is that no other option provide
 | OpenTelemetry OTLP Metrics Exporter | ✅ | ❌ | ❌ | ❌ | ❌ | ✅
 | OpenTelemetry OTLP Traces Exporter | ✅ | ✅ | ✅ | ✅ | ✅ | ✅
 | OpenTelemetry Environment Variables | ✅ | ⚠️* | ⚠️* | ✅ | ✅ | ✅
+| Common OTLP Configuration for All Signals | ✅ | ❌ | ❌ | ❌ | ⚠️* | ✅
 | Micrometer Metrics OTLP Exporter | ✅ | ✅ | ✅ | ✅ | ✅ | ❌
 | OpenTelemetry Java Instrumentation | 🔶 | ❌ | ❌ | ❌ | ❌ | ✅
 | Micrometer Instrumentation | ✅ | ✅ | ✅ | ✅ | ✅ | ❌
@@ -581,7 +582,11 @@ For metrics, Spring Boot doesn’t provide support for the OpenTelemetry Metrics
 A key difference between Arconia OpenTelemetry and Spring Boot is that the latter doesn’t provide full support for OpenTelemetry APIs and SDKs. Spring Boot supports the OpenTelemetry environment variables since version 4.1.
 
 In particular, by not supporting the OpenTelemetry Metrics API, Spring Boot misses out on the ability to collect metrics using the standard OpenTelemetry APIs and instrumentation, which some Java libraries use.
-Additionally, configuration for each observability signal is segregated rather than unified under a single OpenTelemetry configuration model to benefit from consistency and common defaults across all signals.
+Additionally, configuration for each observability signal is segregated rather than unified under a single OpenTelemetry configuration model to benefit from consistency and common defaults across all signals. Since version 4.2, Spring Boot lets you configure the OTLP endpoint, headers, and compression once for logs and traces with the `+management.opentelemetry.otlp.*+` properties. The other settings, such as timeouts, transport, and TLS, are still configured for each signal, and the export of metrics is configured separately under `+management.otlp.metrics.export.*+`.
+
+Since version 4.2, Spring Boot can also apply the OpenTelemetry Semantic Conventions when you set `management.observations.conventions` to `open-telemetry`, but only to part of the telemetry: the JVM and system metrics and the HTTP server requests. The HTTP client requests, the database queries, and the Generative AI operations keep the Micrometer and Spring conventions. What is covered also deviates from the conventions in several ways, since it's based on the Micrometer instrumentation: for example, the JVM metrics differ in units and instrument types, and attribute values are always strings. Arconia covers all those areas with its xref:observability:semantic-conventions/opentelemetry.adoc[OpenTelemetry Semantic Conventions] support, and documents the deviations that remain in the Known Deviations sections of that page, such as the ones for the xref:observability:semantic-conventions/opentelemetry.adoc#_jvm[JVM] metrics.
+
+In tests, the Spring Boot test support turns off the export of metrics and traces, but not the export of logs. The `arconia-opentelemetry-spring-boot-starter-test` starter includes that support and does the same for logs (see <<_testing>>).
 
 At development and test time, Spring Boot connects the application to the Grafana LGTM and OpenTelemetry Collector containers you define with Testcontainers or Docker Compose. Arconia provides xref:dev-services:index.adoc[Dev Services] that start Grafana LGTM, the OpenTelemetry Collector, Phoenix, OpenLIT, or Langfuse with no configuration, and Testcontainers service connections for the same backends. Docker Compose service connections for observability backends are not supported yet.
 
