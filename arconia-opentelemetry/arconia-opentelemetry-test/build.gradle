@@ -15,6 +15,11 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+// The module has no public types, and the Javadoc tool fails when it finds nothing to document.
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PACKAGE
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
