@@ -22,6 +22,9 @@ class PageFrontendIT extends BaseFrontendIT {
 
         assertThat(page).hasURL(pageUrl("overview"));
         assertThat(heading(page, "Overview")).isVisible();
+        // The summary has a name of its own, apart from the card of the application.
+        assertThat(page.getByRole(AriaRole.REGION, new Page.GetByRoleOptions().setName("Summary").setExact(true))).isVisible();
+        assertThat(page.getByRole(AriaRole.REGION, new Page.GetByRoleOptions().setName("Application").setExact(true))).hasCount(1);
     }
 
     /**

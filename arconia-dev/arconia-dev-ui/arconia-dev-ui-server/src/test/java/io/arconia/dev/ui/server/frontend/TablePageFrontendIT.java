@@ -69,6 +69,7 @@ class TablePageFrontendIT extends BaseFrontendIT {
         void secretIsShownOnlyWhenAskedFor(Page page) {
             page.navigate(pageUrl("settings") + "?filter=catalog.password");
             assertThat(cell(page, "••••••••")).isVisible();
+            assertThat(page.getByRole(AriaRole.GRIDCELL, new Page.GetByRoleOptions().setName("Hidden value"))).isVisible();
 
             button(page, "Show the value").click();
 

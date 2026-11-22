@@ -17,7 +17,7 @@ class ArconiaOverviewPage extends ArconiaElement {
     render() {
         const application = this.page.application;
         return html`
-            <section class="summary" aria-label="Application">
+            <section class="summary" aria-label="Summary">
                 <div class="identity">
                     <h2>
                         ${application.name}

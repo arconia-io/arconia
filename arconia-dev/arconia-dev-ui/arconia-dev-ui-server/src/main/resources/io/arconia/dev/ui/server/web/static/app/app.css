@@ -430,7 +430,8 @@ arconia-cards-page .logs {
     margin-inline-start: auto;
 }
 
-arconia-cards-page .visually-hidden {
+/* A text for assistive technologies only, such as what a masked secret is. */
+arconia-dev-ui .visually-hidden {
     position: absolute;
     width: 1px;
     height: 1px;

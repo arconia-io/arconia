@@ -212,7 +212,7 @@ class ArconiaTablePage extends ArconiaElement {
         const revealed = this.revealed.has(key);
         return html`
             <span class="secret">
-                <span>${revealed ? cell.text : '••••••••'}</span>
+                ${revealed ? html`<span>${cell.text}</span>` : html`<span aria-hidden="true">••••••••</span><span class="visually-hidden">Hidden value</span>`}
                 <vaadin-button theme="tertiary icon" aria-label=${revealed ? 'Hide the value' : 'Show the value'}
                         title=${revealed ? 'Hide the value' : 'Show the value'} @click=${() => this.toggleSecret(key)}>
                     <vaadin-icon src=${iconPath(revealed ? 'eye-off' : 'eye')}></vaadin-icon>
