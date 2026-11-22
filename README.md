@@ -23,6 +23,7 @@
 ## ✨&nbsp; Features
 
 - **Dev Services.** First-class support for development and testing modes in Spring Boot applications. Dev Services automatically provisions external services using containers, making local development and testing easier, more productive, and more fun.
+- **Dev UI.** A web interface for the application you are developing, served by the application itself in dev mode. Explore its configuration, environment, logs, and Dev Services, restart it with Spring Boot DevTools, and let libraries contribute their own pages.
 - **OpenTelemetry.** Unified observability for Spring Boot applications, combining full support for OpenTelemetry and Micrometer for logs, metrics, and traces.
 - **AI Observability.** Pluggable semantic conventions for AI observability, including OpenTelemetry, OpenInference, OpenLIT, OpenLLMetry, and LangSmith, with integrations for platforms like Arize Phoenix, Grafana LGTM, and OpenLIT.
 - **Docling.** AI-powered document processing, enabling structured content extraction from PDFs, Office files, and HTML documents for use in AI pipelines.
