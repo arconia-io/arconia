@@ -46,7 +46,7 @@ public final class DevUiApplication {
 
     private static final DateTimeFormatter DAY_FORMAT = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 
-    private static final long MEGABYTE = 1024 * 1024;
+    private static final long MEGABYTE = 1024L * 1024;
 
     private final ApplicationContext applicationContext;
 
