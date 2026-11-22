@@ -23,9 +23,6 @@ dependencies {
     implementation "net.ltgt.errorprone:net.ltgt.errorprone.gradle.plugin:${errorPronePluginVersion}"
     implementation "net.ltgt.nullaway:net.ltgt.nullaway.gradle.plugin:${nullAwayPluginVersion}"
 
-    // TEMPORARY: CVE fixes in Jackson 2, which the CycloneDX plugin pins to 2.22.2. Remove once the plugin upgrades it.
-    implementation platform("com.fasterxml.jackson:jackson-bom:2.23.0")
-
     constraints {
         // TEMPORARY: CVE fix in guava, pulled in by the CycloneDX plugin via maven-core. Remove once the plugin upgrades it.
         implementation("com.google.guava:guava:33.8.0-jre") {

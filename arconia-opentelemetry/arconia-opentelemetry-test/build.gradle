@@ -15,6 +15,12 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationVersion}"
+    }
+}
+
 // The module has no public types, and the Javadoc tool fails when it finds nothing to document.
 javadoc {
     options.memberLevel = JavadocMemberLevel.PACKAGE
