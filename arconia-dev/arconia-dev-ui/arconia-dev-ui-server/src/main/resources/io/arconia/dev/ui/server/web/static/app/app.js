@@ -80,7 +80,8 @@ class ArconiaDevUi extends ArconiaElement {
         this.onNavigate = (event) => {
             const destination = new URL(event.destination.url);
             if (event.canIntercept && !event.hashChange && event.downloadRequest === null && !event.formData
-                    && event.navigationType !== 'reload' && isDevUiPath(destination.pathname)) {
+                    && event.navigationType !== 'reload' && isDevUiPath(destination.pathname)
+                    && (!event.destination.sameDocument || event.navigationType === 'traverse')) {
                 event.intercept({ handler: () => this.show(destination) });
             }
         };
@@ -91,7 +92,10 @@ class ArconiaDevUi extends ArconiaElement {
      * buttons of the browser, shows the new page without loading the Dev UI again, which would
      * close the console and its log. The browser tells about each navigation, and the Dev UI
      * takes over the ones to its own pages. A browser that doesn't tell loads the Dev UI again
-     * at the new address, which shows the same.
+     * at the new address, which shows the same. A page that only rewrites its own address, as
+     * a table does with its filter, is left as it is: the browser tells about that too, as a
+     * navigation within the same document, and showing the page anew would take the focus
+     * away from what the developer is typing in.
      */
     connectedCallback() {
         super.connectedCallback();
