@@ -122,6 +122,7 @@ public final class DevUiLogs implements SmartLifecycle {
             viewer.accept(new End(null));
         } catch (InterruptedException ex) {
             // Nobody is watching anymore.
+            Thread.currentThread().interrupt();
         } catch (Exception | LinkageError ex) {
             if (!viewer.gone) {
                 logger.warn("A log shown in the Dev UI cannot be followed", ex);
