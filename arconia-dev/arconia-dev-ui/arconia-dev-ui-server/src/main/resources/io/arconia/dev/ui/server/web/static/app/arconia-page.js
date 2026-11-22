@@ -27,7 +27,7 @@ class ArconiaPage extends ArconiaElement {
 
     willUpdate(changes) {
         if (changes.has('pageId')) {
-            this.load(this.pageId);
+            void this.load(this.pageId);
         }
         if (changes.has('page')) {
             // The tab of the browser says which page it shows, so that several tabs of the
@@ -45,7 +45,7 @@ class ArconiaPage extends ArconiaElement {
     connectedCallback() {
         super.connectedCallback();
         this.onFocus = () => {
-            this.load(this.pageId, { keepContent: true });
+            void this.load(this.pageId, { keepContent: true });
         };
         window.addEventListener('focus', this.onFocus);
     }

@@ -119,7 +119,7 @@ class ArconiaDevUi extends ArconiaElement {
         if (reloadedAfterRestart()) {
             this.tell('The application was restarted.');
         }
-        this.loadPages();
+        void this.loadPages();
     }
 
     /**

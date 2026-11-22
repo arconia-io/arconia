@@ -227,7 +227,20 @@ class ArconiaLogView extends ArconiaElement {
  */
 const WEB_ADDRESS = /https?:\/\/[^\s<>"'`]+/g;
 
-const TRAILING_PUNCTUATION = /[.,;:!?)\]}]+$/;
+const TRAILING_PUNCTUATION = '.,;:!?)]}';
+
+/**
+ * A web address without what ends a sentence or closes a bracket right after it. The characters
+ * are dropped one by one from the end, which takes no longer than the address is long, whatever
+ * it contains.
+ */
+function withoutTrailingPunctuation(address) {
+    let end = address.length;
+    while (end > 0 && TRAILING_PUNCTUATION.includes(address[end - 1])) {
+        end--;
+    }
+    return address.substring(0, end);
+}
 
 /**
  * Turns the web addresses in the text of an element into links, which open in a new tab. The
@@ -238,7 +251,7 @@ export function linked(element) {
     const parts = [];
     let end = 0;
     for (const match of text.matchAll(WEB_ADDRESS)) {
-        const address = match[0].replace(TRAILING_PUNCTUATION, '');
+        const address = withoutTrailingPunctuation(match[0]);
         const link = document.createElement('a');
         link.href = address;
         link.textContent = address;
