@@ -56,9 +56,9 @@ public final class DevUiHosts {
 
     private static final Pattern HOST_NAME = Pattern.compile("[a-z0-9]([a-z0-9.-]*[a-z0-9])?");
 
-    private static final Pattern IP_ADDRESS = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3}|[0-9a-fA-F:.]*:[0-9a-fA-F:.]*");
+    private static final Pattern IP_ADDRESS = Pattern.compile("\\d{1,3}(?:\\.\\d{1,3}){3}|[0-9a-fA-F.]*+:[0-9a-fA-F:.]*+");
 
-    private static final Pattern IPV6_ADDRESS = Pattern.compile("[0-9a-f:.]*:[0-9a-f:.]*:[0-9a-f:.]*");
+    private static final Pattern IPV6_ADDRESS = Pattern.compile("[0-9a-f.]*+:[0-9a-f.]*+:[0-9a-f:.]*+");
 
     private final Set<String> allowedHosts;
 

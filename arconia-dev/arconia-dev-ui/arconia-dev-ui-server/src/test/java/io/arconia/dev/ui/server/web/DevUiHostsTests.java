@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
@@ -94,6 +95,18 @@ class DevUiHostsTests {
                 .isThrownBy(() -> new DevUiHosts(List.of(allowedHost), false, true))
                 .withMessage("'%s' is not a valid allowed host for the Dev UI: it must be a host name or an IP address, without scheme, port or path",
                         allowedHost);
+    }
+
+    /**
+     * The address patterns must not backtrack, or a value like this one would take minutes to
+     * reject.
+     */
+    @Test
+    @Timeout(1)
+    void allowedHostThatIsNotAnAddressIsRejectedQuickly() {
+        String allowedHost = ":".repeat(5_000) + "g";
+
+        assertThatIllegalArgumentException().isThrownBy(() -> new DevUiHosts(List.of(allowedHost), false, true));
     }
 
     /**
