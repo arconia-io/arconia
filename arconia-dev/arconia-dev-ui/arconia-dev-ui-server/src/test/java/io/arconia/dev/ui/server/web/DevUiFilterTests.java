@@ -44,6 +44,18 @@ class DevUiFilterTests {
     }
 
     @Test
+    void everyAnswerForbidsTheBrowserToGuessItsType() throws Exception {
+        MockHttpServletResponse accepted = new MockHttpServletResponse();
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+
+        this.filter.doFilter(request("localhost"), accepted, new MockFilterChain());
+        this.filter.doFilter(request("evil.example.com"), rejected, new MockFilterChain());
+
+        assertThat(accepted.getHeader("X-Content-Type-Options")).isEqualTo("nosniff");
+        assertThat(rejected.getHeader("X-Content-Type-Options")).isEqualTo("nosniff");
+    }
+
+    @Test
     void acceptedRequestGoesStraightToTheServletAndNotThroughTheOtherFilters() throws Exception {
         MockHttpServletRequest request = request("localhost");
         MockHttpServletResponse response = new MockHttpServletResponse();

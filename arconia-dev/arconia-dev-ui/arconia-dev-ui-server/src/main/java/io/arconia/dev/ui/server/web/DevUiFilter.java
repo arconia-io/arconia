@@ -35,6 +35,8 @@ public final class DevUiFilter extends OncePerRequestFilter {
 
     private static final int MAX_REPORTED_REJECTIONS = 50;
 
+    private static final String CONTENT_TYPE_OPTIONS_HEADER = "X-Content-Type-Options";
+
     private final Set<Rejection> reportedRejections = ConcurrentHashMap.newKeySet();
 
     private final Servlet servlet;
@@ -64,6 +66,9 @@ public final class DevUiFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
+        // Every answer is read as the type it declares, so that a browser never reads one
+        // that echoes part of the request as a page of its own.
+        response.setHeader(CONTENT_TYPE_OPTIONS_HEADER, "nosniff");
         Rejection rejection = this.hosts.rejection(request);
         if (rejection != null) {
             warnAbout(rejection);

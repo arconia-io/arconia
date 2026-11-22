@@ -182,6 +182,21 @@ class DevUiHostsTests {
     }
 
     @Test
+    void rejectionCannotAddLinesToTheLog() {
+        DevUiHosts.Rejection rejection = new DevUiHosts.Rejection("host", "evil.example.com\r\nINFO Forged line\u001b[31m");
+
+        assertThat(rejection.value()).isEqualTo("evil.example.com��INFO Forged line�[31m");
+        assertThat(rejection.message()).doesNotContain("\r", "\n", "\u001b");
+    }
+
+    @Test
+    void rejectionCannotFloodTheLog() {
+        DevUiHosts.Rejection rejection = new DevUiHosts.Rejection("host", "a".repeat(10_000));
+
+        assertThat(rejection.value()).isEqualTo("a".repeat(100) + "…");
+    }
+
+    @Test
     void requestAddressedToAnAllowedHostIsAcceptedWhereverItComesFrom() {
         MockHttpServletRequest request = request("dev.example.com");
         request.setRemoteAddr("192.168.1.20");

@@ -262,6 +262,23 @@ public final class DevUiHosts {
 
         static final String WRITE = "write";
 
+        private static final int MAX_VALUE_LENGTH = 100;
+
+        /**
+         * The value comes from the request, so it is made safe to log: control characters are
+         * replaced, so that it cannot add lines to the log, and it is shortened, so that it
+         * cannot flood the log.
+         */
+        Rejection {
+            StringBuilder safeValue = new StringBuilder(Math.min(value.length(), MAX_VALUE_LENGTH) + 1);
+            value.codePoints().limit(MAX_VALUE_LENGTH)
+                    .forEach(c -> safeValue.appendCodePoint(Character.isISOControl(c) ? '�' : c));
+            if (value.codePointCount(0, value.length()) > MAX_VALUE_LENGTH) {
+                safeValue.append('…');
+            }
+            value = safeValue.toString();
+        }
+
         /**
          * What the application log says about the rejection, with what to do about it when
          * the request was meant to be accepted.

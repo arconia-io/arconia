@@ -1,7 +1,5 @@
 package io.arconia.multitenancy.core.resolution;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import io.arconia.core.annotations.Incubating;
@@ -15,8 +13,6 @@ import io.arconia.multitenancy.core.tenantdetails.TenantDetailsService;
 @Incubating
 public final class DefaultTenantVerifier implements TenantVerifier {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultTenantVerifier.class);
-
     private final TenantDetailsService tenantDetailsService;
 
     public DefaultTenantVerifier(TenantDetailsService tenantDetailsService) {
@@ -27,7 +23,6 @@ public final class DefaultTenantVerifier implements TenantVerifier {
     @Override
     public void verify(String tenantIdentifier) {
         Assert.hasText(tenantIdentifier, "tenantIdentifier cannot be null or empty");
-        logger.trace("Verifying tenant: {}", tenantIdentifier);
         var tenant = tenantDetailsService.loadTenantByIdentifier(tenantIdentifier);
         // Identifiers are compared exactly, so that a service matching case-insensitively,
         // such as one backed by a case-insensitive collation, cannot admit "ACME" as an
