@@ -34,7 +34,7 @@ public class PhoenixDevServicesProperties implements DevServicesProperties, SslD
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "arizephoenix/phoenix:version-21.0-nonroot";
+    private String imageName = "arizephoenix/phoenix:version-22.0-nonroot";
 
     /**
      * Environment variables to set in the service.

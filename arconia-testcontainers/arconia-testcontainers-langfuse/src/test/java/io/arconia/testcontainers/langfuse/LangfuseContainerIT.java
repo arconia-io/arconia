@@ -33,12 +33,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @EnabledIfDockerAvailable
 class LangfuseContainerIT {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse("langfuse/langfuse:4.72");
-    private static final String WORKER_IMAGE = "langfuse/langfuse-worker:4.72";
-    private static final String POSTGRES_IMAGE = "postgres:18.6-alpine";
+    private static final DockerImageName IMAGE = DockerImageName.parse("langfuse/langfuse:4.83");
+    private static final String WORKER_IMAGE = "langfuse/langfuse-worker:4.83";
+    private static final String POSTGRES_IMAGE = "postgres:18.7-alpine";
     private static final String CLICKHOUSE_IMAGE = "clickhouse/clickhouse-server:26.10-distroless";
     private static final String REDIS_IMAGE = "redis:8.10-alpine";
-    private static final String FLOCI_IMAGE = "floci/floci:2.4.0";
+    private static final String FLOCI_IMAGE = "floci/floci:2.5.0";
 
     private static final String TRACE_ID = "5b8efff798038103d269b633813fc60c";
 

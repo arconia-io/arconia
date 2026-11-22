@@ -31,17 +31,17 @@ public class LangfuseDevServicesProperties implements DevServicesProperties {
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "langfuse/langfuse:4.72";
+    private String imageName = "langfuse/langfuse:4.83";
 
     /**
      * Full name of the container image used for the Langfuse worker.
      */
-    private String workerImageName = "langfuse/langfuse-worker:4.72";
+    private String workerImageName = "langfuse/langfuse-worker:4.83";
 
     /**
      * Full name of the container image used for the internal PostgreSQL instance.
      */
-    private String postgresImageName = "postgres:18.6-alpine";
+    private String postgresImageName = "postgres:18.7-alpine";
 
     /**
      * Full name of the container image used for the internal ClickHouse instance.
@@ -57,7 +57,7 @@ public class LangfuseDevServicesProperties implements DevServicesProperties {
      * Full name of the container image used for the internal Floci instance,
      * providing the S3-compatible storage.
      */
-    private String flociImageName = "floci/floci:2.4.0";
+    private String flociImageName = "floci/floci:2.5.0";
 
     /**
      * Public key of the API keys of the Langfuse project, used to authenticate the telemetry data sent to Langfuse.

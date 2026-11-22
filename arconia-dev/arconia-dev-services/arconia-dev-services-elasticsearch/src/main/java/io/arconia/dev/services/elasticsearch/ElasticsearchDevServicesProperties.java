@@ -34,7 +34,7 @@ public class ElasticsearchDevServicesProperties implements DevServicesProperties
     /**
      * Full name of the container image used in the dev service.
      */
-    private String imageName = "docker.elastic.co/elasticsearch/elasticsearch:9.5.5";
+    private String imageName = "elasticsearch:9.5.5";
 
     /**
      * Environment variables to set in the service.

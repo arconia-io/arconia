@@ -32,7 +32,7 @@ You can configure the Dev Service via configuration properties. The application 
 | Whether the dev service is enabled.
 
 | `arconia.dev.services.{service-name}.image-name`
-| `docker.elastic.co/elasticsearch/elasticsearch`
+| `elasticsearch`
 | Full name of the container image used in the dev service.
 
 | `arconia.dev.services.{service-name}.environment`

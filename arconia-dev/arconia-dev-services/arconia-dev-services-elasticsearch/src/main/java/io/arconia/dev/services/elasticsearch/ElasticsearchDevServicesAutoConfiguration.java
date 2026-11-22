@@ -26,7 +26,7 @@ import io.arconia.dev.services.elasticsearch.ElasticsearchDevServicesAutoConfigu
 @Import(ElasticsearchDevServicesRegistrar.class)
 public final class ElasticsearchDevServicesAutoConfiguration {
 
-    static final String COMPATIBLE_IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch";
+    static final String COMPATIBLE_IMAGE_NAME = "elasticsearch";
 
     static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
 
