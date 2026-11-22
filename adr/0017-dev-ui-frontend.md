@@ -47,7 +47,7 @@ The welcome page and the error pages are the exception: they are plain HTML and 
 
 Building Arconia takes a JDK and nothing else. Upgrading a frontend library is a version change in the Java build, and tools that watch Maven dependencies cover the frontend too.
 
-The Dev UI is written in JavaScript without a compiler or a type checker in front of it, and the browser is the first to see a mistake. The Java build checks what it can: that every import in the scripts and in the libraries leads to a file on the class path.
+The Dev UI is written in JavaScript without a compiler or a type checker in front of it, and the browser is the first to see a mistake. The Java build checks what it can: that every import in the scripts and in the libraries leads to a file on the class path. Browser tests cover what happens on the page (see [20. Dev UI browser tests](0020-dev-ui-browser-tests.md)).
 
 The browser loads each module as a separate file, which means many requests for a page. They come from the local machine and the library files are cached, so the page still opens quickly, but the approach would not suit a public website.
 

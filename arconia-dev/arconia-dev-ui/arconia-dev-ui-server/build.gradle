@@ -42,11 +42,13 @@ dependencies {
     runtimeOnly "org.mvnpm.at.vaadin:side-nav:${vaadinVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:text-field:${vaadinVersion}"
 
+    testImplementation "com.microsoft.playwright:playwright:${playwrightVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-micrometer-observation"
     testImplementation "org.springframework.boot:spring-boot-starter-security"
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc"
     testImplementation "jakarta.servlet:jakarta.servlet-api"
+    testImplementation "org.testcontainers:testcontainers"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
