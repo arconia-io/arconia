@@ -74,6 +74,25 @@ class CardsPageFrontendIT extends BaseFrontendIT {
     }
 
     @Nested
+    class Status {
+
+        /**
+         * The color of a status says whether it is a problem, which assistive technologies
+         * are told in words.
+         */
+        @Test
+        void levelOfAStatusIsSaidAsWellAsShown(Page page) {
+            page.navigate(pageUrl("services"));
+
+            Locator status = page.locator("vaadin-card vaadin-badge[slot='header-suffix']");
+            assertThat(status).hasAttribute("theme", "success");
+            assertThat(status).hasText("Running, OK");
+            assertThat(status.locator(".visually-hidden")).hasText(", OK");
+        }
+
+    }
+
+    @Nested
     class LogDialog {
 
         @Test

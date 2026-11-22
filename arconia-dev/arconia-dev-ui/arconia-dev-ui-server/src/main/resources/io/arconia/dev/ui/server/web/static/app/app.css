@@ -505,9 +505,19 @@ arconia-table-page [slot='empty-state'] {
     color: var(--vaadin-text-color-secondary);
 }
 
+/* The button that opens the details of a row is small enough for its row to be as tall as the
+   others. */
+
 arconia-table-page .toggle {
-    --vaadin-icon-size: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 0;
+    padding: 0;
     color: var(--vaadin-text-color-secondary);
+}
+
+arconia-table-page .toggle vaadin-icon {
+    --vaadin-icon-size: 1rem;
 }
 
 /* A cell with a secret: its text, hidden behind dots until the developer asks for it, and the

@@ -3,7 +3,7 @@ import { ArconiaElement } from './arconia-element.js';
 import '@vaadin/button';
 import '@vaadin/grid';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
-import { columnBodyRenderer, gridRowDetailsRenderer } from '@vaadin/grid/lit.js';
+import { columnBodyRenderer, columnHeaderRenderer, gridRowDetailsRenderer } from '@vaadin/grid/lit.js';
 import '@vaadin/icon';
 import '@vaadin/select';
 import '@vaadin/text-field';
@@ -90,7 +90,8 @@ class ArconiaTablePage extends ArconiaElement {
     /**
      * Activating a row opens its details, and activating it again closes them. The table
      * activates a row on a click and on the Space key, but not when the click is on a button
-     * in the row or in the details themselves.
+     * in the row or in the details themselves. The button at the start of the row opens and
+     * closes them too, and says whether they are open.
      */
     toggle(row) {
         if (!row?.details) {
@@ -148,6 +149,7 @@ class ArconiaTablePage extends ArconiaElement {
                     ${gridRowDetailsRenderer((row) => this.renderDetails(row), [])}>
                 <span slot="empty-state">${this.rows.length ? 'No rows match the filter.' : 'There is nothing to show in this table.'}</span>
                 <vaadin-grid-column width="2.75rem" flex-grow="0" frozen
+                        ${columnHeaderRenderer(() => html`<span class="visually-hidden">Details</span>`, [])}
                         ${columnBodyRenderer((row) => this.renderToggle(row), [this.opened])}></vaadin-grid-column>
                 ${this.columns.map((column, index) => html`
                     <vaadin-grid-sort-column header=${column} path="sort.${index}" resizable flex-grow=${COLUMN_GROWTH[index] ?? 1}
@@ -188,8 +190,12 @@ class ArconiaTablePage extends ArconiaElement {
             return nothing;
         }
         const opened = this.opened.has(row.id);
-        return html`<vaadin-icon class="toggle" src=${iconPath(opened ? 'chevron-down' : 'chevron-right')}
-                aria-label=${opened ? 'Details shown' : 'Details hidden'}></vaadin-icon>`;
+        return html`
+            <vaadin-button class="toggle" theme="tertiary icon" aria-label="Details" aria-expanded=${opened ? 'true' : 'false'}
+                    title=${opened ? 'Hide the details' : 'Show the details'} @click=${() => this.toggle(row)}>
+                <vaadin-icon src=${iconPath(opened ? 'chevron-down' : 'chevron-right')}></vaadin-icon>
+            </vaadin-button>
+        `;
     }
 
     renderCell(row, index) {

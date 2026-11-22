@@ -157,12 +157,12 @@ class TablePageFrontendIT extends BaseFrontendIT {
 
             cell(page, "orders.retries").click();
 
-            assertThat(toggle(page, "Details shown")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "true");
             assertThat(page.getByText("application.properties")).isVisible();
 
             cell(page, "orders.retries").click();
 
-            assertThat(toggle(page, "Details hidden")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "false");
         }
 
         /**
@@ -173,15 +173,15 @@ class TablePageFrontendIT extends BaseFrontendIT {
         void enterOnARowOpensAndClosesItsDetails(Page page) {
             page.navigate(pageUrl("settings") + "?filter=orders.retries");
             cell(page, "orders.retries").click();
-            assertThat(toggle(page, "Details shown")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "true");
 
             page.keyboard().press("Enter");
 
-            assertThat(toggle(page, "Details hidden")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "false");
 
             page.keyboard().press("Enter");
 
-            assertThat(toggle(page, "Details shown")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "true");
         }
 
         @Test
@@ -192,11 +192,27 @@ class TablePageFrontendIT extends BaseFrontendIT {
             page.keyboard().press("Enter");
 
             assertThat(cell(page, "hunter2")).isVisible();
-            assertThat(toggle(page, "Details hidden")).isVisible();
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "false");
         }
 
-        private static Locator toggle(Page page, String state) {
-            return page.locator("vaadin-grid-cell-content:visible vaadin-icon.toggle[aria-label='" + state + "']");
+        @Test
+        void detailsButtonOpensAndClosesTheDetailsOfItsRow(Page page) {
+            page.navigate(pageUrl("settings") + "?filter=orders.retries");
+            assertThat(page.getByRole(AriaRole.COLUMNHEADER, new Page.GetByRoleOptions().setName("Details"))).hasCount(1);
+
+            detailsButton(page).click();
+
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "true");
+            assertThat(page.getByText("application.properties")).isVisible();
+
+            detailsButton(page).click();
+
+            assertThat(detailsButton(page)).hasAttribute("aria-expanded", "false");
+            assertThat(page.getByText("application.properties")).isHidden();
+        }
+
+        private static Locator detailsButton(Page page) {
+            return page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details").setExact(true));
         }
 
     }

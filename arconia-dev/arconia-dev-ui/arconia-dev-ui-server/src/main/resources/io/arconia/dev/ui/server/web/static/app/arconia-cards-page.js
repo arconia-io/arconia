@@ -11,6 +11,11 @@ import './arconia-log-view.js';
 import './arconia-message.js';
 
 /**
+ * The levels of a status that have a color of their own, and how they are said.
+ */
+const STATUS_LEVELS = { success: 'OK', warning: 'warning', error: 'error' };
+
+/**
  * Shows the cards of a page.
  */
 class ArconiaCardsPage extends ArconiaElement {
@@ -94,13 +99,14 @@ class ArconiaCardsPage extends ArconiaElement {
     /**
      * The status of a card, at the end of its header, as a badge. Its level is one of the
      * variants of the badge, except for the neutral one, which is the neutral accent color of
-     * the theme.
+     * the theme. What the color says is also said in words for assistive technologies, since
+     * the text of a status, such as "Exited", doesn't always tell whether it is a problem.
      */
     renderStatus(status) {
-        const neutral = !['success', 'warning', 'error'].includes(status.level);
+        const level = STATUS_LEVELS[status.level];
         return html`
-            <vaadin-badge slot="header-suffix" class=${neutral ? 'aura-accent-neutral' : nothing} theme=${neutral ? nothing : status.level}>
-                ${status.text}
+            <vaadin-badge slot="header-suffix" class=${level ? nothing : 'aura-accent-neutral'} theme=${level ? status.level : nothing}>
+                ${status.text}${level ? html`<span class="visually-hidden">, ${level}</span>` : nothing}
             </vaadin-badge>
         `;
     }
