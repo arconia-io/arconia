@@ -9,7 +9,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-dev-services-core")
     api "org.springframework.ai:spring-ai-spring-boot-testcontainers"
     api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-ollama"
@@ -19,7 +19,7 @@ dependencies {
     optional "org.springframework.ai:spring-ai-autoconfigure-model-ollama"
     optional "org.springframework.ai:spring-ai-autoconfigure-model-openai"
 
-    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation testFixtures(project(":arconia-dev-services-core"))
     testImplementation "org.springframework.ai:spring-ai-autoconfigure-model-ollama"
     testImplementation "org.springframework.ai:spring-ai-autoconfigure-model-openai"
     testImplementation "org.springframework.boot:spring-boot-starter-test"

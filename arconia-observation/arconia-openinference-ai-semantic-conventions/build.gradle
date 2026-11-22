@@ -9,15 +9,15 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-observation:arconia-observation")
+    api project(":arconia-core-annotations")
+    api project(":arconia-observation")
     api "com.arize:openinference-semantic-conventions:${openInferenceVersion}"
     api "org.springframework.ai:spring-ai-model"
     api "io.micrometer:micrometer-observation"
 
     implementation "tools.jackson.core:jackson-databind"
 
-    optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional project(":arconia-opentelemetry")
     optional "org.springframework.boot:spring-boot-autoconfigure"
     optional "org.springframework.ai:spring-ai-client-chat"
     optional "io.micrometer:micrometer-tracing-bridge-otel"
@@ -25,7 +25,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.micrometer:micrometer-tracing-bridge-otel"
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
-    testRuntimeOnly project(":arconia-opentelemetry:arconia-opentelemetry")
+    testRuntimeOnly project(":arconia-opentelemetry")
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 

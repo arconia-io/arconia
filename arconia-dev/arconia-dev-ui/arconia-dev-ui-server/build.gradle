@@ -9,9 +9,9 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-core:arconia-core-bootstrap")
-    api project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-api")
+    api project(":arconia-core-annotations")
+    api project(":arconia-core-bootstrap")
+    api project(":arconia-dev-ui-api")
     api "org.springframework:spring-web"
     api "org.springframework.boot:spring-boot-autoconfigure"
 

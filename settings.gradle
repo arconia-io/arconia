@@ -4,101 +4,102 @@ plugins {
 
 rootProject.name = 'arconia'
 
-// The folders that group modules are projects too, and they would take the group of the
-// modules. A folder named like one of its modules, such as arconia-dev, would then claim the
-// coordinates of that module, which a composite build cannot tell apart. The folders publish
-// nothing, so they get a group of their own.
-gradle.lifecycle.beforeProject { project ->
-    if (project != project.rootProject && !project.buildFile.exists()) {
-        project.group = 'io.arconia.folders'
-    }
+// Each module is included by its name, with its folder set explicitly, so that the folders that
+// group modules don't become projects of their own. As projects, they would take the group of
+// the modules, and a folder named like one of its modules, such as arconia-dev, would claim the
+// coordinates of that module in a composite build.
+// https://docs.gradle.org/current/userguide/best_practices_structuring_builds.html#avoid_empty_projects
+def module(String path) {
+    def name = path.substring(path.lastIndexOf('/') + 1)
+    include name
+    project(":${name}").projectDir = file(path)
 }
 
 // BOM
-include 'arconia-bom'
+module 'arconia-bom'
 
 // AI
-include 'arconia-ai:arconia-ai-docling-document-reader'
+module 'arconia-ai/arconia-ai-docling-document-reader'
 
 // Core
-include 'arconia-core:arconia-core-annotations'
-include 'arconia-core:arconia-core-bootstrap'
-include 'arconia-core:arconia-core-bootstrap-profiles'
+module 'arconia-core/arconia-core-annotations'
+module 'arconia-core/arconia-core-bootstrap'
+module 'arconia-core/arconia-core-bootstrap-profiles'
 
 // Data
-include 'arconia-data:arconia-data-jdbc-sqlite'
+module 'arconia-data/arconia-data-jdbc-sqlite'
 
 // Dev
-include 'arconia-dev:arconia-dev'
+module 'arconia-dev/arconia-dev'
 
 // Dev Services
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-api'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-core'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-api'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-core'
 
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-artemis'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-docling'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-elasticsearch'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-floci'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-kafka'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-keycloak'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-langfuse'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-lgtm'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-lldap'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-mariadb'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-mongodb'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-mongodb-atlas'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-mysql'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-oidc'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-ollama'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-oracle-xe'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-openlit'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-otel-collector'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-phoenix'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-pulsar'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
-include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-artemis'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-docling'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-elasticsearch'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-floci'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-kafka'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-keycloak'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-langfuse'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-lgtm'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-lldap'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-mariadb'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-mongodb'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-mongodb-atlas'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-mysql'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-oidc'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-ollama'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-oracle'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-oracle-xe'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-openlit'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-otel-collector'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-phoenix'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-postgresql'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-pulsar'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-rabbitmq'
+module 'arconia-dev/arconia-dev-services/arconia-dev-services-redis'
 
 // Dev UI
-include 'arconia-dev:arconia-dev-ui:arconia-dev-ui-api'
-include 'arconia-dev:arconia-dev-ui:arconia-dev-ui-server'
+module 'arconia-dev/arconia-dev-ui/arconia-dev-ui-api'
+module 'arconia-dev/arconia-dev-ui/arconia-dev-ui-server'
 
 // Integrations
-include 'arconia-integrations:arconia-docling'
+module 'arconia-integrations/arconia-docling'
 
 // Multitenancy
-include 'arconia-multitenancy:arconia-multitenancy-core'
-include 'arconia-multitenancy:arconia-multitenancy-web'
-include 'arconia-multitenancy:arconia-multitenancy-details-jdbc'
-include 'arconia-multitenancy:arconia-multitenancy-data-jdbc'
+module 'arconia-multitenancy/arconia-multitenancy-core'
+module 'arconia-multitenancy/arconia-multitenancy-web'
+module 'arconia-multitenancy/arconia-multitenancy-details-jdbc'
+module 'arconia-multitenancy/arconia-multitenancy-data-jdbc'
 
 // Observation
-include 'arconia-observation:arconia-observation'
-include 'arconia-observation:arconia-openinference-ai-semantic-conventions'
-include 'arconia-observation:arconia-opentelemetry-ai-semantic-conventions'
-include 'arconia-observation:arconia-opentelemetry-semantic-conventions'
+module 'arconia-observation/arconia-observation'
+module 'arconia-observation/arconia-openinference-ai-semantic-conventions'
+module 'arconia-observation/arconia-opentelemetry-ai-semantic-conventions'
+module 'arconia-observation/arconia-opentelemetry-semantic-conventions'
 
 // Observability
-include 'arconia-opentelemetry:arconia-opentelemetry'
-include 'arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http'
-include 'arconia-opentelemetry:arconia-opentelemetry-logback-bridge'
-include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-metrics-bridge'
-include 'arconia-opentelemetry:arconia-opentelemetry-micrometer-registry-otlp'
-include 'arconia-opentelemetry:arconia-opentelemetry-test'
+module 'arconia-opentelemetry/arconia-opentelemetry'
+module 'arconia-opentelemetry/arconia-opentelemetry-exporter-sender-http'
+module 'arconia-opentelemetry/arconia-opentelemetry-logback-bridge'
+module 'arconia-opentelemetry/arconia-opentelemetry-micrometer-metrics-bridge'
+module 'arconia-opentelemetry/arconia-opentelemetry-micrometer-registry-otlp'
+module 'arconia-opentelemetry/arconia-opentelemetry-test'
 
 // Spring Boot Starters
-include 'spring-boot-starters:arconia-data-jdbc-sqlite-spring-boot-starter'
-include 'spring-boot-starters:arconia-docling-spring-boot-starter'
-include 'spring-boot-starters:arconia-multitenancy-core-spring-boot-starter'
-include 'spring-boot-starters:arconia-multitenancy-details-jdbc-spring-boot-starter'
-include 'spring-boot-starters:arconia-multitenancy-web-spring-boot-starter'
-include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter'
-include 'spring-boot-starters:arconia-opentelemetry-spring-boot-starter-test'
-include 'spring-boot-starters:arconia-spring-boot-starter'
+module 'spring-boot-starters/arconia-data-jdbc-sqlite-spring-boot-starter'
+module 'spring-boot-starters/arconia-docling-spring-boot-starter'
+module 'spring-boot-starters/arconia-multitenancy-core-spring-boot-starter'
+module 'spring-boot-starters/arconia-multitenancy-details-jdbc-spring-boot-starter'
+module 'spring-boot-starters/arconia-multitenancy-web-spring-boot-starter'
+module 'spring-boot-starters/arconia-opentelemetry-spring-boot-starter'
+module 'spring-boot-starters/arconia-opentelemetry-spring-boot-starter-test'
+module 'spring-boot-starters/arconia-spring-boot-starter'
 
 // Testcontainers
-include 'arconia-testcontainers:arconia-testcontainers-langfuse'
-include 'arconia-testcontainers:arconia-testcontainers-openlit'
-include 'arconia-testcontainers:arconia-testcontainers-phoenix'
-include 'arconia-testcontainers:arconia-testcontainers-redis'
+module 'arconia-testcontainers/arconia-testcontainers-langfuse'
+module 'arconia-testcontainers/arconia-testcontainers-openlit'
+module 'arconia-testcontainers/arconia-testcontainers-phoenix'
+module 'arconia-testcontainers/arconia-testcontainers-redis'

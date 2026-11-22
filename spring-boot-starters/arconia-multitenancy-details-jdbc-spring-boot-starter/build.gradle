@@ -9,9 +9,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    api project(":arconia-core:arconia-core-bootstrap")
-    api project(":arconia-core:arconia-core-bootstrap-profiles")
-    api project(":arconia-multitenancy:arconia-multitenancy-details-jdbc")
+    api project(":arconia-core-bootstrap")
+    api project(":arconia-core-bootstrap-profiles")
+    api project(":arconia-multitenancy-details-jdbc")
     api "org.springframework.boot:spring-boot-starter-jdbc"
 }
 

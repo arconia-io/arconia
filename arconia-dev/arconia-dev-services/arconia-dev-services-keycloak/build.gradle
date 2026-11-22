@@ -9,9 +9,9 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-oidc")
+    api project(":arconia-core-annotations")
+    api project(":arconia-dev-services-core")
+    api project(":arconia-dev-services-oidc")
     api "org.springframework.boot:spring-boot-autoconfigure"
 
     api("com.github.dasniko:testcontainers-keycloak:${testcontainersKeycloakVersion}") {
@@ -23,7 +23,7 @@ dependencies {
     optional "org.springframework.boot:spring-boot-security-oauth2-client"
     optional "org.springframework.boot:spring-boot-security-oauth2-resource-server"
 
-    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation testFixtures(project(":arconia-dev-services-core"))
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

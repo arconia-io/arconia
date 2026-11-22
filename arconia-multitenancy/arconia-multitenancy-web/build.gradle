@@ -13,8 +13,8 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-multitenancy:arconia-multitenancy-core")
+    api project(":arconia-core-annotations")
+    api project(":arconia-multitenancy-core")
     api "org.springframework.boot:spring-boot-webmvc"
 
     implementation "org.slf4j:slf4j-api"

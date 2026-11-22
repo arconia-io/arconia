@@ -9,7 +9,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
+    api project(":arconia-core-annotations")
     api "io.opentelemetry:opentelemetry-sdk"
     api "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemanticConventionsVersion}"
     api "org.springframework.boot:spring-boot-micrometer-metrics"
@@ -30,9 +30,9 @@ dependencies {
     optional "io.opentelemetry:opentelemetry-exporter-logging"
 
     // Testcontainers
-    optional project(":arconia-testcontainers:arconia-testcontainers-langfuse")
-    optional project(":arconia-testcontainers:arconia-testcontainers-openlit")
-    optional project(":arconia-testcontainers:arconia-testcontainers-phoenix")
+    optional project(":arconia-testcontainers-langfuse")
+    optional project(":arconia-testcontainers-openlit")
+    optional project(":arconia-testcontainers-phoenix")
     optional "org.springframework.boot:spring-boot-testcontainers"
     optional "org.testcontainers:testcontainers-grafana"
 
@@ -44,7 +44,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-actuator"
     testImplementation "org.springframework.boot:spring-boot-starter-security"
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc"
-    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
+    testImplementation project(":arconia-opentelemetry-exporter-sender-http")
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing"
     testImplementation "io.opentelemetry:opentelemetry-exporter-sender-grpc-managed-channel"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"

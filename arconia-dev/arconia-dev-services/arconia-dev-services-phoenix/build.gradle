@@ -9,16 +9,16 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api project(":arconia-opentelemetry:arconia-opentelemetry")
-    api project(":arconia-testcontainers:arconia-testcontainers-phoenix")
+    api project(":arconia-dev-services-core")
+    api project(":arconia-opentelemetry")
+    api project(":arconia-testcontainers-phoenix")
     api "org.springframework.boot:spring-boot-autoconfigure"
 
-    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation testFixtures(project(":arconia-dev-services-core"))
     testImplementation("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
-    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
+    testImplementation project(":arconia-opentelemetry-exporter-sender-http")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

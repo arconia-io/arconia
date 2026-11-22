@@ -10,15 +10,15 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-bootstrap")
-    api project(":arconia-core:arconia-core-bootstrap-profiles")
-    api project(":arconia-core:arconia-core-annotations")
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-api")
+    api project(":arconia-core-bootstrap")
+    api project(":arconia-core-bootstrap-profiles")
+    api project(":arconia-core-annotations")
+    api project(":arconia-dev-services-api")
     api "org.springframework.boot:spring-boot-testcontainers"
 
     implementation "org.slf4j:slf4j-api"
 
-    optional project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-api")
+    optional project(":arconia-dev-ui-api")
     optional "org.springframework.boot:spring-boot-actuator"
     optional "org.springframework.boot:spring-boot-actuator-autoconfigure"
     optional "org.springframework.boot:spring-boot-jdbc"

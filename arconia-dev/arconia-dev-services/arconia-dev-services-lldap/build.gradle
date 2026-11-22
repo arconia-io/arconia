@@ -9,12 +9,12 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
+    api project(":arconia-dev-services-core")
     api "org.springframework.boot:spring-boot-ldap"
     api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-ldap"
 
-    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation testFixtures(project(":arconia-dev-services-core"))
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

@@ -17,7 +17,7 @@ dependencies {
 
     implementation "org.slf4j:slf4j-api"
 
-    optional project(":arconia-opentelemetry:arconia-opentelemetry")
+    optional project(":arconia-opentelemetry")
     optional "ch.qos.logback:logback-classic"
     optional "org.springframework.boot:spring-boot-autoconfigure"
 

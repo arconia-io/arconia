@@ -9,20 +9,20 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-dev:arconia-dev-services:arconia-dev-services-core")
-    api project(":arconia-opentelemetry:arconia-opentelemetry")
+    api project(":arconia-dev-services-core")
+    api project(":arconia-opentelemetry")
     api "org.springframework.boot:spring-boot-autoconfigure"
     api "org.testcontainers:testcontainers-grafana"
 
     implementation "org.slf4j:slf4j-api"
 
-    testImplementation testFixtures(project(":arconia-dev:arconia-dev-services:arconia-dev-services-core"))
+    testImplementation testFixtures(project(":arconia-dev-services-core"))
     testImplementation("io.opentelemetry:opentelemetry-exporter-otlp") {
         exclude group: "io.opentelemetry", module: "opentelemetry-exporter-sender-okhttp"
     }
-    testImplementation project(":arconia-opentelemetry:arconia-opentelemetry-exporter-sender-http")
-    testImplementation project(":arconia-observation:arconia-opentelemetry-ai-semantic-conventions")
-    testImplementation project(":arconia-observation:arconia-opentelemetry-semantic-conventions")
+    testImplementation project(":arconia-opentelemetry-exporter-sender-http")
+    testImplementation project(":arconia-opentelemetry-ai-semantic-conventions")
+    testImplementation project(":arconia-opentelemetry-semantic-conventions")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

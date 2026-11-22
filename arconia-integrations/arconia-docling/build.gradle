@@ -9,7 +9,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    api project(":arconia-core:arconia-core-annotations")
+    api project(":arconia-core-annotations")
     api "ai.docling:docling-serve-api"
     api "org.springframework.boot:spring-boot-jackson"
     api "org.springframework.boot:spring-boot-restclient"
