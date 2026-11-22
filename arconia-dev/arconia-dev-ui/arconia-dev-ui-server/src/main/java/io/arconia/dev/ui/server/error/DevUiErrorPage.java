@@ -42,6 +42,8 @@ final class DevUiErrorPage implements View {
 
     private static final String CONTENT_TYPE = new MediaType(MediaType.TEXT_HTML, StandardCharsets.UTF_8).toString();
 
+    private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+
     private final String title;
 
     private final String lead;
@@ -192,6 +194,8 @@ final class DevUiErrorPage implements View {
         byte[] page = html().getBytes(StandardCharsets.UTF_8);
         response.setContentType(CONTENT_TYPE);
         response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
+        // Like the Dev UI, the page may not be shown inside a frame by another page.
+        response.setHeader(CONTENT_SECURITY_POLICY_HEADER, "frame-ancestors 'none'");
         response.setContentLength(page.length);
         response.getOutputStream().write(page);
     }

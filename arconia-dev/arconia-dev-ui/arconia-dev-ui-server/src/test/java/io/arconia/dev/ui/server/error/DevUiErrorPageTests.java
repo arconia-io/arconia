@@ -165,6 +165,7 @@ class DevUiErrorPageTests {
 
         assertThat(response.getContentType()).isEqualTo("text/html;charset=UTF-8");
         assertThat(response.getHeader("Cache-Control")).isEqualTo("no-store");
+        assertThat(response.getHeader("Content-Security-Policy")).isEqualTo("frame-ancestors 'none'");
         assertThat(response.getContentAsString()).startsWith("<!DOCTYPE html>");
     }
 
