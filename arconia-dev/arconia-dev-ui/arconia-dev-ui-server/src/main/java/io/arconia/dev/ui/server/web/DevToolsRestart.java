@@ -46,7 +46,7 @@ final class DevToolsRestart {
      * Restarts the application, a moment from now and without waiting for it.
      */
     static void restart() {
-        Thread.ofPlatform().name("arconia-dev-ui-restart").daemon().start(() -> {
+        Thread.ofVirtual().name("arconia-dev-ui-restart").start(() -> {
             try {
                 Thread.sleep(DELAY);
                 Restart.now();
