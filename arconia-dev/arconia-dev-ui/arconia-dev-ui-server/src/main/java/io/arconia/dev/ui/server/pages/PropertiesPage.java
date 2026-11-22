@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
@@ -85,7 +84,7 @@ public final class PropertiesPage {
         Assert.notNull(sanitizingFunctions, "sanitizingFunctions cannot be null");
         SensitiveProperties sensitiveProperties = new SensitiveProperties(sanitizingFunctions);
         // The metadata is in the jars of the application, which don't change while it runs.
-        Supplier<Metadata> metadata = SingletonSupplier.of(() -> loadMetadata(classLoader));
+        SingletonSupplier<Metadata> metadata = SingletonSupplier.of(() -> loadMetadata(classLoader));
         return TablePage.builder()
                 .id("properties")
                 .title("Properties")
@@ -94,7 +93,7 @@ public final class PropertiesPage {
                 .order(-100)
                 .columns(List.of("Property", "Value", "Status", "Source"))
                 .filterColumn("Status")
-                .rows(() -> rows(environment, metadata.get(), sensitiveProperties))
+                .rows(() -> rows(environment, metadata.obtain(), sensitiveProperties))
                 .build();
     }
 
