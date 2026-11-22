@@ -41,7 +41,7 @@ public final class DevServiceSpec {
      * labels, and the default network alias of the container, so it is kept to the character
      * set valid in all of them.
      */
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]+(?:-[a-z0-9]+)*+");
 
     @Nullable
     private String name;

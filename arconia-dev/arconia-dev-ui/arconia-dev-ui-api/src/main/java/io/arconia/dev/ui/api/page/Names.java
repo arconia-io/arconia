@@ -11,7 +11,7 @@ import org.springframework.util.Assert;
  */
 final class Names {
 
-    private static final Pattern PATTERN = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
+    private static final Pattern PATTERN = Pattern.compile("[a-z0-9]+(?:-[a-z0-9]+)*+");
 
     private Names() {}
 

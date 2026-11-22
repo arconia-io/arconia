@@ -17,7 +17,7 @@ import io.arconia.core.annotations.Incubating;
 @Incubating
 public final class DevServiceRegistration {
 
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]+(?:-[a-z0-9]+)*+");
 
     private final String name;
 
