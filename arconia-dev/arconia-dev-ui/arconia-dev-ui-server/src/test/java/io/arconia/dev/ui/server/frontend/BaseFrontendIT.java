@@ -38,26 +38,40 @@ abstract class BaseFrontendIT {
 
     private final List<String> expectedFailedRequests = new CopyOnWriteArrayList<>();
 
-    /**
-     * The Dev UI only starts in dev mode. The mode is set while the application starts and
-     * cleared right after, so that it doesn't reach the other tests that run in the same JVM.
-     */
     @BeforeAll
     static void startApplication() {
-        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
-        try {
-            context = new SpringApplicationBuilder(FrontendTestApplication.class)
-                    .properties("server.port=0", "server.servlet.context-path=/app")
-                    .run();
-        } finally {
-            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
-        }
+        context = run(0);
         port = ((WebServerApplicationContext) context).getWebServer().getPort();
     }
 
     @AfterAll
     static void stopApplication() {
         context.close();
+    }
+
+    /**
+     * Stops the application and starts it again on the same port, as a restart during
+     * development does. What is given runs while the application is away.
+     */
+    static void restartApplication(Runnable whileAway) {
+        context.close();
+        whileAway.run();
+        context = run(port);
+    }
+
+    /**
+     * The Dev UI only starts in dev mode. The mode is set while the application starts and
+     * cleared right after, so that it doesn't reach the other tests that run in the same JVM.
+     */
+    private static ConfigurableApplicationContext run(int port) {
+        System.setProperty(BootstrapMode.SYSTEM_PROPERTY, "dev");
+        try {
+            return new SpringApplicationBuilder(FrontendTestApplication.class)
+                    .properties("server.port=" + port, "server.servlet.context-path=/app")
+                    .run();
+        } finally {
+            System.clearProperty(BootstrapMode.SYSTEM_PROPERTY);
+        }
     }
 
     @BeforeEach
