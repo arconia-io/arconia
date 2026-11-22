@@ -1,5 +1,7 @@
 package io.arconia.dev.ui.server.frontend;
 
+import java.time.Duration;
+
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -7,7 +9,11 @@ import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import io.arconia.dev.ui.server.frontend.FrontendTestApplication.ServerLog;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Frontend tests of {@code arconia-cards-page.js}, the element that shows the cards of a page,
@@ -63,6 +69,53 @@ class CardsPageFrontendIT extends BaseFrontendIT {
 
             assertThat(page).hasURL(pageUrl("properties") + "?filter=spring.");
             assertThat(filter(page)).hasValue("spring.");
+        }
+
+    }
+
+    @Nested
+    class LogDialog {
+
+        @Test
+        void logOfACardOpensInADialogNamedAfterIt(Page page) {
+            page.navigate(pageUrl("services"));
+
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Server log").setExact(true)).click();
+
+            assertThat(logDialog(page, "Catalog: Server log")).hasAttribute("opened", "");
+            assertThat(logDialog(page, "Catalog: Server log").getByText("Server started")).isVisible();
+        }
+
+        /**
+         * A log goes on for as long as somebody watches it, so it must no longer be followed
+         * once its dialog is closed. The server finds out when it next writes to the browser, so
+         * the log is made to write until it does.
+         */
+        @Test
+        void closedDialogNoLongerFollowsTheLog(Page page) {
+            page.navigate(pageUrl("services"));
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Server log").setExact(true)).click();
+            Locator dialog = logDialog(page, "Catalog: Server log");
+            assertThat(dialog.getByText("Request handled")).isVisible();
+            ServerLog serverLog = bean(ServerLog.class);
+            assertThat(serverLog.viewers()).isEqualTo(1);
+
+            dialog.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close")).click();
+
+            // A closed dialog has no title.
+            assertThat(page.locator("vaadin-dialog")).not().hasAttribute("opened", "");
+            await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+                serverLog.write("Request handled");
+                assertThat(serverLog.viewers()).isZero();
+            });
+        }
+
+        /**
+         * The dialog of a log, by its title. Its content is shown in an overlay, so the dialog
+         * itself never counts as visible.
+         */
+        private static Locator logDialog(Page page, String title) {
+            return page.locator("vaadin-dialog[aria-label='" + title + "']");
         }
 
     }
