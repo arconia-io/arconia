@@ -220,7 +220,7 @@ class ArconiaDevUi extends ArconiaElement {
         const id = pageIdOf(this.location.pathname);
         return id
             ? keyed(this.location, html`<arconia-page .pageId=${id}></arconia-page>`)
-            : html`<arconia-message heading="Page not found" text="There is no page at this address."></arconia-message>`;
+            : html`<arconia-message not-found></arconia-message>`;
     }
 
     render() {

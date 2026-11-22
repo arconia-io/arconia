@@ -36,6 +36,8 @@ abstract class BaseFrontendIT {
 
     private final List<String> errors = new CopyOnWriteArrayList<>();
 
+    private final List<String> expectedFailedRequests = new CopyOnWriteArrayList<>();
+
     /**
      * The Dev UI only starts in dev mode. The mode is set while the application starts and
      * cleared right after, so that it doesn't reach the other tests that run in the same JVM.
@@ -61,8 +63,8 @@ abstract class BaseFrontendIT {
     @BeforeEach
     void recordErrors(Page page) {
         page.onConsoleMessage(message -> {
-            if ("error".equals(message.type())) {
-                this.errors.add(message.text());
+            if ("error".equals(message.type()) && !isExpectedFailedRequest(message.text(), message.location())) {
+                this.errors.add(message.text() + " (" + message.location() + ")");
             }
         });
         page.onPageError(this.errors::add);
@@ -71,6 +73,19 @@ abstract class BaseFrontendIT {
     @AfterEach
     void noErrorsInTheBrowser() {
         assertThat(this.errors).isEmpty();
+    }
+
+    /**
+     * Expects a request of the Dev UI to fail, which the browser reports as an error, such as the
+     * one for a page the application doesn't have.
+     */
+    void expectFailedRequest(String path) {
+        this.expectedFailedRequests.add(devUi(path));
+    }
+
+    private boolean isExpectedFailedRequest(String text, String location) {
+        return text.startsWith("Failed to load resource")
+                && this.expectedFailedRequests.stream().anyMatch(location::startsWith);
     }
 
     /**

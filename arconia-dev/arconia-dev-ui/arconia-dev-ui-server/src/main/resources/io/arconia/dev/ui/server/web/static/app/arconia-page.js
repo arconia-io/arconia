@@ -21,6 +21,8 @@ class ArconiaPage extends ArconiaElement {
         pageId: { attribute: false },
         page: { state: true },
         failure: { state: true },
+        // Whether the application has no page with the identifier of the address.
+        notFound: { state: true },
         // Whether the page could not be loaded because the application cannot be reached.
         waiting: { state: true },
     };
@@ -70,6 +72,7 @@ class ArconiaPage extends ArconiaElement {
         if (!keepContent) {
             this.page = undefined;
             this.failure = undefined;
+            this.notFound = false;
             this.waiting = false;
         }
         try {
@@ -77,12 +80,14 @@ class ArconiaPage extends ArconiaElement {
             if (request === this.request) {
                 this.page = page;
                 this.failure = undefined;
+                this.notFound = false;
                 this.waiting = false;
             }
         } catch (error) {
             // A page that is no longer shown has nothing to report and nothing to wait for.
             if (this.isConnected && request === this.request) {
                 this.failure = error.message;
+                this.notFound = error.status === 404;
                 this.waiting = !!error.unreachable;
                 if (error.unreachable) {
                     // The application is most likely being restarted and will be back soon.
@@ -95,6 +100,9 @@ class ArconiaPage extends ArconiaElement {
     render() {
         if (this.waiting) {
             return html`<arconia-message waiting></arconia-message>`;
+        }
+        if (this.notFound) {
+            return html`<arconia-message not-found></arconia-message>`;
         }
         if (this.failure) {
             return html`<arconia-message error heading="This page cannot be shown" text=${this.failure}></arconia-message>`;

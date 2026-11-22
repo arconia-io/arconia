@@ -706,14 +706,14 @@ arconia-message[plain]::before {
     display: none;
 }
 
-arconia-message > h2 {
+arconia-message > h1 {
     margin: 0 0 var(--vaadin-gap-s);
     font-size: var(--aura-font-size-l);
     font-weight: var(--aura-font-weight-semibold);
     color: var(--vaadin-text-color);
 }
 
-arconia-message[error] > h2 {
+arconia-message[error] > h1 {
     color: var(--aura-red-text);
 }
 

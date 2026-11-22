@@ -25,7 +25,7 @@ export const WAITING_HEADING = 'Waiting for the application';
 
 /**
  * Reads JSON from the API of the Dev UI. When the request fails, the error carries the message
- * the server reports. When the application cannot be reached at all, as while it is being
+ * the server reports and the status of the response. When the application cannot be reached at all, as while it is being
  * restarted, the error says so with its "unreachable" property, so that the caller can try
  * again.
  */
@@ -41,7 +41,7 @@ export async function getJson(path) {
     }
     await reloadIfRestarted(response);
     if (!response.ok) {
-        throw new Error(await errorMessage(response));
+        throw Object.assign(new Error(await errorMessage(response)), { status: response.status });
     }
     return response.json();
 }
