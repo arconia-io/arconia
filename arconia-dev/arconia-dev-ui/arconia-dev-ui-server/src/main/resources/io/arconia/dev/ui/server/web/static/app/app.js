@@ -1,6 +1,6 @@
 import { html, nothing } from 'lit';
+import { keyed } from 'lit/directives/keyed.js';
 import { ArconiaElement } from './arconia-element.js';
-import { Router } from '@vaadin/router';
 import '@vaadin/app-layout';
 import '@vaadin/app-layout/vaadin-drawer-toggle.js';
 import '@vaadin/badge';
@@ -11,7 +11,7 @@ import '@vaadin/side-nav';
 import '@vaadin/side-nav/vaadin-side-nav-item.js';
 import { getJson, post, reloadedAfterRestart, RETRY_DELAY } from './api.js';
 import { colorScheme, nextColorScheme } from './color-scheme.js';
-import { applicationLogs, applicationName, applicationRestart, applicationVersion, basePath, iconPath, pagePath } from './paths.js';
+import { applicationLogs, applicationName, applicationRestart, applicationVersion, basePath, iconPath, isDevUiPath, isHomePath, pageIdOf, pagePath } from './paths.js';
 import './arconia-console.js';
 import './arconia-message.js';
 import './arconia-page.js';
@@ -50,13 +50,6 @@ const COLOR_SCHEMES = {
     dark: { icon: 'moon', label: 'Color scheme: dark. Click to follow the system.' },
 };
 
-function message(heading, text) {
-    const element = document.createElement('arconia-message');
-    element.heading = heading;
-    element.text = text;
-    return element;
-}
-
 /**
  * The root element of the Dev UI: the top bar, the navigation, and the area where the pages
  * are shown.
@@ -69,6 +62,7 @@ class ArconiaDevUi extends ArconiaElement {
         failure: { state: true },
         // Whether the pages could not be loaded because the application cannot be reached.
         waiting: { state: true },
+        // The address of what is shown, a new object each time the developer goes somewhere.
         location: { state: true },
         colorScheme: { state: true },
         // Whether a restart of the application was asked for and is not over yet.
@@ -82,34 +76,50 @@ class ArconiaDevUi extends ArconiaElement {
         this.navigation = [];
         this.colorScheme = colorScheme();
         this.collapsedSections = readCollapsedSections();
-        this.updateLocation = (event) => {
-            this.location = event.detail.location;
+        this.show(new URL(window.location.href));
+        this.onNavigate = (event) => {
+            const destination = new URL(event.destination.url);
+            if (event.canIntercept && !event.hashChange && event.downloadRequest === null && !event.formData
+                    && event.navigationType !== 'reload' && isDevUiPath(destination.pathname)) {
+                event.intercept({ handler: () => this.show(destination) });
+            }
         };
     }
 
+    /**
+     * Going from one page of the Dev UI to another, with a link or with the back and forward
+     * buttons of the browser, shows the new page without loading the Dev UI again, which would
+     * close the console and its log. The browser tells about each navigation, and the Dev UI
+     * takes over the ones to its own pages. A browser that doesn't tell loads the Dev UI again
+     * at the new address, which shows the same.
+     */
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('vaadin-router-location-changed', this.updateLocation);
+        window.navigation?.addEventListener('navigate', this.onNavigate);
     }
 
     disconnectedCallback() {
-        window.removeEventListener('vaadin-router-location-changed', this.updateLocation);
+        window.navigation?.removeEventListener('navigate', this.onNavigate);
         super.disconnectedCallback();
     }
 
-    async firstUpdated() {
+    /**
+     * Shows what is at an address of the Dev UI. The Dev UI opens on the overview of the
+     * application.
+     */
+    show(location) {
+        if (isHomePath(location.pathname)) {
+            location = new URL(pagePath('overview'), location);
+            window.history.replaceState(window.history.state, '', location);
+        }
+        this.location = location;
+    }
+
+    firstUpdated() {
         if (reloadedAfterRestart()) {
             this.tell('The application was restarted.');
         }
-        if (!await this.loadPages()) {
-            return;
-        }
-        const router = new Router(this.renderRoot.querySelector('main'), { baseUrl: `${basePath}/` });
-        router.setRoutes([
-            { path: '/', action: (context, commands) => this.home(commands) },
-            { path: '/pages/:id', component: 'arconia-page' },
-            { path: '(.*)', action: () => message('Page not found', 'There is no page at this address.') },
-        ]);
+        this.loadPages();
     }
 
     /**
@@ -124,14 +134,12 @@ class ArconiaDevUi extends ArconiaElement {
                 this.navigation = (await getJson('pages')).navigation;
                 this.failure = undefined;
                 this.waiting = false;
-                // The area where the pages are shown takes the place of the failure.
-                await this.updateComplete;
-                return true;
+                return;
             } catch (error) {
                 this.failure = error.message;
                 this.waiting = !!error.unreachable;
                 if (!error.unreachable) {
-                    return false;
+                    return;
                 }
                 await new Promise((resolve) => { setTimeout(resolve, RETRY_DELAY); });
             }
@@ -201,10 +209,14 @@ class ArconiaDevUi extends ArconiaElement {
     }
 
     /**
-     * The Dev UI opens on the overview of the application.
+     * A page is shown anew each time the developer goes to it, even when it is the one already
+     * shown, as for a link to the configuration properties under another prefix.
      */
-    home(commands) {
-        return commands.redirect('/pages/overview');
+    renderMain() {
+        const id = pageIdOf(this.location.pathname);
+        return id
+            ? keyed(this.location, html`<arconia-page .pageId=${id}></arconia-page>`)
+            : html`<arconia-message heading="Page not found" text="There is no page at this address."></arconia-message>`;
     }
 
     render() {
@@ -233,7 +245,7 @@ class ArconiaDevUi extends ArconiaElement {
                 <vaadin-side-nav slot="drawer" .location=${this.location}>
                     ${this.navigation.map((entry) => entry.section ? html`
                         <vaadin-side-nav-item ?expanded=${!this.collapsedSections.has(entry.section.id)}
-                                ?holds-current=${entry.pages.some((page) => pagePath(page.id) === this.location?.pathname)}
+                                ?holds-current=${entry.pages.some((page) => pagePath(page.id) === this.location.pathname)}
                                 @expanded-changed=${(event) => this.rememberSection(entry.section.id, event.detail.value)}>
                             <vaadin-icon slot="prefix" src=${iconPath(entry.section.icon)}></vaadin-icon>
                             ${entry.section.title}
@@ -245,7 +257,7 @@ class ArconiaDevUi extends ArconiaElement {
                     ? this.waiting
                         ? html`<arconia-message waiting></arconia-message>`
                         : html`<arconia-message error heading="The Dev UI cannot be loaded" text=${this.failure}></arconia-message>`
-                    : html`<main></main>`}
+                    : html`<main>${this.renderMain()}</main>`}
                 ${applicationLogs ? html`<arconia-console></arconia-console>` : nothing}
             </vaadin-app-layout>
         `;

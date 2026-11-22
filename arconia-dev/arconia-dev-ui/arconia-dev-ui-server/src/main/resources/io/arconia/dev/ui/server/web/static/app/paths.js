@@ -43,10 +43,37 @@ export function iconPath(name) {
 }
 
 /**
+ * The path the pages of the Dev UI start with.
+ */
+const pagesPath = `${basePath}/pages/`;
+
+/**
  * The path of a page of the Dev UI.
  */
 export function pagePath(id) {
-    return `${basePath}/pages/${id}`;
+    return `${pagesPath}${id}`;
+}
+
+/**
+ * Whether a path is the one the Dev UI opens at.
+ */
+export function isHomePath(path) {
+    return path === basePath || path === `${basePath}/`;
+}
+
+/**
+ * Whether the server answers a path with the Dev UI: the path it opens at, or the one of a
+ * page. It answers any other path as not found.
+ */
+export function isDevUiPath(path) {
+    return isHomePath(path) || path.startsWith(pagesPath);
+}
+
+/**
+ * The identifier of the page at a path, or undefined when the path is not the one of a page.
+ */
+export function pageIdOf(path) {
+    return path.startsWith(pagesPath) ? path.slice(pagesPath.length).match(/^[a-z0-9-]+$/)?.[0] : undefined;
 }
 
 /**

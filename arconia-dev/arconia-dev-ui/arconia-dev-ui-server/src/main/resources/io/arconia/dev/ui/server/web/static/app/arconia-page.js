@@ -17,8 +17,8 @@ const BASE_TITLE = document.title;
 class ArconiaPage extends ArconiaElement {
 
     static properties = {
-        // Set by the router, with the identifier of the page as a parameter.
-        location: { attribute: false },
+        // The identifier of the page, from its address.
+        pageId: { attribute: false },
         page: { state: true },
         failure: { state: true },
         // Whether the page could not be loaded because the application cannot be reached.
@@ -26,8 +26,8 @@ class ArconiaPage extends ArconiaElement {
     };
 
     willUpdate(changes) {
-        if (changes.has('location')) {
-            this.load(this.location.params.id);
+        if (changes.has('pageId')) {
+            this.load(this.pageId);
         }
         if (changes.has('page')) {
             // The tab of the browser says which page it shows, so that several tabs of the
@@ -45,9 +45,7 @@ class ArconiaPage extends ArconiaElement {
     connectedCallback() {
         super.connectedCallback();
         this.onFocus = () => {
-            if (this.location) {
-                this.load(this.location.params.id, { keepContent: true });
-            }
+            this.load(this.pageId, { keepContent: true });
         };
         window.addEventListener('focus', this.onFocus);
     }

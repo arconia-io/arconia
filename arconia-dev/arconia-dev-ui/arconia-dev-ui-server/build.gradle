@@ -38,7 +38,6 @@ dependencies {
     runtimeOnly "org.mvnpm.at.vaadin:grid:${vaadinVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:icon:${vaadinVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:notification:${vaadinVersion}"
-    runtimeOnly "org.mvnpm.at.vaadin:router:${vaadinRouterVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:select:${vaadinVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:side-nav:${vaadinVersion}"
     runtimeOnly "org.mvnpm.at.vaadin:text-field:${vaadinVersion}"
