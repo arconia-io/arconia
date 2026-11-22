@@ -1,0 +1,174 @@
+= Contributing Pages
+
+A library contributes a page to the xref:index.adoc[Arconia Dev UI] by defining a bean. The Dev UI shows the pages it finds, so the developer of the application has nothing to configure. The library describes what the page shows, and the Dev UI decides how: a library writes no frontend code.
+
+[NOTE]
+====
+The Dev UI is incubating, and its APIs may change in future releases.
+====
+
+== Dependencies
+
+Add the Dev UI API as an optional dependency of your library. It is the only dependency on Arconia you need: the API is on the class path of an application only when the Dev UI is, during development, and never in the packaged application.
+
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    compileOnly 'io.arconia:arconia-dev-ui-api'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev-ui-api</artifactId>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+== Defining a Page
+
+Define the page in an auto-configuration that is only active when the Dev UI API is on the class path, with `@ConditionalOnClass(DevUiPage.class)` on the class. Spring Boot reads that condition without loading the class, so the auto-configuration is skipped where the Dev UI is not there, as in production. Put the condition on the class, never on a `@Bean` method only, where the JVM would load the classes of the API before the condition applies. The following example contributes a page for FancyDB, a fictional database by Acme, with one card for each database:
+
+[source,java]
+----
+@AutoConfiguration
+@ConditionalOnClass(DevUiPage.class)
+public final class FancyDbDevUiAutoConfiguration {
+
+    @Bean
+    CardsPage fancyDbDevUiPage(FancyDbClient client) {
+        return CardsPage.builder()
+                .id("fancydb")
+                .title("FancyDB")
+                .icon("database")
+                .cards(() -> client.databases().stream()
+                        .map(database -> Card.builder()
+                                .id(database.name())
+                                .title(database.displayName())
+                                .description(database.description())
+                                .status(new Status("Online", StatusLevel.SUCCESS))
+                                .items(
+                                        InfoItem.of("Tables", String.valueOf(database.tableCount())),
+                                        InfoItem.builder().label("Engine").value(database.engine()).icon("cpu").code(true).build(),
+                                        LinkItem.of("Console", database.consoleUrl()),
+                                        LogItem.of("Logs", database::followLog))
+                                .build())
+                        .toList())
+                .build();
+    }
+
+}
+----
+
+There are two kinds of pages. A `CardsPage` suits a handful of things with a few facts each, such as the services of an application. A `TablePage` suits what comes in large numbers, such as configuration properties. Both have the following attributes:
+
+|===
+| Attribute | Description
+
+| `id`
+| Required. Identifies the page in its address. It can only contain lowercase letters, digits, and single hyphens between them, and it cannot be `overview`, which is the one of the Overview. When two pages have the same identifier, only the first one in the navigation is shown, and the other is reported in the application log.
+
+| `title`
+| Required. The title of the page, shown in the navigation.
+
+| `icon`
+| The name of an icon of the https://lucide.dev/icons[Lucide] icon set, shown next to the title (see <<_icons>>). Defaults to `layout-grid` for a cards page and `table` for a table page.
+
+| `order`
+| Positions the page in the navigation. Pages with a lower value come first, and pages with the same value are sorted by title. Defaults to `0`.
+
+| `section`
+| A section of the navigation to list the page in, with the other pages about the same subject. The sections are the ones `DevUiSection` defines, such as `DevUiSection.CONFIGURATION`. Inside a section, the order positions the page among the pages of the section.
+|===
+
+== Cards Pages
+
+A cards page shows a set of cards, in three columns at most and in fewer when the page is not wide enough. Set `maxColumns` to a lower number for cards with a lot of content.
+
+A `Card` has:
+
+* an identifier, required, which tells the card apart from the others of the page. It can be any text, such as the name of what the card is about;
+* a title, required;
+* an icon, shown next to the title;
+* a description, shown below the title, in a sentence;
+* a status, shown next to the title (see <<_status>>);
+* a link to its documentation, an HTTP or HTTPS URL, shown as an icon in the footer of the card;
+* a prefix of the configuration properties about its subject, shown as an icon in the footer of the card that opens the Properties page with those properties;
+* its items, in the order they are shown (see <<_items>>).
+
+The content of a card usually comes from the application as it runs, where a text that is not known is often empty. An optional text that is empty is left out, so that the supplier doesn't have to check each of them.
+
+=== Status
+
+A `Status` is a word or two shown next to the title of a card, with a level that decides its color: `SUCCESS`, `WARNING`, `ERROR`, or `NEUTRAL`. For example, `new Status("Running", StatusLevel.SUCCESS)`.
+
+=== Items
+
+A card shows three kinds of items:
+
+* An `InfoItem` shows a piece of information with a label, as one value or as several, such as the ports of a container. Create it with `InfoItem.of("Size", "12 MB")`. With `InfoItem.builder()`, you can also give it an icon, shown before the label, and say that its values are code, such as the name of a class or of a container image, which is shown in a fixed-width font. A value that is `null` is left out, and an item without any value is shown with a dash.
+* A `LinkItem` links to a page outside the Dev UI. Create it with `LinkItem.of("Grafana", url)`, where the URL is an HTTP or HTTPS URL, or a path of the application that starts with a slash, such as `/swagger-ui.html`. A path is taken from the context path of the application.
+* A `LogItem` opens a log in a dialog and follows it live. Create it with `LogItem.of("Logs", source)`. The logs of a card must have different labels.
+
+A `LogSource` provides the log. Its `follow` method passes each line to the Dev UI as it is written, and returns when the log ends. It is called on a thread of its own each time someone opens the log, and that thread is interrupted when they close it. The `LogSource` must then return, or let the `InterruptedException` through. Otherwise, the thread keeps running for as long as the log goes on. When `follow` throws an exception, the Dev UI shows its message in the dialog.
+
+== Table Pages
+
+A table page has the titles of its columns and a supplier of rows. Put what a row is about in the first column, which is given the most room and is always shown in full.
+
+A `TableRow` has:
+
+* an identifier, required, which tells the row apart from the others of the table. It can be any text;
+* one cell for each column, created with `TableCell.text(...)`, or with `TableCell.secret(...)` for a text that is hidden until the developer asks to see it, such as a password. When all the cells are plain text, `cells("server.port", "8080")` is a shortcut;
+* its details, shown below the row when the developer clicks it. Each detail is an `InfoItem`.
+
+The developer can sort the rows by any column and filter them by the text they contain. Rows are sorted as text, so a column of numbers is better shown in the details of each row. The text of a secret cell is neither sorted nor searched. A text too long to be read in the table is shown in full in the details of its row. Set `filterColumn` to the title of a column to also let the developer choose one of its values and see the matching rows only, which suits a column with a few values that many rows share.
+
+The following example lists the tables of a database:
+
+[source,java]
+----
+@Bean
+TablePage fancyDbTablesDevUiPage(FancyDbClient client) {
+    return TablePage.builder()
+            .id("fancydb-tables")
+            .title("FancyDB Tables")
+            .columns("Table", "Database", "Owner")
+            .filterColumn("Database")
+            .rows(() -> client.tables().stream()
+                    .map(table -> TableRow.builder()
+                            .id(table.qualifiedName())
+                            .cells(table.name(), table.database(), table.owner())
+                            .details(List.of(InfoItem.of("Rows", String.valueOf(table.rowCount()))))
+                            .build())
+                    .toList())
+            .build();
+}
+----
+
+== Supplying the Content
+
+The cards and the rows of a page are supplied whenever the Dev UI needs them, and never when the application starts, so the supplier can read the current state of the application. That can be several times while someone looks at a page, for example when they come back to it or open one of its logs, so keep the supplier quick and free of side effects. It runs on the thread of the request that needs the content, possibly for two requests at the same time, so it must be safe to call from several threads.
+
+The Dev UI shows a failure in place of the page, and reports it in the application log, when:
+
+* the supplier throws an exception, such as one thrown by a builder for content it rejects;
+* the supplier returns `null` instead of an empty list;
+* two cards of the page, or two rows of the table, have the same identifier. A log is found by the identifier of its card, so it must tell the cards apart.
+
+A row that has more or fewer cells than there are columns is shown as it is, and reported once in the application log.
+
+== Icons
+
+Pages, cards, and items take the name of an icon of the https://lucide.dev/icons[Lucide] icon set, such as `database` or `container`. A name can only contain lowercase letters, digits, and single hyphens between them. A page with the name of an icon that doesn't exist is shown with a generic icon, and a card or an item without one, and both are reported in the application log.
+
+Choose an icon for what the subject is, such as a database or a message broker. The Dev UI has no way to show an image, such as the logo of a product: the icons are always the ones of the icon set, in the colors of the Dev UI.

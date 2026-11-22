@@ -1,0 +1,372 @@
+/*
+ * The styles of the welcome page and the error pages of the Dev UI. These pages are plain HTML
+ * and don't load the theme of the Dev UI. They are loaded after the stylesheet of the brand
+ * (brand.css), which defines the properties prefixed with "--arconia".
+ */
+
+:root {
+    --text-color: light-dark(#1B2433, rgba(255, 255, 255, 0.86));
+    --secondary-text-color: light-dark(#5A6577, rgba(255, 255, 255, 0.62));
+    --error-color: light-dark(#B3261E, #FF8A80);
+}
+
+body {
+    margin: 0;
+    background: light-dark(var(--arconia-background-color-light), var(--arconia-background-color-dark));
+    color: var(--text-color);
+    font-family: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.5rem;
+    background: var(--arconia-chrome-background);
+    border-bottom: 1px solid var(--arconia-border-color);
+}
+
+main {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+h1 {
+    margin: 0 0 0.5rem;
+    font-family: var(--arconia-font-family-display);
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--arconia-heading-color);
+}
+
+.lead {
+    margin: 0 0 2rem;
+    font-size: 1.1rem;
+    color: var(--secondary-text-color);
+}
+
+/* The welcome page opens with a band in a tint of the accent: what the page has to say, what
+   the Dev UI is for, and a button to open it. The mark of Arconia is drawn large and faint at
+   the end of the band, when there is room for it. */
+
+.welcome {
+    --accent: light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--arconia-border-color);
+    background: color-mix(in srgb, var(--accent) 10%, var(--arconia-chrome-background));
+}
+
+.welcome > div {
+    position: relative;
+    z-index: 1;
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem;
+}
+
+.welcome h1 {
+    font-size: 2.8rem;
+}
+
+.welcome .lead {
+    margin-bottom: 0.75rem;
+}
+
+.welcome p {
+    max-width: 38rem;
+    margin: 0 0 1.75rem;
+}
+
+.welcome .open {
+    display: inline-block;
+    padding: 0.65rem 1.25rem;
+    border-radius: 9px;
+    background: var(--arconia-accent-color-light);
+    color: #FFFFFF;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.welcome .open:hover {
+    background: color-mix(in srgb, var(--arconia-accent-color-light) 88%, #000000);
+}
+
+.welcome .open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+@media (width >= 64rem) {
+    .welcome::after {
+        content: '';
+        position: absolute;
+        inset-block: 2.5rem;
+        inset-inline-end: max(2rem, (100% - 84rem) / 2);
+        aspect-ratio: 276 / 226;
+        background: color-mix(in srgb, var(--accent) 16%, transparent);
+        mask: url('images/arconia-mark.svg') center / contain no-repeat;
+    }
+}
+
+section {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--arconia-border-color);
+    border-radius: 15px;
+    background: var(--arconia-surface-background);
+}
+
+h2 {
+    margin: 0 0 0.75rem;
+    font-family: var(--arconia-font-family-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--arconia-heading-color);
+    overflow-wrap: anywhere;
+}
+
+section p {
+    margin: 0 0 0.75rem;
+}
+
+section p:last-child {
+    margin-bottom: 0;
+}
+
+/* The exception that explains a failed request: its type and, standing out, its message, in
+   a box marked with a bar in the color of errors. */
+
+.failure {
+    margin: 0 0 1rem;
+    padding: 0.9rem 1.1rem;
+    border-left: 4px solid var(--error-color);
+    border-radius: 0 9px 9px 0;
+    background: color-mix(in srgb, var(--error-color) 8%, transparent);
+}
+
+.failure > h2 {
+    margin: 0;
+    font-family: var(--arconia-font-family-code);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+}
+
+.failure > .message {
+    margin: 0.35rem 0 0;
+    color: var(--error-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+code,
+pre {
+    font-family: var(--arconia-font-family-code);
+    font-size: 0.9em;
+}
+
+pre {
+    margin: 0 0 0.75rem;
+    padding: 1rem;
+    overflow: auto;
+    max-height: 60vh;
+    border-radius: 9px;
+    background: var(--arconia-code-background);
+    color: var(--arconia-code-text-color);
+    line-height: 1.5;
+}
+
+section > pre:last-child {
+    margin-bottom: 0;
+}
+
+a {
+    color: light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+}
+
+.endpoints {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.endpoints li {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.35rem 0;
+}
+
+.endpoints li + li {
+    border-top: 1px solid var(--arconia-border-color);
+}
+
+.endpoints .methods {
+    flex: none;
+    min-width: 4.5rem;
+    font-family: var(--arconia-font-family-code);
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+}
+
+/* The link to the Dev UI, at the end of the top bar. */
+
+header > .dev-ui {
+    color: var(--arconia-chrome-accent-color);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+header > .dev-ui:hover {
+    text-decoration: underline;
+}
+
+/* The stack trace of a failed request. It is as long as it needs to be and scrolls with the
+   page. The frames of the application stand out from the ones of the libraries. */
+
+.trace > summary {
+    width: fit-content;
+    border-radius: 4px;
+    color: var(--arconia-heading-color);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.trace > summary:focus-visible {
+    outline: 2px solid light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    outline-offset: 2px;
+}
+
+.trace[open] > summary {
+    margin-bottom: 0.75rem;
+}
+
+.trace > pre {
+    max-height: none;
+    margin: 0;
+    tab-size: 4;
+}
+
+.trace .library {
+    opacity: 0.55;
+}
+
+.trace .application {
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* The two orders of a stack trace, with a pair of radio buttons to choose the one to show.
+   The buttons themselves are hidden, and their labels look like the two halves of a switch. */
+
+.trace > pre.root-cause,
+.trace > pre.original {
+    display: none;
+}
+
+.trace > #trace-root-cause:checked ~ pre.root-cause,
+.trace > #trace-original:checked ~ pre.original {
+    display: block;
+}
+
+.trace > input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.trace > label {
+    display: inline-block;
+    margin: 0 0 0.75rem;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid var(--arconia-border-color);
+    color: var(--secondary-text-color);
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.trace > label:first-of-type {
+    border-radius: 9px 0 0 9px;
+}
+
+.trace > label:last-of-type {
+    margin-left: -1px;
+    border-radius: 0 9px 9px 0;
+}
+
+.trace > input:checked + label {
+    border-color: light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    background: color-mix(in srgb, light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark)) 12%, transparent);
+    color: var(--arconia-heading-color);
+    position: relative;
+}
+
+.trace > input:focus-visible + label {
+    outline: 2px solid light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    outline-offset: 2px;
+}
+
+/* The button that copies the stack trace, at the end of the line that opens it. */
+
+.trace {
+    position: relative;
+}
+
+.trace > .copy {
+    position: absolute;
+    top: -0.35rem;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border: 1px solid var(--arconia-border-color);
+    border-radius: 9px;
+    background: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+}
+
+.trace > .copy[hidden] {
+    display: none;
+}
+
+.trace > .copy:hover {
+    border-color: light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    color: var(--arconia-heading-color);
+}
+
+.trace > .copy:focus-visible {
+    outline: 2px solid light-dark(var(--arconia-accent-color-light), var(--arconia-accent-color-dark));
+    outline-offset: 2px;
+}
+
+.trace > .copy > svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.trace > .copy > .copied-icon,
+.trace > .copy.copied > .copy-icon {
+    display: none;
+}
+
+.trace > .copy.copied > .copied-icon {
+    display: block;
+}

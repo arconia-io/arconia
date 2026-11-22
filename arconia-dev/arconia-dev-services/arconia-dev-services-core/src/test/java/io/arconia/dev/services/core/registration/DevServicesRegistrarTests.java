@@ -50,7 +50,7 @@ class DevServicesRegistrarTests {
                 DevServicesTestSupport::registerPostgresDevService,
                 registry -> registry.registerDevService(service -> service
                         .name("linky")
-                        .description("Test Dev Service")
+                        .title("Test Dev Service")
                         .properties(TestDevServicesProperties.DEFAULT)
                         .container(TestLinkContainer.class, TestLinkContainer::new)));
 
@@ -189,7 +189,7 @@ class DevServicesRegistrarTests {
             registry.registerDevService(service -> service
                     .name("first")
                     .category("jdbc")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }
@@ -203,7 +203,7 @@ class DevServicesRegistrarTests {
             registry.registerDevService(service -> service
                     .name("second")
                     .category("jdbc")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }

@@ -102,7 +102,7 @@ class DevServiceContainerCustomizerTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
         }
@@ -185,7 +185,7 @@ class DevServiceContainerCustomizerTests {
         protected void registerDevServices(DevServicesRegistry registry, Environment environment) {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresSubclassContainer.class, TestPostgresSubclassContainer::new));
         }

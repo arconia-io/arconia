@@ -67,7 +67,7 @@ Your `@SpringBootTest` tests use the same Dev Service, with no further setup.
 
 [TIP]
 ====
-Want to verify which Dev Services are running? When running the application in dev mode with Spring Boot Actuator in your classpath, check the `/actuator/devservices` endpoint (see xref:index.adoc#_actuator[Actuator]).
+Want to verify which Dev Services are running? When running the application in dev mode with Spring Boot Actuator in your classpath, check the `/actuator/devservices` endpoint (see xref:index.adoc#_actuator[Actuator]). With the xref:dev-ui:index.adoc[Arconia Dev UI], you can see them in your browser instead, together with their links.
 ====
 
 == Using Dev Services
@@ -623,7 +623,9 @@ Response example:
 {
   "docling": {
     "name": "docling",
-    "description": "Docling Dev Service",
+    "title": "Docling",
+    "description": "Document processing service that parses PDFs, Office files, and other formats to get documents ready for generative AI.",
+    "documentation": "https://docs.arconia.io/arconia/latest/dev-services/docling/",
     "category": null,
     "origin": "MANAGED",
     "links": [
@@ -668,7 +670,9 @@ Response example:
   },
   "postgresql": {
     "name": "postgresql",
-    "description": "PostgreSQL Dev Service",
+    "title": "PostgreSQL",
+    "description": "Open-source relational database known for its reliability and extensibility.",
+    "documentation": "https://docs.arconia.io/arconia/latest/dev-services/postgresql/",
     "category": "jdbc",
     "origin": "MANAGED",
     "links": [],
@@ -716,7 +720,9 @@ Response example:
 ----
 {
   "name": "postgresql",
-  "description": "PostgreSQL Dev Service",
+  "title": "PostgreSQL",
+  "description": "Open-source relational database known for its reliability and extensibility.",
+  "documentation": "https://docs.arconia.io/arconia/latest/dev-services/postgresql/",
   "category": "jdbc",
   "origin": "MANAGED",
   "links": [],

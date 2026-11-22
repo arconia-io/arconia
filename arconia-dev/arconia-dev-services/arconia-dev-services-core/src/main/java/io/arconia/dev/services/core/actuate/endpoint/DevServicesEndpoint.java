@@ -60,7 +60,8 @@ public class DevServicesEndpoint {
     }
 
     private ServiceInfo toServiceInfo(DevServiceRegistration registration) {
-        return new ServiceInfo(registration.getName(), registration.getDescription(), registration.getCategory(), registration.getOrigin(),
+        return new ServiceInfo(registration.getName(), registration.getTitle(), registration.getDescription(),
+                registration.getDocumentation(), registration.getCategory(), registration.getOrigin(),
                 registration.getLinks(), resolveContainerInfo(registration), resolveSslInfo(registration));
     }
 
@@ -91,7 +92,11 @@ public class DevServicesEndpoint {
 
     public record ServiceInfo(
             String name,
+            String title,
+            @Nullable
             String description,
+            @Nullable
+            String documentation,
             @Nullable
             String category,
             DevServiceRegistration.Origin origin,

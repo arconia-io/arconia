@@ -1,0 +1,262 @@
+= Arconia Dev UI
+
+The Arconia Dev UI is a web interface for the application you are developing: its configuration, its logs, and the services it uses. The application serves it while it runs in xref:ROOT:core-features/bootstrap-mode.adoc[dev mode], and the libraries it uses contribute the pages. Add one dependency and open the Dev UI in your browser. No code or configuration is needed.
+
+[WARNING]
+====
+The Dev UI is incubating. Its features and its configuration may change in any release.
+====
+
+[NOTE]
+====
+The Dev UI is a development tool. Declared as a development-only dependency, it is left out of the packaged application. It is not active when the application runs in test mode or in production mode.
+====
+
+== Quick Start
+
+1. Add the Arconia Dev dependency to your project, which brings the development tools of Arconia, including the Dev UI:
++
+[tabs]
+======
+Gradle::
++
+[source,groovy]
+----
+dependencies {
+    developmentOnly 'io.arconia:arconia-dev'
+}
+----
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+    <groupId>io.arconia</groupId>
+    <artifactId>arconia-dev</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+----
+======
+
+2. Run your application as usual:
++
+include::ROOT:partial$app-run.adoc[]
+
+3. Open http://localhost:8080/a/dev-ui in your browser.
+
+The Dev UI is available in Servlet web applications. It is served under the context path of the application: with `server.servlet.context-path=/shop`, it is at `/shop/a/dev-ui`.
+
+== Using the Dev UI
+
+The navigation on the left lists the pages: the Overview, which the Dev UI opens on, followed by the pages that the libraries of the application contribute. Pages about one subject are gathered in a section, such as Configuration. Each page has its own address, so you can bookmark it, reload it, or share it.
+
+The top bar shows the name of the application, and its version when it is known, so that you can tell the Dev UI of one application from the one of another. The name is the value of `spring.application.name`, or the name of the main class when the application sets none. The version comes from `spring.application.version` or from the build information. The title of the browser tab shows the name too, after the title of the page.
+
+A page shows the application as it is when the page is loaded. It is loaded again when you come back to the Dev UI from another tab or window, such as your IDE, and when you reload it in your browser.
+
+When the application restarts, as Spring Boot DevTools does after a change in the code, the Dev UI notices on its next request, or right away when the console with the logs is open. While the application is down, the page says that it is waiting for it and tries again on its own. Once the application is back, the page is loaded again at the same address, with a notice that the application was restarted.
+
+With Spring Boot DevTools, the top bar has a button that restarts the application, the way DevTools does after a change in the code. The button is not shown when the restart support of DevTools is not in use, as when you turn it off with `spring.devtools.restart.enabled`.
+
+The last button of the top bar sets the color scheme: the one of your operating system, which is the default, light, or dark. Click it to move from one to the next.
+
+The Dev UI remembers in your browser the sections you closed, the color scheme, and whether the console with the logs is open and how tall it is.
+
+=== Logs
+
+The logs of the application are in a console at the bottom of every page. Click Logs to open or close it, and drag its top edge to change its height.
+
+The console shows the most recent lines, from the start of the application, and follows the new ones as they are logged. Each line shows its time, level, logger, and message. You can:
+
+* choose a level, to see only the lines of that level and above;
+* type in the filter, to see only the lines that contain a text in their logger, message, or stack trace;
+* copy the lines that are shown, with their stack traces in full;
+* clear the lines shown so far, for example before reproducing a problem, which doesn't affect the logs of the application;
+* click the exception under a line, to unfold its stack trace;
+* click a web address in a message, to open it in a new tab.
+
+When you scroll up, the console stays where you are, and Jump to latest takes you back to the end. When the application restarts, the console keeps the lines of the run that ended and marks where the new one begins.
+
+The console is available when the application logs with Logback, the default in Spring Boot. It keeps the last 2000 lines in memory, with an appender of its own on top of the ones of the application. The appender is added when the application starts, so the console stops receiving lines if the application sets up Logback again while it runs, until the next restart.
+
+=== Overview
+
+The Overview gathers what identifies the application and where it runs:
+
+* the name and version of the application, when it started, and the Spring Boot version, Java version, port, and active profiles at a glance;
+* the application: its main class and packages, and the build and Git information when the build generates it (group, artifact, build time, branch, commit);
+* Spring: the Spring Boot and Arconia versions, the active profiles, the web server with its port and context path, and whether virtual threads and Spring Boot DevTools are in use;
+* Java: the version, vendor, runtime, and virtual machine;
+* the system: the operating system, architecture, processors, process identifier, and heap memory in use.
+
+=== Properties
+
+The Properties page, in the Configuration section, lists every configuration property that the application and its libraries document, whether it is set or not. Each row shows the property, its value, its status (Set or Default), and the source that sets it. An environment variable such as `SERVER_PORT` is shown as what it is for Spring Boot: the value of `server.port`.
+
+Type in the filter to see only the properties that contain a text, such as `spring.datasource`. The filter is part of the address of the page, so a filtered table can be bookmarked and shared. Choose a status to see only the properties that are set or only the ones left to their default. Click the title of a column to sort the properties by it. Click a row, or press Enter or Space on it, to see more about the property: its description, its type, the class that declares it, its default value, where in a file it is set, the values it suggests, and what replaces it when it is deprecated.
+
+The properties come from the configuration metadata that libraries ship in their jars, which IDEs use to complete property names too. As a consequence:
+
+* A property that is set without being documented is listed without a description. That is the case of a property the application reads without declaring it in a `@ConfigurationProperties` class processed by the Spring Boot configuration processor.
+* An entry of a property that holds a map or a list, such as `logging.level.org.springframework.web`, is a row of its own, described by the property it belongs to.
+* The default value is the one the metadata documents. Some properties have a default that is computed when the application runs.
+* System properties and environment variables are listed only when they set a documented property. The Environment page lists all of them.
+
+The value is the one in the environment of the application, with its placeholders resolved. An application can still change in code what a library ends up using.
+
+=== Environment
+
+The Environment page, in the Configuration section, lists every property of every source the application reads its configuration from: command line arguments, system properties, environment variables, configuration files, and any other source a library adds. The sources come in the order Spring looks them up, so the first one that holds a property is the one that gives it its value. Each row shows the property, its value, its source, and whether the value is effective or overridden by an earlier source.
+
+A source is shown with the name Spring gives it, such as `systemEnvironment` for the environment variables, and a configuration file with the name of the file. Type in the filter to see only the rows that contain a text, choose a source to see only its properties, and click the title of a column to sort by it. Click a row to see its value in full when it is too long for the table, where in a file the property is set, and which source overrides it.
+
+=== Secrets
+
+On the Properties and Environment pages, a value that is likely to be a secret is hidden. Click the eye next to it to show it, and click again to hide it. A hidden value is not searched by the filter.
+
+What counts as a secret is decided by the sanitizer of Spring Boot, the one the Actuator endpoints use. A value is hidden when the name of its property ends with `password`, `secret`, `key`, or `token`, or contains `credentials`, and when the value is a URL that carries credentials. If the application defines `SanitizingFunction` beans, the Dev UI follows them too.
+
+Hiding a value keeps it from the eyes of someone looking at your screen. It doesn't keep it from whoever can use the Dev UI, which is why the Dev UI only accepts requests from your own machine (see <<_accessing_the_dev_ui>>).
+
+=== Dev Services
+
+When the application uses xref:dev-services:index.adoc[Arconia Dev Services], the Dev Services page has a card for each of them, with:
+
+* the product the Dev Service runs, with its icon, and what it provides;
+* the state of the container: green when it runs, red when it has exited, and orange in any other state, such as paused;
+* the name of the Dev Service, which its configuration properties are based on, such as `postgresql` for `arconia.dev.services.postgresql`;
+* the container image;
+* the ports of the container published on your machine, each followed by the port it is published to;
+* whether the container is managed by this application or was started by another one (see xref:dev-services:index.adoc#_reusing_dev_services[Reusing Dev Services]);
+* the links of the Dev Service, such as the Grafana console of the xref:dev-services:lgtm.adoc[Grafana LGTM Dev Service];
+* a link to the documentation of the Dev Service and one to its configuration properties on the Properties page;
+* the logs of the container, which open in a dialog and follow the log live. As in the console, you can filter, copy, and clear the lines.
+
+== Welcome and Error Pages
+
+In an application that uses Spring MVC, the Dev UI replaces the whitelabel error page of Spring Boot with pages that help while you develop:
+
+* a welcome page at the root path, when the application serves nothing there yet. It confirms that the application is running, links to the Dev UI, and shows how to add a first endpoint;
+* a page for a path that doesn't exist, which names the path that was requested;
+* a page for a request that failed, with the exception and its stack trace.
+
+The welcome page and the page for a path that doesn't exist list the endpoints that the controllers of your application define, so that a mistyped path is easy to spot.
+
+The page for a failed request starts from the root cause: the exception at the origin of the failure, which is often wrapped in other exceptions. Its type and message come first, followed by the stack trace. The stack trace is open for a failure of the application (a 5xx status) and closed for a request the application rejected (a 4xx status), where the message usually says it all. When the root cause is wrapped in other exceptions, a switch shows the stack trace in its original order instead, and a button copies it as shown. The frames of your application are highlighted and the ones of libraries are dimmed. Your application is the package of its main class and the packages below it.
+
+When you open the error path of Spring Boot (`/error` by default) directly, no request has failed, and the page says so.
+
+These pages only take the place of the whitelabel error page. What the application defines is left as it is: a mapping or an `index.html` at the root path, an error template, a custom error view, or a custom error controller. A client that asks for JSON gets the error as JSON, as usual. Like the Dev UI, the pages are only shown for requests that the Dev UI accepts (see <<_accessing_the_dev_ui>>), since the page for a failed request shows its stack trace.
+
+To keep the whitelabel error page, set `arconia.dev.ui.error-pages.enabled` to `false`.
+
+== Accessing the Dev UI
+
+The Dev UI accepts requests that come from your own machine and are addressed to it: `localhost`, `127.0.0.1`, or `::1`. It rejects a request from another machine, even one that names your machine, a request addressed to any other host name, and a request sent by a page of another website open in your browser. A request that changes something, such as the one that restarts the application, must also come from the Dev UI itself.
+
+A rejected request is reported in the application log, once for each host name or address, with what to do if it should have been accepted.
+
+The Dev UI has no login, and the security of the application doesn't apply to it. Its requests are answered before Spring Security and the other filters of the application, so the Dev UI is available whatever they do: ask for a login, resolve the current tenant, or reject a request they know nothing about. The application keeps its security configuration for all its own paths.
+
+=== Applications in a Container
+
+When the application runs in a container, and you reach it through a published port, the application sees your requests as coming from another machine. Set `arconia.dev.ui.remote-access.enabled` to `true` for the Dev UI to accept them:
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  dev:
+    ui:
+      remote-access:
+        enabled: true
+----
+
+Properties::
++
+[source,properties]
+----
+arconia.dev.ui.remote-access.enabled=true
+----
+======
+
+[WARNING]
+====
+With remote access enabled, anyone who can reach the port of the application can use the Dev UI and see the configuration of the application. Publish the port to your own machine only, for example with `-p 127.0.0.1:8080:8080`.
+====
+
+=== Remote Development Environments
+
+When you reach the application through another host name, as in a remote development environment, list that host name in `arconia.dev.ui.allowed-hosts`:
+
+[tabs]
+======
+YAML::
++
+[source,yaml]
+----
+arconia:
+  dev:
+    ui:
+      allowed-hosts: workspace.example.com
+----
+
+Properties::
++
+[source,properties]
+----
+arconia.dev.ui.allowed-hosts=workspace.example.com
+----
+======
+
+Each entry is a host name or an IP address, without scheme, port, or path. An allowed host is accepted from any machine, so a name of your own machine, such as `localhost`, cannot be listed: it would let other machines in. Any of these values stops the application at startup with a message naming the entry.
+
+[WARNING]
+====
+Anyone who can reach the application under an allowed host name can use the Dev UI. Only list a host name when the environment behind it is yours alone.
+====
+
+=== Behind a Proxy
+
+When the application trusts forwarded headers (`server.forward-headers-strategy`), both the host the proxy forwards and the one in the `Host` header of the request it sends must be your machine or an allowed host. Forwarded headers alone are never enough, because a web page can add them to its own requests. In the same way, the Dev UI goes by the machine that opened the connection, never by the address a forwarded header claims.
+
+With `server.forward-headers-strategy=native`, which is also the default of Spring Boot on a cloud platform, the web server replaces the address and the host of a request with the forwarded ones, and the Dev UI can no longer tell which requests come from your machine. It then rejects the requests addressed to your machine and says so in the application log at startup. Use the `framework` strategy during development, or enable remote access to accept those requests wherever they come from.
+
+== Observability
+
+The requests to the Dev UI are left out of the metrics and traces of the application, which Spring Boot produces through the Micrometer Observation API. They are not requests to your application, and they would get in the way when you look at its telemetry. To observe them as well, set `arconia.dev.ui.observations.enabled` to `true`.
+
+== Configuration Properties
+
+|===
+| Property | Default | Description
+
+| `arconia.dev.ui.allowed-hosts`
+|
+| Host names allowed to access the Dev UI, in addition to the local machine ("localhost", "127.0.0.1", "::1"). For example, the host name of a remote development environment.
+
+| `arconia.dev.ui.enabled`
+| `true`
+| Whether to enable the Dev UI.
+
+| `arconia.dev.ui.error-pages.enabled`
+| `true`
+| Whether to show the welcome page and the error pages of the Dev UI in place of the whitelabel error page.
+
+| `arconia.dev.ui.observations.enabled`
+| `false`
+| Whether to include the requests to the Dev UI in the metrics and traces of the application.
+
+| `arconia.dev.ui.remote-access.enabled`
+| `false`
+| Whether to accept the requests addressed to the local machine ("localhost", "127.0.0.1", "::1") that come from another machine. For example, when the application runs in a container and is reached through a published port.
+|===
+
+== Contributing Pages
+
+Libraries can contribute their own pages to the Dev UI, as Arconia Dev Services does. Learn how in xref:contributing-pages.adoc[Contributing Pages].

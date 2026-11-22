@@ -148,7 +148,9 @@ public final class LgtmDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("lgtm")
-                    .description("Grafana LGTM Dev Service")
+                    .title("Grafana LGTM")
+                    .description("Observability platform based on OpenTelemetry for exploring logs, metrics, and traces with Grafana, Loki, Prometheus, and Tempo.")
+                    .icon("chart-no-axes-combined")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     // The dashboards are collected when the container is created, so that nothing is

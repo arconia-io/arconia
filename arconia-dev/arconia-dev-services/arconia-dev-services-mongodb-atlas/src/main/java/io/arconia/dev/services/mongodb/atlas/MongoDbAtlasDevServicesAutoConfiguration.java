@@ -40,7 +40,9 @@ public final class MongoDbAtlasDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("mongodb-atlas")
-                    .description("MongoDB Atlas Dev Service")
+                    .title("MongoDB Atlas")
+                    .description("Document database with built-in full-text and vector search.")
+                    .icon("leaf")
                     .category(DevServiceCategories.MONGODB)
                     .properties(properties)
                     .container(MongoDBAtlasLocalContainer.class, () -> createContainer(properties))

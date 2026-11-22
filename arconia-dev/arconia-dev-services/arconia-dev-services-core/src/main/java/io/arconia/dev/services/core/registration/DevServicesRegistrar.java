@@ -50,7 +50,7 @@ public abstract class DevServicesRegistrar implements ImportBeanDefinitionRegist
 
     @Override
     public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        registerDevServices(new DevServicesRegistry(registry, environment, resourceLoader), environment);
+        registerDevServices(new DevServicesRegistry(registry, environment, resourceLoader, getClass()), environment);
     }
 
     @Override

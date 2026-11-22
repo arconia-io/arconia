@@ -56,7 +56,7 @@ class DevServiceDefinitionTests {
     void whenRequiredValueIsNotSetThenBuildThrows() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> DevServiceDefinition.builder().name("postgres").build())
-                .withMessageContaining("description cannot be null");
+                .withMessageContaining("title cannot be null");
     }
 
     @Test
@@ -101,7 +101,7 @@ class DevServiceDefinitionTests {
     private static DevServiceDefinition.Builder definition() {
         return DevServiceDefinition.builder()
                 .name("postgres")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new);
     }

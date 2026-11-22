@@ -81,7 +81,9 @@ public final class MongoDbDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("mongodb")
-                    .description("MongoDB Dev Service")
+                    .title("MongoDB")
+                    .description("Document database for storing and querying JSON-like data.")
+                    .icon("leaf")
                     .category(DevServiceCategories.MONGODB)
                     .properties(properties)
                     .container(MongoDBContainer.class, () -> createContainer(properties))

@@ -1,0 +1,852 @@
+/*
+ * The theme of the Dev UI: the Vaadin Aura theme with the Arconia brand applied to it.
+ *
+ * It is loaded after the stylesheet of Aura and the one of the brand (brand.css), which
+ * defines the properties prefixed with "--arconia". The brand is applied through the style
+ * properties of Aura and of the Vaadin components wherever one exists.
+ *
+ * The elements of the Dev UI have no shadow root, so that the theme applies to the Vaadin
+ * components they contain. Their styles are all here, each rule starting with the name of
+ * the element it belongs to.
+ *
+ * What the rules rely on in the Vaadin components, to check when Vaadin is upgraded:
+ *
+ * - the style properties prefixed with "--vaadin" and "--aura", which are the documented way
+ *   to style the components and the theme;
+ * - the parts "content" and "drawer" of the app layout and its "overlay" attribute, the parts
+ *   "content" and "link" of a side navigation item and its "current" and "expanded"
+ *   attributes, and the part "content" of a card;
+ * - the slots of a card ("title", "header-prefix", "header-suffix"), where its title is an
+ *   element that the card creates;
+ * - the class "aura-accent-neutral" of the Aura theme.
+ *
+ * Two rules go against what Aura does and are the first to look at if a layout breaks: the
+ * content part of the app layout is turned into a column that doesn't scroll, so that the page
+ * scrolls above the console, and the padding of the drawer is set for both of its states.
+ */
+
+html {
+    /* Aura: the accent and the background of the brand. */
+    --aura-accent-color-light: var(--arconia-accent-color-light);
+    --aura-accent-color-dark: var(--arconia-accent-color-dark);
+    --aura-background-color-light: var(--arconia-background-color-light);
+    --aura-background-color-dark: var(--arconia-background-color-dark);
+
+    /* Vaadin components: the top bar and the navigation share the chrome background, and
+       cards are raised above the background of the page. */
+    --vaadin-app-layout-navbar-background: var(--arconia-chrome-background);
+    --vaadin-app-layout-drawer-background: var(--arconia-chrome-background);
+    --vaadin-card-background: var(--arconia-surface-background);
+    --vaadin-card-border-color: var(--arconia-border-color);
+    --vaadin-card-border-radius: var(--vaadin-radius-l);
+    --vaadin-card-title-color: var(--arconia-heading-color);
+
+    /* The area around the content of the application layout blends with the chrome. */
+    background: var(--arconia-chrome-background);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+/* The root element: the top bar, the navigation, and the area where the pages are shown. */
+
+arconia-dev-ui {
+    display: block;
+    height: 100%;
+}
+
+/* The application the Dev UI belongs to, at the end of the top bar: its name, which is cut
+   short when there is not enough room, and its version. */
+
+arconia-dev-ui vaadin-app-layout > .application {
+    display: flex;
+    align-items: center;
+    gap: var(--vaadin-gap-s);
+    min-width: 0;
+    margin-inline: auto var(--vaadin-gap-s);
+    padding-inline-start: var(--vaadin-gap-l);
+}
+
+arconia-dev-ui vaadin-app-layout > .application > .name {
+    overflow: hidden;
+    color: var(--arconia-chrome-text-color-strong);
+    font-weight: var(--aura-font-weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The buttons at the end of the top bar: the one that restarts the application, whose icon
+   turns while the restart is going on, and the one that switches the color scheme. */
+
+arconia-dev-ui .restart,
+arconia-dev-ui .color-scheme {
+    flex: none;
+    color: var(--arconia-chrome-accent-color);
+}
+
+arconia-dev-ui .restart > .spinning {
+    animation: arconia-spin 1s linear infinite;
+}
+
+@keyframes arconia-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    arconia-dev-ui .restart > .spinning {
+        animation-duration: 3s;
+    }
+}
+
+/* The icons of the top bar are a little smaller than the ones of the navigation. An icon that
+   fills its box, such as a monitor, looks too heavy otherwise. */
+
+arconia-dev-ui .restart > vaadin-icon,
+arconia-dev-ui .color-scheme > vaadin-icon {
+    --vaadin-icon-size: 1.125rem;
+}
+
+/* The content area is a flat panel in the background color of the page, without a border.
+   The page scrolls inside it, above the console, which stays at the bottom. */
+
+arconia-dev-ui vaadin-app-layout::part(content) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--aura-background-color);
+    border-color: transparent;
+}
+
+/* Next to the navigation, the content area leaves a gap below the top bar. On a narrow
+   screen it takes the whole window. */
+
+arconia-dev-ui vaadin-app-layout:not([overlay])::part(content) {
+    margin-block-start: var(--vaadin-padding-s);
+}
+
+arconia-dev-ui vaadin-app-layout > main {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+arconia-dev-ui vaadin-app-layout > arconia-console {
+    flex: none;
+}
+
+/* The button that shows and hides the navigation is a plain icon in the accent of the chrome. */
+
+arconia-dev-ui vaadin-drawer-toggle {
+    color: var(--arconia-chrome-accent-color);
+}
+
+/* The navigation: a fixed width, and a soft tint of the accent for the item under the
+   pointer and for the current item, which is also set in a stronger text. */
+
+/* The same padding all around, next to the content or over it on a narrow screen. At the top
+   it is the gap that the content area also leaves below the top bar, so that the first item
+   starts level with it. Both states of the drawer are named on purpose: a rule of Aura for one
+   of them would win over a rule that names neither. */
+arconia-dev-ui vaadin-app-layout:not([overlay])::part(drawer),
+arconia-dev-ui vaadin-app-layout[overlay]::part(drawer) {
+    padding: var(--vaadin-padding-s);
+}
+
+arconia-dev-ui vaadin-side-nav {
+    box-sizing: border-box;
+    width: 12rem;
+}
+
+arconia-dev-ui vaadin-side-nav-item {
+    --vaadin-side-nav-item-text-color: var(--arconia-chrome-text-color);
+    --vaadin-side-nav-item-border-color: transparent;
+}
+
+arconia-dev-ui vaadin-side-nav-item > vaadin-icon {
+    color: var(--arconia-chrome-accent-color);
+}
+
+arconia-dev-ui vaadin-side-nav-item::part(link) {
+    padding: var(--vaadin-padding-s) var(--vaadin-padding-m);
+}
+
+arconia-dev-ui vaadin-side-nav-item:not([current])::part(content):hover {
+    --vaadin-side-nav-item-background: color-mix(in srgb, var(--arconia-chrome-accent-color) 9%, transparent);
+    --vaadin-side-nav-item-text-color: var(--arconia-chrome-text-color-strong);
+}
+
+/* A closed section that holds the current page is set like the current item, so that the
+   navigation still tells where the developer is. */
+
+arconia-dev-ui vaadin-side-nav-item[holds-current]:not([expanded])::part(content),
+arconia-dev-ui vaadin-side-nav-item[current]::part(content) {
+    --vaadin-side-nav-item-background: color-mix(in srgb, var(--arconia-chrome-accent-color) 15%, transparent);
+    --vaadin-side-nav-item-text-color: var(--arconia-chrome-text-color-strong);
+    --vaadin-side-nav-item-border-color: transparent;
+    --vaadin-side-nav-item-font-weight: var(--aura-font-weight-semibold);
+}
+
+
+/* A page. */
+
+/* A page is at least as tall as the area it is shown in, so that content made to fill the
+   height, such as a table, has a height to fill. */
+
+arconia-page {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: var(--vaadin-padding-xl);
+}
+
+arconia-page > h1 {
+    margin: 0 0 var(--vaadin-gap-l);
+    font-family: var(--arconia-font-family-display);
+    font-size: calc(var(--aura-font-size-xl) * 1.35);
+    font-weight: var(--aura-font-weight-semibold);
+    letter-spacing: -0.01em;
+    color: var(--arconia-heading-color);
+}
+
+/* The overview of the application. What identifies the application is set apart in a band in
+   the colors of the brand, the same in both color schemes, with the facts worth seeing at a
+   glance as tiles. The details follow as cards, as wide as the band. */
+
+arconia-overview-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--vaadin-gap-l);
+    max-width: calc(2 * 32rem + var(--vaadin-gap-l));
+}
+
+arconia-overview-page > .summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--vaadin-gap-l) var(--vaadin-gap-xl);
+    padding: var(--vaadin-padding-xl);
+    border-radius: var(--vaadin-radius-l);
+    background: linear-gradient(120deg, #001545 0%, #06307A 55%, var(--arconia-accent-color-light) 100%);
+    color: #FFFFFF;
+}
+
+arconia-overview-page .identity > h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vaadin-gap-m);
+    margin: 0;
+    font-family: var(--arconia-font-family-display);
+    color: inherit;
+    font-size: calc(var(--aura-font-size-xl) * 1.6);
+    font-weight: var(--aura-font-weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+arconia-overview-page .identity > h2 > vaadin-badge {
+    --vaadin-badge-background: rgba(255, 255, 255, 0.16);
+    --vaadin-badge-border-color: rgba(255, 255, 255, 0.3);
+    --vaadin-badge-text-color: #FFFFFF;
+    font-family: var(--aura-font-family);
+    letter-spacing: 0;
+}
+
+arconia-overview-page .identity > p {
+    margin: var(--vaadin-gap-s) 0 0;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+arconia-overview-page > .summary > dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--vaadin-gap-m);
+    margin: 0;
+}
+
+arconia-overview-page > .summary > dl > div {
+    min-width: 5.5rem;
+    padding: var(--vaadin-padding-s) var(--vaadin-padding-m);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--vaadin-radius-m);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+arconia-overview-page > .summary dt {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: var(--aura-font-size-s);
+}
+
+arconia-overview-page > .summary dd {
+    margin: 0;
+    font-family: var(--arconia-font-family-display);
+    font-size: var(--aura-font-size-l);
+    font-weight: var(--aura-font-weight-semibold);
+}
+
+/* The cards of the overview differ a lot in height, and in a grid a short card would leave
+   a hole next to a tall one. Here they are stacked in columns of about the same height, each
+   card right below the one before it. */
+
+arconia-overview-page > arconia-cards-page {
+    display: block;
+    max-width: none;
+    columns: 2 22rem;
+    column-gap: var(--gap);
+}
+
+arconia-overview-page > arconia-cards-page > vaadin-card {
+    break-inside: avoid;
+    margin-bottom: var(--gap);
+}
+
+/* The cards of a page, in as many columns as the page asks for, or fewer when there is not
+   enough room for cards of a readable width. A card is never wider than the page, and on a
+   wide screen it doesn't stretch beyond the width its content reads well at. */
+
+arconia-cards-page {
+    --gap: var(--vaadin-gap-l);
+    display: grid;
+    max-width: calc(var(--columns, 3) * 32rem + (var(--columns, 3) - 1) * var(--gap));
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(max(min(20rem, 100%), (100% - (var(--columns, 3) - 1) * var(--gap)) / var(--columns, 3)), 1fr)
+    );
+    gap: var(--gap);
+}
+
+/* The cards of a row are as tall as the tallest one. Inside a card, what it has to show is
+   in groups with the same space between them: its description, its information, its links,
+   and its footer, which stays at the bottom so that the footers of a row line up. */
+
+arconia-cards-page vaadin-card {
+    --vaadin-card-title-font-weight: var(--aura-font-weight-semibold);
+    --vaadin-card-padding: 1.25rem;
+    --card-group-gap: var(--vaadin-gap-l);
+}
+
+arconia-cards-page vaadin-card::part(content) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--card-group-gap);
+}
+
+arconia-cards-page .description {
+    margin: 0;
+    color: var(--vaadin-text-color-secondary);
+}
+
+/* The icon of a card sits closer to the title than the gap the card leaves between its
+   parts, so that the two read as one. */
+
+arconia-cards-page vaadin-card > [slot='header-prefix'] {
+    --vaadin-icon-size: 1.25rem;
+    margin-inline-end: calc(-1 * var(--vaadin-gap-s));
+    color: var(--arconia-chrome-accent-color);
+}
+
+arconia-cards-page vaadin-card > [slot='title'] {
+    font-family: var(--arconia-font-family-display);
+    letter-spacing: -0.005em;
+}
+
+/* The links of a card, in a row below its information. */
+
+arconia-cards-page .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vaadin-gap-s) var(--vaadin-gap-l);
+}
+
+arconia-cards-page .links > a {
+    display: flex;
+    align-items: center;
+    gap: var(--vaadin-gap-s);
+    border-radius: var(--vaadin-radius-s);
+    color: var(--aura-accent-text-color);
+    font-weight: var(--aura-font-weight-medium);
+    text-decoration: none;
+}
+
+arconia-cards-page .links > a:hover {
+    text-decoration: underline;
+}
+
+arconia-cards-page .links > a:focus-visible,
+arconia-cards-page .footer > .about:focus-visible {
+    outline: 2px solid var(--aura-accent-color);
+    outline-offset: 2px;
+}
+
+arconia-cards-page .links > a > vaadin-icon,
+arconia-cards-page .footer vaadin-icon {
+    flex: none;
+    --vaadin-icon-size: 1.125rem;
+}
+
+/* The footer of a card, separated from the rest by a line: what there is to read about the
+   card at the start, as icons, and the buttons of its logs at the end. */
+
+arconia-cards-page .footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vaadin-gap-s) var(--vaadin-gap-m);
+    min-height: 2.25rem;
+    margin-top: auto;
+    padding-top: var(--card-group-gap);
+    border-top: 1px solid var(--arconia-border-color);
+}
+
+arconia-cards-page .footer > .about {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--vaadin-radius-m);
+    color: var(--vaadin-text-color-secondary);
+}
+
+arconia-cards-page .footer > .about:hover {
+    background: color-mix(in srgb, var(--arconia-chrome-accent-color) 10%, transparent);
+    color: var(--aura-accent-text-color);
+}
+
+arconia-cards-page .logs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vaadin-gap-s) var(--vaadin-gap-m);
+    margin-inline-start: auto;
+}
+
+arconia-cards-page .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* The table of a page: the tools above it, and the table itself in the rest of the height
+   of the page, where it scrolls on its own. */
+
+arconia-table-page {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--vaadin-gap-m);
+    min-height: 16rem;
+}
+
+/* The tools of a table and of a log: a filter, with the number of rows or lines next to it.
+   The rules they share come first. */
+
+arconia-table-page > .toolbar,
+arconia-log-view > .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vaadin-gap-s) var(--vaadin-gap-m);
+}
+
+arconia-table-page > .toolbar > vaadin-text-field,
+arconia-log-view > .toolbar > vaadin-text-field {
+    flex: 1;
+}
+
+arconia-table-page > .toolbar > .count,
+arconia-log-view > .toolbar > .count {
+    color: var(--vaadin-text-color-secondary);
+    font-size: var(--aura-font-size-s);
+    white-space: nowrap;
+}
+
+arconia-table-page > .toolbar > vaadin-text-field {
+    min-width: 12rem;
+    max-width: 28rem;
+}
+
+arconia-table-page > .toolbar > .count {
+    margin-inline-start: auto;
+}
+
+arconia-table-page > .toolbar vaadin-icon {
+    --vaadin-icon-size: 1.125rem;
+}
+
+arconia-table-page > vaadin-grid {
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--vaadin-radius-l);
+}
+
+/* The first column is never cut short: a long name continues on the next line. */
+
+arconia-table-page .name {
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+arconia-table-page [slot='empty-state'] {
+    color: var(--vaadin-text-color-secondary);
+}
+
+arconia-table-page .toggle {
+    --vaadin-icon-size: 1rem;
+    color: var(--vaadin-text-color-secondary);
+}
+
+/* A cell with a secret: its text, hidden behind dots until the developer asks for it, and the
+   button that shows and hides it. */
+
+arconia-table-page .secret {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--vaadin-gap-xs);
+    max-width: 100%;
+}
+
+arconia-table-page .secret > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+arconia-table-page .secret vaadin-icon {
+    --vaadin-icon-size: 1rem;
+}
+
+/* The button of a secret is small enough for its row to be as tall as the others. */
+
+arconia-table-page .secret > vaadin-button {
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 0;
+    padding: 0;
+}
+
+/* The details of a row, shown below it: a label and its value on each line, in a text that
+   can be selected. */
+
+arconia-table-page .details {
+    display: block;
+    padding: var(--vaadin-padding-s) var(--vaadin-padding-m) var(--vaadin-padding-m) 2.75rem;
+    cursor: auto;
+    user-select: text;
+    white-space: normal;
+}
+
+arconia-table-page .details > dl {
+    row-gap: var(--vaadin-gap-xs);
+}
+
+/* Pieces of information: a label and its value on each line. A label can have an icon before
+   it, and the labels without one keep its space when others have one. Values that are code
+   are in a fixed-width font, and several values of one piece are side by side, each on one
+   line. */
+
+arconia-info-list {
+    display: block;
+}
+
+arconia-info-list > dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--vaadin-gap-s) var(--vaadin-gap-l);
+    margin: 0;
+}
+
+arconia-info-list dt {
+    display: flex;
+    align-items: center;
+    align-self: start;
+    gap: var(--vaadin-gap-s);
+    color: var(--vaadin-text-color-secondary);
+}
+
+arconia-info-list dt > vaadin-icon,
+arconia-info-list dt > .no-icon {
+    --vaadin-icon-size: 1rem;
+    flex: none;
+    width: 1rem;
+}
+
+arconia-info-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+arconia-info-list dd.code {
+    font-family: var(--arconia-font-family-code);
+    font-size: 0.92em;
+}
+
+arconia-info-list .values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--vaadin-gap-xs) var(--vaadin-gap-l);
+}
+
+arconia-info-list .values > span {
+    white-space: nowrap;
+}
+
+/* The console, docked at the bottom of every page. Closed, it is a bar with its title. Open,
+   it is a log view with the title and the choice of level at the start of its toolbar, and
+   an edge at the top to drag. */
+
+arconia-console {
+    position: relative;
+    display: block;
+    border-top: 1px solid var(--arconia-border-color);
+    background: var(--arconia-chrome-background);
+}
+
+arconia-console > .resizer {
+    position: absolute;
+    inset: -3px 0 auto;
+    height: 6px;
+    cursor: ns-resize;
+}
+
+arconia-console > .resizer:hover {
+    background: color-mix(in srgb, var(--arconia-chrome-accent-color) 45%, transparent);
+}
+
+arconia-console > .bar {
+    display: flex;
+    min-height: 2.25rem;
+    padding: 0 var(--vaadin-padding-m);
+}
+
+/* Whatever height was chosen on another window, there is always a page above the console. */
+
+arconia-console > arconia-log-view {
+    max-height: 60dvh;
+    gap: 0;
+}
+
+arconia-console > arconia-log-view > .toolbar {
+    min-height: 2.25rem;
+    padding: 0 var(--vaadin-padding-m);
+}
+
+arconia-console > arconia-log-view > .lines {
+    border-radius: 0;
+}
+
+arconia-console .title {
+    align-self: center;
+    --vaadin-button-text-color: var(--arconia-chrome-text-color-strong);
+    --vaadin-button-font-weight: var(--aura-font-weight-semibold);
+}
+
+arconia-console .title > vaadin-icon {
+    --vaadin-icon-size: 1.125rem;
+    color: var(--arconia-chrome-accent-color);
+}
+
+arconia-console .title > .chevron {
+    --vaadin-icon-size: 1rem;
+    color: var(--vaadin-text-color-secondary);
+}
+
+/* A message shown in place of content: a panel with the mark of Arconia in a soft tint above
+   the text, all centered. A message that is only there for a moment, while a page loads, has
+   no mark. */
+
+arconia-message {
+    display: block;
+    padding: var(--vaadin-padding-xl);
+    border: 1px solid var(--arconia-border-color);
+    border-radius: var(--vaadin-radius-l);
+    background: var(--arconia-surface-background);
+    color: var(--vaadin-text-color-secondary);
+    text-align: center;
+}
+
+arconia-dev-ui vaadin-app-layout > arconia-message,
+arconia-dev-ui vaadin-app-layout > main > arconia-message {
+    margin: var(--vaadin-padding-xl);
+}
+
+arconia-cards-page > arconia-message {
+    grid-column: 1 / -1;
+}
+
+arconia-message::before {
+    content: '';
+    display: block;
+    width: 2.75rem;
+    aspect-ratio: 276 / 226;
+    margin: var(--vaadin-padding-s) auto var(--vaadin-padding-l);
+    background: color-mix(in srgb, var(--arconia-chrome-accent-color) 30%, transparent);
+    mask: url('images/arconia-mark.svg') center / contain no-repeat;
+}
+
+arconia-message[plain] {
+    border-color: transparent;
+    background: none;
+}
+
+arconia-message[plain]::before {
+    display: none;
+}
+
+arconia-message > h2 {
+    margin: 0 0 var(--vaadin-gap-s);
+    font-size: var(--aura-font-size-l);
+    font-weight: var(--aura-font-weight-semibold);
+    color: var(--vaadin-text-color);
+}
+
+arconia-message[error] > h2 {
+    color: var(--aura-red-text);
+}
+
+arconia-message > p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* A log: its tools above its lines. The lines are in a fixed-width font on a dark surface in
+   both color schemes, in an area that scrolls on its own. The log fills what it is in: a
+   dialog, whose size the developer can change, or the console. */
+
+arconia-log-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--vaadin-gap-s);
+    box-sizing: border-box;
+    height: 100%;
+}
+
+/* In a log, the filter and the number of lines are at the start, and the buttons at the end. */
+
+arconia-log-view > .toolbar > vaadin-text-field {
+    min-width: 8rem;
+    max-width: 20rem;
+}
+
+arconia-log-view > .toolbar > .count {
+    margin-inline-end: auto;
+}
+
+arconia-log-view > .toolbar vaadin-icon[slot='prefix'] {
+    --vaadin-icon-size: 1rem;
+}
+
+arconia-log-view > .lines {
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: var(--vaadin-padding-s) var(--vaadin-padding-m);
+    overflow: auto;
+    border-radius: var(--vaadin-radius-m);
+    background: var(--arconia-code-background);
+    color: var(--arconia-code-text-color);
+    font-family: var(--arconia-font-family-code);
+    font-size: var(--aura-font-size-s);
+    line-height: 1.5;
+}
+
+/* Whether there are no lines yet or the filters let none through, the log says so. */
+
+arconia-log-view > .lines[data-empty]::before {
+    content: 'No lines to show.';
+    opacity: 0.6;
+}
+
+arconia-log-view .line {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* A web address in a line is a link. */
+
+arconia-log-view .line a {
+    color: var(--arconia-code-link-color);
+    text-underline-offset: 2px;
+}
+
+arconia-log-view .line a:focus-visible {
+    outline: 2px solid var(--arconia-code-link-color);
+    outline-offset: 1px;
+}
+
+/* A line of the logs of the application: its time and logger step back, and its level has
+   the color of what it means. */
+
+arconia-log-view .line > span {
+    margin-inline-end: 0.75em;
+}
+
+arconia-log-view .line > .time,
+arconia-log-view .line > .logger {
+    opacity: 0.6;
+}
+
+arconia-log-view .line > .level {
+    display: inline-block;
+    min-width: 3.1em;
+    font-weight: 600;
+}
+
+arconia-log-view .line.error > .level,
+arconia-log-view .line.error > .message {
+    color: var(--arconia-code-error-color);
+}
+
+arconia-log-view .line.warn > .level {
+    color: var(--arconia-code-warning-color);
+}
+
+arconia-log-view .line.info > .level {
+    color: var(--arconia-code-success-color);
+}
+
+arconia-log-view .line.debug,
+arconia-log-view .line.trace {
+    opacity: 0.75;
+}
+
+/* The stack trace of a line: the exception, which opens the frames with a click. */
+
+arconia-log-view details {
+    margin-inline-start: 1.5em;
+}
+
+arconia-log-view summary {
+    color: var(--arconia-code-error-color);
+    cursor: pointer;
+}
+
+arconia-log-view details > pre {
+    margin: 0;
+    font: inherit;
+    opacity: 0.8;
+    tab-size: 4;
+    white-space: pre-wrap;
+}
+
+/* Where one run of the application ends and the next begins. */
+
+arconia-log-view .marker {
+    margin: 0.5em 0;
+    padding: 0.15em 0;
+    border-block: 1px dashed color-mix(in srgb, var(--arconia-code-text-color) 35%, transparent);
+    color: var(--arconia-code-link-color);
+    font-weight: 600;
+}

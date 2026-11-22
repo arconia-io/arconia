@@ -68,17 +68,33 @@ public final class DevServicesRegistry {
 
     private final BooleanSupplier testcontainersReuseSupport;
 
+    /**
+     * The class that registers the dev services, which tells whose they are, if known.
+     */
+    @Nullable
+    private final Class<?> registrarType;
+
     private final DevServiceRestartSupport restartSupport;
 
     private final DevServiceNetworkSupport networkSupport;
 
     DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader) {
+        this(beanDefinitionRegistry, environment, resourceLoader, (Class<?>) null);
+    }
+
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader,
+            @Nullable Class<?> registrarType) {
         this(beanDefinitionRegistry, environment, resourceLoader, new DockerContainerDiscovery(),
-                () -> TestcontainersConfiguration.getInstance().environmentSupportsReuse());
+                () -> TestcontainersConfiguration.getInstance().environmentSupportsReuse(), registrarType);
     }
 
     DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader,
             ContainerDiscovery containerDiscovery, BooleanSupplier testcontainersReuseSupport) {
+        this(beanDefinitionRegistry, environment, resourceLoader, containerDiscovery, testcontainersReuseSupport, null);
+    }
+
+    DevServicesRegistry(BeanDefinitionRegistry beanDefinitionRegistry, Environment environment, ResourceLoader resourceLoader,
+            ContainerDiscovery containerDiscovery, BooleanSupplier testcontainersReuseSupport, @Nullable Class<?> registrarType) {
         Assert.notNull(beanDefinitionRegistry, "beanDefinitionRegistry cannot be null");
         Assert.notNull(environment, "environment cannot be null");
         Assert.notNull(resourceLoader, "resourceLoader cannot be null");
@@ -88,6 +104,7 @@ public final class DevServicesRegistry {
         this.resourceLoader = resourceLoader;
         this.containerDiscovery = containerDiscovery;
         this.testcontainersReuseSupport = testcontainersReuseSupport;
+        this.registrarType = registrarType;
         this.restartSupport = new DevServiceRestartSupport(beanDefinitionRegistry, environment, testcontainersReuseSupport);
         this.networkSupport = new DevServiceNetworkSupport(environment);
     }
@@ -101,7 +118,7 @@ public final class DevServicesRegistry {
         Assert.notNull(service, "service cannot be null");
         DevServiceSpec serviceSpec = new DevServiceSpec();
         service.accept(serviceSpec);
-        registerBeanDefinitions(serviceSpec.build());
+        registerBeanDefinitions(serviceSpec.registeredBy(registrarType).build());
     }
 
     /**
@@ -334,7 +351,7 @@ public final class DevServicesRegistry {
         DevServiceContainerBeanDefinition beanDefinition = new DevServiceContainerBeanDefinition();
         BeanAttribute.AOT_EXCLUDED.set(beanDefinition, true);
         beanDefinition.setBeanClass(service.containerType());
-        beanDefinition.setDescription(service.description());
+        beanDefinition.setDescription(service.title());
 
         // The annotations Spring Boot reads from the container bean: the service connection, and
         // what makes the application connect over SSL when the dev service is secured with it.
@@ -505,7 +522,11 @@ public final class DevServicesRegistry {
             @Nullable String containerId, List<DevServiceLink> links, boolean sslBundleRegistered) {
         return DevServiceRegistration.builder()
                 .name(service.name())
+                .title(service.title())
                 .description(service.description())
+                .documentation(service.documentation())
+                .propertiesPrefix(service.propertiesPrefix())
+                .icon(service.icon())
                 .category(service.category())
                 .origin(origin)
                 .containerInfo(() -> {

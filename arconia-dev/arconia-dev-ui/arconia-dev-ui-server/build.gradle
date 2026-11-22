@@ -1,0 +1,63 @@
+plugins {
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    api project(":arconia-core:arconia-core-annotations")
+    api project(":arconia-core:arconia-core-bootstrap")
+    api project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-api")
+    api "org.springframework:spring-web"
+    api "org.springframework.boot:spring-boot-autoconfigure"
+
+    implementation "io.mvnpm:importmap:${importMapVersion}"
+    implementation "org.springframework.boot:spring-boot-actuator"
+    implementation "org.springframework.boot:spring-boot-configuration-metadata"
+    implementation "org.slf4j:slf4j-api"
+    implementation "tools.jackson.core:jackson-databind"
+
+    compileOnly "jakarta.servlet:jakarta.servlet-api"
+
+    optional "org.springframework.boot:spring-boot-webmvc"
+    optional "ch.qos.logback:logback-classic"
+    optional "org.springframework.boot:spring-boot-devtools"
+
+    runtimeOnly "org.mvnpm:lit:${litVersion}"
+    runtimeOnly "org.mvnpm:lucide-static:${lucideVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:app-layout:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:aura:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:badge:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:button:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:card:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:dialog:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:grid:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:icon:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:notification:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:router:${vaadinRouterVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:select:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:side-nav:${vaadinVersion}"
+    runtimeOnly "org.mvnpm.at.vaadin:text-field:${vaadinVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-micrometer-observation"
+    testImplementation "org.springframework.boot:spring-boot-starter-security"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc"
+    testImplementation "jakarta.servlet:jakarta.servlet-api"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev UI Server"
+                description = "Arconia Dev UI Server."
+            }
+        }
+    }
+}

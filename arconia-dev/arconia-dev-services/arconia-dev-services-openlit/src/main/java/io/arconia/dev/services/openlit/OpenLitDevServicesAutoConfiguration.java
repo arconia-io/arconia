@@ -67,7 +67,9 @@ public final class OpenLitDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("openlit")
-                    .description("OpenLIT Dev Service")
+                    .title("OpenLIT")
+                    .description("Open-source platform based on OpenTelemetry for tracing, evaluating, and improving AI applications.")
+                    .icon("scan-eye")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(OpenLitContainer.class, () -> createContainer(properties))

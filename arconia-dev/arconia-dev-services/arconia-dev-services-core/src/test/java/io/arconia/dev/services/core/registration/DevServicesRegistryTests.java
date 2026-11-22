@@ -98,7 +98,7 @@ class DevServicesRegistryTests {
                             .name("postgres")
                             .properties(TestDevServicesProperties.DEFAULT)
                             .container(TestPostgresContainer.class, TestPostgresContainer::new)))
-                    .withMessageContaining("Dev Service 'postgres': description cannot be null or empty");
+                    .withMessageContaining("Dev Service 'postgres': title cannot be null or empty");
             assertThat(beanFactory.getBeanDefinitionCount()).isZero();
         }
 
@@ -138,7 +138,7 @@ class DevServicesRegistryTests {
         void whenServiceConnectionIsEnabledThenContainerHasServiceConnectionAnnotation() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .serviceConnectionName("postgres"));
@@ -162,7 +162,7 @@ class DevServicesRegistryTests {
         void whenServiceConnectionIsDisabledThenContainerHasNoServiceConnectionAnnotation() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .serviceConnection(false));
@@ -196,7 +196,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("second")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .category("jdbc")
                     .properties(TestDevServicesProperties.DEFAULT.withEnabled(false))
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
@@ -231,7 +231,7 @@ class DevServicesRegistryTests {
         void whenDevServiceIsDisabledThenNothingIsRegistered(CapturedOutput output) {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT.withEnabled(false))
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
@@ -270,7 +270,7 @@ class DevServicesRegistryTests {
         private void registerCategorizedDevService(String name, String category, Supplier<TestPostgresContainer> containerSupplier) {
             registry.registerDevService(service -> {
                 service.name(name)
-                        .description("Test Dev Service")
+                        .title("Test Dev Service")
                         .properties(TestDevServicesProperties.DEFAULT)
                         .container(TestPostgresContainer.class, containerSupplier);
                 if (category != null) {
@@ -288,7 +288,7 @@ class DevServicesRegistryTests {
         void whenContainerCreatedThenCommonPropertiesAreApplied() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.WITH_ENVIRONMENT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
@@ -302,7 +302,7 @@ class DevServicesRegistryTests {
         void whenPortDeclaredAndConfiguredThenContainerBindsItToTheHost() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .port(5432));
@@ -316,7 +316,7 @@ class DevServicesRegistryTests {
         void whenAdditionalPortsDeclaredThenContainerBindsTheConfiguredOnes() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .port(5432)
@@ -333,7 +333,7 @@ class DevServicesRegistryTests {
         void whenContainerDeclaresBindingsThenTheyAreKept() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT.withPort(1234))
                     .container(TestPostgresContainer.class, () -> {
                         var container = new TestPostgresContainer();
@@ -351,7 +351,7 @@ class DevServicesRegistryTests {
         void whenPortDeclaredButNotConfiguredThenContainerHasNoFixedPort() {
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .port(5432));
@@ -404,7 +404,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
@@ -420,7 +420,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.TESTCONTAINERS)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));
@@ -443,7 +443,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.TESTCONTAINERS)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
@@ -460,7 +460,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.TESTCONTAINERS)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new));
 
@@ -503,7 +503,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("linky")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestLinkContainer.class, TestLinkContainer::new));
             beanFactory.getBean(BeanName.CONTAINER.of("linky"), GenericContainer.class);
@@ -636,7 +636,7 @@ class DevServicesRegistryTests {
             assertThatExceptionOfType(MultipleDevServicesException.class)
                     .isThrownBy(() -> registry.registerDevService(service -> service
                             .name("other")
-                            .description("Other Dev Service")
+                            .title("Other Dev Service")
                             .category("jdbc")
                             .properties(TestDevServicesProperties.FRAMEWORK)
                             .container(TestPostgresContainer.class, TestPostgresContainer::new)
@@ -660,7 +660,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     // Raw type to bypass the compile-time check and exercise the runtime net.
@@ -677,7 +677,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class,
@@ -704,7 +704,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class,
@@ -721,7 +721,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class,
@@ -738,7 +738,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.TESTCONTAINERS)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class,
@@ -841,7 +841,7 @@ class DevServicesRegistryTests {
             new DevServicesRegistry(restarted, new StandardEnvironment(), new DefaultResourceLoader(), serviceName -> List.of(), () -> false)
                     .registerDevService(service -> service
                             .name("postgres")
-                            .description("Test Dev Service")
+                            .title("Test Dev Service")
                             .properties(TestDevServicesProperties.DEFAULT)
                             .container(RestartingContainer.class, RestartingContainer::new)
                             .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails(container.host())));
@@ -886,7 +886,7 @@ class DevServicesRegistryTests {
             new DevServicesRegistry(restartedBeanFactory, environment, new DefaultResourceLoader(), serviceName -> discoveredContainers, () -> false)
                     .registerDevService(service -> service
                             .name("postgres")
-                            .description("Test Dev Service")
+                            .title("Test Dev Service")
                             .properties(properties)
                             .container(containerType, containerSupplier)
                             .discovery(TestConnectionDetails.class,
@@ -935,7 +935,7 @@ class DevServicesRegistryTests {
             DevServiceSslConfigurer<TestLinkContainer> replacingConfigurer = (container, bundle) -> container.waitingFor(Wait.forListeningPort());
             registry.registerDevService(service -> service
                     .name("secure")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(properties)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(replacingConfigurer));
@@ -981,7 +981,7 @@ class DevServicesRegistryTests {
             // The container generates its own certificate, which Spring Boot extracts.
             registry.registerDevService(service -> service
                     .name("secure")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestSslDevServicesProperties.enabledWithoutKeyStore())
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(configurer, SslKeyStoreRequirement.OPTIONAL));
@@ -1022,7 +1022,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestSslDevServicesProperties.pem().withReuseStrategy(ReuseStrategy.FRAMEWORK))
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(configurer)
@@ -1048,7 +1048,7 @@ class DevServicesRegistryTests {
 
             registry.registerDevService(service -> service
                     .name("secure")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestSslDevServicesProperties.pem())
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(configurer)
@@ -1060,7 +1060,7 @@ class DevServicesRegistryTests {
         private void registerSslDevService(TestSslDevServicesProperties properties) {
             registry.registerDevService(service -> service
                     .name("secure")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(properties)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .ssl(configurer));
@@ -1075,7 +1075,7 @@ class DevServicesRegistryTests {
         void whenPortDeclaredThenReadyMessageReportsTheAddress(CapturedOutput output) {
             registry.registerDevService(service -> service
                     .name("addressed")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .port(8080));
@@ -1090,7 +1090,7 @@ class DevServicesRegistryTests {
         void whenNoPortDeclaredThenReadyMessageReportsNoAddress(CapturedOutput output) {
             registry.registerDevService(service -> service
                     .name("unaddressed")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestLinkContainer.class, TestLinkContainer::new));
 
@@ -1103,7 +1103,7 @@ class DevServicesRegistryTests {
         void whenNothingIsReusedThenReadyMessageDoesNotMentionTheReuseStrategy(CapturedOutput output) {
             registry.registerDevService(service -> service
                     .name("reusable")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .discovery(TestConnectionDetails.class, container -> new TestConnectionDetails("discovered")));
@@ -1120,7 +1120,7 @@ class DevServicesRegistryTests {
                     serviceName -> List.of(), () -> false);
             registry.registerDevService(service -> service
                     .name("reusable")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.TESTCONTAINERS)
                     .container(TestLinkContainer.class, TestLinkContainer::new));
 
@@ -1138,7 +1138,7 @@ class DevServicesRegistryTests {
         void whenLinksDeclaredThenRegistrationResolvesThemAgainstTheContainer() {
             registry.registerDevService(service -> service
                     .name("linky")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestLinkContainer.class, TestLinkContainer::new)
                     .link("UI", 8080)
@@ -1157,7 +1157,7 @@ class DevServicesRegistryTests {
             // As when an application context is created without the Testcontainers lifecycle.
             registry.registerDevService(service -> service
                     .name("linky")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT)
                     .container(TestUnstartedLinkContainer.class, TestUnstartedLinkContainer::new)
                     .link("UI", 8080));

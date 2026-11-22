@@ -55,7 +55,9 @@ public final class PostgresqlDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("postgresql")
-                    .description("PostgreSQL Dev Service")
+                    .title("PostgreSQL")
+                    .description("Open-source relational database known for its reliability and extensibility.")
+                    .icon("database")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(PostgreSQLContainer.class, () -> createContainer(properties))

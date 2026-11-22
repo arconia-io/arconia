@@ -40,7 +40,9 @@ public final class DoclingDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> {
                 service.name("docling")
-                        .description("Docling Dev Service")
+                        .title("Docling")
+                        .description("Document processing service that parses PDFs, Office files, and other formats to get documents ready for generative AI.")
+                        .icon("scan-text")
                         .properties(properties)
                         .container(DoclingServeContainer.class, () -> createContainer(properties))
                         .port(DoclingServeContainer.DEFAULT_DOCLING_PORT)

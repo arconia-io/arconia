@@ -65,7 +65,9 @@ public final class PhoenixDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("phoenix")
-                    .description("Phoenix Dev Service")
+                    .title("Phoenix")
+                    .description("AI observability platform for experimenting with, evaluating, and troubleshooting AI applications.")
+                    .icon("flame")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(PhoenixContainer.class, () -> createContainer(properties))

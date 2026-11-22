@@ -1,0 +1,30 @@
+plugins {
+    id "java-conventions"
+    id "nullability-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api project(":arconia-core:arconia-core-bootstrap")
+    api "org.springframework.boot:spring-boot"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+// The module has no public types, and the Javadoc tool fails when it finds nothing to document.
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PACKAGE
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Core Bootstrap Profiles"
+                description = "Arconia Core Bootstrap Profiles."
+            }
+        }
+    }
+}

@@ -17,6 +17,7 @@ dependencies {
 
         api project(":arconia-core:arconia-core-annotations")
         api project(":arconia-core:arconia-core-bootstrap")
+        api project(":arconia-core:arconia-core-bootstrap-profiles")
 
         api project(":arconia-data:arconia-data-jdbc-sqlite")
 
@@ -47,6 +48,11 @@ dependencies {
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-pulsar")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq")
         api project(":arconia-dev:arconia-dev-services:arconia-dev-services-redis")
+
+        api project(":arconia-dev:arconia-dev")
+
+        api project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-api")
+        api project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-server")
 
         api project(":arconia-integrations:arconia-docling")
 

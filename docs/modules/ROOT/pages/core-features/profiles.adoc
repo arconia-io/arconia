@@ -28,6 +28,8 @@ The profiles activated by Arconia come before the ones you activate yourself, fo
 
 == How Profiles Are Activated
 
+The profiles are activated by the `arconia-core-bootstrap-profiles` module, which the Arconia starters and the Arconia Dev Services bring.
+
 Arconia activates the mode-specific profiles right before Spring Boot loads the application configuration. As a result, profile-specific configuration files (such as `application-dev.yml`) are loaded as part of the standard Spring Boot configuration flow, including when configuration is imported from external sources (such as Spring Cloud Config Server or HashiCorp Vault via `spring.config.import`).
 
 NOTE: The mode-specific profiles become active profiles, so, as in Spring Boot, the default profiles (`spring.profiles.default`) no longer apply. If you rely on them, add them to `arconia.dev.profiles` and `arconia.test.profiles`, or disable the automatic activation.

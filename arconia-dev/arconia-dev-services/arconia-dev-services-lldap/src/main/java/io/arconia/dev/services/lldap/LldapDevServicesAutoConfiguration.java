@@ -52,7 +52,9 @@ public final class LldapDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("lldap")
-                    .description("LLDAP Dev Service")
+                    .title("LLDAP")
+                    .description("Lightweight authentication server with a simplified LDAP interface for managing users and groups.")
+                    .icon("book-user")
                     .properties(properties)
                     .container(LLdapContainer.class, () -> createContainer(properties))
                     .port(LDAP_PORT)

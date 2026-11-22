@@ -1,0 +1,20 @@
+plugins {
+    id "java-conventions"
+    id "sbom-conventions"
+    id "release-conventions"
+}
+
+dependencies {
+    api project(":arconia-dev:arconia-dev-ui:arconia-dev-ui-server")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = "Arconia Dev"
+                description = "Arconia Dev."
+            }
+        }
+    }
+}

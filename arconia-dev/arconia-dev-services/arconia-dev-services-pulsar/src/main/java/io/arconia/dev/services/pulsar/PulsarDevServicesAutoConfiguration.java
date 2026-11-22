@@ -37,7 +37,9 @@ public final class PulsarDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("pulsar")
-                    .description("Pulsar Dev Service")
+                    .title("Pulsar")
+                    .description("Open-source distributed messaging and streaming platform built for the cloud.")
+                    .icon("activity")
                     .properties(properties)
                     .container(PulsarContainer.class, () -> createContainer(properties))
                     .port(PulsarContainer.BROKER_PORT)

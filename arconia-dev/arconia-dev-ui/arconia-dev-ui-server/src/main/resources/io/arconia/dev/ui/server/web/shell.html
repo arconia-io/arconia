@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{{applicationName}} · Arconia Dev UI</title>
+    <link rel="icon" type="image/png" href="{{staticPath}}app/images/favicon.png">
+    <script>
+        // Apply the color scheme the developer picked before anything is shown, so that the
+        // page doesn't flash in the other one. The key is the one used in color-scheme.js.
+        try {
+            const scheme = localStorage.getItem('arconia-dev-ui-color-scheme');
+            if (scheme === 'dark' || scheme === 'light') {
+                document.documentElement.style.colorScheme = scheme;
+            }
+        } catch { /* The scheme of the operating system applies. */ }
+    </script>
+    <link rel="stylesheet" href="{{themeStylesheet}}">
+    <link rel="stylesheet" href="{{staticPath}}app/brand.css">
+    <link rel="stylesheet" href="{{staticPath}}app/app.css">
+    <script type="importmap">{{importMap}}</script>
+    <script type="module" src="{{staticPath}}app/app.js"></script>
+</head>
+<body>
+    <arconia-dev-ui base-path="{{basePath}}" icons-path="{{iconsPath}}" application-name="{{applicationName}}" application-version="{{applicationVersion}}" application-started-at="{{applicationStartedAt}}" application-logs="{{applicationLogs}}" application-restart="{{applicationRestart}}"></arconia-dev-ui>
+</body>
+</html>

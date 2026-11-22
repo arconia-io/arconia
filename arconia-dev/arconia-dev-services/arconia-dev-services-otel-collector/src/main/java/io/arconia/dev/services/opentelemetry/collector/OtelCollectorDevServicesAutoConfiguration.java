@@ -88,7 +88,9 @@ public final class OtelCollectorDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("otel-collector")
-                    .description("OpenTelemetry Collector Dev Service")
+                    .title("OpenTelemetry Collector")
+                    .description("Vendor-agnostic service for receiving, processing, and exporting telemetry data.")
+                    .icon("telescope")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(ArconiaOtelCollectorContainer.class, () -> new ArconiaOtelCollectorContainer(properties))

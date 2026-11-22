@@ -100,7 +100,7 @@ final class DevServicesTestSupport {
     static void registerPostgresDevService(DevServicesRegistry registry) {
         registry.registerDevService(service -> service
                 .name("postgres")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new));
     }
@@ -115,7 +115,7 @@ final class DevServicesTestSupport {
     static void registerSharedDevService(DevServicesRegistry registry, Consumer<DevServiceSpec> customizer) {
         registry.registerDevService(service -> {
             service.name("postgres")
-                    .description("PostgreSQL Dev Service")
+                    .title("PostgreSQL Dev Service")
                     .properties(TestDevServicesProperties.FRAMEWORK)
                     .container(TestPostgresContainer.class, TestPostgresContainer::new)
                     .discovery(TestConnectionDetails.class,

@@ -45,7 +45,9 @@ public final class ArtemisDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("artemis")
-                    .description("Artemis Dev Service")
+                    .title("Artemis")
+                    .description("Multi-protocol message broker for high-performance asynchronous messaging.")
+                    .icon("mails")
                     .properties(properties)
                     .container(ArtemisContainer.class, () -> createContainer(properties))
                     .port(TCP_PORT)

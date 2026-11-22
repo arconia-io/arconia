@@ -78,7 +78,9 @@ public final class RabbitMqDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("rabbitmq")
-                    .description("RabbitMQ Dev Service")
+                    .title("RabbitMQ")
+                    .description("Open-source message broker for asynchronous messaging and streaming.")
+                    .icon("rabbit")
                     .properties(properties)
                     .container(RabbitMQContainer.class, () -> createContainer(properties))
                     .port(properties.getSsl().isEnabled() ? AMQPS_PORT : AMQP_PORT)

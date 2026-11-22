@@ -78,7 +78,9 @@ public final class ElasticsearchDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("elasticsearch")
-                    .description("Elasticsearch Dev Service")
+                    .title("Elasticsearch")
+                    .description("Distributed search and analytics engine for full-text, structured, and vector search.")
+                    .icon("text-search")
                     .properties(properties)
                     .container(ElasticsearchContainer.class, () -> createContainer(properties))
                     .port(ELASTICSEARCH_DEFAULT_PORT)

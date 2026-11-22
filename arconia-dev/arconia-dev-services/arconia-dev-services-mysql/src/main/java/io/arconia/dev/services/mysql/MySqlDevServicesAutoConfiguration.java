@@ -47,7 +47,9 @@ public final class MySqlDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("mysql")
-                    .description("MySQL Dev Service")
+                    .title("MySQL")
+                    .description("Open-source relational database for transactional applications.")
+                    .icon("database")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(MySQLContainer.class, () -> createContainer(properties))

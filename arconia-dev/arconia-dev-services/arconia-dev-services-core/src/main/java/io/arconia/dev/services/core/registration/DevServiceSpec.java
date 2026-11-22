@@ -11,8 +11,11 @@ import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -38,10 +41,22 @@ public final class DevServiceSpec {
      * labels, and the default network alias of the container, so it is kept to the character
      * set valid in all of them.
      */
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]([a-z0-9-]*[a-z0-9])?");
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
 
     @Nullable
     private String name;
+
+    @Nullable
+    private String title;
+
+    @Nullable
+    private String documentation;
+
+    @Nullable
+    private Class<?> registrarType;
+
+    @Nullable
+    private String icon;
 
     @Nullable
     private String description;
@@ -90,10 +105,67 @@ public final class DevServiceSpec {
     }
 
     /**
-     * The description of the dev service.
+     * The title of the dev service, which is the name of the product it runs, such as
+     * {@code PostgreSQL}. It is how the dev service is presented to the developer.
      */
-    public DevServiceSpec description(String description) {
+    public DevServiceSpec title(String title) {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * What the dev service provides, in a sentence. It is optional, and worth setting when
+     * there is more to say than the title.
+     */
+    public DevServiceSpec description(@Nullable String description) {
         this.description = description;
+        return this;
+    }
+
+    /**
+     * The URL of the documentation of the dev service, which developer tooling links to. The
+     * dev services of Arconia link to their page in the documentation of Arconia by default.
+     */
+    public DevServiceSpec documentation(@Nullable String documentation) {
+        this.documentation = documentation;
+        return this;
+    }
+
+    /**
+     * The class that registers the dev service, which tells whether it is one of the dev
+     * services of Arconia.
+     */
+    DevServiceSpec registeredBy(@Nullable Class<?> registrarType) {
+        this.registrarType = registrarType;
+        return this;
+    }
+
+    /**
+     * The documentation set for the dev service or, for a dev service of Arconia without one,
+     * its page in the documentation of Arconia.
+     */
+    private @Nullable String resolveDocumentation(String name) {
+        return (documentation != null) ? documentation : DevServiceConventions.documentation(registrarType, name);
+    }
+
+    /**
+     * What the names of the configuration properties of the dev service start with: the prefix
+     * their class is annotated with, which is how the properties of a dev service are declared.
+     * Developer tooling uses it to show the properties of the dev service.
+     */
+    private static @Nullable String propertiesPrefix(DevServicesProperties properties) {
+        ConfigurationProperties annotation = AnnotatedElementUtils.findMergedAnnotation(ClassUtils.getUserClass(properties),
+                ConfigurationProperties.class);
+        return (annotation != null && StringUtils.hasText(annotation.prefix())) ? annotation.prefix() : null;
+    }
+
+    /**
+     * The name of the icon that developer tooling, such as the Arconia Dev UI, shows for the
+     * dev service. It is the name of an icon of the <a href="https://lucide.dev/icons">Lucide</a>
+     * icon set, such as {@code database}. A dev service without an icon is shown without one.
+     */
+    public DevServiceSpec icon(@Nullable String icon) {
+        this.icon = icon;
         return this;
     }
 
@@ -247,10 +319,15 @@ public final class DevServiceSpec {
     DevServiceDefinition build() {
         Assert.hasText(name, "Dev Service name cannot be null or empty");
         Assert.isTrue(NAME_PATTERN.matcher(name).matches(),
-                () -> "Dev Service name must contain only lowercase letters, digits, and dashes: " + name);
+                () -> "Dev Service name must contain only lowercase letters, digits, and single dashes between them: " + name);
         String prefix = "Dev Service '%s': ".formatted(name);
 
-        Assert.hasText(description, () -> prefix + "description cannot be null or empty");
+        Assert.hasText(title, () -> prefix + "title cannot be null or empty");
+        Assert.isTrue(description == null || StringUtils.hasText(description), () -> prefix + "description cannot be empty");
+        Assert.isTrue(icon == null || NAME_PATTERN.matcher(icon).matches(),
+                () -> prefix + "icon must contain only lowercase letters, digits, and single dashes between them: " + icon);
+        Assert.isTrue(documentation == null || documentation.startsWith("http://") || documentation.startsWith("https://"),
+                () -> prefix + "documentation must be an HTTP or HTTPS URL: " + documentation);
         Assert.isTrue(category == null || StringUtils.hasText(category), () -> prefix + "category cannot be empty");
         Assert.notNull(properties, () -> prefix + "properties cannot be null");
         Assert.notNull(containerType, () -> prefix + "container type cannot be null");
@@ -269,7 +346,11 @@ public final class DevServiceSpec {
 
         return DevServiceDefinition.builder()
                 .name(name)
+                .title(title)
                 .description(description)
+                .documentation(resolveDocumentation(name))
+                .propertiesPrefix(propertiesPrefix(properties))
+                .icon(icon)
                 .category(category)
                 .properties(properties)
                 .container(containerType, containerSupplier)

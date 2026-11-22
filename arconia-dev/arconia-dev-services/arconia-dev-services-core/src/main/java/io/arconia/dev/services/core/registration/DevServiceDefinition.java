@@ -20,7 +20,11 @@ import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
  * The complete and validated definition of a dev service, as built from a {@link DevServiceSpec}.
  *
  * @param name the logical name of the dev service
- * @param description the description of the dev service
+ * @param title the title of the dev service, which is the name of the product it runs
+ * @param description what the dev service provides, in a sentence, if set
+ * @param documentation the URL of the documentation of the dev service, if set
+ * @param propertiesPrefix what the names of the configuration properties of the dev service start with, if known
+ * @param icon the name of the icon shown for the dev service, if set
  * @param category the category of mutually exclusive dev services it belongs to, if any
  * @param properties the configuration properties of the dev service
  * @param containerType the type of the container the dev service runs in
@@ -35,7 +39,11 @@ import io.arconia.dev.services.core.ssl.SslKeyStoreRequirement;
  */
 record DevServiceDefinition(
         String name,
-        String description,
+        String title,
+        @Nullable String description,
+        @Nullable String documentation,
+        @Nullable String propertiesPrefix,
+        @Nullable String icon,
         @Nullable String category,
         DevServicesProperties properties,
         Class<? extends GenericContainer<?>> containerType,
@@ -88,7 +96,15 @@ record DevServiceDefinition(
         @Nullable
         private String name;
         @Nullable
+        private String title;
+        @Nullable
         private String description;
+        @Nullable
+        private String documentation;
+        @Nullable
+        private String propertiesPrefix;
+        @Nullable
+        private String icon;
         @Nullable
         private String category;
         @Nullable
@@ -116,8 +132,28 @@ record DevServiceDefinition(
             return this;
         }
 
-        Builder description(String description) {
+        Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        Builder description(@Nullable String description) {
             this.description = description;
+            return this;
+        }
+
+        Builder documentation(@Nullable String documentation) {
+            this.documentation = documentation;
+            return this;
+        }
+
+        Builder propertiesPrefix(@Nullable String propertiesPrefix) {
+            this.propertiesPrefix = propertiesPrefix;
+            return this;
+        }
+
+        Builder icon(@Nullable String icon) {
+            this.icon = icon;
             return this;
         }
 
@@ -174,13 +210,13 @@ record DevServiceDefinition(
 
         DevServiceDefinition build() {
             Assert.hasText(name, "name cannot be null or empty");
-            Assert.hasText(description, "description cannot be null or empty");
+            Assert.hasText(title, "title cannot be null or empty");
             Assert.notNull(properties, "properties cannot be null");
             Assert.notNull(containerType, "containerType cannot be null");
             Assert.notNull(containerSupplier, "containerSupplier cannot be null");
             Assert.notNull(additionalPorts, "additionalPorts cannot be null");
             Assert.notNull(links, "links cannot be null");
-            return new DevServiceDefinition(name, description, category, properties, containerType, containerSupplier,
+            return new DevServiceDefinition(name, title, description, documentation, propertiesPrefix, icon, category, properties, containerType, containerSupplier,
                     serviceConnection, serviceConnectionName, discovery, port, additionalPorts, links, sslSupport);
         }
 

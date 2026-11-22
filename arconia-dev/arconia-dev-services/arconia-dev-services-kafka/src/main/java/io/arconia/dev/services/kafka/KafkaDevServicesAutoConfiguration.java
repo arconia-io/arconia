@@ -73,7 +73,9 @@ public final class KafkaDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("kafka")
-                    .description("Kafka Dev Service")
+                    .title("Kafka")
+                    .description("Open-source distributed event streaming platform for publishing, storing, and processing streams of events.")
+                    .icon("share-2")
                     .properties(properties)
                     .container(KafkaContainer.class, () -> createContainer(properties))
                     .port(KAFKA_PORT)

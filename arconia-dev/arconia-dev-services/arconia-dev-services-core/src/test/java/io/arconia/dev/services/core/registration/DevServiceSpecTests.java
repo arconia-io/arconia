@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.ssl.SslBundle;
 
 import io.arconia.dev.services.api.config.ResourceMapping;
@@ -36,6 +37,51 @@ class DevServiceSpecTests {
     class Build {
 
         @Test
+        void definitionCarriesTheDescriptionDocumentationAndIconOfTheSpec() {
+            DevServiceDefinition definition = completeSpec()
+                    .description("A database for tests.")
+                    .documentation("https://example.org/docs/postgres/")
+                    .icon("database")
+                    .registeredBy(DevServiceSpecTests.class)
+                    .build();
+
+            assertThat(definition.description()).isEqualTo("A database for tests.");
+            assertThat(definition.documentation()).isEqualTo("https://example.org/docs/postgres/");
+            assertThat(definition.icon()).isEqualTo("database");
+        }
+
+        @Test
+        void devServiceOfArconiaWithoutDocumentationLinksToItsPageInTheDocumentationOfArconia() {
+            assertThat(completeSpec().registeredBy(DevServiceSpecTests.class).build().documentation())
+                    .isEqualTo("https://docs.arconia.io/arconia/latest/dev-services/postgres/");
+        }
+
+        @Test
+        void propertiesPrefixIsTheOneThePropertiesOfTheDevServiceAreDeclaredWith() {
+            assertThat(completeSpec().properties(new AnnotatedProperties()).build().propertiesPrefix())
+                    .isEqualTo("acme.dev.services.fancydb");
+            assertThat(completeSpec().build().propertiesPrefix()).isNull();
+        }
+
+        @Test
+        void whenIconOrDocumentationIsInvalidThenThrowNamingTheService() {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> completeSpec().icon("Database").build())
+                    .withMessage("Dev Service 'postgres': icon must contain only lowercase letters, digits, and single dashes between them: Database");
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> completeSpec().documentation("docs.acme.io/fancydb").build())
+                    .withMessage("Dev Service 'postgres': documentation must be an HTTP or HTTPS URL: docs.acme.io/fancydb");
+        }
+
+        @Test
+        void devServiceFromElsewhereHasNoDocumentationUnlessItSetsOne() {
+            assertThat(completeSpec().registeredBy(String.class).build().documentation()).isNull();
+            assertThat(completeSpec().build().documentation()).isNull();
+            assertThat(completeSpec().build().description()).isNull();
+            assertThat(completeSpec().build().icon()).isNull();
+        }
+
+        @Test
         void whenSpecIsCompleteThenDefinitionCarriesItsValues() {
             DevServiceDefinition definition = completeSpec()
                     .category("jdbc")
@@ -43,7 +89,7 @@ class DevServiceSpecTests {
                     .build();
 
             assertThat(definition.name()).isEqualTo("postgres");
-            assertThat(definition.description()).isEqualTo("Test Dev Service");
+            assertThat(definition.title()).isEqualTo("Test Dev Service");
             assertThat(definition.category()).isEqualTo("jdbc");
             assertThat(definition.properties()).isSameAs(TestDevServicesProperties.DEFAULT);
             assertThat(definition.containerType()).isEqualTo(TestPostgresContainer.class);
@@ -77,15 +123,23 @@ class DevServiceSpecTests {
                     .withMessageContaining("Dev Service name cannot be null or empty");
         }
 
-        @Test
-        void whenNameIsInvalidThenThrow() {
+        @ParameterizedTest
+        @ValueSource(strings = { "Fancy_DB", "fancy db", "fancy--db", "-fancydb", "fancydb-" })
+        void whenNameIsInvalidThenThrow(String name) {
             assertThatIllegalArgumentException()
-                    .isThrownBy(completeSpec().name("Fancy_DB")::build)
-                    .withMessageContaining("Dev Service name must contain only lowercase letters, digits, and dashes: Fancy_DB");
+                    .isThrownBy(completeSpec().name(name)::build)
+                    .withMessageContaining(
+                            "Dev Service name must contain only lowercase letters, digits, and single dashes between them: " + name);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "fancydb", "fancy-db", "fancy-db-2", "db2" })
+        void whenNameIsValidThenBuild(String name) {
+            assertThat(completeSpec().name(name).build().name()).isEqualTo(name);
         }
 
         @Test
-        void whenDescriptionIsMissingThenThrowNamingTheService() {
+        void whenTitleIsMissingThenThrowNamingTheService() {
             DevServiceSpec spec = new DevServiceSpec()
                     .name("postgres")
                     .properties(TestDevServicesProperties.DEFAULT)
@@ -93,14 +147,14 @@ class DevServiceSpecTests {
 
             assertThatIllegalArgumentException()
                     .isThrownBy(spec::build)
-                    .withMessageContaining("Dev Service 'postgres': description cannot be null or empty");
+                    .withMessageContaining("Dev Service 'postgres': title cannot be null or empty");
         }
 
         @Test
         void whenPropertiesAreMissingThenThrow() {
             DevServiceSpec spec = new DevServiceSpec()
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .container(TestPostgresContainer.class, TestPostgresContainer::new);
 
             assertThatIllegalArgumentException()
@@ -112,7 +166,7 @@ class DevServiceSpecTests {
         void whenContainerIsMissingThenThrow() {
             DevServiceSpec spec = new DevServiceSpec()
                     .name("postgres")
-                    .description("Test Dev Service")
+                    .title("Test Dev Service")
                     .properties(TestDevServicesProperties.DEFAULT);
 
             assertThatIllegalArgumentException()
@@ -437,10 +491,13 @@ class DevServiceSpecTests {
 
     }
 
+    @ConfigurationProperties(prefix = "acme.dev.services.fancydb")
+    static class AnnotatedProperties extends TestDevServicesProperties {}
+
     private static DevServiceSpec completeSpec() {
         return new DevServiceSpec()
                 .name("postgres")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new);
     }

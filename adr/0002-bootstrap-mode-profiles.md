@@ -24,6 +24,8 @@ The profiles of each mode can be customized as a list, with the `arconia.dev.pro
 
 The mode profiles are activated before the profiles the user activates, so the profile-specific configuration of the user's profiles takes precedence over the one of the mode profiles. A mode profile that is already active is not activated again.
 
+The mode profiles are activated by the `arconia-core-bootstrap-profiles` module, separate from the detection of the mode. The Arconia starters bring it, and so do the Dev Services since they configure the application for development and tests and are on the development and test class paths alike, built-in and custom ones the same.
+
 The profiles are activated before Spring Boot loads the application configuration, so that the profile-specific files are loaded by its regular import. For the same reason, these properties are only read from the sources available at that point: the `META-INF/arconia-bootstrap.properties` file, JVM system properties, environment variables, and command line arguments. Setting them in the application configuration has no effect and is reported with a warning.
 
 ## Consequences

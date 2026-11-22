@@ -49,7 +49,9 @@ public final class MariaDbDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("mariadb")
-                    .description("MariaDB Dev Service")
+                    .title("MariaDB")
+                    .description("Open-source relational database, compatible with MySQL.")
+                    .icon("database")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(MariaDBContainer.class, () -> createContainer(properties))

@@ -155,7 +155,7 @@ class DevServicesEndpointAutoConfigurationTests {
                 .build();
         return DevServiceRegistration.builder()
                 .name(name)
-                .description(description)
+                .title(description)
                 .origin(DevServiceRegistration.Origin.MANAGED)
                 .containerInfo(containerInfo)
                 .build();

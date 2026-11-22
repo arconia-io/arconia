@@ -50,9 +50,9 @@ class DevServicesEndpointTests {
         Map<String, ServiceInfo> result = endpoint().devServices();
 
         assertThat(result.keySet()).containsExactly("postgres", "docling", "artemis");
-        assertThat(result.get("postgres").description()).isEqualTo("PostgreSQL Database");
+        assertThat(result.get("postgres").title()).isEqualTo("PostgreSQL Database");
         assertThat(result.get("postgres").containerInfo().getImageName()).isEqualTo("postgres:18");
-        assertThat(result.get("docling").description()).isEqualTo("Docling Serve");
+        assertThat(result.get("docling").title()).isEqualTo("Docling Serve");
         assertThat(result.get("docling").containerInfo().getImageName()).isEqualTo("docling:1.10");
     }
 
@@ -64,7 +64,7 @@ class DevServicesEndpointTests {
 
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo("postgres");
-        assertThat(result.description()).isEqualTo("PostgreSQL Database");
+        assertThat(result.title()).isEqualTo("PostgreSQL Database");
         assertThat(result.origin()).isEqualTo(DevServiceRegistration.Origin.MANAGED);
         assertThat(result.containerInfo()).isNotNull();
         assertThat(result.containerInfo().getId()).isEqualTo("container-1");
@@ -139,7 +139,7 @@ class DevServicesEndpointTests {
     private static DevServiceRegistration registration(String name, String description, Supplier<ContainerInfo> containerInfo, String sslBundle) {
         return DevServiceRegistration.builder()
                 .name(name)
-                .description(description)
+                .title(description)
                 .origin(DevServiceRegistration.Origin.MANAGED)
                 .containerInfo(containerInfo)
                 .sslBundleName(sslBundle)

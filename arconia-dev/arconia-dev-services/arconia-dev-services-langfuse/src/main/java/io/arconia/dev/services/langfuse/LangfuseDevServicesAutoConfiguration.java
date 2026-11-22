@@ -54,7 +54,9 @@ public final class LangfuseDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("langfuse")
-                    .description("Langfuse Dev Service")
+                    .title("Langfuse")
+                    .description("Open-source LLM engineering platform for tracing, evaluating, and debugging AI applications.")
+                    .icon("scan-eye")
                     .category(DevServiceCategories.OPENTELEMETRY)
                     .properties(properties)
                     .container(LangfuseContainer.class, () -> createContainer(properties))

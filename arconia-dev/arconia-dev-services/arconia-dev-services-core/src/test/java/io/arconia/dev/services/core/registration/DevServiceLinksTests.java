@@ -81,7 +81,7 @@ class DevServiceLinksTests {
     private static DevServiceSpec linkyService() {
         return new DevServiceSpec()
                 .name("linky")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(TestDevServicesProperties.DEFAULT)
                 .container(TestLinkContainer.class, TestLinkContainer::new);
     }

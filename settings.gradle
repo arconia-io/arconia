@@ -4,6 +4,16 @@ plugins {
 
 rootProject.name = 'arconia'
 
+// The folders that group modules are projects too, and they would take the group of the
+// modules. A folder named like one of its modules, such as arconia-dev, would then claim the
+// coordinates of that module, which a composite build cannot tell apart. The folders publish
+// nothing, so they get a group of their own.
+gradle.lifecycle.beforeProject { project ->
+    if (project != project.rootProject && !project.buildFile.exists()) {
+        project.group = 'io.arconia.folders'
+    }
+}
+
 // BOM
 include 'arconia-bom'
 
@@ -13,9 +23,13 @@ include 'arconia-ai:arconia-ai-docling-document-reader'
 // Core
 include 'arconia-core:arconia-core-annotations'
 include 'arconia-core:arconia-core-bootstrap'
+include 'arconia-core:arconia-core-bootstrap-profiles'
 
 // Data
 include 'arconia-data:arconia-data-jdbc-sqlite'
+
+// Dev
+include 'arconia-dev:arconia-dev'
 
 // Dev Services
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-api'
@@ -45,6 +59,10 @@ include 'arconia-dev:arconia-dev-services:arconia-dev-services-postgresql'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-pulsar'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-rabbitmq'
 include 'arconia-dev:arconia-dev-services:arconia-dev-services-redis'
+
+// Dev UI
+include 'arconia-dev:arconia-dev-ui:arconia-dev-ui-api'
+include 'arconia-dev:arconia-dev-ui:arconia-dev-ui-server'
 
 // Integrations
 include 'arconia-integrations:arconia-docling'

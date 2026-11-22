@@ -1,0 +1,80 @@
+/*
+ * The Arconia brand: its font, its colors, and its logo. It is shared by the Dev UI, which
+ * applies it to the Vaadin Aura theme, and by the welcome page and the error pages, which are
+ * plain HTML.
+ */
+
+/* League Spartan, licensed under the SIL Open Font License 1.1 (see fonts/league-spartan-OFL.txt). */
+@font-face {
+    font-family: 'League Spartan';
+    src: url('fonts/league-spartan-variable.woff2') format('woff2');
+    font-weight: 500 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    /* Follow the color scheme of the operating system. */
+    color-scheme: light dark;
+
+    /* The brand blue as accent, and a blue-tinted background, in each color scheme. */
+    --arconia-accent-color-light: #005ED9;
+    --arconia-accent-color-dark: #4C9DFF;
+    --arconia-background-color-light: #F1F4F9;
+    --arconia-background-color-dark: #000E2A;
+
+    --arconia-font-family-display: 'League Spartan', var(--aura-font-family, system-ui), sans-serif;
+    --arconia-heading-color: light-dark(#001545, #EAF1FB);
+    --arconia-chrome-background: light-dark(#FFFFFF, #001545);
+    --arconia-chrome-text-color: light-dark(#001545, rgba(255, 255, 255, 0.78));
+    --arconia-chrome-text-color-strong: light-dark(#001545, #FFFFFF);
+    --arconia-chrome-accent-color: light-dark(#005ED9, #C1F1FF);
+    --arconia-surface-background: light-dark(#FFFFFF, #0B2350);
+    --arconia-border-color: light-dark(#E1E7F1, rgba(255, 255, 255, 0.12));
+
+    /* Logs and stack traces are shown on a dark surface in both color schemes. */
+    --arconia-code-background: #001545;
+    --arconia-code-text-color: #E6EDF7;
+    --arconia-code-link-color: #9CC4FF;
+    --arconia-code-error-color: #FF8A80;
+    --arconia-code-warning-color: #FFD479;
+    --arconia-code-success-color: #8FD9A8;
+    --arconia-font-family-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* The brand in the top bar: the Arconia logo, which takes the color of the chrome text in
+   both color schemes, followed by the name of the product. */
+
+.arconia-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.arconia-brand:focus-visible {
+    outline: 2px solid var(--arconia-chrome-accent-color);
+    outline-offset: 4px;
+}
+
+.arconia-brand-logo {
+    height: 22px;
+    aspect-ratio: 1666 / 500;
+    background-color: var(--arconia-chrome-text-color-strong);
+    mask: url('images/arconia-horizontal.svg') center / contain no-repeat;
+}
+
+.arconia-brand-product {
+    padding-left: 0.75rem;
+    border-left: 1px solid color-mix(in srgb, var(--arconia-chrome-accent-color) 35%, transparent);
+    font-family: var(--arconia-font-family-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--arconia-chrome-accent-color);
+    /* Aligned with the letters of the logo, which sit below its center. */
+    transform: translateY(2px);
+}

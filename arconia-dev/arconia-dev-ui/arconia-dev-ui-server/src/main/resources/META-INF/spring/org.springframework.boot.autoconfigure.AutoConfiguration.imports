@@ -1,0 +1,2 @@
+io.arconia.dev.ui.server.autoconfigure.DevUiAutoConfiguration
+io.arconia.dev.ui.server.autoconfigure.DevUiErrorPagesAutoConfiguration

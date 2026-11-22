@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.arconia.dev.services.api.registration.ContainerInfo;
 import io.arconia.dev.services.api.registration.DevServiceLink;
@@ -30,17 +31,29 @@ class DevServiceRegistrationTests {
     void whenAComponentIsMissingThenThrow(String component, ThrowingCallable creation) {
         assertThatThrownBy(creation)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining(component + " cannot be");
+                .hasMessageContaining(component.contains(" ") ? component : component + " cannot be");
     }
 
     static Stream<Arguments> invalidRegistrations() {
         return Stream.of(
                 Arguments.of("name", (ThrowingCallable) () -> validRegistration().name("").build()),
-                Arguments.of("description", (ThrowingCallable) () -> validRegistration().description("").build()),
+                Arguments.of("title", (ThrowingCallable) () -> validRegistration().title("").build()),
+                Arguments.of("description", (ThrowingCallable) () -> validRegistration().description(" ").build()),
                 Arguments.of("category", (ThrowingCallable) () -> validRegistration().category("").build()),
+                Arguments.of("documentation must be an HTTP or HTTPS URL", (ThrowingCallable) () -> validRegistration().documentation("docs/fancydb").build()),
+                Arguments.of("icon must contain only lowercase letters, digits, and single dashes between them: My Icon",
+                        (ThrowingCallable) () -> validRegistration().icon("My Icon").build()),
                 Arguments.of("origin", (ThrowingCallable) () -> validRegistration().origin(null).build()),
                 Arguments.of("containerInfo", (ThrowingCallable) () -> validRegistration().containerInfo(null).build()),
                 Arguments.of("links", (ThrowingCallable) () -> validRegistration().links(null).build()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "Fancy_DB", "fancy db", "fancy--db", "-fancydb", "fancydb-" })
+    void whenNameIsInvalidThenThrow(String name) {
+        assertThatThrownBy(() -> validRegistration().name(name).build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("name must contain only lowercase letters, digits, and single dashes between them: " + name);
     }
 
     @Test
@@ -49,16 +62,19 @@ class DevServiceRegistrationTests {
 
         var registration = DevServiceRegistration.builder()
                 .name("test-service")
-                .description("A test service")
+                .title("Test Service")
                 .origin(MANAGED)
                 .containerInfo(() -> expectedContainerInfo)
                 .build();
 
         assertThat(registration.getName()).isEqualTo("test-service");
-        assertThat(registration.getDescription()).isEqualTo("A test service");
+        assertThat(registration.getTitle()).isEqualTo("Test Service");
         assertThat(registration.getOrigin()).isEqualTo(MANAGED);
         assertThat(registration.getContainerInfo().get()).isEqualTo(expectedContainerInfo);
-        // No category, no links, and no SSL bundle by default.
+        // No description, no documentation, no icon, no category, no links, and no SSL bundle by default.
+        assertThat(registration.getDescription()).isNull();
+        assertThat(registration.getDocumentation()).isNull();
+        assertThat(registration.getIcon()).isNull();
         assertThat(registration.getCategory()).isNull();
         assertThat(registration.getLinks()).isEmpty();
         assertThat(registration.getSslBundleName()).isNull();
@@ -77,7 +93,7 @@ class DevServiceRegistrationTests {
 
         var registration = DevServiceRegistration.builder()
                 .name("test-service")
-                .description("A test service")
+                .title("A test service")
                 .origin(MANAGED)
                 .containerInfo(DevServiceRegistrationTests::createContainerInfo)
                 .links(links)
@@ -94,9 +110,19 @@ class DevServiceRegistrationTests {
     private static DevServiceRegistration.Builder validRegistration() {
         return DevServiceRegistration.builder()
                 .name("test-service")
-                .description("A test service")
+                .title("A test service")
                 .origin(MANAGED)
                 .containerInfo(DevServiceRegistrationTests::createContainerInfo);
+    }
+
+    @Test
+    void registrationCanHaveDocumentationPropertiesPrefixAndAnIcon() {
+        var registration = validRegistration().documentation("https://example.org/docs/fancydb/")
+                .propertiesPrefix("acme.dev.services.fancydb").icon("database").build();
+
+        assertThat(registration.getDocumentation()).isEqualTo("https://example.org/docs/fancydb/");
+        assertThat(registration.getPropertiesPrefix()).isEqualTo("acme.dev.services.fancydb");
+        assertThat(registration.getIcon()).isEqualTo("database");
     }
 
     private static ContainerInfo createContainerInfo() {

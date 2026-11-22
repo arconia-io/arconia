@@ -42,7 +42,9 @@ public final class OracleDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("oracle")
-                    .description("Oracle Dev Service")
+                    .title("Oracle")
+                    .description("Enterprise relational database in its free edition, from version 23ai.")
+                    .icon("database")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(OracleContainer.class, () -> createContainer(properties))

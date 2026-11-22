@@ -30,7 +30,9 @@ public final class KeycloakDevServicesAutoConfiguration {
             registry.registerDevService(service -> {
                 service
                     .name("keycloak")
-                    .description("Keycloak Dev Service")
+                    .title("Keycloak")
+                    .description("Open-source identity and access management server for single sign-on with OAuth2 and OpenID Connect.")
+                    .icon("key-round")
                     .category(DevServiceCategories.OIDC)
                     .properties(properties)
                     .container(ArconiaKeycloakContainer.class, () -> new ArconiaKeycloakContainer(properties))

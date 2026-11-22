@@ -69,7 +69,9 @@ public final class RedisDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("redis")
-                    .description("Redis Dev Service")
+                    .title("Redis")
+                    .description("In-memory data store for caching, messaging, and fast access to data structures.")
+                    .icon("database-zap")
                     .category(DevServiceCategories.REDIS)
                     .properties(properties)
                     .container(RedisContainer.class, () -> createContainer(properties))

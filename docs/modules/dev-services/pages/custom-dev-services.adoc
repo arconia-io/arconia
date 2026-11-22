@@ -163,7 +163,7 @@ public final class FancyDbDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("fancydb")
-                    .description("FancyDB Dev Service")
+                    .title("FancyDB")
                     .properties(properties)
                     .container(FancyDbContainer.class, () -> createContainer(properties))
                     .port(FancyDbContainer.FANCYDB_PORT)
@@ -191,8 +191,9 @@ FancyDB has no Spring Boot integration, so the example disables the service conn
 ====
 A few constraints apply to the registration, enforced at startup:
 
-* The name of the Dev Service must contain only lowercase letters, digits, and dashes (`[a-z0-9]([a-z0-9-]*[a-z0-9])?`), since it becomes part of bean names, container labels, and the network alias of the container. It must be unique in the application: registering a second Dev Service with the same name fails.
-* The description is required: it's shown in developer tooling, such as the `devservices` actuator endpoint.
+* The name of the Dev Service must contain only lowercase letters, digits, and single dashes between them (`[a-z0-9]+(-[a-z0-9]+)*`), since it becomes part of bean names, container labels, and the network alias of the container. It must be unique in the application: registering a second Dev Service with the same name fails.
+* The title is required: it's the name of the product the dev service runs, shown in developer tooling, such as the xref:dev-ui:index.adoc#_dev_services[Arconia Dev UI] and the `devservices` actuator endpoint. Add a `description` when there is more to say than the title, in a sentence.
+* The documentation and the icon are optional. Set `documentation` to the URL of the documentation of your dev service, and `icon` to the name of an icon of the https://lucide.dev/icons[Lucide] icon set, such as `database`. Developer tooling such as the Arconia Dev UI links to the first and shows the second. The Arconia Dev UI also links to the configuration properties of your dev service, which it finds from the prefix of your properties class.
 * The `port` property can only be set for a Dev Service declaring its container port with `port(...)`. Otherwise, the property would be silently ignored, so the application fails to start instead.
 * The common properties must return a value: a properties class returning `null` for one of them is reported by property name at startup.
 * The auto-configuration must declare `before = ServiceConnectionAutoConfiguration.class`, as in the example above: the container bean definition must exist by the time Spring Boot looks for the `@ServiceConnection` beans to provide the connection details for. Without it, the container starts, but the application is not connected to it.
@@ -244,7 +245,7 @@ To let multiple applications running simultaneously use the same container of yo
 ----
 registry.registerDevService(service -> service
         .name("fancydb")
-        .description("FancyDB Dev Service")
+        .title("FancyDB")
         .properties(properties)
         .container(FancyDbContainer.class, () -> createContainer(properties))
         .discovery(FancyDbConnectionDetails.class,
@@ -294,7 +295,7 @@ Then declare how to configure your container to serve SSL when registering the D
 ----
 registry.registerDevService(service -> service
         .name("fancydb")
-        .description("FancyDB Dev Service")
+        .title("FancyDB")
         .properties(properties)
         .container(FancyDbContainer.class, () -> createContainer(properties))
         .ssl(FancyDbDevServicesAutoConfiguration::configureSsl));

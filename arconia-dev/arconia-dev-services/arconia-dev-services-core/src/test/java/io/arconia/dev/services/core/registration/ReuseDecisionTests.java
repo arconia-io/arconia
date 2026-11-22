@@ -115,7 +115,7 @@ class ReuseDecisionTests {
     private static DevServiceDefinition serviceSpec(DevServicesProperties properties, boolean discovery) {
         DevServiceSpec service = new DevServiceSpec()
                 .name("postgres")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(properties)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new);
         if (discovery) {

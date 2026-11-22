@@ -290,7 +290,7 @@ class DevServiceSslSupportTests {
     private static DevServiceDefinition definition(TestDevServicesProperties properties, @Nullable SslSupport sslSupport) {
         DevServiceSpec spec = new DevServiceSpec()
                 .name("postgres")
-                .description("Test Dev Service")
+                .title("Test Dev Service")
                 .properties(properties)
                 .container(TestPostgresContainer.class, TestPostgresContainer::new);
         if (sslSupport != null) {

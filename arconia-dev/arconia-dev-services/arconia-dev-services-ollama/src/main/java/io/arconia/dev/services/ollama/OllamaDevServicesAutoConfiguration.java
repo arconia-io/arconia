@@ -51,7 +51,9 @@ public final class OllamaDevServicesAutoConfiguration {
             registry.registerDevService(service -> {
                 service
                         .name("ollama")
-                        .description("Ollama Dev Service")
+                        .title("Ollama")
+                        .description("Inference service for running open large language models and embedding models locally.")
+                        .icon("brain-circuit")
                         .properties(properties)
                         .container(ArconiaOllamaContainer.class, () -> new ArconiaOllamaContainer(properties))
                         .port(ArconiaOllamaContainer.OLLAMA_PORT);

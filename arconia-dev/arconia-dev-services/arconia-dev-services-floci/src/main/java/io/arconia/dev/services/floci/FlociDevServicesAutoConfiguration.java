@@ -90,7 +90,9 @@ public final class FlociDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("floci")
-                    .description("Floci Dev Service")
+                    .title("Floci")
+                    .description("Free and open-source local AWS emulator for developing and testing cloud applications.")
+                    .icon("cloud-cog")
                     .category(DevServiceCategories.AWS)
                     .properties(properties)
                     .container(FlociContainer.class, () -> createContainer(properties))

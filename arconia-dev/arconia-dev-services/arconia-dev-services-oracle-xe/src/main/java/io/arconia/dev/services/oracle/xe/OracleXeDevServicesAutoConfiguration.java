@@ -42,7 +42,9 @@ public final class OracleXeDevServicesAutoConfiguration {
 
             registry.registerDevService(service -> service
                     .name("oracle-xe")
-                    .description("Oracle XE Dev Service")
+                    .title("Oracle XE")
+                    .description("Enterprise relational database in its free Express Edition, up to version 21c.")
+                    .icon("database")
                     .category(DevServiceCategories.JDBC)
                     .properties(properties)
                     .container(OracleContainer.class, () -> createContainer(properties))

@@ -1,5 +1,9 @@
 package io.arconia.core.bootstrap;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +98,7 @@ class BootstrapModeDetectorTests {
 
     @Test
     void whenArconiaBootstrapModeSetInBootstrapConfigurationFileItIsIgnored() {
-        var stubClassLoader = BootstrapConfigurationFileTests.classLoaderWithBootstrapFile("arconia.bootstrap.mode=prod");
+        var stubClassLoader = classLoaderWithBootstrapFile("arconia.bootstrap.mode=prod");
         Thread currentThread = Thread.currentThread();
         ClassLoader originalClassLoader = currentThread.getContextClassLoader();
         try {
@@ -369,6 +373,23 @@ class BootstrapModeDetectorTests {
             mockedBootstrapModeDetector = mockStatic(BootstrapModeDetector.class, Mockito.CALLS_REAL_METHODS);
         }
         mockedBootstrapModeDetector.when(BootstrapModeDetector::isDevelopmentContext).thenReturn(isDevelopment);
+    }
+
+    /**
+     * A class loader with the bootstrap configuration file of Arconia Core Profiles, which holds
+     * profile settings and never the mode.
+     */
+    private static ClassLoader classLoaderWithBootstrapFile(String content) {
+        return new ClassLoader(BootstrapModeDetectorTests.class.getClassLoader()) {
+            @Override
+            @Nullable
+            public InputStream getResourceAsStream(String name) {
+                if ("META-INF/arconia-bootstrap.properties".equals(name)) {
+                    return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+                }
+                return super.getResourceAsStream(name);
+            }
+        };
     }
 
 }
