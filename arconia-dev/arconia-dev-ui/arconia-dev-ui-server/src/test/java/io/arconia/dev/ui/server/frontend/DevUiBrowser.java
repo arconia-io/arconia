@@ -1,4 +1,4 @@
-package io.arconia.dev.ui.server;
+package io.arconia.dev.ui.server.frontend;
 
 import java.nio.file.Path;
 import java.util.Map;

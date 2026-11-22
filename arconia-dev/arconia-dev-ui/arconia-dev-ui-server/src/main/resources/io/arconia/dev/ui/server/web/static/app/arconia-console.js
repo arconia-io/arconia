@@ -162,7 +162,7 @@ class ArconiaConsole extends ArconiaElement {
         }
         const leading = html`
             ${title}
-            <vaadin-select aria-label="Level" theme="small" .value=${this.level} .items=${LEVEL_ITEMS}
+            <vaadin-select accessible-name="Level" theme="small" .value=${this.level} .items=${LEVEL_ITEMS}
                     @value-changed=${(event) => { this.level = event.detail.value; this.view?.refilter(); }}>
             </vaadin-select>
         `;

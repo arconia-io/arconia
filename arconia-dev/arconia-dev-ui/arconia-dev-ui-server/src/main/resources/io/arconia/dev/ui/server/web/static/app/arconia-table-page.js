@@ -130,12 +130,12 @@ class ArconiaTablePage extends ArconiaElement {
         const rows = this.shownRows;
         return html`
             <div class="toolbar">
-                <vaadin-text-field placeholder="Filter" aria-label="Filter the rows of the table" clear-button-visible
+                <vaadin-text-field placeholder="Filter" accessible-name="Filter the rows of the table" clear-button-visible
                         .value=${this.filter} @value-changed=${(event) => this.setFilter(event.detail.value)}>
                     <vaadin-icon slot="prefix" src=${iconPath('search')}></vaadin-icon>
                 </vaadin-text-field>
                 ${this.groupItems.length ? html`
-                    <vaadin-select aria-label=${this.columns[this.filterColumn]} .value=${this.group}
+                    <vaadin-select accessible-name=${this.columns[this.filterColumn]} .value=${this.group}
                             .items=${this.groupItems}
                             @value-changed=${(event) => { this.group = event.detail.value; }}>
                     </vaadin-select>

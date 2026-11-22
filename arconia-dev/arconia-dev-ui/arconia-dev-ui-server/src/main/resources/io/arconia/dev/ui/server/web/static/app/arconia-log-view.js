@@ -193,7 +193,7 @@ class ArconiaLogView extends ArconiaElement {
         return html`
             <div class="toolbar">
                 ${this.leading ?? nothing}
-                <vaadin-text-field theme="small" placeholder="Filter" aria-label="Filter the lines of the log" clear-button-visible
+                <vaadin-text-field theme="small" placeholder="Filter" accessible-name="Filter the lines of the log" clear-button-visible
                         .value=${this.filter} @value-changed=${(event) => { this.filter = event.detail.value; this.refilter(); }}>
                     <vaadin-icon slot="prefix" src=${iconPath('search')}></vaadin-icon>
                 </vaadin-text-field>

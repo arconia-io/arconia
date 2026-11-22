@@ -1,4 +1,4 @@
-package io.arconia.dev.ui.server;
+package io.arconia.dev.ui.server.frontend;
 
 import java.time.Duration;
 import java.util.UUID;
